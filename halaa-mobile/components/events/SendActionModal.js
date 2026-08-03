@@ -120,7 +120,7 @@ export default function SendActionModal({
           toast.error(
             t(
               "events:bulkActions.sendInvitesFirst",
-              "أرسِل الدعوات الأولية أولًا، ثم استخدم إعادة الإرسال لمن لم يردّ أو اختار ربما."
+              "أرسِل الدعوات الأولية أولًا، ثم استخدم إعادة الإرسال لمن لم يردّ."
             )
           );
         } else if (data.code === "NO_NEW_GUESTS") {

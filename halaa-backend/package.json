@@ -5,6 +5,7 @@
   "main": "src/server.js",
   "scripts": {
     "test": "node --test test/*.test.js",
+    "migrate:public-template-categories": "node scripts/migratePublicTemplateCategories.js",
     "migrate:vendor-copy": "node scripts/migrate-vendor-localized-copy.js",
     "catalog:generate": "node scripts/generateStoreCatalog.js",
     "catalog:check": "node scripts/generateStoreCatalog.js --check",
@@ -14,6 +15,8 @@
     "legal:check": "node scripts/generateLegalManifest.js --check",
     "legal:test": "node --test test/legal-manifest.test.js",
     "legal:verify": "node scripts/generateLegalManifest.js --check && node --test test/legal-manifest.test.js",
+    "taqnyat:owner-templates": "node scripts/submit-owner-taqnyat-templates.js",
+    "migrate:two-choice-invitations": "node scripts/migrate-two-choice-invitations.js",
     "dev": "nodemon src/server.js",
     "start": "node src/server.js"
   },

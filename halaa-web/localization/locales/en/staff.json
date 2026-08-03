@@ -3,7 +3,6 @@
   "eventDetails": "Event Details",
   "invitationInteraction": "Invitation Interaction",
   "waiting": "Waiting",
-  "maybe": "Maybe",
   "declined": "Declined",
   "confirmed": "Confirmed",
   "checkedIn": "Checked In",
@@ -24,7 +23,6 @@
   "stats": {
     "total": "Total Guests",
     "confirmed": "Confirmed",
-    "maybe": "Maybe",
     "declined": "Declined",
     "checkedIn": "At Event Now"
   },
@@ -47,8 +45,7 @@
     "checkedIn": "Checked in",
     "confirmed": "Confirmed",
     "declined": "Declined",
-    "invited": "Invited",
-    "maybe": "Maybe"
+    "invited": "Invited"
   },
   "qr": {
     "scanTitle": "Scan QR Code",

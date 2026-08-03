@@ -22,8 +22,7 @@ const {
   resolveTaqnyatTemplate,
   getEventBodyParams,
   buildSmsBody,
-  getEventImageUrl,
-  buildInvitationUrlButton,
+  getRequiredEventImageUrl,
 } = require('./messaging.formatting');
 const taqnyatTemplatesService = require('../taqnyat-templates/taqnyat-templates.service');
 const { INVITATION_TYPE } = require('../../shared/constants');
@@ -93,17 +92,15 @@ async function sendTestMessage({ eventId, phoneNumber, channel = 'whatsapp', isA
         invitationMode: event.invitationType || INVITATION_TYPE.REPLY_AND_QR,
       }
     );
-    imageUrl = getEventImageUrl(event, cached);
+    imageUrl = getRequiredEventImageUrl(event, cached);
     bodyParams = getEventBodyParams(event, 'ضيف تجريبي', cached);
 
-    const urlButton = buildInvitationUrlButton(event, cached, previewCode, 'ar');
     const components = [
       {
         type: 'body',
         parameters: bodyParams.map((p) => ({ type: 'text', text: p })),
       },
-      urlButton,
-    ].filter(Boolean);
+    ];
 
     // Native SMS failover: Taqnyat dispatches SMS automatically when the
     // recipient has no WhatsApp capability. Mirror the per-guest path so
@@ -120,7 +117,7 @@ async function sendTestMessage({ eventId, phoneNumber, channel = 'whatsapp', isA
           bodyParams,
           smsFallback,
           logOptions,
-          urlButton ? [urlButton] : []
+          []
         )
       : await taqnyat.sendWhatsAppTemplate(
           phoneNumber,
@@ -245,16 +242,14 @@ async function sendToGuest({ guestId, eventId, channel = 'sms', userId, isAdmin 
         invitationMode: event.invitationType || INVITATION_TYPE.REPLY_AND_QR,
       }
     );
-    imageUrl = getEventImageUrl(event, cached);
+    imageUrl = getRequiredEventImageUrl(event, cached);
     bodyParams = getEventBodyParams(event, guest.name, cached);
-    const urlButton = buildInvitationUrlButton(event, cached, guest.qrcode, 'ar');
     const components = [
       {
         type: 'body',
         parameters: bodyParams.map((p) => ({ type: 'text', text: p })),
       },
-      urlButton,
-    ].filter(Boolean);
+    ];
 
     // SMS fallback automatically dispatched by Taqnyat when the guest
     // has no WhatsApp capability.
@@ -272,7 +267,7 @@ async function sendToGuest({ guestId, eventId, channel = 'sms', userId, isAdmin 
           bodyParams,
           smsFallback,
           logOptions,
-          urlButton ? [urlButton] : []
+          []
         )
       : await taqnyat.sendWhatsAppTemplate(
           guest.phone,

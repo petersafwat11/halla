@@ -54,11 +54,6 @@ const GuestListItem = ({
           ...getStatusVisual("declined"),
           label: t("guestTableExtras.status.declined", "Declined"),
         };
-      case "maybe":
-        return {
-          ...getStatusVisual("maybe"),
-          label: t("guestTableExtras.status.maybe", "Maybe"),
-        };
       default:
         return {
           ...getStatusVisual("invited"),

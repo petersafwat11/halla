@@ -50,12 +50,10 @@
     "invitationModes": {
       "reply_and_qr": "Reply + QR",
       "reply_only": "Reply only",
-      "qr_only": "QR only",
       "none": "No reply, no QR"
     },
     "buttonCapabilities": {
-      "three_quick_replies": "Three quick replies: accept, decline and maybe",
-      "dynamic_url": "One dynamic URL button for the guest pass",
+      "two_quick_replies": "Two quick replies: confirm and decline",
       "none": "No WhatsApp buttons",
       "unsupported": "Unsupported button combination",
       "unverified": "Controls not yet verified; sync from Taqnyat"
@@ -63,7 +61,7 @@
     "uniquePerCategoryHint": "Only one active template is allowed per category for this type. Saving deactivates the previous one.",
     "types": {
       "invite": "Invitation",
-      "reminder_pending": "Reminder — no response or maybe",
+      "reminder_pending": "Reminder — no response",
       "reminder_confirmed": "Reminder — confirmed",
       "post_event": "Post-event",
       "staff_access": "Staff access"
@@ -105,6 +103,7 @@
     "sourceKeys": {
       "guest_name": "Guest name",
       "event_title": "Event title",
+      "event_dayFormatted": "Event day (formatted)",
       "event_dateFormatted": "Event date (formatted)",
       "event_time": "Event time",
       "event_location": "Event address",

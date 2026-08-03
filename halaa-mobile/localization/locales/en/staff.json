@@ -52,7 +52,6 @@
     "invited": "Invited",
     "confirmed": "Confirmed",
     "declined": "Declined",
-    "maybe": "Maybe",
     "checked_in": "Checked In",
     "no_show": "No Show"
   },
@@ -69,7 +68,6 @@
     "checkedIn": "Checked in",
     "confirmed": "Confirmed",
     "declined": "Declined",
-    "invited": "Invited",
-    "maybe": "Maybe"
+    "invited": "Invited"
   }
 }

@@ -147,7 +147,7 @@ async function getHostById(hostId) {
       guestListLength: e.guestList?.length || 0,
       totalConfirmed: counts.confirmed || 0,
       totalDeclined: counts.declined || 0,
-      totalPending: (counts.invited || 0) + (counts.maybe || 0),
+      totalPending: counts.invited || 0,
     };
   });
 

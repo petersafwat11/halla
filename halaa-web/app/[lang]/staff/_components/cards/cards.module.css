@@ -113,9 +113,6 @@
 .iconCircle--confirmed {
   background-color: #d9ece2;
 }
-.iconCircle--maybe {
-  background-color: #fbf0dc;
-}
 .iconCircle--declined {
   background-color: #f5dada;
 }
@@ -146,9 +143,6 @@
 }
 .statValue--confirmed {
   color: #2a8c5b;
-}
-.statValue--maybe {
-  color: #d38200;
 }
 .statValue--declined {
   color: #c0392b;

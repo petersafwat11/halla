@@ -53,7 +53,6 @@ const EventsTable = () => {
           t("table.columns.eventType", "نوع المناسبة"),
           t("table.columns.confirmed", "مؤكد"),
           t("table.columns.declined", "معتذر"),
-          t("table.columns.maybe", "ربما"),
           t("table.columns.noResponse", "لم يرد"),
           t("table.columns.dateTime", "التاريخ والوقت"),
           t("table.columns.status", "الحالة"),
@@ -62,15 +61,13 @@ const EventsTable = () => {
           const guestCount = event.guestCount || 0;
           const confirmed = event.confirmedCount || 0;
           const declined = event.declinedCount || 0;
-          const maybe = event.maybeCount || 0;
-          const noResponse = Math.max(0, guestCount - confirmed - declined - maybe);
+          const noResponse = Math.max(0, guestCount - confirmed - declined);
           return {
             id: event.id,
             title: event.title || "-",
             type: event.eventType || "-",
             confirmed,
             declined,
-            maybe,
             noResponse,
             dateTime: event.date,
             status: event.status || "pending_scheduling",
@@ -127,9 +124,6 @@ const EventsTable = () => {
           }
           if (key === "declined") {
             return <strong style={{ color: "#C0392B" }}>{value}</strong>;
-          }
-          if (key === "maybe") {
-            return <strong style={{ color: "#B7791F" }}>{value}</strong>;
           }
           if (key === "noResponse") {
             return <strong style={{ color: "#D38200" }}>{value}</strong>;

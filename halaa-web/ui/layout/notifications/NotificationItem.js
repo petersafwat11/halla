@@ -40,7 +40,6 @@ const getIconComponent = (type) => {
     // Guest
     guest_rsvp_accepted: IoPersonOutline,
     guest_rsvp_declined: IoPersonOutline,
-    guest_rsvp_maybe: IoPersonOutline,
     guest_checked_in: IoCheckmarkCircleOutline,
     invitations_sent: IoSendOutline,
 

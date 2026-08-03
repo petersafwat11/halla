@@ -319,7 +319,7 @@ const invitationReportEmail = (data, lang = "ar") => {
   const responseRate =
     stats.totalInvited > 0
       ? Math.round(
-          ((stats.confirmed + stats.declined + stats.maybe) /
+          ((stats.confirmed + stats.declined) /
             stats.totalInvited) *
             100
         )
@@ -363,15 +363,6 @@ const invitationReportEmail = (data, lang = "ar") => {
       },
     ])}
     
-    ${
-      stats.maybe > 0
-        ? `
-      <p style="text-align: center; color: ${COLORS.text.secondary};">
-        ${isAr ? "ربما يحضر:" : "Maybe:"} <strong>${stats.maybe}</strong>
-      </p>
-    `
-        : ""
-    }
     
     <div style="margin: 24px 0;">
       <p style="margin-bottom: 8px; font-size: 14px; color: ${COLORS.text.secondary}; text-align: center;">

@@ -6,7 +6,8 @@
 const TaqnyatTemplate = require('../../../models/TaqnyatTemplateModel');
 const { formatRiyadh } = require('../../shared/utils/timezone');
 const logger = require('../../shared/utils/logger');
-const { INVITATION_TYPE } = require('../../shared/constants');
+const { invitationAllowsReply } = require('../../shared/constants');
+const { AppError } = require('../../shared/errors');
 
 const TAQNYAT_SENDER = process.env.TAQNYAT_SENDER_NAME || 'HalaaApp';
 
@@ -19,6 +20,23 @@ function formatDate(date, lang = 'ar') {
   return formatRiyadh(date, {
     style: 'date',
     locale: lang === 'ar' ? 'ar-SA' : 'en-US',
+  });
+}
+
+/**
+ * Format only the weekday name in Asia/Riyadh.
+ */
+function formatDay(date, lang = 'ar') {
+  if (!date) return '';
+  return formatRiyadh(date, {
+    style: 'date',
+    locale: lang === 'ar' ? 'ar-SA' : 'en-US',
+    options: {
+      year: undefined,
+      month: undefined,
+      day: undefined,
+      weekday: 'long',
+    },
   });
 }
 
@@ -81,6 +99,7 @@ function getEventBodyParams(event, guestName, taqnyatTemplate = null, extraConte
     guest: { name: guestName || 'ضيفنا الكريم' },
     eventDetails: {
       ...ed,
+      dayFormatted: formatDay(ed.date),
       dateFormatted: formatDate(ed.date),
       location: { ...loc, mapUrl },
     },
@@ -117,7 +136,10 @@ function buildSmsBody(event, guestName, rsvpLink) {
   const time = event.eventDetails?.time || '';
   const location = event.eventDetails?.location?.address || '';
   const name = guestName ? `${guestName}، ` : '';
-  return `${name}أنت مدعو لحضور ${title}\nبتاريخ ${date} الساعة ${time}\n${location}\n${rsvpLink}`;
+  const responseLink = invitationAllowsReply(event?.invitationType) && rsvpLink
+    ? `\n${rsvpLink}`
+    : '';
+  return `${name}أنت مدعو لحضور ${title}\nبتاريخ ${date} الساعة ${time}\n${location}${responseLink}`;
 }
 
 /**
@@ -140,25 +162,23 @@ function getEventImageUrl(event, taqnyatTemplate = null) {
   return null;
 }
 
-/** Build the provider parameter for a QR-only template's dynamic URL CTA. */
-function buildInvitationUrlButton(event, taqnyatTemplate, invitationCode, lang = 'ar') {
-  if (event?.invitationType !== INVITATION_TYPE.QR_ONLY) return null;
-  const button = (taqnyatTemplate?.buttons || []).find(
-    (candidate) => String(candidate?.type || '').toUpperCase() === 'URL'
-  );
-  if (!button || !/\{\{\d+\}\}/.test(button.url || '')) return null;
-
-  const staticPrefix = String(button.url).split(/\{\{\d+\}\}/)[0];
-  const text = /\/invitation\/$/.test(staticPrefix)
-    ? String(invitationCode)
-    : `${lang === 'en' ? 'en' : 'ar'}/invitation/${invitationCode}`;
-
-  return {
-    type: 'button',
-    sub_type: 'url',
-    index: String(button.index || 0),
-    parameters: [{ type: 'text', text }],
-  };
+/**
+ * Resolve the event-specific Step 3 image for an IMAGE-header template.
+ *
+ * An approved IMAGE header is a required template component. Falling back to
+ * the text-only send path would produce a malformed Taqnyat payload, so fail
+ * before the provider call with an actionable event configuration error.
+ */
+function getRequiredEventImageUrl(event, taqnyatTemplate = null) {
+  const imageUrl = getEventImageUrl(event, taqnyatTemplate);
+  if (taqnyatTemplate?.hasImageHeader === true && !imageUrl) {
+    throw new AppError(
+      'The selected WhatsApp template requires a public invitation image from Step 3.',
+      400,
+      'TAQNYAT_TEMPLATE_IMAGE_REQUIRED'
+    );
+  }
+  return imageUrl;
 }
 
 /**
@@ -195,6 +215,7 @@ function getPostEventBodyParams(event, guestName, taqnyatTemplate, accessCtx = {
     guest: { name: guestName || 'ضيفنا الكريم' },
     eventDetails: {
       ...ed,
+      dayFormatted: formatDay(ed.date),
       dateFormatted: formatDate(ed.date),
       location: { ...loc, mapUrl },
     },
@@ -239,11 +260,12 @@ function buildPostEventAccessLinkSmsBody(event, guestName, accessLink) {
 module.exports = {
   TAQNYAT_SENDER,
   formatDate,
+  formatDay,
   resolveTaqnyatTemplate,
   getEventBodyParams,
   buildSmsBody,
   getEventImageUrl,
-  buildInvitationUrlButton,
+  getRequiredEventImageUrl,
   getPostEventBodyParams,
   buildPostEventAccessLinkSmsBody,
 };

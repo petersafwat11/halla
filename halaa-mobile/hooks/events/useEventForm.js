@@ -301,7 +301,6 @@ export const transformFormDataToPayload = (formData) => ({
   guestReplies: {
     onAttend: formData.guestReplies?.onAttend || "",
     onAbsent: formData.guestReplies?.onAbsent || "",
-    onExpected: formData.guestReplies?.onExpected || "",
   },
   invitationType: formData.invitationType || DEFAULT_INVITATION_TYPE,
   templateImage: formData.templateImage,
@@ -343,7 +342,7 @@ export const getDefaultFormValues = () => ({
   selectedTemplate: null,
   taqnyatTemplate: null,
   invitationType: DEFAULT_INVITATION_TYPE,
-  guestReplies: { onAttend: "", onAbsent: "", onExpected: "" },
+  guestReplies: { onAttend: "", onAbsent: "" },
 
   // Launch settings
   sendSchedule: "now",

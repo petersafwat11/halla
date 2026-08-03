@@ -99,9 +99,7 @@
       "confirmed": "مؤكد",
       "declined": "معتذر",
       "invited": "لم يرد",
-      "noResponse": "لم يرد",
-      "maybe": "ربما",
-      "tentative": "ربما"
+      "noResponse": "لم يرد"
     },
     "actions": {
       "edit": "تعديل",
@@ -257,7 +255,6 @@
       "confirmed": "مؤكد",
       "declined": "مرفوض",
       "noResponse": "بدون رد",
-      "maybe": "ربما",
       "responseRate": "معدل الاستجابة"
     },
     "confirmDelete": {

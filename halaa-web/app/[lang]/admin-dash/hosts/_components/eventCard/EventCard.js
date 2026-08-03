@@ -88,7 +88,7 @@ const EventCard = ({ data }) => {
               {t("hostDetails.declined")} <span>{data?.totalDeclined}</span>
             </p>
           </div>
-          <div className={styles.maybe}>
+          <div className={styles.pending}>
             <p className={styles.answerText}>
               {t("hostDetails.pending")} <span>{data?.totalPending}</span>
             </p>

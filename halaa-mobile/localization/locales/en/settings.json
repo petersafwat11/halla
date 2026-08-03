@@ -94,7 +94,7 @@
     "invalidPhone": "Invalid phone number",
     "currentPasswordRequired": "Current password is required",
     "passwordMinLength": "Password must be at least 8 characters",
-    "passwordComplexity": "Password must contain uppercase, lowercase, and number",
+    "passwordComplexity": "Use letters and numbers only, with at least one of each",
     "confirmPasswordRequired": "Password confirmation is required",
     "passwordsDoNotMatch": "Passwords do not match",
     "passwordRequired": "Password is required for confirmation",

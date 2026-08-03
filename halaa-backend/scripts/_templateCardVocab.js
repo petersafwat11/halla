@@ -348,13 +348,12 @@ function styleTail() {
 }
 
 const CATEGORIES = [
-  { code: "wedding",       nameEn: "Wedding",       nameAr: "زفاف",          sortOrder: 10 },
-  { code: "engagement",    nameEn: "Engagement",    nameAr: "خطوبة",         sortOrder: 20 },
-  { code: "birthday",      nameEn: "Birthday",      nameAr: "عيد ميلاد",     sortOrder: 30 },
-  { code: "baby_shower",   nameEn: "Baby Shower",   nameAr: "استقبال مولود", sortOrder: 40 },
-  { code: "ladies_event",  nameEn: "Ladies' Event", nameAr: "مناسبة نسائية", sortOrder: 50 },
-  { code: "general_event", nameEn: "General Event", nameAr: "مناسبات عامة",  sortOrder: 60 },
-  { code: "conference",    nameEn: "Conference",    nameAr: "مؤتمر",         sortOrder: 70 },
+  { code: "birthday",      nameEn: "Birthday Invitation",   nameAr: "دعوة عيد ميلاد", sortOrder: 10 },
+  { code: "wedding",       nameEn: "Wedding Invitation",    nameAr: "دعوة زفاف",      sortOrder: 20 },
+  { code: "baby_shower",   nameEn: "Newborn Invitation",    nameAr: "دعوة مولود",     sortOrder: 30 },
+  { code: "special_event", nameEn: "Special Occasion",      nameAr: "مناسبة خاصة",     sortOrder: 40 },
+  { code: "ramadan",       nameEn: "Ramadan Invitation",    nameAr: "دعوة رمضان",     sortOrder: 50 },
+  { code: "graduation",    nameEn: "Graduation Invitation", nameAr: "دعوة تخرج",      sortOrder: 60 },
 ];
 
 module.exports = {

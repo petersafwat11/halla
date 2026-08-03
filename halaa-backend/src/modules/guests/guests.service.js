@@ -82,12 +82,12 @@ class GuestsService {
   /**
    * RSVP response from guest
    * @param {string} guestId
-   * @param {string} response - 'confirmed' | 'declined' | 'maybe'
+   * @param {string} response - 'confirmed' | 'declined'
    * @param {Object} [additionalInfo]
    * @returns {Promise<Object>}
    */
   async submitRSVP(guestId, response, additionalInfo = {}) {
-    const validResponses = ['confirmed', 'declined', 'maybe'];
+    const validResponses = ['confirmed', 'declined'];
     if (!validResponses.includes(response)) {
       throw new ValidationError('Invalid RSVP response');
     }
@@ -113,7 +113,7 @@ class GuestsService {
       throw new ValidationError('This event is no longer accepting RSVPs');
     }
 
-    // Gate on invitation type: qr_only / none invitations don't offer a reply,
+    // Gate on invitation type: plain invitations don't offer a reply,
     // so reject an RSVP even if a stale portal or a crafted request reaches
     // here. The portal itself won't render the RSVP form for these types.
     if (guest.event && !invitationAllowsReply(guest.event.invitationType)) {
@@ -140,7 +140,7 @@ class GuestsService {
 
     // Response shape differs by outcome:
     //   - confirmed → message + structured entry-pass (renders the boarding pass)
-    //   - declined / maybe → message only
+    //   - declined → message only
     const lang = additionalInfo.lang === 'en' ? 'en' : 'ar';
     const event = guest.event;
     const message = getReplyMessage(response, event, lang);
@@ -753,8 +753,8 @@ class GuestsService {
       description: event.eventDetails?.description,
       hostName: event.host?.name || event.host?.username,
       deliveryMode: event.invitationDeliveryMode || null,
-      // Drives the portal's mode: reply types render the RSVP form; qr_only
-      // shows the entry pass directly; none shows an info-only card.
+      // Drives the portal's mode: reply types render the RSVP form; plain
+      // invitations show an information-only card.
       invitationType: event.invitationType || null,
       allowsReply: invitationAllowsReply(event.invitationType),
       includesQr: invitationIncludesQr(event.invitationType),
@@ -771,7 +771,6 @@ class GuestsService {
     const statusMessages = {
       confirmed: { en: 'confirmed attendance', ar: 'أكد حضوره' },
       declined: { en: 'declined the invitation', ar: 'اعتذر عن الحضور' },
-      maybe: { en: 'responded "maybe"', ar: 'رد بـ"ربما"' },
     };
 
     const msg = statusMessages[response];

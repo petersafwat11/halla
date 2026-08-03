@@ -25,7 +25,6 @@ const EMPTY_STATS = {
   confirmed: 0,
   checkedIn: 0,
   declined: 0,
-  maybe: 0,
   pending: 0,
   lastCheckIn: null,
 };

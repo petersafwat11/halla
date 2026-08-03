@@ -50,12 +50,10 @@
     "invitationModes": {
       "reply_and_qr": "رد مع رمز دخول",
       "reply_only": "رد فقط",
-      "qr_only": "رمز دخول فقط",
       "none": "بدون رد أو رمز"
     },
     "buttonCapabilities": {
-      "three_quick_replies": "ثلاثة ردود سريعة: سأحضر، سأعتذر، ربما",
-      "dynamic_url": "زر رابط ديناميكي واحد لبطاقة دخول الضيف",
+      "two_quick_replies": "ردّان سريعان: سأحضر، سأعتذر",
       "none": "لا توجد أزرار واتساب",
       "unsupported": "تركيبة أزرار غير مدعومة",
       "unverified": "لم يتم التحقق من الأزرار بعد؛ قم بالمزامنة من Taqnyat"
@@ -63,7 +61,7 @@
     "uniquePerCategoryHint": "يُسمح بقالب واحد نشط فقط لكل فئة لهذا النوع. الحفظ سيُلغي تفعيل السابق.",
     "types": {
       "invite": "دعوة",
-      "reminder_pending": "تذكير — لم يردّ أو ربما",
+      "reminder_pending": "تذكير — لم يردّ",
       "reminder_confirmed": "تذكير — مؤكد الحضور",
       "post_event": "بعد الحدث",
       "staff_access": "وصول المشرفين"
@@ -105,6 +103,7 @@
     "sourceKeys": {
       "guest_name": "اسم الضيف",
       "event_title": "عنوان الحدث",
+      "event_dayFormatted": "يوم الحدث (منسّق)",
       "event_dateFormatted": "تاريخ الحدث (منسّق)",
       "event_time": "وقت الحدث",
       "event_location": "عنوان الحدث (الموقع)",

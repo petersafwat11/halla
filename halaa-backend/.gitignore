@@ -24,6 +24,8 @@ Thumbs.db
 # Logs
 logs
 *.log
+/.taqnyat-owner-template-submission-state.json
+/.taqnyat-owner-two-button-submission-state.json
 
 # Claude
 .claude/

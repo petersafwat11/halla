@@ -22,7 +22,6 @@ const getNotificationIconName = (type) => {
     event_cancelled: "close-circle-outline",
     guest_rsvp_accepted: "person-outline",
     guest_rsvp_declined: "person-remove-outline",
-    guest_rsvp_maybe: "help-circle-outline",
     guest_checked_in: "checkmark-done-outline",
     invitations_sent: "send-outline",
     subscription_expiring: "time-outline",

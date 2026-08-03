@@ -15,6 +15,8 @@ const {
   normalizeTemplateButtons,
   getButtonCapability,
   isTemplateCompatibleWithInvitationMode,
+  isTemplateCategoryCompatible,
+  GENERAL_EVENT_FALLBACK_CATEGORIES,
   effectiveInvitationMode,
 } = require('./taqnyat-template-capabilities');
 
@@ -82,9 +84,14 @@ async function syncFromTaqnyat({ actor } = {}) {
     seenIds.add(String(taqnyatId));
 
     const componentDefinitionAvailable = Array.isArray(t.components);
-    const bodyComponent = (t.components || []).find((c) => c.type === 'BODY') || {};
+    const bodyComponent =
+      (t.components || []).find(
+        (c) => String(c?.type || '').toUpperCase() === 'BODY'
+      ) || {};
     const hasImageHeader = (t.components || []).some(
-      (c) => c.type === 'HEADER' && c.format === 'IMAGE'
+      (c) =>
+        String(c?.type || '').toUpperCase() === 'HEADER' &&
+        String(c?.format || '').toUpperCase() === 'IMAGE'
     );
     const buttons = normalizeTemplateButtons(t.components || []);
 
@@ -94,7 +101,7 @@ async function syncFromTaqnyat({ actor } = {}) {
     const shouldBackfillLegacyReplyMode =
       existing?.type === 'invite' &&
       !existing?.invitationMode &&
-      getButtonCapability(buttons).kind === 'three_quick_replies';
+      getButtonCapability(buttons).kind === 'two_quick_replies';
 
     // Preserve admin-curated fields (`category`, `varMapping`, `active`,
     // `sortOrder`) on update. `removedFromMeta` is forced false so a
@@ -120,7 +127,9 @@ async function syncFromTaqnyat({ actor } = {}) {
       },
       $setOnInsert: {
         category: null,
-        invitationMode: null,
+        // Avoid setting the same path in both $set and $setOnInsert when a
+        // legacy two-reply template is being backfilled in this upsert.
+        ...(!shouldBackfillLegacyReplyMode && { invitationMode: null }),
         varMapping: [],
         active: true,
         sortOrder: 0,
@@ -202,7 +211,14 @@ async function listForHost({ category, type = 'invite', invitationMode } = {}) {
     removedFromMeta: { $ne: true },
     type,
   };
-  if (category) query.category = category;
+  if (category) {
+    if (GENERAL_EVENT_FALLBACK_CATEGORIES.has(category)) {
+      query.category = 'other';
+      query.templateName = /^halaa_general_event_/i;
+    } else {
+      query.category = category;
+    }
+  }
 
   if (type === 'invite' && invitationMode) {
     query.$or = invitationMode === INVITATION_TYPE.REPLY_AND_QR
@@ -346,7 +362,7 @@ function assertResolvedInviteTemplateCompatible(template, { category, invitation
       'TAQNYAT_TEMPLATE_UNAVAILABLE'
     );
   }
-  if (category && template.category !== category) {
+  if (!isTemplateCategoryCompatible(template, category)) {
     throw new AppError(
       'The selected WhatsApp template does not match the event category',
       400,

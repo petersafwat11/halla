@@ -3,7 +3,6 @@
   "eventDetails": "تفاصيل المناسبة",
   "invitationInteraction": "التفاعل على الدعوة",
   "waiting": "في الانتظار",
-  "maybe": "ربما",
   "declined": "إعتذر",
   "confirmed": "حضور",
   "checkedIn": "حضر",
@@ -24,7 +23,6 @@
   "stats": {
     "total": "اجمالي الضيوف",
     "confirmed": "أكد الحضور",
-    "maybe": "ربما",
     "declined": "اعتذر",
     "checkedIn": "في الحفل الآن"
   },
@@ -47,8 +45,7 @@
     "checkedIn": "حضر",
     "confirmed": "حضور",
     "declined": "إعتذر",
-    "invited": "مدعو",
-    "maybe": "ربما"
+    "invited": "مدعو"
   },
   "qr": {
     "scanTitle": "مسح رمز QR",

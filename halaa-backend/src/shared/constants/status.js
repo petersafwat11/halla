@@ -93,18 +93,16 @@ const RSVP_STATUS = {
   PENDING: 'pending',
   CONFIRMED: 'confirmed',
   DECLINED: 'declined',
-  MAYBE: 'maybe',
 };
 
 /**
  * Invitation type — chosen by the host in create-event Step 4. Encodes two
  * independent dimensions in one enum: whether the guest can reply
- * (accept/decline/maybe) and whether they receive a QR entry code.
+ * (confirm/decline) and whether confirmation sends a QR entry code.
  *
  *   REPLY_AND_QR (01): reply buttons + QR entry code   (default = legacy behavior)
  *   REPLY_ONLY   (02): reply buttons, no QR
- *   QR_ONLY      (03): QR entry code, no reply
- *   NONE         (04): neither — a plain informational invitation
+ *   NONE         (03): neither — a plain informational invitation
  *
  * "Reply" gates the WhatsApp button webhook AND the web RSVP portal.
  * "QR" gates the entry-pass QR (auto-reply image on confirm, and the portal
@@ -115,17 +113,16 @@ const RSVP_STATUS = {
 const INVITATION_TYPE = {
   REPLY_AND_QR: 'reply_and_qr',
   REPLY_ONLY: 'reply_only',
-  QR_ONLY: 'qr_only',
   NONE: 'none',
 };
 
-/** True when the invitation type lets guests reply (accept/decline/maybe). */
+/** True when the invitation type lets guests reply (confirm/decline). */
 const invitationAllowsReply = (type) =>
   type === INVITATION_TYPE.REPLY_AND_QR || type === INVITATION_TYPE.REPLY_ONLY;
 
 /** True when the invitation type includes a QR entry code for the guest. */
 const invitationIncludesQr = (type) =>
-  type === INVITATION_TYPE.REPLY_AND_QR || type === INVITATION_TYPE.QR_ONLY;
+  type === INVITATION_TYPE.REPLY_AND_QR;
 
 /**
  * Guest check-in status
@@ -190,7 +187,6 @@ const GUEST_STATUS = {
   DECLINED: 'declined',
   CHECKED_IN: 'checked_in',
   NO_SHOW: 'no_show',
-  MAYBE: 'maybe',
 };
 
 /**

@@ -70,12 +70,9 @@ const mapApiToFormValues = (eventData) => {
     invitationMessage: eventData.invitationMessage || inv.invitationMessage || "",
     attendanceAutoReply: canonicalReplies.onAttend || inv.attendanceAutoReply || "",
     absenceAutoReply: canonicalReplies.onAbsent || inv.absenceAutoReply || "",
-    expectedAttendanceAutoReply:
-      canonicalReplies.onExpected || inv.expectedAttendanceAutoReply || "",
     guestReplies: {
       onAttend: canonicalReplies.onAttend || inv.attendanceAutoReply || "",
       onAbsent: canonicalReplies.onAbsent || inv.absenceAutoReply || "",
-      onExpected: canonicalReplies.onExpected || inv.expectedAttendanceAutoReply || "",
     },
     hostNote: eventData.hostNote || inv.note || "",
     note: inv.note || eventData.hostNote || "",

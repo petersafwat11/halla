@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { FormProvider } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
@@ -40,8 +40,8 @@ const CreateEventV2 = () => {
     methods,
     formData,
     currentStep,
+    goToStep,
     goToNextStep,
-    goToPreviousStep,
     isStepValid,
     validateStep,
     staffList,
@@ -108,15 +108,57 @@ const CreateEventV2 = () => {
     }
 
     if (currentStep < 5) {
-      goToNextStep();
+      if (goToNextStep()) {
+        const url = new URL(window.location.href);
+        url.searchParams.set("step", String(currentStep + 1));
+        window.history.pushState(
+          { ...window.history.state, halaaCreateEventStep: currentStep + 1 },
+          "",
+          url
+        );
+      }
     } else {
       handleSubmit(onSubmit)();
     }
   }, [currentStep, handleSubmit, onSubmit, validateStep, goToNextStep, t]);
 
   const onPrevious = useCallback(() => {
-    goToPreviousStep();
-  }, [goToPreviousStep]);
+    if (currentStep > 1) window.history.back();
+  }, [currentStep]);
+
+  // Keep wizard steps in same-route browser history. Browser Back and the
+  // visible Previous button now move one step without remounting the page or
+  // clearing the form.
+  useEffect(() => {
+    const initialUrl = new URL(window.location.href);
+    initialUrl.searchParams.set("step", "1");
+    window.history.replaceState(
+      { ...window.history.state, halaaCreateEventStep: 1 },
+      "",
+      initialUrl
+    );
+
+    const handlePopState = () => {
+      const step = Number(new URL(window.location.href).searchParams.get("step"));
+      if (Number.isInteger(step) && step >= 1 && step <= 5) goToStep(step);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [goToStep]);
+
+  const handleHeaderBack = useCallback(() => {
+    if (currentStep > 1) {
+      onPrevious();
+      return;
+    }
+    const shouldLeave = window.confirm(
+      locale === "ar"
+        ? "سيتم فقدان بيانات المناسبة غير المحفوظة. هل تريد الرجوع؟"
+        : "Your unsaved event details will be lost. Do you want to go back?"
+    );
+    if (shouldLeave) router.push(`/${locale}/host`);
+  }, [currentStep, locale, onPrevious, router]);
 
   const renderStepContent = () => {
     switch (currentStep) {
@@ -221,6 +263,7 @@ const CreateEventV2 = () => {
               title={t("page_title")}
               description={t("page_description")}
               buttonText={t("promo_button")}
+              onButtonClick={handleHeaderBack}
             />
           </div>
 
@@ -240,6 +283,11 @@ const CreateEventV2 = () => {
                 onSubmit={(e) => e.preventDefault()}
               >
                 {renderStepContent()}
+                {currentStep === 4 && (
+                  <MobilePreviewButton
+                    onClick={() => setShowMobilePreview(true)}
+                  />
+                )}
                 <Buttons
                   onNext={onNext}
                   onPrevious={onPrevious}
@@ -270,11 +318,6 @@ const CreateEventV2 = () => {
               </div>
             )}
           </div>
-
-          {/* Mobile Preview Button - Only show on Step 4 */}
-          {currentStep === 4 && (
-            <MobilePreviewButton onClick={() => setShowMobilePreview(true)} />
-          )}
 
           {/* Mobile WhatsApp Preview Modal */}
           {showMobilePreview && currentStep === 4 && (

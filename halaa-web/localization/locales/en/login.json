@@ -61,7 +61,7 @@
       "emailRequired": "Email is required",
       "invalidEmail": "Invalid email address",
       "passwordMinLength": "Password must be at least 8 characters",
-      "passwordComplexity": "Password must contain at least one uppercase letter, one lowercase letter, and one number",
+      "passwordComplexity": "Use letters and numbers only, with at least one of each",
       "invalidPassword": "Password is incorrect, check it and try again.",
       "phoneNumberInvalid": "Phone number is incorrect, please check and try again",
       "otpInvalid": "Invalid verification code",

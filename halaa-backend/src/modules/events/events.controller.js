@@ -416,7 +416,7 @@ exports.retryLaunch = catchAsync(async (req, res) => {
 // ============================================
 
 /**
- * Resend invitation to non-responders / "maybe" guests (or an explicit
+ * Resend invitation to non-responders (or an explicit
  * guestIds set). POST /api/v2/events/:id/resend-invite
  *
  * Pool-charged (one invite per successful send) and repeatable — no

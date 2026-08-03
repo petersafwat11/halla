@@ -29,12 +29,7 @@ export default function GuestRows({
     { label: t("singleEvent.stats.all", "الكل"), value: null },
     { label: t("singleEvent.stats.confirmed"), value: "confirmed" },
     { label: t("singleEvent.stats.declined"), value: "declined" },
-    { label: t("singleEvent.stats.maybe", "ربما"), value: "maybe" },
     { label: t("singleEvent.stats.noResponse"), value: "noResponse" },
-    {
-      label: t("singleEvent.stats.noResponseOrMaybe", "Didn't respond or maybe"),
-      value: "noResponseOrMaybe",
-    },
     { label: t("singleEvent.stats.checkedIn"), value: "checkedIn" },
   ].map((opt) => ({
     ...opt,

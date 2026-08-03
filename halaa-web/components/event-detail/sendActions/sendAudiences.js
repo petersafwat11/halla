@@ -5,9 +5,9 @@
 // The backend re-enforces each audience, so these client filters are for UX
 // only (which rows to show, how many, enable/disable) — never authorization.
 
-// Resend targets guests already sent an invite who haven't responded / said
-// "maybe". Extra reminder targets confirmed (or checked-in) guests.
-export const RESEND_STATUSES = ["invited", "pending", "maybe"];
+// Resend targets guests already sent an invite who haven't responded.
+// Extra reminder targets confirmed (or checked-in) guests.
+export const RESEND_STATUSES = ["invited", "pending"];
 export const REMINDER_STATUSES = ["confirmed", "checked_in"];
 
 const TERMINAL_STATUSES = ["completed", "cancelled", "deleted", "archived"];

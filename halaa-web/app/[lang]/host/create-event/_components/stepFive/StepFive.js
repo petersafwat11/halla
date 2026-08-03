@@ -7,7 +7,6 @@
  *   - invitationMessage          (top-level)
  *   - guestReplies.onAttend      ⇄ attendanceAutoReply
  *   - guestReplies.onAbsent      ⇄ absenceAutoReply
- *   - guestReplies.onExpected    ⇄ expectedAttendanceAutoReply
  *   - hostNote                   ⇄ note
  */
 
@@ -20,14 +19,12 @@ import TextArea from "@/ui/commen/inputs/inputGroup/TextArea";
 
 const AUTO_REPLIES_DEFAULTS = {
   attending:
-    "شكراً لتأكيد حضورك! يسعدنا أن تكون معنا في هذه المناسبة. سيصلك رمز الدخول الخاص بك قريباً. 🎉",
-  maybe: "شكراً لردّك! نأمل أن تتمكن من الحضور ونتطلع إلى رؤيتك بيننا. 🤍",
+    "شكرًا لتأكيد حضورك! يسعدنا أن تكون معنا في هذه المناسبة. 🎉",
   absence: "شكراً لإعلامنا. نتفهم ظروفك ونتمنى لك دوام الصحة والسعادة. 🌹",
 };
 
 const REPLY_TABS = [
   { key: "attending", label: "الحضور", canonical: "onAttend" },
-  { key: "maybe", label: "ربما", canonical: "onExpected" },
   { key: "absence", label: "الاعتذار", canonical: "onAbsent" },
 ];
 
@@ -45,9 +42,6 @@ const StepFive = () => {
     }
     if (!watch("guestReplies.onAbsent")) {
       setValue("guestReplies.onAbsent", AUTO_REPLIES_DEFAULTS.absence, { shouldDirty: false });
-    }
-    if (!watch("guestReplies.onExpected")) {
-      setValue("guestReplies.onExpected", AUTO_REPLIES_DEFAULTS.maybe, { shouldDirty: false });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

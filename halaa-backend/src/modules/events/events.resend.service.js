@@ -26,7 +26,7 @@ const { INVITATION_TYPE } = require('../../shared/constants');
 const {
   TAQNYAT_SENDER,
   getEventBodyParams,
-  getEventImageUrl,
+  getRequiredEventImageUrl,
   buildSmsBody,
   buildInvitationUrlButton,
 } = require("../messaging/messaging.formatting");
@@ -274,7 +274,7 @@ module.exports = {
   },
 
   /**
-   * Resend invitation to non-responders / "maybe" guests (default audience),
+   * Resend invitation to non-responders (default audience),
    * or to an explicit `guestIds` set. POOL-CHARGED and REPEATABLE — there are
    * no live/cooldown/once-only gates anymore.
    *
@@ -310,7 +310,7 @@ module.exports = {
 
     // ---------- Find target guests ----------
     // Resend is ONLY for the permitted audience: guests already sent an
-    // invitation who haven't responded or said "maybe". This audience is
+    // invitation who haven't responded. This audience is
     // enforced on the backend regardless of what the client sends — explicit
     // `guestIds` may only NARROW the audience, never bypass the status gate
     // (UI filtering is not authorization). A crafted request can therefore
@@ -319,7 +319,7 @@ module.exports = {
       event: eventId,
       deleted: { $ne: true },
       "invitation.sent": true,
-      status: { $in: ["invited", "pending", "maybe"] },
+      status: { $in: ["invited", "pending"] },
     };
     if (Array.isArray(body.guestIds) && body.guestIds.length > 0) {
       guestQuery._id = { $in: body.guestIds };
@@ -377,7 +377,7 @@ module.exports = {
 
         if (channel === "whatsapp" && template) {
           const bodyParams = getEventBodyParams(event, guest.name, template);
-          const imageUrl = getEventImageUrl(event, template);
+          const imageUrl = getRequiredEventImageUrl(event, template);
           const urlButton = buildInvitationUrlButton(event, template, guest.qrcode, 'ar');
           const components = [
             {

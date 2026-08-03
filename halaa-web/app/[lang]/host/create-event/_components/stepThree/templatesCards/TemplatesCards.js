@@ -39,7 +39,7 @@ const TemplatesCards = ({ templates, selectedTemplate, onTemplateSelect }) => {
             (selectedTemplate?._id && selectedTemplate._id === template._id);
 
           const src = template.thumbnailUrl || template.src || template.imageUrl;
-          const alt = template.name || `Template ${template.id || template._id}`;
+          const alt = "Invitation template";
 
           return (
             <div

@@ -108,7 +108,7 @@ const PATHS = {
     retryLaunch: (id) => `/events/${id}/retry-launch`,
 
     // Resend invite — pool-charged, repeatable, no gates. Optional guestIds
-    // (else defaults to non-responded / maybe guests). Uses the invite template.
+    // (else defaults to guests who have not responded). Uses the invite template.
     resendInvite: (id) => `/events/${id}/resend-invite`,
 
     // Extra reminder — pool-charged, immediate, CONFIRMED guests only, using the

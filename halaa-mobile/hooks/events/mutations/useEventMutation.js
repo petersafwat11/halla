@@ -405,7 +405,7 @@ const ACTIONS = {
   /**
    * Messaging + auto-replies + host note update for the unified wizard's
    * StepFive. Dual-writes legacy `attendanceAutoReply` / `absenceAutoReply` /
-   * `expectedAttendanceAutoReply` / `note` alongside canonical
+   * `note` alongside canonical
    * `guestReplies.*` / `invitationMessage` / `hostNote` so the read paths
    * resolve under either shape until the legacy field is dropped.
    */
@@ -421,7 +421,6 @@ const ACTIONS = {
         settings.guestReplies = guestReplies;
         if (guestReplies.onAttend !== undefined) settings.attendanceAutoReply = guestReplies.onAttend;
         if (guestReplies.onAbsent !== undefined) settings.absenceAutoReply = guestReplies.onAbsent;
-        if (guestReplies.onExpected !== undefined) settings.expectedAttendanceAutoReply = guestReplies.onExpected;
       }
       return _updateInvitationSettings(eventId, settings);
     },
@@ -442,7 +441,7 @@ const ACTIONS = {
   },
 
   // Resend invite — pool-charged, REPEATABLE, no gates. Targets the
-  // non-responders / maybe audience; pass `guestIds` to scope the send to a
+  // non-responder audience; pass `guestIds` to scope the send to a
   // specific selection (else the backend defaults to all non-responders).
   // Server charges the host's invite pool and 402s INSUFFICIENT_INVITES when
   // the selection exceeds remaining invites.
@@ -600,7 +599,7 @@ export const useUpdateMessagingContent = () =>
 export const useRetryLaunch = () => useEventMutation("retryLaunch");
 export const useUpdateReminderSettings = () =>
   useEventMutation("updateReminderSettings");
-// Pool-charged, repeatable resend to non-responders / maybe (optional guestIds).
+// Pool-charged, repeatable resend to non-responders (optional guestIds).
 export const useResendInvite = () => useEventMutation("resendInvite");
 // Pool-charged extra reminder to CONFIRMED guests (optional guestIds).
 export const useExtraReminder = () => useEventMutation("extraReminder");

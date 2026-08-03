@@ -220,13 +220,6 @@ const PreviewInvitation = ({
                 {t("whatsapp_invitation_preview_declining", t("absence"))}
               </Text>
             </View>
-            <View style={styles.ctaDivider} />
-            <View style={styles.ctaBtn}>
-              <Ionicons name="help" size={15} color="#0096DE" />
-              <Text style={styles.ctaText}>
-                {t("whatsapp_invitation_preview_maybe", t("maybe"))}
-              </Text>
-            </View>
           </View>}
 
         {/* Input bar */}

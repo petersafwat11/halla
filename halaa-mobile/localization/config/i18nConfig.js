@@ -49,6 +49,7 @@ export const i18nConfig = {
 // Initialize i18next only if not already initialized
 if (!i18n.isInitialized) {
   i18n.use(initReactI18next).init({
+    showSupportNotice: false,
     compatibilityJSON: "v3", // For React Native compatibility
     resources,
     lng: i18nConfig.defaultLocale, // Use default locale, not device locale

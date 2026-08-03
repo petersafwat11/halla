@@ -21,6 +21,7 @@ const GuestImporter = ({
   setImportLimitInfo,
   setShowImportLimitPopup,
   categories = [],
+  showCategory = true,
 }) => {
   const { t } = useTranslation("createEvent");
   const fileInputRef = useRef(null);
@@ -110,15 +111,21 @@ const GuestImporter = ({
     const headers = [
       { key: "name", label: t("excel_guest_name") },
       { key: "mobile", label: t("excel_phone_number") },
-      { key: "category", label: t("excel_category") },
+      ...(showCategory
+        ? [{ key: "category", label: t("excel_category") }]
+        : []),
     ];
     const sampleData = [
-      { name: t("excel_sample_name"), mobile: "512345678", category: t("excel_sample_category") },
+      {
+        name: t("excel_sample_name"),
+        mobile: "512345678",
+        ...(showCategory ? { category: t("excel_sample_category") } : {}),
+      },
     ];
     const fileName = t("excel_template_filename");
     const result = exportToXLSX(headers, sampleData, fileName, true);
     if (!result.success) console.error("Error downloading template");
-  }, [t]);
+  }, [showCategory, t]);
 
   const handleImportCSV = useCallback(
     async (event) => {
@@ -136,9 +143,9 @@ const GuestImporter = ({
         const headers = [
           { key: "name", label: t("excel_guest_name") },
           { key: "mobile", label: t("excel_phone_number") },
-          // Optional column — present in the downloaded template, but the
-          // importer accepts files without it.
-          { key: "category", label: t("excel_category"), optional: true },
+          ...(showCategory
+            ? [{ key: "category", label: t("excel_category"), optional: true }]
+            : []),
         ];
         const validateRow = (row) => {
           const errors = [];
@@ -172,7 +179,7 @@ const GuestImporter = ({
             .map((item) => ({
               name: (item.name || "").trim(),
               mobile: (item.mobile || "").trim(),
-              category: (item.category || "").trim(),
+              category: showCategory ? (item.category || "").trim() : "",
               id: `${Date.now()}_${Math.random()}`,
             }));
           // Limit to remaining guest quota
@@ -204,7 +211,7 @@ const GuestImporter = ({
         if (fileInputRef.current) fileInputRef.current.value = "";
       }
     },
-    [guestList, setValue, isLimitReached, isUnlimited, guestLimit, t, setImportErrors, setImportLimitInfo, setShowImportLimitPopup]
+    [guestList, setValue, isLimitReached, isUnlimited, guestLimit, showCategory, t, setImportErrors, setImportLimitInfo, setShowImportLimitPopup]
   );
 
   const isEditing = currentItem.id !== undefined;
@@ -249,17 +256,19 @@ const GuestImporter = ({
             error={showValidationErrors ? localErrors.mobile : ""}
             disabled={isLimitReached && !currentItem.id}
           />
-          <CategorySelect
-            label={t("category")}
-            placeholder={t("category_placeholder")}
-            searchPlaceholder={t("category_search")}
-            noneLabel={t("category_none")}
-            createLabel={(q) => t("category_create", { q })}
-            value={currentItem.category || ""}
-            onChange={(val) => handleInputChange("category", val)}
-            options={categoryOptions}
-            disabled={isLimitReached && !currentItem.id}
-          />
+          {showCategory && (
+            <CategorySelect
+              label={t("category")}
+              placeholder={t("category_placeholder")}
+              searchPlaceholder={t("category_search")}
+              noneLabel={t("category_none")}
+              createLabel={(q) => t("category_create", { q })}
+              value={currentItem.category || ""}
+              onChange={(val) => handleInputChange("category", val)}
+              options={categoryOptions}
+              disabled={isLimitReached && !currentItem.id}
+            />
+          )}
         </div>
 
         <ActionButtons

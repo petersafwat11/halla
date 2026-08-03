@@ -14,7 +14,7 @@ const {
   TAQNYAT_SENDER,
   formatDate,
   getEventBodyParams,
-  getEventImageUrl,
+  getRequiredEventImageUrl,
   buildSmsBody,
 } = require('./messaging.formatting');
 const { withIdempotency, sha256 } = require('../../shared/utils/idempotency');
@@ -218,7 +218,7 @@ async function sendAutoReminderBatch({
             },
           };
           const bodyParams = getEventBodyParams(event, guest.name, template);
-          const imageUrl = getEventImageUrl(event, template);
+          const imageUrl = getRequiredEventImageUrl(event, template);
           const smsFallback = {
             sender: TAQNYAT_SENDER,
             body: buildSmsBody(event, guest.name, rsvpLink),

@@ -109,7 +109,7 @@ router.get('/invitation/:code', apiLimiter, guestsController.getByInvitationCode
  *             properties:
  *               response:
  *                 type: string
- *                 enum: [confirmed, declined, maybe]
+ *                 enum: [confirmed, declined]
  *               invitationCode:
  *                 type: string
  *               message:
@@ -206,7 +206,7 @@ router.get('/my-contacts', guestsController.getMyContacts);
  *         name: status
  *         schema:
  *           type: string
- *           enum: [invited, confirmed, declined, maybe, checked_in, no_show]
+ *           enum: [invited, confirmed, declined, checked_in, no_show]
  *         description: Filter by guest status
  *     responses:
  *       200:

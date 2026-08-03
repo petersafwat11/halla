@@ -46,10 +46,6 @@ const WhatsAppInvitationPreview = ({ eventName, templateImage, selectedTemplate,
             <View style={styles.waAction}>
               <Text style={styles.waActionText}>{t("summary.invitationPreview.declining")}</Text>
             </View>
-            <View style={styles.waActionDivider} />
-            <View style={styles.waAction}>
-              <Text style={styles.waActionText}>{t("summary.invitationPreview.maybe")}</Text>
-            </View>
           </View>
         </View>
       </View>

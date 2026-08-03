@@ -68,7 +68,7 @@
 }
 .yes,
 .no,
-.maybe {
+.pending {
   display: flex;
   height: 4.7rem;
   padding: 1.2rem 1.6rem;
@@ -89,13 +89,13 @@
   background: #f9ebea;
   color: #c0392b;
 }
-.maybe {
+.pending {
   background: #f7f7f7;
   color: #2c2c2c;
 }
 .yes span,
 .no span,
-.maybe span {
+.pending span {
   font-weight: 700;
 }
 .seeStats {

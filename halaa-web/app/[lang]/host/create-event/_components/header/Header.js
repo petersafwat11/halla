@@ -8,14 +8,19 @@ const Header = ({ title, description, buttonText, onButtonClick }) => {
     <div className={styles.header}>
       <div className={styles.header_content}>
         <div className={styles.left_section}>
-          <div className={styles.back_button}>
+          <button
+            type="button"
+            className={styles.back_button}
+            onClick={onButtonClick}
+            aria-label="back"
+          >
             <Image
               src="/svg/admin/arrow-right.svg"
               alt="back"
               width={24}
               height={24}
             />
-          </div>
+          </button>
 
           <div className={styles.title_section}>
             <h1 className={styles.title}>{title}</h1>

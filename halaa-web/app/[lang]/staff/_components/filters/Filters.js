@@ -3,7 +3,7 @@ import React from "react";
 import SearchableSelect from "@/ui/commen/inputs/SearchableSelect/SearchableSelect";
 import styles from "./filters.module.css";
 
-const STATUS_VALUES = ["invited", "confirmed", "checked_in", "declined", "maybe"];
+const STATUS_VALUES = ["invited", "confirmed", "checked_in", "declined"];
 
 export default function Filters({ search, status, onChange, t }) {
   const statusOptions = STATUS_VALUES.map((value) => ({

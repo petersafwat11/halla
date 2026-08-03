@@ -355,7 +355,10 @@ const uploadTemplateMedia = async (imageBuffer, mimeType = 'image/jpeg', filenam
     const form = new FormData();
     form.append('file', imageBuffer, { filename, contentType: mimeType });
 
-    const response = await waClient.post('/templates/media/', form, {
+    // Taqnyat's v2 reference page currently shows both `/templates/media/`
+    // and `/media/` in different sections. The live v2 API accepts `/media/`
+    // for multipart uploads and returns 404 for `/templates/media/`.
+    const response = await waClient.post('/media/', form, {
       headers: { ...form.getHeaders() },
     });
 

@@ -25,7 +25,13 @@ const detectPlatform = () => {
  * who to invite via the shared Table. Parsed in-browser — the file never
  * leaves the device; only selected guests are kept.
  */
-const VCardImportModal = ({ isOpen, onClose, onAdd, existingMobiles = [] }) => {
+const VCardImportModal = ({
+  isOpen,
+  onClose,
+  onAdd,
+  existingMobiles = [],
+  showCategory = true,
+}) => {
   const { t } = useTranslation("createEvent");
   const fileInputRef = useRef(null);
 
@@ -89,7 +95,11 @@ const VCardImportModal = ({ isOpen, onClose, onAdd, existingMobiles = [] }) => {
     const list = selectedIds
       .map((id) => byId.get(id))
       .filter(Boolean)
-      .map((r) => ({ name: r.name, mobile: r.phone, category: cat }));
+      .map((r) => ({
+        name: r.name,
+        mobile: r.phone,
+        ...(showCategory && cat ? { category: cat } : {}),
+      }));
     if (list.length) onAdd(list);
     onClose();
   };
@@ -151,13 +161,15 @@ const VCardImportModal = ({ isOpen, onClose, onAdd, existingMobiles = [] }) => {
                   {t("vcard_choose_another")}
                 </button>
               </div>
-              <input
-                className={styles.search}
-                placeholder={t("contacts_category_placeholder")}
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                maxLength={60}
-              />
+              {showCategory && (
+                <input
+                  className={styles.search}
+                  placeholder={t("contacts_category_placeholder")}
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  maxLength={60}
+                />
+              )}
               <Table
                 key={importNonce}
                 headers={[t("name"), t("mobile")]}

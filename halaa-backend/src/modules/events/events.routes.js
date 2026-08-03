@@ -971,7 +971,7 @@ router.post(
 );
 
 // ============================================
-// RESEND INVITE — pool-charged re-invitation for non-responders / "maybe"
+// RESEND INVITE — pool-charged re-invitation for non-responders
 // guests (or an explicit guestIds set). Repeatable BUT idempotent on a
 // client-supplied `Idempotency-Key` header (optional): a NEW key starts a
 // genuinely new re-send, the SAME key replays the cached result instead of

@@ -6,13 +6,12 @@
  * string values in sync across web / mobile / backend.
  *
  * One enum encodes two dimensions: whether guests can reply
- * (accept/decline/maybe) and whether they get a QR entry code.
+ * (confirm/decline) and whether confirmation sends a QR entry code.
  */
 export const INVITATION_TYPES = {
   REPLY_AND_QR: "reply_and_qr", // 01 — reply buttons + QR
   REPLY_ONLY: "reply_only", // 02 — reply buttons, no QR
-  QR_ONLY: "qr_only", // 03 — QR only, no reply
-  NONE: "none", // 04 — neither
+  NONE: "none", // 03 — plain invitation
 };
 
 // The value a fresh create-event form starts on (also the backend schema
@@ -23,7 +22,7 @@ export const invitationAllowsReply = (type) =>
   type === INVITATION_TYPES.REPLY_AND_QR || type === INVITATION_TYPES.REPLY_ONLY;
 
 export const invitationIncludesQr = (type) =>
-  type === INVITATION_TYPES.REPLY_AND_QR || type === INVITATION_TYPES.QR_ONLY;
+  type === INVITATION_TYPES.REPLY_AND_QR;
 
 /**
  * Ordered options for the Step-4 selector, matching the client's 4-card image
@@ -44,13 +43,6 @@ export const INVITATION_TYPE_OPTIONS = [
     qr: false,
     labelKey: "invitation_type_reply_only_label",
     descKey: "invitation_type_reply_only_desc",
-  },
-  {
-    value: INVITATION_TYPES.QR_ONLY,
-    reply: false,
-    qr: true,
-    labelKey: "invitation_type_qr_only_label",
-    descKey: "invitation_type_qr_only_desc",
   },
   {
     value: INVITATION_TYPES.NONE,

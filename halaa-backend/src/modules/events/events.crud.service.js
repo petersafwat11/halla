@@ -93,9 +93,9 @@ module.exports = {
       Event.countDocuments(query),
     ]);
 
-    // Get guest counts via aggregation (total + confirmed + declined + maybe)
+    // Get guest counts via aggregation (total + confirmed + declined)
     const eventIds = events.map(e => e._id);
-    const [guestCounts, confirmedCounts, declinedCounts, maybeCounts] = await Promise.all([
+    const [guestCounts, confirmedCounts, declinedCounts] = await Promise.all([
       Guest.aggregate([
         { $match: { event: { $in: eventIds } } },
         { $group: { _id: '$event', count: { $sum: 1 } } },
@@ -108,10 +108,6 @@ module.exports = {
         { $match: { event: { $in: eventIds }, status: 'declined' } },
         { $group: { _id: '$event', count: { $sum: 1 } } },
       ]),
-      Guest.aggregate([
-        { $match: { event: { $in: eventIds }, status: 'maybe' } },
-        { $group: { _id: '$event', count: { $sum: 1 } } },
-      ]),
     ]);
     const countMap = {};
     guestCounts.forEach(g => { countMap[g._id.toString()] = g.count; });
@@ -119,8 +115,6 @@ module.exports = {
     confirmedCounts.forEach(g => { confirmedMap[g._id.toString()] = g.count; });
     const declinedMap = {};
     declinedCounts.forEach(g => { declinedMap[g._id.toString()] = g.count; });
-    const maybeMap = {};
-    maybeCounts.forEach(g => { maybeMap[g._id.toString()] = g.count; });
 
     return {
       data: events.map((e) => ({
@@ -128,7 +122,6 @@ module.exports = {
         guestCount: countMap[e._id.toString()] || 0,
         confirmedCount: confirmedMap[e._id.toString()] || 0,
         declinedCount: declinedMap[e._id.toString()] || 0,
-        maybeCount: maybeMap[e._id.toString()] || 0,
       })),
       pagination: {
         page,

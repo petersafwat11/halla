@@ -99,7 +99,7 @@ export const useUpdateLaunchSettings = () => useEventSettingsMutation("updateLau
 export const useUpdateReminderSettings = () => useEventSettingsMutation("updateReminderSettings");
 // Manually retry a failed event launch.
 export const useRetryLaunch = () => useEventSettingsMutation("retryLaunch");
-// Pool-charged, repeatable resend to non-responders / maybe (optional guestIds).
+// Pool-charged, repeatable resend to non-responders (optional guestIds).
 export const useResendInvite = () => useEventSettingsMutation("resendInvite");
 // Pool-charged extra reminder to CONFIRMED guests (optional guestIds).
 export const useExtraReminder = () => useEventSettingsMutation("extraReminder");

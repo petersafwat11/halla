@@ -21,8 +21,7 @@ const EventListItem = ({ event, onPress }) => {
   const guestCount = event.guestCount || event.totalInvites || 0;
   const confirmed = event.confirmedCount || event.confirmed || 0;
   const declined = event.declinedCount || event.declined || 0;
-  const maybe = event.maybeCount || event.maybe || 0;
-  const noResponse = Math.max(0, guestCount - confirmed - declined - maybe);
+  const noResponse = Math.max(0, guestCount - confirmed - declined);
 
   const getStatusStyle = (status) => {
     const v = getStatusVisual(status);
@@ -50,7 +49,6 @@ const EventListItem = ({ event, onPress }) => {
   // Stat dots — route through the same helper so dots match the badge palette.
   const confirmedDot = getStatusVisual("confirmed").fg;
   const declinedDot = getStatusVisual("declined").fg;
-  const maybeDot = getStatusVisual("maybe").fg;
   const noResponseDot = getStatusVisual("invited").fg;
 
   return (
@@ -103,10 +101,6 @@ const EventListItem = ({ event, onPress }) => {
         <View style={styles.statItem}>
           <View style={[styles.statDot, { backgroundColor: declinedDot }]} />
           <Text style={styles.statText}>معتذر {declined}</Text>
-        </View>
-        <View style={styles.statItem}>
-          <View style={[styles.statDot, { backgroundColor: maybeDot }]} />
-          <Text style={styles.statText}>ربما {maybe}</Text>
         </View>
         <View style={styles.statItem}>
           <View style={[styles.statDot, { backgroundColor: noResponseDot }]} />

@@ -61,7 +61,6 @@
       "confirmed": "تم التأكيد",
       "declined": "تم الرفض",
       "noResponse": "لا استجابة",
-      "maybe": "ربما",
       "staffName": "اسم الموظف",
       "staffPhone": "رقم الجوال",
       "staffEvent": "الحدث"
@@ -70,7 +69,6 @@
       "invited": "مدعو",
       "confirmed": "تم التأكيد",
       "declined": "تم الرفض",
-      "maybe": "ربما",
       "pending_scheduling": "في انتظار الجدولة",
       "published": "منشور",
       "completed": "مكتمل",
@@ -208,7 +206,7 @@
     "required": "هذا الحقل مطلوب",
     "passwordMinLength": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
     "passwordMaxLength": "كلمة المرور يجب أن لا تتجاوز 128 حرف",
-    "passwordComplexity": "كلمة المرور يجب أن تحتوي على حرف كبير وصغير ورقم",
+    "passwordComplexity": "كلمة المرور تتكون من حروف وأرقام فقط، وبها حرف ورقم على الأقل",
     "otpLength": "رمز التحقق يجب أن يكون 6 أرقام",
     "otpInvalid": "رمز التحقق يجب أن يحتوي على أرقام فقط"
   },

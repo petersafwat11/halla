@@ -129,7 +129,7 @@ const buildMutations = (queryClient) => ({
   },
 
   // Resend invite — pool-charged, REPEATABLE, no gates. Targets the
-  // non-responders / maybe audience; pass `guestIds` to scope the send to a
+  // non-responder audience; pass `guestIds` to scope the send to a
   // specific selection (else the backend defaults to all non-responders).
   // The server charges the host's invite pool and 402s INSUFFICIENT_INVITES
   // when the selection exceeds remaining invites.

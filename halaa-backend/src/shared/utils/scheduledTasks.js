@@ -697,7 +697,7 @@ const _formatDateAr = (date) => {
  *
  * The free auto-reminder targets CONFIRMED guests only, using the
  * `(event.eventDetails.type, reminder_confirmed)` template. Non-responders /
- * maybe / declined guests get NOTHING from the auto-reminder — re-engaging
+ * Declined guests get nothing from the automatic reminder — re-engaging
  * them is a pool-charged action (resend invite / extra reminder). Templates
  * are looked up by `(category, reminder_confirmed)`.
  * A missing template audits and skips — it does not crash the tick.
@@ -789,7 +789,7 @@ async function _runAutoReminderForEvent(event) {
     deleted: { $ne: true },
   });
 
-  // Confirmed-only audience. Non-responders / maybe / declined get nothing
+  // Confirmed-only audience. Non-responders and declined guests get nothing
   // from the free auto-reminder — re-engaging them is a pool-charged action.
   const confirmedGuests = allGuests.filter(
     (guest) => guest.rsvp?.response === "confirmed"

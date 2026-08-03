@@ -277,7 +277,7 @@ const LEGACY_TEMPLATE_SPECS = [
     polished: "6.png",
     nameEn: "Burgundy Bloom Wedding",
     nameAr: "زفاف الورد الأرجواني",
-    categories: ["wedding", "ladies_event"],
+    categories: ["wedding"],
     sortOrder: 24,
     fields: COUPLE_WEDDING_FIELDS(),
     overlays: [
@@ -321,7 +321,7 @@ const LEGACY_TEMPLATE_SPECS = [
     polished: "8.png",
     nameEn: "Candle Engagement",
     nameAr: "خطوبة الشموع",
-    categories: ["wedding", "engagement"],
+    categories: ["wedding"],
     sortOrder: 30,
     fields: COUPLE_WEDDING_FIELDS(),
     overlays: [
@@ -377,7 +377,7 @@ const LEGACY_TEMPLATE_SPECS = [
     polished: "10.png",
     nameEn: "Eid Al-Adha",
     nameAr: "عيد الأضحى",
-    categories: ["general_event"],
+    categories: ["special_event"],
     sortOrder: 40,
     fields: [
       field("invitationMessage"),
@@ -403,7 +403,7 @@ const LEGACY_TEMPLATE_SPECS = [
     polished: "11.png",
     nameEn: "Ramadan Iftar",
     nameAr: "سفرة إفطار رمضان",
-    categories: ["general_event"],
+    categories: ["ramadan"],
     sortOrder: 41,
     fields: [
       field("invitationMessage"),
@@ -505,7 +505,7 @@ const LEGACY_TEMPLATE_SPECS = [
     polished: "15.png",
     nameEn: "Graduation Celebration",
     nameAr: "حفل تخرج",
-    categories: ["general_event"],
+    categories: ["graduation"],
     sortOrder: 42,
     fields: [
       field("invitationMessage"),
@@ -531,7 +531,7 @@ const LEGACY_TEMPLATE_SPECS = [
     polished: "16.png",
     nameEn: "Pearl Promise",
     nameAr: "وعد لؤلؤي",
-    categories: ["engagement"],
+    categories: ["special_event"],
     sortOrder: 31,
     fields: [
       field("invitationHeader"),
@@ -602,7 +602,7 @@ const LEGACY_TEMPLATE_SPECS = [
     polished: null,
     nameEn: "Sacred Pilgrimage",
     nameAr: "بشارة الحج",
-    categories: ["general_event"],
+    categories: ["special_event"],
     sortOrder: 43,
     fields: [
       field("announcement"),
@@ -630,7 +630,7 @@ const LEGACY_TEMPLATE_SPECS = [
     polished: null,
     nameEn: "Visionary Conference",
     nameAr: "مؤتمر القادة",
-    categories: ["conference"],
+    categories: ["special_event"],
     sortOrder: 70,
     fields: [
       field("invitationHeader"),

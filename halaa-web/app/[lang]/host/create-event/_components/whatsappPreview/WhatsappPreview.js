@@ -235,13 +235,6 @@ const WhatsappPreview = ({
                   <span>{t("whatsapp_invitation_preview_declining", t("absence"))}</span>
                 </button>
                 <div className={styles.ctaDivider} />
-                <button className={styles.ctaBtn} type="button">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="9" stroke="#0096DE" strokeWidth="2"/>
-                    <path d="M12 8v4M12 16h.01" stroke="#0096DE" strokeWidth="2" strokeLinecap="round"/>
-                  </svg>
-                  <span>{t("whatsapp_invitation_preview_maybe", t("maybe"))}</span>
-                </button>
               </div>}
             </div>
 

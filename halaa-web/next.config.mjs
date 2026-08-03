@@ -43,6 +43,9 @@ const nextConfig = {
   },
 
   images: {
+    // Next 16 requires every explicit <Image quality={...}> value to be
+    // allowlisted. Keep the framework default and the landing-card quality.
+    qualities: [75, 78],
     remotePatterns: [
       {
         protocol: "http",

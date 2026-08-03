@@ -13,10 +13,10 @@
 const INITIAL_TEMPLATE_NAMES = {
   CLASSIC_WEDDING: { en: "Classic Wedding", ar: "زفاف كلاسيكي", category: "wedding" },
   WEDDING_PARTY:   { en: "Wedding Party",   ar: "حفل زفاف",     category: "wedding" },
-  ENGAGEMENT:      { en: "Engagement",      ar: "خطوبة",        category: "engagement" },
+  ENGAGEMENT:      { en: "Engagement",      ar: "خطوبة",        category: "special_event" },
   GOLDEN_BIRTHDAY: { en: "Golden Birthday", ar: "عيد ميلاد ذهبي", category: "birthday" },
   BABY_SHOWER:     { en: "Baby Shower",     ar: "استقبال مولود", category: "baby_shower" },
-  GENERAL:         { en: "General",         ar: "عام",           category: "general" },
+  GENERAL:         { en: "General",         ar: "عام",           category: "special_event" },
 };
 
 module.exports = { INITIAL_TEMPLATE_NAMES };

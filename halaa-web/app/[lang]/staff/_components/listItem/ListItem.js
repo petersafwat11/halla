@@ -7,7 +7,6 @@ const STATUS_CONFIG = {
   checked_in: { labelKey: "filters.checkedIn" },
   confirmed: { labelKey: "filters.confirmed" },
   declined: { labelKey: "filters.declined" },
-  maybe: { labelKey: "filters.maybe" },
   invited: { labelKey: "filters.invited" },
 };
 

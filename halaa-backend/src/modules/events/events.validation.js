@@ -149,7 +149,7 @@ const resendInviteSchema = z.object({
   channel: z.enum(['sms', 'whatsapp']).optional(),
   // Optional explicit target set. When present, exactly these guests are
   // re-invited (still restricted to the event in the service); when absent the
-  // default non-responder / "maybe" audience is used.
+  // default non-responder audience is used.
   guestIds: z.array(objectId).optional(),
 }).passthrough();
 

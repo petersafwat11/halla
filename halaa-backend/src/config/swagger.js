@@ -723,7 +723,7 @@ const swaggerOptions = {
             },
             status: {
               type: 'string',
-              enum: ['invited', 'confirmed', 'declined', 'maybe', 'checked_in', 'no_show'],
+              enum: ['invited', 'confirmed', 'declined', 'checked_in', 'no_show'],
               example: 'confirmed',
             },
             addedBy: {
@@ -745,7 +745,7 @@ const swaggerOptions = {
                 },
                 response: {
                   type: 'string',
-                  enum: ['pending', 'confirmed', 'declined', 'maybe'],
+                  enum: ['pending', 'confirmed', 'declined'],
                 },
                 message: {
                   type: 'string',
@@ -1653,7 +1653,7 @@ const swaggerOptions = {
             email: { type: 'string', format: 'email' },
             status: {
               type: 'string',
-              enum: ['invited', 'confirmed', 'declined', 'checked_in', 'no_show', 'maybe'],
+              enum: ['invited', 'confirmed', 'declined', 'checked_in', 'no_show'],
             },
           },
         },
@@ -1774,7 +1774,6 @@ const swaggerOptions = {
             guestReplies: { type: 'object' },
             attendanceAutoReply: { type: 'string' },
             absenceAutoReply: { type: 'string' },
-            expectedAttendanceAutoReply: { type: 'string' },
             templateImage: { type: 'string', format: 'binary' },
           },
         },

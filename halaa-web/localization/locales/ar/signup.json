@@ -141,7 +141,7 @@
           "emailRequired": "البريد الإلكتروني مطلوب",
           "emailInvalid": "يرجى إدخال عنوان بريد إلكتروني صحيح",
           "passwordRequired": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
-          "passwordComplexity": "كلمة المرور يجب أن تحتوي على حرف كبير وصغير ورقم",
+          "passwordComplexity": "كلمة المرور تتكون من حروف وأرقام فقط، وبها حرف ورقم على الأقل",
           "passwordConfirmRequired": "يرجى تأكيد كلمة المرور",
           "passwordsDoNotMatch": "كلمات المرور غير متطابقة"
         }
@@ -788,7 +788,7 @@
         "emailRequired": "البريد الإلكتروني مطلوب",
         "invalidEmail": "عنوان بريد إلكتروني غير صحيح",
         "passwordMinLength": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
-        "passwordComplexity": "كلمة المرور يجب أن تحتوي على حرف كبير وحرف صغير ورقم",
+        "passwordComplexity": "كلمة المرور تتكون من حروف وأرقام فقط، وبها حرف ورقم على الأقل",
         "invalidPassword": "كلمة المرور غير صحيحة، تحقق منها وحاول مرة أخرى.",
         "phoneNumberInvalid": "رقم الهاتف غير صحيح، يرجى التحقق والمحاولة مرة أخرى",
         "usernameRequired": "اسم المستخدم مطلوب",
@@ -804,7 +804,7 @@
         "title": "معلومات شخصية",
         "fullName": {
           "label": "اسمك بالكامل",
-          "placeholder": "احمد كامل عبد ربه"
+          "placeholder": "أدخل اسمك بالكامل"
         },
         "email": {
           "label": "البريد الالكتروني",
@@ -852,8 +852,8 @@
         "emailRequired": "البريد الالكتروني مطلوب",
         "invalidEmail": "قم بإدخال بريد إلكتروني صحيح مثال example@domain.com",
         "passwordMinLength": "على الاقل 8احرف",
-        "passwordComplexity": "تحتوي على حرف كبير وحرف صغير",
-        "passwordSpecialChar": "ورمز*&^%@",
+        "passwordComplexity": "تتكون من حروف وأرقام فقط، وبها حرف ورقم على الأقل",
+        "passwordSpecialChar": "بدون رموز",
         "confirmPasswordRequired": "تأكيد كلمة المرور مطلوب",
         "passwordsDoNotMatch": "كلمات المرور غير متطابقة"
       }
@@ -865,7 +865,7 @@
     "invalidSaudiPhone": "يرجى إدخال رقم هاتف سعودي صحيح",
     "passwordMinLength": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
     "passwordMaxLength": "كلمة المرور يجب أن تكون أقل من 128 حرف",
-    "passwordComplexity": "كلمة المرور يجب أن تحتوي على حرف كبير وحرف صغير ورقم",
+    "passwordComplexity": "كلمة المرور تتكون من حروف وأرقام فقط، وبها حرف ورقم على الأقل",
     "passwordMismatch": "كلمات المرور غير متطابقة",
     "nameMinLength": "الاسم يجب أن يكون حرفين على الأقل",
     "otpLength": "رمز التحقق يجب أن يكون 6 أرقام",

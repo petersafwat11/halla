@@ -12,6 +12,7 @@ const GuestTableImpl = ({
   handleRemove,
   handleBulkDelete,
   handleBulkCategory,
+  showCategory = true,
 }) => {
   const { t } = useTranslation("createEvent");
 
@@ -23,8 +24,12 @@ const GuestTableImpl = ({
     <div className={styles.tableContainer}>
       <Table
         title={t("guest_list_title")}
-        headers={[t("name"), t("mobile"), t("category")]}
-        headerKeys={["name", "mobile", "category"]}
+        headers={showCategory
+          ? [t("name"), t("mobile"), t("category")]
+          : [t("name"), t("mobile")]}
+        headerKeys={showCategory
+          ? ["name", "mobile", "category"]
+          : ["name", "mobile"]}
         data={guestList}
         // On live events, existing rows become read-only — host can still
         // add new guests via the form above, but cannot edit or delete
@@ -49,11 +54,13 @@ const GuestTableImpl = ({
           allowAddOnly
             ? []
             : [
-                {
-                  icon: <FiTag size={16} />,
-                  text: t("link_to_category"),
-                  onClick: (selectedIds) => handleBulkCategory(selectedIds),
-                },
+                ...(showCategory
+                  ? [{
+                      icon: <FiTag size={16} />,
+                      text: t("link_to_category"),
+                      onClick: (selectedIds) => handleBulkCategory(selectedIds),
+                    }]
+                  : []),
                 {
                   icon: <FiTrash2 size={16} />,
                   text: t("delete_selected"),

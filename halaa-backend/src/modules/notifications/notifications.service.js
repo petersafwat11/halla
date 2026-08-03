@@ -30,7 +30,6 @@ const APP_NOTIFICATION_TYPE_TO_PREF_KEY = {
   guest_rsvp: "guestResponses",
   guest_rsvp_accepted: "guestResponses",
   guest_rsvp_declined: "guestResponses",
-  guest_rsvp_maybe: "guestResponses",
   // Host — guest check-ins
   guest_checked_in: "guestCheckIns",
   // Host — subscription/plan alerts

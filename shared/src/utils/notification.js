@@ -38,7 +38,6 @@ const NOTIFICATION_ICON_MAP = {
   // Guest
   guest_rsvp_accepted: "user-check",
   guest_rsvp_declined: "user-x",
-  guest_rsvp_maybe: "user-question",
   guest_checked_in: "scan",
   invitations_sent: "send",
 

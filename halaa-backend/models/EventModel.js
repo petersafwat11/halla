@@ -148,12 +148,10 @@ const canonicalTaqnyatTemplateSchema = new mongoose.Schema(
 // `messaging.service.handleButtonResponse`:
 //   onAttend  ⇄ confirmed (سأحضر)
 //   onAbsent  ⇄ declined  (سأعتذر)
-//   onExpected⇄ maybe     (ربما)
 const guestRepliesSchema = new mongoose.Schema(
   {
     onAttend: String,
     onAbsent: String,
-    onExpected: String,
   },
   { _id: false }
 );
@@ -270,7 +268,7 @@ const eventSchema = new mongoose.Schema(
     taqnyatTemplate: canonicalTaqnyatTemplateSchema,
     guestReplies: guestRepliesSchema,
     // Invitation type (Step 4) — controls whether guests can reply
-    // (accept/decline/maybe) and whether they get a QR entry code. Consumed by
+    // (confirm/decline) and whether confirmation sends a QR entry code. Consumed by
     // the RSVP webhook, the web RSVP portal, and the entry-pass/QR delivery.
     // Default preserves the legacy behavior (reply buttons + QR on confirm).
     invitationType: {

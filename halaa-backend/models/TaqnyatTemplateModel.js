@@ -91,7 +91,7 @@ const taqnyatTemplateSchema = new mongoose.Schema(
      */
     invitationMode: {
       type: String,
-      enum: ['reply_and_qr', 'reply_only', 'qr_only', 'none'],
+      enum: ['reply_and_qr', 'reply_only', 'none'],
       default: null,
       index: true,
     },

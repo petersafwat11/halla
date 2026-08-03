@@ -1,12 +1,22 @@
 const { z } = require("zod");
 
+const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+$/;
+const newPassword = z
+  .string()
+  .min(8, "New password must be at least 8 characters")
+  .max(128, "New password must be at most 128 characters")
+  .regex(
+    passwordPattern,
+    "New password may contain letters and numbers only and must include at least one of each"
+  );
+
 // ============================================================================
 // PASSWORD
 // ============================================================================
 const updatePasswordSchema = z
   .object({
     currentPassword: z.string().min(1, "Current password is required"),
-    newPassword: z.string().min(8, "New password must be at least 8 characters"),
+    newPassword,
     passwordConfirm: z.string().min(1, "Password confirmation is required"),
   })
   .refine((d) => d.newPassword === d.passwordConfirm, {

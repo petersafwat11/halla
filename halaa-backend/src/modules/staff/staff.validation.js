@@ -48,7 +48,7 @@ const getEventGuestsQuerySchema = z
   .object({
     search: z.string().max(120).optional(),
     status: z
-      .enum(['invited', 'confirmed', 'declined', 'checked_in', 'maybe'])
+      .enum(['invited', 'confirmed', 'declined', 'checked_in'])
       .optional(),
     page: z.coerce.number().int().min(1).optional(),
     limit: z.coerce.number().int().min(1).max(100).optional(),

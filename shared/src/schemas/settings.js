@@ -87,7 +87,7 @@ export const passwordUpdateSchema = (t = idT) =>
         .regex(
           PASSWORD_COMPLEXITY_REGEX,
           t("settings.errors.passwordComplexity") ||
-            "كلمة المرور يجب أن تحتوي على حرف كبير وصغير ورقم"
+            "كلمة المرور تتكون من حروف وأرقام فقط، وبها حرف ورقم على الأقل"
         ),
       confirmPassword: z
         .string()
@@ -137,7 +137,7 @@ export const accountSettingsSchema = (t = idT) =>
         .regex(
           PASSWORD_COMPLEXITY_REGEX,
           t("password_requirements") ||
-            "Password must contain uppercase, lowercase, and a number"
+            "Password may use letters and numbers only, including at least one of each"
         )
         .optional()
         .or(z.literal("")),

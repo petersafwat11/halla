@@ -16,7 +16,13 @@ import styles from "../guestPicker.module.css";
  * returned through `onAdd`; persistence flows through the normal Step-2 save.
  * Guests already on the current list are hidden.
  */
-const ReuseGuestsModal = ({ isOpen, onClose, onAdd, existingMobiles = [] }) => {
+const ReuseGuestsModal = ({
+  isOpen,
+  onClose,
+  onAdd,
+  existingMobiles = [],
+  showCategory = true,
+}) => {
   const { t } = useTranslation("createEvent");
   const [category, setCategory] = useState("");
   const [selectedIds, setSelectedIds] = useState([]);
@@ -35,7 +41,11 @@ const ReuseGuestsModal = ({ isOpen, onClose, onAdd, existingMobiles = [] }) => {
   }, [isOpen]);
 
   const { data, isLoading, isError } = useMyContacts(
-    { page: 1, limit: 200, category: category || undefined },
+    {
+      page: 1,
+      limit: 200,
+      category: showCategory && category ? category : undefined,
+    },
     { enabled: isOpen }
   );
 
@@ -64,7 +74,11 @@ const ReuseGuestsModal = ({ isOpen, onClose, onAdd, existingMobiles = [] }) => {
     const list = selectedIds
       .map((id) => byId.get(id))
       .filter(Boolean)
-      .map((r) => ({ name: r.name, mobile: r.phone, category: r.category }));
+      .map((r) => ({
+        name: r.name,
+        mobile: r.phone,
+        ...(showCategory && r.category ? { category: r.category } : {}),
+      }));
     if (list.length) onAdd(list);
     onClose();
   };
@@ -114,11 +128,15 @@ const ReuseGuestsModal = ({ isOpen, onClose, onAdd, existingMobiles = [] }) => {
             <div className={styles.state}>{t("reuse_guests_empty")}</div>
           ) : (
             <Table
-              headers={[t("name"), t("mobile"), t("category")]}
-              headerKeys={["name", "phone", "category"]}
+              headers={showCategory
+                ? [t("name"), t("mobile"), t("category")]
+                : [t("name"), t("mobile")]}
+              headerKeys={showCategory
+                ? ["name", "phone", "category"]
+                : ["name", "phone"]}
               data={rows}
               showSearch
-              showFilter={categories.length > 0}
+              showFilter={showCategory && categories.length > 0}
               filterOptions={filterOptions}
               activeFilter={category}
               showExport={false}
@@ -131,7 +149,7 @@ const ReuseGuestsModal = ({ isOpen, onClose, onAdd, existingMobiles = [] }) => {
         </div>
 
         <div className={styles.footer}>
-          {selectedIds.length > 0 ? (
+          {showCategory && selectedIds.length > 0 ? (
             <button
               type="button"
               className={styles.footerLinkBtn}
@@ -163,13 +181,15 @@ const ReuseGuestsModal = ({ isOpen, onClose, onAdd, existingMobiles = [] }) => {
         </div>
       </div>
 
-      <CategoryAssignModal
-        isOpen={showCategoryAssign}
-        onClose={() => setShowCategoryAssign(false)}
-        onConfirm={handleAssignCategory}
-        options={categoryOptions}
-        count={selectedIds.length}
-      />
+      {showCategory && (
+        <CategoryAssignModal
+          isOpen={showCategoryAssign}
+          onClose={() => setShowCategoryAssign(false)}
+          onConfirm={handleAssignCategory}
+          options={categoryOptions}
+          count={selectedIds.length}
+        />
+      )}
     </PopupWrapper>
   );
 };

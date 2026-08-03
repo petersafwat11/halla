@@ -13,10 +13,7 @@ import useGuestTableActions from "./useGuestTableActions";
 const STATUS_FILTER_MAP = {
   confirmed: ["confirmed", "checked_in"],
   declined: ["declined"],
-  maybe: ["maybe"],
   noResponse: ["invited", "pending"],
-  // Combined audience for a one-shot "filter → select-all → resend" flow.
-  noResponseOrMaybe: ["invited", "pending", "maybe"],
   checkedIn: ["checked_in"],
 };
 

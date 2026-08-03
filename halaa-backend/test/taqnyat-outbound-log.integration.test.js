@@ -33,6 +33,24 @@ function response(config, data) {
   return Promise.resolve({ data, status: 200, statusText: 'OK', headers: {}, config });
 }
 
+test('uploads template header media through the live v2 media path', async () => {
+  let requestedUrl = null;
+  taqnyat.__test.waClient.defaults.adapter = (config) => {
+    requestedUrl = config.url;
+    return response(config, { id: 'template-media-1' });
+  };
+
+  const result = await taqnyat.uploadTemplateMedia(
+    Buffer.from([0xff, 0xd8, 0xff, 0x00]),
+    'image/jpeg',
+    'header.jpg'
+  );
+
+  assert.equal(result.success, true);
+  assert.equal(result.mediaId, 'template-media-1');
+  assert.equal(requestedUrl, '/media/');
+});
+
 test('persists successful SMS provider id, content, response, and context', async () => {
   taqnyat.__test.smsClient.defaults.adapter = (config) => response(config, {
     statusCode: 201,

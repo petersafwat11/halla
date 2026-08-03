@@ -94,7 +94,7 @@
     "invalidPhone": "رقم الهاتف غير صالح",
     "currentPasswordRequired": "كلمة المرور الحالية مطلوبة",
     "passwordMinLength": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
-    "passwordComplexity": "كلمة المرور يجب أن تحتوي على حرف كبير وصغير ورقم",
+    "passwordComplexity": "كلمة المرور تتكون من حروف وأرقام فقط، وبها حرف ورقم على الأقل",
     "confirmPasswordRequired": "تأكيد كلمة المرور مطلوب",
     "passwordsDoNotMatch": "كلمات المرور غير متطابقة",
     "passwordRequired": "كلمة المرور مطلوبة للتأكيد",

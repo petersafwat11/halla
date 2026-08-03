@@ -35,10 +35,13 @@ export function OverlayItem({
       ? (overlay.iconSizeVh / 100) * containerHeight
       : 14;
 
+  // An explicit host choice must win for text, including templates whose
+  // original overlays carry a custom readability colour. Decorations pass a
+  // colorOverride, so their artwork colour remains template-controlled.
   const color =
-    overlay.colorBinding === "custom"
-      ? overlay.color || "#000"
-      : colorOverride || primaryColor || "#5a4a42";
+    colorOverride ||
+    primaryColor ||
+    (overlay.colorBinding === "custom" ? overlay.color || "#000" : "#5a4a42");
 
   return (
     <div

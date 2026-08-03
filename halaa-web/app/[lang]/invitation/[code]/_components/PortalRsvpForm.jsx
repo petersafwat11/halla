@@ -110,14 +110,6 @@ export default function PortalRsvpForm({
         </button>
         <button
           type="button"
-          className={`${styles.btn} ${styles.btnMaybe}`}
-          disabled={isPending}
-          onClick={() => submit("maybe")}
-        >
-          {t("guestPortal.actions.maybe", "Maybe")}
-        </button>
-        <button
-          type="button"
           className={`${styles.btn} ${styles.btnDecline}`}
           disabled={isPending}
           onClick={() => submit("declined")}

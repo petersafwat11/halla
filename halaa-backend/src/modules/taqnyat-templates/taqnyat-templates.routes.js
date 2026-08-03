@@ -39,7 +39,7 @@ router.use(protect);
  *         name: invitationMode
  *         schema:
  *           type: string
- *           enum: [reply_and_qr, reply_only, qr_only, none]
+ *           enum: [reply_and_qr, reply_only, none]
  *     responses:
  *       200:
  *         description: Templates list

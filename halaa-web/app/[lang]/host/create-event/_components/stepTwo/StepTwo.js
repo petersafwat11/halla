@@ -31,6 +31,8 @@ const StepTwo = ({ subscription, allowAddOnly = false }) => {
   const router = useRouter();
   const pathname = usePathname();
   const { t } = useTranslation("createEvent");
+  const showCategory =
+    subscription?.planCode !== "trial" && subscription?.status !== "trial";
 
   const [currentItem, setCurrentItem] = useState({ name: "", mobile: "", category: "" });
   // Mirrors `currentItem.id` so the delete callbacks below don't take a
@@ -59,8 +61,14 @@ const StepTwo = ({ subscription, allowAddOnly = false }) => {
 
   // The host's saved category labels — feeds the manual-add combobox and is
   // independent of the reuse modal's own paged fetch.
-  const { data: contactsMeta } = useMyContacts({ page: 1, limit: 1 });
-  const savedCategories = contactsMeta?.data?.categories || [];
+  const { data: contactsMeta } = useMyContacts(
+    { page: 1, limit: 1 },
+    { enabled: showCategory }
+  );
+  const savedCategories = useMemo(
+    () => contactsMeta?.data?.categories || [],
+    [contactsMeta]
+  );
 
   const setCurrentItemTracked = useCallback((updater) => {
     setCurrentItem((prev) => {
@@ -322,6 +330,7 @@ const StepTwo = ({ subscription, allowAddOnly = false }) => {
         setImportLimitInfo={setImportLimitInfo}
         setShowImportLimitPopup={setShowImportLimitPopup}
         categories={savedCategories}
+        showCategory={showCategory}
       />
 
       {/* Import Errors Display */}
@@ -343,6 +352,7 @@ const StepTwo = ({ subscription, allowAddOnly = false }) => {
         handleRemove={handleRemove}
         handleBulkDelete={handleBulkDelete}
         handleBulkCategory={handleBulkCategory}
+        showCategory={showCategory}
       />
 
       {/* Import Limit Popup */}
@@ -388,6 +398,7 @@ const StepTwo = ({ subscription, allowAddOnly = false }) => {
         onAdd={(selected) => addIncomingWithFeedback(selected)}
         existingMobiles={guestList.map((g) => g.mobile)}
         remainingCapacity={remainingCapacity}
+        showCategory={showCategory}
       />
 
       {/* Import from an uploaded contacts file (.vcf) — all browsers */}
@@ -397,16 +408,19 @@ const StepTwo = ({ subscription, allowAddOnly = false }) => {
         onAdd={(selected) => addIncomingWithFeedback(selected)}
         existingMobiles={guestList.map((g) => g.mobile)}
         remainingCapacity={remainingCapacity}
+        showCategory={showCategory}
       />
 
       {/* Bulk link-to-category for the selected guests */}
-      <CategoryAssignModal
-        isOpen={categoryAssignIds !== null}
-        onClose={() => setCategoryAssignIds(null)}
-        onConfirm={applyCategoryToIds}
-        options={categoryOptions}
-        count={categoryAssignIds?.length || 0}
-      />
+      {showCategory && (
+        <CategoryAssignModal
+          isOpen={categoryAssignIds !== null}
+          onClose={() => setCategoryAssignIds(null)}
+          onConfirm={applyCategoryToIds}
+          options={categoryOptions}
+          count={categoryAssignIds?.length || 0}
+        />
+      )}
     </div>
   );
 };

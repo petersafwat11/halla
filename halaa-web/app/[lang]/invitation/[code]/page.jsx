@@ -133,30 +133,16 @@ export default function GuestPortalPage() {
     : submittedResponse || guest.rsvp?.response;
   const guestsCount = 1 + Math.max(0, Number(guest.rsvp?.plusOnes) || 0);
 
-  // No-reply invitation types (qr_only / none): never show the RSVP form.
-  // qr_only shows the entry pass directly; none shows an info-only card.
+  // Plain invitations never show the RSVP form or any controls.
   if (!allowsReply) {
     return (
       <div className={styles.page} style={cssVars}>
-        {includesQr ? (
-          <PortalConfirmed
-            mode="pass"
-            showQr
-            guestName={guest.name}
-            event={event}
-            code={code}
-            guestsCount={guestsCount}
-            formatDate={formatDate}
-            t={t}
-          />
-        ) : (
-          <PortalInfoOnly
-            guestName={guest.name}
-            event={event}
-            formatDate={formatDate}
-            t={t}
-          />
-        )}
+        <PortalInfoOnly
+          guestName={guest.name}
+          event={event}
+          formatDate={formatDate}
+          t={t}
+        />
       </div>
     );
   }
@@ -165,7 +151,6 @@ export default function GuestPortalPage() {
     return (
       <div className={styles.page} style={cssVars}>
         <PortalConfirmed
-          mode="confirmed"
           showQr={includesQr}
           guestName={guest.name}
           event={event}
@@ -179,13 +164,11 @@ export default function GuestPortalPage() {
     );
   }
 
-  if (finalResponse === "declined" || finalResponse === "maybe") {
+  if (finalResponse === "declined") {
     return (
       <div className={styles.page} style={cssVars}>
         <PortalThankYou
-          response={finalResponse}
           guestName={guest.name}
-          event={event}
           onChangeResponse={handleChangeResponse}
           t={t}
         />

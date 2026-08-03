@@ -13,7 +13,7 @@ import { useAuthStore } from "../../../stores/authStore";
  * create-event step components consume. Canonical shape only:
  * `visualTemplate.{templateRef,fieldValues,bakedImagePath}`,
  * `taqnyatTemplate.templateRef` (populated server-side),
- * `guestReplies.{onAttend,onAbsent,onExpected}`.
+ * `guestReplies.{onAttend,onAbsent}`.
  */
 const mapApiToFormValues = (eventData) => {
   if (!eventData) return EventsService.getDefaultFormValues();
@@ -101,7 +101,6 @@ const mapApiToFormValues = (eventData) => {
     guestReplies: {
       onAttend: replies.onAttend || "",
       onAbsent: replies.onAbsent || "",
-      onExpected: replies.onExpected || "",
     },
     invitationType: eventData.invitationType || DEFAULT_INVITATION_TYPE,
   };

@@ -19,6 +19,7 @@ import styles from "./AssignTaqnyatTemplatePopup.module.css";
 const SOURCE_KEYS = [
   "guest.name",
   "eventDetails.title",
+  "eventDetails.dayFormatted",
   "eventDetails.dateFormatted",
   "eventDetails.time",
   "eventDetails.location.address",
@@ -33,6 +34,7 @@ const SOURCE_KEYS = [
 const SOURCE_KEY_LABEL_KEY = {
   "guest.name": "taqnyat.sourceKeys.guest_name",
   "eventDetails.title": "taqnyat.sourceKeys.event_title",
+  "eventDetails.dayFormatted": "taqnyat.sourceKeys.event_dayFormatted",
   "eventDetails.dateFormatted": "taqnyat.sourceKeys.event_dateFormatted",
   "eventDetails.time": "taqnyat.sourceKeys.event_time",
   "eventDetails.location.address": "taqnyat.sourceKeys.event_location",
@@ -51,7 +53,7 @@ const TEMPLATE_TYPES = [
   "staff_access",
 ];
 
-const INVITATION_MODES = ["reply_and_qr", "reply_only", "qr_only", "none"];
+const INVITATION_MODES = ["reply_and_qr", "reply_only", "none"];
 
 function VarMappingField({ name, index, control }) {
   const { t } = useTranslation("admin");

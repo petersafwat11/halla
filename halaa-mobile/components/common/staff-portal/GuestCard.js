@@ -12,7 +12,6 @@ const STATUS_COLORS = {
   invited:    toColor("invited"),
   confirmed:  toColor("confirmed"),
   declined:   toColor("declined"),
-  maybe:      toColor("maybe"),
   checked_in: toColor("checked_in"),
   no_show:    toColor("no_show"),
 };

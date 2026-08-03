@@ -228,7 +228,6 @@ const EventDetailsScreen = () => {
     () => ({
       confirmed: resp?.confirmed || 0,
       declined: resp?.declined || 0,
-      maybe: resp?.maybe || 0,
       pending: resp?.pending || 0,
       checkedIn: resp?.checkedIn || 0,
       totalGuests: resp?.totalGuests || guests.length || 0,
@@ -246,10 +245,7 @@ const EventDetailsScreen = () => {
   const STATUS_FILTER_MAP = useMemo(() => ({
     confirmed: ["confirmed", "checked_in"],
     declined: ["declined"],
-    maybe: ["maybe"],
     noResponse: ["invited", "pending"],
-    // Combined audience for the resend action — non-responders + maybe.
-    noResponseOrMaybe: ["invited", "pending", "maybe"],
     checkedIn: ["checked_in"],
   }), []);
 
@@ -683,7 +679,7 @@ const EventDetailsScreen = () => {
           />
         </View>
 
-        {/* Stats — confirmed / declined / maybe / pending */}
+        {/* Stats — confirmed / declined / pending */}
         <StatsCards stats={stats} eventStatus={event?.status} activeFilter={statusFilter} onFilterPress={handleFilterPress} />
 
         {/* Checked-in / total-guests mini row */}

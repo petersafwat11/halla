@@ -17,7 +17,7 @@
 // ── Semantic tones: explicit (fg, bg) pairs ─────────────────────────────────
 export const STATUS_TONES = {
   success: { fg: "#2A8C5B", bg: "#EAF4EF" }, // positive / done-well / live / paid / approved
-  warning: { fg: "#D38200", bg: "#FBF3E6" }, // awaiting action / pending / maybe
+  warning: { fg: "#D38200", bg: "#FBF3E6" }, // awaiting action / pending
   danger: { fg: "#C0392B", bg: "#F9EBEA" }, // failed / declined / cancelled / rejected / suspended / expired
   info: { fg: "#3498DB", bg: "#E8F4FD" }, // in-progress / scheduled / sent
   neutral: { fg: "#656565", bg: "#F2F2F2" }, // inert / closed / completed / inactive / archived
@@ -47,7 +47,6 @@ const BASE_TONE = {
   confirmed: "success",
   attended: "success",
   declined: "danger",
-  maybe: "warning",
   checked_in: "indigo",
   no_show: "neutral",
 

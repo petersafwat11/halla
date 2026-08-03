@@ -24,7 +24,7 @@ const taqnyat = require('../../infrastructure/taqnyat');
 const taqnyatTemplatesService = require('../taqnyat-templates/taqnyat-templates.service');
 const {
   getEventBodyParams,
-  getEventImageUrl,
+  getRequiredEventImageUrl,
 } = require('../messaging/messaging.formatting');
 
 module.exports = {
@@ -335,7 +335,7 @@ module.exports = {
             staff: { name: staffMember.name, accessUrl: staffUrl },
           };
           const bodyParams = getEventBodyParams(event, staffMember.name, template, staffCtx);
-          const imageUrl = getEventImageUrl(event, template);
+          const imageUrl = getRequiredEventImageUrl(event, template);
           sendResult = imageUrl
             ? await taqnyat.sendWhatsAppTemplateWithImage(
                 staffMember.phone,

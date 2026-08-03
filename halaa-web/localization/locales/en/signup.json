@@ -139,7 +139,7 @@
           "emailRequired": "Email is required",
           "emailInvalid": "Please enter a valid email address",
           "passwordRequired": "Password must be at least 8 characters",
-          "passwordComplexity": "Password must contain uppercase, lowercase, and number",
+          "passwordComplexity": "Use letters and numbers only, with at least one of each",
           "passwordConfirmRequired": "Please confirm your password",
           "passwordsDoNotMatch": "Passwords do not match"
         }
@@ -822,7 +822,7 @@
         "emailRequired": "Email is required",
         "invalidEmail": "Invalid email address",
         "passwordMinLength": "Password must be at least 8 characters",
-        "passwordComplexity": "Password must contain at least one uppercase letter, one lowercase letter, and one number",
+        "passwordComplexity": "Use letters and numbers only, with at least one of each",
         "invalidPassword": "Password is incorrect, check it and try again.",
         "phoneNumberInvalid": "Phone number is incorrect, please check and try again",
         "usernameRequired": "Username is required",
@@ -838,7 +838,7 @@
         "title": "Personal Information",
         "fullName": {
           "label": "Full Name",
-          "placeholder": "Ahmed Kamal Abd Rabbo"
+          "placeholder": "Enter your full name"
         },
         "email": {
           "label": "Email Address",
@@ -886,8 +886,8 @@
         "emailRequired": "Email is required",
         "invalidEmail": "Please enter a valid email address",
         "passwordMinLength": "Password must be at least 8 characters",
-        "passwordComplexity": "Password must contain at least one uppercase letter, one lowercase letter, and one number",
-        "passwordSpecialChar": "Password must contain a special character",
+        "passwordComplexity": "Use letters and numbers only, with at least one of each",
+        "passwordSpecialChar": "Do not use symbols",
         "confirmPasswordRequired": "Confirm password is required",
         "passwordsDoNotMatch": "Passwords do not match"
       }
@@ -899,7 +899,7 @@
     "invalidSaudiPhone": "Please enter a valid Saudi phone number",
     "passwordMinLength": "Password must be at least 8 characters",
     "passwordMaxLength": "Password must be less than 128 characters",
-    "passwordComplexity": "Password must contain uppercase, lowercase, and number",
+    "passwordComplexity": "Use letters and numbers only, with at least one of each",
     "passwordMismatch": "Passwords do not match",
     "nameMinLength": "Name must be at least 2 characters",
     "otpLength": "Verification code must be 6 digits",

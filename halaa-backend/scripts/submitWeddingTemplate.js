@@ -88,7 +88,6 @@ function buildWeddingTemplate(headerHandleUrl) {
         buttons: [
           { type: 'QUICK_REPLY', text: 'سأحضر' },
           { type: 'QUICK_REPLY', text: 'سأعتذر' },
-          { type: 'QUICK_REPLY', text: 'ربما' },
         ],
       },
     ],

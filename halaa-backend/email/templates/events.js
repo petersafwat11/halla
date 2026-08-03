@@ -90,7 +90,6 @@ const guestRsvpEmail = (data, lang = "ar") => {
   const responseText = {
     confirmed: { ar: "قبل الدعوة", en: "accepted", color: COLORS.success },
     declined: { ar: "اعتذر عن الحضور", en: "declined", color: COLORS.error },
-    maybe: { ar: "ربما يحضر", en: "responded maybe", color: COLORS.warning },
   };
 
   const response = responseText[data.response] || responseText.confirmed;

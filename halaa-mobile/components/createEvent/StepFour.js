@@ -52,14 +52,7 @@ const REPLY_TABS = [
     labelKey: "auto_replies_tab_attending",
     fallback: "الحضور",
     defaultKey: "auto_replies_default_attending",
-    defaultText: "شكراً لتأكيد حضورك! يسعدنا أن تكون معنا في هذه المناسبة. سيصلك رمز الدخول الخاص بك قريباً. 🎉",
-  },
-  {
-    key: "onExpected",
-    labelKey: "auto_replies_tab_maybe",
-    fallback: "ربما",
-    defaultKey: "auto_replies_default_maybe",
-    defaultText: "شكراً لردّك! نأمل أن تتمكن من الحضور ونتطلع إلى رؤيتك بيننا. 🤍",
+    defaultText: "شكرًا لتأكيد حضورك! يسعدنا أن تكون معنا في هذه المناسبة. 🎉",
   },
   {
     key: "onAbsent",

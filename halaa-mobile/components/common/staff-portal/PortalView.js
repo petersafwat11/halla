@@ -23,7 +23,6 @@ const STATUS_OPTIONS = [
   { key: "confirmed", value: "confirmed" },
   { key: "checked_in", value: "checked_in" },
   { key: "declined", value: "declined" },
-  { key: "maybe", value: "maybe" },
 ];
 
 const PortalView = ({ staffInfo, eventInfo, eventId, onLogout, t }) => {

@@ -77,15 +77,7 @@ const REPLY_TABS = [
     fallback: "الحضور",
     canonical: "onAttend",
     defaultKey: "auto_replies_default_attending",
-    defaultText: "شكراً لتأكيد حضورك! يسعدنا أن تكون معنا في هذه المناسبة. سيصلك رمز الدخول الخاص بك قريباً. 🎉",
-  },
-  {
-    key: "maybe",
-    labelKey: "auto_replies_tab_maybe",
-    fallback: "ربما",
-    canonical: "onExpected",
-    defaultKey: "auto_replies_default_maybe",
-    defaultText: "شكراً لردّك! نأمل أن تتمكن من الحضور ونتطلع إلى رؤيتك بيننا. 🤍",
+    defaultText: "شكرًا لتأكيد حضورك! يسعدنا أن تكون معنا في هذه المناسبة. 🎉",
   },
   {
     key: "absence",
@@ -375,8 +367,7 @@ const StepFour = () => {
         </div>
 
         {/* ── Auto-replies ─────────────────────────────────────── */}
-        {/* Only reply-enabled invitation types send auto-replies, so hide the
-            editor for qr_only / none and explain why. */}
+        {/* Plain invitations do not send auto-replies. */}
         <div className={styles.repliesSection}>
           <div className={styles.repliesHeader}>
             <label className={styles.sectionLabel}>

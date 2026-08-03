@@ -28,10 +28,6 @@
       "title": "Thank you for letting us know",
       "body": "We'll truly miss you, {{name}}. Thank you for taking the time to reply — you're welcome anytime."
     },
-    "maybe": {
-      "title": "Thank you — your response is saved",
-      "body": "We've saved your reply, {{name}}. Come back anytime to confirm if your plans change."
-    },
     "hostedBy": "Hosted by {{host}}",
     "fields": {
       "date": "Date",
@@ -46,7 +42,6 @@
     },
     "actions": {
       "confirm": "Confirm",
-      "maybe": "Maybe",
       "decline": "Decline",
       "change": "Change my response"
     }

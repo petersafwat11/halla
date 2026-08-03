@@ -121,7 +121,6 @@ export const TAQNYAT_TEMPLATE_TYPES = [
 export const TAQNYAT_INVITATION_MODES = [
   "reply_and_qr",
   "reply_only",
-  "qr_only",
   "none",
 ];
 

@@ -7,7 +7,17 @@
 const { INVITATION_TYPE } = require('../../shared/constants');
 
 const INVITATION_MODES = Object.values(INVITATION_TYPE);
-const REQUIRED_RSVP_BUTTON_TEXTS = ['سأحضر', 'سأعتذر', 'ربما'];
+const REQUIRED_RSVP_BUTTON_TEXTS = ['سأحضر', 'سأعتذر'];
+const GENERAL_EVENT_FALLBACK_CATEGORIES = new Set(['graduation', 'meeting']);
+
+function isTemplateCategoryCompatible(template, category) {
+  if (!category || template?.category === category) return true;
+  return (
+    GENERAL_EVENT_FALLBACK_CATEGORIES.has(category) &&
+    template?.category === 'other' &&
+    /^halaa_general_event_/i.test(String(template?.templateName || ''))
+  );
+}
 
 function normalizeTemplateButtons(components = []) {
   const buttonsComponent = components.find(
@@ -48,18 +58,15 @@ function getButtonCapability(buttons = []) {
     kind = 'none';
     compatibleInvitationModes = [INVITATION_TYPE.NONE];
   } else if (
-    normalized.length === 3 &&
-    quickReplyCount === 3 &&
+    normalized.length === 2 &&
+    quickReplyCount === 2 &&
     quickReplyLabelsValid
   ) {
-    kind = 'three_quick_replies';
+    kind = 'two_quick_replies';
     compatibleInvitationModes = [
       INVITATION_TYPE.REPLY_AND_QR,
       INVITATION_TYPE.REPLY_ONLY,
     ];
-  } else if (normalized.length === 1 && dynamicUrlButtonCount === 1) {
-    kind = 'dynamic_url';
-    compatibleInvitationModes = [INVITATION_TYPE.QR_ONLY];
   }
 
   return {
@@ -103,4 +110,6 @@ module.exports = {
   isTemplateCompatibleWithInvitationMode,
   effectiveInvitationMode,
   REQUIRED_RSVP_BUTTON_TEXTS,
+  GENERAL_EVENT_FALLBACK_CATEGORIES,
+  isTemplateCategoryCompatible,
 };

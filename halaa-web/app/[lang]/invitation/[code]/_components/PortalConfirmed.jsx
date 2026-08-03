@@ -13,9 +13,6 @@ export default function PortalConfirmed({
   guestsCount = 1,
   formatDate,
   onChangeResponse,
-  // "confirmed" → post-RSVP confirmation; "pass" → a no-reply (qr_only)
-  // invitation where the pass is shown directly with a neutral heading.
-  mode = "confirmed",
   // Whether to render the QR entry pass. reply_only (02) confirmations pass
   // false so a confirmed guest sees the message but no QR.
   showQr = true,
@@ -26,28 +23,19 @@ export default function PortalConfirmed({
     ? `${formatDate(event.date)}${event.time ? ` · ${event.time}` : ""}`
     : "";
   const venue = event.location?.name || event.location?.address || "";
-  const isPass = mode === "pass";
 
   return (
     <div className={styles.card}>
       {/* Heading + welcome message */}
       <h1 className={styles.successHeading}>
-        {isPass
-          ? t("guestPortal.pass.title", "Your entry pass · بطاقة دخولك")
-          : t("guestPortal.confirmed.title", "You're confirmed!")}
+        {t("guestPortal.confirmed.title", "You're confirmed!")}
       </h1>
       <p className={styles.message}>
-        {isPass
-          ? t(
-              "guestPortal.pass.welcome",
-              "Welcome, {{name}} — here is your entry pass.",
-              { name: guestName }
-            )
-          : t(
-              "guestPortal.confirmed.welcome",
-              "Welcome, {{name}} — we're delighted you'll be joining us.",
-              { name: guestName }
-            )}
+        {t(
+          "guestPortal.confirmed.welcome",
+          "Welcome, {{name}} — we're delighted you'll be joining us.",
+          { name: guestName }
+        )}
       </p>
 
       {/* Entry pass (only when this invitation type includes a QR) */}

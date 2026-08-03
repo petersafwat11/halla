@@ -16,7 +16,6 @@ export const GuestStatus = z.enum([
   "invited",
   "confirmed",
   "declined",
-  "maybe",
   "checked_in",
   "no_show",
 ]);

@@ -35,7 +35,6 @@ const DEFAULT_FORM_VALUES = {
   guestReplies: {
     onAttend: "",
     onAbsent: "",
-    onExpected: "",
   },
   // Step 5 - Schedule and confirmation (create only)
   sendSchedule: "now",
@@ -134,7 +133,6 @@ export const mapEventToFormValues = (event) => ({
   guestReplies: {
     onAttend: event.guestReplies?.onAttend || "",
     onAbsent: event.guestReplies?.onAbsent || "",
-    onExpected: event.guestReplies?.onExpected || "",
   },
   sendSchedule: "now",
   scheduleDate: "",
@@ -187,7 +185,6 @@ export const buildEventPayload = (data) => ({
   guestReplies: {
     onAttend: data.guestReplies?.onAttend || "",
     onAbsent: data.guestReplies?.onAbsent || "",
-    onExpected: data.guestReplies?.onExpected || "",
   },
   invitationType: data.invitationType || DEFAULT_INVITATION_TYPE,
   templateImage: data.templateImage,
@@ -418,7 +415,6 @@ export const useEventForm = (options = {}) => {
               guestReplies: {
                 onAttend: formData.guestReplies?.onAttend || "",
                 onAbsent: formData.guestReplies?.onAbsent || "",
-                onExpected: formData.guestReplies?.onExpected || "",
               },
               invitationType: formData.invitationType || DEFAULT_INVITATION_TYPE,
             },

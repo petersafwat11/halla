@@ -219,7 +219,6 @@ module.exports = {
       totalGuests: guests.length,
       confirmed: guests.filter((g) => g.status === "confirmed").length,
       declined: guests.filter((g) => g.status === "declined").length,
-      maybe: guests.filter((g) => g.status === "maybe").length,
       pending: guests.filter((g) => g.status === "invited").length,
       checkedIn: guests.filter((g) => g.status === "checked_in").length,
     };

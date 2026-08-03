@@ -44,7 +44,7 @@ const TEMPLATE_TYPES = [
   'post_event',
   'staff_access',
 ];
-const INVITATION_MODES = ['reply_and_qr', 'reply_only', 'qr_only', 'none'];
+const INVITATION_MODES = ['reply_and_qr', 'reply_only', 'none'];
 
 const assignMappingSchema = z
   .object({

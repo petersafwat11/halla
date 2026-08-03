@@ -114,7 +114,6 @@ exports.validatePhone = (fieldName = "phoneNumber", options = {}) => {
  * @param {string} fieldName - Name of the field containing password
  * @param {Object} options - Validation options
  * @param {boolean} options.required - Whether the field is required
- * @param {boolean} options.strict - Require uppercase, lowercase, number, and special char
  */
 exports.validatePassword = (fieldName = "password", options = {}) => {
   return (req, res, next) => {
@@ -143,20 +142,13 @@ exports.validatePassword = (fieldName = "password", options = {}) => {
       );
     }
 
-    if (options.strict) {
-      const hasUpperCase = /[A-Z]/.test(password);
-      const hasLowerCase = /[a-z]/.test(password);
-      const hasNumbers = /\d/.test(password);
-      const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-
-      if (!hasUpperCase || !hasLowerCase || !hasNumbers || !hasSpecialChar) {
-        return next(
-          new AppError(
-            "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character",
-            400
-          )
-        );
-      }
+    if (!/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+$/.test(password)) {
+      return next(
+        new AppError(
+          "Password may contain letters and numbers only and must include at least one of each",
+          400
+        )
+      );
     }
 
     next();

@@ -52,7 +52,6 @@
     "invited": "مدعو",
     "confirmed": "حضور",
     "declined": "اعتذر",
-    "maybe": "ربما",
     "checked_in": "تم التسجيل",
     "no_show": "لم يحضر"
   },
@@ -69,7 +68,6 @@
     "checkedIn": "حضر",
     "confirmed": "حضور",
     "declined": "اعتذر",
-    "invited": "مدعو",
-    "maybe": "ربما"
+    "invited": "مدعو"
   }
 }

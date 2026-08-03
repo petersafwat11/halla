@@ -244,9 +244,6 @@ const guestInvitationEmail = (data, lang = "ar") => {
       <a href="${data.rsvpUrl}?response=declined" style="display: inline-block; padding: 12px 24px; background: ${COLORS.error}; color: white; text-decoration: none; border-radius: 8px; margin: 4px; font-weight: 600;">
         ${isAr ? "لن أتمكن ✗" : "Can't Attend ✗"}
       </a>
-      <a href="${data.rsvpUrl}?response=maybe" style="display: inline-block; padding: 12px 24px; background: ${COLORS.warning}; color: white; text-decoration: none; border-radius: 8px; margin: 4px; font-weight: 600;">
-        ${isAr ? "ربما" : "Maybe"}
-      </a>
     </div>
     
     ${

@@ -76,6 +76,8 @@
   align-items: center;
   gap: 1rem;
   border-radius: 0.4rem;
+  border: none;
+  padding: 0;
   background: var(--Content-bg-Card-Bg-artboard, #f9f4ef);
   cursor: pointer;
   transition: all 0.2s ease;

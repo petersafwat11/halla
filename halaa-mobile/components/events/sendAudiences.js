@@ -4,7 +4,7 @@
 // in sync. The backend re-enforces each audience, so these client filters are
 // for UX only (which rows to show, counts, enable/disable) — never authz.
 
-export const RESEND_STATUSES = ["invited", "pending", "maybe"];
+export const RESEND_STATUSES = ["invited", "pending"];
 export const REMINDER_STATUSES = ["confirmed", "checked_in"];
 
 const TERMINAL_STATUSES = ["completed", "cancelled", "deleted", "archived"];

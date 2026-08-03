@@ -277,18 +277,6 @@ const StepThree = () => {
                 />
               )}
             </div>
-            {mode === "template" && checkedTemplate && (
-              <p className={styles.confirmedCardTemplateName}>
-                {isAr ? checkedTemplate.nameAr : checkedTemplate.nameEn}
-              </p>
-            )}
-            {mode === "template" && !checkedTemplate && hasTemplateRef && (
-              <p className={styles.confirmedCardTemplateName}>
-                {visualTemplate?.templateName ||
-                  visualTemplate?.name ||
-                  t("saved_design", "Saved Design")}
-              </p>
-            )}
             <div className={styles.confirmedCardActions}>
               <button
                 type="button"
@@ -385,16 +373,6 @@ const StepThree = () => {
                   />
                 )}
 
-                {checkedTemplate && (
-                  <p className={styles.selectedLabel}>
-                    {t("selected_template")}:{" "}
-                    <span className={styles.selectedName}>
-                      {isAr
-                        ? checkedTemplate.nameAr
-                        : checkedTemplate.nameEn}
-                    </span>
-                  </p>
-                )}
               </>
             )}
 

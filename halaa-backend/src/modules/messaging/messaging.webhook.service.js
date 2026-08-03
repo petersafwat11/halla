@@ -81,7 +81,7 @@ async function markGuestAsSmsFallback(messageId) {
 }
 
 /**
- * Handle a WhatsApp button-reply event (RSVP confirm / decline / maybe).
+ * Handle a WhatsApp button-reply event (RSVP confirm / decline).
  *
  * Resolves the guest by phone (trying multiple format variants), persists
  * the RSVP status, notifies the host, and sends an auto-reply. Falls back
@@ -178,7 +178,6 @@ async function handleButtonResponse({
   const statusMap = {
     'سأحضر': 'confirmed',
     'سأعتذر': 'declined',
-    'ربما': 'maybe',
   };
   const rsvpStatus = statusMap[buttonText];
   if (!rsvpStatus) {
@@ -188,6 +187,7 @@ async function handleButtonResponse({
   await Guest.findByIdAndUpdate(guest._id, {
     status: rsvpStatus,
     'rsvp.responded': true,
+    'rsvp.response': rsvpStatus,
     'rsvp.respondedAt': new Date(),
   });
 
@@ -209,12 +209,7 @@ async function handleButtonResponse({
 
   try {
     if (event.host) {
-      const statusLabel =
-        rsvpStatus === 'confirmed'
-          ? 'سيحضر ✅'
-          : rsvpStatus === 'declined'
-          ? 'اعتذر ❌'
-          : 'ربما يحضر 🤔';
+      const statusLabel = rsvpStatus === 'confirmed' ? 'سيحضر ✅' : 'اعتذر ❌';
       await notificationService.sendToUser(event.host, {
         type: 'guest_rsvp',
         title: 'رد ضيف جديد',
@@ -231,7 +226,7 @@ async function handleButtonResponse({
   const replyMessage = getReplyMessage(rsvpStatus, event, 'ar');
 
   // Only a CONFIRMED guest on a QR-bearing invitation type receives the entry
-  // pass (QR image + rich caption). Declined / maybe — and confirmed guests on
+  // pass (QR image + rich caption). Declined guests — and confirmed guests on
   // a reply_only invitation (no QR) — get a plain text reply.
   if (rsvpStatus !== 'confirmed' || !invitationIncludesQr(event.invitationType)) {
     try {

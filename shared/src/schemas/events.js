@@ -59,6 +59,7 @@ export const EVENT_TYPES = [
   "wedding",
   "birthday",
   "graduation",
+  "engagement",
   "meeting",
   "conference",
   "other",
@@ -94,13 +95,11 @@ export const createEventSchema = (t = idT) =>
       taqnyatTemplate: z.any().optional(),
       attendanceAutoReply: z.string().optional(),
       absenceAutoReply: z.string().optional(),
-      expectedAttendanceAutoReply: z.string().optional(),
       templateImage: z.any().optional(),
       guestReplies: z
         .object({
           onAttend: z.string().optional(),
           onAbsent: z.string().optional(),
-          onExpected: z.string().optional(),
         })
         .partial()
         .optional(),
@@ -145,14 +144,12 @@ export const updateEventSchema = (t = idT) =>
           .object({
             onAttend: z.string().optional(),
             onAbsent: z.string().optional(),
-            onExpected: z.string().optional(),
           })
           .partial()
           .optional(),
         selectedTemplate: z.any().optional(),
         attendanceAutoReply: z.string().optional(),
         absenceAutoReply: z.string().optional(),
-        expectedAttendanceAutoReply: z.string().optional(),
         templateImage: z.any().optional(),
       })
       .partial()

@@ -17,6 +17,7 @@ export default function ClientComponentsTranslationsProvider({
   const i18n = useMemo(() => {
     const instance = createInstance();
     instance.use(initReactI18next).init({
+      showSupportNotice: false,
       lng: locale,
       fallbackLng: locale,
       supportedLngs: ["en", "ar"],

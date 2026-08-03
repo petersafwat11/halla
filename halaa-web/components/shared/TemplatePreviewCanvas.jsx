@@ -92,6 +92,7 @@ const TemplatePreviewCanvas = forwardRef(function TemplatePreviewCanvas(
   const decorations = [...(template.decorations || [])].sort(cmpZ);
   const overlays = [...(template.overlays || [])].sort(cmpZ);
   const fieldsByKey = Object.fromEntries((template.fields || []).map((f) => [f.key, f]));
+  const effectivePrimaryColor = primaryColor || data?.primaryColor;
 
   return (
     <div
@@ -135,7 +136,7 @@ const TemplatePreviewCanvas = forwardRef(function TemplatePreviewCanvas(
           containerHeight={containerSize.height}
           text={d.type === "icon" ? d.source : ""}
           colorOverride={d.color}
-          primaryColor={primaryColor}
+          primaryColor={effectivePrimaryColor}
         />
       ))}
       {overlays.map((o, i) => {
@@ -150,7 +151,7 @@ const TemplatePreviewCanvas = forwardRef(function TemplatePreviewCanvas(
             containerWidth={containerSize.width}
             containerHeight={containerSize.height}
             text={display}
-            primaryColor={primaryColor}
+            primaryColor={effectivePrimaryColor}
             fontFamilyOverride={fontFamilyOverride}
             dir={field?.dir}
           />

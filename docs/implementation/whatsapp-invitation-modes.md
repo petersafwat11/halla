@@ -1,36 +1,15 @@
-# WhatsApp invitation-template contract
+# WhatsApp invitation modes
 
-Every event category needs four separately approved Meta/Taqnyat invitation
-templates. In the Halaa admin dashboard, set template purpose to `invite`,
-select the event category, then assign exactly one `invitationMode`.
+Hala supports exactly three invitation journeys.
 
-| invitationMode | Approved-template controls | Runtime behavior |
+| Mode | Initial WhatsApp controls | Confirmation behavior |
 | --- | --- | --- |
-| `reply_and_qr` | Exactly 3 quick replies: `سأحضر`, `سأعتذر`, `ربما` | The webhook records the reply. Accept sends the guest's QR entry pass. |
-| `reply_only` | Exactly 3 quick replies: `سأحضر`, `سأعتذر`, `ربما` | The webhook records the reply. No QR is issued. |
-| `qr_only` | Exactly 1 dynamic URL button and no quick replies | The initial message opens the guest portal, which displays the QR immediately. |
-| `none` | No buttons | Informational message only; replies are rejected and no QR is issued. |
+| `reply_and_qr` | Two quick replies: `سأحضر`, `سأعتذر` | Records confirmation and sends a follow-up message with the guest QR image. |
+| `reply_only` | Two quick replies: `سأحضر`, `سأعتذر` | Records confirmation and sends a text follow-up without a QR. |
+| `none` | No buttons | Sends an informational invitation only. Its body does not ask the guest to choose a response. |
 
-For `qr_only`, configure the Meta URL button with its variable at the end. The
-preferred production form is:
+The Step 3 invitation design is supplied as the IMAGE header for every invitation template. The body uses the seven-variable mapping documented in the owner manifest. QR delivery is a session follow-up after confirmation; it is never a URL button on the initial template.
 
-```text
-https://halaa.com.sa/ar/invitation/{{1}}
-```
+Provider templates with a third reply or a direct QR URL are legacy and unsupported. They remain unavailable to hosts even if the provider retains their historical definitions.
 
-The backend supplies the guest's unique invitation code as `{{1}}`. It also
-supplies a signed, 15-minute preview code for test messages, so the test CTA
-opens a working preview without exposing a real guest pass.
-
-After the owner creates or updates templates in Meta/Taqnyat:
-
-1. Open Admin Dashboard → WhatsApp Templates.
-2. Run **Sync from Taqnyat** so Halaa caches the real button definitions.
-3. Open **Assign** for each template.
-4. Set its category, purpose `invite`, and invitation mode.
-5. Map body variables and activate it.
-
-The dashboard disables modes that do not match the synced controls, and the
-backend repeats the same validation when an event is created, updated, tested,
-sent, or resent. Existing three-button invite templates are treated as
-`reply_and_qr`; the next sync persists that legacy backfill.
+The owner catalog's `general_event` copy is the intentional fallback for the app's `graduation` and `meeting` categories. Category validation accepts only that general template for those two categories; specialized ladies-event and baby-shower templates are not used as fallbacks.

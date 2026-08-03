@@ -2,8 +2,7 @@
  * StepFive (mobile) — messaging + auto-replies + host note.
  *
  * Dual-writes legacy + canonical keys:
- *   guestReplies.{onAttend,onAbsent,onExpected}  ⇄ {attendance,absence,
- *                                                    expectedAttendance}AutoReply
+ *   guestReplies.{onAttend,onAbsent}  ⇄ {attendance,absence}AutoReply
  *   hostNote                                      ⇄ note
  */
 
@@ -30,7 +29,6 @@ const StepFive = () => {
   const AUTO_REPLIES_DEFAULTS = useMemo(
     () => ({
       onAttend: t("auto_replies_default_attending"),
-      onExpected: t("auto_replies_default_maybe"),
       onAbsent: t("auto_replies_default_absence"),
     }),
     [t]
@@ -39,7 +37,6 @@ const StepFive = () => {
   const REPLY_TABS = useMemo(
     () => [
       { key: "onAttend", label: t("auto_replies_tab_attending") },
-      { key: "onExpected", label: t("auto_replies_tab_maybe") },
       { key: "onAbsent", label: t("auto_replies_tab_absence") },
     ],
     [t]
@@ -56,9 +53,6 @@ const StepFive = () => {
     }
     if (!guestReplies?.onAbsent) {
       setValue("guestReplies.onAbsent", AUTO_REPLIES_DEFAULTS.onAbsent, { shouldDirty: false });
-    }
-    if (!guestReplies?.onExpected) {
-      setValue("guestReplies.onExpected", AUTO_REPLIES_DEFAULTS.onExpected, { shouldDirty: false });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

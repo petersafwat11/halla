@@ -25,14 +25,6 @@ const StatsCards = ({ stats, eventStatus, activeFilter, onFilterPress }) => {
       bgColor: "#F9EBEA",
       textColor: "#C0392B"
     },
-    maybe: {
-      key: "maybe",
-      label: "ربما",
-      value: stats?.maybe ?? 0,
-      icon: "help-circle-outline",
-      bgColor: "#FEFCE8",
-      textColor: "#CA8A04"
-    },
     pending: {
       key: "noResponse",
       label: "في الانتظار",
@@ -54,7 +46,7 @@ const StatsCards = ({ stats, eventStatus, activeFilter, onFilterPress }) => {
     const keys = ["confirmed", "declined"];
 
     if (isPreLaunch || isLive) {
-      keys.push("maybe", "pending");
+      keys.push("pending");
     }
 
     return keys.map((k) => allCards[k]).filter(Boolean);

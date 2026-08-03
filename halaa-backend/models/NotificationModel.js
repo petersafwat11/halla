@@ -21,7 +21,6 @@ const NOTIFICATION_TYPES = {
   // Guest notifications
   GUEST_RSVP_ACCEPTED: "guest_rsvp_accepted",
   GUEST_RSVP_DECLINED: "guest_rsvp_declined",
-  GUEST_RSVP_MAYBE: "guest_rsvp_maybe",
   GUEST_CHECKED_IN: "guest_checked_in",
   INVITATIONS_SENT: "invitations_sent",
   TEMPLATE_STATUS_CHANGE: "template_status_change",

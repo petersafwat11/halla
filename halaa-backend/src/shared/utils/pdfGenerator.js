@@ -541,7 +541,6 @@ async function generateInvitationReportPDF(data, lang = "ar") {
       confirmed: isAr ? "مؤكد" : "Confirmed",
       declined: isAr ? "اعتذر" : "Declined",
       pending: isAr ? "بانتظار" : "Pending",
-      maybe: isAr ? "ربما" : "Maybe",
     };
 
     pdf.addTable(
@@ -579,7 +578,6 @@ async function generateGuestListPDF(data, lang = "ar") {
     confirmed: isAr ? "مؤكد" : "Confirmed",
     declined: isAr ? "اعتذر" : "Declined",
     pending: isAr ? "بانتظار" : "Pending",
-    maybe: isAr ? "ربما" : "Maybe",
     checked_in: isAr ? "وصل" : "Checked In",
   };
 

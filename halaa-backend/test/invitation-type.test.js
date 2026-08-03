@@ -20,7 +20,6 @@ test("truth table: reply × QR per type", () => {
     // [type, allowsReply, includesQr]
     [INVITATION_TYPE.REPLY_AND_QR, true, true],
     [INVITATION_TYPE.REPLY_ONLY, true, false],
-    [INVITATION_TYPE.QR_ONLY, false, true],
     [INVITATION_TYPE.NONE, false, false],
   ];
   for (const [type, allowsReply, includesQr] of cases) {

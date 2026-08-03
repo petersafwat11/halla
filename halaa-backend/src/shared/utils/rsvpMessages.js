@@ -6,7 +6,7 @@
  *   - Web portal   → guests.service.submitRSVP (HTTP response)
  *   - WhatsApp      → messaging.webhook.service.handleButtonResponse (auto-reply)
  *
- * Per-event overrides live on `event.guestReplies.{onAttend,onAbsent,onExpected}`
+ * Per-event overrides live on `event.guestReplies.{onAttend,onAbsent}`
  * (see EventModel). When an override is absent we fall back to the professional
  * defaults below. Defaults are intentionally NOT baked into the schema so we can
  * improve copy without a migration.
@@ -26,23 +26,18 @@ function formatDate(date, lang = 'ar') {
 /** Default reply copy by response + language. */
 const DEFAULT_REPLIES = {
   confirmed: {
-    ar: 'تم تأكيد حضورك! يسعدنا انضمامك إلينا. احتفظ ببطاقة الدخول أدناه وأبرز الرمز عند الوصول.',
-    en: "You're confirmed! We're delighted you'll be joining us. Keep your entry pass below and show the code at the door.",
+    ar: 'شكرًا لتأكيد حضورك! يسعدنا أن تكون معنا في هذه المناسبة. 🎉',
+    en: "Thank you for confirming! We're delighted you'll be joining us. 🎉",
   },
   declined: {
     ar: 'شكراً لإخبارنا. سنفتقدك حقاً، وندعوك في أي وقت آخر.',
     en: "Thank you for letting us know. We'll truly miss you — you're welcome anytime.",
-  },
-  maybe: {
-    ar: 'شكراً لردك. سجّلنا ردك، ويمكنك تأكيد حضورك لاحقاً إذا تغيّرت خطتك.',
-    en: "Thanks — we've saved your response. You can confirm later if your plans change.",
   },
 };
 
 const OVERRIDE_KEY = {
   confirmed: 'onAttend',
   declined: 'onAbsent',
-  maybe: 'onExpected',
 };
 
 /**

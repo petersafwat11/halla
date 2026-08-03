@@ -40,6 +40,8 @@ const useStepConfig = ({ t, subscriptionInfo, eventRaw, isEventLive }) =>
         Component: StepTwo,
         props: {
           subscription: {
+            planCode: subscriptionInfo?.planCode ?? null,
+            status: subscriptionInfo?.status ?? null,
             guestLimit: isPool
               ? (subscriptionInfo?.invitesRemaining ?? 0)
               : (eventFrozenLimit ?? subscriptionInfo?.guestLimit ?? 0),

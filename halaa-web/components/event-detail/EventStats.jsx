@@ -33,13 +33,6 @@ export default function EventStats({ eventId, activeFilter, onFilterPress }) {
       textColor: "#16A34A",
       icon: "/svg/events/right.svg",
     },
-    maybe: {
-      label: t("singleEvent.stats.maybe", "ربما"),
-      value: data?.maybe || 0,
-      color: "#FEFCE8",
-      textColor: "#CA8A04",
-      icon: "/svg/events/maybe.svg",
-    },
     noResponse: {
       label: t("singleEvent.stats.noResponse"),
       value: data?.pending || 0,
@@ -73,7 +66,7 @@ export default function EventStats({ eventId, activeFilter, onFilterPress }) {
     const keys = ["confirmed", "declined", "totalGuests"];
 
     if (isPreLaunch || isLive) {
-      keys.push("maybe", "noResponse");
+      keys.push("noResponse");
     }
 
     if (isLive || isCompleted) {

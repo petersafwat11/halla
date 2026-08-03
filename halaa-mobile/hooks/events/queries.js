@@ -154,7 +154,6 @@ export function useSingleEventStats(eventId, opts) {
         confirmed: stats.confirmed || 0,
         declined: stats.declined || 0,
         pending: stats.pending || 0,
-        maybe: stats.maybe || 0,
         checkedIn: stats.checkedIn || 0,
         totalGuests: stats.totalGuests || 0,
       };

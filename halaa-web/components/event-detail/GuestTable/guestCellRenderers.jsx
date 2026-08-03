@@ -93,7 +93,6 @@ export function renderStatusBadge(value, t) {
     confirmed: t("table.status.confirmed", "مؤكد"),
     checked_in: t("table.status.checkedIn", "حضر"),
     declined: t("table.status.declined", "معتذر"),
-    maybe: t("table.status.maybe", "ربما"),
     invited: t("table.status.invited", "مدعو"),
   };
   // Unknown status falls back to the "invited" label/colors, matching the

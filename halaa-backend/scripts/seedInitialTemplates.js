@@ -37,11 +37,12 @@ const PLACEHOLDER_NATURAL_WIDTH = 1080;
 const PLACEHOLDER_NATURAL_HEIGHT = 1350;
 
 const CATEGORY_DEFS = {
-  wedding:     { nameEn: "Wedding",     nameAr: "زفاف",     sortOrder: 10 },
-  engagement:  { nameEn: "Engagement",  nameAr: "خطوبة",    sortOrder: 20 },
-  birthday:    { nameEn: "Birthday",    nameAr: "عيد ميلاد", sortOrder: 30 },
-  baby_shower: { nameEn: "Baby Shower", nameAr: "استقبال مولود", sortOrder: 40 },
-  general:     { nameEn: "General",     nameAr: "عام",       sortOrder: 99 },
+  birthday:      { nameEn: "Birthday Invitation",   nameAr: "دعوة عيد ميلاد", sortOrder: 10 },
+  wedding:       { nameEn: "Wedding Invitation",    nameAr: "دعوة زفاف",      sortOrder: 20 },
+  baby_shower:   { nameEn: "Newborn Invitation",    nameAr: "دعوة مولود",     sortOrder: 30 },
+  special_event: { nameEn: "Special Occasion",      nameAr: "مناسبة خاصة",     sortOrder: 40 },
+  ramadan:       { nameEn: "Ramadan Invitation",    nameAr: "دعوة رمضان",     sortOrder: 50 },
+  graduation:    { nameEn: "Graduation Invitation", nameAr: "دعوة تخرج",      sortOrder: 60 },
 };
 
 async function ensureCategory(code) {

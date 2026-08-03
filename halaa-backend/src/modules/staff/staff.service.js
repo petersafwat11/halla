@@ -240,9 +240,8 @@ class StaffService {
       confirmed: counts.confirmed || 0,
       checkedIn: counts.checked_in || 0,
       declined: counts.declined || 0,
-      maybe: counts.maybe || 0,
       invited: counts.invited || 0,
-      pending: (counts.invited || 0) + (counts.maybe || 0),
+      pending: counts.invited || 0,
     };
   }
 

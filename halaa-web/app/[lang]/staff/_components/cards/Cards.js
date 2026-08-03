@@ -15,13 +15,6 @@ const ConfirmedIcon = () => (
   </svg>
 );
 
-const MaybeIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M8 14.67A6.67 6.67 0 1 0 8 1.33a6.67 6.67 0 0 0 0 13.34Z" stroke="#D38200" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M6.06 6a2 2 0 0 1 3.89.67c0 1.33-2 2-2 2M8 11.33h.01" stroke="#D38200" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
 const DeclinedIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M8 14.67A6.67 6.67 0 1 0 8 1.33a6.67 6.67 0 0 0 0 13.34Z" stroke="#C0392B" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
@@ -39,7 +32,6 @@ const CheckedInIcon = () => (
 const STAT_CONFIG = [
   { icon: <TotalIcon />, labelKey: "stats.total", valueKey: "total", variant: "total" },
   { icon: <ConfirmedIcon />, labelKey: "stats.confirmed", valueKey: "confirmed", variant: "confirmed" },
-  { icon: <MaybeIcon />, labelKey: "stats.maybe", valueKey: "maybe", variant: "maybe" },
   { icon: <DeclinedIcon />, labelKey: "stats.declined", valueKey: "declined", variant: "declined" },
   { icon: <CheckedInIcon />, labelKey: "stats.checkedIn", valueKey: "checkedIn", variant: "checkedIn" },
 ];

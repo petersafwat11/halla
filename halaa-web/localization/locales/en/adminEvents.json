@@ -99,9 +99,7 @@
       "confirmed": "Confirmed",
       "declined": "Declined",
       "invited": "Invited",
-      "noResponse": "No Response",
-      "maybe": "Maybe",
-      "tentative": "Maybe"
+      "noResponse": "No Response"
     },
     "actions": {
       "edit": "Edit",
@@ -260,7 +258,6 @@
       "confirmed": "Confirmed",
       "declined": "Declined",
       "noResponse": "No Response",
-      "maybe": "Maybe",
       "responseRate": "Response Rate"
     },
     "confirmDelete": {

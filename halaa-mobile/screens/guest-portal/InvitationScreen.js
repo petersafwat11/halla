@@ -16,7 +16,6 @@ import useGuestByToken from "../../hooks/guestPortal/queries";
 import useSubmitRSVP from "../../hooks/guestPortal/mutations";
 
 const FALLBACK_BRAND_COLOR = "#C28E5C";
-const FALLBACK_ACCENT_COLOR = "#6B4E33";
 const FALLBACK_BG = "#F9F4EF";
 
 const InvitationScreen = ({ route }) => {
@@ -43,11 +42,9 @@ const InvitationScreen = ({ route }) => {
   // Defaults below preserve a sensible look without that source.
   const brandColor =
     event?.eventDetails?.primaryColor || FALLBACK_BRAND_COLOR;
-  const accentColor = FALLBACK_ACCENT_COLOR;
   const logoUri = event?.eventDetails?.logoUrl || null;
 
   const currentStatus = submitChoice || guest?.status || "invited";
-  const hasResponded = ["confirmed", "declined", "maybe"].includes(currentStatus);
 
   // Invitation type governs whether the RSVP buttons appear and whether a QR
   // is shown. The backend computes these flags on the event payload.
@@ -64,10 +61,9 @@ const InvitationScreen = ({ route }) => {
     () =>
       StyleSheet.create({
         primaryButton: { backgroundColor: brandColor },
-        accentButton: { backgroundColor: accentColor },
         eventName: { color: brandColor },
       }),
-    [brandColor, accentColor]
+    [brandColor]
   );
 
   if (isLoading) {
@@ -108,30 +104,8 @@ const InvitationScreen = ({ route }) => {
     );
   }
 
-  // No-reply invitation types (qr_only / none): never show RSVP buttons.
-  // qr_only shows the entry pass QR directly; none shows an info-only card.
+  // Plain invitations never show RSVP buttons or a QR control.
   if (!allowsReply) {
-    if (includesQr) {
-      const qrValue = guest.qrcode || guest.qrUrl || guest.token || code;
-      return (
-        <SafeAreaView style={[styles.container, { backgroundColor: FALLBACK_BG }]}>
-          <ScrollView contentContainerStyle={styles.scrollContent}>
-            {logoUri ? (
-              <Image source={{ uri: logoUri }} style={styles.logo} resizeMode="contain" />
-            ) : null}
-            <Text style={[styles.eventName, themedStyles.eventName]}>{eventTitle}</Text>
-            <Text style={styles.welcomeTitle}>{t("guest.portal.passTitle")}</Text>
-            <Text style={styles.welcomeBody}>
-              {t("guest.portal.passBody", { name: guest.name || "" })}
-            </Text>
-            <View style={styles.qrWrap}>
-              <QRCode value={String(qrValue)} size={220} />
-            </View>
-            <Text style={styles.qrLabel}>{t("guest.portal.qrLabel")}</Text>
-          </ScrollView>
-        </SafeAreaView>
-      );
-    }
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: FALLBACK_BG }]}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -201,8 +175,8 @@ const InvitationScreen = ({ route }) => {
     );
   }
 
-  // ---- Declined / Maybe (thank-you) ------------------------------------
-  if (currentStatus === "declined" || currentStatus === "maybe") {
+  // ---- Declined (thank-you) --------------------------------------------
+  if (currentStatus === "declined") {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: FALLBACK_BG }]}>
         <View style={styles.centered}>
@@ -211,11 +185,7 @@ const InvitationScreen = ({ route }) => {
           ) : null}
           <Text style={styles.thanksTitle}>{t("guest.portal.thanksTitle")}</Text>
           <Text style={styles.muted}>
-            {t(
-              currentStatus === "declined"
-                ? "guest.portal.thanksDeclined"
-                : "guest.portal.thanksMaybe"
-            )}
+            {t("guest.portal.thanksDeclined")}
           </Text>
         </View>
       </SafeAreaView>
@@ -281,13 +251,6 @@ const InvitationScreen = ({ route }) => {
           )}
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.button, themedStyles.accentButton]}
-          disabled={submit.isPending}
-          onPress={() => handleRsvp("maybe")}
-        >
-          <Text style={styles.buttonText}>{t("guest.portal.maybe")}</Text>
-        </TouchableOpacity>
 
         <TouchableOpacity
           style={[styles.button, styles.declineButton]}

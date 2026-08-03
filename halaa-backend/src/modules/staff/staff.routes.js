@@ -115,7 +115,7 @@ router.use(staffAuth);
  *         name: status
  *         schema:
  *           type: string
- *           enum: [invited, confirmed, declined, checked_in, maybe]
+ *           enum: [invited, confirmed, declined, checked_in]
  *         description: Filter by guest status
  *       - $ref: '#/components/parameters/PageParam'
  *       - $ref: '#/components/parameters/LimitParam'

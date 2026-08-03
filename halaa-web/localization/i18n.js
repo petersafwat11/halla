@@ -21,6 +21,7 @@ export default async function initTranslations(
   }
 
   await i18nInstance.init({
+    showSupportNotice: false,
     lng: locale,
     resources,
     fallbackLng: i18nRouterConfig.defaultLocale,

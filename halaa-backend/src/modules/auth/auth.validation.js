@@ -7,7 +7,7 @@
 const { z } = require('zod');
 
 const phonePattern = /^(\+966|966|0)?5\d{8}$/;
-const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
+const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+$/;
 
 const phoneNumber = z
   .string()
@@ -24,7 +24,7 @@ const password = z
   .string()
   .min(8, 'Password must be at least 8 characters')
   .max(128, 'Password must be at most 128 characters')
-  .regex(passwordPattern, 'Password must contain uppercase, lowercase, and number');
+  .regex(passwordPattern, 'Password may contain letters and numbers only and must include at least one of each');
 
 const username = z
   .string()

@@ -9,12 +9,12 @@ import useCarouselSnap from "@/ui/landing/_shared/useCarouselSnap";
 import CarouselDots from "@/ui/landing/_shared/CarouselDots";
 
 const LOCAL_CATEGORIES = [
-  { code: "wedding",       nameEn: "Wedding",       nameAr: "زفاف" },
-  { code: "engagement",    nameEn: "Engagement",    nameAr: "خطوبة" },
-  { code: "birthday",      nameEn: "Birthday",      nameAr: "عيد ميلاد" },
-  { code: "baby_shower",   nameEn: "Baby Shower",   nameAr: "استقبال مولود" },
-  { code: "ladies_event",  nameEn: "Ladies' Event", nameAr: "مناسبة نسائية" },
-  { code: "general_event", nameEn: "General Event", nameAr: "مناسبات عامة" },
+  { code: "birthday",      nameEn: "Birthday Invitation",   nameAr: "دعوة عيد ميلاد" },
+  { code: "wedding",       nameEn: "Wedding Invitation",    nameAr: "دعوة زفاف" },
+  { code: "baby_shower",   nameEn: "Newborn Invitation",    nameAr: "دعوة مولود" },
+  { code: "special_event", nameEn: "Special Occasion",      nameAr: "مناسبة خاصة" },
+  { code: "ramadan",       nameEn: "Ramadan Invitation",    nameAr: "دعوة رمضان" },
+  { code: "graduation",    nameEn: "Graduation Invitation", nameAr: "دعوة تخرج" },
 ];
 
 const LOCAL_TEMPLATES = [
@@ -57,7 +57,7 @@ const LOCAL_TEMPLATES = [
     id: "tpl-6",
     nameEn: "Burgundy Bloom Wedding",
     nameAr: "زفاف الورد الأرجواني",
-    categories: ["wedding", "ladies_event"],
+    categories: ["wedding"],
     src: "/template-cards/6.png",
   },
   {
@@ -71,7 +71,7 @@ const LOCAL_TEMPLATES = [
     id: "tpl-8",
     nameEn: "Candle Engagement",
     nameAr: "خطوبة الشموع",
-    categories: ["wedding", "engagement"],
+    categories: ["wedding"],
     src: "/template-cards/8.png",
   },
   {
@@ -85,14 +85,14 @@ const LOCAL_TEMPLATES = [
     id: "tpl-10",
     nameEn: "Eid Al-Adha",
     nameAr: "عيد الأضحى",
-    categories: ["general_event"],
+    categories: ["special_event"],
     src: "/template-cards/10.png",
   },
   {
     id: "tpl-11",
     nameEn: "Ramadan Iftar",
     nameAr: "سفرة إفطار رمضان",
-    categories: ["general_event"],
+    categories: ["ramadan"],
     src: "/template-cards/11.png",
   },
   {
@@ -120,14 +120,14 @@ const LOCAL_TEMPLATES = [
     id: "tpl-15",
     nameEn: "Graduation Celebration",
     nameAr: "حفل تخرج",
-    categories: ["general_event"],
+    categories: ["graduation"],
     src: "/template-cards/15.png",
   },
   {
     id: "tpl-16",
     nameEn: "Pearl Promise",
     nameAr: "وعد لؤلؤي",
-    categories: ["engagement"],
+    categories: ["special_event"],
     src: "/template-cards/16.png",
   },
 ];
@@ -211,7 +211,7 @@ function EventTemplatesSection() {
             >
               {templates.map((tpl) => {
                 const src = tpl.src;
-                const alt = isAr ? tpl.nameAr : tpl.nameEn;
+                const alt = t("templates.cardAlt");
                 return (
                   <div
                     key={tpl.id}
@@ -266,9 +266,7 @@ function EventTemplatesSection() {
         >
           <div className={styles.modal}>
             <header className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>
-                {isAr ? previewTemplate.nameAr : previewTemplate.nameEn}
-              </h3>
+              <h3 className={styles.modalTitle}>{t("templates.preview")}</h3>
               <button
                 type="button"
                 className={styles.modalClose}
@@ -282,7 +280,7 @@ function EventTemplatesSection() {
               <div className={styles.previewImageWrapper}>
                 <Image
                   src={previewTemplate.src}
-                  alt={isAr ? previewTemplate.nameAr : previewTemplate.nameEn}
+                  alt={t("templates.cardAlt")}
                   width={340}
                   height={412}
                   className={styles.previewImage}

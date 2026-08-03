@@ -18,8 +18,11 @@ import { z } from "zod";
 // Accepts: 5XXXXXXXX, 05XXXXXXXX, 9665XXXXXXXX, +9665XXXXXXXX.
 export const SAUDI_PHONE_REGEX = /^(\+966|966|0)?5\d{8}$/;
 
-// Backend canonical password complexity (auth.validation.js#passwordPattern).
-export const PASSWORD_COMPLEXITY_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
+// Canonical password policy (mirrors auth.validation.js): 8-128 ASCII
+// letters/digits, with at least one letter and one digit. Uppercase and
+// symbols are intentionally not required; symbols are rejected so the rule
+// shown during onboarding is also the rule enforced by every client.
+export const PASSWORD_COMPLEXITY_REGEX = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+$/;
 
 // OTP pattern (6 digits).
 export const OTP_REGEX = /^\d{6}$/;

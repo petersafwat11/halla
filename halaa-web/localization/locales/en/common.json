@@ -61,7 +61,6 @@
       "confirmed": "Confirmed",
       "declined": "Declined",
       "noResponse": "No Response",
-      "maybe": "Maybe",
       "staffName": "Staff Name",
       "staffPhone": "Phone Number",
       "staffEvent": "Event"
@@ -70,7 +69,6 @@
       "invited": "Invited",
       "confirmed": "Confirmed",
       "declined": "Declined",
-      "maybe": "Maybe",
       "pending_scheduling": "Pending Scheduling",
       "published": "Published",
       "completed": "Completed",
@@ -208,7 +206,7 @@
     "required": "This field is required",
     "passwordMinLength": "Password must be at least 8 characters",
     "passwordMaxLength": "Password must not exceed 128 characters",
-    "passwordComplexity": "Password must contain uppercase, lowercase, and a number",
+    "passwordComplexity": "Use letters and numbers only, with at least one of each",
     "otpLength": "Verification code must be 6 digits",
     "otpInvalid": "Verification code must contain only digits"
   },
