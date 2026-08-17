@@ -1,0 +1,273 @@
+.overlay {
+  display: flex;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 2rem;
+}
+
+.panel {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  padding: 1.6rem;
+  max-width: 38rem;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+/* Quick Select Buttons */
+.quickSelect {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+}
+
+.quickBtn {
+  padding: 0.6rem 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #fff;
+  color: #374151;
+  font-size: 1.2rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.quickBtn:hover {
+  background: #f9fafb;
+  border-color: #c28e5c;
+  color: #c28e5c;
+}
+
+/* Month/Year Navigation */
+.navigation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.navArrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.8rem;
+  height: 2.8rem;
+  border: none;
+  background: #f9fafb;
+  border-radius: 6px;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.navArrow:hover {
+  background: #c28e5c;
+  color: #fff;
+}
+
+.monthSelect,
+.yearSelect {
+  padding: 0.6rem 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #fff;
+  color: #374151;
+  font-size: 1.3rem;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.monthSelect:hover,
+.yearSelect:hover {
+  border-color: #c28e5c;
+}
+
+.monthSelect:focus,
+.yearSelect:focus {
+  border-color: #c28e5c;
+  box-shadow: 0 0 0 3px rgba(194, 142, 92, 0.1);
+}
+
+.monthSelect {
+  min-width: 10rem;
+}
+
+.yearSelect {
+  min-width: 7rem;
+}
+
+/* Calendar Wrapper */
+.calendarWrapper {
+  padding: 0.4rem 0;
+}
+
+/* Hide the default DayPicker caption since we have custom navigation */
+.hiddenCaption {
+  display: none !important;
+}
+
+/* Make calendar more compact */
+.calendarWrapper :global(.rdp) {
+  margin: 0;
+}
+
+.calendarWrapper :global(.rdp-month) {
+  margin: 0 auto;
+}
+
+.calendarWrapper :global(.rdp-months) {
+  margin: 0 auto;
+}
+
+.calendarWrapper :global(.rdp-month_grid) {
+  width: 100%;
+  max-width: 32rem;
+  margin: 0 auto;
+}
+
+.calendarWrapper :global(.rdp-week) td {
+  width: 3.6rem;
+  height: 3.6rem;
+}
+
+/* Footer Buttons */
+.footer {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  padding-top: 1.2rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.cancelBtn {
+  padding: 0.7rem 1.8rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #fff;
+  color: #374151;
+  font-size: 1.3rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancelBtn:hover {
+  background: #f9fafb;
+}
+
+.confirmBtn {
+  padding: 0.7rem 2rem;
+  border: none;
+  border-radius: 6px;
+  background: #c28e5c;
+  color: #fff;
+  font-size: 1.3rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.confirmBtn:hover {
+  background: #b4845c;
+}
+/* Calendar Day Styles */
+.day {
+  font-size: 1.2rem;
+  color: #374151;
+}
+
+.daySelected {
+  background: #c28e5c !important;
+  color: #fff !important;
+  font-weight: 600;
+}
+
+.dayToday {
+  border: 2px solid #c28e5c !important;
+  font-weight: 600;
+}
+
+/* Range Selection Styles */
+.calendarWrapper :global(.rdp-range_start .rdp-day_button),
+.calendarWrapper :global(.rdp-range_end .rdp-day_button) {
+  background: #c28e5c !important;
+  color: #fff !important;
+  font-weight: 600;
+}
+
+/* Days in between range - Lighter golden */
+.calendarWrapper :global(.rdp-range_middle) {
+  background: rgba(194, 142, 92, 0.15) !important;
+}
+
+.calendarWrapper :global(.rdp-range_middle .rdp-day_button) {
+  background: transparent !important;
+  color: #c28e5c !important;
+  font-weight: 500;
+}
+
+.calendarWrapper :global(.rdp-range_middle:hover .rdp-day_button) {
+  background: rgba(194, 142, 92, 0.25) !important;
+}
+
+/* Responsive Styles */
+@media screen and (max-width: 768px) {
+  .overlay {
+    padding: 1rem;
+  }
+
+  .panel {
+    padding: 1.6rem;
+    max-width: 100%;
+  }
+
+  .quickSelect {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.6rem;
+  }
+
+  .quickBtn {
+    font-size: 1.2rem;
+    padding: 0.6rem 1rem;
+  }
+
+  .navigation {
+    gap: 0.8rem;
+  }
+
+  .monthSelect {
+    min-width: 9rem;
+    font-size: 1.3rem;
+  }
+
+  .yearSelect {
+    min-width: 7rem;
+    font-size: 1.3rem;
+  }
+
+  .footer {
+    flex-direction: column-reverse;
+    gap: 0.8rem;
+  }
+
+  .cancelBtn,
+  .confirmBtn {
+    width: 100%;
+  }
+}

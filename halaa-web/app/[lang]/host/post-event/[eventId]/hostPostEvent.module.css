@@ -1,0 +1,113 @@
+.page {
+  padding: 3.2rem 4rem 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2.4rem;
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--color-primary-50);
+  min-height: calc(100vh - 7.2rem);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.title {
+  font-size: 2.4rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--color-secondary-900);
+  line-height: 3rem;
+}
+
+.subtitle {
+  font-size: 1.4rem;
+  color: var(--color-natural-450);
+  margin: 0;
+}
+
+/* Facebook-style single-column composer, centered. */
+.composer {
+  width: 100%;
+  max-width: 68rem;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2.4rem;
+}
+
+.composerCard {
+  background: var(--color-natural-50, #fff);
+  border: 1px solid var(--color-primary-100, #e6d7c8);
+  border-radius: 1.6rem;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  box-shadow: 0 1px 2px rgba(82, 68, 56, 0.04);
+}
+
+.mediaLabel {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--color-secondary-900, #2a2a2a);
+}
+
+.section {
+  background: var(--color-natural-50);
+  border: 1px solid var(--color-primary-100);
+  border-radius: 1.6rem;
+  padding: 2.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  box-shadow: 0 1px 2px rgba(82, 68, 56, 0.04);
+}
+
+.sectionTitle {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--color-secondary-900);
+}
+
+.errorBox {
+  padding: 2.4rem;
+  border: 1px solid #f5c2c2;
+  background: #fef2f2;
+  border-radius: 1.2rem;
+  color: #991b1b;
+}
+
+@media (max-width: 1280px) {
+  .mainGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 1024px) {
+  .page {
+    padding: 2.4rem 2.4rem 4rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding: 1.6rem 1.6rem 3.2rem;
+    gap: 1.6rem;
+  }
+
+  .section {
+    padding: 1.6rem;
+    border-radius: 1.2rem;
+  }
+
+  .title {
+    font-size: 2rem;
+    line-height: 2.6rem;
+  }
+}

@@ -1,0 +1,87 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+  padding: 1rem;
+  width: 100%;
+  min-width: 0;
+}
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.title {
+  color: #656565;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 16px;
+  letter-spacing: 0.056px;
+}
+.totalGuests {
+  color: #2c2c2c;
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 28px;
+}
+
+.body {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+.chart {
+  /* width: 240px !important;
+  height: 240px !important; */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* .chart > div {
+  width: 240px !important;
+  height: 240px !important;
+} */
+.stats {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.item {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.item span {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  border-radius: 3px;
+  background: #c28e5c;
+
+}
+.item:nth-child(2) span {
+  background: #d6b392;
+}
+.item:nth-child(3) span {
+  background: #f5ece4;
+}
+
+.statText {
+  color: rgba(0, 0, 0, 0.7);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .container { padding: 0.4rem; gap: 1rem; }
+  .body { gap: 1.6rem; flex-wrap: wrap; justify-content: center; }
+  .totalGuests { font-size: 20px; line-height: 24px; }
+  .statText { white-space: normal; }
+}

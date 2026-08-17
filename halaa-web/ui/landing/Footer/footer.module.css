@@ -1,0 +1,655 @@
+.footer {
+  width: 100%;
+  padding: 54px 98px;
+  background: var(--color-secondary-800);
+}
+
+.container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 44px;
+  max-width: 1520px;
+  margin: 0 auto;
+}
+
+/* Section titles — left-aligned to match column content */
+.sectionTitle {
+  width: 100%;
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 28px;
+  margin: 0 0 24px 0;
+  text-align: start;
+}
+
+/* Download section overrides title to center, no extra bottom margin */
+.downloadSection .sectionTitle {
+  text-align: center;
+  margin-bottom: 0;
+}
+
+/* ── Contact Section ── */
+.contactSection {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1.2;
+  min-width: 0;
+}
+
+.contactInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  width: 100%;
+}
+
+.contactLink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 24px;
+  letter-spacing: 0.08px;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.contactLink:hover {
+  color: var(--color-primary-500);
+}
+
+.contactIcon {
+  flex-shrink: 0;
+  filter: brightness(0) invert(1);
+  opacity: 1;
+}
+
+.addressLink {
+  display: flex;
+  padding: 4px 0;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  font-style: normal;
+}
+
+.addressLink span {
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 24px;
+  letter-spacing: 0.08px;
+}
+
+/* Social icons — left-aligned on desktop, centered on mobile */
+.socialLinks {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.socialIcon {
+  font-size: 1.25rem;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  transition: all 0.25s ease;
+  text-decoration: none;
+}
+
+.socialIcon:hover {
+  transform: translateY(-3px);
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--color-primary-500);
+}
+
+/* ── Quick Links Section ── */
+.helpSection {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 0.8;
+  min-width: 0;
+}
+
+.linksList {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.footerLink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 24px;
+  letter-spacing: 0.08px;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+
+.footerLink:hover {
+  color: var(--color-primary-500);
+  transform: translateX(-4px);
+}
+
+.footerLinkArrow {
+  flex-shrink: 0;
+  filter: brightness(0) invert(1);
+  opacity: 1;
+  transition: opacity 0.25s ease;
+}
+
+.footerLink:hover .footerLinkArrow {
+  opacity: 0.9;
+}
+
+/* ── Download Section — fully centered CTA ── */
+.downloadSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  align-items: center;
+  flex: 1.2;
+  min-width: 0;
+}
+
+.downloadContent {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+  width: 100%;
+}
+
+.downloadDescription {
+  width: 100%;
+  max-width: 360px;
+  color: #ffffff;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 26px;
+  margin: 0;
+}
+
+.downloadOptions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.qrSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.qrCode {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 4px;
+  border: 1px solid var(--color-white-10);
+  overflow: hidden;
+  transition: transform 0.3s ease;
+}
+
+.qrCode:hover {
+  transform: scale(1.05);
+}
+
+.qrImage {
+  width: 110px;
+  height: 110px;
+  aspect-ratio: 1/1;
+  border-radius: 3px;
+  display: block;
+}
+
+.qrLabel {
+  width: 100%;
+  background: var(--color-white-10);
+  color: var(--bg-artboard);
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.divider {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.appStoreButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.storeButton {
+  display: flex;
+  min-width: 182px;
+  height: 56px;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+  padding: 0 1.6rem;
+  border-radius: 8.4px;
+  background: var(--color-black-100);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.storeButton::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--color-white-10) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.storeButton:hover::before {
+  opacity: 1;
+}
+
+.storeButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--color-black-30);
+}
+
+.storeButtonContent {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  flex: 1;
+}
+
+.storeLabel {
+  color: var(--color-white-70);
+  font-size: 9px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.storeName {
+  color: var(--color-natural-50);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+/* ── 1400px ── */
+@media (max-width: 1400px) {
+  .footer {
+    padding: 48px 70px;
+  }
+
+  .container {
+    gap: 36px;
+  }
+}
+
+/* ── 1200px — 2-column grid ── */
+@media (max-width: 1200px) {
+  .footer {
+    padding: 44px 48px;
+  }
+
+  .container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 40px 60px;
+    align-items: start;
+  }
+
+  .contactSection {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .helpSection {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .downloadSection {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    align-items: center;
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .downloadContent {
+    align-items: center;
+    max-width: 520px;
+  }
+
+  .downloadOptions {
+    flex-wrap: nowrap;
+  }
+}
+
+/* ── 900px ── */
+@media (max-width: 900px) {
+  .footer {
+    padding: 36px 24px;
+  }
+
+  .container {
+    gap: 32px 36px;
+  }
+
+  .downloadSection {
+    flex-direction: column;
+  }
+
+  .downloadDescription {
+    max-width: 100%;
+  }
+
+  .downloadOptions {
+    flex-wrap: wrap;
+  }
+}
+
+/* ── 768px ── */
+@media (max-width: 768px) {
+  .sectionTitle {
+    font-size: 17px;
+    line-height: 24px;
+    margin-bottom: 16px;
+  }
+
+  .downloadDescription {
+    font-size: 14px;
+    line-height: 22px;
+  }
+
+  .footerLink,
+  .contactLink {
+    font-size: 14px;
+  }
+
+  .addressLink span {
+    font-size: 13px;
+  }
+
+  .linksList {
+    gap: 14px;
+  }
+
+  .socialIcon {
+    width: 34px;
+    height: 34px;
+    font-size: 1.1rem;
+  }
+}
+
+/* ── 576px — single column, left-aligned with dividers ── */
+@media (max-width: 576px) {
+  .footer {
+    padding: 28px 20px 32px;
+  }
+
+  .container {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    align-items: center;
+  }
+
+  /* Section titles: small uppercase label style */
+  .sectionTitle {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #ffffff;
+    opacity: 1;
+    margin-bottom: 14px;
+    text-align: center;
+    line-height: 18px;
+  }
+
+  /* All sections centered, separated by dividers */
+  .contactSection,
+  .helpSection {
+    align-items: center;
+    width: 100%;
+    padding: 24px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .contactInfo {
+    align-items: center;
+    gap: 12px;
+  }
+
+  .contactLink {
+    font-size: 14px;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .addressLink {
+    justify-content: center;
+  }
+
+  .addressLink span {
+    text-align: center;
+    font-size: 13px;
+    line-height: 20px;
+  }
+
+  /* Social icons centered row */
+  .socialLinks {
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  .socialIcon {
+    width: 36px;
+    height: 36px;
+    font-size: 1.1rem;
+  }
+
+  /* Quick links: 2-column grid, centered */
+  .helpSection {
+    align-items: center;
+  }
+
+  .linksList {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 10px 20px;
+    width: 100%;
+  }
+
+  .footerLink {
+    font-size: 13px;
+    gap: 6px;
+    white-space: normal;
+    color: #ffffff;
+  }
+
+  /* Download: centered CTA block */
+  .downloadSection {
+    align-items: center;
+    width: 100%;
+    padding-top: 24px;
+  }
+
+  .downloadSection .sectionTitle {
+    text-align: center;
+    text-transform: uppercase;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    opacity: 1;
+    margin-bottom: 0;
+  }
+
+  .downloadContent {
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+  }
+
+  .downloadDescription {
+    text-align: center;
+    font-size: 13px;
+    line-height: 22px;
+    max-width: 100%;
+  }
+
+  .downloadOptions {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 10px;
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ── Bottom bar ── */
+.bottomBar {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin: 44px 98px 0;
+  padding-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.legalName {
+  font-size: 14px;
+  color: #ffffff;
+  font-weight: 500;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
+.copyright {
+  font-size: 13px;
+  color: #ffffff;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.langLinks {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.langLink {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
+  text-decoration: none;
+  transition: color 0.2s;
+  white-space: nowrap;
+}
+
+.langLink:hover {
+  color: #ffffff;
+}
+
+.langLinkActive {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.legalDot {
+  color: #ffffff;
+  font-size: 12px;
+  user-select: none;
+}
+
+@media (max-width: 1400px) {
+  .bottomBar {
+    margin: 40px 70px 0;
+  }
+}
+
+@media (max-width: 1200px) {
+  .bottomBar {
+    margin: 36px 48px 0;
+  }
+}
+
+@media (max-width: 900px) {
+  .bottomBar {
+    margin: 32px 24px 0;
+  }
+}
+
+@media (max-width: 576px) {
+  .bottomBar {
+    margin: 24px 0 0;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .langLinks {
+    gap: 8px;
+    justify-content: center;
+  }
+
+  .langLink,
+  .copyright {
+    font-size: 12px;
+  }
+
+  .legalName {
+    font-size: 13px;
+    line-height: 19px;
+  }
+}

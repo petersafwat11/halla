@@ -1,0 +1,117 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 2rem;
+  min-width: 400px;
+  max-width: 500px;
+}
+
+.title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin: 0;
+  text-align: center;
+}
+
+.guestCount {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: #f0f4ff;
+  border-radius: 8px;
+  font-size: 1.4rem;
+}
+
+.guestCount strong {
+  color: #2563eb;
+  font-size: 1.6rem;
+}
+
+.channelSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.label {
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.channelOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.radioOption {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.2rem 1.5rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.radioOption:hover {
+  border-color: #2563eb;
+  background: #f8fafc;
+}
+
+.radioOption input[type="radio"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #2563eb;
+}
+
+.radioOption input[type="radio"]:checked + .radioLabel {
+  color: #2563eb;
+  font-weight: 500;
+}
+
+.radioLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  font-size: 1.4rem;
+  color: #374151;
+}
+
+.channelIcon {
+  font-size: 1.6rem;
+}
+
+.info {
+  padding: 1rem 1.5rem;
+  background: #fefce8;
+  border: 1px solid #fef08a;
+  border-radius: 8px;
+}
+
+.info p {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #854d0e;
+  line-height: 1.6;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+@media (max-width: 480px) {
+  .container {
+    min-width: 100%;
+    padding: 1.5rem;
+  }
+}

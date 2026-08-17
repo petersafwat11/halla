@@ -1,0 +1,317 @@
+{
+  "defaultVendorName": "مزود الخدمة",
+  "greeting": "مرحباً",
+  "currency": "ريال",
+
+  "dashboard": {
+    "title": "لوحة التحكم",
+    "subtitle": "لديك {{count}} خدمة نشطة"
+  },
+
+  "actions": {
+    "addService": "إضافة خدمة",
+    "viewServices": "عرض الخدمات",
+    "support": "الدعم"
+  },
+
+  "stats": {
+    "rating": "التقييم",
+    "activeServices": "الخدمات النشطة",
+    "inactiveServices": "الخدمات غير النشطة",
+    "totalServices": "إجمالي الخدمات"
+  },
+
+  "orders": {
+    "recentOrders": "الطلبات الأخيرة",
+    "orders": "طلبات",
+    "noOrders": "لا توجد طلبات بعد",
+    "noOrdersDescription": "لم تتلق أي طلبات بعد. حافظ على خدماتك نشطة لبدء استقبال الحجوزات.",
+    "customer": "العميل",
+    "eventDate": "تاريخ الحدث",
+    "price": "السعر"
+  },
+
+  "orderStatus": {
+    "pending": "قيد الانتظار",
+    "confirmed": "مؤكد",
+    "completed": "مكتمل",
+    "cancelled": "ملغي"
+  },
+
+  "insights": {
+    "title": "رؤى الأداء",
+    "avgRating": "متوسط التقييم",
+    "activeServices": "الخدمات النشطة",
+    "inactiveServices": "الخدمات غير النشطة"
+  },
+
+  "categories": {
+    "photography": "التصوير الفوتوغرافي",
+    "catering": "تقديم الطعام",
+    "decoration": "الديكور",
+    "entertainment": "الترفيه",
+    "venue": "المكان",
+    "planning": "تخطيط الفعاليات"
+  },
+
+  "settings": {
+    "title": "الإعدادات",
+    "saveChanges": "حفظ التغييرات",
+    "changePhoto": "تغيير الصورة",
+    "uploadImage": "رفع صورة",
+    "changeImage": "تغيير الصورة",
+    "imageSelected": "تم اختيار الصورة",
+    "addImages": "إضافة صور",
+    "saveSuccess": "تم حفظ الإعدادات بنجاح",
+    "saveError": "فشل حفظ الإعدادات. يرجى المحاولة مرة أخرى.",
+    "imagePickError": "فشل اختيار الصورة. يرجى المحاولة مرة أخرى.",
+
+    "tabs": {
+      "accountSetup": "إعداد الحساب",
+      "notifications": "الإشعارات"
+    },
+
+    "personalInfo": {
+      "title": "المعلومات الشخصية",
+      "description": "قم بتحديث تفاصيلك الشخصية وصورة الملف الشخصي",
+      "avatar": "صورة الملف الشخصي",
+      "name": "الاسم الكامل",
+      "namePlaceholder": "أدخل اسمك الكامل",
+      "email": "البريد الإلكتروني",
+      "emailPlaceholder": "أدخل بريدك الإلكتروني"
+    },
+
+    "serviceDetails": {
+      "title": "تفاصيل الخدمة",
+      "subtitle": "قدم معلومات حول خدماتك وعملك",
+      "description": "وصف الخدمة",
+      "descriptionPlaceholder": "صف خدماتك بالتفصيل",
+      "categories": "فئات الخدمة",
+      "categoriesPlaceholder": "اختر فئات الخدمة",
+      "location": "موقع الخدمة",
+      "nationalId": "رقم الهوية الوطنية",
+      "nationalIdPlaceholder": "أدخل رقم هويتك الوطنية",
+      "nationalIdImage": "صورة الهوية الوطنية",
+      "commercialRecord": "صورة السجل التجاري"
+    },
+
+    "imagesAndPricing": {
+      "title": "الصور والأسعار",
+      "description": "قم برفع صور المعرض وباقات الأسعار",
+      "portfolioImages": "صور المعرض",
+      "pricePackages": "باقات الأسعار",
+      "noPortfolioImages": "لا توجد صور معرض بعد",
+      "noPricePackages": "لا توجد باقات أسعار بعد"
+    },
+
+    "additionalLinks": {
+      "title": "روابط التواصل الاجتماعي",
+      "description": "أضف روابط وسائل التواصل الاجتماعي والموقع الإلكتروني",
+      "website": "الموقع الإلكتروني",
+      "instagram": "إنستغرام",
+      "facebook": "فيسبوك",
+      "twitter": "تويتر",
+      "tiktok": "تيك توك"
+    },
+
+    "permissions": {
+      "title": "الإذن مطلوب",
+      "message": "نحتاج إلى إذن للوصول إلى صورك لرفع الصور."
+    },
+
+    "notifications": {
+      "comingSoon": "قريباً",
+      "comingSoonDescription": "ستكون إعدادات الإشعارات متاحة في التحديث القادم."
+    },
+
+    "validation": {
+      "nameRequired": "الاسم مطلوب",
+      "emailRequired": "البريد الإلكتروني مطلوب",
+      "emailInvalid": "صيغة البريد الإلكتروني غير صحيحة",
+      "descriptionRequired": "وصف الخدمة مطلوب",
+      "nationalIdRequired": "رقم الهوية الوطنية مطلوب",
+      "categoriesRequired": "يجب اختيار فئة واحدة على الأقل",
+      "locationRequired": "موقع الخدمة مطلوب",
+      "invalidUrl": "صيغة الرابط غير صحيحة"
+    }
+  },
+
+  "tickets": {
+    "title": "تذاكر الدعم",
+    "createTicket": "إنشاء تذكرة",
+    "editTicket": "تعديل التذكرة",
+    "createFirst": "أنشئ تذكرتك الأولى",
+    "noTickets": "لا توجد تذاكر",
+    "noTicketsDescription": "لم تقم بإنشاء أي تذاكر دعم بعد.",
+    "searchPlaceholder": "البحث في التذاكر...",
+    "deleteConfirm": "حذف التذكرة",
+    "deleteConfirmMessage": "هل أنت متأكد من حذف هذه التذكرة؟",
+    "deleteSuccess": "تم حذف التذكرة بنجاح",
+    "deleteError": "فشل حذف التذكرة",
+    "createSuccess": "تم إنشاء التذكرة بنجاح",
+    "updateSuccess": "تم تحديث التذكرة بنجاح",
+    "submitError": "فشل إرسال التذكرة. يرجى المحاولة مرة أخرى.",
+
+    "type": "نوع التذكرة",
+    "priorityLabel": "الأولوية",
+    "message": "الرسالة",
+    "messagePlaceholder": "صف مشكلتك أو استفسارك بالتفصيل...",
+
+    "types": {
+      "technical": "مشكلة تقنية",
+      "billing": "الفواتير",
+      "general": "استفسار عام",
+      "complaint": "شكوى"
+    },
+
+    "priority": {
+      "low": "منخفضة",
+      "medium": "متوسطة",
+      "high": "عالية"
+    },
+
+    "status": {
+      "open": "مفتوحة",
+      "in_progress": "قيد المعالجة",
+      "resolved": "محلولة",
+      "closed": "مغلقة"
+    },
+
+    "filter": {
+      "all": "الكل",
+      "open": "مفتوحة",
+      "in_progress": "قيد المعالجة",
+      "resolved": "محلولة",
+      "closed": "مغلقة"
+    },
+
+    "validation": {
+      "typeRequired": "نوع التذكرة مطلوب",
+      "messageRequired": "الرسالة مطلوبة",
+      "messageTooShort": "يجب أن تكون الرسالة 10 أحرف على الأقل"
+    }
+  },
+
+  "common": {
+    "loading": "جاري التحميل...",
+    "success": "نجح",
+    "error": "خطأ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "create": "إنشاء",
+    "update": "تحديث",
+    "viewAll": "عرض الكل"
+  },
+
+  "services": {
+    "title": "إضافة خدمة جديدة",
+    "editTitle": "تعديل الخدمة",
+    "update": "تحديث",
+    "updateSuccess": "تم تحديث الخدمة بنجاح",
+    "updateError": "فشل تحديث الخدمة",
+    "imageLabel": "صورة الخدمة",
+    "imagePlaceholder": "ارفع صورة",
+    "nameLabel": "اسم الخدمة (بالإنجليزية)",
+    "namePlaceholder": "أدخل اسم الخدمة بالإنجليزية",
+    "nameArLabel": "اسم الخدمة (بالعربية)",
+    "nameArPlaceholder": "أدخل اسم الخدمة بالعربية",
+    "typeLabel": "نوع الخدمة",
+    "typePlaceholder": "اختر نوع الخدمة",
+    "typeModalTitle": "اختر نوع الخدمة",
+    "descLabel": "وصف الخدمة (بالإنجليزية)",
+    "descPlaceholder": "أدخل وصف الخدمة بالإنجليزية",
+    "descArLabel": "وصف الخدمة (بالعربية)",
+    "descArPlaceholder": "أدخل وصف الخدمة بالعربية",
+    "priceLabel": "سعر الخدمة",
+    "pricePlaceholder": "ادخل سعر الخدمة",
+    "durationLabel": "مدة تنفيذ الخدمة",
+    "durationPlaceholder": "مثال: 8-12 ساعة",
+    "includedLabel": "ما الذي يتضمنه",
+    "includedPlaceholder": "اكتب عنصرًا ثم اضغط +",
+    "tagsLabel": "اختر التصنيف",
+    "create": "إنشاء",
+    "cancel": "إلغاء",
+    "edit": "تعديل",
+    "available": "متاحة",
+    "unavailable": "غير متاحة",
+    "person": "شخص",
+    "people": "شخص",
+    "photo": "صورة",
+    "photos": "صورة",
+    "filterAll": "كل الخدمات",
+    "filterActive": "نشطة",
+    "filterInactive": "غير نشطة",
+    "searchPlaceholder": "ابحث عن خدمة",
+    "noServices": "لا توجد خدمات",
+    "noServicesHint": "قم بإضافة خدمتك الأولى الآن",
+    "addService": "إضافة خدمة",
+    "deleteConfirm": "حذف الخدمة",
+    "deleteConfirmMessage": "هل أنت متأكد من حذف هذه الخدمة؟",
+    "deleteSuccess": "تم حذف الخدمة بنجاح",
+    "deleteError": "فشل حذف الخدمة",
+    "addSuccess": "تم إضافة الخدمة بنجاح",
+    "addError": "فشل إضافة الخدمة",
+    "toggleSuccess": "تم تحديث حالة الخدمة",
+    "toggleError": "فشل تحديث حالة الخدمة",
+    "serviceTypes": {
+      "eventPlanning": "تخطيط الفعاليات",
+      "mediaProduction": "الإنتاج الإعلامي",
+      "giftsAndGiveaways": "الهدايا والتوزيعات",
+      "foodAndBeverages": "الأطعمة والمشروبات",
+      "beautyAndFashion": "التجميل والأزياء",
+      "logisticsAndDelivery": "اللوجستيات والتوصيل",
+      "corporateServices": "خدمات الشركات",
+      "supportServices": "خدمات الدعم",
+      "technicalServices": "الخدمات التقنية",
+      "soundLightingEntertainment": "الصوت والإضاءة والترفيه",
+      "hallsAndVenues": "القاعات والأماكن"
+    },
+    "tags": {
+      "weddings": "افراح",
+      "graduation": "تخرج",
+      "birthdays": "أعياد ميلاد",
+      "corporate": "فعاليات شركات",
+      "engagement": "خطوبة",
+      "baby_shower": "استقبال مولود"
+    },
+    "validation": {
+      "nameMinLength": "اسم الخدمة يجب أن يكون أكثر من حرفين",
+      "typeRequired": "نوع الخدمة مطلوب",
+      "descriptionMinLength": "وصف الخدمة يجب أن يكون أكثر من 10 أحرف",
+      "priceRequired": "سعر الخدمة مطلوب",
+      "durationMaxLength": "مدة الخدمة يجب أن تكون أقل من 100 حرف"
+    }
+  },
+
+  "validation": {
+    "ownerNameRequired": "اسم المالك مطلوب",
+    "ownerNameMinLength": "الاسم يجب أن يكون حرفين على الأقل",
+    "ownerNameMaxLength": "الاسم يجب أن يكون أقل من 100 حرف",
+    "brandNameRequired": "اسم النشاط التجاري مطلوب",
+    "brandNameMinLength": "اسم النشاط التجاري يجب أن يكون حرفين على الأقل",
+    "brandNameMaxLength": "اسم النشاط التجاري يجب أن يكون أقل من 100 حرف",
+    "emailRequired": "البريد الإلكتروني مطلوب",
+    "emailInvalid": "صيغة البريد الإلكتروني غير صحيحة",
+    "phoneInvalid": "صيغة رقم الهاتف غير صحيحة",
+    "phoneRequired": "رقم الهاتف مطلوب",
+    "descriptionMaxLength": "الوصف يجب أن لا يتجاوز 1000 حرف",
+    "nationalIdInvalid": "رقم الهوية يجب أن يكون 10 أرقام",
+    "invalidUrl": "صيغة الرابط غير صحيحة",
+    "currentPasswordRequired": "كلمة المرور الحالية مطلوبة",
+    "newPasswordRequired": "كلمة المرور الجديدة مطلوبة",
+    "passwordMinLength": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
+    "passwordMismatch": "كلمات المرور غير متطابقة",
+    "passwordConfirmRequired": "يرجى تأكيد كلمة المرور",
+    "otpRequired": "رمز التحقق مطلوب",
+    "otpInvalid": "رمز التحقق يجب أن يكون 4-8 أرقام",
+    "otpFormat": "رمز التحقق يجب أن يكون 4-8 أرقام",
+    "passwordChangeCurrentRequired": "كلمة المرور الحالية مطلوبة لتغيير كلمة المرور"
+  },
+  "errors": {
+    "fetchFailed": "فشل تحميل البيانات",
+    "fetchFailedMessage": "تعذر تحميل البيانات. يرجى المحاولة مرة أخرى.",
+    "fetchDataMessage": "تعذر تحميل بيانات المزود. يرجى المحاولة مرة أخرى.",
+    "fetchTicketsMessage": "تعذر تحميل التذاكر. يرجى المحاولة مرة أخرى."
+  }
+}

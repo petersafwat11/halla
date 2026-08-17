@@ -1,0 +1,32 @@
+.container {
+  width: 100%;
+  margin-top: 2rem;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 1rem;
+  border-radius: 2rem;
+  font-size: 1.3rem;
+  font-weight: 500;
+  width: fit-content;
+}
+
+.statusBadgeClickable {
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.statusBadgeClickable:hover {
+  opacity: 0.8;
+}
+
+.statusBadgeReadonly {
+  cursor: default;
+}
+
+.statusBadgeText {
+  font-size: 1.3rem;
+  font-weight: 500;
+}

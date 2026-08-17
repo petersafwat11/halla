@@ -1,0 +1,119 @@
+.container {
+  display: flex;
+  width: 100%;
+  padding: 16px ;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.4rem;
+  border-radius: 12px;
+  border: 1px solid #c28e5c;
+  border-right: 6px solid #c28e5c;
+  background: #fff;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+.header {
+  display: flex;
+  gap: 1.6rem;
+}
+.title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  line-height: 2.8rem;
+  color: #2c2c2c;
+}
+.data {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  width: 100%;
+  align-items: flex-start;
+}
+
+.dataItem {
+  display: flex;
+  gap: 0.8rem;
+}
+.dataItemText {
+  color: #656565;
+  font-size: 1.4rem;
+  font-weight: 500;
+  line-height: 2rem;
+  letter-spacing: 0.014px;
+}
+.status {
+  display: flex;
+  padding: 0.3rem 1.1rem;
+  align-items: center;
+  border-radius: 9999px;
+  background: #eaf4ef;
+  color: #2a8c5b;
+  font-size: 1.2rem;
+  font-weight: 500;
+  line-height: 1.6rem;
+  letter-spacing: 0.06px;
+}
+.ended {
+  color: #c0392b;
+  background: #f9ebea;
+}
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 2.4rem;
+}
+.stats {
+  display: flex;
+  gap: 1.6rem;
+  width: 100%;
+}
+.yes,
+.no,
+.pending {
+  display: flex;
+  height: 4.7rem;
+  padding: 1.2rem 1.6rem;
+  justify-content: center;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 0.8rem;
+  font-size: 1.2rem;
+  font-weight: 400;
+  line-height: 1.6rem;
+  flex: 1;
+}
+.yes {
+  background: #eaf4ef;
+  color: #2a8c5b;
+}
+.no {
+  background: #f9ebea;
+  color: #c0392b;
+}
+.pending {
+  background: #f7f7f7;
+  color: #2c2c2c;
+}
+.yes span,
+.no span,
+.pending span {
+  font-weight: 700;
+}
+.seeStats {
+  display: flex;
+  height: 3.2rem;
+  padding: 1.6rem;
+  justify-content: center;
+  align-items: center;
+  gap: 1.2rem;
+  border-radius: 0.4rem;
+  border: 1px solid #d6b392;
+  background: #fff;
+  color: #6b4e33;
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.6rem;
+  letter-spacing: 0.06px;
+  cursor: pointer;
+  width: 100%;
+}

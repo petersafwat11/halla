@@ -1,0 +1,126 @@
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
+  padding: 1.6rem;
+}
+
+.modal {
+  background: var(--color-natural-50);
+  border-radius: 1.6rem;
+  width: 100%;
+  max-width: 56rem;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  padding: 2.4rem;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--color-secondary-900);
+}
+
+.closeButton {
+  background: transparent;
+  border: none;
+  font-size: 1.8rem;
+  cursor: pointer;
+  color: var(--color-natural-450);
+  padding: 0.4rem 0.8rem;
+  border-radius: 0.6rem;
+}
+
+.closeButton:hover {
+  background: var(--color-natural-150);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.sectionTitle {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--color-secondary-700);
+  margin: 0;
+}
+
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.filterRow {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  font-size: 1.4rem;
+  color: var(--color-secondary-900);
+  cursor: pointer;
+}
+
+.select {
+  padding: 1rem 1.2rem;
+  border-radius: 0.8rem;
+  border: 1px solid var(--color-natural-250);
+  font-size: 1.4rem;
+  font-family: inherit;
+  background: var(--color-natural-50);
+  color: var(--color-secondary-900);
+}
+
+.select:focus {
+  outline: none;
+  border-color: var(--color-primary-400);
+  box-shadow: 0 0 0 3px rgba(194, 142, 92, 0.18);
+}
+
+.muted {
+  color: var(--color-natural-450);
+  font-size: 1.3rem;
+  margin: 0;
+}
+
+.emptyTemplate {
+  background: var(--color-warning-50);
+  border: 1px solid var(--color-warning-100);
+  border-radius: 0.8rem;
+  padding: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  font-size: 1.3rem;
+  color: var(--color-warning-800);
+}
+
+.cta {
+  font-weight: 600;
+  color: var(--color-primary-700);
+  text-decoration: underline;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.8rem;
+  margin-top: 0.4rem;
+}

@@ -1,0 +1,221 @@
+.page_container {
+  width: 100%;
+  min-height: 100vh;
+  background: var(--bg-artboard);
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+.main_content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.4rem;
+  padding-bottom: 4rem;
+  width: 100%;
+}
+
+.header_wrapper,
+.stepper_wrapper {
+  width: 100%;
+  max-width: 96rem;
+}
+
+.content_wrapper {
+  display: flex;
+  width: 100%;
+  align-items: flex-start;
+  gap: 2.4rem;
+  position: relative;
+  justify-content: center;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.form_section {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+  width: 100%;
+  max-width: 85rem;
+  min-width: 0;
+}
+
+/* Step 4 has a side-by-side preview, so the form column gets a slightly
+   wider cap and the preview takes its natural width next to it. */
+.form_section_wide {
+  max-width: 82rem;
+}
+
+.form_card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.4rem;
+  align-self: stretch;
+  border-radius: 1.6rem;
+  background: var(--color-natural-50);
+  border: 1px solid var(--color-primary-100);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.05),
+    0 10px 32px rgba(81, 60, 39, 0.08);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* Preview column on step 4 — sticky so it tracks the form as you scroll. */
+.preview_wrapper {
+  position: sticky;
+  top: 2rem;
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+
+/* Tablet — drop the preview below the form */
+@media (max-width: 900px) {
+  .content_wrapper {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .form_section,
+  .form_section_wide {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .preview_wrapper {
+    position: static;
+    align-self: center;
+  }
+}
+
+/* Mobile styles */
+@media (max-width: 600px) {
+  .page_container {
+    padding: 2rem 0;
+  }
+
+  .header_wrapper,
+  .stepper_wrapper {
+    padding: 0 1.6rem;
+  }
+
+  .content_wrapper {
+    padding: 0 1.6rem;
+  }
+
+  .form_card {
+    border-radius: 1.2rem;
+  }
+}
+
+/* Mobile Preview Modal */
+.modal_overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 2rem;
+}
+
+.modal_content {
+  position: relative;
+  background: white;
+  border-radius: 1.2rem;
+  max-width: 36rem;
+  width: 100%;
+  max-height: 90vh;
+  overflow: hidden;
+}
+
+@media (max-width: 900px) {
+  .modal_content {
+    max-width: 34rem;
+    width: calc(100% - 2rem);
+    max-height: calc(100dvh - 2rem);
+    padding: 0;
+  }
+
+  .modal_close {
+    top: 0.5rem;
+    right: 0.5rem;
+    width: 2.8rem;
+    height: 2.8rem;
+    font-size: 2rem;
+  }
+}
+
+.modal_close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: #f5ece4;
+  border: none;
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: 50%;
+  font-size: 2.4rem;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b4e33;
+  transition: background 0.2s;
+}
+
+.modal_close:hover {
+  background: #ead9c8;
+}
+
+/* Loading Container */
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50vh;
+  width: 100%;
+}
+
+.loadingContainer p {
+  color: #656565;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* Live-event status banner */
+.live_event_banner {
+  margin: 1.2rem 2.4rem;
+  padding: 1.2rem 1.6rem;
+  border-radius: 0.8rem;
+  background: #fff7e6;
+  color: #7a4f01;
+  border: 1px solid #ffd591;
+  font-size: 1.4rem;
+}
+
+/* Fieldset reset — removes browser default border/padding around step content.
+   min-width: 0 is essential: a <fieldset> defaults to min-width: min-content,
+   which overrides width: 100% and lets inner horizontal scrollers (e.g. the
+   step-3 template carousel) balloon to their full content width and escape the
+   form card. Resetting it lets the flex chain shrink and the track scroll. */
+.fieldset_reset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  min-width: 0;
+  align-self: stretch;
+}

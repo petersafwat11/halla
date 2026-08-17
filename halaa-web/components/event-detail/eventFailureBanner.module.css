@@ -1,0 +1,266 @@
+/* Shared banner shell — soft elevated card with brand-tonal border. */
+.banner {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+  padding: 2rem 2.2rem;
+  border-radius: 1.6rem;
+  margin: 1.6rem 0;
+  text-align: start;
+  border: 1px solid transparent;
+  box-shadow: 0 1px 2px var(--color-black-10), 0 8px 24px -16px var(--color-black-20);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Failed state ── soft red, accented top stripe. */
+.failed {
+  background: linear-gradient(180deg, var(--color-error-50) 0%, #ffffff 100%);
+  border-color: var(--color-error-100);
+  color: var(--color-error-800);
+}
+
+.failed::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
+  top: 0;
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    var(--color-error-400) 0%,
+    var(--color-error-600) 100%
+  );
+}
+
+/* ── Retrying state ── warm warning, slow shimmering top stripe. */
+.retrying {
+  background: linear-gradient(180deg, var(--color-warning-50) 0%, #ffffff 100%);
+  border-color: var(--color-warning-100);
+  color: var(--color-warning-900);
+}
+
+.retrying::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
+  top: 0;
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    var(--color-warning-300) 0%,
+    var(--color-warning-500) 50%,
+    var(--color-warning-300) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2.4s linear infinite;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 0% 0%; }
+  100% { background-position: 200% 0%; }
+}
+
+/* ── Header row: icon + title ── */
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.iconWrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.failed .iconWrap {
+  background: var(--color-error-100);
+  color: var(--color-error-700);
+}
+
+.retrying .iconWrap {
+  background: var(--color-warning-100);
+  color: var(--color-warning-700);
+}
+
+/* Spinning ring for the retry icon. */
+.spinner {
+  width: 2.2rem;
+  height: 2.2rem;
+  animation: spin 1.4s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.icon {
+  width: 2.2rem;
+  height: 2.2rem;
+}
+
+.title {
+  font-size: 1.7rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 0;
+}
+
+.message {
+  font-size: 1.4rem;
+  line-height: 1.7;
+  color: var(--color-natural-700);
+}
+
+.failed .message,
+.retrying .message {
+  color: inherit;
+  opacity: 0.9;
+}
+
+/* ── Progress dots: visualize attempt N of MAX ── */
+.progress {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.4rem;
+}
+
+.dot {
+  width: 0.9rem;
+  height: 0.9rem;
+  border-radius: 50%;
+  background: var(--color-warning-100);
+  border: 1px solid var(--color-warning-200);
+  transition: transform 0.2s ease;
+}
+
+.dotActive {
+  background: var(--color-warning-500);
+  border-color: var(--color-warning-500);
+  transform: scale(1.15);
+}
+
+.dotCurrent {
+  background: var(--color-warning-500);
+  border-color: var(--color-warning-500);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--color-warning-300); }
+  50%      { box-shadow: 0 0 0 6px rgba(211, 130, 0, 0); }
+}
+
+/* ── Countdown pill ── */
+.countdownPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: #ffffff;
+  border: 1px solid var(--color-warning-200);
+  color: var(--color-warning-800);
+  border-radius: 999px;
+  padding: 0.6rem 1.2rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+  align-self: flex-start;
+  font-variant-numeric: tabular-nums;
+}
+
+.countdownDot {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: var(--color-warning-500);
+  animation: pulse 1.6s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+/* ── Failure-state extras ── */
+.reason {
+  font-size: 1.3rem;
+  background: #ffffff;
+  border: 1px solid var(--color-error-100);
+  padding: 0.8rem 1.2rem;
+  border-radius: 0.8rem;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-self: flex-start;
+  color: var(--color-error-800);
+}
+
+.reason code {
+  font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace;
+  font-size: 1.25rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+  margin-top: 0.4rem;
+}
+
+.retryButton {
+  background: var(--color-error-600);
+  color: #ffffff;
+  border: none;
+  border-radius: 1rem;
+  padding: 1.1rem 1.8rem;
+  font-size: 1.4rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.retryButton:hover:not(:disabled) {
+  background: var(--color-error-700);
+}
+
+.retryButton:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.retryButton:disabled {
+  background: var(--color-error-300);
+  cursor: not-allowed;
+}
+
+.error {
+  font-size: 1.3rem;
+  color: var(--color-error-800);
+  background: #ffffff;
+  border: 1px solid var(--color-error-100);
+  padding: 0.8rem 1.2rem;
+  border-radius: 0.8rem;
+}
+
+/* ── Small screens ── */
+@media (max-width: 480px) {
+  .banner {
+    padding: 1.6rem 1.4rem;
+    gap: 1.2rem;
+  }
+  .iconWrap {
+    width: 3.4rem;
+    height: 3.4rem;
+  }
+  .spinner,
+  .icon {
+    width: 1.8rem;
+    height: 1.8rem;
+  }
+  .title {
+    font-size: 1.5rem;
+  }
+}

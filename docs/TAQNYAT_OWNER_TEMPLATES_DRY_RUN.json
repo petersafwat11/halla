@@ -1,0 +1,1770 @@
+{
+  "manifestHash": "59be0bb744461abf38f6ef606032bce0d3849c94827596e6987090695761f5db",
+  "templateCount": 21,
+  "templates": [
+    {
+      "name": "halaa_wedding_reply_ar_v1",
+      "category": "wedding",
+      "halaaCategory": "wedding",
+      "invitationMode": "reply_and_qr",
+      "varMapping": [
+        {
+          "placeholder": "{{1}}",
+          "sourceKey": "guest.name"
+        },
+        {
+          "placeholder": "{{2}}",
+          "sourceKey": "host.name"
+        },
+        {
+          "placeholder": "{{3}}",
+          "sourceKey": "eventDetails.title"
+        },
+        {
+          "placeholder": "{{4}}",
+          "sourceKey": "eventDetails.dayFormatted"
+        },
+        {
+          "placeholder": "{{5}}",
+          "sourceKey": "eventDetails.dateFormatted"
+        },
+        {
+          "placeholder": "{{6}}",
+          "sourceKey": "eventDetails.time"
+        },
+        {
+          "placeholder": "{{7}}",
+          "sourceKey": "eventDetails.location.address"
+        }
+      ],
+      "payload": {
+        "name": "halaa_wedding_reply_ar_v1",
+        "category": "UTILITY",
+        "language": "ar",
+        "allow_category_change": false,
+        "components": [
+          {
+            "type": "HEADER",
+            "format": "IMAGE",
+            "example": {
+              "header_handle": [
+                "https://halaa.com.sa/logo.png"
+              ]
+            }
+          },
+          {
+            "type": "BODY",
+            "text": "المكرم/ة {{1}}\nيا هلا...\nيسرّ {{2}} دعوتك لحضور {{3}} ومشاركتنا هذه المناسبة السعيدة.\nاليوم: {{4}}\nالتاريخ: {{5}}\nالوقت: {{6}}\nالمكان: {{7}}\n\nيرجى تأكيد الحضور أو الاعتذار عبر أحد الأزرار أدناه.\n\nللاستفسارات، يرجى التواصل مع خدمة المدعوين:\n+966552619282",
+            "example": {
+              "body_text": [
+                [
+                  "خالد بن أحمد",
+                  "عائلة أحمد ونورة",
+                  "حفل الزفاف",
+                  "الثلاثاء",
+                  "15 سبتمبر 2026",
+                  "7:30 مساءً",
+                  "فندق الريتز كارلتون – الرياض"
+                ]
+              ]
+            }
+          },
+          {
+            "type": "FOOTER",
+            "text": "منصة هلا – إدارة الدعوات"
+          },
+          {
+            "type": "BUTTONS",
+            "buttons": [
+              {
+                "type": "QUICK_REPLY",
+                "text": "سأحضر"
+              },
+              {
+                "type": "QUICK_REPLY",
+                "text": "سأعتذر"
+              },
+              {
+                "type": "QUICK_REPLY",
+                "text": "ربما"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "halaa_wedding_plain_ar_v1",
+      "category": "wedding",
+      "halaaCategory": "wedding",
+      "invitationMode": "none",
+      "varMapping": [
+        {
+          "placeholder": "{{1}}",
+          "sourceKey": "guest.name"
+        },
+        {
+          "placeholder": "{{2}}",
+          "sourceKey": "host.name"
+        },
+        {
+          "placeholder": "{{3}}",
+          "sourceKey": "eventDetails.title"
+        },
+        {
+          "placeholder": "{{4}}",
+          "sourceKey": "eventDetails.dayFormatted"
+        },
+        {
+          "placeholder": "{{5}}",
+          "sourceKey": "eventDetails.dateFormatted"
+        },
+        {
+          "placeholder": "{{6}}",
+          "sourceKey": "eventDetails.time"
+        },
+        {
+          "placeholder": "{{7}}",
+          "sourceKey": "eventDetails.location.address"
+        }
+      ],
+      "payload": {
+        "name": "halaa_wedding_plain_ar_v1",
+        "category": "UTILITY",
+        "language": "ar",
+        "allow_category_change": false,
+        "components": [
+          {
+            "type": "HEADER",
+            "format": "IMAGE",
+            "example": {
+              "header_handle": [
+                "https://halaa.com.sa/logo.png"
+              ]
+            }
+          },
+          {
+            "type": "BODY",
+            "text": "المكرم/ة {{1}}\nيا هلا...\nيسرّ {{2}} دعوتك لحضور {{3}} ومشاركتنا هذه المناسبة السعيدة.\nاليوم: {{4}}\nالتاريخ: {{5}}\nالوقت: {{6}}\nالمكان: {{7}}\n\nللاستفسارات، يرجى التواصل مع خدمة المدعوين:\n+966552619282",
+            "example": {
+              "body_text": [
+                [
+                  "خالد بن أحمد",
+                  "عائلة أحمد ونورة",
+                  "حفل الزفاف",
+                  "الثلاثاء",
+                  "15 سبتمبر 2026",
+                  "7:30 مساءً",
+                  "فندق الريتز كارلتون – الرياض"
+                ]
+              ]
+            }
+          },
+          {
+            "type": "FOOTER",
+            "text": "منصة هلا – إدارة الدعوات"
+          }
+        ]
+      }
+    },
+    {
+      "name": "halaa_wedding_qr_ar_v1",
+      "category": "wedding",
+      "halaaCategory": "wedding",
+      "invitationMode": "qr_only",
+      "varMapping": [
+        {
+          "placeholder": "{{1}}",
+          "sourceKey": "guest.name"
+        },
+        {
+          "placeholder": "{{2}}",
+          "sourceKey": "host.name"
+        },
+        {
+          "placeholder": "{{3}}",
+          "sourceKey": "eventDetails.title"
+        },
+        {
+          "placeholder": "{{4}}",
+          "sourceKey": "eventDetails.dayFormatted"
+        },
+        {
+          "placeholder": "{{5}}",
+          "sourceKey": "eventDetails.dateFormatted"
+        },
+        {
+          "placeholder": "{{6}}",
+          "sourceKey": "eventDetails.time"
+        },
+        {
+          "placeholder": "{{7}}",
+          "sourceKey": "eventDetails.location.address"
+        }
+      ],
+      "payload": {
+        "name": "halaa_wedding_qr_ar_v1",
+        "category": "UTILITY",
+        "language": "ar",
+        "allow_category_change": false,
+        "components": [
+          {
+            "type": "HEADER",
+            "format": "IMAGE",
+            "example": {
+              "header_handle": [
+                "https://halaa.com.sa/logo.png"
+              ]
+            }
+          },
+          {
+            "type": "BODY",
+            "text": "المكرم/ة {{1}}\nيا هلا...\nيسرّ {{2}} دعوتك لحضور {{3}} ومشاركتنا هذه المناسبة السعيدة.\nاليوم: {{4}}\nالتاريخ: {{5}}\nالوقت: {{6}}\nالمكان: {{7}}\n\nلعرض رمز الدخول الخاص بك، استخدم الزر أدناه.\n\nللاستفسارات، يرجى التواصل مع خدمة المدعوين:\n+966552619282",
+            "example": {
+              "body_text": [
+                [
+                  "خالد بن أحمد",
+                  "عائلة أحمد ونورة",
+                  "حفل الزفاف",
+                  "الثلاثاء",
+                  "15 سبتمبر 2026",
+                  "7:30 مساءً",
+                  "فندق الريتز كارلتون – الرياض"
+                ]
+              ]
+            }
+          },
+          {
+            "type": "FOOTER",
+            "text": "منصة هلا – إدارة الدعوات"
+          },
+          {
+            "type": "BUTTONS",
+            "buttons": [
+              {
+                "type": "URL",
+                "text": "عرض رمز الدخول",
+                "url": "https://halaa.com.sa/ar/invitation/{{1}}",
+                "example": [
+                  "https://halaa.com.sa/ar/invitation/TEST123"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "halaa_engagement_reply_ar_v1",
+      "category": "engagement",
+      "halaaCategory": "engagement",
+      "invitationMode": "reply_and_qr",
+      "varMapping": [
+        {
+          "placeholder": "{{1}}",
+          "sourceKey": "guest.name"
+        },
+        {
+          "placeholder": "{{2}}",
+          "sourceKey": "host.name"
+        },
+        {
+          "placeholder": "{{3}}",
+          "sourceKey": "eventDetails.title"
+        },
+        {
+          "placeholder": "{{4}}",
+          "sourceKey": "eventDetails.dayFormatted"
+        },
+        {
+          "placeholder": "{{5}}",
+          "sourceKey": "eventDetails.dateFormatted"
+        },
+        {
+          "placeholder": "{{6}}",
+          "sourceKey": "eventDetails.time"
+        },
+        {
+          "placeholder": "{{7}}",
+          "sourceKey": "eventDetails.location.address"
+        }
+      ],
+      "payload": {
+        "name": "halaa_engagement_reply_ar_v1",
+        "category": "UTILITY",
+        "language": "ar",
+        "allow_category_change": false,
+        "components": [
+          {
+            "type": "HEADER",
+            "format": "IMAGE",
+            "example": {
+              "header_handle": [
+                "https://halaa.com.sa/logo.png"
+              ]
+            }
+          },
+          {
+            "type": "BODY",
+            "text": "المكرم/ة {{1}}\nيا هلا...\nيسرّ {{2}} دعوتك لحضور {{3}} ومشاركتنا هذه المناسبة السعيدة.\nاليوم: {{4}}\nالتاريخ: {{5}}\nالوقت: {{6}}\nالمكان: {{7}}\n\nيرجى تأكيد الحضور أو الاعتذار عبر أحد الأزرار أدناه.\n\nللاستفسارات، يرجى التواصل مع خدمة المدعوين:\n+966552619282",
+            "example": {
+              "body_text": [
+                [
+                  "سارة محمد",
+                  "عائلة خالد ومنى",
+                  "حفل الخطوبة",
+                  "الخميس",
+                  "22 أغسطس 2026",
+                  "8:30 مساءً",
+                  "قاعة ليالي نجد – جدة"
+                ]
+              ]
+            }
+          },
+          {
+            "type": "FOOTER",
+            "text": "منصة هلا – إدارة الدعوات"
+          },
+          {
+            "type": "BUTTONS",
+            "buttons": [
+              {
+                "type": "QUICK_REPLY",
+                "text": "سأحضر"
+              },
+              {
+                "type": "QUICK_REPLY",
+                "text": "سأعتذر"
+              },
+              {
+                "type": "QUICK_REPLY",
+                "text": "ربما"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "halaa_engagement_plain_ar_v1",
+      "category": "engagement",
+      "halaaCategory": "engagement",
+      "invitationMode": "none",
+      "varMapping": [
+        {
+          "placeholder": "{{1}}",
+          "sourceKey": "guest.name"
+        },
+        {
+          "placeholder": "{{2}}",
+          "sourceKey": "host.name"
+        },
+        {
+          "placeholder": "{{3}}",
+          "sourceKey": "eventDetails.title"
+        },
+        {
+          "placeholder": "{{4}}",
+          "sourceKey": "eventDetails.dayFormatted"
+        },
+        {
+          "placeholder": "{{5}}",
+          "sourceKey": "eventDetails.dateFormatted"
+        },
+        {
+          "placeholder": "{{6}}",
+          "sourceKey": "eventDetails.time"
+        },
+        {
+          "placeholder": "{{7}}",
+          "sourceKey": "eventDetails.location.address"
+        }
+      ],
+      "payload": {
+        "name": "halaa_engagement_plain_ar_v1",
+        "category": "UTILITY",
+        "language": "ar",
+        "allow_category_change": false,
+        "components": [
+          {
+            "type": "HEADER",
+            "format": "IMAGE",
+            "example": {
+              "header_handle": [
+                "https://halaa.com.sa/logo.png"
+              ]
+            }
+          },
+          {
+            "type": "BODY",
+            "text": "المكرم/ة {{1}}\nيا هلا...\nيسرّ {{2}} دعوتك لحضور {{3}} ومشاركتنا هذه المناسبة السعيدة.\nاليوم: {{4}}\nالتاريخ: {{5}}\nالوقت: {{6}}\nالمكان: {{7}}\n\nللاستفسارات، يرجى التواصل مع خدمة المدعوين:\n+966552619282",
+            "example": {
+              "body_text": [
+                [
+                  "سارة محمد",
+                  "عائلة خالد ومنى",
+                  "حفل الخطوبة",
+                  "الخميس",
+                  "22 أغسطس 2026",
+                  "8:30 مساءً",
+                  "قاعة ليالي نجد – جدة"
+                ]
+              ]
+            }
+          },
+          {
+            "type": "FOOTER",
+            "text": "منصة هلا – إدارة الدعوات"
+          }
+        ]
+      }
+    },
+    {
+      "name": "halaa_engagement_qr_ar_v1",
+      "category": "engagement",
+      "halaaCategory": "engagement",
+      "invitationMode": "qr_only",
+      "varMapping": [
+        {
+          "placeholder": "{{1}}",
+          "sourceKey": "guest.name"
+        },
+        {
+          "placeholder": "{{2}}",
+          "sourceKey": "host.name"
+        },
+        {
+          "placeholder": "{{3}}",
+          "sourceKey": "eventDetails.title"
+        },
+        {
+          "placeholder": "{{4}}",
+          "sourceKey": "eventDetails.dayFormatted"
+        },
+        {
+          "placeholder": "{{5}}",
+          "sourceKey": "eventDetails.dateFormatted"
+        },
+        {
+          "placeholder": "{{6}}",
+          "sourceKey": "eventDetails.time"
+        },
+        {
+          "placeholder": "{{7}}",
+          "sourceKey": "eventDetails.location.address"
+        }
+      ],
+      "payload": {
+        "name": "halaa_engagement_qr_ar_v1",
+        "category": "UTILITY",
+        "language": "ar",
+        "allow_category_change": false,
+        "components": [
+          {
+            "type": "HEADER",
+            "format": "IMAGE",
+            "example": {
+              "header_handle": [
+                "https://halaa.com.sa/logo.png"
+              ]
+            }
+          },
+          {
+            "type": "BODY",
+            "text": "المكرم/ة {{1}}\nيا هلا...\nيسرّ {{2}} دعوتك لحضور {{3}} ومشاركتنا هذه المناسبة السعيدة.\nاليوم: {{4}}\nالتاريخ: {{5}}\nالوقت: {{6}}\nالمكان: {{7}}\n\nلعرض رمز الدخول الخاص بك، استخدم الزر أدناه.\n\nللاستفسارات، يرجى التواصل مع خدمة المدعوين:\n+966552619282",
+            "example": {
+              "body_text": [
+                [
+                  "سارة محمد",
+                  "عائلة خالد ومنى",
+                  "حفل الخطوبة",
+                  "الخميس",
+                  "22 أغسطس 2026",
+                  "8:30 مساءً",
+                  "قاعة ليالي نجد – جدة"
+                ]
+              ]
+            }
+          },
+          {
+            "type": "FOOTER",
+            "text": "منصة هلا – إدارة الدعوات"
+          },
+          {
+            "type": "BUTTONS",
+            "buttons": [
+              {
+                "type": "URL",
+                "text": "عرض رمز الدخول",
+                "url": "https://halaa.com.sa/ar/invitation/{{1}}",
+                "example": [
+                  "https://halaa.com.sa/ar/invitation/TEST123"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "halaa_conference_reply_ar_v1",
+      "category": "conference",
+      "halaaCategory": "conference",
+      "invitationMode": "reply_and_qr",
+      "varMapping": [
+        {
+          "placeholder": "{{1}}",
+          "sourceKey": "guest.name"
+        },
+        {
+          "placeholder": "{{2}}",
+          "sourceKey": "host.name"
+        },
+        {
+          "placeholder": "{{3}}",
+          "sourceKey": "eventDetails.title"
+        },
+        {
+          "placeholder": "{{4}}",
+          "sourceKey": "eventDetails.dayFormatted"
+        },
+        {
+          "placeholder": "{{5}}",
+          "sourceKey": "eventDetails.dateFormatted"
+        },
+        {
+          "placeholder": "{{6}}",
+          "sourceKey": "eventDetails.time"
+        },
+        {
+          "placeholder": "{{7}}",
+          "sourceKey": "eventDetails.location.address"
+        }
+      ],
+      "payload": {
+        "name": "halaa_conference_reply_ar_v1",
+        "category": "UTILITY",
+        "language": "ar",
+        "allow_category_change": false,
+        "components": [
+          {
+            "type": "HEADER",
+            "format": "IMAGE",
+            "example": {
+              "header_handle": [
+                "https://halaa.com.sa/logo.png"
+              ]
+            }
+          },
+          {
+            "type": "BODY",
+            "text": "الأستاذ/ة {{1}}\nيا هلا...\nيسرّ {{2}} دعوتك لحضور {{3}}، والمشاركة في فعالية تجمع نخبة من المختصين والمهتمين لتبادل الخبرات وبناء فرص تواصل قيّمة.\nاليوم: {{4}}\nالتاريخ: {{5}}\nالوقت: {{6}}\nالموقع: {{7}}\n\nيرجى تأكيد الحضور أو الاعتذار عبر أحد الأزرار أدناه.\n\nللاستفسارات، يرجى التواصل مع خدمة المدعوين:\n+966552619282",
+            "example": {
+              "body_text": [
+                [
+                  "أحمد محمد",
+                  "مركز ريادة الأعمال السعودي",
+                  "ملتقى مستقبل الأعمال 2026",
+                  "الثلاثاء",
+                  "15 سبتمبر 2026",
+                  "7:00 مساءً",
+                  "فندق الهيلتون – الرياض"
+                ]
+              ]
+            }
+          },
+          {
+            "type": "FOOTER",
+            "text": "منصة هلا – إدارة الدعوات"
+          },
+          {
+            "type": "BUTTONS",
+            "buttons": [
+              {
+                "type": "QUICK_REPLY",
+                "text": "سأحضر"
+              },
+              {
+                "type": "QUICK_REPLY",
+                "text": "سأعتذر"
+              },
+              {
+                "type": "QUICK_REPLY",
+                "text": "ربما"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "halaa_conference_plain_ar_v1",
+      "category": "conference",
+      "halaaCategory": "conference",
+      "invitationMode": "none",
+      "varMapping": [
+        {
+          "placeholder": "{{1}}",
+          "sourceKey": "guest.name"
+        },
+        {
+          "placeholder": "{{2}}",
+          "sourceKey": "host.name"
+        },
+        {
+          "placeholder": "{{3}}",
+          "sourceKey": "eventDetails.title"
+        },
+        {
+          "placeholder": "{{4}}",
+          "sourceKey": "eventDetails.dayFormatted"
+        },
+        {
+          "placeholder": "{{5}}",
+          "sourceKey": "eventDetails.dateFormatted"
+        },
+        {
+          "placeholder": "{{6}}",
+          "sourceKey": "eventDetails.time"
+        },
+        {
+          "placeholder": "{{7}}",
+          "sourceKey": "eventDetails.location.address"
+        }
+      ],
+      "payload": {
+        "name": "halaa_conference_plain_ar_v1",
+        "category": "UTILITY",
+        "language": "ar",
+        "allow_category_change": false,
+        "components": [
+          {
+            "type": "HEADER",
+            "format": "IMAGE",
+            "example": {
+              "header_handle": [
+                "https://halaa.com.sa/logo.png"
+              ]
+            }
+          },
+          {
+            "type": "BODY",
+            "text": "الأستاذ/ة {{1}}\nيا هلا...\nيسرّ {{2}} دعوتك لحضور {{3}}، والمشاركة في فعالية تجمع نخبة من المختصين والمهتمين لتبادل الخبرات وبناء فرص تواصل قيّمة.\nاليوم: {{4}}\nالتاريخ: {{5}}\nالوقت: {{6}}\nالموقع: {{7}}\n\nللاستفسارات، يرجى التواصل مع خدمة المدعوين:\n+966552619282",
+            "example": {
+              "body_text": [
+                [
+                  "أحمد محمد",
+                  "مركز ريادة الأعمال السعودي",
+                  "ملتقى مستقبل الأعمال 2026",
+                  "الثلاثاء",
+                  "15 سبتمبر 2026",
+                  "7:00 مساءً",
+                  "فندق الهيلتون – الرياض"
+                ]
+              ]
+            }
+          },
+          {
+            "type": "FOOTER",
+            "text": "منصة هلا – إدارة الدعوات"
+          }
+        ]
+      }
+    },
+    {
+      "name": "halaa_conference_qr_ar_v1",
+      "category": "conference",
+      "halaaCategory": "conference",
+      "invitationMode": "qr_only",
+      "varMapping": [
+        {
+          "placeholder": "{{1}}",
+          "sourceKey": "guest.name"
+        },
+        {
+          "placeholder": "{{2}}",
+          "sourceKey": "host.name"
+        },
+        {
+          "placeholder": "{{3}}",
+          "sourceKey": "eventDetails.title"
+        },
+        {
+          "placeholder": "{{4}}",
+          "sourceKey": "eventDetails.dayFormatted"
+        },
+        {
+          "placeholder": "{{5}}",
+          "sourceKey": "eventDetails.dateFormatted"
+        },
+        {
+          "placeholder": "{{6}}",
+          "sourceKey": "eventDetails.time"
+        },
+        {
+          "placeholder": "{{7}}",
+          "sourceKey": "eventDetails.location.address"
+        }
+      ],
+      "payload": {
+        "name": "halaa_conference_qr_ar_v1",
+        "category": "UTILITY",
+        "language": "ar",
+        "allow_category_change": false,
+        "components": [
+          {
+            "type": "HEADER",
+            "format": "IMAGE",
+            "example": {
+              "header_handle": [
+                "https://halaa.com.sa/logo.png"
+              ]
+            }
+          },
+          {
+            "type": "BODY",
+            "text": "الأستاذ/ة {{1}}\nيا هلا...\nيسرّ {{2}} دعوتك لحضور {{3}}، والمشاركة في فعالية تجمع نخبة من المختصين والمهتمين لتبادل الخبرات وبناء فرص تواصل قيّمة.\nاليوم: {{4}}\nالتاريخ: {{5}}\nالوقت: {{6}}\nالموقع: {{7}}\n\nلعرض رمز الدخول الخاص بك، استخدم الزر أدناه.\n\nللاستفسارات، يرجى التواصل مع خدمة المدعوين:\n+966552619282",
+            "example": {
+              "body_text": [
+                [
+                  "أحمد محمد",
+                  "مركز ريادة الأعمال السعودي",
+                  "ملتقى مستقبل الأعمال 2026",
+                  "الثلاثاء",
+                  "15 سبتمبر 2026",
+                  "7:00 مساءً",
+                  "فندق الهيلتون – الرياض"
+                ]
+              ]
+            }
+          },
+          {
+            "type": "FOOTER",
+            "text": "منصة هلا – إدارة الدعوات"
+          },
+          {
+            "type": "BUTTONS",
+            "buttons": [
+              {
+                "type": "URL",
+                "text": "عرض رمز الدخول",
+                "url": "https://halaa.com.sa/ar/invitation/{{1}}",
+                "example": [
+                  "https://halaa.com.sa/ar/invitation/TEST123"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "halaa_ladies_event_reply_ar_v1",
+      "category": "ladies_event",
+      "halaaCategory": "other",
+      "invitationMode": "reply_and_qr",
+      "varMapping": [
+        {
+          "placeholder": "{{1}}",
+          "sourceKey": "guest.name"
+        },
+        {
+          "placeholder": "{{2}}",
+          "sourceKey": "host.name"
+        },
+        {
+          "placeholder": "{{3}}",
+          "sourceKey": "eventDetails.title"
+        },
+        {
+          "placeholder": "{{4}}",
+          "sourceKey": "eventDetails.dayFormatted"
+        },
+        {
+          "placeholder": "{{5}}",
+          "sourceKey": "eventDetails.dateFormatted"
+        },
+        {
+          "placeholder": "{{6}}",
+          "sourceKey": "eventDetails.time"
+        },
+        {
+          "placeholder": "{{7}}",
+          "sourceKey": "eventDetails.location.address"
+        }
+      ],
+      "payload": {
+        "name": "halaa_ladies_event_reply_ar_v1",
+        "category": "UTILITY",
+        "language": "ar",
+        "allow_category_change": false,
+        "components": [
+          {
+            "type": "HEADER",
+            "format": "IMAGE",
+            "example": {
+              "header_handle": [
+                "https://halaa.com.sa/logo.png"
+              ]
+            }
+          },
+          {
+            "type": "BODY",
+            "text": "المكرمة {{1}}\nيا هلا...\nتتشرف {{2}} بدعوتك لحضور {{3}} ومشاركتنا أجواء هذه المناسبة الجميلة.\nاليوم: {{4}}\nالتاريخ: {{5}}\nالوقت: {{6}}\nالموقع: {{7}}\n\nيرجى تأكيد الحضور أو الاعتذار عبر أحد الأزرار أدناه.\n\nللاستفسارات، يرجى التواصل مع خدمة المدعوين:\n+966552619282",
+            "example": {
+              "body_text": [
+                [
+                  "نورة خالد",
+                  "منال",
+                  "ليلة نسائية خاصة",
+                  "الخميس",
+                  "22 أغسطس 2026",
+                  "8:30 مساءً",
+                  "قاعة ليالي نجد – جدة"
+                ]
+              ]
+            }
+          },
+          {
+            "type": "FOOTER",
+            "text": "منصة هلا – إدارة الدعوات"
+          },
+          {
+            "type": "BUTTONS",
+            "buttons": [
+              {
+                "type": "QUICK_REPLY",
+                "text": "سأحضر"
+              },
+              {
+                "type": "QUICK_REPLY",
+                "text": "سأعتذر"
+              },
+              {
+                "type": "QUICK_REPLY",
+                "text": "ربما"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "halaa_ladies_event_plain_ar_v1",
+      "category": "ladies_event",
+      "halaaCategory": "other",
+      "invitationMode": "none",
+      "varMapping": [
+        {
+          "placeholder": "{{1}}",
+          "sourceKey": "guest.name"
+        },
+        {
+          "placeholder": "{{2}}",
+          "sourceKey": "host.name"
+        },
+        {
+          "placeholder": "{{3}}",
+          "sourceKey": "eventDetails.title"
+        },
+        {
+          "placeholder": "{{4}}",
+          "sourceKey": "eventDetails.dayFormatted"
+        },
+        {
+          "placeholder": "{{5}}",
+          "sourceKey": "eventDetails.dateFormatted"
+        },
+        {
+          "placeholder": "{{6}}",
+          "sourceKey": "eventDetails.time"
+        },
+        {
+          "placeholder": "{{7}}",
+          "sourceKey": "eventDetails.location.address"
+        }
+      ],
+      "payload": {
+        "name": "halaa_ladies_event_plain_ar_v1",
+        "category": "UTILITY",
+        "language": "ar",
+        "allow_category_change": false,
+        "components": [
+          {
+            "type": "HEADER",
+            "format": "IMAGE",
+            "example": {
+              "header_handle": [
+                "https://halaa.com.sa/logo.png"
+              ]
+            }
+          },
+          {
+            "type": "BODY",
+            "text": "المكرمة {{1}}\nيا هلا...\nتتشرف {{2}} بدعوتك لحضور {{3}} ومشاركتنا أجواء هذه المناسبة الجميلة.\nاليوم: {{4}}\nالتاريخ: {{5}}\nالوقت: {{6}}\nالموقع: {{7}}\n\nللاستفسارات، يرجى التواصل مع خدمة المدعوين:\n+966552619282",
+            "example": {
+              "body_text": [
+                [
+                  "نورة خالد",
+                  "منال",
+                  "ليلة نسائية خاصة",
+                  "الخميس",
+                  "22 أغسطس 2026",
+                  "8:30 مساءً",
+                  "قاعة ليالي نجد – جدة"
+                ]
+              ]
+            }
+          },
+          {
+            "type": "FOOTER",
+            "text": "منصة هلا – إدارة الدعوات"
+          }
+        ]
+      }
+    },
+    {
+      "name": "halaa_ladies_event_qr_ar_v1",
+      "category": "ladies_event",
+      "halaaCategory": "other",
+      "invitationMode": "qr_only",
+      "varMapping": [
+        {
+          "placeholder": "{{1}}",
+          "sourceKey": "guest.name"
+        },
+        {
+          "placeholder": "{{2}}",
+          "sourceKey": "host.name"
+        },
+        {
+          "placeholder": "{{3}}",
+          "sourceKey": "eventDetails.title"
+        },
+        {
+          "placeholder": "{{4}}",
+          "sourceKey": "eventDetails.dayFormatted"
+        },
+        {
+          "placeholder": "{{5}}",
+          "sourceKey": "eventDetails.dateFormatted"
+        },
+        {
+          "placeholder": "{{6}}",
+          "sourceKey": "eventDetails.time"
+        },
+        {
+          "placeholder": "{{7}}",
+          "sourceKey": "eventDetails.location.address"
+        }
+      ],
+      "payload": {
+        "name": "halaa_ladies_event_qr_ar_v1",
+        "category": "UTILITY",
+        "language": "ar",
+        "allow_category_change": false,
+        "components": [
+          {
+            "type": "HEADER",
+            "format": "IMAGE",
+            "example": {
+              "header_handle": [
+                "https://halaa.com.sa/logo.png"
+              ]
+            }
+          },
+          {
+            "type": "BODY",
+            "text": "المكرمة {{1}}\nيا هلا...\nتتشرف {{2}} بدعوتك لحضور {{3}} ومشاركتنا أجواء هذه المناسبة الجميلة.\nاليوم: {{4}}\nالتاريخ: {{5}}\nالوقت: {{6}}\nالموقع: {{7}}\n\nلعرض رمز الدخول الخاص بك، استخدم الزر أدناه.\n\nللاستفسارات، يرجى التواصل مع خدمة المدعوين:\n+966552619282",
+            "example": {
+              "body_text": [
+                [
+                  "نورة خالد",
+                  "منال",
+                  "ليلة نسائية خاصة",
+                  "الخميس",
+                  "22 أغسطس 2026",
+                  "8:30 مساءً",
+                  "قاعة ليالي نجد – جدة"
+                ]
+              ]
+            }
+          },
+          {
+            "type": "FOOTER",
+            "text": "منصة هلا – إدارة الدعوات"
+          },
+          {
+            "type": "BUTTONS",
+            "buttons": [
+              {
+                "type": "URL",
+                "text": "عرض رمز الدخول",
+                "url": "https://halaa.com.sa/ar/invitation/{{1}}",
+                "example": [
+                  "https://halaa.com.sa/ar/invitation/TEST123"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "halaa_baby_shower_reply_ar_v1",
+      "category": "baby_shower",
+      "halaaCategory": "other",
+      "invitationMode": "reply_and_qr",
+      "varMapping": [
+        {
+          "placeholder": "{{1}}",
+          "sourceKey": "guest.name"
+        },
+        {
+          "placeholder": "{{2}}",
+          "sourceKey": "host.name"
+        },
+        {
+          "placeholder": "{{3}}",
+          "sourceKey": "eventDetails.title"
+        },
+        {
+          "placeholder": "{{4}}",
+          "sourceKey": "eventDetails.dayFormatted"
+        },
+        {
+          "placeholder": "{{5}}",
+          "sourceKey": "eventDetails.dateFormatted"
+        },
+        {
+          "placeholder": "{{6}}",
+          "sourceKey": "eventDetails.time"
+        },
+        {
+          "placeholder": "{{7}}",
+          "sourceKey": "eventDetails.location.address"
+        }
+      ],
+      "payload": {
+        "name": "halaa_baby_shower_reply_ar_v1",
+        "category": "UTILITY",
+        "language": "ar",
+        "allow_category_change": false,
+        "components": [
+          {
+            "type": "HEADER",
+            "format": "IMAGE",
+            "example": {
+              "header_handle": [
+                "https://halaa.com.sa/logo.png"
+              ]
+            }
+          },
+          {
+            "type": "BODY",
+            "text": "أهلًا وسهلًا {{1}}\nالحمد لله الذي أتمّ علينا نعمته ووهبنا أجمل عطاياه.\nيسرّ {{2}} دعوتك لحضور {{3}} ومشاركتنا فرحة استقبال المولود، وبحضورك تكبر فرحتنا.\nاليوم: {{4}}\nالتاريخ: {{5}}\nالوقت: {{6}}\nالموقع: {{7}}\n\nيرجى تأكيد الحضور أو الاعتذار عبر أحد الأزرار أدناه.\n\nللاستفسارات، يرجى التواصل مع خدمة المدعوين:\n+966552619282",
+            "example": {
+              "body_text": [
+                [
+                  "سارة",
+                  "لينا وعبدالعزيز",
+                  "حفل استقبال المولودة جود",
+                  "الخميس",
+                  "24 أكتوبر 2026",
+                  "7:30 مساءً",
+                  "منزل العائلة – حي النهضة، جدة"
+                ]
+              ]
+            }
+          },
+          {
+            "type": "FOOTER",
+            "text": "منصة هلا – إدارة الدعوات"
+          },
+          {
+            "type": "BUTTONS",
+            "buttons": [
+              {
+                "type": "QUICK_REPLY",
+                "text": "سأحضر"
+              },
+              {
+                "type": "QUICK_REPLY",
+                "text": "سأعتذر"
+              },
+              {
+                "type": "QUICK_REPLY",
+                "text": "ربما"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "halaa_baby_shower_plain_ar_v1",
+      "category": "baby_shower",
+      "halaaCategory": "other",
+      "invitationMode": "none",
+      "varMapping": [
+        {
+          "placeholder": "{{1}}",
+          "sourceKey": "guest.name"
+        },
+        {
+          "placeholder": "{{2}}",
+          "sourceKey": "host.name"
+        },
+        {
+          "placeholder": "{{3}}",
+          "sourceKey": "eventDetails.title"
+        },
+        {
+          "placeholder": "{{4}}",
+          "sourceKey": "eventDetails.dayFormatted"
+        },
+        {
+          "placeholder": "{{5}}",
+          "sourceKey": "eventDetails.dateFormatted"
+        },
+        {
+          "placeholder": "{{6}}",
+          "sourceKey": "eventDetails.time"
+        },
+        {
+          "placeholder": "{{7}}",
+          "sourceKey": "eventDetails.location.address"
+        }
+      ],
+      "payload": {
+        "name": "halaa_baby_shower_plain_ar_v1",
+        "category": "UTILITY",
+        "language": "ar",
+        "allow_category_change": false,
+        "components": [
+          {
+            "type": "HEADER",
+            "format": "IMAGE",
+            "example": {
+              "header_handle": [
+                "https://halaa.com.sa/logo.png"
+              ]
+            }
+          },
+          {
+            "type": "BODY",
+            "text": "أهلًا وسهلًا {{1}}\nالحمد لله الذي أتمّ علينا نعمته ووهبنا أجمل عطاياه.\nيسرّ {{2}} دعوتك لحضور {{3}} ومشاركتنا فرحة استقبال المولود، وبحضورك تكبر فرحتنا.\nاليوم: {{4}}\nالتاريخ: {{5}}\nالوقت: {{6}}\nالموقع: {{7}}\n\nللاستفسارات، يرجى التواصل مع خدمة المدعوين:\n+966552619282",
+            "example": {
+              "body_text": [
+                [
+                  "سارة",
+                  "لينا وعبدالعزيز",
+                  "حفل استقبال المولودة جود",
+                  "الخميس",
+                  "24 أكتوبر 2026",
+                  "7:30 مساءً",
+                  "منزل العائلة – حي النهضة، جدة"
+                ]
+              ]
+            }
+          },
+          {
+            "type": "FOOTER",
+            "text": "منصة هلا – إدارة الدعوات"
+          }
+        ]
+      }
+    },
+    {
+      "name": "halaa_baby_shower_qr_ar_v1",
+      "category": "baby_shower",
+      "halaaCategory": "other",
+      "invitationMode": "qr_only",
+      "varMapping": [
+        {
+          "placeholder": "{{1}}",
+          "sourceKey": "guest.name"
+        },
+        {
+          "placeholder": "{{2}}",
+          "sourceKey": "host.name"
+        },
+        {
+          "placeholder": "{{3}}",
+          "sourceKey": "eventDetails.title"
+        },
+        {
+          "placeholder": "{{4}}",
+          "sourceKey": "eventDetails.dayFormatted"
+        },
+        {
+          "placeholder": "{{5}}",
+          "sourceKey": "eventDetails.dateFormatted"
+        },
+        {
+          "placeholder": "{{6}}",
+          "sourceKey": "eventDetails.time"
+        },
+        {
+          "placeholder": "{{7}}",
+          "sourceKey": "eventDetails.location.address"
+        }
+      ],
+      "payload": {
+        "name": "halaa_baby_shower_qr_ar_v1",
+        "category": "UTILITY",
+        "language": "ar",
+        "allow_category_change": false,
+        "components": [
+          {
+            "type": "HEADER",
+            "format": "IMAGE",
+            "example": {
+              "header_handle": [
+                "https://halaa.com.sa/logo.png"
+              ]
+            }
+          },
+          {
+            "type": "BODY",
+            "text": "أهلًا وسهلًا {{1}}\nالحمد لله الذي أتمّ علينا نعمته ووهبنا أجمل عطاياه.\nيسرّ {{2}} دعوتك لحضور {{3}} ومشاركتنا فرحة استقبال المولود، وبحضورك تكبر فرحتنا.\nاليوم: {{4}}\nالتاريخ: {{5}}\nالوقت: {{6}}\nالموقع: {{7}}\n\nلعرض رمز الدخول الخاص بك، استخدم الزر أدناه.\n\nللاستفسارات، يرجى التواصل مع خدمة المدعوين:\n+966552619282",
+            "example": {
+              "body_text": [
+                [
+                  "سارة",
+                  "لينا وعبدالعزيز",
+                  "حفل استقبال المولودة جود",
+                  "الخميس",
+                  "24 أكتوبر 2026",
+                  "7:30 مساءً",
+                  "منزل العائلة – حي النهضة، جدة"
+                ]
+              ]
+            }
+          },
+          {
+            "type": "FOOTER",
+            "text": "منصة هلا – إدارة الدعوات"
+          },
+          {
+            "type": "BUTTONS",
+            "buttons": [
+              {
+                "type": "URL",
+                "text": "عرض رمز الدخول",
+                "url": "https://halaa.com.sa/ar/invitation/{{1}}",
+                "example": [
+                  "https://halaa.com.sa/ar/invitation/TEST123"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "halaa_birthday_reply_ar_v1",
+      "category": "birthday",
+      "halaaCategory": "birthday",
+      "invitationMode": "reply_and_qr",
+      "varMapping": [
+        {
+          "placeholder": "{{1}}",
+          "sourceKey": "guest.name"
+        },
+        {
+          "placeholder": "{{2}}",
+          "sourceKey": "host.name"
+        },
+        {
+          "placeholder": "{{3}}",
+          "sourceKey": "eventDetails.title"
+        },
+        {
+          "placeholder": "{{4}}",
+          "sourceKey": "eventDetails.dayFormatted"
+        },
+        {
+          "placeholder": "{{5}}",
+          "sourceKey": "eventDetails.dateFormatted"
+        },
+        {
+          "placeholder": "{{6}}",
+          "sourceKey": "eventDetails.time"
+        },
+        {
+          "placeholder": "{{7}}",
+          "sourceKey": "eventDetails.location.address"
+        }
+      ],
+      "payload": {
+        "name": "halaa_birthday_reply_ar_v1",
+        "category": "UTILITY",
+        "language": "ar",
+        "allow_category_change": false,
+        "components": [
+          {
+            "type": "HEADER",
+            "format": "IMAGE",
+            "example": {
+              "header_handle": [
+                "https://halaa.com.sa/logo.png"
+              ]
+            }
+          },
+          {
+            "type": "BODY",
+            "text": "يا هلا {{1}}\nيسرّ {{2}} دعوتك لحضور {{3}} ومشاركتنا هذه المناسبة السعيدة.\nاليوم: {{4}}\nالتاريخ: {{5}}\nالوقت: {{6}}\nالموقع: {{7}}\n\nسيكون حضورك أجمل هدية، ونتطلع للاحتفال معك وقضاء وقت ممتع.\nيرجى تأكيد الحضور أو الاعتذار عبر أحد الأزرار أدناه.\n\nللاستفسارات، يرجى التواصل مع خدمة المدعوين:\n+966552619282",
+            "example": {
+              "body_text": [
+                [
+                  "سارة",
+                  "ليان",
+                  "حفل عيد ميلادي",
+                  "الجمعة",
+                  "5 سبتمبر 2026",
+                  "5:30 مساءً",
+                  "كيدز بارك – جدة"
+                ]
+              ]
+            }
+          },
+          {
+            "type": "FOOTER",
+            "text": "منصة هلا – إدارة الدعوات"
+          },
+          {
+            "type": "BUTTONS",
+            "buttons": [
+              {
+                "type": "QUICK_REPLY",
+                "text": "سأحضر"
+              },
+              {
+                "type": "QUICK_REPLY",
+                "text": "سأعتذر"
+              },
+              {
+                "type": "QUICK_REPLY",
+                "text": "ربما"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "halaa_birthday_plain_ar_v1",
+      "category": "birthday",
+      "halaaCategory": "birthday",
+      "invitationMode": "none",
+      "varMapping": [
+        {
+          "placeholder": "{{1}}",
+          "sourceKey": "guest.name"
+        },
+        {
+          "placeholder": "{{2}}",
+          "sourceKey": "host.name"
+        },
+        {
+          "placeholder": "{{3}}",
+          "sourceKey": "eventDetails.title"
+        },
+        {
+          "placeholder": "{{4}}",
+          "sourceKey": "eventDetails.dayFormatted"
+        },
+        {
+          "placeholder": "{{5}}",
+          "sourceKey": "eventDetails.dateFormatted"
+        },
+        {
+          "placeholder": "{{6}}",
+          "sourceKey": "eventDetails.time"
+        },
+        {
+          "placeholder": "{{7}}",
+          "sourceKey": "eventDetails.location.address"
+        }
+      ],
+      "payload": {
+        "name": "halaa_birthday_plain_ar_v1",
+        "category": "UTILITY",
+        "language": "ar",
+        "allow_category_change": false,
+        "components": [
+          {
+            "type": "HEADER",
+            "format": "IMAGE",
+            "example": {
+              "header_handle": [
+                "https://halaa.com.sa/logo.png"
+              ]
+            }
+          },
+          {
+            "type": "BODY",
+            "text": "يا هلا {{1}}\nيسرّ {{2}} دعوتك لحضور {{3}} ومشاركتنا هذه المناسبة السعيدة.\nاليوم: {{4}}\nالتاريخ: {{5}}\nالوقت: {{6}}\nالموقع: {{7}}\n\nسيكون حضورك أجمل هدية، ونتطلع للاحتفال معك وقضاء وقت ممتع.\n\nللاستفسارات، يرجى التواصل مع خدمة المدعوين:\n+966552619282",
+            "example": {
+              "body_text": [
+                [
+                  "سارة",
+                  "ليان",
+                  "حفل عيد ميلادي",
+                  "الجمعة",
+                  "5 سبتمبر 2026",
+                  "5:30 مساءً",
+                  "كيدز بارك – جدة"
+                ]
+              ]
+            }
+          },
+          {
+            "type": "FOOTER",
+            "text": "منصة هلا – إدارة الدعوات"
+          }
+        ]
+      }
+    },
+    {
+      "name": "halaa_birthday_qr_ar_v1",
+      "category": "birthday",
+      "halaaCategory": "birthday",
+      "invitationMode": "qr_only",
+      "varMapping": [
+        {
+          "placeholder": "{{1}}",
+          "sourceKey": "guest.name"
+        },
+        {
+          "placeholder": "{{2}}",
+          "sourceKey": "host.name"
+        },
+        {
+          "placeholder": "{{3}}",
+          "sourceKey": "eventDetails.title"
+        },
+        {
+          "placeholder": "{{4}}",
+          "sourceKey": "eventDetails.dayFormatted"
+        },
+        {
+          "placeholder": "{{5}}",
+          "sourceKey": "eventDetails.dateFormatted"
+        },
+        {
+          "placeholder": "{{6}}",
+          "sourceKey": "eventDetails.time"
+        },
+        {
+          "placeholder": "{{7}}",
+          "sourceKey": "eventDetails.location.address"
+        }
+      ],
+      "payload": {
+        "name": "halaa_birthday_qr_ar_v1",
+        "category": "UTILITY",
+        "language": "ar",
+        "allow_category_change": false,
+        "components": [
+          {
+            "type": "HEADER",
+            "format": "IMAGE",
+            "example": {
+              "header_handle": [
+                "https://halaa.com.sa/logo.png"
+              ]
+            }
+          },
+          {
+            "type": "BODY",
+            "text": "يا هلا {{1}}\nيسرّ {{2}} دعوتك لحضور {{3}} ومشاركتنا هذه المناسبة السعيدة.\nاليوم: {{4}}\nالتاريخ: {{5}}\nالوقت: {{6}}\nالموقع: {{7}}\n\nسيكون حضورك أجمل هدية، ونتطلع للاحتفال معك وقضاء وقت ممتع.\nلعرض رمز الدخول الخاص بك، استخدم الزر أدناه.\n\nللاستفسارات، يرجى التواصل مع خدمة المدعوين:\n+966552619282",
+            "example": {
+              "body_text": [
+                [
+                  "سارة",
+                  "ليان",
+                  "حفل عيد ميلادي",
+                  "الجمعة",
+                  "5 سبتمبر 2026",
+                  "5:30 مساءً",
+                  "كيدز بارك – جدة"
+                ]
+              ]
+            }
+          },
+          {
+            "type": "FOOTER",
+            "text": "منصة هلا – إدارة الدعوات"
+          },
+          {
+            "type": "BUTTONS",
+            "buttons": [
+              {
+                "type": "URL",
+                "text": "عرض رمز الدخول",
+                "url": "https://halaa.com.sa/ar/invitation/{{1}}",
+                "example": [
+                  "https://halaa.com.sa/ar/invitation/TEST123"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "halaa_general_event_reply_ar_v1",
+      "category": "general_event",
+      "halaaCategory": "other",
+      "invitationMode": "reply_and_qr",
+      "varMapping": [
+        {
+          "placeholder": "{{1}}",
+          "sourceKey": "guest.name"
+        },
+        {
+          "placeholder": "{{2}}",
+          "sourceKey": "host.name"
+        },
+        {
+          "placeholder": "{{3}}",
+          "sourceKey": "eventDetails.title"
+        },
+        {
+          "placeholder": "{{4}}",
+          "sourceKey": "eventDetails.dayFormatted"
+        },
+        {
+          "placeholder": "{{5}}",
+          "sourceKey": "eventDetails.dateFormatted"
+        },
+        {
+          "placeholder": "{{6}}",
+          "sourceKey": "eventDetails.time"
+        },
+        {
+          "placeholder": "{{7}}",
+          "sourceKey": "eventDetails.location.address"
+        }
+      ],
+      "payload": {
+        "name": "halaa_general_event_reply_ar_v1",
+        "category": "UTILITY",
+        "language": "ar",
+        "allow_category_change": false,
+        "components": [
+          {
+            "type": "HEADER",
+            "format": "IMAGE",
+            "example": {
+              "header_handle": [
+                "https://halaa.com.sa/logo.png"
+              ]
+            }
+          },
+          {
+            "type": "BODY",
+            "text": "هلا وسهلًا {{1}}\nيسرّ {{2}} دعوتك لحضور {{3}} وقضاء أوقات جميلة تجمعنا على المحبة والفرح.\nاليوم: {{4}}\nالتاريخ: {{5}}\nالوقت: {{6}}\nالموقع: {{7}}\n\nيرجى تأكيد الحضور أو الاعتذار عبر أحد الأزرار أدناه.\n\nللاستفسارات، يرجى التواصل مع خدمة المدعوين:\n+966552619282",
+            "example": {
+              "body_text": [
+                [
+                  "خالد",
+                  "سالم أحمد",
+                  "لقاء العائلة السنوي",
+                  "الخميس",
+                  "12 ديسمبر 2026",
+                  "8:00 مساءً",
+                  "استراحة الندى – جدة"
+                ]
+              ]
+            }
+          },
+          {
+            "type": "FOOTER",
+            "text": "منصة هلا – إدارة الدعوات"
+          },
+          {
+            "type": "BUTTONS",
+            "buttons": [
+              {
+                "type": "QUICK_REPLY",
+                "text": "سأحضر"
+              },
+              {
+                "type": "QUICK_REPLY",
+                "text": "سأعتذر"
+              },
+              {
+                "type": "QUICK_REPLY",
+                "text": "ربما"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "halaa_general_event_plain_ar_v1",
+      "category": "general_event",
+      "halaaCategory": "other",
+      "invitationMode": "none",
+      "varMapping": [
+        {
+          "placeholder": "{{1}}",
+          "sourceKey": "guest.name"
+        },
+        {
+          "placeholder": "{{2}}",
+          "sourceKey": "host.name"
+        },
+        {
+          "placeholder": "{{3}}",
+          "sourceKey": "eventDetails.title"
+        },
+        {
+          "placeholder": "{{4}}",
+          "sourceKey": "eventDetails.dayFormatted"
+        },
+        {
+          "placeholder": "{{5}}",
+          "sourceKey": "eventDetails.dateFormatted"
+        },
+        {
+          "placeholder": "{{6}}",
+          "sourceKey": "eventDetails.time"
+        },
+        {
+          "placeholder": "{{7}}",
+          "sourceKey": "eventDetails.location.address"
+        }
+      ],
+      "payload": {
+        "name": "halaa_general_event_plain_ar_v1",
+        "category": "UTILITY",
+        "language": "ar",
+        "allow_category_change": false,
+        "components": [
+          {
+            "type": "HEADER",
+            "format": "IMAGE",
+            "example": {
+              "header_handle": [
+                "https://halaa.com.sa/logo.png"
+              ]
+            }
+          },
+          {
+            "type": "BODY",
+            "text": "هلا وسهلًا {{1}}\nيسرّ {{2}} دعوتك لحضور {{3}} وقضاء أوقات جميلة تجمعنا على المحبة والفرح.\nاليوم: {{4}}\nالتاريخ: {{5}}\nالوقت: {{6}}\nالموقع: {{7}}\n\nللاستفسارات، يرجى التواصل مع خدمة المدعوين:\n+966552619282",
+            "example": {
+              "body_text": [
+                [
+                  "خالد",
+                  "سالم أحمد",
+                  "لقاء العائلة السنوي",
+                  "الخميس",
+                  "12 ديسمبر 2026",
+                  "8:00 مساءً",
+                  "استراحة الندى – جدة"
+                ]
+              ]
+            }
+          },
+          {
+            "type": "FOOTER",
+            "text": "منصة هلا – إدارة الدعوات"
+          }
+        ]
+      }
+    },
+    {
+      "name": "halaa_general_event_qr_ar_v1",
+      "category": "general_event",
+      "halaaCategory": "other",
+      "invitationMode": "qr_only",
+      "varMapping": [
+        {
+          "placeholder": "{{1}}",
+          "sourceKey": "guest.name"
+        },
+        {
+          "placeholder": "{{2}}",
+          "sourceKey": "host.name"
+        },
+        {
+          "placeholder": "{{3}}",
+          "sourceKey": "eventDetails.title"
+        },
+        {
+          "placeholder": "{{4}}",
+          "sourceKey": "eventDetails.dayFormatted"
+        },
+        {
+          "placeholder": "{{5}}",
+          "sourceKey": "eventDetails.dateFormatted"
+        },
+        {
+          "placeholder": "{{6}}",
+          "sourceKey": "eventDetails.time"
+        },
+        {
+          "placeholder": "{{7}}",
+          "sourceKey": "eventDetails.location.address"
+        }
+      ],
+      "payload": {
+        "name": "halaa_general_event_qr_ar_v1",
+        "category": "UTILITY",
+        "language": "ar",
+        "allow_category_change": false,
+        "components": [
+          {
+            "type": "HEADER",
+            "format": "IMAGE",
+            "example": {
+              "header_handle": [
+                "https://halaa.com.sa/logo.png"
+              ]
+            }
+          },
+          {
+            "type": "BODY",
+            "text": "هلا وسهلًا {{1}}\nيسرّ {{2}} دعوتك لحضور {{3}} وقضاء أوقات جميلة تجمعنا على المحبة والفرح.\nاليوم: {{4}}\nالتاريخ: {{5}}\nالوقت: {{6}}\nالموقع: {{7}}\n\nلعرض رمز الدخول الخاص بك، استخدم الزر أدناه.\n\nللاستفسارات، يرجى التواصل مع خدمة المدعوين:\n+966552619282",
+            "example": {
+              "body_text": [
+                [
+                  "خالد",
+                  "سالم أحمد",
+                  "لقاء العائلة السنوي",
+                  "الخميس",
+                  "12 ديسمبر 2026",
+                  "8:00 مساءً",
+                  "استراحة الندى – جدة"
+                ]
+              ]
+            }
+          },
+          {
+            "type": "FOOTER",
+            "text": "منصة هلا – إدارة الدعوات"
+          },
+          {
+            "type": "BUTTONS",
+            "buttons": [
+              {
+                "type": "URL",
+                "text": "عرض رمز الدخول",
+                "url": "https://halaa.com.sa/ar/invitation/{{1}}",
+                "example": [
+                  "https://halaa.com.sa/ar/invitation/TEST123"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

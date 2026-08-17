@@ -1,0 +1,134 @@
+{
+  "pageTitle": "الخدمات",
+  "pageSubtitle": "إليك نظرة سريعة على فعالياتك ودعواتك",
+  "buttons": {
+    "addService": "إضافة خدمة",
+    "complaints": "الشكاوى",
+    "promoteProfile": "ترويج الصفحة",
+    "available": "متاحة",
+    "unavailable": "غير متاحة",
+    "delete": "حذف",
+    "edit": "تعديل"
+  },
+  "search": {
+    "placeholder": "ابحث عن خدمة"
+  },
+  "stats": {
+    "totalRating": "التقييم الكلي",
+    "inactiveServices": "الخدمات غير النشطة",
+    "activeServices": "الخدمات النشطة",
+    "totalServices": "إجمالي الخدمات",
+    "increase": "زيادة",
+    "decrease": "انخفاض"
+  },
+  "service": {
+    "defaultTitle": "خدمة",
+    "price": "ريال"
+  },
+  "errors": {
+    "loadFailed": "فشل في تحميل الخدمات",
+    "boundary": "فشل في تحميل لوحة التحكم",
+    "update_failed": "فشل في تحديث الخدمة",
+    "delete_failed": "فشل في حذف الخدمة"
+  },
+  "success": {
+    "updated": "تم تحديث الخدمة بنجاح",
+    "deleted": "تم حذف الخدمة بنجاح"
+  },
+  "confirmDelete": {
+    "title": "حذف الخدمة",
+    "message": "هل أنت متأكد من حذف هذه الخدمة؟ لا يمكن التراجع عن هذا الإجراء.",
+    "confirm": "حذف",
+    "cancel": "إلغاء"
+  },
+  "noSearchResults": "لا توجد خدمات تطابق البحث",
+  "noServices": "لا توجد خدمات متاحة",
+  "filters": {
+    "allServices": "كل الخدمات"
+  },
+  "addServicePopup": {
+    "title": "إضافة خدمة جديدة",
+    "editTitle": "تعديل الخدمة",
+    "imageUpload": {
+      "label": "صورة الخدمة",
+      "placeholder": "ارفع صورة"
+    },
+    "serviceType": {
+      "label": "نوع الخدمة",
+      "placeholder": "اختر نوع الخدمة"
+    },
+    "serviceName": {
+      "label": "اسم الخدمة (بالإنجليزية)",
+      "placeholder": "أدخل اسم الخدمة بالإنجليزية"
+    },
+    "serviceNameAr": {
+      "label": "اسم الخدمة (بالعربية)",
+      "placeholder": "أدخل اسم الخدمة بالعربية"
+    },
+    "description": {
+      "label": "وصف الخدمة (بالإنجليزية)",
+      "placeholder": "أدخل وصف الخدمة بالإنجليزية"
+    },
+    "descriptionAr": {
+      "label": "وصف الخدمة (بالعربية)",
+      "placeholder": "أدخل وصف الخدمة بالعربية"
+    },
+    "price": {
+      "label": "سعر الخدمة",
+      "placeholder": "ادخل سعر الخدمة"
+    },
+    "duration": {
+      "label": "مدة تنفيذ الخدمة",
+      "placeholder": "مثال: 8-12 ساعة"
+    },
+    "included": {
+      "label": "ما الذي يتضمنه",
+      "placeholder": "اكتب عنصرًا ثم اضغط Enter",
+      "removeHint": "اضغط للحذف"
+    },
+    "category": {
+      "label": "اختر التصنيف",
+      "placeholder": "اختر من التصنيفات أدناه"
+    },
+    "serviceTypes": {
+      "eventPlanning": "تخطيط الفعاليات",
+      "mediaProduction": "الإنتاج الإعلامي",
+      "giftsAndGiveaways": "الهدايا والتوزيعات",
+      "foodAndBeverages": "الأطعمة والمشروبات",
+      "beautyAndFashion": "التجميل والأزياء",
+      "logisticsAndDelivery": "اللوجستيات والتوصيل",
+      "corporateServices": "خدمات الشركات",
+      "supportServices": "خدمات الدعم",
+      "technicalServices": "الخدمات التقنية",
+      "soundLightingEntertainment": "الصوت والإضاءة والترفيه",
+      "hallsAndVenues": "القاعات والأماكن"
+    },
+    "tags": {
+      "weddings": "افراح",
+      "graduation": "تخرج",
+      "birthdays": "أعياد ميلاد",
+      "corporate": "فعاليات شركات",
+      "engagement": "خطوبة",
+      "babyShower": "استقبال مولود"
+    },
+    "submit": "إنشاء",
+    "update": "تحديث",
+    "cancel": "إلغاء",
+    "submitting": "جاري الإنشاء...",
+    "updating": "جاري التحديث...",
+    "success": "تم إضافة الخدمة بنجاح",
+    "updateSuccess": "تم تحديث الخدمة بنجاح",
+    "error": "فشل في إضافة الخدمة",
+    "updateError": "فشل في تحديث الخدمة",
+    "validation": {
+      "serviceNameMinLength": "اسم الخدمة يجب أن يكون أكثر من حرفين",
+      "serviceNameMaxLength": "اسم الخدمة يجب أن يكون أقل من 100 حرف",
+      "serviceTypeRequired": "نوع الخدمة مطلوب",
+      "descriptionMinLength": "وصف الخدمة يجب أن يكون أكثر من 10 أحرف",
+      "descriptionMaxLength": "وصف الخدمة يجب أن يكون أقل من 1000 حرف",
+      "priceRequired": "سعر الخدمة مطلوب",
+      "priceInvalid": "يرجى إدخال سعر صحيح",
+      "durationMaxLength": "مدة الخدمة يجب أن تكون أقل من 100 حرف"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "skip": "Skip",
+  "slides": [
+    {
+      "title": "Welcome to Labba!",
+      "description": "The smartest way to organize your invitation from the first step to the event day, easily, elegantly, and effortlessly."
+    },
+    {
+      "title": "Create Your Invitation in Minutes",
+      "description": "Choose the design, add your guests, and share your invitation via WhatsApp"
+    },
+    {
+      "title": "Monitor Real-time Interaction",
+      "description": "Know who accepted or declined, and export lists with one click."
+    },
+    {
+      "title": "Comprehensive Event Management",
+      "description": "Know who accepted or declined, and export lists with one click."
+    }
+  ],
+  "buttons": {
+    "previous": "Previous",
+    "next": "Next",
+    "login": "Login",
+    "newUser": "New User"
+  }
+}

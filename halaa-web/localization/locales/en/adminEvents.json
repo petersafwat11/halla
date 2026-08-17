@@ -1,0 +1,299 @@
+{
+  "header": {
+    "title": "Events",
+    "subtitle": "Monitor and manage platform events",
+    "dateRange": "Date Range",
+    "createEvent": "Create Event"
+  },
+  "events": {
+    "title": "Events Management",
+    "subtitle": "View and manage all events",
+    "createEvent": "Create Event",
+    "confirmDelete": "Are you sure you want to delete this event?",
+    "deleteSuccess": "Event deleted successfully",
+    "deleteError": "Failed to delete event",
+    "selectRows": "Please select events to delete",
+    "confirmBulkDelete": "Are you sure you want to delete {{count}} events?",
+    "bulkDeleteSuccess": "Events deleted successfully",
+    "bulkDeleteError": "Failed to delete events",
+    "statusUpdateSuccess": "Status updated successfully",
+    "statusUpdateError": "Failed to update status",
+    "exportError": "Failed to export data",
+    "viewDetails": "View Details",
+    "activate": "Activate",
+    "suspend": "Suspend",
+    "confirmSuspend": "Are you sure you want to suspend this event?",
+    "confirmActivate": "Are you sure you want to activate this event?",
+    "delete": "Delete",
+    "status": {
+      "scheduled": "Scheduled",
+      "live": "Live",
+      "completed": "Completed",
+      "pending_scheduling": "Pending Scheduling",
+      "cancelled": "Cancelled"
+    },
+    "loadError": "Failed to load events",
+    "columns": {
+      "title": "Title",
+      "host": "Host",
+      "date": "Date",
+      "guests": "Guests",
+      "status": "Status"
+    },
+    "filter": {
+      "all": "All",
+      "pending_scheduling": "Pending Scheduling",
+      "scheduled": "Scheduled",
+      "live": "Live",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "bulkDelete": "Delete Selected",
+    "stats": {
+      "total": "Total Events",
+      "allTime": "All Time",
+      "active": "Active Events",
+      "liveNow": "Live Now",
+      "scheduled": "Scheduled",
+      "upcoming": "Upcoming",
+      "completed": "Completed",
+      "finished": "Finished"
+    }
+  },
+  "stats": {
+    "totalEvents": "Total Events",
+    "totalActiveEvents": "Active Events",
+    "totalEndedEvents": "Ended Events",
+    "totalSuspendedEvents": "Suspended Events"
+  },
+  "charts": {
+    "mostCreatedEvents": "Most Created Events",
+    "guestResponseStats": "Guest Response Statistics",
+    "confirmed": "Confirmed",
+    "attended": "Attended",
+    "declined": "Declined"
+  },
+  "table": {
+    "title": "Events List",
+    "searchPlaceholder": "Search events...",
+    "filter": "Filter",
+    "export": "Export",
+    "columns": {
+      "title": "Event Title",
+      "eventMaker": "Event Maker",
+      "type": "Type",
+      "guestList": "Guest Count",
+      "datetime": "Date & Time",
+      "status": "Status",
+      "guestName": "Guest Name",
+      "mobile": "Mobile Number",
+      "addedBy": "Added By",
+      "responseTime": "Response Time"
+    },
+    "status": {
+      "active": "Active",
+      "ended": "Ended",
+      "suspended": "Suspended",
+      "pending_scheduling": "Pending Scheduling",
+      "accepted": "Accepted",
+      "confirmed": "Confirmed",
+      "declined": "Declined",
+      "invited": "Invited",
+      "noResponse": "No Response"
+    },
+    "actions": {
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "eventTypes": {
+      "wedding": "Wedding",
+      "birthday": "Birthday",
+      "graduation": "Graduation",
+      "corporate": "Corporate",
+      "family": "Family",
+      "other": "Other"
+    }
+  },
+  "dateRange": {
+    "all": "All",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "thisWeek": "This week",
+    "lastWeek": "Last week",
+    "thisMonth": "This month",
+    "lastMonth": "Last month",
+    "confirm": "Confirm",
+    "cancel": "Cancel"
+  },
+  "createEvent": {
+    "title": "Create Event (Admin)",
+    "subtitle": "Select a host and create an event",
+    "creatingFor": "Creating for:",
+    "inviteButton": "Your invitation is on us",
+    "selectHost": {
+      "title": "Select Target",
+      "description": "Choose who this event is for",
+      "createForSelf": "Create for Myself",
+      "createForHost": "Create for Client",
+      "createForYourself": "Create Event for Yourself",
+      "unlimitedDescription": "As a platform admin, you have unlimited events and guests",
+      "unlimited": "Unlimited",
+      "searchByPhone": "Search by Phone",
+      "selectFromList": "Select from List",
+      "phonePlaceholder": "+966 XX XXX XXXX",
+      "enterPhone": "Please enter a phone number",
+      "hostNotFound": "Client not found",
+      "searchError": "Search failed",
+      "noHostsFound": "No clients found",
+      "selectedHost": "Selected Client:",
+      "selectedTarget": "Selected:",
+      "creatingForSelf": "Creating for yourself",
+      "noSubscription": "No subscription",
+      "inactiveSubscription": "Inactive",
+      "subscriptionRequired": "Subscription required",
+      "eventsRemaining": "remaining"
+    },
+    "steps": {
+      "eventDetails": "Event Details",
+      "eventDetailsDesc": "Fill in the basic event information",
+      "guestList": "Guest List",
+      "guestListDesc": "Add guests and staff",
+      "template": "Invitation Design",
+      "templateDesc": "Choose the invitation design",
+      "messages": "Customize Message",
+      "messagesDesc": "Add invitation message and auto-replies",
+      "summary": "Review and Create Event",
+      "summaryDesc": "Review all details before creating"
+    },
+    "buttons": {
+      "proceed": "Proceed",
+      "next": "Next",
+      "previous": "Previous",
+      "create": "Create Event",
+      "changeHost": "Change Host",
+      "cancel": "Cancel",
+      "saveDraft": "Pending Scheduling"
+    },
+    "success": {
+      "created": "Event created successfully",
+      "scheduled": "Sending scheduled successfully"
+    },
+    "creatingForSelf": "Creating event for yourself (Unlimited)",
+    "errors": {
+      "hostRequired": "Please select a host",
+      "subscriptionRequired": "Host must have an active subscription",
+      "limitReached": "Event limit reached for this subscription",
+      "guestLimitExceeded": "Guest count exceeds subscription limit",
+      "fillRequired": "Please fill all required fields",
+      "createFailed": "Failed to create event. Please try again."
+    }
+  },
+  "updateEvent": {
+    "title": "Update Event",
+    "subtitle": "Edit event details",
+    "hostInfo": "Host:",
+    "inviteButton": "Your invitation is on us",
+    "loadingEvent": "Loading event data...",
+    "steps": {
+      "eventDetails": "Event Details",
+      "eventDetailsDesc": "Edit event details",
+      "guestList": "Guest List",
+      "guestListDesc": "Edit guest list",
+      "template": "Invitation Design",
+      "templateDesc": "Edit invitation design",
+      "messages": "Customize Message",
+      "messagesDesc": "Edit message customization"
+    },
+    "success": {
+      "updated": "Event updated successfully",
+      "detailsUpdated": "Event details updated successfully",
+      "guestsUpdated": "Guest list updated successfully",
+      "templateUpdated": "Invitation design updated successfully",
+      "messageUpdated": "Message customization updated successfully"
+    },
+    "errors": {
+      "missingId": "Event ID is missing",
+      "loadFailed": "Failed to load event data",
+      "updateFailed": "Failed to update event. Please try again.",
+      "fillRequired": "Please fill all required fields"
+    }
+  },
+  "singleEvent": {
+    "title": "Event Details",
+    "hostInfo": "Host: {{hostName}}",
+    "deleteSuccess": "Event deleted successfully",
+    "deleteError": "Failed to delete event",
+    "actions": {
+      "edit": "Edit Event",
+      "editGuests": "Edit Guests",
+      "moderators": "Moderators",
+      "delete": "Delete Event",
+      "sendReminder": "Send Reminder",
+      "testMessage": "Test Message",
+      "schedule": "Schedule Sending",
+      "viewStats": "View Statistics",
+      "staff": "Staff"
+    },
+    "header": {
+      "sendReminder": "Send Reminder"
+    },
+    "editSteps": {
+      "details": "Event Details",
+      "guestList": "Guest List",
+      "design": "Invitation Design",
+      "customization": "Message Customization"
+    },
+    "guestTable": {
+      "title": "Guest List",
+      "exportSuccess": "Guests exported successfully",
+      "exportError": "Failed to export guests",
+      "confirmDelete": "Are you sure you want to delete this guest?",
+      "deleteSuccess": "Guest deleted successfully",
+      "deleteError": "Failed to delete guest",
+      "updateSuccess": "Guest updated successfully",
+      "updateError": "Failed to update guest"
+    },
+    "stats": {
+      "totalGuests": "Total Guests",
+      "confirmed": "Confirmed",
+      "declined": "Declined",
+      "noResponse": "No Response",
+      "responseRate": "Response Rate"
+    },
+    "confirmDelete": {
+      "title": "Delete Event?",
+      "message": "Are you sure you want to delete this event? This action cannot be undone.",
+      "confirm": "Delete",
+      "cancel": "Cancel"
+    },
+    "subscription": {
+      "title": "Subscription Info",
+      "remainingGuests": "Remaining Guests",
+      "compensationInvitations": "Compensation Invitations",
+      "remainingEvents": "Remaining Events",
+      "expires": "Expires:",
+      "days": "days",
+      "used": "used",
+      "expired": "Expired",
+      "unlimited": "Unlimited"
+    }
+  },
+  "loading": "Loading...",
+  "messaging": {
+    "sendInvitations": "Send Invitations",
+    "noGuestsWithPhone": "No guests have phone numbers",
+    "invitationsSent": "{{count}} invitations sent successfully",
+    "sendError": "Failed to send invitations"
+  },
+  "reminderPopup": {
+    "success": "Reminder sent successfully",
+    "error": "Failed to send reminder"
+  },
+  "errors": {
+    "loadingEvent": "Error Loading Event",
+    "noGuestId": "Guest ID not found"
+  },
+  "buttons": {
+    "goBack": "Go Back"
+  }
+}

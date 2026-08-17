@@ -1,0 +1,180 @@
+.guestCard {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1.2rem;
+  width: 100%;
+  border-radius: 1.2rem;
+  border-top: 1px solid var(--Content-Border-Border-Gray300, #cacaca);
+  border-right: 6px solid var(--Content-Border-Border-Gray300, #cacaca);
+  border-bottom: 1px solid var(--Content-Border-Border-Gray300, #cacaca);
+  border-left: 1px solid var(--Content-Border-Border-Gray300, #cacaca);
+  background: var(--Content-bg-Card-bg-1, #fff);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  padding: 1.2rem 1.6rem;
+  transition: all 0.3s ease;
+  animation: fadeInUp 0.5s ease-out;
+  width: 100%;
+}
+
+.guestCard:hover {
+  transform: translateX(-4px);
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1);
+  border-right-color: var(--color-primary, #c28e5c);
+}
+
+.cardContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.2rem;
+  align-self: stretch;
+  cursor: pointer;
+}
+
+.contentWrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 0.4rem 1rem;
+  border-radius: 10rem;
+  font-family: Cairo, -apple-system, Roboto, Helvetica, sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.6rem;
+  white-space: nowrap;
+}
+
+.infoColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.nameContainer {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.guestName {
+  color: var(--Content-Text-Text-title-black, #2c2c2c);
+  font-family: Cairo, -apple-system, Roboto, Helvetica, sans-serif;
+  font-size: 1.4rem;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 2rem;
+  letter-spacing: 0.014px;
+  margin: 0;
+  text-align: right;
+}
+
+.contactInfo {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.contactGroup {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+}
+
+.phoneContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.phone {
+  color: var(--Content-Text-Text-body-discription, #656565);
+  font-family: Cairo, -apple-system, Roboto, Helvetica, sans-serif;
+  font-size: 1.2rem;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1.6rem;
+  letter-spacing: 0.06px;
+}
+
+.divider {
+  display: flex;
+  height: 1.7rem;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.dividerText {
+  color: var(--Content-Text-Text-body-discription, #656565);
+  font-family: Cairo, -apple-system, Roboto, Helvetica, sans-serif;
+  font-size: 1.4rem;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 2rem;
+  letter-spacing: 0.014px;
+}
+
+.emailContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1.6rem;
+}
+
+.email {
+  color: var(--Content-Text-Text-body-discription, #656565);
+  font-family: Cairo, -apple-system, Roboto, Helvetica, sans-serif;
+  font-size: 1.2rem;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1.6rem;
+  letter-spacing: 0.06px;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (min-width: 768px) {
+  .guestCard {
+    padding: 1.6rem 2rem;
+  }
+
+  .guestName {
+    font-size: 1.6rem;
+    line-height: 2.4rem;
+  }
+
+  .phone,
+  .email {
+    font-size: 1.4rem;
+    line-height: 1.8rem;
+  }
+
+  .dividerText {
+    font-size: 1.6rem;
+    line-height: 2.4rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .guestCard {
+    max-width: 100%;
+  }
+}

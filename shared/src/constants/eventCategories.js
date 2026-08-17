@@ -1,0 +1,10 @@
+import catalog from "./eventCategories.cjs";
+
+export const EVENT_CATEGORIES = catalog.EVENT_CATEGORIES;
+export const EVENT_CATEGORY_VALUES = catalog.EVENT_CATEGORY_VALUES;
+export const TEMPLATE_FAMILY_TO_EVENT_CATEGORY =
+  catalog.TEMPLATE_FAMILY_TO_EVENT_CATEGORY;
+export const GENERAL_EVENT_FALLBACK_CATEGORIES =
+  catalog.GENERAL_EVENT_FALLBACK_CATEGORIES;
+
+export default EVENT_CATEGORIES;

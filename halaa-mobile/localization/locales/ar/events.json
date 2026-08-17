@@ -1,0 +1,329 @@
+{
+  "title": "المناسبات",
+  "createEvent": {
+    "title": "إنشاء مناسبة جديدة",
+    "eventName": "اسم المناسبة",
+    "description": "الوصف",
+    "date": "التاريخ",
+    "time": "الوقت",
+    "location": "الموقع",
+    "guests": "الضيوف",
+    "businessActivationRequired": "فعّل اشتراكك لإنشاء مناسبة"
+  },
+  "eventDetails": {
+    "title": "تفاصيل المناسبة",
+    "attendees": "الحضور",
+    "confirmed": "مؤكد",
+    "pending": "في الانتظار",
+    "declined": "رفض"
+  },
+  "guestList": {
+    "title": "قائمة الضيوف",
+    "addGuest": "إضافة ضيف",
+    "name": "الاسم",
+    "phone": "الهاتف",
+    "status": "الحالة"
+  },
+  "home": {
+    "welcome": "مرحبا",
+    "guest": "ضيف"
+  },
+  "common": {
+    "loading": "جار التحميل...",
+    "loadError": "خطأ في تحميل البيانات",
+    "retry": "إعادة المحاولة",
+    "search": "ابحث...",
+    "filter": "تصفية",
+    "all": "الكل"
+  },
+  "stats": {
+    "liveEvents": "مناسبات مباشرة",
+    "allEvents": "جميع المناسبات",
+    "endedEvents": "مناسبات منتهية",
+    "attendanceRate": "عدد القبول"
+  },
+  "filters": {
+    "all": "الكل",
+    "live": "مباشرة",
+    "ended": "منتهية",
+    "draft": "مسودة"
+  },
+  "subscription": {
+    "guestQuota": "حصة الضيوف",
+    "unlimited": "ضيوف غير محدودين",
+    "remaining": "ضيف متبقي",
+    "limitReached": "تم الوصول للحد الأقصى من الضيوف",
+    "upgradePrompt": "قم بترقية باقتك لإنشاء مزيد من المناسبات أو إضافة المزيد من الضيوف",
+    "upgradePlan": "ترقية الباقة",
+    "eventLimitReached": "لقد وصلت إلى الحد الأقصى من المناسبات لهذه الفترة"
+  },
+  "messaging": {
+    "sendInvitation": "إرسال الدعوات",
+    "selectedGuests": "الضيوف المحددون",
+    "selectChannel": "اختر طريقة الإرسال",
+    "channel": "القناة",
+    "sms": "SMS",
+    "whatsapp": "واتساب",
+    "smsInfo": "سيتم إرسال رسالة نصية تحتوي على تفاصيل الدعوة ورابط الرد",
+    "whatsappInfo": "سيتم إرسال رسالة واتساب تحتوي على تفاصيل الدعوة ورابط الرد",
+    "send": "إرسال",
+    "sending": "جاري الإرسال...",
+    "invitationsSent_one": "تم إرسال {{count}} دعوة بنجاح",
+    "invitationsSent_other": "تم إرسال {{count}} دعوة بنجاح",
+    "sendError": "خطأ في إرسال الدعوات",
+    "noGuestsWithPhone": "لا يوجد ضيوف برقم هاتف",
+    "retryFailed": "إعادة المحاولة",
+    "retrying": "جاري إعادة المحاولة...",
+    "retrySuccess": "تمت إعادة قائمة انتظار الدعوات الفاشلة",
+    "sent": "مُرسَلة",
+    "delivered": "مُستلَمة",
+    "failed": "فاشلة",
+    "pending": "في الانتظار"
+  },
+  "staff": {
+    "notifySuccess": "تم الإرسال إلى {{sent}} من {{total}} من الطاقم",
+    "notifyError": "فشل إشعار الطاقم",
+    "notifying": "جاري الإرسال...",
+    "notifyStaff": "إشعار الطاقم"
+  },
+  "postEvent": {
+    "share": "مشاركة ما بعد المناسبة"
+  },
+  "manageEvent": "إدارة المناسبة",
+  "testMessage": {
+    "title": "رسالة تجريبية",
+    "description": "أرسل رسالة تجريبية للتحقق من محتوى الدعوة قبل الإطلاق",
+    "phoneLabel": "رقم الجوال",
+    "cancel": "إلغاء",
+    "send": "إرسال",
+    "sending": "جاري الإرسال...",
+    "success": "تم إرسال الرسالة التجريبية بنجاح",
+    "error": "فشل في إرسال الرسالة التجريبية",
+    "infoText": "سيتم إرسال نسخة تجريبية من دعوتك إلى هذا الرقم",
+    "validation": {
+      "phoneRequired": "رقم الجوال مطلوب",
+      "phoneFormat": "يجب أن يبدأ بـ 5 ويتكون من 9 أرقام"
+    }
+  },
+  "partialFailure": {
+    "title": "إرسال جزئي للدعوات",
+    "message": "لم يتم إرسال {{failed}} من أصل {{total}} دعوة. {{sent}} وصلت بنجاح."
+  },
+  "scheduleSend": {
+    "title": "جدولة الإرسال",
+    "description": "حدد موعد إرسال دعوات المناسبة للضيوف",
+    "date": "تاريخ الإرسال",
+    "datePlaceholder": "اختر التاريخ",
+    "time": "وقت الإرسال",
+    "timePlaceholder": "اختر الوقت",
+    "windowNote": "اختر تاريخ إرسال بين أقرب تاريخ مسموح وقبل المناسبة بـ 3 أيام.",
+    "cancel": "إلغاء",
+    "confirm": "تأكيد الجدولة",
+    "scheduling": "جاري الجدولة...",
+    "success": "تمت جدولة الدعوات بنجاح",
+    "error": "فشل في جدولة الإرسال",
+    "validation": {
+      "dateRequired": "التاريخ مطلوب",
+      "timeRequired": "الوقت مطلوب",
+      "minDate": "تاريخ الإرسال مبكر جداً — اختر تاريخاً لاحقاً.",
+      "tooSoon": "تاريخ الإرسال مبكر جداً — اختر تاريخاً لاحقاً.",
+      "tooLate": "يجب أن يكون تاريخ الإرسال قبل المناسبة بـ 3 أيام على الأقل."
+    }
+  },
+  "validation": {
+    "guestNameRequired": "اسم الضيف مطلوب",
+    "staffNameRequired": "اسم المشرف مطلوب",
+    "nameRequired": "الاسم مطلوب",
+    "phoneRequired": "رقم الجوال مطلوب",
+    "phoneInvalid": "رقم الجوال يجب أن يكون 9 أرقام ويبدأ بـ 5",
+    "phoneDuplicate": "هذا الرقم موجود بالفعل في القائمة"
+  },
+  "csv": {
+    "headers": {
+      "guestName": "اسم الضيف",
+      "staffName": "اسم المشرف",
+      "phone": "رقم الجوال",
+      "category": "التصنيف"
+    }
+  },
+  "guest": {
+    "alerts": {
+      "successTitle": "نجاح",
+      "errorTitle": "خطأ",
+      "cancel": "إلغاء",
+      "delete": "حذف",
+      "addSuccess": "تم إضافة الضيف بنجاح",
+      "addError": "حدث خطأ أثناء الحفظ",
+      "updateSuccess": "تم تعديل الضيف بنجاح",
+      "deleteConfirmTitle": "تأكيد الحذف",
+      "deleteConfirmBody": "هل أنت متأكد من حذف هذا الضيف؟",
+      "staffDeleteConfirmBody": "هل أنت متأكد من حذف هذا المشرف؟",
+      "deleteSuccess": "تم حذف الضيف بنجاح",
+      "deleteError": "حدث خطأ أثناء الحذف",
+      "staffAddSuccess": "تم إضافة المشرف بنجاح",
+      "staffUpdateSuccess": "تم تعديل المشرف بنجاح",
+      "staffDeleteSuccess": "تم حذف المشرف بنجاح",
+      "staffDeleteError": "حدث خطأ أثناء حذف المشرف",
+      "staffRevokeAlready": "تم إلغاء صلاحية هذا المشرف بالفعل.",
+      "staffRevokeSuccess": "تم إلغاء صلاحية وصول المشرف.",
+      "staffRevokeError": "حدث خطأ أثناء إلغاء الصلاحية",
+      "qrRotatedNew": "تم إنشاء رمز QR جديد. سيُرسل إلى الضيف عبر القناة المعتادة.",
+      "qrUpdated": "تم تحديث رمز الدخول.",
+      "qrRotateError": "تعذر تحديث رمز QR",
+      "accessRevokedSuccess": "تم إلغاء صلاحية الضيف لمحتوى ما بعد المناسبة.",
+      "accessRevokeError": "تعذر إلغاء الصلاحية",
+      "exportDialogTitle": "تصدير قائمة الضيوف",
+      "exportTitle": "تصدير",
+      "exportError": "تعذر تصدير قائمة الضيوف",
+      "saveError": "حدث خطأ أثناء الحفظ",
+      "noResponseYet": "لم يرد بعد"
+    },
+    "portal": {
+      "loading": "جارٍ تحميل دعوتك...",
+      "errorTitle": "تعذر تحميل الدعوة",
+      "invalidCode": "رابط الدعوة غير صالح أو منتهي الصلاحية.",
+      "notAccepting": "هذه المناسبة لم تعد تستقبل الردود.",
+      "networkError": "تعذر الاتصال بالخادم. الرجاء المحاولة مرة أخرى.",
+      "retry": "إعادة المحاولة",
+      "greeting": "مرحباً، {{name}}",
+      "rsvpPrompt": "هل ستحضر؟",
+      "confirm": "تأكيد الحضور",
+      "decline": "اعتذار",
+      "submitting": "جارٍ الإرسال...",
+      "submitError": "تعذر إرسال الرد. حاول مجدداً.",
+      "welcomeTitle": "أهلاً وسهلاً بك",
+      "welcomeBody": "نسعد بحضورك ونتطلع لرؤيتك.",
+      "qrLabel": "رمز الدخول",
+      "infoTitle": "أنت مدعو!",
+      "infoBody": "أهلاً بك يا {{name}} — يسعدنا وجودك معنا.",
+      "thanksTitle": "شكراً لردك",
+      "thanksDeclined": "نأسف لعدم تمكنك من الحضور. شكراً لإعلامنا.",
+      "alreadyResponded": "تم تسجيل ردك مسبقاً.",
+      "messageLabel": "رسالة (اختياري)",
+      "messagePlaceholder": "أضف ملاحظة للمضيف",
+      "dietaryLabel": "متطلبات غذائية (اختياري)",
+      "plusOnesLabel": "ضيوف إضافيون (اختياري)"
+    }
+  },
+  "autoReminderInfo": "نرسل تذكيراً مجانياً لضيوفك الذين أكدوا الحضور قبل المناسبة.",
+  "autoReminderInfoCustom": "نرسل تذكيراً مجانياً لضيوفك الذين أكدوا الحضور في {{date}} الساعة {{time}}.",
+  "customizeReminder": "تخصيص",
+  "customizeReminderModalTitle": "تخصيص التذكير التلقائي",
+  "customReminderCheckbox": "تخصيص وقت التذكير",
+  "saveSuccess": "تم حفظ إعدادات التذكير بنجاح",
+  "save": "حفظ",
+  "reminderCustomize": {
+    "description": "نرسل تذكيراً مجانياً لضيوفك الذين أكدوا الحضور قبل المناسبة.",
+    "trialInfo": "في الباقة التجريبية، يُرسل التذكير تلقائياً بعد 10 دقائق من إرسال الدعوات ولا يمكن تخصيصه.",
+    "dateLabel": "التاريخ",
+    "timeLabel": "الوقت",
+    "selectDate": "اختر التاريخ",
+    "windowHint": "اختر وقتاً بعد بدء الإرسال وقبل المناسبة بـ 24 ساعة على الأقل.",
+    "cancel": "إلغاء",
+    "errors": {
+      "dateTimeRequired": "التاريخ والوقت مطلوبان لتخصيص التذكير",
+      "outOfRange": "يجب أن يكون وقت التذكير بعد بدء الإرسال وقبل المناسبة بـ 24 ساعة على الأقل.",
+      "generic": "تعذّر حفظ إعدادات التذكير"
+    }
+  },
+  "reminder": {
+    "confirmTitle": "إرسال تذكير",
+    "confirmBody": "إرسال تذكير مجاني للضيوف الذين أكدوا الحضور؟",
+    "send": "إرسال",
+    "sending": "جاري الإرسال...",
+    "sendAll": "تذكير الضيوف",
+    "success": "تم إرسال التذكير",
+    "error": "تعذر إرسال التذكير"
+  },
+  "selectMode": {
+    "select": "تحديد",
+    "cancel": "إلغاء التحديد",
+    "selectedCount": "{{count}} محدد"
+  },
+  "bulkActions": {
+    "resend": "إعادة إرسال الدعوة",
+    "extraReminder": "تذكير إضافي",
+    "resendTitle": "إعادة إرسال الدعوة",
+    "extraReminderTitle": "تذكير إضافي",
+    "costSummary": "سيتم الإرسال إلى {{count}} · يكلف {{count}} دعوة · {{remaining}} متبقية",
+    "sentResult": "{{successful}}/{{total}} تم الإرسال",
+    "insufficientInvites": "لا يوجد رصيد كافٍ من الدعوات — اشترِ المزيد من الباقات.",
+    "noReminderTemplate": "لا يوجد قالب تذكير مُعد لهذه الفئة. تواصل مع الدعم.",
+    "noEligibleResend": "لا يمكن إعادة دعوة أي من الضيوف المحددين (فقط من لم يردّ).",
+    "noEligibleReminder": "لا يوجد بين الضيوف المحددين من أكّد الحضور.",
+    "sendInvitesFirst": "أرسِل الدعوات الأولية أولًا، ثم استخدم إعادة الإرسال لمن لم يردّ.",
+    "noEligibleNow": "لقد ردّ الجميع — لا يوجد من يمكن إعادة دعوته.",
+    "noConfirmedNow": "لا يوجد ضيوف مؤكدون للتذكير بعد.",
+    "error": "تعذّر إتمام العملية",
+    "send": "إرسال",
+    "cancel": "إلغاء",
+    "unlimited": "غير محدود"
+  },
+  "sendActions": {
+    "menu": "إرسال الرسائل",
+    "items": {
+      "newGuests": "إرسال دعوة للضيوف الجدد",
+      "resend": "إعادة إرسال الدعوة",
+      "extraReminder": "تذكير إضافي"
+    },
+    "disabled": {
+      "sendFirst": "أرسِل الدعوات الأولية أولًا",
+      "noNewGuests": "لا يوجد ضيوف جدد للإرسال إليهم",
+      "noResend": "ردّ الجميع بالفعل",
+      "noConfirmed": "لا يوجد ضيوف مؤكدون بعد"
+    },
+    "noNewGuestsToast": "لا يوجد ضيوف جدد لإرسال الدعوات إليهم.",
+    "expired": "انتهت صلاحية باقة هذه المناسبة أو لم يعد الإرسال متاحًا.",
+    "popup": {
+      "selectAll": "تحديد الكل",
+      "counter": "{{count}} محدد · {{remaining}} دعوة متبقية",
+      "counterUnlimited": "{{count}} محدد",
+      "cost": "سيُرسل هذا {{count}} رسالة ويستهلك {{count}} دعوة.",
+      "costUnlimited": "سيُرسل هذا {{count}} رسالة.",
+      "empty": "لا يوجد ضيوف مطابقون لهذا الإجراء."
+    }
+  },
+  "remainingInvites": {
+    "label": "الدعوات المتبقية",
+    "unlimited": "غير محدود",
+    "helper": "إضافة الضيوف مجانية؛ يتم خصم الرصيد فقط عند إرسال دعوة أو تذكير.",
+    "tooltip": "الدعوات المتبقية = الرصيد + الإضافات + التعويض − المُرسَل. إضافة الضيوف مجانية؛ يتم خصم الرصيد فقط عند إرسال دعوة أو تذكير."
+  },
+  "failureBanner": {
+    "retrying": {
+      "title": "نُعيد محاولة إطلاق مناسبتك",
+      "attemptCount": "محاولة {{attempt}} من {{max}}. سنحاول مجدداً تلقائياً.",
+      "nextAttempt": "المحاولة التالية خلال {{countdown}}"
+    },
+    "failed": {
+      "title": "نعتذر — تعذّر إطلاق مناسبتك",
+      "message": "لم نتمكن من إرسال الدعوات لمناسبتك. سنبذل كل جهد لمساعدتك على إطلاقها.",
+      "reason": "سبب الفشل: "
+    },
+    "retryButton": {
+      "retrying": "جارٍ إعادة المحاولة...",
+      "idle": "إعادة محاولة الإطلاق"
+    },
+    "retryNotAvailable": "إعادة المحاولة غير متاحة في هذه الشاشة",
+    "retryUnavailableTitle": "غير متاح"
+  },
+  "guestTableExtras": {
+    "autoReminder": "تذكير تلقائي",
+    "sent": "تم الإرسال",
+    "notSent": "لم يُرسل",
+    "addedBy": "أضافه",
+    "sentVia": "أُرسل عبر",
+    "responseTime": "وقت الرد",
+    "noResponse": "لم يرد بعد",
+    "notAvailable": "—",
+    "whatsapp": "واتساب",
+    "sms": "رسالة نصية",
+    "smsFallback": "رسالة نصية (بديلة)",
+    "status": {
+      "confirmed": "مؤكد",
+      "checkedIn": "حضر",
+      "declined": "معتذر",
+      "invited": "مدعو"
+    }
+  }
+}

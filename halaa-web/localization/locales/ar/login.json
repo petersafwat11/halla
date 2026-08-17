@@ -1,0 +1,56 @@
+{
+  "loginForm": {
+    "greeting": {
+      "title": "مرحبًا بك فى هلا",
+      "subtitle": "سجّل دخولك وابدأ رحلتك معنا في تنظيم الدعوات بأسلوب عصري ومميز."
+    },
+    "emailLogin": {
+      "email": {
+        "label": "البريد اللإلكترونى",
+        "placeholder": "ادخل البريد اللإلكترونى"
+      },
+      "password": {
+        "label": "كلمة المرور",
+        "placeholder": "ادخل كلمة المرور"
+      },
+      "forgotPassword": "نسيت كلمة المرور",
+      "rememberMe": "تذكرنى",
+      "loginWithOTP": "تسجيل الدخول بكلمة مرور مؤقتة"
+    },
+    "otpLogin": {
+      "phoneNumber": "رقم الهاتف",
+      "verification": "التحقق",
+      "editPhone": "إلغاء",
+      "loginWithEmail": "تسجيل الدخول بالبريد اللإلكترونى",
+      "verificationTitle": "التحقق من رقم الهاتف",
+      "verificationDescription": "لقد أرسلنا رمز مكون من 6 أرقام إلى رقم هاتفك المحمول ",
+      "verificationDescriptionEnd": " يرجى إدخاله أدناه",
+      "resendCode": "إعادة إرسال الرمز؟ ({{seconds}} ثانية)",
+      "resendNow": "إعادة إرسال الرمز",
+      "resending": "جاري إعادة الإرسال..."
+    },
+    "buttons": {
+      "login": "تسجيل الدخول",
+      "verify": "التحقق"
+    },
+    "formBottom": {
+      "orContinueWith": "أو استمر باستخدام",
+      "noAccount": "ليس لديك حساب؟",
+      "createAccount": "إنشاء حساب"
+    },
+    "email": {},
+    "errors": {
+      "emailRequired": "البريد الإلكتروني مطلوب",
+      "invalidEmail": "قم بإدخال بريد إالكتروني صالح مثال example@domain.com",
+      "passwordMinLength": "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل",
+      "passwordComplexity": "كلمة المرور تتكون من حروف وأرقام فقط، وبها حرف ورقم على الأقل",
+      "invalidPassword": "كلمة المرور غير صحيحة، تحقق منها وحاول مرة أخرى.",
+      "phoneNumberInvalid": "رقم الهاتف غير صحيح تحقق منه وحاول مرة اخرى",
+      "otpInvalid": "رمز التحقق غير صحيح",
+      "otpIncomplete": "يرجى إدخال رمز التحقق كاملاً"
+    }
+  },
+  "validation": {
+    "invalidSaudiPhone": "يرجى إدخال رقم هاتف سعودي صحيح"
+  }
+}

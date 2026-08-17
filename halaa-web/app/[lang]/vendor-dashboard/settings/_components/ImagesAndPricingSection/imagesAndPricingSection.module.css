@@ -1,0 +1,15 @@
+/* Images & Pricing — read view. Card/thumb/empty styling comes from
+   ../_shared; only the per-gallery label/spacing is section-specific.
+   (The edit popup uses imagesAndPricingEditForm.module.css.) */
+
+.gallery {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-12);
+}
+
+.label {
+  font-size: var(--fs-body-small);
+  font-weight: var(--fw-medium);
+  color: var(--color-natural-400);
+}

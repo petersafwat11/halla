@@ -1,0 +1,157 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: 3.2rem;
+  padding: 2.4rem;
+  background: #fff;
+}
+
+@media screen and (max-width: 768px) {
+  .sections {
+    gap: 2.4rem;
+    padding: 2rem;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .sections {
+    gap: 2rem;
+    padding: 1.6rem;
+  }
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 2.4rem;
+  border-radius: 1.2rem;
+  border: 1px solid #f0f0f0;
+  background: #fff;
+}
+
+@media screen and (max-width: 768px) {
+  .section {
+    padding: 2rem;
+    gap: 1.6rem;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .section {
+    padding: 1.6rem;
+  }
+}
+
+.inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+@media screen and (max-width: 768px) {
+  .inputs {
+    gap: 1.6rem;
+  }
+}
+
+.grid_inputs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+}
+
+@media screen and (max-width: 768px) {
+  .grid_inputs {
+    gap: 1.6rem;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .grid_inputs {
+    grid-template-columns: 1fr;
+  }
+}
+
+.full_width {
+  grid-column: span 2;
+}
+
+@media screen and (max-width: 600px) {
+  .full_width {
+    grid-column: span 1;
+  }
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+}
+
+.refund_policy {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.policy_text {
+  padding: 1.6rem;
+  border-radius: 0.8rem;
+  background: #fafafa;
+  border: 1px solid #e5e5e5;
+}
+
+.policy_text p {
+  color: var(--color-title);
+  font-size: clamp(1.3rem, 2.5vw, 1.4rem);
+  font-weight: 400;
+  line-height: 1.43;
+  letter-spacing: 0.014px;
+  text-align: right;
+  margin: 0;
+}
+
+.terms_checkbox {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.checkbox {
+  width: 2.4rem;
+  height: 2.4rem;
+  accent-color: #c28e5c;
+  cursor: pointer;
+}
+
+.checkbox_label {
+  color: var(--color-title);
+  font-size: clamp(1.4rem, 2.8vw, 1.6rem);
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: 0.08px;
+  text-align: right;
+  cursor: pointer;
+  flex: 1;
+}
+
+@media screen and (max-width: 899px) {
+  .sections {
+    padding: 2rem 1.6rem;
+  }
+  
+  .section {
+    border-radius: 1.2rem;
+    border: 1px solid #f0f0f0;
+  }
+}

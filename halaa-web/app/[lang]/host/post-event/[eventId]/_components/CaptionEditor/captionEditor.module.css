@@ -1,0 +1,63 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  background: var(--color-primary, #c28e5c);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.6rem;
+  flex-shrink: 0;
+}
+
+.hostName {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-secondary-900, #2a2a2a);
+}
+
+.textarea {
+  width: 100%;
+  border: none;
+  outline: none;
+  resize: vertical;
+  font-family: Cairo, -apple-system, Roboto, Helvetica, sans-serif;
+  font-size: 1.7rem;
+  line-height: 2.4rem;
+  color: var(--color-secondary-900, #2a2a2a);
+  background: transparent;
+  min-height: 6rem;
+}
+
+.textarea::placeholder {
+  color: var(--color-natural-450, #9a9a9a);
+}
+
+.statusRow {
+  min-height: 1.6rem;
+}
+
+.saving {
+  font-size: 1.2rem;
+  color: var(--color-natural-450, #9a9a9a);
+}
+
+.saved {
+  font-size: 1.2rem;
+  color: #2e7d32;
+}

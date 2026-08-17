@@ -1,0 +1,144 @@
+{
+  "validating": "Validating your access...",
+  "loading": "Loading content...",
+  "invalidToken": "This link is invalid or has expired.",
+  "accessDenied": "Access Denied",
+  "accessDeniedDesc": "Your access link is no longer valid. Please request a new link.",
+  "noContent": "No content available yet.",
+  "noContentDesc": "The host hasn't published any post-event content yet. Check back later.",
+  "thankYou": {
+    "defaultTitle": "Thank you for attending!",
+    "noMessage": "We hope you had a wonderful time!"
+  },
+  "post": {
+    "photo": "Photo",
+    "video": "Video",
+    "message": "Message",
+    "gallery": "Gallery",
+    "likes": "{{count}} Likes",
+    "comments": "{{count}} Comments",
+    "likeButton": "Like",
+    "commentButton": "Comment",
+    "viewComments": "View all comments",
+    "hideComments": "Hide comments"
+  },
+  "comment": {
+    "placeholder": "Write a comment...",
+    "send": "Send",
+    "sending": "Sending...",
+    "empty": "No comments yet. Be the first!",
+    "success": "Comment added",
+    "error": "Failed to add comment",
+    "guestFallback": "Guest"
+  },
+  "like": {
+    "error": "Failed to update like"
+  },
+  "event": {
+    "hostLabel": "Hosted by"
+  },
+  "buttons": {
+    "back": "Back"
+  },
+  "postEventFallback": "Post Event",
+  "errors": {
+    "qrInvalid": "This link is invalid.",
+    "qrRotated": "This link has been replaced by a newer one.",
+    "qrRevoked": "This link has been revoked.",
+    "qrExpired": "This link has expired.",
+    "qrLookup": "We couldn't find your invitation. Please request a new link."
+  },
+  "validation": {
+    "commentEmpty": "Comment cannot be empty",
+    "commentMaxLength": "Comment cannot exceed 1000 characters",
+    "imagesMaxCount": "Maximum 3 images allowed",
+    "titleMaxLength": "Title cannot exceed 200 characters",
+    "titleArMaxLength": "Arabic title cannot exceed 200 characters",
+    "descriptionMaxLength": "Description cannot exceed 1000 characters",
+    "descriptionArMaxLength": "Arabic description cannot exceed 1000 characters",
+    "textMaxLength": "Text cannot exceed 2000 characters"
+  },
+  "host": {
+    "title": "Post Event Page",
+    "publish": "Publish & Send to Guests",
+    "publishSuccess": "Content published and links sent successfully",
+    "publishConfirmTitle": "Publish post-event content",
+    "publishConfirmMessage": "This will send access links to all attended guests. Continue?",
+    "unpublish": "Unpublish",
+    "unpublishSuccess": "Content unpublished",
+    "unpublishConfirmTitle": "Unpublish post-event content",
+    "unpublishConfirmMessage": "Existing access links will be revoked. Continue?",
+    "media": {
+      "uploadHint": "Choose what to add",
+      "empty": "Tap to add event media",
+      "deleteConfirm": "Delete this media item?",
+      "deleteTitle": "Delete Media",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "add": "Add Media",
+      "uploading": "Uploading...",
+      "pickPhotos": "Photos",
+      "pickVideos": "Videos",
+      "permissionRequired": "Permission Required",
+      "permissionMessage": "Please allow gallery access to upload media"
+    },
+    "messaging": {
+      "title": "Access-link template",
+      "subtitle": "Choose the WhatsApp template guests receive when you publish.",
+      "empty": "No templates available",
+      "emptyHint": "Ask an admin to assign at least one approved template to the post-event category.",
+      "varCount": "{{count}} variables",
+      "preview": "Preview",
+      "saveSuccess": "Template saved",
+      "saveFailed": "Could not save template"
+    },
+    "thankYouMessage": {
+      "title": "Thank-you message",
+      "placeholder": "Write a thank-you message for guests...",
+      "save": "Save message",
+      "saveSuccess": "Message saved"
+    },
+    "accessLinks": {
+      "title": "Send access links",
+      "templatePicker": "Override template (optional)",
+      "filterLabel": "Send to",
+      "filterAttended": "Attended",
+      "filterConfirmed": "Confirmed",
+      "filterAll": "All guests",
+      "send": "Send",
+      "success": "Sent {{count}} access links",
+      "channelBreakdown": "WhatsApp: {{whatsapp}} · SMS: {{sms}} · Failed: {{failed}}",
+      "noTemplateConfigured": "No Taqnyat template selected — pick one before sending.",
+      "noTemplateCta": "Pick a template"
+    },
+    "summary": {
+      "title": "Content summary",
+      "photos": "Photos",
+      "videos": "Videos",
+      "comments": "Comments",
+      "likes": "Likes",
+      "linksSent": "Links sent"
+    },
+    "errors": {
+      "uploadFailed": "Failed to upload media",
+      "deleteFailed": "Failed to delete media",
+      "publishFailed": "Failed to publish",
+      "saveFailed": "Failed to save",
+      "sendFailed": "Failed to send access links"
+    }
+  },
+  "hostPostEvent": {
+    "title": "Post Event Page",
+    "status": {
+      "published": "Published — Guests can access content",
+      "draft": "Draft — Not yet published"
+    },
+    "photos": {
+      "title": "Media"
+    },
+    "errors": {
+      "loadFailed": "Failed to load data",
+      "retry": "Retry"
+    }
+  }
+}

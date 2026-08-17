@@ -1,0 +1,40 @@
+{
+  "tabs": {
+    "branding": "العلامة التجارية"
+  },
+  "loading": "جاري التحميل...",
+  "branding": {
+    "logo": "شعار المنصة",
+    "logoDescription": "قم بتحميل شعار منصتك. الحجم الموصى به: 200×60 بكسل",
+    "uploadLogo": "انقر لتحميل الشعار",
+    "removeLogo": "إزالة الشعار",
+    "platformName": "اسم المنصة",
+    "platformNameDescription": "سيظهر هذا الاسم في رسائل البريد الإلكتروني والإشعارات",
+    "platformNameLabel": "اسم المنصة",
+    "platformNamePlaceholder": "أدخل اسم منصتك",
+    "colorScheme": "نظام الألوان",
+    "colorSchemeDescription": "اختر الألوان التي تتناسب مع علامتك التجارية",
+    "presets": "إعدادات سريعة:",
+    "primaryColor": "اللون الأساسي",
+    "secondaryColor": "اللون الثانوي",
+    "preview": "معاينة:",
+    "sampleButton": "زر نموذجي",
+    "sampleText": "نص نموذجي",
+    "contactInfo": "معلومات الاتصال",
+    "contactInfoDescription": "تفاصيل الاتصال بالدعم لمستخدمي منصتك",
+    "supportEmail": "البريد الإلكتروني للدعم",
+    "supportEmailPlaceholder": "support@yourplatform.com",
+    "supportPhone": "هاتف الدعم",
+    "supportPhonePlaceholder": "+966 XX XXX XXXX",
+    "saveChanges": "حفظ التغييرات",
+    "saving": "جاري الحفظ...",
+    "saveSuccess": "تم حفظ إعدادات العلامة التجارية بنجاح",
+    "saveError": "فشل في حفظ إعدادات العلامة التجارية"
+  },
+  "subscription": {
+    "currentPlan": "الخطة الحالية:",
+    "active": "نشط",
+    "inactive": "غير نشط",
+    "expiresOn": "تنتهي في:"
+  }
+}

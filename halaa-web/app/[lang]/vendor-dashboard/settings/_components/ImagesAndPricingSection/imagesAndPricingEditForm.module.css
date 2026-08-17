@@ -1,0 +1,195 @@
+/* Images & Pricing edit form (rendered inside PopupLayout). Token-based. */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  max-height: 85vh;
+  min-width: min(560px, 86vw);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-12);
+  padding-bottom: var(--spacing-16);
+  margin-bottom: var(--spacing-20);
+  border-bottom: 1px solid var(--color-natural-200);
+}
+
+.closeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: var(--radius-8);
+  background: transparent;
+  color: var(--color-natural-700);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+.closeBtn:hover {
+  background: var(--color-natural-150);
+}
+
+.title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: var(--fw-semibold);
+  color: var(--color-natural-900);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-24);
+  overflow-y: auto;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-12);
+}
+
+.sectionHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-12);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: var(--fs-body-medium);
+  font-weight: var(--fw-semibold);
+  color: var(--color-natural-700);
+}
+
+.addButton {
+  padding: var(--spacing-8) var(--spacing-16);
+  border: 1px solid var(--color-primary-200);
+  border-radius: var(--radius-8);
+  background: var(--color-primary-50);
+  color: var(--color-primary-800);
+  font-size: var(--fs-body-small);
+  font-weight: var(--fw-semibold);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.addButton:hover {
+  background: var(--color-primary-100);
+}
+
+.empty {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: var(--spacing-12) var(--spacing-16);
+  border: 1px dashed var(--color-natural-250);
+  border-radius: var(--radius-12);
+  color: var(--color-natural-350);
+  font-size: var(--fs-body-small);
+}
+
+.subhead {
+  font-size: var(--fs-body-small);
+  font-weight: var(--fw-medium);
+  color: var(--color-natural-400);
+}
+
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-12);
+}
+
+.tile {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.tileImage {
+  display: block;
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  border: 1px solid var(--color-natural-200);
+  border-radius: var(--radius-12);
+}
+
+.tileDelete {
+  position: absolute;
+  top: -8px;
+  inset-inline-end: -8px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-error-500);
+  color: #fff;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+.tileDelete:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.footer {
+  display: flex;
+  gap: var(--spacing-12);
+  padding-top: var(--spacing-16);
+  margin-top: var(--spacing-4);
+  border-top: 1px solid var(--color-natural-200);
+}
+
+.saveBtn {
+  flex: 1;
+  padding: var(--spacing-12) var(--spacing-20);
+  border: none;
+  border-radius: var(--radius-8);
+  background: var(--color-primary-500);
+  color: #fff;
+  font-size: var(--fs-body-medium);
+  font-weight: var(--fw-semibold);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.saveBtn:hover:not(:disabled) {
+  background: var(--color-primary-600);
+}
+.saveBtn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.cancelBtn {
+  padding: var(--spacing-12) var(--spacing-20);
+  border: 1px solid var(--color-natural-250);
+  border-radius: var(--radius-8);
+  background: var(--color-natural-50);
+  color: var(--color-natural-700);
+  font-size: var(--fs-body-medium);
+  font-weight: var(--fw-semibold);
+  cursor: pointer;
+}
+.cancelBtn:hover:not(:disabled) {
+  background: var(--color-natural-150);
+}
+
+@media (max-width: 480px) {
+  .container {
+    min-width: 0;
+  }
+  .footer {
+    flex-direction: column-reverse;
+  }
+}

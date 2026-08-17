@@ -1,0 +1,635 @@
+/* ═══════════════════════════════════════════════
+   STEP FOUR — Template Selection
+   Refined luxury aesthetic with warm gold accents
+═══════════════════════════════════════════════ */
+
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bubbleFadeIn {
+  from { opacity: 0; transform: translateY(4px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes checkPop {
+  0%   { transform: scale(0) rotate(-15deg); opacity: 0; }
+  60%  { transform: scale(1.2) rotate(3deg); }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+@keyframes accentGrow {
+  from { height: 0; }
+  to   { height: 100%; }
+}
+
+/* ─── Layout ──────────────────────────────────── */
+.stepFour {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2.4rem;
+  align-self: stretch;
+  width: 100%;
+}
+
+.formSection {
+  display: flex;
+  padding: 0 2.4rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2rem;
+  align-self: stretch;
+}
+.formSection > * {
+  width: 100%;
+}
+
+/* ─── Shared labels ──────────────────────────── */
+.sectionLabel {
+  color: #2c2c2c;
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 2rem;
+  letter-spacing: 0.01rem;
+}
+
+/* ─── Template section ───────────────────────── */
+.templateSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  align-self: stretch;
+}
+
+.templateHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 0.4rem;
+}
+
+.filterHint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #8a7e74;
+  font-size: 1.2rem;
+  font-weight: 400;
+  line-height: 1.6rem;
+}
+
+.filterCategoryName {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.85rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f5e9d8 0%, #efddc4 100%);
+  color: #6b4e33;
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.02rem;
+}
+
+
+/* ─── Template list ──────────────────────────── */
+.templateList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+/* ─── Template card ──────────────────────────── */
+.templateCard {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  width: 100%;
+  border: 1.5px solid #e8e2da;
+  border-radius: 1.2rem;
+  background: #ffffff;
+  cursor: pointer;
+  text-align: right;
+  overflow: hidden;
+  transition:
+    border-color 0.22s ease,
+    background 0.22s ease,
+    box-shadow 0.22s ease,
+    transform 0.14s ease;
+  animation: cardIn 0.3s ease both;
+}
+
+.templateCard:hover {
+  border-color: #d4a878;
+  background: #fefcf9;
+  box-shadow: 0 2px 12px rgba(194, 142, 92, 0.12);
+  transform: translateY(-1px);
+}
+
+.templateCardSelected {
+  border-color: #c28e5c;
+  background: linear-gradient(135deg, #fdf9f4 0%, #fef6ee 100%);
+  box-shadow:
+    0 0 0 1px rgba(194, 142, 92, 0.3),
+    0 4px 16px rgba(194, 142, 92, 0.14);
+}
+
+.templateCardSelected:hover {
+  transform: translateY(0);
+}
+
+/* Gold accent bar on the right side (RTL start) */
+.cardAccent {
+  display: block;
+  width: 3.5px;
+  background: #e8e2da;
+  border-radius: 0 1px 1px 0;
+  flex-shrink: 0;
+  transition: background 0.22s ease;
+  align-self: stretch;
+  min-height: 100%;
+}
+
+.cardAccentActive {
+  background: linear-gradient(180deg, #d4a878 0%, #c28e5c 50%, #a87040 100%);
+  animation: accentGrow 0.3s ease both;
+}
+
+.cardBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 1.4rem 1.6rem 1.4rem 1.2rem;
+  min-width: 0;
+}
+
+/* Top row: name + radio */
+.cardTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.cardLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.cardLabelIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 0.7rem;
+  background: linear-gradient(135deg, #f9efde 0%, #f1dcb9 100%);
+  color: #a87040;
+  flex-shrink: 0;
+}
+
+.cardLabelText {
+  color: #2c2c2c;
+  font-size: 1.3rem;
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: 0.01rem;
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
+}
+
+/* Message bubble */
+.bubbleWrap {
+  position: relative;
+  background: #faf6ef;
+  border-radius: 0.4rem 1rem 1rem 1rem;
+  padding: 1.1rem 1.3rem;
+  border: 1px solid #efe6d6;
+}
+
+.bubbleText {
+  color: #4a3d33;
+  font-size: 1.25rem;
+  font-weight: 400;
+  line-height: 2rem;
+  direction: rtl;
+  text-align: right;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+}
+
+/* Gold check badge (top-left corner) */
+.checkBadge {
+  position: absolute;
+  top: 1rem;
+  left: 1.2rem;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #d4a462, #c28e5c);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(194, 142, 92, 0.35);
+  animation: checkPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* ─── Skeleton Loading ───────────────────────── */
+.skeletonList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.skeletonCard {
+  padding: 1.4rem 1.6rem;
+  border-radius: 1.2rem;
+  border: 1.5px solid #f0ebe4;
+  background: #fdfaf7;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.skeletonRow {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  justify-content: flex-end;
+}
+
+.skeletonPulse {
+  border-radius: 0.4rem;
+  background: linear-gradient(90deg, #f0ebe4 25%, #fdf9f5 50%, #f0ebe4 75%);
+  background-size: 400px 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+
+.skeletonRadio {
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.skeletonTitle {
+  height: 1.4rem;
+  width: 45%;
+}
+
+.skeletonBody {
+  height: 1.2rem;
+  width: 90%;
+}
+
+.skeletonBodyShort {
+  height: 1.2rem;
+  width: 65%;
+}
+
+/* ─── Empty state ────────────────────────────── */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 3.2rem 2.4rem;
+  border-radius: 1.2rem;
+  border: 1.5px dashed #ddd5c8;
+  background: #fdfaf7;
+}
+
+.emptyIcon {
+  font-size: 3.2rem;
+  opacity: 0.35;
+  line-height: 1;
+  margin-bottom: 0.4rem;
+}
+
+.emptyTitle {
+  color: #5a5550;
+  font-size: 1.35rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.emptyHint {
+  color: #9c9288;
+  font-size: 1.2rem;
+  font-weight: 400;
+  text-align: center;
+}
+
+/* ─── Replies section ────────────────────────── */
+.repliesSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  padding: 1.6rem;
+  border-radius: 1.2rem;
+  border: 1.5px solid #ede7df;
+  background: linear-gradient(160deg, #fdfbf8 0%, #f9f5f0 100%);
+}
+
+.repliesHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.repliesHint {
+  color: #8a8a8a;
+  font-size: 1.2rem;
+  font-weight: 400;
+  line-height: 1.7rem;
+  letter-spacing: 0.01rem;
+}
+
+/* ─── Pill tabs ──────────────────────────────── */
+.tabsWrapper {
+  display: flex;
+  flex-direction: row;
+  border-radius: 0.8rem;
+  background: #f0e9e0;
+  padding: 0.3rem;
+  gap: 0.2rem;
+}
+
+.tabBtn {
+  flex: 1;
+  padding: 0.8rem 0.4rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #8a7e74;
+  font-size: 1.25rem;
+  font-weight: 500;
+  line-height: 1.4;
+  border-radius: 0.6rem;
+  transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.tabBtn:hover:not(.tabBtnActive) {
+  background: rgba(255, 255, 255, 0.5);
+  color: #5a5046;
+}
+
+.tabBtnActive {
+  background: #ffffff;
+  color: #2c2c2c;
+  font-weight: 600;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(194, 142, 92, 0.1);
+}
+
+/* ─── Reply bubble ───────────────────────────── */
+.replyBubbleWrap {
+  animation: bubbleFadeIn 0.22s ease both;
+}
+
+.replyBubble {
+  background: #ffffff;
+  border-radius: 1.2rem 1.2rem 0 1.2rem;
+  border: 1px solid #e6ddd3;
+  padding: 1.2rem 1.4rem 0.8rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.replyText {
+  color: #2c2c2c;
+  font-size: 1.35rem;
+  font-weight: 400;
+  line-height: 2.1rem;
+  direction: rtl;
+  text-align: right;
+  margin: 0 0 0.6rem;
+}
+
+
+/* ─── Optional note ──────────────────────────── */
+.optionalField {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.8rem;
+  align-self: stretch;
+}
+
+.labelWithOptional {
+  display: flex;
+  padding: 0 0.8rem;
+  justify-content: flex-start;
+  align-items: center;
+  align-self: stretch;
+  gap: 0.4rem;
+  flex-direction: row-reverse;
+}
+
+.label {
+  color: #2c2c2c;
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 2rem;
+  letter-spacing: 0.01rem;
+}
+
+.optionalText {
+  color: #a09890;
+  font-size: 1.2rem;
+  font-weight: 400;
+  line-height: 1.6rem;
+}
+
+/* ─── Invitation-type selector ───────────────── */
+.inviteTypeSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  align-self: stretch;
+}
+
+.inviteTypeGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.inviteTypeCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.8rem;
+  padding: 1.8rem 1.2rem 1.4rem;
+  border: 1.5px solid #e8e2da;
+  border-radius: 1.2rem;
+  background: #ffffff;
+  cursor: pointer;
+  transition:
+    border-color 0.22s ease,
+    background 0.22s ease,
+    box-shadow 0.22s ease,
+    transform 0.14s ease;
+  animation: cardIn 0.3s ease both;
+}
+
+.inviteTypeCard:hover {
+  border-color: #d4a878;
+  background: #fefcf9;
+  box-shadow: 0 2px 12px rgba(194, 142, 92, 0.12);
+  transform: translateY(-1px);
+}
+
+.inviteTypeCardSelected {
+  border-color: #c28e5c;
+  background: linear-gradient(135deg, #fdf9f4 0%, #fef6ee 100%);
+  box-shadow:
+    0 0 0 1px rgba(194, 142, 92, 0.3),
+    0 4px 16px rgba(194, 142, 92, 0.14);
+}
+
+.inviteTypeCardSelected:hover {
+  transform: translateY(0);
+}
+
+/* Sequence number chip (01–04), top-right in RTL */
+.inviteTypeNum {
+  position: absolute;
+  top: 1rem;
+  right: 1.2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.4rem;
+  height: 2.4rem;
+  padding: 0 0.6rem;
+  border-radius: 999px;
+  background: #f4efe7;
+  color: #a87040;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.02rem;
+}
+
+.inviteTypeIcons {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.8rem;
+}
+
+.inviteIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: 0.8rem;
+  background: #f7f4ef;
+  transition: opacity 0.18s ease, filter 0.18s ease;
+}
+
+/* "off" icons are greyed to mirror the client's 4-card image */
+.inviteIconOff {
+  filter: grayscale(1);
+  opacity: 0.32;
+}
+
+.inviteTypeTitle {
+  color: #2c2c2c;
+  font-size: 1.3rem;
+  font-weight: 700;
+  line-height: 1.7rem;
+  margin: 0.2rem 0 0;
+}
+
+.inviteTypeDesc {
+  color: #8a7e74;
+  font-size: 1.15rem;
+  font-weight: 400;
+  line-height: 1.6rem;
+  margin: 0;
+}
+
+/* Note shown in place of the auto-reply editor for no-reply types */
+.repliesDisabledNote {
+  padding: 1.4rem 1.6rem;
+  border-radius: 0.9rem;
+  border: 1px dashed #ddd5c8;
+  background: #fdfaf7;
+  color: #8a7e74;
+  font-size: 1.25rem;
+  line-height: 2rem;
+  direction: rtl;
+  text-align: right;
+}
+
+/* ─── Responsive ─────────────────────────────── */
+@media (max-width: 1400px) {
+  .inviteTypeGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .formSection {
+    padding: 0 1.2rem;
+  }
+
+  .inviteTypeGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.8rem;
+  }
+
+  .inviteTypeCard {
+    gap: 0.6rem;
+    padding: 1.5rem 0.8rem 1.2rem;
+  }
+
+  .inviteTypeIcons {
+    gap: 0.35rem;
+  }
+
+  .inviteIcon {
+    width: 2.8rem;
+    height: 2.8rem;
+  }
+
+  .tabBtn {
+    font-size: 1.15rem;
+    padding: 0.7rem 0.3rem;
+  }
+
+  .cardLabelText {
+    font-size: 1.2rem;
+  }
+
+  .cardLabelIcon {
+    width: 2.2rem;
+    height: 2.2rem;
+  }
+
+  .bubbleText {
+    font-size: 1.15rem;
+    line-height: 1.85rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .inviteTypeGrid {
+    grid-template-columns: 1fr;
+  }
+}

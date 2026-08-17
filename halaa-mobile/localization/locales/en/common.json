@@ -1,0 +1,104 @@
+{
+  "success": "successful",
+  "templates": "Event templates",
+  "templates_categories_error": "Could not load categories",
+  "templates_load_error": "Could not load templates",
+  "no_templates_available": "No templates available",
+  "common": { "all": "All" },
+  "buttons": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "done": "Done",
+    "retry": "Retry",
+    "refresh": "Refresh"
+  },
+  "messages": {
+    "loading": "Loading...",
+    "noData": "No data available",
+    "error": "Something went wrong",
+    "success": "Operation completed successfully",
+    "networkError": "Network connection error",
+    "tryAgain": "Please try again"
+  },
+  "navigation": {
+    "home": "Home",
+    "events": "Events",
+    "marketplace": "Halaa Marketplace",
+    "plans": "Plans",
+    "tickets": "Tickets",
+    "profile": "Profile",
+    "settings": "Settings",
+    "dashboard": "Dashboard",
+    "hosts": "Hosts",
+    "more": "More"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all as read",
+    "clearAll": "Clear all",
+    "clearAllConfirm": "Are you sure you want to clear all notifications?",
+    "loadMore": "Load more",
+    "loading": "Loading...",
+    "empty": {
+      "title": "No notifications",
+      "message": "You're all caught up! Check back later."
+    },
+    "delete": "Delete",
+    "justNow": "Just now"
+  },
+  "fonts": {
+    "cairo": { "displayName": "Cairo" },
+    "inter": { "displayName": "Inter" },
+    "lato": { "displayName": "Lato" },
+    "amiri": { "displayName": "Amiri" },
+    "ibm_plex_arabic": { "displayName": "IBM Plex Sans Arabic" },
+    "noto_sans_arabic": { "displayName": "Noto Sans Arabic" }
+  },
+  "validation": {
+    "invalidSaudiPhone": "Phone must start with 5 and be 9 digits",
+    "invalidEmail": "Please enter a valid email address",
+    "required": "This field is required",
+    "passwordMinLength": "Password must be at least 8 characters",
+    "passwordMaxLength": "Password must not exceed 128 characters",
+    "passwordComplexity": "Use letters and numbers only, with at least one of each",
+    "otpLength": "Verification code must be 6 digits",
+    "otpInvalid": "Verification code must contain only digits",
+    "usernameMin": "Username must be at least 2 characters",
+    "usernameMax": "Username must be less than 50 characters",
+    "emailInvalid": "Please enter a valid email address",
+    "passwordMin": "Password must be at least 8 characters",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "currentPasswordRequired": "Current password is required to set a new password"
+  },
+  "date": {
+    "months": {
+      "0": "January",
+      "1": "February",
+      "2": "March",
+      "3": "April",
+      "4": "May",
+      "5": "June",
+      "6": "July",
+      "7": "August",
+      "8": "September",
+      "9": "October",
+      "10": "November",
+      "11": "December"
+    },
+    "days": {
+      "0": "Sunday",
+      "1": "Monday",
+      "2": "Tuesday",
+      "3": "Wednesday",
+      "4": "Thursday",
+      "5": "Friday",
+      "6": "Saturday"
+    }
+  }
+}

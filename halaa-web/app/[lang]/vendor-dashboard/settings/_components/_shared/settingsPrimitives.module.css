@@ -1,0 +1,219 @@
+/* Shared vendor-settings read-view primitives. Token-based, responsive. */
+
+/* ---- Card ---------------------------------------------------------------- */
+.card {
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--color-natural-50);
+  border: 1px solid var(--color-natural-200);
+  border-radius: var(--radius-16);
+  padding: var(--spacing-24);
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-12);
+  margin-bottom: var(--spacing-20);
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-6);
+  color: var(--color-natural-900);
+}
+
+.editBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-8);
+  flex-shrink: 0;
+  padding: var(--spacing-8) var(--spacing-16);
+  border: 1px solid var(--color-primary-200);
+  border-radius: var(--radius-8);
+  background: var(--color-primary-50);
+  color: var(--color-primary-800);
+  font-size: var(--fs-body-small);
+  font-weight: var(--fw-semibold);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.editBtn:hover {
+  background: var(--color-primary-100);
+  border-color: var(--color-primary-300);
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-20);
+}
+
+/* ---- Field grid + read fields ------------------------------------------- */
+.fieldGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--spacing-16) var(--spacing-20);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+  min-width: 0;
+}
+
+.fieldLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-8);
+  font-size: var(--fs-body-small);
+  font-weight: var(--fw-medium);
+  color: var(--color-natural-400);
+}
+
+.fieldValue {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-8);
+  min-height: 44px;
+  padding: var(--spacing-12) var(--spacing-16);
+  box-sizing: border-box;
+  background: var(--color-natural-150);
+  border: 1px solid var(--color-natural-200);
+  border-radius: var(--radius-12);
+  color: var(--color-natural-900);
+  font-size: var(--fs-body-medium);
+  line-height: var(--lh-7, 24px);
+}
+
+.fieldIcon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.fieldText {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.placeholder {
+  color: var(--color-natural-350);
+}
+
+.fieldBlock .fieldValue {
+  align-items: flex-start;
+  min-height: 0;
+  white-space: pre-wrap;
+}
+
+/* ---- Thumbnails ---------------------------------------------------------- */
+.thumbRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-12);
+}
+
+.thumb {
+  position: relative;
+  flex-shrink: 0;
+  /* Shrink-wrap the thumbnail so the absolutely-positioned delete badge sits
+     on the image corner — not the far edge of a stretched flex-column parent
+     (e.g. the standalone logo block). */
+  align-self: flex-start;
+  width: fit-content;
+}
+
+.thumbView {
+  display: block;
+  padding: 0;
+  border: 1px solid var(--color-natural-200);
+  border-radius: var(--radius-12);
+  background: var(--color-natural-100);
+  cursor: pointer;
+  overflow: hidden;
+  line-height: 0;
+}
+.thumbView:disabled {
+  cursor: default;
+}
+
+.thumbImg {
+  display: block;
+  width: 96px;
+  height: 80px;
+  object-fit: cover;
+}
+
+.thumbHint {
+  display: block;
+  padding: var(--spacing-4) var(--spacing-8);
+  font-size: 10px;
+  line-height: 1.4;
+  color: var(--color-natural-400);
+  background: var(--color-natural-50);
+  text-align: center;
+}
+
+.thumbDelete {
+  position: absolute;
+  top: -8px;
+  inset-inline-end: -8px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-error-500, #d92d20);
+  color: #fff;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+.thumbDelete:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* ---- Empty state --------------------------------------------------------- */
+.empty {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: var(--spacing-12) var(--spacing-16);
+  box-sizing: border-box;
+  border: 1px dashed var(--color-natural-250);
+  border-radius: var(--radius-12);
+  color: var(--color-natural-350);
+  font-size: var(--fs-body-small);
+}
+
+/* ---- Responsive ---------------------------------------------------------- */
+@media (max-width: 768px) {
+  .card {
+    padding: var(--spacing-20);
+    border-radius: var(--radius-12);
+  }
+  .cardBody {
+    gap: var(--spacing-16);
+  }
+  .fieldGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: var(--spacing-16);
+  }
+  .editBtnText {
+    display: none;
+  }
+}

@@ -1,0 +1,11 @@
+.container {
+  margin-top: 2rem;
+}
+
+.errorState {
+  text-align: center;
+  padding: 6rem;
+  color: #c62828;
+  background: #ffebee;
+  border-radius: 1.2rem;
+}

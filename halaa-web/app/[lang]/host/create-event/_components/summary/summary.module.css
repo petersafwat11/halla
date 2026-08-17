@@ -1,0 +1,379 @@
+.summary {
+  display: flex;
+  padding-bottom: 2.4rem;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.6rem;
+  align-self: stretch;
+}
+
+.content {
+  display: flex;
+  padding: 0 2.4rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.6rem;
+  align-self: stretch;
+}
+
+.statsCards {
+  display: flex;
+  padding: 0 1.2rem;
+  align-items: center;
+  gap: 2.4rem;
+  align-self: stretch;
+}
+
+.statCard {
+  display: flex;
+  padding: 1.6rem;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 1.6rem;
+  flex: 1 0 0;
+  border-radius: 1.2rem;
+  border: 1px solid var(--Content-Border-Border-brand, #c28e5c);
+  background: var(--Content-bg-Card-bg-1, #fff);
+  flex-direction: column;
+  align-items: center;
+}
+
+.iconContainer {
+  display: flex;
+  width: 2.4rem;
+  height: 2.4rem;
+  padding: 0.462rem;
+  justify-content: center;
+  align-items: center;
+  gap: 0.462rem;
+  border-radius: 0.554rem;
+  background: var(--Content-bg-Card-bg-5, #f9f4ef);
+}
+
+.statValue {
+  color: var(--Content-Text-Text-title-black, #2c2c2c);
+  font-size: 1.6rem;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 2.4rem;
+  letter-spacing: 0.024rem;
+}
+
+.statLabel {
+  color: var(--Content-Text-Text-body-discription, #656565);
+  font-size: 1.2rem;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.6rem;
+  letter-spacing: 0.06rem;
+}
+
+.detailsSection {
+  display: flex;
+  padding: 1.2rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+  align-self: stretch;
+  border-radius: 1.2rem;
+  border: 1px solid var(--Content-Border-Border-Gray250, #dfdfdf);
+}
+
+.detailsHeader {
+  color: var(--Content-Text-Text-title-black, #2c2c2c);
+  font-size: 1.4rem;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 2rem;
+  letter-spacing: 0.035rem;
+}
+
+.detailsContent {
+  display: flex;
+  padding: 1.2rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.6rem;
+  align-self: stretch;
+  border-radius: 1.2rem;
+  background: var(--Content-bg-Card-bg-5, #f9f4ef);
+}
+
+.eventTitle {
+  align-self: stretch;
+  color: var(--Content-Text-Text-title-black, #2c2c2c);
+  font-size: 1.4rem;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1.6rem;
+  letter-spacing: 0.056rem;
+}
+
+.invitationText {
+  display: flex;
+  padding: 0.8rem;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  align-self: stretch;
+  border-radius: 0.8rem;
+  border: 1px dashed var(--Content-Border-Border-brand200, #e3cbb4);
+  flex: 1 0 0;
+  color: var(--Content-Text-Text-body-paragraph, #2c2c2c);
+  font-size: 1.2rem;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.6rem;
+  letter-spacing: 0.06rem;
+}
+
+.eventDetails {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.2rem;
+  align-self: stretch;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 2.4rem;
+  align-self: stretch;
+}
+
+.detailValue {
+  color: var(--Content-Text-Text-body-discription, #656565);
+  font-size: 1.6rem;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 2.4rem;
+  letter-spacing: 0.08rem;
+}
+
+.detailIcon {
+  display: flex;
+  padding: 0.4rem;
+  align-items: center;
+  gap: 1rem;
+  border-radius: 0.8rem;
+  background: var(--Content-bg-Card-bg-6, #f5ece4);
+}
+
+.scheduleSection {
+  display: flex;
+  padding: 1.6rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.2rem;
+  align-self: stretch;
+  border-radius: 0.8rem;
+  border: 1px solid var(--Content-Border-Text-body-Activr, #2a8c5b);
+  background: var(--Content-bg-Card-bg-10, #eaf4ef);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.scheduleHeader {
+  color: #14532d;
+  font-size: 1.6rem;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 2.4rem;
+  letter-spacing: 0.024rem;
+}
+
+.scheduleContent {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.6rem;
+  align-self: stretch;
+}
+
+.scheduleText {
+  color: #15803d;
+  text-align: right;
+  font-size: 1.4rem;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 2rem;
+  letter-spacing: 0.014rem;
+}
+
+.scheduledInfo {
+  display: flex;
+  padding: 1.2rem 1.6rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+  align-self: stretch;
+  border-radius: 0.6rem;
+  background: var(--Content-bg-Card-bg-1, #fff);
+}
+
+.scheduledTitle {
+  color: var(--Content-Text-Text-title-black, #2c2c2c);
+  font-size: 1.4rem;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 1.6rem;
+  letter-spacing: 0.056rem;
+}
+
+.scheduledDetails {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.scheduledItem {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
+.scheduledValue {
+  color: var(--Content-Text-Text-body-discription, #656565);
+  font-size: 1.4rem;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.6rem;
+  letter-spacing: 0.056rem;
+}
+
+.scheduleActions {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 1.6rem;
+}
+
+.actionButton {
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+  gap: 1rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+}
+
+.actionText {
+  color: var(--Content-Text-Text-title-black, #2c2c2c);
+  font-size: 1.2rem;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 1.6rem;
+  letter-spacing: 0.06rem;
+}
+
+.actionTextDanger {
+  color: var(--Content-Text-Text-body-error, #c0392b);
+  font-size: 1.2rem;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 1.6rem;
+  letter-spacing: 0.06rem;
+}
+
+.checkboxSection {
+  display: flex;
+  padding: 0 1.2rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.6rem;
+  align-self: stretch;
+}
+
+.checkboxRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.6rem;
+}
+
+.checkboxLabel {
+  color: var(--Content-Text-Text-body-paragraph, #2c2c2c);
+  text-align: right;
+  font-size: 1.6rem;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 2.4rem;
+  letter-spacing: 0.024rem;
+}
+
+.checkbox {
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 0.6rem;
+  border: 1.5px solid var(--Content-Border-Border-Gray250, #dfdfdf);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.checkboxChecked {
+  background: var(--Button-Primary-bg-active, #c28e5c);
+  border-color: var(--Button-Primary-bg-active, #c28e5c);
+  position: relative;
+}
+
+.checkboxChecked::after {
+  content: "✓";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 1.4rem;
+  font-weight: bold;
+}
+
+@media (max-width: 600px) {
+  .content {
+    padding: 0 1.2rem;
+  }
+
+  .statsCards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.2rem;
+    padding: 0;
+  }
+
+  .detailsContent {
+    padding: 0.8rem;
+  }
+
+  .detailRow {
+    /* flex-direction: column; */
+    align-items: flex-start;
+    gap: 0.8rem;
+  }
+
+  .scheduleSection {
+    padding: 1.2rem;
+  }
+
+  .scheduledDetails {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  .scheduleActions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .actionButton {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .checkboxSection {
+    padding: 0;
+  }
+}

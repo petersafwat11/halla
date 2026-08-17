@@ -1,0 +1,173 @@
+.listSection {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  align-self: stretch;
+  width: 100%;
+  padding: 0 2.4rem;
+  margin-bottom: 2.4rem;
+}
+
+.listContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2rem;
+  align-self: stretch;
+}
+
+.listCard {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  align-self: stretch;
+  border-radius: 1.2rem;
+  background: var(--Content-bg-Card-bg-1, #fff);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  padding: 1.6rem;
+  animation: fadeIn 0.8s ease-out;
+}
+
+.tabHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+  align-self: stretch;
+  border-radius: 1.2rem 1.2rem 0 0;
+  border-bottom: 1px solid var(--Natural-200, #f2f2f2);
+  padding-bottom: 1.6rem;
+}
+
+.tabList {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+}
+
+.tabItem {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.6rem;
+  border-radius: 0.4rem;
+  padding: 0.8rem 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.tabItem:hover {
+  background: rgba(194, 142, 92, 0.05);
+}
+
+.tabTitle {
+  display: flex;
+  align-items: flex-start;
+}
+
+.tabText {
+  color: var(--Content-Text-Text-title-black, #2c2c2c);
+  font-family: Cairo, -apple-system, Roboto, Helvetica, sans-serif;
+  font-size: 1.4rem;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 2rem;
+  letter-spacing: 0.014px;
+}
+
+.tabIcon {
+  display: flex;
+  width: 1.6rem;
+  height: 1.6rem;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.guestsList {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.6rem;
+  align-self: stretch;
+  max-height: 60rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 0.4rem;
+}
+.guestsList > * {
+  width: 100%;
+}
+
+.guestsList::-webkit-scrollbar {
+  width: 0.6rem;
+}
+
+.guestsList::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 1rem;
+}
+
+.guestsList::-webkit-scrollbar-thumb {
+  background: var(--color-primary, #c28e5c);
+  border-radius: 1rem;
+}
+
+.guestsList::-webkit-scrollbar-thumb:hover {
+  background: #a57a4d;
+}
+
+.emptyState {
+  font-family: Cairo, -apple-system, Roboto, Helvetica, sans-serif;
+  font-size: 1.4rem;
+  color: #6b7280;
+  text-align: center;
+  padding: 2.4rem 0;
+  width: 100%;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (min-width: 768px) {
+  .listSection {
+    padding: 0 4rem;
+  }
+
+  .listCard {
+    padding: 2.4rem;
+  }
+
+  .tabText {
+    font-size: 1.6rem;
+    line-height: 2.4rem;
+  }
+
+  .tabIcon {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .guestsList {
+    gap: 2rem;
+    max-height: 70rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .listSection {
+    max-width: 100rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .guestsList {
+    max-height: 80rem;
+  }
+}

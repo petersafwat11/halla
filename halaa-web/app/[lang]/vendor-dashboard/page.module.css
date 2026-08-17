@@ -1,0 +1,368 @@
+.container {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  padding: 0 0 40px 0;
+  background: var(--Content-bg-Card-Bg-artboard, #f9f4ef);
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  width: 100%;
+  padding: 24px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  box-sizing: border-box;
+}
+
+.headerContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  align-self: stretch;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.headerRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+}
+
+.pageTitle {
+  color: var(--Natural-900, #2c2c2c);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 28px;
+  margin: 0;
+}
+
+.pageSubtitle {
+  color: var(--Content-Text-Text-body-discription, #656565);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  margin: 0;
+}
+
+.primaryButton,
+.secondaryButton {
+  display: inline-flex;
+  height: 40px;
+  padding: 0 16px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.primaryButton {
+  background: var(--Button-Primary-bg-active, #c28e5c);
+}
+
+.primaryButton:hover {
+  background: #b37d4f;
+}
+
+.primaryButton span {
+  color: var(--Button-Primary-foreground-active, #fff);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 16px;
+  letter-spacing: 0.056px;
+}
+
+.secondaryButton {
+  background: var(--Button-Secondary-bg-active, #f5ece4);
+}
+
+.secondaryButton:hover {
+  background: #e8d9c9;
+}
+
+.secondaryButton span {
+  color: var(--Button-Secondary-foreground-active, #6b4e33);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 16px;
+  letter-spacing: 0.056px;
+}
+
+.filtersSection {
+  display: flex;
+  width: calc(100% - 48px);
+  margin: 0 24px;
+  padding: 16px 24px;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 12px;
+  background: var(--Content-bg-Card-bg-1, #fff);
+  margin-bottom: 24px;
+  box-sizing: border-box;
+}
+
+.filtersSectionContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  align-self: stretch;
+  width: 100%;
+  gap: 16px;
+}
+
+.filtersRight {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+  flex: 1;
+}
+
+.filtersLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.filtersTitle {
+  color: var(--Natural-900, #2c2c2c);
+  text-align: right;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 28px;
+  margin: 0;
+}
+
+.moreButton {
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  justify-content: center;
+  align-items: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.moreButton:hover {
+  background: var(--Content-bg-Card-bg-5, #f9f4ef);
+}
+
+.searchBox {
+  display: flex;
+  width: 240px;
+  padding: 8px 12px;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  border-radius: 8px;
+  background: var(--Content-bg-Card-bg-4, #f2f2f2);
+  box-sizing: border-box;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 0;
+  color: var(--Content-Text-Text-body-discription, #656565);
+  text-align: right;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.06px;
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+.searchInput::placeholder {
+  color: var(--Content-Text-Text-body-discription, #656565);
+}
+
+.servicesGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  padding: 0 24px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.noServices {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 24px;
+  color: #656565;
+  font-size: 16px;
+}
+
+.error {
+  display: flex;
+  justify-content: center;
+  padding: 60px 24px;
+  color: #c43d3d;
+}
+
+@media (max-width: 1024px) {
+  .header {
+    padding: 20px;
+  }
+
+  .filtersSection {
+    width: calc(100% - 40px);
+    margin: 0 20px 24px;
+    padding: 16px 20px;
+  }
+
+  .servicesGrid {
+    padding: 0 20px;
+    gap: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding: 20px 16px;
+  }
+
+  .headerContent {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .headerLeft {
+    width: 100%;
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  .primaryButton,
+  .secondaryButton {
+    flex: 1;
+    height: 38px;
+    padding: 0 12px;
+  }
+
+  .primaryButton span,
+  .secondaryButton span {
+    font-size: 13px;
+  }
+
+  .filtersSection {
+    width: calc(100% - 32px);
+    margin: 0 16px 16px;
+    padding: 12px 16px;
+  }
+
+  .filtersSectionContent {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .filtersRight {
+    justify-content: flex-end;
+    width: 100%;
+  }
+
+  .filtersLeft {
+    width: 100%;
+    gap: 10px;
+  }
+
+  .filtersTitle {
+    font-size: 18px;
+    line-height: 22px;
+  }
+
+  .searchBox {
+    flex: 1;
+    width: auto;
+  }
+
+  .servicesGrid {
+    grid-template-columns: 1fr;
+    padding: 0 16px;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 16px 12px;
+  }
+
+  .headerLeft {
+    gap: 8px;
+  }
+
+  .primaryButton,
+  .secondaryButton {
+    height: 36px;
+    padding: 0 10px;
+    gap: 8px;
+  }
+
+  .primaryButton span,
+  .secondaryButton span {
+    font-size: 12px;
+    line-height: 14px;
+  }
+
+  .pageTitle {
+    font-size: 20px;
+    line-height: 24px;
+  }
+
+  .pageSubtitle {
+    font-size: 11px;
+  }
+
+  .filtersSection {
+    width: calc(100% - 24px);
+    margin: 0 12px 12px;
+    padding: 12px;
+  }
+
+  .filtersTitle {
+    font-size: 16px;
+    line-height: 20px;
+  }
+
+  .moreButton {
+    width: 28px;
+    height: 28px;
+  }
+
+  .moreButton img {
+    width: 20px;
+    height: 20px;
+  }
+
+  .servicesGrid {
+    padding: 0 12px;
+    gap: 12px;
+  }
+}

@@ -1,0 +1,329 @@
+{
+  "title": "Events",
+  "createEvent": {
+    "title": "Create New Event",
+    "eventName": "Event Name",
+    "description": "Description",
+    "date": "Date",
+    "time": "Time",
+    "location": "Location",
+    "guests": "Guests",
+    "businessActivationRequired": "Activate your subscription to create an event"
+  },
+  "eventDetails": {
+    "title": "Event Details",
+    "attendees": "Attendees",
+    "confirmed": "Confirmed",
+    "pending": "Pending",
+    "declined": "Declined"
+  },
+  "guestList": {
+    "title": "Guest List",
+    "addGuest": "Add Guest",
+    "name": "Name",
+    "phone": "Phone",
+    "status": "Status"
+  },
+  "home": {
+    "welcome": "Welcome",
+    "guest": "Guest"
+  },
+  "common": {
+    "loading": "Loading...",
+    "loadError": "Error loading data",
+    "retry": "Retry",
+    "search": "Search...",
+    "filter": "Filter",
+    "all": "All"
+  },
+  "stats": {
+    "liveEvents": "Live Events",
+    "allEvents": "All Events",
+    "endedEvents": "Ended Events",
+    "attendanceRate": "Acceptance Count"
+  },
+  "filters": {
+    "all": "All",
+    "live": "Live",
+    "ended": "Ended",
+    "draft": "Draft"
+  },
+  "subscription": {
+    "guestQuota": "Guest Quota",
+    "unlimited": "Unlimited guests",
+    "remaining": "guests remaining",
+    "limitReached": "Guest limit reached",
+    "upgradePrompt": "Upgrade your plan to create more events or add more guests",
+    "upgradePlan": "Upgrade Plan",
+    "eventLimitReached": "You have reached your event limit for this period"
+  },
+  "messaging": {
+    "sendInvitation": "Send Invitations",
+    "selectedGuests": "Selected Guests",
+    "selectChannel": "Select Delivery Method",
+    "channel": "Channel",
+    "sms": "SMS",
+    "whatsapp": "WhatsApp",
+    "smsInfo": "An SMS will be sent containing invitation details and RSVP link",
+    "whatsappInfo": "A WhatsApp message will be sent containing invitation details and RSVP link",
+    "send": "Send",
+    "sending": "Sending...",
+    "invitationsSent_one": "Successfully sent {{count}} invitation",
+    "invitationsSent_other": "Successfully sent {{count}} invitations",
+    "sendError": "Error sending invitations",
+    "noGuestsWithPhone": "No guests with phone numbers",
+    "retryFailed": "Retry Failed",
+    "retrying": "Retrying...",
+    "retrySuccess": "Failed invitations re-queued",
+    "sent": "Sent",
+    "delivered": "Delivered",
+    "failed": "Failed",
+    "pending": "Pending"
+  },
+  "staff": {
+    "notifySuccess": "Sent to {{sent}}/{{total}} staff",
+    "notifyError": "Failed to notify staff",
+    "notifying": "Sending...",
+    "notifyStaff": "Notify Staff"
+  },
+  "postEvent": {
+    "share": "Share Post-Event"
+  },
+  "manageEvent": "Manage Event",
+  "testMessage": {
+    "title": "Test Message",
+    "description": "Send a test message to verify the invitation before launch",
+    "phoneLabel": "Mobile Number",
+    "cancel": "Cancel",
+    "send": "Send",
+    "sending": "Sending...",
+    "success": "Test message sent successfully",
+    "error": "Failed to send test message",
+    "infoText": "A test version of your invitation will be sent to this number",
+    "validation": {
+      "phoneRequired": "Phone number is required",
+      "phoneFormat": "Must start with 5 and be 9 digits"
+    }
+  },
+  "partialFailure": {
+    "title": "Partial invitation send",
+    "message": "{{failed}} of {{total}} invitations failed to send. {{sent}} delivered successfully."
+  },
+  "scheduleSend": {
+    "title": "Schedule Send",
+    "description": "Set a date and time to send event invitations to guests",
+    "date": "Send Date",
+    "datePlaceholder": "Select date",
+    "time": "Send Time",
+    "timePlaceholder": "Select time",
+    "windowNote": "Choose a send date between the earliest allowed date and 3 days before the event.",
+    "cancel": "Cancel",
+    "confirm": "Confirm Schedule",
+    "scheduling": "Scheduling...",
+    "success": "Invitations scheduled successfully",
+    "error": "Failed to schedule send",
+    "validation": {
+      "dateRequired": "Date is required",
+      "timeRequired": "Time is required",
+      "minDate": "Send date is too early — pick a later date.",
+      "tooSoon": "Send date is too early — pick a later date.",
+      "tooLate": "Send date must be at least 3 days before the event."
+    }
+  },
+  "validation": {
+    "guestNameRequired": "Guest name is required",
+    "staffNameRequired": "Staff name is required",
+    "nameRequired": "Name is required",
+    "phoneRequired": "Phone number is required",
+    "phoneInvalid": "Phone must be 9 digits and start with 5",
+    "phoneDuplicate": "This phone is already in the list"
+  },
+  "csv": {
+    "headers": {
+      "guestName": "Guest name",
+      "staffName": "Staff name",
+      "phone": "Phone",
+      "category": "Category"
+    }
+  },
+  "guest": {
+    "alerts": {
+      "successTitle": "Success",
+      "errorTitle": "Error",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "addSuccess": "Guest added",
+      "addError": "Could not save",
+      "updateSuccess": "Guest updated",
+      "deleteConfirmTitle": "Delete confirmation",
+      "deleteConfirmBody": "Are you sure you want to delete this guest?",
+      "staffDeleteConfirmBody": "Are you sure you want to delete this staff member?",
+      "deleteSuccess": "Guest deleted",
+      "deleteError": "Could not delete guest",
+      "staffAddSuccess": "Staff member added",
+      "staffUpdateSuccess": "Staff member updated",
+      "staffDeleteSuccess": "Staff member deleted",
+      "staffDeleteError": "Could not delete staff member",
+      "staffRevokeAlready": "Staff access was already revoked.",
+      "staffRevokeSuccess": "Staff access revoked.",
+      "staffRevokeError": "Could not revoke staff access",
+      "qrRotatedNew": "New QR code generated. It will be sent to the guest via the usual channel.",
+      "qrUpdated": "Access code updated.",
+      "qrRotateError": "Failed to update QR code.",
+      "accessRevokedSuccess": "Guest access to post-event content revoked.",
+      "accessRevokeError": "Failed to revoke access.",
+      "exportDialogTitle": "Export guest list",
+      "exportTitle": "Export",
+      "exportError": "Failed to export guest list",
+      "saveError": "Could not save",
+      "noResponseYet": "Not responded yet"
+    },
+    "portal": {
+      "loading": "Loading your invitation...",
+      "errorTitle": "Could not load invitation",
+      "invalidCode": "This invitation link is invalid or has expired.",
+      "notAccepting": "This event is no longer accepting RSVPs.",
+      "networkError": "Could not reach the server. Please try again.",
+      "retry": "Try again",
+      "greeting": "Hello, {{name}}",
+      "rsvpPrompt": "Will you attend?",
+      "confirm": "Confirm",
+      "decline": "Decline",
+      "submitting": "Submitting...",
+      "submitError": "Could not submit your response. Please try again.",
+      "welcomeTitle": "Welcome",
+      "welcomeBody": "We are looking forward to seeing you.",
+      "qrLabel": "Entry code",
+      "infoTitle": "You're invited!",
+      "infoBody": "Welcome, {{name}} — we'd be delighted to have you with us.",
+      "thanksTitle": "Thanks for your response",
+      "thanksDeclined": "Sorry you cannot make it. Thank you for letting us know.",
+      "alreadyResponded": "Your response has already been recorded.",
+      "messageLabel": "Message (optional)",
+      "messagePlaceholder": "Add a note for the host",
+      "dietaryLabel": "Dietary restrictions (optional)",
+      "plusOnesLabel": "Additional guests (optional)"
+    }
+  },
+  "autoReminderInfo": "We send a free reminder to your confirmed guests before the event.",
+  "autoReminderInfoCustom": "We send a free reminder to your confirmed guests on {{date}} at {{time}}.",
+  "customizeReminder": "Customize",
+  "customizeReminderModalTitle": "Customize automatic reminder",
+  "customReminderCheckbox": "Customize reminder time",
+  "saveSuccess": "Reminder settings saved successfully",
+  "save": "Save",
+  "reminderCustomize": {
+    "description": "We send a free reminder to your confirmed guests before the event.",
+    "trialInfo": "On the trial plan, the reminder is sent automatically 10 minutes after invitations go out and can't be customized.",
+    "dateLabel": "Date",
+    "timeLabel": "Time",
+    "selectDate": "Select date",
+    "windowHint": "Choose a time after sending starts and at least 24 hours before the event.",
+    "cancel": "Cancel",
+    "errors": {
+      "dateTimeRequired": "Date and time are required for a custom reminder",
+      "outOfRange": "The reminder time must be after sending starts and at least 24 hours before the event.",
+      "generic": "Failed to save reminder settings"
+    }
+  },
+  "reminder": {
+    "confirmTitle": "Send reminder",
+    "confirmBody": "Send a free reminder to guests who confirmed?",
+    "send": "Send",
+    "sending": "Sending...",
+    "sendAll": "Remind guests",
+    "success": "Reminder sent",
+    "error": "Failed to send reminder"
+  },
+  "selectMode": {
+    "select": "Select",
+    "cancel": "Cancel selection",
+    "selectedCount": "{{count}} selected"
+  },
+  "bulkActions": {
+    "resend": "Resend invitation",
+    "extraReminder": "Extra reminder",
+    "resendTitle": "Resend invitation",
+    "extraReminderTitle": "Extra reminder",
+    "costSummary": "Will send to {{count}} · costs {{count}} invites · {{remaining}} remaining",
+    "sentResult": "{{successful}}/{{total}} sent",
+    "insufficientInvites": "Not enough invites — buy more in Plans.",
+    "noReminderTemplate": "No reminder template is configured for this category. Contact support.",
+    "noEligibleResend": "None of the selected guests can be re-invited (only non-responders).",
+    "noEligibleReminder": "None of the selected guests are confirmed.",
+    "sendInvitesFirst": "Send the initial invitations first, then use resend for guests who haven't responded.",
+    "noEligibleNow": "Everyone has already responded — no one left to re-invite.",
+    "noConfirmedNow": "No confirmed guests to remind yet.",
+    "error": "Could not complete the action",
+    "send": "Send",
+    "cancel": "Cancel",
+    "unlimited": "Unlimited"
+  },
+  "sendActions": {
+    "menu": "Send messages",
+    "items": {
+      "newGuests": "Send invite to new guests",
+      "resend": "Resend invitation",
+      "extraReminder": "Extra reminder"
+    },
+    "disabled": {
+      "sendFirst": "Send the initial invitations first",
+      "noNewGuests": "No new guests to send to",
+      "noResend": "Everyone has responded",
+      "noConfirmed": "No confirmed guests yet"
+    },
+    "noNewGuestsToast": "No new guests to send invitations to.",
+    "expired": "This event's plan has expired or sending is no longer allowed.",
+    "popup": {
+      "selectAll": "Select all",
+      "counter": "{{count}} selected · {{remaining}} invites left",
+      "counterUnlimited": "{{count}} selected",
+      "cost": "This will send {{count}} message(s) and use {{count}} invite(s).",
+      "costUnlimited": "This will send {{count}} message(s).",
+      "empty": "No guests match this action."
+    }
+  },
+  "remainingInvites": {
+    "label": "Invites left",
+    "unlimited": "Unlimited",
+    "helper": "Adding guests is free; you're charged only when an invitation or reminder is sent.",
+    "tooltip": "Invites left = pool + extras + compensation − sent. Adding guests is free; you're charged only when an invitation or reminder is sent."
+  },
+  "failureBanner": {
+    "retrying": {
+      "title": "Retrying your event launch",
+      "attemptCount": "Attempt {{attempt}} of {{max}}. We'll retry automatically.",
+      "nextAttempt": "Next attempt in {{countdown}}"
+    },
+    "failed": {
+      "title": "We're sorry — your event couldn't launch",
+      "message": "We couldn't send your invitations. We'll do our best to help you launch.",
+      "reason": "Reason: "
+    },
+    "retryButton": {
+      "retrying": "Retrying...",
+      "idle": "Retry launch"
+    },
+    "retryNotAvailable": "Retry is not available on this screen",
+    "retryUnavailableTitle": "Not Available"
+  },
+  "guestTableExtras": {
+    "autoReminder": "Auto reminder",
+    "sent": "Sent",
+    "notSent": "Not sent",
+    "addedBy": "Added by",
+    "sentVia": "Sent via",
+    "responseTime": "Response time",
+    "noResponse": "No response yet",
+    "notAvailable": "—",
+    "whatsapp": "WhatsApp",
+    "sms": "SMS",
+    "smsFallback": "SMS (fallback)",
+    "status": {
+      "confirmed": "Confirmed",
+      "checkedIn": "Checked in",
+      "declined": "Declined",
+      "invited": "Invited"
+    }
+  }
+}

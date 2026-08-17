@@ -1,0 +1,50 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  width: 100%;
+}
+.or {
+  color: #767676;
+  text-align: right;
+  font-size: 1.4rem;
+  font-weight: 400;
+  line-height: 2rem;
+}
+.toggle_button {
+  display: flex;
+  height: 4.8rem;
+  padding: 1.6rem;
+  justify-content: center;
+  align-items: center;
+  gap: 1.2rem;
+  border-radius: 1.2rem;
+  border: 1px solid #d6b392;
+  background: #fff;
+  color: var(--color-primary);
+  font-size: 1.6rem;
+  font-weight: 600;
+  line-height: 2.4rem;
+  letter-spacing: 0.08px;
+  cursor: pointer;
+  width: 100%;
+}
+.sign_up_button {
+  color: #767676;
+  font-size: 1.6rem;
+  font-weight: 400;
+  line-height: 2.4rem;
+  letter-spacing: 0.08px;
+  outline: none;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+.make_acc {
+  color: var(--color-primary);
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 2rem;
+  letter-spacing: 0.035px;
+}

@@ -1,0 +1,52 @@
+{
+  "$schema": "./listing.schema.md",
+  "_meta": {
+    "platform": "apple",
+    "templateVersion": "0.1.0-DRAFT",
+    "session": "6",
+    "date": "2026-07-02",
+    "approvalGate": "OWNER_AND_COUNSEL_REQUIRED",
+    "rule": "Only fields marked approved:true are derived from ALREADY-SIGNED facts (brand name Halaa/هلا, Saudi-only D2, feature set observable in code, legal URLs from the shared manifest). Every persuasive/marketing field is BLOCKED_NEEDS_OWNER and MUST NOT be submitted until the owner signs it. Do NOT fabricate ratings, awards, superlatives, user counts, or unverified features.",
+    "bundleId": "com.halla.app",
+    "primaryLocale": "ar-SA",
+    "reusesSession5BlockedItems": [
+      "legalEntityName",
+      "supportEmail",
+      "phone/WhatsApp",
+      "postalAddress",
+      "supportResponseSla"
+    ]
+  },
+  "shared": {
+    "bundleId": { "approved": true, "value": "com.halla.app" },
+    "primaryCategory": { "approved": true, "value": "Lifestyle", "note": "Event planning + digital invitations + vendor discovery. Owner may prefer 'Productivity'; confirm." },
+    "secondaryCategory": { "approved": false, "status": "BLOCKED_NEEDS_OWNER", "proposal": "Business", "note": "Owner to confirm secondary category." },
+    "copyright": { "approved": false, "status": "BLOCKED_NEEDS_OWNER", "note": "e.g. '© 2026 <legal entity>'. Depends on the unresolved legal entity name (Session-5 blocked item)." },
+    "supportUrlAr": { "approved": true, "value": "https://halaa.com.sa/ar/support" },
+    "supportUrlEn": { "approved": true, "value": "https://halaa.com.sa/en/support" },
+    "privacyPolicyUrlAr": { "approved": true, "value": "https://halaa.com.sa/ar/privacy" },
+    "privacyPolicyUrlEn": { "approved": true, "value": "https://halaa.com.sa/en/privacy" },
+    "marketingUrlAr": { "approved": true, "value": "https://halaa.com.sa/ar" },
+    "marketingUrlEn": { "approved": true, "value": "https://halaa.com.sa/en" },
+    "eula": { "approved": false, "status": "BLOCKED_NEEDS_OWNER", "proposal": "Apple standard EULA + link to https://halaa.com.sa/<lang>/terms", "note": "Use Apple's standard EULA OR an owner-approved custom EULA consistently. In-app checkout already links Terms/Privacy (Session 3)." },
+    "availability": { "approved": true, "value": ["SA"], "note": "Saudi Arabia storefront only (signed D2). Expanding triggers a new tax/privacy/trader review." }
+  },
+  "localizations": {
+    "ar-SA": {
+      "name": { "approved": true, "value": "هلا", "limit": 30, "unit": "char", "note": "Matches app.json display name." },
+      "subtitle": { "approved": false, "status": "BLOCKED_NEEDS_OWNER", "limit": 30, "unit": "char", "proposal": "منصة إدارة المناسبات والدعوات", "note": "Persuasive copy — owner sign-off required." },
+      "promotionalText": { "approved": false, "status": "BLOCKED_NEEDS_OWNER", "limit": 170, "unit": "char" },
+      "keywords": { "approved": false, "status": "BLOCKED_NEEDS_OWNER", "limit": 100, "unit": "byte", "note": "Apple keyword field is 100 BYTES; Arabic ≈2 bytes/char, so ≤~50 Arabic chars. No competitor names, no duplication of the name/subtitle. Owner-gated." },
+      "description": { "approved": false, "status": "BLOCKED_NEEDS_OWNER", "limit": 4000, "unit": "char", "factsAvailable": "May describe (truthfully, once approved): create & manage events; design digital invitations; send invitations over WhatsApp (no Meta/WhatsApp affiliation implied); real-time attendance/check-in; guest & RSVP management; discover event vendors in the marketplace; business organization features; report/block privacy controls. Subscriptions (monthly/quarterly/annual) + one-time event packages + add-ons per the 34-plan / 22-add-on catalog. Prices/VAT shown by the App Store." },
+      "whatsNew": { "approved": false, "status": "BLOCKED_NEEDS_OWNER", "limit": 4000, "unit": "char", "note": "First release notes — owner-gated." }
+    },
+    "en-US": {
+      "name": { "approved": true, "value": "Halaa", "limit": 30, "unit": "char" },
+      "subtitle": { "approved": false, "status": "BLOCKED_NEEDS_OWNER", "limit": 30, "unit": "char", "proposal": "Events, invitations & vendors" },
+      "promotionalText": { "approved": false, "status": "BLOCKED_NEEDS_OWNER", "limit": 170, "unit": "char" },
+      "keywords": { "approved": false, "status": "BLOCKED_NEEDS_OWNER", "limit": 100, "unit": "byte", "note": "100 bytes; Latin ≈1 byte/char. No competitor names." },
+      "description": { "approved": false, "status": "BLOCKED_NEEDS_OWNER", "limit": 4000, "unit": "char", "factsAvailable": "Same truthful feature set as ar-SA (see above). No superlatives/ratings/counts." },
+      "whatsNew": { "approved": false, "status": "BLOCKED_NEEDS_OWNER", "limit": 4000, "unit": "char" }
+    }
+  }
+}

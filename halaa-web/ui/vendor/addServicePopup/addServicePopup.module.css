@@ -1,0 +1,390 @@
+.container {
+  width: 80rem;
+  /* max-width: 770px; */
+  padding: 3.6rem;
+  background: #fff;
+  border-radius: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 3.6rem;
+  position: relative;
+  margin: 0 auto;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.title {
+  color: #2c2c2c;
+  font-size: 2.4rem;
+  font-weight: 700;
+  line-height: 2.8rem;
+  margin: 0;
+}
+
+.closeButton {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+  border-radius: 50%;
+}
+
+.closeButton:hover {
+  transform: scale(1.1);
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.closeButton:active {
+  transform: scale(0.95);
+}
+
+/* Form */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 2.4rem;
+  width: 100%;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  width: 100%;
+}
+
+.label {
+  color: #2c2c2c;
+  font-size: 1.4rem;
+  font-weight: 500;
+  line-height: 2rem;
+  letter-spacing: 0.014rem;
+  text-align: right;
+}
+
+.existingImageWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  align-items: flex-start;
+}
+
+.existingImageLabel {
+  color: #6b6b6b;
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+.existingImagePreview {
+  width: 12rem;
+  height: 12rem;
+  object-fit: cover;
+  border-radius: 0.8rem;
+  border: 1px solid #e5e5e5;
+}
+
+/* Image Upload */
+.imageUploadArea {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.uploadPlaceholder {
+  display: flex;
+  width: 10.8rem;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 1.2rem;
+  border-radius: 1.2rem;
+  border: 1px dashed #e3cbb4;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.uploadPlaceholder:hover {
+  border-color: #c28e5c;
+  background: rgba(227, 203, 180, 0.1);
+  transform: translateY(-2px);
+}
+
+.uploadText {
+  color: #656565;
+  font-size: 1.4rem;
+  font-weight: 400;
+  line-height: 2rem;
+  letter-spacing: 0.014rem;
+  text-align: center;
+  margin: 0;
+}
+
+/* Row for side-by-side inputs */
+.row {
+  display: flex;
+  gap: 2.4rem;
+  width: 100%;
+}
+
+.inputWrapper {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Tags Input Wrapper */
+.tagsInputWrapper {
+  width: 100%;
+}
+
+.tagsInput {
+  width: 100%;
+  padding: 1.2rem 1.6rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.8rem;
+  font-size: 1.4rem;
+  line-height: 2rem;
+  color: #2c2c2c;
+  background: #f9fafb;
+  cursor: default;
+}
+
+.tagsInput:disabled {
+  opacity: 1;
+  color: #2c2c2c;
+}
+
+.tagsInput::placeholder {
+  color: #9ca3af;
+}
+
+/* Error Text */
+.errorText {
+  color: #dc2626;
+  font-size: 1.2rem;
+  line-height: 1.6rem;
+  margin-top: 0.4rem;
+}
+
+/* Tags */
+.tagsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 0.8rem;
+}
+
+.tag {
+  display: flex;
+  height: 3.2rem;
+  padding: 0 1.2rem;
+  justify-content: center;
+  align-items: center;
+  border-radius: 2rem;
+  background: #f5ece4;
+  color: #2c2c2c;
+  font-size: 1.4rem;
+  font-weight: 400;
+  line-height: 2rem;
+  letter-spacing: 0.014rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.tag:hover {
+  background: #e3cbb4;
+  transform: translateY(-1px);
+}
+
+.tagSelected {
+  background: #c28e5c;
+  color: #fff;
+}
+
+/* Footer */
+.footer {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  justify-content: flex-start;
+}
+
+.submitButton,
+.cancelButton {
+  display: flex;
+  min-width: 13.1rem;
+  padding: 1.2rem 1.6rem;
+  justify-content: center;
+  align-items: center;
+  gap: 1.2rem;
+  border-radius: 1.2rem;
+  font-size: 1.6rem;
+  font-weight: 600;
+  line-height: 2.4rem;
+  letter-spacing: 0.08rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.submitButton {
+  background: #c28e5c;
+  color: #fff;
+}
+
+.submitButton:hover:not(:disabled) {
+  background: #b07d4a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(194, 142, 92, 0.3);
+}
+
+.submitButton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.submitButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cancelButton {
+  border: 1px solid #d6b392;
+  background: #fff;
+  color: #6b4e33;
+}
+
+.cancelButton:hover:not(:disabled) {
+  background: #f5f5f5;
+  border-color: #c28e5c;
+  transform: translateY(-2px);
+}
+
+.cancelButton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.cancelButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    width: 100%;
+    padding: 2.4rem;
+    gap: 2.4rem;
+  }
+
+  .title {
+    font-size: 2rem;
+    line-height: 2.4rem;
+  }
+
+  .row {
+    flex-direction: column;
+    gap: 1.6rem;
+  }
+
+  .tagsContainer {
+    justify-content: center;
+    gap: 1.2rem;
+  }
+
+  .footer {
+    flex-direction: column-reverse;
+    gap: 1.2rem;
+  }
+
+  .submitButton,
+  .cancelButton {
+    width: 100%;
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 2rem;
+    gap: 2rem;
+    border-radius: 0.8rem;
+  }
+
+  .title {
+    font-size: 1.8rem;
+    line-height: 2.2rem;
+  }
+
+  .section {
+    gap: 1.2rem;
+  }
+
+  .form {
+    gap: 2rem;
+  }
+
+  .uploadPlaceholder {
+    width: 100%;
+    padding: 2rem 1.6rem;
+  }
+
+  .tagsContainer {
+    gap: 0.8rem;
+  }
+
+  .tag {
+    font-size: 1.3rem;
+    height: 2.8rem;
+    padding: 0 1rem;
+  }
+}
+
+/* RTL Support */
+[dir="rtl"] .header {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .footer {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .tagsContainer {
+  justify-content: flex-start;
+}
+
+@media (max-width: 768px) {
+  [dir="rtl"] .footer {
+    flex-direction: column-reverse;
+  }
+
+  [dir="rtl"] .tagsContainer {
+    justify-content: center;
+  }
+}

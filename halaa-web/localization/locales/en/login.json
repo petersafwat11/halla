@@ -1,0 +1,74 @@
+{
+  "loginForm": {
+    "greeting": {
+      "title": "Welcome to Halaa",
+      "subtitle": "Login to your account and start your journey with us in organizing invitations in a modern and unique way."
+    },
+    "emailLogin": {
+      "email": {
+        "label": "Email",
+        "placeholder": "Enter your email"
+      },
+      "password": {
+        "label": "Password",
+        "placeholder": "Enter your password"
+      },
+      "forgotPassword": "Forgot Password",
+      "rememberMe": "Remember Me",
+      "loginWithOTP": "Login with temporary password"
+    },
+    "otpLogin": {
+      "phoneNumber": "Phone Number",
+      "verification": "Verification",
+      "editPhone": "Cancel",
+      "loginWithEmail": "Login with email",
+      "verificationTitle": "Phone Number Verification",
+      "verificationDescription": "We have sent a 6-digit code to your mobile number ",
+      "verificationDescriptionEnd": ". Please enter it below",
+      "resendCode": "Resend code? ({{seconds}} seconds)",
+      "resendNow": "Resend code",
+      "resending": "Resending..."
+    },
+    "buttons": {
+      "login": "Login",
+      "verify": "Verify"
+    },
+    "formBottom": {
+      "orContinueWith": "Or continue using",
+      "noAccount": "Don't have an account?",
+      "createAccount": "Create account"
+    },
+    "initialForm": {
+      "title": "Service Selection",
+      "description": "What type of event do you want to organize?",
+      "service": {
+        "label": "Choose the service",
+        "placeholder": "Select service type",
+        "options": {
+          "hosted": "We handle your invitation",
+          "selfService": "Handle it yourself"
+        },
+        "descriptions": {
+          "hosted": "Halaa team handles everything from design to sending and tracking attendance.",
+          "selfService": "Design and send your invitation easily via WhatsApp with a unique QR code for each guest!"
+        },
+        "errors": {
+          "serviceRequired": "Please select a service type"
+        }
+      }
+    },
+    "errors": {
+      "emailRequired": "Email is required",
+      "invalidEmail": "Invalid email address",
+      "passwordMinLength": "Password must be at least 8 characters",
+      "passwordComplexity": "Use letters and numbers only, with at least one of each",
+      "invalidPassword": "Password is incorrect, check it and try again.",
+      "phoneNumberInvalid": "Phone number is incorrect, please check and try again",
+      "otpInvalid": "Invalid verification code",
+      "otpIncomplete": "Please enter complete verification code"
+    }
+  },
+  "validation": {
+    "invalidSaudiPhone": "Please enter a valid Saudi phone number"
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "login": {
+    "title": "Staff Portal",
+    "subtitle": "Enter your details to access the event guest list",
+    "phonePlaceholder": "Phone number (e.g. 5xxxxxxxx)",
+    "phoneLabel": "Phone Number",
+    "eventIdLabel": "Event ID",
+    "eventIdPlaceholder": "Enter Event ID",
+    "verifyButton": "Verify Access",
+    "verifying": "Verifying...",
+    "errors": {
+      "phoneRequired": "Phone number is required",
+      "eventIdRequired": "Event ID is required",
+      "invalidCredentials": "No staff access found for this phone and event",
+      "verificationFailed": "Verification failed. Please try again."
+    }
+  },
+  "portal": {
+    "guests": "Guests",
+    "searchPlaceholder": "Search by name or phone...",
+    "noGuests": "No guests found",
+    "noGuestsSearch": "No results for your search",
+    "loadingGuests": "Loading guest list...",
+    "checkIn": "Check In",
+    "alreadyCheckedIn": "Already checked in",
+    "logout": "Logout",
+    "refresh": "Refresh"
+  },
+  "stats": {
+    "title": "Event Stats",
+    "pending": "Pending",
+    "confirmed": "Confirmed",
+    "declined": "Declined",
+    "checkedIn": "Checked In",
+    "total": "Total"
+  },
+  "checkIn": {
+    "confirmTitle": "Confirm Check-In",
+    "confirmMessage": "Check in {{name}}?",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "success": "Checked in successfully",
+    "alreadyDone": "{{name}} was already checked in",
+    "failed": "Check-in failed",
+    "qrTitle": "QR Check-In",
+    "qrLabel": "QR Code",
+    "qrPlaceholder": "Enter or scan QR code",
+    "qrButton": "Check In by QR",
+    "scanQR": "Scan QR"
+  },
+  "status": {
+    "invited": "Invited",
+    "confirmed": "Confirmed",
+    "declined": "Declined",
+    "checked_in": "Checked In",
+    "no_show": "No Show"
+  },
+  "errors": {
+    "loadFailed": "Failed to load guest list",
+    "checkInFailed": "Check-in failed. Please try again.",
+    "checkInRateLimited": "Too many check-in attempts. Please wait a moment.",
+    "staffRevoked": "Your staff access was revoked.",
+    "staffExpired": "Your staff access link has expired."
+  },
+  "filters": {
+    "searchPlaceholder": "Search by name or phone",
+    "allStatuses": "All",
+    "checkedIn": "Checked in",
+    "confirmed": "Confirmed",
+    "declined": "Declined",
+    "invited": "Invited"
+  }
+}

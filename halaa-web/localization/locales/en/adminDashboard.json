@@ -1,0 +1,214 @@
+{
+  "header": {
+    "welcome": "Welcome, {{name}}! 👋",
+    "subtitle": "Here's a quick overview of your events and invitations",
+    "pageTitle": "Admin Dashboard",
+    "pageSubtitle": "Overview of your platform performance"
+  },
+  "stats": {
+    "totalHosts": "Total Hosts",
+    "activeVendors": "Active Vendors",
+    "activeEvents": "Active Events",
+    "attendanceRate": "Acceptance Count",
+    "unsubscribed": "unsubscribed",
+    "pending": "pending",
+    "activeNow": "active now",
+    "guestConfirming": "guest confirmation rate",
+    "newThisPeriod": "new this month",
+    "totalEvents": "total",
+    "subscriptionStatus": "Subscription Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "noPlan": "No Plan",
+    "moderators": "Moderators",
+    "activeModerators": "active",
+    "totalVendors": "Total Vendors",
+    "totalEventsCard": "Total Events",
+    "activeSubscriptions": "Active Subscriptions",
+    "openTickets": "Open Tickets",
+    "resolved": "resolved",
+    "pendingApproval": "pending approval",
+    "byPlan": "by plan",
+    "resolvedThisPeriod": "resolved this period",
+    "hosts": {
+      "title": "Total Hosts",
+      "subtitle": "{{count}} active",
+      "highlight": "+{{count}} new"
+    },
+    "businesses": {
+      "title": "Total Businesses",
+      "subtitle": "{{count}} active",
+      "highlight": "+{{count}} new"
+    },
+    "vendors": {
+      "title": "Total Vendors",
+      "subtitle": "{{count}} pending approval",
+      "highlight": "+{{count}} new"
+    },
+    "events": {
+      "title": "Total Events",
+      "subtitle": "{{count}} active",
+      "highlight": "{{count}}% vs last period"
+    },
+    "subscriptions": {
+      "title": "Active Subscriptions",
+      "subtitle": "{{count}} by plan"
+    },
+    "tickets": {
+      "title": "Open Tickets",
+      "subtitle": "{{count}} resolved this period"
+    }
+  },
+  "errors": {
+    "loadFailed": "Failed to load dashboard"
+  },
+  "charts": {
+    "guestResponse": "Guest Response",
+    "revenue": "Revenue",
+    "subscriptions": "Subscriptions",
+    "tickets": "Tickets",
+    "confirmed": "Confirmed",
+    "declined": "Declined",
+    "pending": "Pending",
+    "host": "Host",
+    "addons": "Addons",
+    "lite": "Lite",
+    "pro": "Pro",
+    "elite": "Elite",
+    "other": "Other",
+    "resolved": "Resolved",
+    "open": "Open",
+    "thisperiod": "This Period",
+    "previousperiod": "Previous Period",
+    "change": "Change",
+    "currency": "Currency"
+  },
+  "bottom": {
+    "topVendors": "Top Vendors",
+    "activitySummary": "Activity Summary",
+    "clicks": "clicks"
+  },
+  "actions": {
+    "title": "Quick Actions",
+    "createEvent": "Create Event",
+    "addModerator": "Add Moderator",
+    "createTicket": "Create Ticket"
+  },
+  "createTicket": {
+    "title": "Create Support Ticket",
+    "username": "Username",
+    "usernamePlaceholder": "Enter username",
+    "number": "Phone Number",
+    "numberPlaceholder": "5xx xxx xxx",
+    "type": "Ticket Type",
+    "message": "Message",
+    "messagePlaceholder": "Write your message here...",
+    "cancel": "Cancel",
+    "create": "Create",
+    "creating": "Creating...",
+    "success": "Ticket created successfully",
+    "error": "Failed to create ticket"
+  },
+  "table": {
+    "title": "Data Table",
+    "searchPlaceholder": "Search...",
+    "filter": "Filter",
+    "export": "Export",
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "pending": "Pending",
+      "resolved": "Resolved",
+      "open": "Open",
+      "closed": "Closed",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "suspended": "Suspended"
+    }
+  },
+  "tables": {
+    "tickets": {
+      "title": "Tickets",
+      "columns": {
+        "number": "Ticket Number",
+        "username": "Username",
+        "type": "Type",
+        "message": "Message",
+        "status": "Status",
+        "createdAt": "Created At"
+      }
+    },
+    "vendors": {
+      "title": "Pending Vendors",
+      "columns": {
+        "ownerFullName": "Owner Name",
+        "email": "Email",
+        "phoneNumber": "Phone Number",
+        "status": "Status"
+      }
+    },
+    "recentHosts": {
+      "title": "Recent Hosts",
+      "columns": {
+        "name": "Name",
+        "email": "Email",
+        "status": "Status",
+        "createdAt": "Date"
+      },
+      "status": {
+        "active": "Active",
+        "pending": "Pending",
+        "suspended": "Suspended"
+      }
+    },
+    "recentEvents": {
+      "title": "Recent Events",
+      "columns": {
+        "title": "Title",
+        "host": "Host",
+        "date": "Date",
+        "status": "Status"
+      },
+      "status": {
+        "scheduled": "Scheduled",
+        "live": "Live",
+        "completed": "Completed",
+        "pending_scheduling": "Pending Scheduling"
+      }
+    }
+  },
+  "subscription": {
+    "title": "Update Subscription",
+    "hostName": "Host Name",
+    "plan": "Plan",
+    "selectPlan": "Select a plan",
+    "loadingPlans": "Loading plans...",
+    "errorLoadingPlans": "Failed to load plans. Please try again.",
+    "retry": "Retry",
+    "status": "Status",
+    "selectStatus": "Select status",
+    "billingCycle": "Billing Cycle",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "cancel": "Cancel",
+    "update": "Update",
+    "updating": "Updating...",
+    "updateSuccess": "Subscription updated successfully",
+    "statusActive": "Active",
+    "statusExpired": "Expired",
+    "statusCancelled": "Cancelled"
+  },
+  "discounts": {
+    "planTypes": {
+      "trial": "Trial",
+      "basic_event": "Basic — Per Event",
+      "basic_monthly": "Basic — Monthly",
+      "premium_event": "Premium — Per Event",
+      "premium_monthly": "Premium — Monthly",
+      "business_event": "Business — Per Event",
+      "business_quarterly": "Business — Quarterly",
+      "business_annual": "Business — Annual",
+      "unlimited": "Unlimited"
+    }
+  }
+}

@@ -1,0 +1,238 @@
+{
+  "test": "test",
+  "phone_required": "Phone number is required",
+  "phone_invalid": "Phone number must be at least 9 digits",
+  "phone_number": "Phone Number",
+  "enter_phone_number": "Enter phone number",
+  "test_sending": "Test Sending",
+  "test_sending_description": "Enter a phone number to test the sending functionality",
+  "test_message_sent": "Test message sent successfully!",
+  "test_message_failed": "Failed to send test message",
+  "sending": "Sending...",
+  "confirm": "Confirm",
+  "cancel": "Cancel",
+  "loading": "Loading...",
+  "uploadFile": {
+    "dragAndDrop": "Drag images here or click to select",
+    "acceptedFormats": "Accepted formats",
+    "clickToView": "Click to view",
+    "delete": "Delete",
+    "replace": "Replace",
+    "kb": "KB"
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "events": "Events",
+    "settings": "Settings",
+    "freePlan": "Free Plan",
+    "freePlanDesc": "Subscribe to send unlimited invitations",
+    "upgradeNow": "Upgrade Now",
+    "logout": "Logout"
+  },
+  "adminSidebar": {
+    "dashboard": "Dashboard",
+    "moderators": "Moderators",
+    "hosts": "Hosts",
+    "businesses": "Businesses",
+    "vendors": "Vendors",
+    "marketplace": "Halaa Marketplace",
+    "events": "Events",
+    "tickets": "Tickets",
+    "payments": "Payments",
+    "managePlans": "Manage Plans",
+    "discounts": "Discounts",
+    "settings": "Settings",
+    "templates": "Templates",
+    "templateCategories": "Template Categories",
+    "taqnyatTemplates": "WhatsApp Templates",
+    "logout": "Logout"
+  },
+  "table": {
+    "columns": {
+      "guestName": "Guest Name",
+      "mobile": "Mobile Number",
+      "email": "Email",
+      "status": "Status",
+      "responseTime": "Response Time",
+      "actions": "Actions",
+      "eventName": "Event Name",
+      "eventType": "Event Type",
+      "totalInvites": "Total Invites",
+      "confirmed": "Confirmed",
+      "declined": "Declined",
+      "noResponse": "No Response",
+      "staffName": "Staff Name",
+      "staffPhone": "Phone Number",
+      "staffEvent": "Event"
+    },
+    "status": {
+      "invited": "Invited",
+      "confirmed": "Confirmed",
+      "declined": "Declined",
+      "pending_scheduling": "Pending Scheduling",
+      "published": "Published",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "actions": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "view": "View Details"
+    }
+  },
+  "schedule_sending": "Schedule Sending",
+  "schedule_sending_description": "Select when you would like to send the message",
+  "schedule_date": "Date",
+  "schedule_time": "Time",
+  "select_date": "Select date",
+  "schedule_date_time_required": "Please select both date and time",
+  "schedule_invalid_time": "Please select a valid time",
+  "schedule_too_soon": "That date is too soon — pick a later date within the allowed window.",
+  "schedule_too_late": "That date is too late — sending must be at least 3 days before the event.",
+  "schedule_window_range": "You can schedule between {{from}} and {{to}}.",
+  "schedule_window_from": "Earliest you can schedule: {{from}}.",
+  "schedule_message_success": "Message scheduled successfully!",
+  "schedule_message_failed": "Failed to schedule message",
+  "delete": "Delete",
+  "notifications": {
+    "title": "Notifications",
+    "empty": {
+      "title": "No notifications",
+      "message": "You're all caught up! Check back later."
+    },
+    "markAllRead": "Mark all as read",
+    "clearAll": "Clear all",
+    "clearAllConfirm": "Are you sure you want to clear all notifications?",
+    "viewAll": "View all notifications",
+    "loading": "Loading...",
+    "loadMore": "Load more"
+  },
+  "vendorSidebar": {
+    "services": "Services",
+    "marketplace": "Halaa Marketplace",
+    "tickets": "Tickets",
+    "settings": "Settings"
+  },
+  "filters": {
+    "all": "All",
+    "active": "Active",
+    "inactive": "Inactive",
+    "pending": "Pending",
+    "suspended": "Suspended",
+    "pending_scheduling": "Pending Scheduling",
+    "completed": "Completed",
+    "open": "Open",
+    "closed": "Closed",
+    "inProgress": "In Progress",
+    "resolved": "Resolved",
+    "failed": "Failed",
+    "refunded": "Refunded",
+    "underReview": "Under Review"
+  },
+  "status": {
+    "active": "Active",
+    "pending": "Pending",
+    "approved": "Approved",
+    "suspended": "Suspended",
+    "rejected": "Rejected",
+    "underReview": "Under Review"
+  },
+  "authErrors": {
+    "CONFLICT": {
+      "email": "This email is already registered. Try logging in instead.",
+      "phone": "This phone number is already registered. Try logging in instead.",
+      "email_and_phone": "This email and phone number are both already registered. Try logging in instead.",
+      "default": "This account already exists. Try logging in instead."
+    },
+    "DUPLICATE_FIELD": {
+      "email": "This email is already registered. Try logging in instead.",
+      "phoneNumber": "This phone number is already registered. Try logging in instead.",
+      "username": "This username is already taken.",
+      "default": "This account already exists."
+    },
+    "UNAUTHORIZED": "Invalid email or password. Please check your credentials and try again.",
+    "INVALID_TOKEN": "Your session is invalid. Please log in again.",
+    "TOKEN_EXPIRED": "Your session has expired. Please log in again.",
+    "TOKEN_INVALID_OR_EXPIRED": "This link is invalid or has expired. Please request a new one.",
+    "VERIFICATION_LINK_EXPIRED": "The email verification link has expired. Please request a new one.",
+    "VERIFICATION_TOKEN_MISSING": "Verification token is missing.",
+    "ACCOUNT_LOCKED": "Your account is temporarily locked due to too many failed attempts. Please try again later.",
+    "ACCOUNT_LOCKED_WITH_MINUTES": "Your account is temporarily locked. Please try again in {{minutes}} minutes.",
+    "ACCOUNT_STATUS_ERROR": {
+      "suspended": "Your account has been suspended. Please contact support for assistance.",
+      "inactive": "Your account is inactive. Please contact support.",
+      "rejected": "Your application was not approved. Please contact support for more details.",
+      "pending": "Your account is still under review. We'll notify you once it's approved."
+    },
+    "NOT_FOUND": "No account found with these credentials.",
+    "VALIDATION_ERROR": "Please check your information and try again.",
+    "OTP_ERROR": {
+      "invalid": "The verification code is incorrect. Please try again.",
+      "invalid_with_attempts": "The verification code is incorrect. {{attemptsLeft}} attempts left.",
+      "expired": "The verification code has expired. Please request a new one.",
+      "max_attempts": "Too many failed attempts. Please request a new code.",
+      "cooldown": "Please wait before requesting a new code.",
+      "cooldown_with_seconds": "Please wait {{seconds}} seconds before requesting a new code.",
+      "not_found": "No code found. Please request a new one.",
+      "send_failed": "Couldn't send the verification code. Please try again."
+    },
+    "RATE_LIMIT_EXCEEDED": "Too many requests. Please wait a moment and try again.",
+    "NETWORK_ERROR": "Unable to connect to the server. Please check your internet connection.",
+    "NETWORK": "Unable to connect to the server. Please check your internet connection.",
+    "TIMEOUT": "The request timed out. Please try again.",
+    "SERVER": "Something went wrong on our end. Please try again later.",
+    "INTERNAL_ERROR": "Something went wrong on our end. Please try again later.",
+    "UNKNOWN": "An unexpected error occurred. Please try again.",
+    "loginAction": "Log in here",
+    "requestNewLinkAction": "Request a new link"
+  },
+  "verifyEmail": {
+    "verifyingTitle": "Verifying your email…",
+    "verifyingSubtitle": "Please wait a moment.",
+    "successTitle": "Your email is verified",
+    "successSubtitle": "You can continue using your account.",
+    "goToHome": "Go to my account",
+    "expiredTitle": "This link has expired",
+    "expiredSubtitle": "The link you used is no longer valid. Enter your email below to get a new one.",
+    "emailLabel": "Email",
+    "emailPlaceholder": "Enter your email",
+    "resendButton": "Send a new link",
+    "resendSentTitle": "Link sent",
+    "resendSentSubtitle": "If that email needs verification, we've sent a new link."
+  },
+  "validation": {
+    "invalidSaudiPhone": "Phone must start with 5 and be 9 digits",
+    "invalidEmail": "Please enter a valid email address",
+    "required": "This field is required",
+    "passwordMinLength": "Password must be at least 8 characters",
+    "passwordMaxLength": "Password must not exceed 128 characters",
+    "passwordComplexity": "Use letters and numbers only, with at least one of each",
+    "otpLength": "Verification code must be 6 digits",
+    "otpInvalid": "Verification code must contain only digits"
+  },
+  "date": {
+    "months": {
+      "0": "January",
+      "1": "February",
+      "2": "March",
+      "3": "April",
+      "4": "May",
+      "5": "June",
+      "6": "July",
+      "7": "August",
+      "8": "September",
+      "9": "October",
+      "10": "November",
+      "11": "December"
+    },
+    "days": {
+      "0": "Sunday",
+      "1": "Monday",
+      "2": "Tuesday",
+      "3": "Wednesday",
+      "4": "Thursday",
+      "5": "Friday",
+      "6": "Saturday"
+    }
+  }
+}

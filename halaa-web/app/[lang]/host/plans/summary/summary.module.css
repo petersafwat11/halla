@@ -1,0 +1,645 @@
+/* ============================================
+   ORDER SUMMARY — Checkout Page
+   Theme aligned with globals.css (brand brown)
+   Layout: 2-col on desktop (>=1024px), single col on mobile
+   ============================================ */
+
+.container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- Header strip ---------- */
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2.4rem 2rem 1.6rem;
+  gap: 0.4rem;
+  text-align: center;
+}
+
+.title {
+  color: var(--color-secondary-900);
+  font-size: 2.4rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0;
+  font-family: var(--font-ar);
+  letter-spacing: -0.2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.backArrow {
+  cursor: pointer;
+  font-size: 2.4rem;
+  color: var(--color-primary-500);
+  transition: transform 250ms ease;
+}
+
+.backArrow:hover {
+  transform: scale(1.1);
+}
+
+.subtitle {
+  color: var(--color-natural-450);
+  font-size: 1.4rem;
+  margin: 0;
+  font-family: var(--font-ar);
+}
+
+/* ---------- Layout (2-column on desktop) ---------- */
+.content {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 0 2rem 4rem;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.6rem;
+  width: 100%;
+  max-width: 1200px;
+  align-items: start;
+}
+
+@media (min-width: 1024px) {
+  .layout {
+    grid-template-columns: minmax(0, 1.4fr) minmax(360px, 1fr);
+    gap: 2.4rem;
+  }
+}
+
+.leftCol,
+.rightCol {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  .rightCol {
+    position: sticky;
+    top: 1.6rem;
+  }
+}
+
+/* ---------- Card primitives ---------- */
+.card {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-natural-50);
+  border: 1px solid var(--color-natural-200);
+  border-radius: var(--radius-16);
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(82, 68, 56, 0.04);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.4rem 1.6rem;
+  border-bottom: 1px solid var(--color-natural-200);
+  background: var(--color-natural-50);
+}
+
+.cardTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0;
+  font-family: var(--font-ar);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-secondary-900);
+}
+
+.cardTitleIcon {
+  color: var(--color-primary-500);
+  font-size: 1.4rem;
+}
+
+.managedBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 0.9rem;
+  background: var(--color-primary-500);
+  color: var(--color-natural-50);
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-family: var(--font-ar);
+  border-radius: var(--radius-8);
+}
+
+.cardContent {
+  display: flex;
+  flex-direction: column;
+  padding: 1.6rem;
+  gap: 1.4rem;
+}
+
+/* ---------- Plan info block ---------- */
+.planInfo {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 1.4rem;
+  background: var(--color-primary-50);
+  border-radius: var(--radius-12);
+  border: 1px solid var(--color-primary-100);
+}
+
+.planIcon {
+  width: 4.8rem;
+  height: 4.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-natural-50);
+  border: 1px solid var(--color-primary-200);
+  border-radius: var(--radius-12);
+  color: var(--color-primary-600);
+  font-size: 1.6rem;
+  flex-shrink: 0;
+}
+
+.planDetails {
+  flex: 1;
+  min-width: 0;
+}
+
+.planName {
+  font-family: var(--font-ar);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--color-secondary-900);
+  margin: 0 0 0.2rem;
+}
+
+.planType {
+  font-family: var(--font-ar);
+  font-size: 1.25rem;
+  color: var(--color-natural-450);
+  margin: 0;
+}
+
+.planPrice {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+[dir="rtl"] .planPrice { align-items: flex-start; }
+
+.priceAmount {
+  font-family: var(--font-ar);
+  font-size: 2.4rem;
+  font-weight: 800;
+  color: var(--color-primary-700);
+  line-height: 1;
+}
+
+.priceCurrency {
+  font-family: var(--font-ar);
+  font-size: 1.15rem;
+  color: var(--color-primary-600);
+  font-weight: 600;
+  margin-top: 0.2rem;
+}
+
+/* ---------- Feature chips ---------- */
+.featuresSummary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.featureItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.9rem;
+  background: var(--color-natural-150);
+  border-radius: var(--radius-8);
+  font-family: var(--font-ar);
+  font-size: 1.2rem;
+  color: var(--color-secondary-700);
+  font-weight: 500;
+}
+
+.featureIcon {
+  color: var(--color-primary-500);
+  font-size: 1.1rem;
+}
+
+/* ---------- Billing period row ---------- */
+.billingPeriod {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.9rem 1.2rem;
+  background: var(--color-natural-150);
+  border-radius: var(--radius-8);
+  border: 1px solid var(--color-natural-200);
+}
+
+.billingLabel {
+  font-family: var(--font-ar);
+  font-size: 1.2rem;
+  color: var(--color-natural-450);
+}
+
+.billingValue {
+  font-family: var(--font-ar);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--color-secondary-900);
+}
+
+/* ---------- Compensation helper note ---------- */
+.compensationNote {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0;
+  font-family: var(--font-ar);
+  font-size: 1.1rem;
+  line-height: 1.45;
+  color: var(--color-natural-450);
+}
+
+.compensationNoteIcon {
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+  color: var(--color-primary-400);
+  font-size: 1.15rem;
+}
+
+/* ---------- Total invites row ---------- */
+.totalInvitesRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1rem 1.2rem;
+  background: var(--color-primary-50, #faf5ee);
+  border: 1px solid var(--color-primary-200, #e6d3bd);
+  border-radius: var(--radius-8);
+}
+
+.totalInvitesHead {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.totalInvitesIcon {
+  color: var(--color-primary-500);
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.totalInvitesLabel {
+  font-family: var(--font-ar);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--color-secondary-900);
+}
+
+.totalInvitesValue {
+  margin-inline-start: auto;
+  font-family: var(--font-ar);
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--color-primary-700);
+  letter-spacing: -0.3px;
+}
+
+.totalInvitesHint {
+  margin: 0;
+  font-family: var(--font-ar);
+  font-size: 1.1rem;
+  line-height: 1.45;
+  color: var(--color-natural-450);
+}
+
+/* ---------- Discount section ---------- */
+.discountInputWrapper {
+  display: flex;
+  gap: 0.8rem;
+}
+
+.discountInput {
+  flex: 1;
+  min-width: 0;
+  padding: 0.95rem 1.1rem;
+  border: 1px solid var(--form-border);
+  border-radius: var(--radius-12);
+  font-family: var(--font-ar);
+  font-size: 1.3rem;
+  color: var(--form-fg-filled);
+  background: var(--form-bg);
+  transition: all 180ms ease;
+}
+
+.discountInput:focus {
+  outline: none;
+  border-color: var(--form-border-focused);
+  box-shadow: 0 0 0 3px rgba(194, 142, 92, 0.12);
+}
+
+.discountInput::placeholder {
+  color: var(--form-fg);
+}
+
+.discountInput.discountApplied {
+  background: var(--color-success-50);
+  border-color: var(--color-success-300);
+  color: var(--color-success-800);
+}
+
+.applyButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0 1.6rem;
+  min-height: 4.4rem;
+  background: var(--color-primary-500);
+  border: none;
+  border-radius: var(--radius-12);
+  color: var(--color-natural-50);
+  font-family: var(--font-ar);
+  font-size: 1.3rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 180ms ease, transform 180ms ease;
+  white-space: nowrap;
+}
+
+.applyButton:hover:not(:disabled) {
+  background: var(--color-primary-600);
+}
+
+.applyButton:disabled {
+  background: var(--color-primary-100);
+  color: var(--color-primary-400);
+  cursor: not-allowed;
+}
+
+.removeButton {
+  background: var(--color-error-50) !important;
+  color: var(--color-error-600) !important;
+  border: 1px solid var(--color-error-100) !important;
+}
+
+.removeButton:hover:not(:disabled) {
+  background: var(--color-error-100) !important;
+}
+
+.discountSuccess {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-ar);
+  font-size: 1.2rem;
+  color: var(--color-success-700);
+  margin: 0;
+}
+
+.discountError {
+  border-color: var(--color-error-500) !important;
+  background: var(--color-error-50) !important;
+}
+
+.discountErrorMsg {
+  font-family: var(--font-ar);
+  font-size: 1.2rem;
+  color: var(--color-error-600);
+  margin: 0;
+}
+
+/* ---------- Payment summary breakdown ---------- */
+.summaryBreakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.summaryLabel {
+  font-family: var(--font-ar);
+  font-size: 1.3rem;
+  color: var(--color-natural-450);
+}
+
+.summaryValue {
+  font-family: var(--font-ar);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--color-secondary-900);
+}
+
+.summaryValueDiscount {
+  font-family: var(--font-ar);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--color-success-600);
+}
+
+.discountRow {
+  background: var(--color-success-50);
+  padding: 0.7rem 1rem;
+  border-radius: var(--radius-8);
+  margin: 0.2rem -0.4rem;
+}
+
+.summaryDivider {
+  height: 1px;
+  background: var(--color-natural-200);
+  margin: 0.6rem 0 0.4rem;
+}
+
+.totalRow {
+  align-items: baseline;
+  padding-top: 0.4rem;
+}
+
+.totalLabel {
+  font-family: var(--font-ar);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-secondary-900);
+}
+
+.totalValue {
+  font-family: var(--font-ar);
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--color-primary-700);
+  letter-spacing: -0.3px;
+}
+
+/* ---------- Proceed (CTA) ---------- */
+.proceedButton {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  padding: 1.4rem 1.8rem;
+  border: none;
+  border-radius: var(--radius-12);
+  background: var(--color-primary-500);
+  color: var(--color-natural-50);
+  font-family: var(--font-ar);
+  font-size: 1.5rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 200ms ease, transform 150ms ease, box-shadow 200ms ease;
+  box-shadow: 0 4px 14px rgba(194, 142, 92, 0.28);
+}
+
+.proceedButton:hover:not(:disabled) {
+  background: var(--color-primary-600);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(194, 142, 92, 0.38);
+}
+
+.proceedButton:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(194, 142, 92, 0.28);
+}
+
+.proceedButton:disabled {
+  background: var(--color-primary-100);
+  color: var(--color-primary-400);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.processingText {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.totalBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.9rem;
+  background: var(--color-white-20);
+  border-radius: var(--radius-8);
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
+/* ---------- Security & terms ---------- */
+.securityNotice {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.9rem 1rem;
+  background: var(--color-natural-150);
+  border: 1px solid var(--color-natural-200);
+  border-radius: var(--radius-8);
+  font-family: var(--font-ar);
+  font-size: 1.15rem;
+  color: var(--color-natural-450);
+}
+
+.securityIcon {
+  color: var(--color-primary-500);
+  font-size: 1.2rem;
+}
+
+.termsNotice {
+  text-align: center;
+  font-family: var(--font-ar);
+  font-size: 1.1rem;
+  color: var(--color-natural-400);
+  margin: 0;
+  line-height: 1.6;
+  padding: 0 0.5rem;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+  .header {
+    padding: 2rem 1rem 1rem;
+  }
+
+  .title { font-size: 2rem; }
+  .backArrow { font-size: 2rem; }
+  .subtitle { font-size: 1.25rem; }
+
+  .content { padding: 0 1rem 3rem; }
+  .layout { gap: 1.2rem; }
+  .leftCol, .rightCol { gap: 1.2rem; }
+
+  .cardHeader { padding: 1.2rem 1.4rem; }
+  .cardContent { padding: 1.4rem; gap: 1.2rem; }
+  .cardTitle { font-size: 1.4rem; }
+
+  .planInfo {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .planPrice {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 0.4rem;
+  }
+
+  .featuresSummary {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .featureItem {
+    width: 100%;
+    justify-content: flex-start;
+    padding: 0.7rem 1rem;
+  }
+
+  .discountInputWrapper { flex-direction: column; gap: 0.6rem; }
+  .applyButton { min-height: 4.6rem; padding: 1.2rem; }
+
+  .totalLabel { font-size: 1.4rem; }
+  .totalValue { font-size: 2rem; }
+
+  .proceedButton {
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 1.3rem 1.4rem;
+    font-size: 1.4rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .title { font-size: 1.8rem; }
+  .planName { font-size: 1.4rem; }
+  .priceAmount { font-size: 2rem; }
+}

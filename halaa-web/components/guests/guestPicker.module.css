@@ -1,0 +1,307 @@
+/* Shared styles for the guest-picker popups (reuse guest book + vCard import).
+   Mirrors the canonical popup structure used across the app
+   (ui/host/popups/addGuestPopup): .popup > .header + .content + .footer. */
+
+.popup {
+  padding: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 24px 16px 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+  color: #1f2937;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+.closeButton:hover {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.content {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Search + category toolbar */
+.toolbar {
+  display: flex;
+  gap: 12px;
+}
+.search,
+.select {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 14px;
+  background: #fff;
+  color: #1f2937;
+}
+.search {
+  flex: 1;
+}
+.select {
+  width: auto;
+  min-width: 140px;
+}
+
+/* Selectable list */
+.list {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  max-height: 340px;
+  overflow-y: auto;
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f3f4f6;
+  cursor: pointer;
+}
+.row:last-child {
+  border-bottom: none;
+}
+.rowSelected {
+  background: #faf6f1;
+}
+.rowDisabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: #c28e5c;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.rowMain {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  gap: 2px;
+}
+.rowName {
+  font-weight: 600;
+  color: #1f2937;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rowPhone {
+  font-size: 13px;
+  color: #6b7280;
+  direction: ltr;
+}
+.badge {
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #f3e9dd;
+  color: #a8743f;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.added {
+  font-size: 12px;
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+/* Empty / loading / error states */
+.state {
+  padding: 32px 16px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.loadMore {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  background: none;
+  color: #c28e5c;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Footer — confirm at the start, cancel at the end, each filling half */
+.footer {
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px 24px 24px;
+  border-top: 1px solid #e5e7eb;
+}
+.footerInfo {
+  font-size: 14px;
+  color: #6b7280;
+}
+.footerActions {
+  display: flex;
+  gap: 16px;
+  flex: 1;
+}
+.footerBtn {
+  flex: 1;
+  padding: 1.4rem 1.6rem;
+  font-size: 1.6rem;
+}
+
+/* "Link to category" affordance — a lighter button shown at the footer start
+   when rows are selected, so confirm/cancel stay primary. */
+.footerLinkBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 1.2rem 1.4rem;
+  border: 1px solid #e7d8c6;
+  border-radius: 12px;
+  background: #f9f4ef;
+  color: #6b4e33;
+  font: inherit;
+  font-size: 1.4rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.footerLinkBtn:hover {
+  background: #f1e6d8;
+  border-color: #c28e5c;
+}
+.footerLinkBtn svg {
+  color: #c28e5c;
+}
+
+/* ---- vCard import: platform tabs + instructions ---- */
+.tabs {
+  display: flex;
+  gap: 8px;
+}
+.tab {
+  flex: 1;
+  box-sizing: border-box;
+  padding: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fff;
+  color: #374151;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.tabActive {
+  background: #c28e5c;
+  border-color: #c28e5c;
+  color: #fff;
+  font-weight: 600;
+}
+.steps {
+  margin: 0;
+  padding: 16px 20px;
+  padding-inline-start: 36px;
+  background: #faf6f1;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.step {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #374151;
+}
+.pickArea {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.hint {
+  font-size: 12px;
+  color: #9ca3af;
+  text-align: center;
+  margin: 0;
+}
+.error {
+  margin: 0;
+  color: #dc2626;
+  font-size: 14px;
+}
+.foundBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.foundText {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+}
+.linkBtn {
+  background: none;
+  border: none;
+  color: #c28e5c;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding: 20px 20px 12px 20px;
+  }
+  .content {
+    padding: 20px;
+  }
+  .footer {
+    padding: 12px 20px 20px 20px;
+  }
+  .title {
+    font-size: 18px;
+  }
+}

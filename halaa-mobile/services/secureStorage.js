@@ -1,0 +1,101 @@
+/**
+ * Secure storage wrapper.
+ *
+ * The long-lived refresh token lives in the platform's secure enclave
+ * (iOS Keychain / Android Keystore via expo-secure-store). This module
+ * is the single entry point so the rest of the app never touches
+ * AsyncStorage for credentials.
+ *
+ * - Native (iOS / Android): expo-secure-store.
+ * - Web bundle (Expo for web): SecureStore is not available; falls back
+ *   to AsyncStorage so dev workflows still function. Production web users
+ *   authenticate via cookies, not the mobile bundle.
+ */
+
+import { Platform } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+let SecureStore = null;
+try {
+  // eslint-disable-next-line global-require
+  SecureStore = require("expo-secure-store");
+} catch (e) {
+  SecureStore = null;
+}
+
+const isSecureStoreAvailable = !!(SecureStore && Platform.OS !== "web");
+
+const REFRESH_TOKEN_KEY = "halla.refreshToken";
+const USER_KEY = "halla.user";
+const STAFF_TOKEN_KEY = "halla.staffSessionToken";
+
+const setItem = async (key, value) => {
+  if (isSecureStoreAvailable) {
+    await SecureStore.setItemAsync(key, value, {
+      keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK,
+    });
+  } else {
+    await AsyncStorage.setItem(`@secure:${key}`, value);
+  }
+};
+
+const getItem = async (key) => {
+  if (isSecureStoreAvailable) {
+    return SecureStore.getItemAsync(key);
+  }
+  return AsyncStorage.getItem(`@secure:${key}`);
+};
+
+const deleteItem = async (key) => {
+  if (isSecureStoreAvailable) {
+    await SecureStore.deleteItemAsync(key);
+  } else {
+    await AsyncStorage.removeItem(`@secure:${key}`);
+  }
+};
+
+export const saveRefreshToken = (token) => {
+  if (!token) return deleteItem(REFRESH_TOKEN_KEY);
+  return setItem(REFRESH_TOKEN_KEY, token);
+};
+
+export const loadRefreshToken = () => getItem(REFRESH_TOKEN_KEY);
+
+export const clearRefreshToken = () => deleteItem(REFRESH_TOKEN_KEY);
+
+export const saveUserShadow = async (user) => {
+  if (!user) return deleteItem(USER_KEY);
+  return setItem(USER_KEY, JSON.stringify(user));
+};
+
+export const loadUserShadow = async () => {
+  const raw = await getItem(USER_KEY);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch (e) {
+    return null;
+  }
+};
+
+export const clearUserShadow = () => deleteItem(USER_KEY);
+
+export const saveStaffToken = (token) => {
+  if (!token) return deleteItem(STAFF_TOKEN_KEY);
+  return setItem(STAFF_TOKEN_KEY, token);
+};
+
+export const loadStaffToken = () => getItem(STAFF_TOKEN_KEY);
+
+export const clearStaffToken = () => deleteItem(STAFF_TOKEN_KEY);
+
+const ONBOARDING_KEY = "halla.onboardingSeen";
+
+export const saveOnboardingSeen = () => setItem(ONBOARDING_KEY, "true");
+export const loadOnboardingSeen = async () => {
+  const val = await getItem(ONBOARDING_KEY);
+  return val === "true";
+};
+export const clearOnboardingSeen = () => deleteItem(ONBOARDING_KEY);
+
+export const STORAGE_BACKEND = isSecureStoreAvailable ? "secure-store" : "async-storage-fallback";

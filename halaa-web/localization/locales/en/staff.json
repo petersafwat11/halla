@@ -1,0 +1,56 @@
+{
+  "pageTitle": "Guest Management",
+  "eventDetails": "Event Details",
+  "invitationInteraction": "Invitation Interaction",
+  "waiting": "Waiting",
+  "declined": "Declined",
+  "confirmed": "Confirmed",
+  "checkedIn": "Checked In",
+  "guests": "Guests",
+  "scanQrCode": "Scan QR Code",
+  "confirmAttendance": "Confirm Attendance",
+  "alreadyCheckedIn": "Already Checked In",
+  "confirm": "Confirm",
+  "cancel": "Cancel",
+  "guestName": "Guest Name",
+  "phone": "Phone",
+  "email": "Email",
+  "noGuests": "No guests",
+  "loading": "Loading...",
+  "error": "An error occurred",
+  "success": "Success",
+  "defaultEventName": "Wedding Event",
+  "stats": {
+    "total": "Total Guests",
+    "confirmed": "Confirmed",
+    "declined": "Declined",
+    "checkedIn": "At Event Now"
+  },
+  "errors": {
+    "noAccessToken": "No access token provided",
+    "accessDenied": "Access denied",
+    "verificationFailed": "Verification failed. Please try again.",
+    "checkInFailed": "Check-in failed. Please try again.",
+    "checkInRateLimited": "Too many check-in attempts. Please wait a moment.",
+    "staffRevoked": "Your staff access was revoked.",
+    "staffExpired": "Your staff access link has expired.",
+    "accessError": "Access Error"
+  },
+  "checkIn": {
+    "alreadyAt": "Already checked in at {{time}}"
+  },
+  "filters": {
+    "searchPlaceholder": "Search by name or phone",
+    "allStatuses": "All statuses",
+    "checkedIn": "Checked in",
+    "confirmed": "Confirmed",
+    "declined": "Declined",
+    "invited": "Invited"
+  },
+  "qr": {
+    "scanTitle": "Scan QR Code",
+    "instructions": "Position the QR code within the frame",
+    "retry": "Retry",
+    "cameraError": "Unable to access camera"
+  }
+}

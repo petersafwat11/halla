@@ -1,0 +1,129 @@
+.container {
+  background: #f9f4ef;
+  min-height: 100vh;
+  padding-bottom: 4rem;
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50vh;
+  padding: 4rem;
+}
+
+.loadingContainer p {
+  color: #656565;
+  font-size: 1.6rem;
+  font-weight: 500;
+}
+
+.header {
+  display: flex;
+  padding: 4rem;
+  /* flex-direction: column; */
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.welcomeSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.welcomeTitle {
+  color: #2c2c2c;
+  font-size: 2.4rem;
+  font-weight: 700;
+  line-height: 2.8rem;
+  /* margin: 0 0 1rem 0; */
+  text-align: end;
+}
+
+.welcomeSubtitle {
+  color: #656565;
+  font-size: 1.2rem;
+  font-weight: 400;
+  line-height: 1.6rem;
+  margin: 0;
+  text-align: end;
+}
+
+.createButton {
+  padding: 1.2rem 1.6rem !important;
+  font-size: 1.6rem !important;
+  border-radius: 12px !important;
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.eventsContainer {
+  display: flex;
+  /* align-items: stretch; */
+  justify-content: center;
+  gap: 2rem;
+  padding: 0 4rem;
+  margin-bottom: 2.4rem;
+}
+.eventsSection {
+  padding: 0 4rem;
+  margin-bottom: 2.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2.4rem;
+}
+
+@media (max-width: 1200px) {
+  .eventsContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    align-items: center;
+  }
+}
+@media (max-width: 768px) {
+  .header {
+    padding: 2.4rem;
+  }
+
+  .welcomeSection {
+    flex-direction: column;
+    /* align-items: flex-end; */
+    gap: 0.8rem;
+  }
+
+  .welcomeTitle {
+    font-size: 1.8rem;
+    line-height: 2.4rem;
+  }
+
+  .createButton {
+    align-self: stretch;
+  }
+  .eventsContainer {
+    padding: 0 1.6rem;
+  }
+  .eventsSection {
+    padding: 0 2.4rem;
+  }
+}
+
+@media (max-width: 550px) {
+  .header {
+    padding: 2.4rem 1.6rem;
+  }
+
+  .welcomeTitle {
+    font-size: 1.6rem;
+    line-height: 2rem;
+  }
+
+  .eventsSection {
+    padding: 0 1.6rem;
+  }
+}

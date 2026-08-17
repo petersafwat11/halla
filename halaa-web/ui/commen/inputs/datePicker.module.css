@@ -1,0 +1,127 @@
+.date_picker_group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.label {
+  color: #2c2c2c;
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 2rem;
+  letter-spacing: 0.014px;
+}
+
+.required {
+  color: #c0392b;
+  margin-left: 0.2rem;
+}
+
+.date_picker_container {
+  position: relative;
+  width: 100%;
+}
+
+.date_picker_button {
+  display: flex;
+  height: 4.8rem;
+  padding: 1.2rem;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 0.8rem;
+  border-radius: 1.2rem;
+  border: 1.5px solid #dfdfdf;
+  background: #fff;
+  width: 100%;
+  color: #767676;
+  font-size: 1.6rem;
+  font-weight: 400;
+  line-height: 2.4rem;
+  letter-spacing: 0.08px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.date_picker_button:hover {
+  border-color: #b5b0b0;
+  background-color: #f9f4ef;
+}
+
+.date_picker_button_error {
+  border: 1.5px solid #c0392b;
+  background: #fdf5f5;
+}
+
+.date_picker_button_disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.calendar_icon {
+  flex-shrink: 0;
+}
+
+.date_picker_text {
+  flex: 1;
+  text-align: left;
+}
+
+.error_icon {
+  position: absolute;
+  right: 1.2rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Calendar Dropdown Styles */
+.calendar_dropdown {
+  position: absolute;
+  top: calc(100% + 0.8rem);
+  left: 0;
+  background: #fff;
+  border-radius: 12px;
+  z-index: 1000;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  padding: 0 1.6rem 1.6rem;
+  width: 36rem;
+  max-width: 90vw;
+}
+
+.calendar {
+  width: 100%;
+}
+
+/* Calendar wrapper - styles are now in Calendar.module.css */
+
+.error_container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-top: 0.4rem;
+}
+
+.error {
+  color: #c0392b;
+  font-size: 1.4rem;
+  font-weight: 400;
+  line-height: 2rem;
+  letter-spacing: 0.014px;
+  margin-top: 0.2rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .calendar_dropdown {
+    width: 32rem;
+    padding: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .calendar_dropdown {
+    width: 100%;
+    max-width: calc(100vw - 2rem);
+  }
+}

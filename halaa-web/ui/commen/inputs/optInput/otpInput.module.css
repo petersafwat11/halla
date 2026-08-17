@@ -1,0 +1,46 @@
+.input_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.8rem;
+  position: relative;
+}
+.input {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 4.8rem;
+  padding: 1.2rem;
+  border-radius: 8px;
+  border: 1px solid #dfdfdf;
+  background: #fff;
+  color: #cacaca;
+  text-align: center;
+  font-size: 2.4rem;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 2.8rem;
+  transition: border-color 0.2s;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.input.error {
+  border-color: #dc3545;
+}
+
+.input.error:focus {
+  box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.25);
+}
+
+.error_message {
+  position: absolute;
+  bottom: -20px;
+  left: 0;
+  color: #dc3545;
+  font-size: 12px;
+}

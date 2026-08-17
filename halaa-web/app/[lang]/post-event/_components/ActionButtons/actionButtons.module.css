@@ -1,0 +1,82 @@
+.actionButtonsContainer {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  animation: fadeIn 0.8s ease-out 0.3s both;
+}
+
+.actionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  flex: 1;
+  padding: 0.8rem 0.4rem;
+  background: none;
+  border: none;
+  border-radius: 0.8rem;
+  cursor: pointer;
+  color: #65676b;
+  font-family: Cairo, -apple-system, Roboto, Helvetica, sans-serif;
+  font-size: 1.4rem;
+  font-weight: 600;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+}
+
+.actionBtn:hover {
+  background: #f2f2f2;
+}
+
+.actionBtn:active {
+  transform: scale(0.97);
+}
+
+.actionBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.actionLabel {
+  line-height: 1;
+}
+
+.actionBtn.liked {
+  color: #e74c3c;
+}
+
+.actionBtn.liked svg {
+  animation: heartBeat 0.5s ease;
+}
+
+@keyframes heartBeat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.3);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  75% {
+    transform: scale(1.2);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (min-width: 768px) {
+  .actionBtn {
+    font-size: 1.5rem;
+    padding: 1rem 0.6rem;
+  }
+}

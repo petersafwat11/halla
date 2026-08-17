@@ -1,0 +1,49 @@
+.chartsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  margin: 2rem 0;
+  width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .chartsGrid {
+    grid-template-columns: 1fr;
+    gap: 1.4rem;
+    margin: 1.4rem 0;
+  }
+}
+
+.chartBox {
+  background: white;
+  border-radius: 1.2rem;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .chartBox {
+    padding: 1.4rem 1.2rem;
+    border-radius: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .chartBox {
+    padding: 1.2rem 0.8rem;
+  }
+}
+
+.error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  color: #c0392b;
+  font-family: Cairo, sans-serif;
+  font-size: 1rem;
+}

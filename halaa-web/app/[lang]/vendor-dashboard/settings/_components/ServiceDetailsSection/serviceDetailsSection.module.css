@@ -1,0 +1,281 @@
+/* Service Details — read view + edit form (ServiceDetailsEditForm,
+   DocumentUploadsRow, LocationFieldsRow, EditFormHeader all import this
+   module, so the editForm* / multiSelect* class names are preserved).
+   Card/field/thumb read-view styling comes from ../_shared. */
+
+/* ---- Read view ----------------------------------------------------------- */
+.docRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-24);
+}
+
+.docField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+  min-width: 0;
+}
+
+.docLabel,
+.label {
+  font-size: var(--fs-body-small);
+  font-weight: var(--fw-medium);
+  color: var(--color-natural-400);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-8);
+}
+
+.tag {
+  padding: var(--spacing-4) var(--spacing-12);
+  background: var(--color-primary-50);
+  border: 1px solid var(--color-primary-200);
+  border-radius: 9999px;
+  color: var(--color-primary-800);
+  font-size: var(--fs-body-small);
+}
+
+/* ---- Edit form (in popup) ------------------------------------------------ */
+.editFormContainer {
+  display: flex;
+  flex-direction: column;
+  max-height: 85vh;
+}
+
+.editFormHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-12);
+  padding-bottom: var(--spacing-16);
+  margin-bottom: var(--spacing-20);
+  border-bottom: 1px solid var(--color-natural-200);
+}
+
+.editFormCloseButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: var(--radius-8);
+  background: transparent;
+  cursor: pointer;
+}
+.editFormCloseButton:hover {
+  background: var(--color-natural-150);
+}
+
+.editFormTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: var(--fw-semibold);
+  color: var(--color-natural-900);
+}
+
+.editForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-16);
+  overflow-y: auto;
+}
+
+.editFormRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--spacing-16);
+}
+
+.editFormField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+  min-width: 0;
+}
+
+.editFormSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-12);
+}
+
+.editFormSectionLabel {
+  font-size: var(--fs-body-medium);
+  font-weight: var(--fw-semibold);
+  color: var(--color-natural-700);
+}
+
+.editFormLabel {
+  font-size: var(--fs-body-small);
+  font-weight: var(--fw-medium);
+  color: var(--color-natural-500);
+}
+
+.editFormInput,
+.editFormTextarea,
+.editFormSelect {
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--spacing-12) var(--spacing-16);
+  border: 1px solid var(--color-natural-250);
+  border-radius: var(--radius-8);
+  background: var(--color-natural-50);
+  color: var(--color-natural-900);
+  font-size: var(--fs-body-medium);
+  font-family: inherit;
+  transition: border-color 0.15s ease;
+}
+.editFormInput:focus,
+.editFormTextarea:focus,
+.editFormSelect:focus {
+  outline: none;
+  border-color: var(--color-primary-500);
+}
+.editFormTextarea {
+  resize: vertical;
+  min-height: 96px;
+}
+.editFormSelect:disabled,
+.disabledLabel {
+  background: var(--color-natural-150);
+  color: var(--color-natural-350);
+  cursor: not-allowed;
+}
+.disabledLabel {
+  display: flex;
+  align-items: center;
+}
+
+.editFormFooter {
+  display: flex;
+  gap: var(--spacing-12);
+  padding-top: var(--spacing-16);
+  margin-top: var(--spacing-4);
+  border-top: 1px solid var(--color-natural-200);
+}
+
+.editFormSubmitBtn {
+  flex: 1;
+  padding: var(--spacing-12) var(--spacing-20);
+  border: none;
+  border-radius: var(--radius-8);
+  background: var(--color-primary-500);
+  color: #fff;
+  font-size: var(--fs-body-medium);
+  font-weight: var(--fw-semibold);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.editFormSubmitBtn:hover:not(:disabled) {
+  background: var(--color-primary-600);
+}
+.editFormSubmitBtn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.editFormCancelBtn {
+  padding: var(--spacing-12) var(--spacing-20);
+  border: 1px solid var(--color-natural-250);
+  border-radius: var(--radius-8);
+  background: var(--color-natural-50);
+  color: var(--color-natural-700);
+  font-size: var(--fs-body-medium);
+  font-weight: var(--fw-semibold);
+  cursor: pointer;
+}
+.editFormCancelBtn:hover:not(:disabled) {
+  background: var(--color-natural-150);
+}
+
+.error {
+  font-size: var(--fs-body-small);
+  color: var(--color-error-500);
+}
+
+/* ---- District multi-select ---------------------------------------------- */
+.multiSelectContainer {
+  position: relative;
+}
+
+.multiSelectTrigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-8);
+  padding: var(--spacing-12) var(--spacing-16);
+  border: 1px solid var(--color-natural-250);
+  border-radius: var(--radius-8);
+  background: var(--color-natural-50);
+  color: var(--color-natural-900);
+  font-size: var(--fs-body-medium);
+  cursor: pointer;
+}
+
+.arrow {
+  color: var(--color-natural-400);
+  font-size: var(--fs-body-small);
+}
+
+.multiSelectDropdown {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 4px);
+  inset-inline-start: 0;
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--spacing-8);
+  background: var(--color-natural-50);
+  border: 1px solid var(--color-natural-250);
+  border-radius: var(--radius-8);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.searchInput {
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--spacing-8) var(--spacing-12);
+  margin-bottom: var(--spacing-8);
+  border: 1px solid var(--color-natural-250);
+  border-radius: var(--radius-8);
+  font-size: var(--fs-body-small);
+  font-family: inherit;
+}
+
+.optionsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.optionItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-8);
+  padding: var(--spacing-8);
+  border-radius: var(--radius-8);
+  color: var(--color-natural-800);
+  font-size: var(--fs-body-medium);
+  cursor: pointer;
+}
+.optionItem:hover {
+  background: var(--color-natural-150);
+}
+
+@media (max-width: 480px) {
+  .editFormFooter {
+    flex-direction: column-reverse;
+  }
+}

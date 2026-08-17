@@ -1,0 +1,31 @@
+.header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex: 1 0 0;
+}
+
+.title {
+  color: #2c2c2c;
+  font-size: 2.4rem;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 2.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+@media screen and (max-width: 768px) {
+  .title {
+    font-size: 2rem;
+    line-height: 2.4rem;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .title {
+    font-size: 1.8rem;
+    line-height: 2.2rem;
+  }
+}

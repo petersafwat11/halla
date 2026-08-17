@@ -1,0 +1,27 @@
+{
+  "failureBanner": {
+    "retrying": {
+      "title": "Retrying your event launch",
+      "attemptCount": "Attempt {{attempt}} of {{max}}. We'll try again automatically.",
+      "nextAttempt": "Next attempt in {{countdown}}"
+    },
+    "failed": {
+      "title": "We're sorry — your event couldn't launch",
+      "message": "We couldn't send your invitations. We'll do our best to help you launch.",
+      "reason": "Reason: "
+    },
+    "retryButton": {
+      "retrying": "Retrying...",
+      "idle": "Retry launch"
+    }
+  },
+  "partialFailureBanner": {
+    "live": {
+      "title": "Partial invitation delivery"
+    },
+    "completed": {
+      "title": "Partial delivery after the event"
+    },
+    "message": "{{failed}} of {{total}} invitations failed to send. {{sent}} delivered successfully."
+  }
+}

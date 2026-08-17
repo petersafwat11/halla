@@ -1,0 +1,640 @@
+.eventCard {
+  display: flex;
+  width: 100%;
+  max-width: 500px;
+  padding: 16px 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  border-radius: 12px;
+  border-top: 1px solid #c28e5c;
+  border-right: 6px solid #c28e5c;
+  border-bottom: 1px solid #c28e5c;
+  border-left: 1px solid #c28e5c;
+  background: #fff;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  height: max-content;
+}
+
+.container {
+  display: flex;
+  padding: 0 1.6rem;
+  justify-content: flex-end;
+  align-items: flex-start;
+  gap: 1.6rem;
+  align-self: stretch;
+}
+
+.eventInfo {
+  display: flex;
+  width: 43.4rem;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 0.8rem;
+}
+
+.headerContainer {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 1.2rem;
+  align-self: stretch;
+}
+
+.statusBadge {
+  display: flex;
+  padding: 3px 11px;
+  align-items: center;
+  border-radius: 9999px;
+  background: #eaf4ef;
+}
+
+.statusText {
+  color: #2a8c5b;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.06px;
+}
+
+/* Status Badge Variants */
+.statusPublished {
+  background: #eaf4ef;
+}
+
+.statusPublished .statusText {
+  color: #2a8c5b;
+}
+
+.statusCompleted {
+  background: #f5f5f5;
+}
+
+.statusCompleted .statusText {
+  color: #666666;
+}
+
+.statusPending {
+  background: #fff3e0;
+}
+
+.statusPending .statusText {
+  color: #f57c00;
+}
+
+.statusSuspended {
+  background: #ffebee;
+}
+
+.statusSuspended .statusText {
+  color: #c62828;
+}
+
+.statusActive {
+  background: #e3f2fd;
+}
+
+.statusActive .statusText {
+  color: #1976d2;
+}
+
+.statusNotSubmitted {
+  background: #e9ecef;
+}
+
+.statusNotSubmitted .statusText {
+  color: #6c757d;
+}
+
+.statusRejected {
+  background: #ffebee;
+}
+
+.statusRejected .statusText {
+  color: #c62828;
+}
+
+.rejectionNote {
+  font-size: 12px;
+  color: #721c24;
+  margin: 0;
+  padding: 0 16px;
+}
+
+.titleContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.eventTitle {
+  color: #2c2c2c;
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 28px;
+  margin: 0;
+}
+
+.metaInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.metaText {
+  color: #656565;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: 0.014px;
+}
+
+.icon {
+  display: flex;
+  width: 16px;
+  height: 16px;
+  justify-content: center;
+  align-items: center;
+}
+
+.eventImage {
+  display: flex;
+  width: 80px;
+  height: 80px;
+  flex-direction: column;
+  align-items: flex-start;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.eventImagePhoto {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.imagePlaceholder {
+  display: flex;
+  width: 80px;
+  height: 80px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.divider {
+  width: 100%;
+  max-width: 529px;
+  height: 1px;
+}
+
+.statsContainer {
+  display: flex;
+  padding: 0 16px;
+  justify-content: flex-end;
+  align-items: flex-end;
+  gap: 8px;
+  align-self: stretch;
+}
+
+.statBox {
+  display: flex;
+  padding: 12px 16px;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  flex: 1 0 0;
+  align-self: stretch;
+  border-radius: 8px;
+  background: #f7f7f7;
+  flex-direction: column;
+}
+
+.statBoxDeclined {
+  background: #f9ebea;
+}
+
+.statBoxApproved {
+  background: #eaf4ef;
+}
+
+.statLabel {
+  color: #2c2c2c;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 16px;
+}
+
+.statLabelDeclined {
+  color: #c0392b;
+}
+
+.statLabelApproved {
+  color: #2a8c5b;
+}
+
+.statValue {
+  color: #2c2c2c;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 20px;
+  letter-spacing: 0.014px;
+}
+
+.statValueDeclined {
+  color: #c0392b;
+}
+
+.statValueApproved {
+  color: #2a8c5b;
+}
+
+.actionsContainer {
+  display: flex;
+  padding: 0 16px;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  align-self: stretch;
+}
+
+.dropdownWrapper {
+  position: relative;
+}
+
+.dropdown {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  margin-bottom: 8px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  z-index: 100;
+  animation: dropdownSlide 0.2s ease-out;
+}
+
+@keyframes dropdownSlide {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdownItem {
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  text-align: right;
+  background: #fff;
+  border: none;
+  color: #2c2c2c;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  cursor: pointer;
+  transition: background 0.2s;
+  border-bottom: 1px solid #f2f2f2;
+}
+
+.dropdownItem:last-child {
+  border-bottom: none;
+}
+
+.dropdownItem:hover {
+  background: #f9f4ef;
+}
+
+.outlineButton {
+  display: flex;
+  height: 32px;
+  padding: 16px;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  border-radius: 4px;
+  border: 1px solid #d6b392;
+  background: #fff;
+  cursor: pointer;
+  color: #6b4e33;
+  text-align: center;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.06px;
+  transition: all 0.2s;
+}
+
+.outlineButton:hover {
+  background: #f9f4ef;
+}
+
+.primaryButton {
+  display: flex;
+  height: 32px;
+  padding: 16px;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  border-radius: 4px;
+  background: #c28e5c;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  text-align: center;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.06px;
+  transition: all 0.2s;
+}
+
+.primaryButton:hover {
+  background: #b07d4d;
+}
+
+.responseRateSection {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  align-self: stretch;
+  /* padding: 0 16px; */
+}
+
+.responseRateContainer {
+  display: flex;
+  padding: 12px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  align-self: stretch;
+  border-radius: 8px;
+  background: #f7f7f7;
+}
+
+.responseRateHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  align-self: stretch;
+}
+
+.responseRateText {
+  color: #656565;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 16px;
+}
+
+.responseRateLabel {
+  color: #656565;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.06px;
+}
+
+.responseLegend {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  align-self: stretch;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  align-self: stretch;
+}
+
+.legendText {
+  display: flex;
+  align-items: flex-start;
+  color: #2c2c2c;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 16px;
+}
+
+.legendDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 9999px;
+}
+
+.dotGray {
+  background: #a0a0a0;
+}
+
+.dotRed {
+  background: #c0392b;
+}
+
+.dotGreen {
+  background: #2a8c5b;
+}
+
+.mobileActions {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 12px;
+  align-self: stretch;
+}
+
+.actionRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  align-self: stretch;
+}
+
+.actionRow .outlineButton {
+  flex: 1 0 0;
+}
+
+/* Subscription Quota Section */
+.subscriptionQuota {
+  display: flex;
+  padding: 12px 16px;
+  justify-content: center;
+  align-items: center;
+  align-self: stretch;
+  background: linear-gradient(135deg, #f9f4ef 0%, #fff 100%);
+  border-radius: 8px;
+  border: 1px solid #e8d4c4;
+  margin: 0 16px;
+}
+
+.quotaItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.quotaLabel {
+  color: #656565;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  text-align: center;
+}
+
+.quotaValue {
+  color: #2c2c2c;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 28px;
+}
+
+.quotaSeparator {
+  width: 1px;
+  height: 36px;
+  background: #e8d4c4;
+}
+
+.planBadge {
+  color: #c28e5c;
+  background: rgba(194, 142, 92, 0.1);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+@media (max-width: 1200px) {
+  .eventCard {
+    max-width: 70rem;
+  }
+
+  .subscriptionQuota {
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin: 0;
+  }
+}
+
+@media (max-width: 550px) {
+  .eventCard {
+    width: 100%;
+    max-width: 100%;
+    padding: 16px;
+  }
+
+  .container {
+    align-items: center;
+    padding: 0;
+  }
+
+  .eventInfo {
+    flex: 1 0 0;
+    width: auto;
+  }
+
+  .eventTitle {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 24px;
+    letter-spacing: 0.024px;
+  }
+
+  .eventImage {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+  }
+
+  .imagePlaceholder {
+    width: 40px;
+    height: 40px;
+  }
+
+  .actionsContainer {
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    padding: 0 16px;
+  }
+
+  .actionsContainer .outlineButton,
+  .actionsContainer .primaryButton {
+    width: 100%;
+  }
+
+  .dropdownWrapper {
+    width: 100%;
+  }
+
+  .secondaryActions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .secondaryActions .outlineButton {
+    width: 100%;
+    padding: 12px 8px;
+    font-size: 11px;
+  }
+
+  .primaryButton {
+    width: 100%;
+  }
+
+  .mobileActions .primaryButton {
+    align-self: stretch;
+  }
+}
+
+@keyframes pulseFlashing {
+  0% {
+    background-color: #ffffff;
+    box-shadow: 0 0 0 0 rgba(194, 142, 92, 0.4);
+  }
+  50% {
+    background-color: #fbf3eb;
+    box-shadow: 0 0 0 6px rgba(194, 142, 92, 0.2);
+  }
+  100% {
+    background-color: #ffffff;
+    box-shadow: 0 0 0 0 rgba(194, 142, 92, 0.4);
+  }
+}
+
+.flashingButton {
+  animation: pulseFlashing 2.3s infinite;
+  border-color: #c28e5c !important;
+}

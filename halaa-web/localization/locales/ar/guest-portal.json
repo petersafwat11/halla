@@ -1,0 +1,49 @@
+{
+  "guestPortal": {
+    "errors": {
+      "title": "تعذّر تحميل الدعوة",
+      "notFound": "الدعوة غير موجودة. الرجاء التحقق من الرابط.",
+      "forbidden": "رابط الدعوة لم يعد صالحاً.",
+      "notAcceptingRsvps": "لم تعد المناسبة تستقبل الردود.",
+      "network": "خطأ في الاتصال. الرجاء التحقق من الإنترنت والمحاولة مرة أخرى.",
+      "unknown": "حدث خطأ ما. الرجاء المحاولة مرة أخرى."
+    },
+    "confirmed": {
+      "title": "تم تأكيد حضورك!",
+      "welcome": "أهلاً بك يا {{name}} — يسعدنا انضمامك إلينا."
+    },
+    "pass": {
+      "label": "بطاقة الدخول · Entry Pass",
+      "title": "بطاقة دخولك · Your entry pass",
+      "welcome": "أهلاً بك يا {{name}} — هذه بطاقة دخولك.",
+      "showCode": "يُرجى إبراز الكود للدخول · Please show this code to enter",
+      "guests": "ضيوف · Guests",
+      "keepHandy": "يُرجى الاحتفاظ بهذا الرمز لإبرازه عند الدخول · Keep this code handy and show it at the door"
+    },
+    "info": {
+      "title": "أنت مدعو!",
+      "body": "أهلاً بك يا {{name}} — يسعدنا وجودك معنا."
+    },
+    "declined": {
+      "title": "شكراً لإخبارنا",
+      "body": "سنفتقدك حقاً يا {{name}}. شكراً لتخصيص وقتك للرد — وندعوك في أي وقت آخر."
+    },
+    "hostedBy": "بدعوة من {{host}}",
+    "fields": {
+      "date": "التاريخ",
+      "venue": "المكان",
+      "message": "رسالة (اختياري)",
+      "messagePlaceholder": "أضف ملاحظة للمضيف",
+      "dietary": "متطلبات غذائية (اختياري)",
+      "plusOnes": "مرافقون (اختياري)"
+    },
+    "invite": {
+      "greeting": "مرحباً {{name}}، هل ستنضم إلينا؟"
+    },
+    "actions": {
+      "confirm": "تأكيد الحضور",
+      "decline": "اعتذار",
+      "change": "تغيير ردّي"
+    }
+  }
+}

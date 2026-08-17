@@ -1,0 +1,143 @@
+.container {
+  width: 100%;
+}
+
+.toggleWrapper {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1.6rem;
+  padding-bottom: 2.4rem;
+}
+
+.labelSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  /* align-items: flex-end; */
+  gap: 0.4rem;
+}
+
+.label {
+  color: #1a1a1a;
+  /* text-align: right; */
+  font-size: 1.6rem;
+  font-weight: 400;
+  line-height: 2.4rem;
+  letter-spacing: 0.024px;
+  cursor: pointer;
+  margin: 0;
+}
+
+.description {
+  font-size: 1.4rem;
+  color: #656565;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.toggleContainer {
+  flex-shrink: 0;
+}
+
+.hiddenInput {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle {
+  position: relative;
+  width: 4.2rem;
+  height: 2.4rem;
+  background-color: #e1e1e1;
+  border-radius: 3.75rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  border: none;
+}
+
+.toggle:hover {
+  background-color: #d0d0d0;
+}
+
+.toggle.active {
+  background-color: #c28e5c;
+}
+
+.toggle.active:hover {
+  background-color: #b07d4a;
+}
+
+.toggle.disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  background-color: #f5f5f5;
+}
+
+.toggle.disabled:hover {
+  background-color: #f5f5f5;
+}
+
+.toggleSlider {
+  position: absolute;
+  top: 0.2rem;
+  left: 0.2rem;
+  width: 2.1rem;
+  height: 2.1rem;
+  background-color: #ffffff;
+  border-radius: 50%;
+  transition: transform 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.toggle.active .toggleSlider {
+  transform: translateX(1.8rem);
+}
+
+.errorContainer {
+  margin-top: 0.8rem;
+}
+
+.error {
+  color: #ff4757;
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .toggleWrapper {
+    gap: 1.2rem;
+    padding-bottom: 1.6rem;
+  }
+
+  .label {
+    font-size: 1.4rem;
+    line-height: 2rem;
+  }
+
+  .description {
+    font-size: 1.2rem;
+  }
+
+  .toggle {
+    width: 4rem;
+    height: 2.2rem;
+  }
+
+  .toggleSlider {
+    width: 1.8rem;
+    height: 1.8rem;
+  }
+
+  .toggle.active .toggleSlider {
+    transform: translateX(1.8rem);
+  }
+}
+
+@media (max-width: 600px) {
+  .label {
+    font-size: 1.3rem;
+  }
+}

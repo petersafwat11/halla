@@ -1,0 +1,132 @@
+{
+  "header": {
+    "title": "المدفوعات",
+    "subtitle": "راقب وأدر أحداث المنصة",
+    "dateRange": "نطاق التاريخ"
+  },
+  "stats": {
+    "currentMonthRevenue": "إيرادات الشهر الحالي",
+    "lastMonthRevenue": "إيرادات الشهر الماضي",
+    "totalTransactions": "إجمالي المعاملات"
+  },
+  "table": {
+    "title": "قائمة المعاملات",
+    "searchPlaceholder": "البحث في المعاملات...",
+    "filter": "التصفية",
+    "export": "تصدير",
+    "exporting": "جارٍ التصدير…",
+    "refundedTag": "مسترد",
+    "columns": {
+      "id": "رقم المعاملة",
+      "name": "الاسم",
+      "amount": "المبلغ",
+      "currency": "العملة",
+      "planType": "الوصف",
+      "paymentMethod": "طريقة الدفع",
+      "method": "طريقة الدفع",
+      "transactionId": "رقم المعاملة",
+      "status": "الحالة",
+      "createdAt": "تاريخ الإنشاء",
+      "actions": "إجراءات"
+    },
+    "status": {
+      "all": "الكل",
+      "successful": "نجحت",
+      "completed": "مكتملة",
+      "pending": "في الانتظار",
+      "pending_3ds": "في انتظار التحقق الآمن",
+      "authorized": "مفوضة",
+      "captured": "مقبوضة",
+      "failed": "فشلت",
+      "refunded": "مستردة",
+      "partially_refunded": "مستردة جزئيًا",
+      "voided": "ملغاة",
+      "cancelled": "ملغية"
+    },
+    "method": {
+      "creditcard": "بطاقة",
+      "applepay": "آبل باي",
+      "samsungpay": "سامسونج باي",
+      "stcpay": "إس تي سي باي",
+      "token": "بطاقة محفوظة"
+    }
+  },
+  "actions": {
+    "refund": "استرداد",
+    "capture": "قبض",
+    "void": "إلغاء",
+    "viewDetails": "عرض التفاصيل",
+    "refundTitle": "استرداد المبلغ",
+    "captureTitle": "قبض المبلغ",
+    "voidTitle": "إلغاء الدفعة",
+    "confirmRefund": "تأكيد الاسترداد",
+    "confirmCapture": "تأكيد القبض",
+    "confirmVoid": "تأكيد الإلغاء",
+    "refunding": "جارٍ الاسترداد...",
+    "capturing": "جارٍ القبض...",
+    "voiding": "جارٍ الإلغاء...",
+    "refundAmount": "مبلغ الاسترداد",
+    "captureAmount": "مبلغ القبض",
+    "amountPlaceholder": "اتركه فارغًا للمبلغ الكامل",
+    "refundAmountHint": "اتركه فارغًا لاسترداد المبلغ المتبقي بالكامل",
+    "captureAmountHint": "اتركه فارغًا لقبض المبلغ المفوض بالكامل",
+    "deductInvites": "عدد الدعوات المراد خصمها من رصيد المضيف",
+    "deductInvitesPlaceholder": "اتركه فارغًا لعدم الخصم",
+    "deductInvitesHint": "اختياري. يخصم هذا العدد من الدعوات من رصيد المضيف مع الاسترداد الجزئي.",
+    "reason": "السبب (اختياري)",
+    "reasonPlaceholder": "أدخل سبب الاسترداد...",
+    "cancel": "إلغاء",
+    "confirm": "تأكيد",
+    "close": "إغلاق"
+  },
+  "dateRange": {
+    "all": "الكل",
+    "today": "اليوم",
+    "yesterday": "أمس",
+    "thisWeek": "هذا الأسبوع",
+    "lastWeek": "الأسبوع الماضي",
+    "thisMonth": "هذا الشهر",
+    "lastMonth": "الشهر الماضي",
+    "from": "من",
+    "to": "إلى",
+    "confirm": "تأكيد",
+    "cancel": "إلغاء"
+  },
+  "pagination": {
+    "prev": "السابق",
+    "next": "التالي"
+  },
+  "errors": {
+    "loadFailed": "فشل تحميل المدفوعات"
+  },
+  "empty": {
+    "title": "لا توجد مدفوعات"
+  },
+  "export": {
+    "success": "تم تصدير المدفوعات"
+  },
+  "refund": {
+    "success": "تم الاسترداد"
+  },
+  "capture": {
+    "success": "تم القبض"
+  },
+  "void": {
+    "success": "تم الإلغاء"
+  },
+  "detail": {
+    "title": "تفاصيل الدفعة",
+    "id": "رقم الدفعة",
+    "status": "الحالة",
+    "amount": "المبلغ",
+    "alreadyRefunded": "تم استرداده",
+    "remaining": "المتبقي",
+    "method": "طريقة الدفع",
+    "moyasarId": "معرّف ميسر",
+    "createdAt": "تاريخ الإنشاء",
+    "capturedAt": "تاريخ القبض",
+    "voidedAt": "تاريخ الإلغاء",
+    "refundedAt": "تاريخ الاسترداد",
+    "refunds": "المسترجعات"
+  }
+}

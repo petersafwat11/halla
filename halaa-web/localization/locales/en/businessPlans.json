@@ -1,0 +1,52 @@
+{
+  "plansPage": {
+    "title": "Subscription Plans",
+    "subtitle": "View and manage your subscription plan",
+    "currentPlan": {
+      "title": "Your Current Plan",
+      "badge": "Active",
+      "validUntil": "Valid until",
+      "unlimited": "Unlimited"
+    },
+    "availablePlans": {
+      "title": "Available Plans",
+      "subtitle": "Compare plans and features"
+    },
+    "planCard": {
+      "currentPlan": "Current Plan",
+      "features": "Features",
+      "events": "events",
+      "invitesPool": "invites (pool)",
+      "invitesPerEvent": "invites/event",
+      "unlimited": "Unlimited",
+      "subscribing": "Subscribing...",
+      "subscribeNow": "Subscribe Now"
+    },
+    "subscriptionStatus": "Subscription Status",
+    "noSubscription": {
+      "title": "No Active Subscription",
+      "text": "Choose a plan below to start using all features"
+    },
+    "successMessage": "Subscribed successfully!",
+    "failedMessage": "Failed to subscribe",
+    "loading": "Loading plans...",
+    "error": "Failed to load plans. Please try again.",
+    "retry": "Retry",
+    "perEventPlans": "Per Event",
+    "quarterlyPlans": "3-Month Pool",
+    "annualPlans": "Annual Pool",
+    "selectInvites": "Select number of invites",
+    "inviteUnit": "Invites",
+    "currency": "SAR",
+    "pricePerEvent": "/event",
+    "pricePerQuarter": "/quarter",
+    "pricePerYear": "/year",
+    "validDays90": "Valid for 90 days",
+    "validDays365": "Valid for 365 days",
+    "poolLabel": "Pool",
+    "setupFeeIncluded": "Setup fee included",
+    "featuresTitle": "Features",
+    "selectPlan": "Select Plan",
+    "selected": "Selected"
+  }
+}

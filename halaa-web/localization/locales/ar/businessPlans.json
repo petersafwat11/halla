@@ -1,0 +1,52 @@
+{
+  "plansPage": {
+    "title": "باقات الاشتراك",
+    "subtitle": "عرض وإدارة باقة اشتراكك",
+    "currentPlan": {
+      "title": "باقتك الحالية",
+      "badge": "نشط",
+      "validUntil": "صالح حتى",
+      "unlimited": "غير محدود"
+    },
+    "availablePlans": {
+      "title": "الباقات المتاحة",
+      "subtitle": "قارن بين الباقات والمميزات"
+    },
+    "planCard": {
+      "currentPlan": "الباقة الحالية",
+      "features": "المميزات",
+      "events": "مناسبة",
+      "invitesPool": "دعوة (رصيد)",
+      "invitesPerEvent": "دعوة/مناسبة",
+      "unlimited": "غير محدود",
+      "subscribing": "جاري الاشتراك...",
+      "subscribeNow": "اشترك الآن"
+    },
+    "subscriptionStatus": "حالة الاشتراك",
+    "noSubscription": {
+      "title": "لا يوجد اشتراك نشط",
+      "text": "اختر إحدى الباقات أدناه للبدء في استخدام جميع المميزات"
+    },
+    "successMessage": "تم الاشتراك بنجاح!",
+    "failedMessage": "فشل في الاشتراك",
+    "loading": "جاري تحميل الباقات...",
+    "error": "فشل في تحميل الباقات. يرجى المحاولة مرة أخرى.",
+    "retry": "إعادة المحاولة",
+    "perEventPlans": "لكل مناسبة",
+    "quarterlyPlans": "باقة 3 شهور",
+    "annualPlans": "باقة سنوية",
+    "selectInvites": "اختر عدد الدعوات",
+    "inviteUnit": "دعوة",
+    "currency": "ر.س",
+    "pricePerEvent": "/مناسبة",
+    "pricePerQuarter": "/ربع سنوي",
+    "pricePerYear": "/سنوي",
+    "validDays90": "صالحة لمدة 90 يوم",
+    "validDays365": "صالحة لمدة 365 يوم",
+    "poolLabel": "الرصيد",
+    "setupFeeIncluded": "رسوم الإعداد مشمولة",
+    "featuresTitle": "المميزات",
+    "selectPlan": "اختر الباقة",
+    "selected": "تم الاختيار"
+  }
+}

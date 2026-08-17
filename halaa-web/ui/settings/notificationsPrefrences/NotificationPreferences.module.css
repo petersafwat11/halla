@@ -1,0 +1,128 @@
+/**
+ * Notification Preferences Styles
+ */
+
+.container {
+  width: 100%;
+}
+
+.sections {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.section {
+  flex: 1;
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.sectionContent {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sectionHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.sectionDescription {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.togglesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Email verification warning styles */
+.emailWarning {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  padding: 1.2rem;
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 0.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.warningIcon {
+  font-size: 1.6rem;
+  flex-shrink: 0;
+}
+
+.warningText {
+  font-family: "Cairo", sans-serif;
+  font-size: 1.3rem;
+  color: #856404;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.buttonsContainer {
+  display: flex;
+  align-items: center;
+  gap: 2.4rem;
+  margin: 2.4rem ;
+  align-self: flex-start;
+}
+
+.saveButton {
+  min-width: 22.8rem;
+}
+
+.cancelButton {
+  min-width: 14.1rem;
+}
+
+/* RTL Support */
+[dir="rtl"] .buttonsContainer {
+  justify-content: flex-start;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sections {
+    flex-direction: column;
+  }
+
+  .section {
+    padding: 16px;
+  }
+
+  .buttonsContainer {
+    flex-direction: column-reverse;
+    align-self: stretch;
+    gap: 1.2rem;
+  }
+
+  .saveButton,
+  .cancelButton {
+    width: 100%;
+    min-width: unset;
+  }
+}

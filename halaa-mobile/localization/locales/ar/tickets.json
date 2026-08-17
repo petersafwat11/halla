@@ -1,0 +1,100 @@
+{
+  "pageTitle": "الشكاوى",
+  "createTicket": "انشاء شكوى",
+  "searchPlaceholder": "ابحث في الشكاوى...",
+  "loading": "جاري التحميل...",
+  "noTickets": {
+    "title": "لا توجد شكاوى سابقة",
+    "message": "إذا كنت بحاجة إلى إخبارنا بأي شيء، أرسل شكوى وسنهتم بها على الفور",
+    "action": "انشاء شكوى"
+  },
+  "popup": {
+    "createTitle": "انشاء شكوى",
+    "editTitle": "تعديل الشكوى",
+    "subjectLabel": "موضوع الشكوى",
+    "subjectPlaceholder": "ادخل موضوع الشكوى",
+    "typeLabel": "نوع الشكوى",
+    "typePlaceholder": "اختر نوع الشكوى",
+    "messageLabel": "نص الشكوى",
+    "messagePlaceholder": "ادخل نص الشكوى",
+    "submitCreate": "حفظ و ارسال",
+    "submitEdit": "تحديث",
+    "submitting": "جاري الإرسال...",
+    "updating": "جاري التحديث...",
+    "cancel": "الغاء",
+    "attachmentLabel": "مرفق (اختياري)",
+    "addImage": "إضافة صورة",
+    "addVideo": "إضافة فيديو",
+    "removeAttachment": "إزالة المرفق",
+    "attachmentTooLarge": "حجم الملف كبير جداً (الحد الأقصى 50 ميجابايت)",
+    "permissionRequired": "الإذن مطلوب",
+    "permissionMessage": "يرجى السماح بالوصول إلى الصور لإرفاق ملف"
+  },
+  "card": {
+    "viewAttachment": "عرض المرفق",
+    "playVideo": "تشغيل الفيديو"
+  },
+  "types": {
+    "technical": "مشكلة تقنية",
+    "payment": "مشكلة في الدفع",
+    "event": "مشكلة في الفعالية",
+    "user": "شكوى من مستخدم",
+    "other": "أخرى",
+    "inquiry": "استفسار",
+    "issue": "مشكلة",
+    "request": "طلب",
+    "suggestion": "اقتراح"
+  },
+  "status": {
+    "open": "مفتوحة",
+    "in_progress": "قيد المعالجة",
+    "waiting_response": "بانتظار الرد",
+    "resolved": "تم الحل",
+    "closed": "مغلقة"
+  },
+  "priority": {
+    "low": "منخفضة",
+    "medium": "متوسطة",
+    "high": "عالية",
+    "urgent": "عاجلة"
+  },
+  "actions": {
+    "delete": "حذف",
+    "edit": "تعديل",
+    "deleteTitle": "حذف الشكوى",
+    "deleteConfirm": "هل أنت متأكد من حذف هذه الشكوى؟",
+    "confirmDelete": "حذف",
+    "cancelDelete": "إلغاء"
+  },
+  "messages": {
+    "createSuccess": "تم إرسال الشكوى بنجاح",
+    "updateSuccess": "تم تحديث الشكوى بنجاح",
+    "deleteSuccess": "تم حذف الشكوى بنجاح",
+    "fetchError": "فشل في تحميل الشكاوى",
+    "deleteError": "فشل في حذف الشكوى",
+    "saveError": "حدث خطأ أثناء حفظ الشكوى"
+  },
+  "createdAt": "تم الإنشاء:",
+  "errors": {
+    "subjectMinLength": "موضوع الشكوى يجب أن يكون 5 أحرف على الأقل",
+    "subjectMaxLength": "موضوع الشكوى يجب أن لا يتجاوز 200 حرف",
+    "typeRequired": "نوع الشكوى مطلوب",
+    "typeInvalid": "نوع الشكوى غير صالح",
+    "messageMinLength": "الرسالة يجب أن تكون 10 أحرف على الأقل",
+    "messageMaxLength": "الرسالة يجب أن لا تتجاوز 5000 حرف",
+    "priorityInvalid": "أولوية غير صالحة",
+    "statusInvalid": "حالة غير صالحة",
+    "resolutionMinLength": "الرد يجب أن يكون 10 أحرف على الأقل",
+    "resolutionMaxLength": "الرد يجب أن لا يتجاوز 5000 حرف",
+    "ratingRequired": "يرجى اختيار تقييم",
+    "ratingMax": "التقييم يجب أن يكون بين 1 و 5",
+    "ratingInvalid": "التقييم يجب أن يكون رقم صحيح",
+    "feedbackMaxLength": "التعليق يجب أن لا يتجاوز 1000 حرف",
+    "boundary": "فشل في تحميل الشكاوى",
+    "loadFailed": "فشل في تحميل الشكاوى"
+  },
+  "ratingInline": {
+    "rateButton": "تقييم",
+    "alreadyRated": "تم التقييم"
+  }
+}

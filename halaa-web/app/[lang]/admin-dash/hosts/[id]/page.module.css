@@ -1,0 +1,7 @@
+.events {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2.4rem;
+  padding: 2.4rem;
+  margin-top: 3.1rem;
+}

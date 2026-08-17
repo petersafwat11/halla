@@ -1,0 +1,264 @@
+/* ============================================
+   MANAGE PLANS — Admin Dashboard
+   Card layout matching host/plans design
+   All colors from tokens.web.js
+   ============================================ */
+
+.container {
+  padding: 2rem;
+  min-height: 100vh;
+}
+
+.top { margin-bottom: 2rem; }
+
+/* Access Denied */
+.accessDenied {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+}
+
+.accessIcon {
+  font-size: 6rem;
+  color: #c0392b;
+  margin-bottom: 2rem;
+}
+
+.accessDenied h2 {
+  font-size: 2.4rem;
+  font-weight: 600;
+  color: var(--c-s700, #3a3028);
+  margin-bottom: 1rem;
+  font-family: var(--font-ar, "Cairo", sans-serif);
+}
+
+.accessDenied p {
+  font-size: 1.6rem;
+  color: var(--c-n400, #767676);
+  font-family: var(--font-ar, "Cairo", sans-serif);
+}
+
+/* ── Filter Dropdown ── */
+.filterDropdownWrapper {
+  margin-bottom: 2rem;
+  max-width: 320px;
+}
+
+.filterDropdown {
+  width: 100%;
+}
+
+/* ── Plans Grid ── */
+.plansGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+/* ── Plan Card — mirrors host mainPlanCard ── */
+.planCard {
+  background: var(--c-n50, #ffffff);
+  border-radius: var(--r-2xl, 1.5rem);
+  border: 2px solid var(--c-n250, #dfdfdf);
+  box-shadow: var(--shadow-card, 0 2px 16px rgba(82,68,56,0.08));
+  overflow: hidden;
+  transition: all var(--t, 250ms ease);
+  display: flex;
+  flex-direction: column;
+}
+
+.planCard:hover {
+  border-color: var(--c-p300, #d6b392);
+  box-shadow: 0 8px 24px rgba(82, 68, 56, 0.12);
+  transform: translateY(-2px);
+}
+
+.inactiveCard { opacity: 0.6; }
+
+/* Top accent stripe */
+.cardAccent {
+  height: 4px;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+/* Card Header */
+.cardHeader {
+  padding: 1.75rem 1.75rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.planTitleSection {
+  flex: 1;
+  min-width: 0;
+}
+
+.planTitle {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--c-s900, #221d18);
+  margin: 0 0 0.4rem;
+  line-height: 1.3;
+  font-family: var(--font-ar, "Cairo", sans-serif);
+}
+
+.planCode {
+  display: inline-block;
+  font-size: 1.1rem;
+  color: var(--c-n400, #767676);
+  font-family: monospace;
+  background: var(--c-n150, #f7f7f7);
+  padding: 0.2rem 0.7rem;
+  border-radius: var(--r-sm, 0.25rem);
+  border: 1px solid var(--c-n250, #dfdfdf);
+}
+
+.cardBadges {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.typeBadge {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--c-n50, #ffffff);
+  padding: 0.3rem 0.9rem;
+  border-radius: var(--r-full, 9999px);
+  font-family: var(--font-ar, "Cairo", sans-serif);
+}
+
+.statusBadge {
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--r-full, 9999px);
+  font-family: var(--font-ar, "Cairo", sans-serif);
+}
+
+/* Price Section — mirrors host priceSection */
+.priceSection {
+  padding: 1.25rem 1.75rem;
+  border-bottom: 1px solid var(--c-n200, #f2f2f2);
+}
+
+.priceAmount {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+}
+
+.currency {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--c-p500, #c28e5c);
+  font-family: var(--font-ar, "Cairo", sans-serif);
+}
+
+.price {
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1;
+  font-family: var(--font-ar, "Cairo", sans-serif);
+}
+
+.pricePeriod {
+  font-size: 1.2rem;
+  color: var(--c-n300, #cacaca);
+  margin-top: 0.2rem;
+  font-family: var(--font-ar, "Cairo", sans-serif);
+}
+
+/* Limits — mirrors host planLimits */
+.limitsSection {
+  display: flex;
+  gap: 1.25rem;
+  padding: 1.25rem 1.75rem;
+  background: var(--c-n150, #f7f7f7);
+  flex-wrap: wrap;
+}
+
+.limitItem {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.limitIcon { font-size: 1.2rem; }
+
+.limitValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--c-s900, #221d18);
+  font-family: var(--font-ar, "Cairo", sans-serif);
+}
+
+.limitLabel {
+  font-size: 1.2rem;
+  color: var(--c-n400, #767676);
+  font-family: var(--font-ar, "Cairo", sans-serif);
+}
+
+/* Edit Button — mirrors host subscribeButton */
+.editButton {
+  margin: 1.25rem 1.75rem 1.75rem;
+  padding: 1.1rem;
+  border: none;
+  border-radius: var(--r-lg, 1rem);
+  background: linear-gradient(135deg, var(--c-p500, #c28e5c) 0%, var(--c-p600, #b18154) 100%);
+  color: var(--c-n50, #ffffff);
+  font-size: 1.4rem;
+  font-weight: 700;
+  font-family: var(--font-ar, "Cairo", sans-serif);
+  cursor: pointer;
+  transition: all var(--t, 250ms ease);
+  box-shadow: var(--shadow-brand, 0 8px 32px rgba(194,142,92,0.25));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: auto;
+}
+
+.editButton:hover {
+  background: linear-gradient(135deg, var(--c-p600, #b18154) 0%, var(--c-p700, #8a6541) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(194, 142, 92, 0.4);
+}
+
+/* Empty State */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  color: var(--c-n400, #767676);
+}
+
+.emptyIcon {
+  font-size: 4rem;
+  color: var(--c-n300, #cacaca);
+  margin-bottom: 1rem;
+}
+
+.emptyState p {
+  font-size: 1.6rem;
+  font-family: var(--font-ar, "Cairo", sans-serif);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container { padding: 1rem; }
+  .filterDropdownWrapper { max-width: 100%; }
+  .plansGrid { grid-template-columns: 1fr; }
+}

@@ -1,0 +1,227 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  color: #64748b;
+  transition: color 0.2s;
+}
+
+.backButton:hover {
+  color: #0f172a;
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.actionButton {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.actionButton:hover {
+  background: #f8fafc;
+}
+
+.attachmentButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  border: 1px solid #c28e5c;
+  background: #fbf6ef;
+  color: #a5713f;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.attachmentButton:hover {
+  background: #f3e6d5;
+}
+
+.resolveButton {
+  background: #10b981;
+  color: white;
+  border-color: #10b981;
+}
+
+.resolveButton:hover {
+  background: #059669;
+}
+
+.reopenButton {
+  background: #f59e0b;
+  color: white;
+  border-color: #f59e0b;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 2rem;
+}
+
+.mainCard, .card {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.ticketHeader {
+  margin-bottom: 2rem;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 1rem;
+}
+
+.ticketTitle {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #1e293b;
+}
+
+.badges {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.badgeOpen {
+  background-color: #f59e0b;
+}
+
+.badgeInProgress {
+  background-color: #3b82f6;
+}
+
+.badgeResolved {
+  background-color: #10b981;
+}
+
+.badgeClosed {
+  background-color: #6b7280;
+}
+
+.badgeUrgent {
+  background-color: #ef4444;
+}
+
+.badgeHigh {
+  background-color: #f97316;
+}
+
+.badgeMedium {
+  background-color: #3b82f6;
+}
+
+.badgeLow {
+  background-color: #10b981;
+}
+
+.cardTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 1.5rem;
+}
+
+.sectionTitle {
+  font-size: 1.1rem;
+  color: #475569;
+  margin-bottom: 0.5rem;
+}
+
+.message {
+  line-height: 1.6;
+  color: #334155;
+  white-space: pre-wrap;
+}
+
+.resolutionSection {
+  margin-top: 2rem;
+  background: #f0fdf4;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid #bbf7d0;
+}
+
+.resolutionSection .sectionTitle {
+  color: #166534;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.meta {
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.infoRow {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.icon {
+  color: #94a3b8;
+  margin-top: 0.25rem;
+}
+
+.label {
+  display: block;
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-bottom: 0.25rem;
+}
+
+.subtext {
+  font-size: 0.875rem;
+  color: #94a3b8;
+}
+
+@media (max-width: 768px) {
+  .content {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "discounts": {
+    "title": "Discounts Management",
+    "subtitle": "Create and manage discount codes for plans",
+    "newCode": "New Code",
+    "deactivated": "Code deactivated",
+    "activated": "Code activated",
+    "toggleError": "Failed to change status",
+    "confirmDelete": "Are you sure you want to delete this code?",
+    "deleteSuccess": "Code deleted",
+    "deleteError": "Delete failed",
+    "copied": "Code copied",
+    "copy": "Copy",
+    "loadError": "Failed to load discount codes",
+    "tableTitle": "Discount Codes",
+    "noExpiry": "No expiry",
+    "deactivate": "Deactivate",
+    "activate": "Activate",
+    "edit": "Edit",
+    "delete": "Delete",
+    "editTitle": "Edit Discount Code",
+    "createTitle": "Create New Discount Code",
+    "cancel": "Cancel",
+    "saving": "Saving...",
+    "saveChanges": "Save Changes",
+    "create": "Create Code",
+    "sar": "SAR",
+    "updateSuccess": "Code updated successfully",
+    "updateError": "Failed to update code",
+    "createSuccess": "Code created successfully",
+    "createError": "Failed to create code",
+    "filter": {
+      "all": "All",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "type": {
+      "percentage": "Percentage",
+      "fixed": "Fixed amount"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "expired": "Expired",
+      "exhausted": "Exhausted"
+    },
+    "columns": {
+      "code": "Code",
+      "type": "Type",
+      "value": "Value",
+      "usage": "Usage",
+      "status": "Status",
+      "expires": "Expiry Date"
+    },
+    "stats": {
+      "total": "Total Codes",
+      "active": "Active",
+      "expired": "Expired",
+      "uses": "Total Uses"
+    },
+    "fields": {
+      "code": "Discount Code *",
+      "codePlaceholder": "e.g. SAVE20",
+      "descEn": "Description (English)",
+      "descEnPlaceholder": "e.g. 20% off for new users",
+      "descAr": "Description (Arabic)",
+      "descArPlaceholder": "e.g. خصم 20% للمستخدمين الجدد",
+      "type": "Discount Type *",
+      "percent": "Percentage (%) *",
+      "amount": "Amount (SAR) *",
+      "maxUses": "Max Uses (0 = unlimited)",
+      "minAmount": "Min Amount (SAR)",
+      "validFrom": "Valid From",
+      "validUntil": "Valid Until",
+      "status": "Status",
+      "planTypes": "Applicable Plans (empty = all plans)"
+    },
+    "planTypes": {
+      "trial": "Trial",
+      "basic_event": "Basic — Per Event",
+      "basic_monthly": "Basic — Monthly",
+      "premium_event": "Premium — Per Event",
+      "premium_monthly": "Premium — Monthly",
+      "business_event": "Business — Per Event",
+      "business_quarterly": "Business — Quarterly",
+      "business_annual": "Business — Annual",
+      "unlimited": "Unlimited"
+    },
+    "validation": {
+      "codeRequired": "Code is required",
+      "valueRequired": "Value is required",
+      "valuePositive": "Value must be positive",
+      "maxPercent": "Percentage must not exceed 100%",
+      "dateRange": "End date must be after start date"
+    }
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "title": "Halaa Marketplace",
+  "search": {
+    "placeholder": "Search for anything...",
+    "filter": "Filter"
+  },
+  "sections": {
+    "title": "Sections",
+    "all": "All",
+    "eventPlanning": "Event Planning",
+    "mediaProduction": "Media Production",
+    "giftsAndGiveaways": "Gifts & Giveaways",
+    "foodAndBeverages": "Food & Beverages",
+    "beautyAndFashion": "Beauty & Fashion",
+    "logisticsAndDelivery": "Logistics & Delivery",
+    "corporateServices": "Corporate Services",
+    "supportServices": "Support Services",
+    "technicalServices": "Technical Services",
+    "soundLightingEntertainment": "Sound, Lighting & Entertainment",
+    "hallsAndVenues": "Halls & Venues"
+  },
+  "filters": {
+    "title": "Filters",
+    "section": "Section",
+    "allSections": "All Sections",
+    "region": "Region",
+    "allRegions": "All Regions",
+    "city": "City",
+    "allCities": "All Cities",
+    "districts": "Districts",
+    "priceRange": "Price Range",
+    "minPrice": "From",
+    "maxPrice": "To",
+    "rating": "Rating",
+    "allRatings": "All",
+    "4stars": "4+ stars",
+    "3stars": "3+ stars",
+    "2stars": "2+ stars",
+    "reset": "Reset",
+    "apply": "Apply Filters"
+  },
+  "vendor": {
+    "defaultName": "Service",
+    "defaultLocation": "Saudi Arabia",
+    "callNow": "Call Now",
+    "viewProfile": "View details",
+    "viewProfileFor": "View {{name}} profile",
+    "moreInfo": "More Info",
+    "users": "users",
+    "sar": "SAR",
+    "serviceDuration": "Duration",
+    "price": "Price",
+    "priceOnRequest": "Price on request",
+    "startsFrom": "Starts from",
+    "whatsIncluded": "What's Included",
+    "contactInfo": "Contact Information",
+    "providedBy": "Provided by",
+    "whatsapp": "WhatsApp",
+    "aboutVendor": "About Vendor",
+    "portfolio": "Portfolio",
+    "ourServices": "Our Services",
+    "backToMarketplace": "Back to marketplace",
+    "share": "Share",
+    "meetVendor": "Meet {{name}}",
+    "servicesHeadline": "Services for your occasion",
+    "portfolioHeadline": "Selected work",
+    "contactHeadline": "Contact the vendor",
+    "contactDescription": "Contact the vendor directly to ask about availability, pricing, and your occasion.",
+    "website": "Website",
+    "noServices": "This vendor has not published services yet.",
+    "askAboutService": "Ask about service",
+    "requestService": "Request service",
+    "requestQuote": "Request a quote",
+    "email": "Email"
+  },
+  "results": {
+    "title": "{{count}} vendors",
+    "subtitle": "Approved providers for your occasion"
+  },
+  "noResults": {
+    "title": "No results found",
+    "description": "Try adjusting your filters or search terms"
+  },
+  "loading": "Loading...",
+  "errors": {
+    "loadFailed": "Failed to load vendors",
+    "profileLoadFailed": "This vendor profile is unavailable",
+    "retry": "Try again",
+    "categoriesLoadFailed": "Failed to load categories"
+  }
+}

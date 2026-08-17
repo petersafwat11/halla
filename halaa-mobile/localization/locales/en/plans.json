@@ -1,0 +1,311 @@
+{
+  "pageTitle": "Business Plans",
+  "loading": "Loading plans...",
+  "currentPlan": { "title": "Current Plan", "events": "Events", "invites": "Invites", "daysRemaining": "Days Remaining" },
+  "noActiveSubscription": { "title": "No active subscription", "subtitle": "Choose a plan below to activate your subscription" },
+  "business": {
+    "pageTitle": "Business Plans",
+    "currentBadge": "Current Plan",
+    "upgradeAction": "Upgrade to this plan",
+    "contactAdminShort": "Assigned by your account manager",
+    "pendingActivation": {
+      "title": "Pending activation",
+      "subtitle": "Your account manager will assign and activate a plan for you. You can upgrade between business plans once active."
+    },
+    "getStarted": {
+      "title": "Choose your plan",
+      "subtitle": "Pick a business plan below to activate your account. You can upgrade, downgrade, or cancel anytime."
+    }
+  },
+  "tabs": {
+    "event": "Per Event",
+    "quarterly": "3-Month Pool",
+    "annual": "Annual Pool"
+  },
+  "planFamilies": { "basic": "Halaa Basic", "premium": "Halaa Premium" },
+  "popular": "Most Popular",
+  "planFamilyDescriptions": {
+    "basic": "Self-managed — you handle everything",
+    "premium": "Fully managed by our team"
+  },
+  "billingTypes": { "event": "Per Event", "monthly": "Monthly Pool" },
+  "billingTypeLabels": { "event": "/ event", "monthly": "/ month" },
+  "billingTypeDescriptions": {
+    "event": "1 event — valid 90 days",
+    "monthly": "Invite Pool — unlimited events — 30 days"
+  },
+  "inviteSelector": { "label": "Select invite count", "poolLabel": "Invite pool", "invites": "invites" },
+  "currency": "SAR",
+  "common": {
+    "currency": { "sar": "SAR" }
+  },
+  "compensation": { "title": "Free Compensation Invites", "invites": "compensation invites" },
+  "buttons": { "subscribeNow": "Contact Us", "subscribeAction": "Subscribe Now", "continueToSummary": "Continue to Summary" },
+  "errors": { "loadFailed": "Failed to load plans", "selectPlan": "Please select a plan.", "noPlansAvailable": "No plans available", "retry": "Retry" },
+  "eventTab": {
+    "hint": "1 event per plan — valid 90 days · 1,200 SAR one-time setup fee",
+    "validity": "Valid 90 days",
+    "priceSuffix": "SAR / event",
+    "invitesSuffix": "invites / event",
+    "noPlans": "No per-event plan available"
+  },
+  "quarterlyTab": {
+    "hint": "Shared invite pool for unlimited events — 90 days",
+    "validity": "Valid 90 days",
+    "priceSuffix": "SAR / 3 months",
+    "invitesSuffix": "invites (shared pool)",
+    "whatsappTemplates": "{{count}} custom WhatsApp templates",
+    "setupIncluded": "Setup fee included",
+    "noPlans": "No quarterly plan available"
+  },
+  "annualTab": {
+    "hint": "Shared invite pool for unlimited events — 365 days",
+    "validity": "Valid 365 days",
+    "priceSuffix": "SAR / year",
+    "invitesSuffix": "invites (shared pool)",
+    "whatsappTemplates": "{{count}} custom WhatsApp templates",
+    "setupIncluded": "Setup fee included",
+    "noPlans": "No annual plan available"
+  },
+  "contactNote": "Our team will contact you to complete payment.",
+  "infoNote": "Our team will contact you after subscription to complete payment and get started.",
+  "addons": {
+    "title": "Add-Ons",
+    "subtitle": "Enhance your plan with optional extras",
+    "loadFailed": "Could not load add-ons.",
+    "selectedCount_one": "1 selected",
+    "selectedCount_other": "{{count}} selected",
+    "clearAll": "Clear all",
+    "extraInvites": {
+      "title": "Extra Invites",
+      "description": "Add more invites to your plan",
+      "stackHint": "Pick multiple packages — they add up. Extra packages don't earn the 15% compensation bonus."
+    },
+    "designTemplate": { "title": "Design Template", "description": "Professional invitation design by our team" },
+    "designTypes": {
+      "ready_made": "Ready-made design (male/female)",
+      "custom_male": "Custom male design",
+      "custom_themed": "Themed custom design",
+      "animated": "Animated background design",
+      "3d": "3D invitation design"
+    },
+    "purchase": {
+      "total": "Total",
+      "cta": "Purchase selected add-ons",
+      "processing": "Processing...",
+      "noneSelected": "Select an add-on first",
+      "success": "Add-ons purchased",
+      "error": "Failed to purchase add-on"
+    },
+    "manageEntry": "Buy add-ons",
+    "buy": "Buy",
+    "completePending": "Complete the add-ons you selected. Each one is a separate purchase.",
+    "noneEligible": "No add-ons are available for your current plan.",
+    "families": {
+      "extra_invites": "Extra Invites",
+      "design_template": "Design Template",
+      "business_customization": "Business Customization"
+    },
+    "fulfillment": {
+      "title": "Fulfillment status",
+      "pending": "Processing — your add-on will be applied shortly."
+    },
+    "history": { "title": "Your add-ons" }
+  },
+  "summary": {
+    "title": "Order Summary",
+    "planDetails": "Plan Details",
+    "invitePool": "Invite Pool",
+    "validDays": "Valid for",
+    "days": "days",
+    "oneEvent": "1 event",
+    "singleEvent": "Single event",
+    "unlimitedEvents": "Unlimited events",
+    "compensationInvites": "compensation invites",
+    "extraInvites": "extra invites",
+    "totalInvites": "Total invites",
+    "totalInvitesHint": "Total pool = base invites + extra packages + 15% compensation.",
+    "compensationHint": "+15% bonus invites on your base plan invites — free. Extra packages don't earn compensation.",
+    "perEventPlanHint": "Per-event plan: 1 event with this invite count.",
+    "poolPlanHint": "Pool plan: many events sharing one invite pool.",
+    "activateButton": "Activate Subscription",
+    "activating": "Activating...",
+    "total": "Total",
+    "businessPlan": "Business Plan",
+    "validFor": "Valid for",
+    "addonsTitle": "Selected Add-Ons",
+    "addonItems": {
+      "extra_invites": "Extra Invites +{{quantity}}",
+      "design_template": "Design Template"
+    },
+    "periods": {
+      "yearly": "1 year (365 days)",
+      "quarterly": "90 days",
+      "monthly": "30 days",
+      "event": "90 days (1 event)",
+      "custom": "{{days}} days"
+    },
+    "discount": {
+      "title": "Discount Code",
+      "placeholder": "Enter discount code",
+      "apply": "Apply",
+      "applied": "Applied",
+      "remove": "Remove",
+      "success": "✓ Code \"{{code}}\" — {{amount}} SAR off",
+      "invalidDefault": "Invalid discount code",
+      "networkError": "Could not verify code. Please try again"
+    },
+    "paymentSummary": {
+      "title": "Payment Summary",
+      "planPrice": "Plan Price",
+      "setupFee": "Setup Fee",
+      "addons": "Add-Ons",
+      "discount": "Discount",
+      "total": "Total"
+    },
+    "payment": {
+      "title": "Payment Summary",
+      "planPrice": "Plan Price",
+      "addons": "Add-Ons",
+      "discount": "Discount",
+      "total": "Total",
+      "method": "Payment Method"
+    },
+    "invitesLabel": "invites",
+    "currency": "SAR",
+    "billingPeriod": "Billing Period:",
+    "termsNotice": "By clicking Activate Subscription, you agree to our Terms of Service and Privacy Policy",
+    "invalidCode": "Invalid discount code",
+    "subscriptionSuccess": "Subscription activated!",
+    "activeSubscription": "You already have an active subscription. You can create an event now.",
+    "subscriptionFailed": "Failed to activate subscription. Please try again.",
+    "paymentFailed": "Payment failed. Please try again.",
+    "invalidPlan": "Invalid plan code.",
+    "processing": "Processing...",
+    "proceedButton": "Proceed to Payment"
+  },
+  "toasts": {
+    "subscriptionCreated": "Subscription activated successfully!",
+    "subscriptionFailed": "Failed to activate subscription. Please try again.",
+    "subscriptionPartial": "Subscription activated; {{count}} add-on(s) need follow-up — our team will reach out.",
+    "alreadyActive": "You have an active subscription."
+  },
+  "checkout": {
+    "method": {
+      "card": "Card",
+      "applepay": "Apple Pay",
+      "stcpay": "STC Pay"
+    },
+    "card": {
+      "name": "Cardholder name",
+      "number": "Card number",
+      "month": "MM",
+      "year": "YYYY",
+      "cvc": "CVC",
+      "secureNote": "Your card details are encrypted and processed securely."
+    },
+    "stcpay": {
+      "mobile": "Mobile number",
+      "note": "You'll receive a confirmation prompt in your STC Pay app."
+    },
+    "applepay": {
+      "note": "You'll be prompted by Apple Pay on the next step."
+    },
+    "errors": {
+      "cardIncomplete": "Please fill in all card details.",
+      "cardNumberInvalid": "Card number looks invalid.",
+      "expiryInvalid": "Expiry date looks invalid.",
+      "cvcInvalid": "CVC looks invalid.",
+      "stcMobileInvalid": "Enter a valid Saudi mobile number (starts with 05).",
+      "applepayUnavailable": "Apple Pay is not yet available on mobile. Please choose another method.",
+      "iapUnavailable": "In-app purchases aren't available on this device.",
+      "planUnavailable": "This plan isn't available for purchase right now.",
+      "addonUnavailable": "This add-on isn't available right now."
+    },
+    "iap": {
+      "note": "Billed securely through the App Store / Google Play.",
+      "restore": "Restore Purchases",
+      "restoring": "Restoring...",
+      "restored": "Purchases restored",
+      "restoreFailed": "Could not restore purchases",
+      "manage": "Manage subscription",
+      "unavailable": "Unavailable",
+      "processing": "Purchase received — your plan will activate shortly."
+    }
+  },
+  "features": {
+    "title": "Included Features"
+  },
+  "taglines": {
+    "basic": "Full control of your event — manage everything yourself with the easiest steps!",
+    "premium": "Your event is on us — we manage everything on your behalf, from the first invitation to the last guest.",
+    "business": "Professional management of invitations and corporate events with the organization's official brand identity through the Halaa team — the ideal choice for companies, organizers of large recurring events, and organizations."
+  },
+  "duration": {
+    "event": "Valid for {{days}} days",
+    "monthly": "Monthly subscription — unlimited events",
+    "quarterly": "3-month subscription",
+    "annual": "Annual subscription"
+  },
+  "includes": { "basic": "All Basic features +" },
+  "compensationRow": "{{count}} compensation invites ({{percent}}% of {{base}})",
+  "setupFeeRow": "One-time setup fee: {{amount}} SAR",
+  "freeInvitesRow": "Includes {{count}} free invitations during the subscription period",
+  "whatsappTemplates": "{{count}} custom WhatsApp templates",
+  "badges": { "selected": "Selected" },
+  "monthlyPlan": { "durationNote": "Valid 30 days — unlimited events" },
+  "iapStates": {
+    "pending": { "title": "Processing your purchase", "body": "We're confirming your purchase with the store. This can take a moment." },
+    "active": { "title": "You're all set", "body": "Your subscription is now active." },
+    "fulfilled": { "title": "Purchase complete", "body": "Your purchase has been applied to your account." },
+    "consumed": { "title": "Already used", "body": "This item has already been used." },
+    "superseded": { "title": "Replaced", "body": "This purchase was replaced by a newer one." },
+    "refund_required": { "title": "Action needed", "body": "Something went wrong applying this purchase. Our team will process a refund — please contact support." },
+    "refunded": { "title": "Refunded", "body": "This purchase has been refunded." },
+    "manual_review": { "title": "Under review", "body": "Your purchase needs a quick review by our team. We'll follow up shortly." },
+    "failed": { "title": "Purchase not completed", "body": "We couldn't complete this purchase. If you were charged, please contact support." }
+  },
+  "iapFlow": {
+    "checking": "Checking eligibility…",
+    "purchasing": "Opening the store…",
+    "errorGeneric": "Something went wrong. Please try again.",
+    "blockedTitle": "Can't purchase this yet",
+    "continue": "Continue",
+    "refresh": "Refresh status",
+    "close": "Close",
+    "pendingHint": "You can keep this open — we'll update automatically, or tap Refresh.",
+    "scheduledTitle": "Change scheduled",
+    "scheduledBody": "Your new plan will take effect at your next renewal. Your current plan stays active until then."
+  },
+  "preflight": {
+    "recurring_plan_active": "You already have an active plan that covers events. Use your current plan instead.",
+    "unused_event_held": "You already have an unused event package. Use or refund it before buying another.",
+    "no_active_subscription": "You need an active subscription before buying this add-on.",
+    "not_an_event_product": "This isn't an event package.",
+    "not_an_addon_product": "This isn't an add-on.",
+    "role_not_eligible": "This product isn't available for your account.",
+    "account_type_not_eligible": "This product isn't available for your account type.",
+    "ineligible": "This purchase isn't available right now.",
+    "preflight_failed": "We couldn't verify this purchase. Please try again.",
+    "purchase_plan_first": "Purchase a plan first."
+  },
+  "replacementActions": {
+    "use_existing_plan": "Manage your current plan.",
+    "consume_or_refund_existing": "Use or refund your existing item first.",
+    "purchase_plan_first": "Purchase a plan first."
+  },
+  "disclosures": {
+    "autoRenew": "Subscription auto-renews until cancelled. You can cancel anytime in your store account.",
+    "manageSubscription": "Manage or cancel your subscription in your App Store / Google Play account.",
+    "oneTime": "One-time purchase. This is not a subscription and does not auto-renew.",
+    "designManaged": "Design templates are a managed service prepared by our team, and are non-refundable once requested.",
+    "businessManaged": "Business customization is a managed service provisioned by our team and may require a short review.",
+    "consumableNoRestore": "Consumable add-ons and event packages apply to your account and can't be restored on another device."
+  },
+  "legal": {
+    "terms": "Terms",
+    "privacy": "Privacy",
+    "refund": "Refund Policy",
+    "support": "Support"
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "title": "Payments",
+  "loading": "Loading…",
+  "errors": {
+    "loadFailed": "Failed to load your payments"
+  },
+  "export": {
+    "success": "Payments exported"
+  },
+  "table": {
+    "title": "Payments List",
+    "columns": {
+      "service": "Service Type",
+      "amount": "Amount",
+      "date": "Transaction Date",
+      "status": "Transaction Status",
+      "method": "Payment Method",
+      "transactionId": "Transaction ID"
+    },
+    "status": {
+      "success": "Successful",
+      "completed": "Completed",
+      "pending": "Pending",
+      "pending_3ds": "Awaiting 3-D Secure",
+      "authorized": "Authorized",
+      "captured": "Captured",
+      "cancelled": "Cancelled",
+      "failed": "Failed",
+      "refunded": "Refunded",
+      "partially_refunded": "Partially refunded",
+      "voided": "Voided"
+    },
+    "method": {
+      "creditcard": "Card",
+      "applepay": "Apple Pay",
+      "samsungpay": "Samsung Pay",
+      "stcpay": "STC Pay",
+      "token": "Saved card"
+    },
+    "actions": {
+      "delete": "Delete",
+      "deleteAll": "Delete All",
+      "actions": "Actions"
+    },
+    "filter": {
+      "title": "Filter",
+      "all": "All",
+      "success": "Successful",
+      "pending": "Pending",
+      "cancelled": "Cancelled"
+    },
+    "export": "Export Data",
+    "search": "Search payments...",
+    "labels": {
+      "actions": "Actions",
+      "filter": "Filter",
+      "export": "Export Data",
+      "moreOptions": "More Options"
+    }
+  },
+  "return": {
+    "title": "Payment status",
+    "confirming": "Confirming with the bank…",
+    "missingId": "Payment reference missing",
+    "timeout": "Still confirming your payment. We'll email you once it lands.",
+    "error": "Failed to confirm payment",
+    "backHome": "Back to dashboard",
+    "status": {
+      "pending": "Pending",
+      "pending_3ds": "Awaiting 3-D Secure",
+      "authorized": "Authorized",
+      "paid": "Paid",
+      "captured": "Captured",
+      "failed": "Failed",
+      "refunded": "Refunded",
+      "voided": "Voided"
+    }
+  }
+}

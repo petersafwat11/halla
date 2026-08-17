@@ -1,0 +1,40 @@
+{
+  "tabs": {
+    "branding": "Branding"
+  },
+  "loading": "Loading...",
+  "branding": {
+    "logo": "Platform Logo",
+    "logoDescription": "Upload your platform logo. Recommended size: 200x60px",
+    "uploadLogo": "Click to upload logo",
+    "removeLogo": "Remove Logo",
+    "platformName": "Platform Name",
+    "platformNameDescription": "This name will appear in emails and notifications",
+    "platformNameLabel": "Platform Name",
+    "platformNamePlaceholder": "Enter your platform name",
+    "colorScheme": "Color Scheme",
+    "colorSchemeDescription": "Choose colors that match your brand",
+    "presets": "Quick Presets:",
+    "primaryColor": "Primary Color",
+    "secondaryColor": "Secondary Color",
+    "preview": "Preview:",
+    "sampleButton": "Sample Button",
+    "sampleText": "Sample Text",
+    "contactInfo": "Contact Information",
+    "contactInfoDescription": "Support contact details for your platform users",
+    "supportEmail": "Support Email",
+    "supportEmailPlaceholder": "support@yourplatform.com",
+    "supportPhone": "Support Phone",
+    "supportPhonePlaceholder": "+966 XX XXX XXXX",
+    "saveChanges": "Save Changes",
+    "saving": "Saving...",
+    "saveSuccess": "Branding settings saved successfully",
+    "saveError": "Failed to save branding settings"
+  },
+  "subscription": {
+    "currentPlan": "Current Plan:",
+    "active": "Active",
+    "inactive": "Inactive",
+    "expiresOn": "Expires on:"
+  }
+}

@@ -1,0 +1,120 @@
+{
+  "sections": {
+    "all": "All",
+    "title": "Categories",
+    "eventPlanning": "Event planning",
+    "mediaProduction": "Media production",
+    "giftsAndGiveaways": "Gifts & giveaways",
+    "foodAndBeverages": "Food & beverages",
+    "beautyAndFashion": "Beauty & fashion",
+    "logisticsAndDelivery": "Logistics & delivery",
+    "corporateServices": "Corporate services",
+    "supportServices": "Support services",
+    "technicalServices": "Technical services",
+    "soundLightingEntertainment": "Sound, lighting & entertainment",
+    "hallsAndVenues": "Halls & venues"
+  },
+  "previousPage": "Previous Page",
+  "goToPage": "Go to page",
+  "nextPage": "Next Page",
+  "filters": {
+    "ratingAll": "All Ratings",
+    "rating4": "4 Stars & Up",
+    "rating3": "3 Stars & Up",
+    "rating2": "2 Stars & Up",
+    "title": "Filters",
+    "region": "Region",
+    "allRegions": "All Regions",
+    "city": "City",
+    "allCities": "All Cities",
+    "searchCity": "Search City",
+    "district": "District",
+    "allDistricts": "All Districts",
+    "searchDistrict": "Search District",
+    "priceRange": "Price Range",
+    "priceFrom": "From",
+    "priceTo": "To",
+    "rating": "Rating",
+    "activeFilters": "Active Filters",
+    "price": "Price"
+  },
+  "filtersPopup": {
+    "close": "Close Filters"
+  },
+  "buttons": {
+    "resetFilters": "Reset",
+    "applyFilters": "Apply"
+  },
+  "search": {
+    "placeholder": "Search...",
+    "vendorPlaceholder": "Search by vendor, service, or occasion",
+    "clear": "Clear search",
+    "prompt": "What does your occasion need?",
+    "hint": "Try photography, venues, catering, gifts, or a vendor name"
+  },
+  "card": {
+    "users": "Users",
+    "callNow": "Call Now",
+    "viewProfile": "View details",
+    "viewProfileFor": "View {{name}} profile",
+    "priceOnRequest": "Price on request"
+  },
+  "vendor": {
+    "defaultName": "Service",
+    "serviceDuration": "Duration",
+    "price": "Price",
+    "whatsIncluded": "What's Included",
+    "contactInfo": "Contact Information",
+    "providedBy": "Provided by",
+    "whatsapp": "WhatsApp",
+    "close": "Close",
+    "startsFrom": "Starts from",
+    "ourServices": "Our Services",
+    "aboutVendor": "About Vendor",
+    "portfolio": "Portfolio",
+    "backToMarketplace": "Back to marketplace",
+    "share": "Share",
+    "linkCopied": "Link copied",
+    "serviceCount": "{{count}} services",
+    "meetVendor": "Meet {{name}}",
+    "servicesHeadline": "Services for your occasion",
+    "portfolioHeadline": "Selected work",
+    "contactHeadline": "Contact the vendor",
+    "contactDescription": "Contact the vendor directly to ask about availability, pricing, and the details of your occasion.",
+    "website": "Website",
+    "noServices": "This vendor has not published services yet.",
+    "askAboutService": "Ask about service",
+    "requestService": "Request service",
+    "requestQuote": "Request a quote",
+    "email": "Email"
+  },
+  "currency": "SAR",
+  "title": "Halaa Marketplace",
+  "hero": {
+    "eyebrow": "Halaa Marketplace",
+    "title": "Discover event vendors",
+    "subtitle": "Browse trusted services from approved vendors to make your next event a success"
+  },
+  "emptyState": {
+    "title": "New vendors coming soon",
+    "description": "We're regularly onboarding new vendors. Check back soon to discover more services."
+  },
+  "noResults": {
+    "title": "No results found",
+    "description": "Try adjusting your filters or search terms"
+  },
+  "results": {
+    "title": "{{count}} vendors",
+    "subtitle": "Approved providers ready to help with your occasion"
+  },
+  "errors": {
+    "loadFailed": "We could not load vendors right now.",
+    "loadFailedTitle": "Marketplace unavailable",
+    "retry": "Try again",
+    "categoriesLoadFailed": "Categories could not be loaded"
+  },
+  "services": {
+    "defaultName": "Service",
+    "defaultLocation": "Saudi Arabia"
+  }
+}

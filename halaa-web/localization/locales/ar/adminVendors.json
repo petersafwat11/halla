@@ -1,0 +1,99 @@
+{
+  "header": {
+    "title": "التجار",
+    "subtitle": "مراجعة الطلبات وإدارة التجار",
+    "dateRange": "نطاق التاريخ"
+  },
+  "stats": {
+    "totalVendors": "إجمالي التجار",
+    "activeVendors": "تجار نشطين",
+    "pendingVendors": "تجار في الانتظار",
+    "suspendedVendors": "تجار موقوفون"
+  },
+  "table": {
+    "title": "قائمة التجار",
+    "searchPlaceholder": "البحث عن التجار...",
+    "filter": "التصفية",
+    "export": "تصدير",
+    "columns": {
+      "username": "اسم التاجر",
+      "phoneNumber": "رقم الهاتف",
+      "email": "البريد الإلكتروني",
+      "serviceType": "نوع الخدمة",
+      "rating": "التقييم",
+      "status": "الحالة",
+      "actions": "الإجراءات"
+    },
+    "status": {
+      "pending": "في الانتظار",
+      "active": "نشط",
+      "suspended": "موقوف",
+      "rejected": "مرفوض"
+    },
+    "actions": {
+      "viewDetails": "عرض التفاصيل",
+      "approve": "الموافقة",
+      "suspend": "إيقاف",
+      "delete": "حذف",
+      "giveRating": "إعطاء تقييم"
+    },
+    "serviceTypes": {
+      "mediaProduction": "إنتاج الوسائط",
+      "foodAndBeverages": "الطعام والمشروبات",
+      "photography": "التصوير",
+      "decoration": "الديكور",
+      "music": "الموسيقى",
+      "entertainment": "الترفيه"
+    }
+  },
+  "dateRange": {
+    "all": "الكل",
+    "today": "اليوم",
+    "yesterday": "أمس",
+    "thisWeek": "هذا الأسبوع",
+    "lastWeek": "الأسبوع الماضي",
+    "thisMonth": "هذا الشهر",
+    "lastMonth": "الشهر الماضي",
+    "confirm": "تأكيد",
+    "cancel": "إلغاء"
+  },
+  "giveRating": {
+    "title": "إعطاء تقييم",
+    "ratingLabel": "التقييم",
+    "submitButton": "إعطاء التقييم",
+    "cancel": "إلغاء",
+    "submitting": "جاري الإرسال...",
+    "success": "تم إعطاء التقييم بنجاح",
+    "error": "فشل في إعطاء التقييم"
+  },
+  "approveVendor": {
+    "success": "تم قبول التاجر بنجاح",
+    "error": "فشل في قبول التاجر"
+  },
+  "suspendVendor": {
+    "success": "تم إيقاف التاجر بنجاح",
+    "error": "فشل في إيقاف التاجر"
+  },
+  "deleteVendor": {
+    "success": "تم حذف التاجر بنجاح",
+    "error": "فشل في حذف التاجر"
+  },
+  "confirmDelete": {
+    "message": "هل أنت متأكد من حذف هذا التاجر؟"
+  },
+  "messages": {
+    "selectRows": "الرجاء تحديد تجار أولاً",
+    "confirmBulkDelete": "هل أنت متأكد من حذف {{count}} تاجر؟",
+    "bulkDeleteSuccess": "تم حذف التجار بنجاح",
+    "bulkDeleteError": "فشل في حذف التجار",
+    "bulkApproveSuccess": "تم اعتماد التجار بنجاح",
+    "bulkSuspendSuccess": "تم إيقاف التجار بنجاح",
+    "exportError": "فشل في تصدير التجار",
+    "activate": "تفعيل",
+    "noRating": "لا يوجد",
+    "createdAt": "تاريخ التسجيل",
+    "bulkApprove": "اعتماد المحدد",
+    "bulkSuspend": "إيقاف المحدد",
+    "bulkDelete": "حذف المحدد"
+  }
+}

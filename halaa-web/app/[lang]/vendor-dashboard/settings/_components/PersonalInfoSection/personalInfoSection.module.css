@@ -1,0 +1,15 @@
+/* Personal Info — read view. Card/field/thumb styling lives in the shared
+   primitives (../_shared/settingsPrimitives.module.css); only the logo block
+   label is section-specific. */
+
+.logoBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+}
+
+.blockLabel {
+  font-size: var(--fs-body-small);
+  font-weight: var(--fw-medium);
+  color: var(--color-natural-400);
+}

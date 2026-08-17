@@ -1,0 +1,118 @@
+{
+  "loading": {
+    "vendorData": "جاري تحميل بيانات التاجر..."
+  },
+  "errors": {
+    "loadFailed": "فشل في تحميل بيانات التاجر"
+  },
+  "actions": {
+    "backToList": "العودة للقائمة",
+    "approve": "الموافقة",
+    "suspend": "إيقاف",
+    "activate": "تفعيل",
+    "confirmSuspend": "هل أنت متأكد من إيقاف هذا التاجر؟"
+  },
+  "defaults": {
+    "vendor": "التاجر",
+    "noDescription": "لا يوجد وصف متاح",
+    "notAvailable": "غير متوفر"
+  },
+  "rating": {
+    "display": "{{rating}} / 5"
+  },
+  "sections": {
+    "identity": "معلومات الهوية",
+    "serviceDescription": "وصف الخدمة",
+    "serviceLocation": "موقع الخدمة",
+    "commercialVerification": "التحقق التجاري",
+    "socialLinks": "روابط التواصل الاجتماعي",
+    "selectedServices": "الخدمات المختارة",
+    "gallery": "معرض الصور"
+  },
+  "identity": {
+    "brandName": "اسم العلامة التجارية",
+    "ownerName": "اسم المالك",
+    "email": "البريد الإلكتروني",
+    "phone": "رقم الجوال",
+    "registrationDate": "تاريخ التسجيل",
+    "additionalInfo": "معلومات إضافية"
+  },
+  "location": {
+    "region": "المنطقة",
+    "city": "المدينة",
+    "coverageType": "نوع التغطية",
+    "noLocation": "لا توجد معلومات موقع متاحة"
+  },
+  "verification": {
+    "commercialRecordNumber": "رقم السجل التجاري",
+    "nationalIdNumber": "رقم الهوية الوطنية"
+  },
+  "status": {
+    "active": "نشط",
+    "underReview": "قيد المراجعة",
+    "approved": "موافق عليه",
+    "suspended": "موقوف",
+    "rejected": "مرفوض"
+  },
+  "messages": {
+    "approveSuccess": "تم قبول التاجر بنجاح",
+    "approveError": "فشل في قبول التاجر",
+    "suspendSuccess": "تم إيقاف التاجر بنجاح",
+    "suspendError": "فشل في إيقاف التاجر",
+    "activateSuccess": "تم تفعيل التاجر بنجاح",
+    "activateError": "فشل في تفعيل التاجر"
+  },
+  "gallery": {
+    "businessLogo": "شعار العمل",
+    "businessLogoTitle": "شعار العمل",
+    "portfolioAlt": "صورة المعرض {{index}}",
+    "portfolioTitle": "معرض الأعمال {{index}}",
+    "packageAlt": "صورة الباقة {{index}}",
+    "packageTitle": "باقة {{index}}",
+    "commercialRecord": "السجل التجاري",
+    "commercialRecordTitle": "السجل التجاري",
+    "nationalId": "الهوية الوطنية",
+    "nationalIdTitle": "الهوية الوطنية",
+    "profileFile": "ملف الملف التعريفي",
+    "profileFileTitle": "الملف التعريفي",
+    "noFiles": "لا توجد ملفات متاحة",
+    "closeImage": "إغلاق معاينة الصورة",
+    "previewAlt": "معاينة الصورة"
+  },
+  "categories": {
+    "eventPlanning": "تخطيط الفعاليات",
+    "mediaProduction": "إنتاج الوسائط",
+    "giftsAndGiveaways": "الهدايا والتوزيعات",
+    "foodAndBeverages": "الطعام والمشروبات",
+    "beautyAndFashion": "الجمال والأزياء",
+    "logisticsAndDelivery": "الخدمات اللوجستية والتوصيل",
+    "corporateServices": "الخدمات المؤسسية",
+    "supportServices": "خدمات الدعم",
+    "technicalServices": "الخدمات التقنية",
+    "soundLightingEntertainment": "الصوت والإضاءة والترفيه",
+    "hallsAndVenues": "القاعات والأماكن"
+  },
+  "services": {
+    "eventCoordination": "تنسيق الفعاليات",
+    "weddingPlanning": "تخطيط حفلات الزفاف",
+    "corporateEventPlanning": "تخطيط الفعاليات المؤسسية",
+    "birthdayPartyPlanning": "تخطيط حفلات أعياد الميلاد",
+    "hallAndLoungeRentals": "تأجير القاعات والاستراحات",
+    "outdoorEventSetup": "إعداد الفعاليات الخارجية",
+    "photography": "التصوير الفوتوغرافي",
+    "videography": "التصوير المرئي",
+    "liveStreaming": "البث المباشر",
+    "dronePhotography": "التصوير بالطائرات المسيرة",
+    "photoBooths": "كبائن التصوير",
+    "videoEditing": "تحرير الفيديو",
+    "noServices": "لم يتم اختيار خدمات"
+  },
+  "socialLinks": {
+    "noLinks": "لا توجد روابط تواصل اجتماعي متاحة",
+    "instagram": "انستغرام",
+    "facebook": "فيسبوك",
+    "tiktok": "تيك توك",
+    "twitter": "تويتر",
+    "website": "الموقع الإلكتروني"
+  }
+}

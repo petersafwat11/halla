@@ -1,0 +1,199 @@
+.planDescription {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  color: var(--text-primary, #1f2937);
+}
+
+.tagline {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-primary-500, #c28e5c);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.duration {
+  font-size: 0.85rem;
+  color: var(--text-secondary, #6b7280);
+  margin: 0;
+}
+
+.includesHeading {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-primary-500, #c28e5c);
+  margin: 0;
+}
+
+.bullets {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.bulletItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.check {
+  flex-shrink: 0;
+  width: 1.05rem;
+  height: 1.05rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(34, 197, 94, 0.12);
+  color: #16a34a;
+  font-size: 0.7rem;
+  font-weight: 700;
+  margin-top: 0.15rem;
+}
+
+.bulletText {
+  flex: 1;
+}
+
+.metaRows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed rgba(0, 0, 0, 0.08);
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-primary, #374151);
+  margin: 0;
+}
+
+.metaIcon {
+  flex-shrink: 0;
+  width: 1.25rem;
+  text-align: center;
+}
+
+/* ── Compensation box (its own block) ── */
+.compensationBox {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.85rem 1rem;
+  background: color-mix(in srgb, var(--color-primary-500, #7c3aed) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-primary-500, #7c3aed) 22%, transparent);
+  border-radius: 0.9rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-secondary-700, #1f2937);
+}
+
+.compensationIcon {
+  flex-shrink: 0;
+  font-size: 1.2rem;
+}
+
+.compensationText {
+  flex: 1;
+  line-height: 1.45;
+}
+
+/* ── Large variant (landing pricing cards) ── */
+.large {
+  gap: 1.1rem;
+}
+
+.large .duration {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-primary-500, #7c3aed);
+  background: color-mix(in srgb, var(--color-primary-500, #7c3aed) 10%, transparent);
+  align-self: flex-start;
+  padding: 0.35rem 0.9rem;
+  border-radius: 9999px;
+  font-family: "Cairo", sans-serif;
+}
+
+.large .includesHeading {
+  font-size: 1.35rem;
+  font-weight: 700;
+  font-family: "Cairo", sans-serif;
+  color: var(--color-secondary-700, #1f2937);
+  padding: 0.55rem 0;
+  border-top: 1px dashed color-mix(in srgb, var(--color-primary-500, #c28e5c) 30%, transparent);
+  border-bottom: 1px dashed color-mix(in srgb, var(--color-primary-500, #c28e5c) 30%, transparent);
+  text-align: center;
+  margin: 0.25rem 0;
+}
+
+.large .bullets {
+  gap: 0.7rem;
+}
+
+.large .bulletItem {
+  font-size: 1.45rem;
+  line-height: 1.55;
+  gap: 0.7rem;
+  font-family: "Cairo", sans-serif;
+  color: var(--color-secondary-700, #1f2937);
+}
+
+.large .check {
+  width: 1.7rem;
+  height: 1.7rem;
+  font-size: 1.1rem;
+  font-weight: 800;
+  line-height: 1;
+  margin-top: 0.15rem;
+  border: none;
+  position: relative;
+  z-index: 1;
+  background: var(--color-primary-100, #f5ece4);
+  color: var(--color-primary-700, #8a6541);
+}
+
+.large .metaRows {
+  gap: 0.65rem;
+  padding-top: 1rem;
+  margin-top: 0.25rem;
+}
+
+.large .metaRow {
+  font-size: 1.3rem;
+  line-height: 1.5;
+  gap: 0.65rem;
+  font-family: "Cairo", sans-serif;
+  color: var(--color-secondary-600, #374151);
+}
+
+.large .metaIcon {
+  width: 1.6rem;
+  font-size: 1.4rem;
+}
+
+.large .compensationBox {
+  gap: 0.9rem;
+  padding: 1.1rem 1.25rem;
+  border-radius: 1.1rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  font-family: "Cairo", sans-serif;
+  background: color-mix(in srgb, var(--color-primary-500, #7c3aed) 10%, transparent);
+  border: 1.5px solid color-mix(in srgb, var(--color-primary-500, #7c3aed) 28%, transparent);
+  color: var(--color-secondary-700, #1f2937);
+}
+
+.large .compensationIcon {
+  font-size: 1.8rem;
+}

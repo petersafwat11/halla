@@ -1,0 +1,137 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 2.4rem;
+  padding: 2.4rem;
+}
+
+.inputsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 2.4rem;
+  
+}
+.nameAndEmailRow {
+  display: flex;
+  /* flex-direction: column; */
+  gap: 1.5rem;
+}
+.inputRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 2.4rem;
+  width: 100%;
+}
+
+.inputRow > div {
+  flex: 1;
+  max-width: 60rem;
+}
+
+.verificationRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 2.4rem;
+  width: 100%;
+}
+
+.actionButton {
+  flex-shrink: 0;
+  padding: 1.2rem 1.6rem !important;
+  height: fit-content;
+  margin-bottom: 0;
+}
+
+.passwordSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  /* padding-top: 2.4rem; */
+  border-top: 1px solid #f2f2f2;
+}
+
+.sectionTitle {
+  color: #1a1a1a;
+  font-size: 1.8rem;
+  font-weight: 700;
+  line-height: 2.8rem;
+  margin: 0;
+}
+
+.sectionDescription {
+  color: #767676;
+  font-size: 1.6rem;
+  font-weight: 400;
+  line-height: 2.4rem;
+  letter-spacing: 0.08px;
+  margin: 0;
+}
+/* 
+.passwordInputs {
+  display: flex;
+  flex-direction: column;
+  gap: 2.4rem;
+}
+
+.passwordInputs > div {
+  max-width: 60rem;
+} */
+
+.buttonsContainer {
+  display: flex;
+  align-items: center;
+  gap: 2.4rem;
+  align-self: flex-start;
+}
+
+.saveButton {
+  min-width: 22.8rem;
+}
+
+.cancelButton {
+  min-width: 14.1rem;
+}
+
+.saveButton:disabled {
+  background: #f5ece4;
+  color: #cea57d;
+  cursor: not-allowed;
+}
+.passwordInputs {
+  display: flex;
+  gap: 2rem;
+  /* max-width: 60rem; */
+}
+@media (max-width: 768px) {
+  .container {
+    padding: 1.6rem;
+  }
+
+  .inputRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.6rem;
+  }
+
+  .actionButton {
+    width: 100%;
+    padding: 0.8rem 1.2rem !important;
+  }
+
+  .buttonsContainer {
+    flex-direction: column-reverse;
+    width: 100%;
+    gap: 1.2rem;
+  }
+
+  .saveButton,
+  .cancelButton {
+    width: 100%;
+    min-width: unset;
+  }
+  .nameAndEmailRow,
+  .passwordInputs {
+    flex-direction: column;
+    gap: 1.6rem;
+  }
+}

@@ -1,0 +1,214 @@
+{
+  "header": {
+    "welcome": "مرحباً بك، {{name}}! 👋",
+    "subtitle": "إليك نظرة سريعة على فعالياتك ودعواتك",
+    "pageTitle": "لوحة التحكم",
+    "pageSubtitle": "نظرة عامة على أداء منصتك"
+  },
+  "stats": {
+    "totalHosts": "إجمالي المضيفين",
+    "activeVendors": "المزودون النشطون",
+    "activeEvents": "المناسبات النشطة",
+    "attendanceRate": "عدد القبول",
+    "unsubscribed": "غير مشتركين",
+    "pending": "في الانتظار",
+    "activeNow": "نشط الآن",
+    "guestConfirming": "معدل تأكيد الضيوف",
+    "newThisPeriod": "جديد هذا الشهر",
+    "totalEvents": "إجمالي",
+    "subscriptionStatus": "حالة الاشتراك",
+    "active": "نشط",
+    "inactive": "غير نشط",
+    "noPlan": "لا يوجد خطة",
+    "moderators": "المشرفين",
+    "activeModerators": "نشط",
+    "totalVendors": "إجمالي المزودين",
+    "totalEventsCard": "إجمالي المناسبات",
+    "activeSubscriptions": "الاشتراكات النشطة",
+    "openTickets": "الشكاوى المفتوحة",
+    "resolved": "محلولة",
+    "pendingApproval": "قيد الموافقة",
+    "byPlan": "حسب الخطة",
+    "resolvedThisPeriod": "محلولة هذه الفترة",
+    "hosts": {
+      "title": "إجمالي المضيفين",
+      "subtitle": "{{count}} نشط",
+      "highlight": "+{{count}} جديد"
+    },
+    "businesses": {
+      "title": "إجمالي المنشآت",
+      "subtitle": "{{count}} نشط",
+      "highlight": "+{{count}} جديد"
+    },
+    "vendors": {
+      "title": "إجمالي المزودين",
+      "subtitle": "{{count}} قيد الموافقة",
+      "highlight": "+{{count}} جديد"
+    },
+    "events": {
+      "title": "إجمالي المناسبات",
+      "subtitle": "{{count}} نشطة",
+      "highlight": "{{count}}% مقارنة بالفترة السابقة"
+    },
+    "subscriptions": {
+      "title": "الاشتراكات النشطة",
+      "subtitle": "{{count}} حسب الخطة"
+    },
+    "tickets": {
+      "title": "الشكاوى المفتوحة",
+      "subtitle": "{{count}} محلولة هذه الفترة"
+    }
+  },
+  "errors": {
+    "loadFailed": "تعذّر تحميل لوحة التحكم"
+  },
+  "charts": {
+    "guestResponse": "استجابة الضيوف",
+    "revenue": "الإيرادات",
+    "subscriptions": "الاشتراكات",
+    "tickets": "الشكاوى",
+    "confirmed": "موافق",
+    "declined": "معتذر",
+    "pending": "لم يرد",
+    "host": "المضيف",
+    "addons": "الإضافات",
+    "lite": "لايت",
+    "pro": "برو",
+    "elite": "إليت",
+    "other": "أخرى",
+    "resolved": "محلولة",
+    "open": "مفتوحة",
+    "thisperiod": "هذه الفترة",
+    "previousperiod": "الفترة السابقة",
+    "change": "التغيير",
+    "currency": "العملة"
+  },
+  "bottom": {
+    "topVendors": "التجار الأكثر تميزاً",
+    "activitySummary": "موجز النشاط",
+    "clicks": "نقرات"
+  },
+  "actions": {
+    "title": "الإجراءات السريعة",
+    "createEvent": "إنشاء مناسبة",
+    "addModerator": "إضافة مشرف",
+    "createTicket": "إنشاء شكوى"
+  },
+  "createTicket": {
+    "title": "إنشاء شكوى دعم",
+    "username": "اسم المستخدم",
+    "usernamePlaceholder": "ادخل اسم المستخدم",
+    "number": "رقم الهاتف",
+    "numberPlaceholder": "5xx xxx xxx",
+    "type": "نوع الشكوى",
+    "message": "الرسالة",
+    "messagePlaceholder": "اكتب رسالتك هنا...",
+    "cancel": "إلغاء",
+    "create": "إنشاء",
+    "creating": "جاري الإنشاء...",
+    "success": "تم إنشاء الشكوى بنجاح",
+    "error": "فشل في إنشاء الشكوى"
+  },
+  "table": {
+    "title": "جدول البيانات",
+    "searchPlaceholder": "بحث...",
+    "filter": "تصفية",
+    "export": "تصدير",
+    "status": {
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "pending": "في الانتظار",
+      "resolved": "محلول",
+      "open": "مفتوح",
+      "closed": "مغلق",
+      "approved": "موافق عليه",
+      "rejected": "مرفوض",
+      "suspended": "معلق"
+    }
+  },
+  "tables": {
+    "tickets": {
+      "title": "الشكاوى",
+      "columns": {
+        "number": "رقم الشكوى",
+        "username": "اسم المستخدم",
+        "type": "النوع",
+        "message": "الرسالة",
+        "status": "الحالة",
+        "createdAt": "تاريخ الإنشاء"
+      }
+    },
+    "vendors": {
+      "title": "المزودون المعلقون",
+      "columns": {
+        "ownerFullName": "اسم المالك",
+        "email": "البريد الإلكتروني",
+        "phoneNumber": "رقم الهاتف",
+        "status": "الحالة"
+      }
+    },
+    "recentHosts": {
+      "title": "العملاء الجدد",
+      "columns": {
+        "name": "الاسم",
+        "email": "البريد الإلكتروني",
+        "status": "الحالة",
+        "createdAt": "التاريخ"
+      },
+      "status": {
+        "active": "نشط",
+        "pending": "قيد الانتظار",
+        "suspended": "موقوف"
+      }
+    },
+    "recentEvents": {
+      "title": "المناسبات الأخيرة",
+      "columns": {
+        "title": "العنوان",
+        "host": "المضيف",
+        "date": "التاريخ",
+        "status": "الحالة"
+      },
+      "status": {
+        "scheduled": "مجدول",
+        "live": "مباشر",
+        "completed": "منتهي",
+        "pending_scheduling": "في انتظار الجدولة"
+      }
+    }
+  },
+  "subscription": {
+    "title": "تحديث الاشتراك",
+    "hostName": "اسم المضيف",
+    "plan": "الخطة",
+    "selectPlan": "اختر خطة",
+    "loadingPlans": "جاري تحميل الخطط...",
+    "errorLoadingPlans": "فشل في تحميل الخطط. حاول مرة أخرى.",
+    "retry": "إعادة المحاولة",
+    "status": "الحالة",
+    "selectStatus": "اختر الحالة",
+    "billingCycle": "دورة الفوترة",
+    "monthly": "شهري",
+    "yearly": "سنوي",
+    "cancel": "إلغاء",
+    "update": "تحديث",
+    "updating": "جاري التحديث...",
+    "updateSuccess": "تم تحديث الاشتراك بنجاح",
+    "statusActive": "نشط",
+    "statusExpired": "منتهي",
+    "statusCancelled": "ملغي"
+  },
+  "discounts": {
+    "planTypes": {
+      "trial": "تجريبي",
+      "basic_event": "أساسي — لكل مناسبة",
+      "basic_monthly": "أساسي — شهري",
+      "premium_event": "مميّز — لكل مناسبة",
+      "premium_monthly": "مميّز — شهري",
+      "business_event": "أعمال — لكل مناسبة",
+      "business_quarterly": "أعمال — ربع سنوي",
+      "business_annual": "أعمال — سنوي",
+      "unlimited": "غير محدود"
+    }
+  }
+}

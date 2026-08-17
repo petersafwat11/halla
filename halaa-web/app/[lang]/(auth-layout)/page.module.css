@@ -1,0 +1,128 @@
+.authHeader {
+  width: 100%;
+  background: var(--color-primary-500);
+  border-bottom: 1.5px solid var(--color-primary-600);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+.authHeaderInner {
+  padding: 1.2rem 2.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.authLogo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.authLangToggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-natural-50);
+  font-size: 1.4rem;
+  font-weight: 600;
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.6rem;
+  background: transparent;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  opacity: 0.9;
+  transition: opacity 0.2s;
+}
+
+.authLangToggle:hover {
+  opacity: 1;
+}
+
+.container {
+  width: 100%;
+  height: 100vh;
+  max-height: 100vh;
+  display: flex;
+  overflow: hidden;
+}
+
+/* Custom scrollbar styling for the whole page */
+.container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.container::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+  border-radius: 4px;
+}
+
+.container::-webkit-scrollbar-thumb:hover {
+  background: #5a4a2a;
+}
+
+/* Firefox scrollbar styling */
+.container {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-primary) #f1f1f1;
+}
+
+.left {
+  width: 55%;
+  height: 100%;
+}
+.right {
+  width: 45%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Custom scrollbar for right panel */
+.right::-webkit-scrollbar {
+  width: 6px;
+}
+
+.right::-webkit-scrollbar-track {
+  background: #f9f9f9;
+}
+
+.right::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+  border-radius: 3px;
+}
+
+.right::-webkit-scrollbar-thumb:hover {
+  background: #5a4a2a;
+}
+@media screen and (max-width: 1024px) {
+  .left,
+  .right {
+    width: 100%;
+  }
+  .left {
+    display: none;
+  }
+
+  .right {
+    overflow-y: auto;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .authHeaderInner { padding: 0.8rem 1.6rem; }
+}
+
+@media screen and (max-width: 480px) {
+  .authHeaderInner { padding: 0.7rem 1.2rem; }
+}

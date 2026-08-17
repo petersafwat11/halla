@@ -1,0 +1,221 @@
+{
+  "checkout": {
+    "method": {
+      "card": "بطاقة",
+      "applepay": "آبل باي",
+      "stcpay": "إس تي سي باي"
+    },
+    "card": {
+      "name": "اسم حامل البطاقة",
+      "number": "رقم البطاقة",
+      "expiry": "تاريخ الانتهاء",
+      "cvc": "رمز التحقق"
+    },
+    "applepay": {
+      "note": "سيُطلب منك التأكيد عبر آبل باي في الخطوة التالية."
+    },
+    "errors": {
+      "nameRequired": "اسم حامل البطاقة مطلوب",
+      "nameTooShort": "يرجى إدخال اسم حامل البطاقة كاملاً",
+      "numberRequired": "رقم البطاقة مطلوب",
+      "numberLength": "يجب أن يتكون رقم البطاقة من 15 أو 16 رقماً",
+      "numberInvalid": "رقم بطاقة غير صالح",
+      "expiryRequired": "تاريخ الانتهاء مطلوب",
+      "expiryMonthInvalid": "شهر غير صالح (01-12)",
+      "expiryExpired": "انتهت صلاحية البطاقة",
+      "cvcRequired": "رمز التحقق مطلوب",
+      "cvcLength": "يجب أن يتكون رمز التحقق من 3 أو 4 أرقام",
+      "mobileRequired": "رقم الجوال مطلوب",
+      "mobileFormat": "يجب أن يكون رقم جوال سعودي صحيح (مثال: 05xxxxxxxx)"
+    }
+  },
+  "business": {
+    "subtitle": "تصفّح وترقية باقة اشتراك أعمالك",
+    "getStarted": {
+      "subtitle": "اختر باقة أعمال من الأسفل لتفعيل حسابك. يمكنك الترقية أو التخفيض أو الإلغاء في أي وقت."
+    },
+    "currentBadge": "الباقة الحالية",
+    "noPlans": "لا توجد باقات أعمال متاحة في فترة الفوترة هذه.",
+    "updatedSuccessfully": "تم تحديث إعدادات الأعمال بنجاح",
+    "updateFailed": "فشل تحديث إعدادات الأعمال",
+    "logo": "شعار الأعمال",
+    "noLogo": "لا يوجد شعار",
+    "changeLogo": "تغيير الشعار",
+    "description": "وصف الأعمال",
+    "descriptionPlaceholder": "صف نشاطك التجاري للضيوف والدعوات…",
+    "billing": {
+      "event": "لكل مناسبة",
+      "quarterly": "ربع سنوي",
+      "annual": "سنوي"
+    },
+    "noSub": {
+      "title": "لا يوجد اشتراك نشط",
+      "message": "لا يملك حساب أعمالك باقة نشطة بعد. يجب أن يقوم المسؤول بتفعيل باقة قبل أن تتمكن من إنشاء المناسبات أو الترقية. يرجى التواصل مع مدير حسابك.",
+      "cta": "تواصل مع المسؤول",
+      "purchaseBlocked": "لا يوجد اشتراك نشط لحسابك. يجب على المسؤول تفعيل باقتك الأولى."
+    },
+    "checkout": {
+      "title": "أكمل اشتراكك",
+      "subtitle": "راجع باقتك وادفع بأمان لتفعيلها",
+      "planLabel": "الباقة",
+      "setupFee": "رسوم إعداد لمرة واحدة",
+      "total": "الإجمالي",
+      "pay": "ادفع الآن",
+      "processing": "جاري المعالجة…",
+      "success": "تم استلام الدفع — جاري تفعيل اشتراكك.",
+      "failed": "فشلت عملية الدفع. يرجى المحاولة مرة أخرى.",
+      "linkUnavailableTitle": "لم يعد رابط الدفع هذا متاحاً",
+      "linkUnavailable": "قد يكون هذا الرابط منتهي الصلاحية أو تم استخدامه أو غير صالح. يرجى التواصل مع مدير حسابك للحصول على رابط جديد.",
+      "return": {
+        "confirming": "جاري تأكيد عملية الدفع…",
+        "pendingTitle": "بانتظار تأكيد الدفع",
+        "pendingText": "لا نزال نؤكد عملية الدفع مع البنك. قد يستغرق هذا لحظات.",
+        "recheck": "تحقق مرة أخرى",
+        "doneTitle": "تم استلام الدفع",
+        "doneText": "جاري تفعيل اشتراكك. ستصلك رسالة تأكيد عبر البريد قريباً. يمكنك الآن تسجيل الدخول إلى حساب أعمالك.",
+        "goToLogin": "تسجيل الدخول",
+        "reference": "المرجع"
+      }
+    }
+  },
+  "currentPlan": { "title": "الباقة الحالية", "events": "مناسبات", "invites": "دعوات", "daysRemaining": "أيام متبقية" },
+  "noActiveSubscription": { "title": "لا يوجد اشتراك نشط حالياً", "subtitle": "اختر باقة من الأسفل لتفعيل اشتراكك" },
+  "pageTitle": "اختر باقتك",
+  "pageSubtitle": "اختر الباقة المناسبة لمناسبتك",
+  "loading": "جار التحميل...",
+  "planFamilies": { "basic": "هلا بيسك", "premium": "هلا بريميوم" },
+  "planFamilyDescriptions": {
+    "basic": "تدير كل شيء بنفسك — نحن نتولى الجانب التقني",
+    "premium": "فريقنا يدير كل شيء عنك"
+  },
+  "billingTypes": { "event": "مناسبة واحدة", "monthly": "اشتراك شهري" },
+  "billingTypeLabels": { "event": "/ مناسبة", "monthly": "/ شهر" },
+  "billingTypeDescriptions": {
+    "event": "مناسبة واحدة — صالحة لـ 90 يوم",
+    "monthly": "رصيد دعوات — مناسبات غير محدودة"
+  },
+  "currency": "ر.س",
+  "common": {
+    "currency": { "sar": "ر.س" }
+  },
+  "inviteSelector": { "label": "اختر عدد الدعوات", "poolLabel": "رصيد الدعوات", "invites": "دعوة" },
+  "planLimits": { "invitesPerEvent": "دعوة/مناسبة", "invitePool": "رصيد الدعوات" },
+  "taglines": {
+    "basic": "تحكم كامل بمناسبتك… تدير كل شيء بنفسك وبخطوات غاية في السهولة!",
+    "premium": "مناسبتك علينا .. نحن ندير كل شي بالنيابة عنك من أول دعوة إلى آخر ضيف.",
+    "business": "إدارة احترافية للدعوات والفعاليات المؤسسية بهوية الجهة الرسمية عبر فريق هلا – الخيار الأمثل للشركات وأصحاب الفعاليات الكبرى والمتكررة والمنظمات"
+  },
+  "duration": {
+    "event": "مدة الصلاحية {{days}} يومًا",
+    "monthly": "اشتراك شهري — مناسبات غير محدودة",
+    "quarterly": "اشتراك 3 اشهر",
+    "annual": "اشتراك سنوى"
+  },
+  "includes": { "basic": "جميع مميزات باقة هلا بيسك +" },
+  "compensationRow": "{{count}} دعوة تعويضية ({{percent}}٪ من {{base}})",
+  "setupFeeRow": "رسوم تأسيس لمرة واحدة: {{amount}} ر.س",
+  "freeInvitesRow": "يشمل {{count}} دعوة مجانية خلال مدة الاشتراك",
+  "whatsappTemplates": "{{count}} قوالب واتساب مخصصة",
+  "compensation": { "title": "دعوات تعويضية مجانية", "invites": "دعوة" },
+  "buttons": { "subscribeNow": "اشترك الآن", "retry": "إعادة المحاولة", "continueToSummary": "متابعة إلى الملخص" },
+  "addons": {
+    "title": "الإضافات", "subtitle": "حسّن باقتك بميزات إضافية اختيارية",
+    "extraInvites": {
+      "title": "دعوات إضافية",
+      "description": "أضف دعوات أكثر إلى باقتك",
+      "stackHint": "اختر أكثر من باقة لتجميعها — تُضاف معًا. باقات الدعوات الإضافية لا تحصل على دعوات تعويضية.",
+      "stackHintSelected": "مُجمّعة: +{{count}} دعوة إضافية. باقات الدعوات الإضافية لا تحصل على دعوات تعويضية."
+    },
+    "designTemplate": { "title": "قالب تصميم", "description": "تصميم دعوة احترافي من فريقنا" },
+    "addButton": "إضافة", "removeButton": "إزالة", "addedBadge": "مُضاف",
+    "selectedCount_one": "إضافة واحدة", "selectedCount_other": "{{count}} إضافات", "clearAll": "إزالة الكل",
+    "loading": "جارِ تحميل الإضافات...",
+    "loadFailed": "تعذّر تحميل الإضافات.",
+    "purchase": {
+      "total": "الإجمالي",
+      "cta": "شراء الإضافات المحددة",
+      "processing": "جارٍ المعالجة...",
+      "noneSelected": "اختر إضافة أولاً",
+      "success": "تم شراء {{count}} إضافة",
+      "error": "فشل شراء الإضافة"
+    },
+    "designTypes": {
+      "ready_made": "تصميم دعوات جاهزة (رجالي/نسائي)",
+      "custom_male": "تصميم دعوات رجالية مخصصة",
+      "custom_themed": "تصميم دعوات حسب ثيم المناسبة",
+      "animated": "تصميم دعوات بخلفيات متحركة",
+      "3d": "تصميم دعوات ثلاثية الأبعاد (3D)"
+    }
+  },
+  "infoNote": "سيتواصل معك فريقنا بعد الاشتراك لإتمام الدفع والبدء.",
+  "managedService": {
+    "contactWhatsApp": "تواصل معنا عبر واتساب",
+    "whatsappMessage": "مرحباً، أريد الاستفسار عن خدمة إدارة المناسبات"
+  },
+  "errors": {
+    "loadFailed": "فشل تحميل الباقات. حاول مرة أخرى.",
+    "selectPlan": "الرجاء اختيار باقة للمتابعة.",
+    "summaryBoundary": "تعذّر عرض ملخص الطلب. حاول مرة أخرى."
+  },
+  "toasts": {
+    "subscriptionCreated": "تم تفعيل الاشتراك بنجاح!",
+    "subscriptionPartial": "تم تفعيل الاشتراك؛ {{count}} إضافة بحاجة إلى متابعة — سيتواصل معك فريقنا.",
+    "alreadyActive": "لديك اشتراك نشط بالفعل.",
+    "subscriptionFailed": "فشل تفعيل الاشتراك. حاول مرة أخرى."
+  },
+  "summary": {
+    "title": "ملخص الطلب",
+    "subtitle": "راجع طلبك قبل إتمام الدفع",
+    "back": "رجوع",
+    "planDetails": "تفاصيل الباقة",
+    "planFamilyBadges": { "basic": "اساسى", "premium": "مميز" },
+    "singleEvent": "مناسبة واحدة",
+    "invitePoolLabel": "{{count}} دعوة (شهري)",
+    "invitesLabel": "{{count}} دعوة",
+    "unlimitedEvents": "مناسبات غير محدودة",
+    "singleEvent90Days": "مناسبة واحدة — 90 يوم",
+    "compensationInvitesLabel": "{{count}} دعوات تعويضية",
+    "totalInvitesLabel": "إجمالي الدعوات",
+    "totalInvitesBreakdown": "{{base}} دعوة من الباقة + {{compensation}} دعوة تعويضية (15%).",
+    "totalInvitesBreakdownWithExtras": "{{base}} من الباقة + {{extras}} دعوة إضافية + {{compensation}} تعويضية (15% على دعوات الباقة فقط).",
+    "compensationHint": "+15% دعوات إضافية مجانية على دعوات باقتك الأساسية. باقات الدعوات الإضافية لا تحصل على تعويض.",
+    "totalPoolHint": "دعوات الباقة + الباقات الإضافية + التعويض = إجمالي الدعوات التي يمكنك إرسالها.",
+    "poolModelHint": "باقة رصيد: عدة مناسبات تتشارك رصيد الدعوات هذا.",
+    "perEventModelHint": "باقة لكل مناسبة: مناسبة واحدة بإجمالي هذه الدعوات.",
+    "billingPeriodLabel": "فترة الاشتراك:",
+    "periods": {
+      "monthly": "30 يوم",
+      "event": "90 يوم (مناسبة واحدة)"
+    },
+    "discount": {
+      "title": "كود الخصم",
+      "placeholder": "أدخل كود الخصم",
+      "apply": "تطبيق",
+      "remove": "إزالة",
+      "success": "✓ كود \"{{code}}\" — خصم {{amount}} ر.س",
+      "invalidDefault": "كود الخصم غير صالح",
+      "networkError": "تعذر التحقق من الكود. حاول مرة أخرى"
+    },
+    "payment": {
+      "title": "ملخص الدفع",
+      "planPrice": "سعر الباقة",
+      "discount": "الخصم",
+      "total": "الإجمالي",
+      "method": "طريقة الدفع"
+    },
+    "proceed": {
+      "cta": "تفعيل الاشتراك",
+      "processing": "جاري التفعيل..."
+    },
+    "terms": "بالضغط على إتمام الدفع، أنت توافق على شروط الخدمة وسياسة الخصوصية",
+    "addonItems": {
+      "extra_invites": "دعوات إضافية +{{quantity}}",
+      "design_template": "تصميم الدعوة"
+    },
+    "invitePool": "رصيد الدعوات",
+    "validDays": "صالحة لـ",
+    "days": "يوم",
+    "compensationInvites": "دعوات تعويضية",
+    "oneEvent": "مناسبة واحدة"
+  }
+}

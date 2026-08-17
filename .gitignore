@@ -1,0 +1,65 @@
+# Dependencies
+**/node_modules/
+**/.pnp
+**/.pnp.js
+
+# Build outputs
+**/.next/
+**/out/
+**/dist/
+**/build/
+**/.expo/
+**/.expo-shared/
+
+# React Native
+**/android/
+**/ios/
+**/*.orig.*
+**/*.jks
+**/*.p8
+**/*.p12
+**/*.key
+**/*.mobileprovision
+**/*.orig
+
+# Logs
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+**/.pnpm-debug.log*
+
+# Cache
+**/.cache/
+**/.turbo/
+**/.parcel-cache/
+**/coverage/
+**/.nyc_output/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Playwright MCP session artifacts (snapshots, console logs)
+.playwright-mcp/
+
+# Local DB logical backups
+**/_db-backup-*/
+
+# Secrets & credentials (NEVER commit real values ??? examples only)
+# NOTE: existing tracked copies must be removed with `git rm --cached` and the
+# history purged as part of the credential-rotation step (see
+# docs/store-readiness-EXTERNAL-STEPS.md). These patterns stop NEW copies.
+**/config.env
+**/*.pem
+**/*.cer
+**/*.crt
+**/play-service-account*.json
+**/service-account*.json
+**/*service-account*.json
+**/google-services.json
+**/GoogleService-Info.plist
+# Keep committed examples
+!**/.env.example
+!**/.env.*.example
+!**/config.env.example
+

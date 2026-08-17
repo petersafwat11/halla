@@ -1,0 +1,242 @@
+{
+  "ar": {
+    "documentType": "refund",
+    "version": "2026-07-02",
+    "locale": "ar",
+    "authoritativeLanguage": "ar",
+    "effectiveDate": "01 مارس 2026",
+    "lastUpdated": "02 يوليو 2026",
+    "ownerApproval": "BLOCKED_NEEDS_OWNER",
+    "badge": "سياسة الإلغاء والاسترداد",
+    "title": "سياسة الإلغاء والتأجيل",
+    "subtitle": "منصة هلا",
+    "changeSummary": "توحيد المصدر القانوني وإضافة أحكام فوترة المتاجر (اشتراكات، عناصر استهلاكية، تصميم، استرداد المتجر).",
+    "sections": [
+      {
+        "id": "article-1",
+        "num": "1",
+        "label": "البند الأول",
+        "title": "نطاق السياسة",
+        "body": "تنطبق هذه السياسة على جميع المناسبات والخدمات التي يتم إنشاؤها أو طلبها من خلال منصة هلا، وتشكل جزءاً من الاتفاق بين المستخدم والمنصة."
+      },
+      {
+        "id": "article-2",
+        "num": "2",
+        "label": "البند الثاني",
+        "title": "إلغاء المناسبة قبل الاستخدام",
+        "body": "يجوز للمستخدم إلغاء المناسبة واسترجاع كامل المبلغ المدفوع إذا لم يتم إرسال أي بطاقة دعوة ولم يتم استخدام أي جزء من الخدمة، شريطة أن يتم طلب الإلغاء قبل موعد المناسبة بمدة لا تقل عن (72) ساعة."
+      },
+      {
+        "id": "article-3",
+        "num": "3",
+        "label": "البند الثالث",
+        "title": "الإلغاء في حال وجود تصميم خاص",
+        "body": "إذا تضمنت المناسبة طلب تصميم خاص تم تنفيذه ودفع قيمته، فيخصم من مبلغ الاسترجاع قيمة التصميم فقط، بشرط عدم إرسال الدعوات وأن يتم طلب الإلغاء قبل (72) ساعة من موعد المناسبة."
+      },
+      {
+        "id": "article-4",
+        "num": "4",
+        "label": "البند الرابع",
+        "title": "عدم أهلية الخدمة للاسترجاع بعد الاستخدام",
+        "body": "لا يحق للمستخدم استرجاع أي مبالغ إذا تم إرسال أي بطاقة دعوة أو استخدام أي جزء من الخدمة، سواء بشكل كامل أو جزئي، لأن الخدمة تُعد منفذة فور الإرسال."
+      },
+      {
+        "id": "article-5",
+        "num": "5",
+        "label": "البند الخامس",
+        "title": "التأجيل وتغيير الموعد",
+        "body": "يحق للمستخدم طلب تأجيل المناسبة إلى موعد آخر طالما لم يتم إرسال الدعوات، ويخضع ذلك للتوافر الفني دون رسوم إضافية.\n\nوفي حال إرسال الدعوات، يُعتبر التأجيل خدمة جديدة وقد ترفض المنصة أو تقبل وفق الضوابط الفنية."
+      },
+      {
+        "id": "article-6",
+        "num": "6",
+        "label": "البند السادس",
+        "title": "الإلغاء بعد الموعد أو عند الطلب المتأخر",
+        "body": "لا تقبل طلبات الإلغاء أو الاسترجاع إذا تم تقديم الطلب خلال آخر (72) ساعة قبل موعد المناسبة، أو بعد انتهاء المناسبة، أو بعد إرسال الدعوات."
+      },
+      {
+        "id": "article-7",
+        "num": "7",
+        "label": "البند السابع",
+        "title": "القيود التقنية والمالية",
+        "body": "جميع المبالغ المسترجعة — إن وُجدت — تُعاد بنفس وسيلة الدفع المستخدمة، وقد تستغرق مدة زمنية تحدد حسب إجراءات البنك أو مزود خدمة الدفع."
+      },
+      {
+        "id": "article-8",
+        "num": "8",
+        "label": "البند الثامن",
+        "title": "حق المنصة في رفض الطلبات",
+        "body": "تحتفظ المنصة بالحق في رفض أي طلب إلغاء أو استرجاع إذا تبيّن وجود استخدام للخدمة أو مخالفة للشروط أو محاولة إساءة استخدام سياسة الإلغاء."
+      },
+      {
+        "id": "article-9",
+        "num": "9",
+        "label": "البند التاسع",
+        "title": "الموافقة على السياسة",
+        "body": "يعد استخدام المستخدم لمنصة هلا وإنشاء المناسبة موافقة صريحة على أحكام هذه السياسة وعلى أي تحديثات قد تطرأ عليها."
+      },
+      {
+        "id": "article-10",
+        "num": "10",
+        "label": "البند العاشر",
+        "title": "مدفوعات الويب عبر مزوّد الدفع",
+        "body": "تخضع عمليات الدفع التي تتم عبر موقع هلا لمزوّد الدفع المعتمد (مدى/البطاقات الائتمانية)، وتنطبق عليها أحكام الإلغاء والاسترجاع الواردة أعلاه الخاصة بالمناسبات والخدمات. أما المشتريات التي تتم داخل تطبيقات الجوال فتخضع لأحكام متاجر التطبيقات الموضّحة في البنود التالية."
+      },
+      {
+        "id": "article-11",
+        "num": "11",
+        "label": "البند الحادي عشر",
+        "title": "الاشتراكات عبر App Store و Google Play",
+        "body": "الاشتراكات المُشتراة داخل التطبيق تتجدّد تلقائياً (شهرياً أو ربع سنوي أو سنوياً) عبر حساب المتجر (Apple/Google) ما لم تُلغِ التجديد قبل نهاية الفترة الحالية. تُدار عمليات الإلغاء وطلبات الاسترداد لهذه الاشتراكات من خلال المتجر نفسه ووفق سياساته، ولا تملك هلا سلطة استرداد مباشرة على مشتريات المتجر. ويؤدي إلغاء الاشتراك إلى إيقاف التجديد مع بقاء الوصول حتى نهاية الفترة المدفوعة."
+      },
+      {
+        "id": "article-12",
+        "num": "12",
+        "label": "البند الثاني عشر",
+        "title": "العناصر الاستهلاكية (باقات المناسبات والدعوات الإضافية)",
+        "body": "العناصر الاستهلاكية مثل باقات المناسبة والدعوات الإضافية تُضاف إلى رصيدك عند الشراء وتُستهلك بالاستخدام، وهي غير قابلة للاستعادة عبر «استعادة المشتريات» بعد استهلاكها. وفي حال استرداد لم يُستهلك، يُستعاد الرصيد غير المستخدم فقط دون النزول تحت ما تم استهلاكه بالفعل."
+      },
+      {
+        "id": "article-13",
+        "num": "13",
+        "label": "البند الثالث عشر",
+        "title": "خدمات التصميم والتخصيص",
+        "body": "تُعد طلبات التصميم الخاص خدمة مُدارة تبدأ فور الشراء (طلب → لوحة الإدارة → تعيين مصمم → تنسيق عبر واتساب → تنفيذ ومراجعات → إكمال)، وهي غير قابلة للاسترداد من لحظة إنشاء الطلب. وتُقدَّم خدمة تخصيص الأعمال كخدمة مُدارة عبر الإدارة. [BLOCKED_NEEDS_OWNER: الصياغة القانونية النهائية لعدم القابلية للاسترداد ومعالجة الحالات الاستثنائية]."
+      },
+      {
+        "id": "article-14",
+        "num": "14",
+        "label": "البند الرابع عشر",
+        "title": "أثر استرداد المتجر على الوصول",
+        "body": "إذا فرض المتجر (Apple/Google) استرداداً لعملية شراء، فقد يُلغى الوصول أو المزايا المرتبطة بتلك العملية وفقاً لنوعها. وتبقى المشتريات والاشتراكات مرتبطة بحساب المتجر الأصلي ومعرّف المستخدم الأصلي لدى هلا، ولا تُنقل تلقائياً بين الحسابات؛ وتُعالَج الحالات الاستثنائية يدوياً عبر الدعم."
+      },
+      {
+        "id": "article-15",
+        "num": "15",
+        "label": "البند الخامس عشر",
+        "title": "الضرائب والتواصل",
+        "body": "تُعرض الأسعار والضرائب المطبّقة (ضريبة القيمة المضافة في المملكة العربية السعودية بنسبة 15%) من خلال المتجر أو مزوّد الدفع المعني عند الشراء. للاستفسار عن الفواتير أو الاسترداد يمكنك التواصل مع الدعم. [BLOCKED_NEEDS_OWNER: بريد/هاتف الدعم ومدة الاستجابة]."
+      }
+    ]
+  },
+  "en": {
+    "documentType": "refund",
+    "version": "2026-07-02",
+    "locale": "en",
+    "authoritativeLanguage": "ar",
+    "effectiveDate": "01 March 2026",
+    "lastUpdated": "02 July 2026",
+    "ownerApproval": "BLOCKED_NEEDS_OWNER",
+    "badge": "Cancellation & Refund Policy",
+    "title": "Cancellation & Postponement Policy",
+    "subtitle": "Halaa Platform",
+    "changeSummary": "Consolidated shared source and added store-billing provisions (subscriptions, consumables, design, store refunds).",
+    "sections": [
+      {
+        "id": "article-1",
+        "num": "1",
+        "label": "Article One",
+        "title": "Scope of the Policy",
+        "body": "This policy applies to all events and services created or requested through the Halaa Platform and forms an integral part of the agreement between the user and the platform."
+      },
+      {
+        "id": "article-2",
+        "num": "2",
+        "label": "Article Two",
+        "title": "Event Cancellation Before Service Use",
+        "body": "The user may cancel an event and receive a full refund of the amount paid if no invitation cards have been sent and no part of the service has been used, provided that the cancellation request is submitted at least seventy-two (72) hours prior to the scheduled event date."
+      },
+      {
+        "id": "article-3",
+        "num": "3",
+        "label": "Article Three",
+        "title": "Cancellation in Case of Custom Design",
+        "body": "If the event includes a custom design request that has been executed and paid for, the cost of the design shall be deducted from the refundable amount, provided that no invitations have been sent and the cancellation request is submitted at least seventy-two (72) hours prior to the event date."
+      },
+      {
+        "id": "article-4",
+        "num": "4",
+        "label": "Article Four",
+        "title": "Non-Refundability After Service Use",
+        "body": "The user shall not be entitled to any refund if any invitation has been sent or any part of the service has been used, whether fully or partially, as the service is deemed executed upon dispatch."
+      },
+      {
+        "id": "article-5",
+        "num": "5",
+        "label": "Article Five",
+        "title": "Postponement and Date Changes",
+        "body": "The user may request to postpone the event to a later date as long as invitations have not been sent, subject to technical availability and without additional fees.\n\nIf invitations have already been sent, the postponement shall be considered a new service request and may be accepted or rejected by the platform based on technical constraints."
+      },
+      {
+        "id": "article-6",
+        "num": "6",
+        "label": "Article Six",
+        "title": "Late or Post-Event Cancellation",
+        "body": "Cancellation or refund requests shall not be accepted if submitted within the last seventy-two (72) hours prior to the event date, after the event has concluded, or after invitations have been sent."
+      },
+      {
+        "id": "article-7",
+        "num": "7",
+        "label": "Article Seven",
+        "title": "Technical and Financial Limitations",
+        "body": "All refunds — if applicable — shall be processed using the same payment method originally used and may take a period of time depending on the bank's or payment service provider's procedures."
+      },
+      {
+        "id": "article-8",
+        "num": "8",
+        "label": "Article Eight",
+        "title": "Platform's Right to Reject Requests",
+        "body": "The platform reserves the right to reject any cancellation or refund request if there is evidence of service usage, violation of terms, or attempted misuse of the cancellation policy."
+      },
+      {
+        "id": "article-9",
+        "num": "9",
+        "label": "Article Nine",
+        "title": "Acceptance of the Policy",
+        "body": "The user's use of the Halaa Platform and creation of an event constitutes explicit acceptance of the terms of this policy and any subsequent updates thereto."
+      },
+      {
+        "id": "article-10",
+        "num": "10",
+        "label": "Article Ten",
+        "title": "Web Payments via the Payment Provider",
+        "body": "Payments made through the Halaa website are processed by the approved payment provider (Mada / credit cards) and are subject to the event and service cancellation and refund terms set out above. Purchases made inside the mobile apps are governed by the app-store terms described in the following articles."
+      },
+      {
+        "id": "article-11",
+        "num": "11",
+        "label": "Article Eleven",
+        "title": "Subscriptions via the App Store and Google Play",
+        "body": "Subscriptions purchased in-app auto-renew (monthly, quarterly, or annually) through your store account (Apple/Google) unless you cancel renewal before the end of the current period. Cancellations and refund requests for these subscriptions are handled by the store itself and under its policies; Halaa has no direct refund authority over store purchases. Cancelling a subscription stops renewal while access continues until the end of the paid period."
+      },
+      {
+        "id": "article-12",
+        "num": "12",
+        "label": "Article Twelve",
+        "title": "Consumables (Event Packages and Extra Invites)",
+        "body": "Consumable items such as event packages and extra invites are added to your balance at purchase and are used up as you consume them; they are not restorable via \"Restore Purchases\" once consumed. In the event of a refund for an unconsumed balance, only the unused portion is reversed and never below what has already been consumed."
+      },
+      {
+        "id": "article-13",
+        "num": "13",
+        "label": "Article Thirteen",
+        "title": "Design and Customization Services",
+        "body": "Custom design requests are a managed service that begins upon purchase (request → admin dashboard → designer assignment → coordination over WhatsApp → production and revisions → completion) and are non-refundable from the moment the request is created. Business customization is provided as an admin-managed service. [BLOCKED_NEEDS_OWNER: final legal wording for non-refundability and handling of exceptional cases]."
+      },
+      {
+        "id": "article-14",
+        "num": "14",
+        "label": "Article Fourteen",
+        "title": "Effect of a Store Refund on Access",
+        "body": "If the store (Apple/Google) forces a refund for a purchase, the access or benefits tied to that purchase may be revoked according to its type. Purchases and subscriptions remain tied to the original store account and your original Halaa user ID and are not automatically transferred between accounts; exceptional cases are handled manually through support."
+      },
+      {
+        "id": "article-15",
+        "num": "15",
+        "label": "Article Fifteen",
+        "title": "Taxes and Contact",
+        "body": "Prices and applicable taxes (Saudi Value Added Tax at 15%) are shown by the relevant store or payment provider at purchase. For billing or refund inquiries you can contact support. [BLOCKED_NEEDS_OWNER: support email/phone and response time]."
+      }
+    ]
+  }
+}

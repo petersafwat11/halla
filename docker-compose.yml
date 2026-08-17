@@ -1,0 +1,88 @@
+name: halaa
+
+# Production stack for a single VPS: Next.js web + Express API behind Caddy
+# (auto-HTTPS). MongoDB is Atlas (managed) and object storage is S3 — neither is
+# containerized. App secrets live in ./config.env on the VPS (never in the image
+# or in git); the Atlas X.509 cert is mounted read-only from ./certs.
+
+services:
+  api:
+    image: ghcr.io/petersafwat11/halaa-api:${IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: halaa-backend/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ./config.env
+    environment:
+      NODE_ENV: production
+      PORT: "8000"
+    volumes:
+      - ./certs:/app/certs:ro
+    # Ensure the container can resolve the Atlas SRV connection string.
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    networks: [halaa]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 25s
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  web:
+    image: ghcr.io/petersafwat11/halaa-web:${IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: halaa-web/Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      HOSTNAME: "0.0.0.0"
+      # Server-side (SSR/RSC) calls to the API travel over the internal network.
+      # The browser calls the relative /api/v2 path, which Caddy routes to `api`.
+      INTERNAL_API_URL: "http://api:8000/api/v2"
+    depends_on:
+      api:
+        condition: service_healthy
+    networks: [halaa]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      web:
+        condition: service_healthy
+    networks: [halaa]
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+networks:
+  halaa:
+    driver: bridge
+
+volumes:
+  caddy_data:
+  caddy_config:

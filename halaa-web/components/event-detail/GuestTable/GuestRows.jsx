@@ -1,0 +1,165 @@
+"use client";
+import React from "react";
+import { FiEdit2, FiTrash2, FiRefreshCw, FiSlash } from "react-icons/fi";
+import Table from "@/ui/commen/new-table/Table";
+import {
+  renderSentViaBadge,
+  renderStatusBadge,
+  renderAutoReminderBadge,
+} from "./guestCellRenderers";
+
+export default function GuestRows({
+  guests,
+  t,
+  formatDate,
+  formatDateTime,
+  statusFilter,
+  onStatusFilterChange,
+  onEditGuest,
+  onDeleteGuest,
+  onRotateQr,
+  onRevokeAccess,
+  onSendInvitation,
+  onSendReminder,
+  onExportGuests,
+}) {
+  const guestsList = guests || [];
+
+  const filterOptions = onStatusFilterChange && [
+    { label: t("singleEvent.stats.all", "الكل"), value: null },
+    { label: t("singleEvent.stats.confirmed"), value: "confirmed" },
+    { label: t("singleEvent.stats.declined"), value: "declined" },
+    { label: t("singleEvent.stats.noResponse"), value: "noResponse" },
+    { label: t("singleEvent.stats.checkedIn"), value: "checkedIn" },
+  ].map((opt) => ({
+    ...opt,
+    onClick: () => onStatusFilterChange(opt.value),
+  }));
+
+  const activeDropdownValue =
+    statusFilter && statusFilter !== "totalGuests" ? statusFilter : null;
+
+  // Pool-charged send actions (resend / extra reminder / new guests) now live
+  // in the single-event header's "Send messages" menu, not in the table's
+  // bulk-selection bar — so there are no bulk actions or row checkboxes here.
+
+  // Column keys must match `headers` 1:1 in the same order. The Table
+  // component falls back to `Object.keys(row)` when `headerKeys` isn't
+  // passed, which would render every property as a column — including
+  // side-channel fields like `smsFallback` that the renderer reads from
+  // `row` but should never be its own cell. Pass keys explicitly.
+  const columnKeys = [
+    "name",
+    "phone",
+    "addedBy",
+    "status",
+    "sentVia",
+    "autoReminder",
+    "responseTime",
+  ];
+
+  return (
+    <Table
+      title={t("singleEvent.guestTable.title", "قائمة الضيوف")}
+      headers={[
+        t("table.columns.guestName", "اسم الضيف"),
+        t("table.columns.mobile", "رقم الجوال"),
+        t("table.columns.addedBy", "أضافه"),
+        t("table.columns.status", "الحالة"),
+        t("table.columns.sentVia", "أُرسل عبر"),
+        t("table.columns.autoReminder", "تذكير تلقائي"),
+        t("table.columns.responseTime", "وقت الرد"),
+      ]}
+      headerKeys={columnKeys}
+      data={guestsList.map((guest) => ({
+        id: guest.id,
+        name: guest.name || "-",
+        phone: guest.phone || "-",
+        addedBy: guest.addedBy?.username || guest.addedBy?.name || "-",
+        status: guest.status || "invited",
+        sentVia:
+          guest.invitation?.effectiveChannel || guest.invitation?.method || null,
+        smsFallback: guest.invitation?.smsFallback || false,
+        // Pass the raw invitation sub-object through so the renderers
+        // (which are pure cell-level) can read auto fields without us
+        // having to flatten every flag onto the row shape.
+        invitation: guest.invitation || {},
+        autoReminder: guest.invitation?.autoReminderSent || false,
+        responseTime: guest.rsvp?.respondedAt,
+      }))}
+      actions={[
+        {
+          type: "dropdown",
+          icon: <FiEdit2 size={16} />,
+          text: t("table.actions.edit", "تعديل"),
+          onClick: (row) => {
+            const guest = guestsList.find((g) => g.id === row.id);
+            if (guest) onEditGuest(guest);
+          },
+        },
+        {
+          type: "dropdown",
+          icon: <FiTrash2 size={16} />,
+          text: t("table.actions.delete", "حذف"),
+          onClick: (row) => {
+            const guest = guestsList.find((g) => g.id === row.id);
+            if (guest) onDeleteGuest(guest);
+          },
+        },
+        ...(onRotateQr
+          ? [
+              {
+                type: "dropdown",
+                icon: <FiRefreshCw size={16} />,
+                text: t("table.actions.rotateQr", "تحديث رمز الدخول"),
+                onClick: (row) => {
+                  const guest = guestsList.find((g) => g.id === row.id);
+                  if (guest) onRotateQr(guest);
+                },
+              },
+            ]
+          : []),
+        ...(onRevokeAccess
+          ? [
+              {
+                type: "dropdown",
+                icon: <FiSlash size={16} />,
+                text: t("table.actions.revokeAccess", "إلغاء الوصول"),
+                onClick: (row) => {
+                  const guest = guestsList.find((g) => g.id === row.id);
+                  if (guest) onRevokeAccess(guest);
+                },
+              },
+            ]
+          : []),
+      ]}
+      moreOptions={[
+        {
+          text: t("messaging.sendInvitations", "إرسال الدعوات"),
+          onClick: onSendInvitation,
+        },
+        {
+          text: t("singleEvent.header.sendReminder", "إرسال تذكير"),
+          onClick: onSendReminder,
+        },
+      ]}
+      renderCell={(key, value, row) => {
+        if (key === "sentVia") return renderSentViaBadge(value, row, t);
+        if (key === "status") return renderStatusBadge(value, t);
+        if (key === "autoReminder") return renderAutoReminderBadge(row, t, formatDateTime || formatDate);
+        if (key === "responseTime" && value) {
+          // Show full date+time so the host can see exactly when the
+          // guest replied — date alone is ambiguous after 24h.
+          return (formatDateTime || formatDate)(value);
+        }
+        return value;
+      }}
+      showSearch={true}
+      showFilter={!!onStatusFilterChange}
+      filterOptions={filterOptions}
+      activeFilter={activeDropdownValue}
+      showExport={true}
+      onExportClick={onExportGuests}
+    />
+  );
+}

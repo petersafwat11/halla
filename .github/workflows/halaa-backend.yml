@@ -1,0 +1,37 @@
+name: halaa-backend
+
+on:
+  pull_request:
+    paths:
+      - "halaa-backend/**"
+      - "shared/**"
+      - ".github/workflows/halaa-backend.yml"
+  push:
+    branches: [master]
+    paths:
+      - "halaa-backend/**"
+      - "shared/**"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: halaa-backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Install (workspaces from repo root)
+        working-directory: .
+        run: npm install --no-audit --no-fund
+      - name: Boot smoke (load main entry without listening)
+        run: node -e "require('./src/app.js')"
+        env:
+          NODE_ENV: test
+          DRY_RUN: "true"
+      - name: Catalog verify (store SKU drift + contracts)
+        run: npm run catalog:verify

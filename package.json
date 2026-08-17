@@ -1,0 +1,20 @@
+{
+  "name": "halaa-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "workspaces": [
+    "halaa-web",
+    "halaa-mobile",
+    "halaa-backend",
+    "shared"
+  ],
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "eslint": "^9.39.4",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^14.0.0"
+  },
+  "overrides": {
+    "react-native-svg": "15.12.1"
+  }
+}

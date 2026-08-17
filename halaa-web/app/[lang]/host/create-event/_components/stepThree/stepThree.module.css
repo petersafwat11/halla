@@ -1,0 +1,834 @@
+.stepThree {
+  display: flex;
+  flex-direction: column;
+  gap: 2.4rem;
+  position: relative;
+  width: 100%;
+  padding: 0 2.4rem 2.4rem;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* Success Badge - Desktop Only */
+.successBadge {
+  display: flex;
+  padding: 0.8rem 1.6rem;
+  align-items: center;
+  gap: 1rem;
+  border-radius: 1.2rem;
+  background: #eaf4ef;
+  width: fit-content;
+  margin-bottom: 1.6rem;
+}
+
+.successBadge span {
+  color: #2a8c5b;
+  font-size: 1.4rem;
+  font-weight: 400;
+  line-height: 2rem;
+  letter-spacing: 0.035px;
+}
+
+.successBadge svg {
+  width: 2.4rem;
+  height: 2.4rem;
+}
+
+/* Template Section */
+.templateSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  padding: 2.4rem;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1),
+    0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  min-width: 0;
+  overflow: clip;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.sectionLabel {
+  color: #2c2c2c;
+  font-size: 1.4rem;
+  font-weight: 500;
+  line-height: 2rem;
+  letter-spacing: 0.014px;
+  text-align: right;
+}
+
+/* Mode toggle — predefined vs custom upload */
+.modeToggle {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 0.4rem;
+  gap: 0.4rem;
+  background: #f7f3ee;
+  border-radius: 1rem;
+  border: 1px solid #ead9c8;
+}
+
+.modeToggleBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.8rem 1.4rem;
+  border: none;
+  background: transparent;
+  color: #6b4e33;
+  font-size: 1.3rem;
+  font-weight: 600;
+  line-height: 1.6rem;
+  border-radius: 0.8rem;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+  white-space: nowrap;
+}
+
+.modeToggleBtn:hover {
+  color: #2c2c2c;
+}
+
+.modeToggleBtnActive {
+  background: #fff;
+  color: #2c2c2c;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* Custom-upload area */
+.uploadSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.uploadInputHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.uploadDropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  width: 100%;
+  min-height: 22rem;
+  padding: 3.2rem 2rem;
+  border: 2px dashed #c28e5c;
+  border-radius: 1.2rem;
+  background: #fffaf3;
+  color: #6b4e33;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s, transform 0.12s;
+  text-align: center;
+}
+
+.uploadDropzone:hover {
+  background: #fff3e1;
+  border-color: #b07d4a;
+}
+
+.uploadDropzone:active {
+  transform: scale(0.995);
+}
+
+.uploadDropzoneIcon {
+  color: #c28e5c;
+}
+
+.uploadDropzoneTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #2c2c2c;
+}
+
+.uploadDropzoneHint {
+  font-size: 1.2rem;
+  color: #767676;
+}
+
+.uploadPreviewWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 1.6rem;
+  background: #fffaf3;
+  border: 1px solid #ead9c8;
+  border-radius: 1.2rem;
+}
+
+.uploadPreview {
+  position: relative;
+  width: 100%;
+  max-width: 32rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.uploadPreviewImg {
+  width: 100%;
+  height: auto;
+  max-height: 44rem;
+  object-fit: contain;
+  border-radius: 0.8rem;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+  background: #fff;
+}
+
+.uploadActions {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.uploadReplaceBtn,
+.uploadRemoveBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.8rem 1.4rem;
+  border-radius: 0.8rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
+}
+
+.uploadReplaceBtn {
+  background: #c28e5c;
+  border: 1px solid #c28e5c;
+  color: #fff;
+}
+
+.uploadReplaceBtn:hover {
+  background: #b07d4a;
+}
+
+.uploadRemoveBtn {
+  background: #fff;
+  border: 1px solid #e5b9b9;
+  color: #a13d3d;
+}
+
+.uploadRemoveBtn:hover {
+  background: #fdecec;
+}
+
+.uploadHintSmall {
+  font-size: 1.2rem;
+  color: #767676;
+  margin: 0;
+  text-align: center;
+}
+
+/* Confirmed selection card — shown after template bake or image upload */
+.confirmedCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.4rem;
+  padding: 2rem;
+  border-radius: 1.6rem;
+  background: #fffaf3;
+  border: 1px solid #ead9c8;
+}
+
+.confirmedCardLabel {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2c2c2c;
+  text-align: center;
+}
+
+.confirmedCardImageWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 32rem;
+  padding: 0.8rem;
+  background: #fff;
+  border-radius: 1.2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.confirmedCardImg {
+  width: 100%;
+  height: auto;
+  max-height: 44rem;
+  object-fit: contain;
+  border-radius: 1rem;
+  background: #fff;
+}
+
+.confirmedCardTemplateName {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #6b4e33;
+  text-align: center;
+}
+
+.confirmedCardActions {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.confirmedRemoveBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.8rem 1.4rem;
+  border-radius: 0.8rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
+  background: #fff;
+  border: 1px solid #e5b9b9;
+  color: #a13d3d;
+}
+
+.confirmedRemoveBtn:hover {
+  background: #fdecec;
+}
+
+.confirmedEditBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.8rem 1.4rem;
+  border-radius: 0.8rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
+  background: #fff;
+  border: 1px solid #c28e5c;
+  color: #c28e5c;
+}
+
+.confirmedEditBtn:hover {
+  background: #fff7eb;
+}
+
+/* Category tabs (match host-dashboard EventTemplatesSection) */
+.tabs {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 2rem;
+  border-bottom: 1px solid #dfdfdf;
+  padding-bottom: 0.4rem;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #c28e5c transparent;
+}
+
+.tabs::-webkit-scrollbar {
+  height: 4px;
+}
+
+.tabs::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tabs::-webkit-scrollbar-thumb {
+  background: #c28e5c;
+  border-radius: 2px;
+}
+
+.tabs::-webkit-scrollbar-thumb:hover {
+  background: #b07d4a;
+}
+
+.tab {
+  background: none;
+  border: none;
+  color: #656565;
+  font-size: 1.4rem;
+  font-weight: 400;
+  line-height: 1.6rem;
+  letter-spacing: 0.056px;
+  cursor: pointer;
+  padding: 0.8rem 0;
+  position: relative;
+  transition: color 0.2s;
+  white-space: nowrap;
+}
+
+.tab:hover {
+  color: #c28e5c;
+}
+
+.tab.active {
+  color: #c28e5c;
+  font-weight: 700;
+  line-height: 2rem;
+  letter-spacing: 0.035px;
+}
+
+.tab.active::after {
+  content: "";
+  position: absolute;
+  bottom: -0.6rem;
+  inset-inline-start: 0;
+  width: 100%;
+  height: 2px;
+  background: #c28e5c;
+}
+
+.templatesGrid {
+  display: flex;
+  align-items: flex-start;
+  gap: 2.4rem;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.templateCard {
+  width: 154px;
+  height: 187px;
+  box-shadow: 0 0.779px 2.337px rgba(0, 0, 0, 0.1),
+    0 0.779px 1.558px -0.779px rgba(0, 0, 0, 0.1);
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.templateCard:hover {
+  transform: translateY(-4px);
+}
+
+.templateCard.selected {
+  outline: 2px solid #c28e5c;
+  outline-offset: 2px;
+  border-radius: 4.66px;
+}
+
+.templateCardInner {
+  display: flex;
+  width: 154px;
+  height: 187px;
+  flex-direction: column;
+  align-items: flex-start;
+  border-radius: 4.66px;
+  background: #fffaea;
+  overflow: hidden;
+  position: relative;
+}
+
+.checkmark {
+  position: absolute;
+  top: 8px;
+  inset-inline-start: 8px;
+  color: #2a8c5b;
+  background: #fff;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  font-size: 18px;
+}
+
+.templateImage {
+  width: 129px;
+  height: 172px;
+  border-radius: 8px;
+  object-fit: cover;
+  margin: 8px auto;
+}
+
+.pagination {
+  display: flex;
+  padding: 0.8rem;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.1);
+  transition: background 0.2s, width 0.2s;
+  cursor: pointer;
+}
+
+.activeDot {
+  width: 8px;
+  background: #c28e5c;
+}
+
+.selectedLabel {
+  color: #2c2c2c;
+  font-size: 1.3rem;
+  margin: 0;
+}
+
+/* Radio Button */
+.radioButton {
+  position: absolute;
+  top: 0.3rem;
+  left: 0.3rem;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  border: 0.858px solid #c28e5c;
+  background: #f9f4ef;
+  z-index: 2;
+}
+
+.radioButton.radioSelected::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: #c28e5c;
+}
+
+/* Template Overlay */
+.templateOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.267rem;
+  z-index: 1;
+}
+
+.selectButton,
+.editButton {
+  display: inline-flex;
+  height: 2.2rem;
+  padding: 0.357rem 1.6rem;
+  justify-content: center;
+  align-items: center;
+  gap: 1.2rem;
+  border-radius: 0.366rem;
+  background: #f5ece4;
+  border: none;
+  cursor: pointer;
+  color: #6b4e33;
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.6rem;
+  letter-spacing: 0.06px;
+  transition: background 0.2s;
+}
+
+.selectButton:hover,
+.editButton:hover {
+  background: #ead9c8;
+}
+
+/* Selected Template Display */
+.selectedTemplate {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  margin-top: 1.6rem;
+}
+
+.selectedTemplate h3 {
+  color: #2c2c2c;
+  font-size: 1.4rem;
+  font-weight: 500;
+  line-height: 2rem;
+}
+
+/* Mobile Only Sections */
+.mobileOnly {
+  display: none;
+}
+
+.formSection {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.6rem;
+  margin-top: 2.4rem;
+}
+
+.repliesSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 1.6rem 1.2rem;
+  border-radius: 1.2rem;
+  border: 1px dashed #dfdfdf;
+  background: #fdfdfd;
+}
+
+.replyTabs {
+  display: flex;
+  padding: 0 0.6rem;
+  align-items: center;
+  align-self: stretch;
+  border-radius: 0.8rem;
+  background: #f7f7f7;
+}
+
+.replyTab {
+  display: flex;
+  padding: 1rem;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  flex: 1 0 0;
+  border: none;
+  background: transparent;
+  color: #656565;
+  font-size: 1.4rem;
+  font-weight: 500;
+  line-height: 1.6rem;
+  letter-spacing: 0.056px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-radius: 0.4rem;
+}
+
+.replyTab:hover {
+  color: #2c2c2c;
+}
+
+.replyTabActive {
+  background: #fff;
+  color: #09090b;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.optionalLabel {
+  color: #767676;
+  font-size: 1.2rem;
+  font-weight: 400;
+  line-height: 1.6rem;
+  letter-spacing: 0.06px;
+  margin-top: -1.2rem;
+}
+
+/* Add Supervisors Button - Mobile Floating */
+.addStaffButton {
+  display: inline-flex;
+  padding: 1.6rem;
+  align-items: center;
+  gap: 0.8rem;
+  border-radius: 0.8rem;
+  background: #c28e5c;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  bottom: 10rem;
+  left: 2.3rem;
+  z-index: 100;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.addStaffButton:hover {
+  transform: scale(1.05);
+}
+
+.addStaffButton span {
+  color: #fff;
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 1.6rem;
+  letter-spacing: 0.056px;
+}
+
+.addStaffButton svg {
+  width: 2rem;
+  height: 2rem;
+}
+
+/* Category chips */
+.categoryChips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.categoryChip {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid #ddd;
+  background: #fff;
+  cursor: pointer;
+  font-size: 1.3rem;
+  color: #2c2c2c;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.categoryChipActive {
+  border: 2px solid #c28e5c;
+  background: #fff7eb;
+}
+
+.emptyMessage {
+  color: #666;
+}
+
+.selectedName {
+  color: #2a8c5b;
+  font-weight: 600;
+}
+
+/* Tablet and below */
+@media (max-width: 1024px) {
+  .stepThree {
+    padding: 2rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .stepThree {
+    padding: 1.6rem;
+  }
+
+  .templateSection {
+    padding: 1.6rem;
+    gap: 1.2rem;
+  }
+
+  .successBadge {
+    display: none;
+  }
+
+  .mobileOnly {
+    display: flex;
+    flex-direction: column;
+    gap: 1.6rem;
+  }
+
+  /* Mobile / tablet: pages of 3 cards laid out in a 3-column grid so
+     each card fills the row evenly. The pagination dot count
+     (one dot per page of 3) is computed in JS in StepThree.js. */
+  .templatesGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.2rem;
+    justify-content: stretch;
+    width: 100%;
+  }
+
+  .templateCard,
+  .templateCardInner {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 154 / 187;
+  }
+
+  .templateCardInner {
+    align-items: stretch;
+  }
+
+  .templateImage {
+    width: 88%;
+    height: auto;
+    aspect-ratio: 129 / 172;
+    margin: 6% auto;
+  }
+
+  /* Larger, more touchable pagination dots on mobile. */
+  .pagination {
+    padding: 1.2rem 0.8rem;
+    gap: 0.8rem;
+  }
+
+  .dot {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .activeDot {
+    width: 2.2rem;
+    height: 1rem;
+    border-radius: 999px;
+  }
+
+  .selectedTemplate h3 {
+    font-size: 1.3rem;
+  }
+}
+
+/* Extra small mobile devices */
+@media (max-width: 550px) {
+  .stepThree {
+    padding: 1.2rem;
+  }
+
+  .templateSection {
+    padding: 1.2rem;
+    gap: 1.2rem;
+  }
+
+  .templatesGrid {
+    gap: 0.9rem;
+  }
+
+  .templateCardInner {
+    border-radius: 6px;
+  }
+
+  .templateImage {
+    border-radius: 6px;
+  }
+
+  .dot {
+    width: 0.9rem;
+    height: 0.9rem;
+  }
+
+  .activeDot {
+    width: 2rem;
+    height: 0.9rem;
+  }
+
+  .addStaffButton {
+    left: 1.6rem;
+    bottom: 8rem;
+  }
+
+  .sectionLabel {
+    font-size: 1.3rem;
+  }
+
+  .selectedTemplate h3 {
+    font-size: 1.2rem;
+  }
+}

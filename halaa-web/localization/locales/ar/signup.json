@@ -1,0 +1,874 @@
+{
+  "signupForm": {
+    "step": "  خطوة",
+    "submitting": "جاري الإرسال...",
+    "personalInfo": {
+      "title": "المعلومات الشخصية",
+      "name": {
+        "label": "الاسم بالكامل",
+        "placeholder": "ادخل الاسم"
+      },
+      "errors": {
+        "nameMinLength": "يجب أن يتكون الاسم من حرفين على الأقل",
+        "nameMaxLength": "يجب أن يتكون الاسم من أقل من 50 حرفًا"
+      }
+    },
+    "initialForm": {
+      "title": "اختيار الخدمة",
+      "description": "ما نوع الحدث الذي تريد تنظيمه؟",
+      "service": {
+        "label": "أختر الخدمة المقدمة",
+        "placeholder": "اختر نوع الخدمة",
+        "options": {
+          "hosted": "دعوتك علينا",
+          "selfService": "دعوتك بيدك"
+        },
+        "descriptions": {
+          "hosted": "فريق هلا يتولى كل شيء من تصميم وإرسال ومتابعة الحضور وتذكير الضيوف",
+          "selfService": "صمم وارسل دعوتك بسهولة عبر الواتساب مع كود QR خاص لكل ضيف!"
+        },
+        "errors": {
+          "serviceRequired": "الرجاء اختيار نوع الخدمة"
+        }
+      },
+      "buttons": {
+        "confirm": "تأكيد",
+        "next": "التالي",
+        "continue": "المتابعة",
+        "continueButton": "المتابعة",
+        "backButton": "رجوع",
+        "submitButton": "إنشاء الحساب"
+      }
+    },
+    "vendor": {
+      "welcomeTitle": "مرحبا عزيزى التاجر",
+      "welcomeDescription": "اكمل ملفك الشخصى",
+      "title": "أكمل ملفك الشخصي",
+      "description": "اتبع هذه الخطوات لإنشاء حسابك كمقدم خدمة وبدء عرض خدماتك على منصة هلا.",
+      "steps": {
+        "identity": "معلومات الحساب الأساسية",
+        "serviceData": "تفاصيل الخدمة أو سوق هلا",
+        "samplesAndPackages": "الصور والعروض والأسعار",
+        "commercialVerification": "التحقق التجاري",
+        "commercialVerificationDescription": "يرجى رفع المستندات المطلوبة للتحقق التجاري.",
+        "paymentData": "سياسة التعامل والدفع",
+        "otherLinksAndData": "روابط وبيانات إضافية (اختياري)",
+        "summary": "ملخص التسجيل"
+      },
+      "identity": {
+        "title": "معلومات الحساب الأساسية",
+        "description": "أدخل معلوماتك الشخصية والتجارية لبدء إنشاء حسابك كمقدم خدمة.",
+        "businessInfo": {
+          "title": "معلومات النشاط"
+        },
+        "brandName": {
+          "label": "اسم العلامة التجارية",
+          "placeholder": "أدخل اسم العلامة التجارية"
+        },
+        "ownerFullName": {
+          "label": "الاسم الكامل لصاحب النشاط",
+          "placeholder": "أدخل الاسم الكامل"
+        },
+        "serviceType": {
+          "title": "نوع النشاط",
+          "options": [
+            {
+              "value": "eventPlanning",
+              "label": "تخطيط الفعاليات"
+            },
+            {
+              "value": "mediaProduction",
+              "label": "الإنتاج الإعلامي"
+            },
+            {
+              "value": "giftsAndPromotionalBags",
+              "label": "الهدايا والحقائب الترويجية"
+            },
+            {
+              "value": "foodAndBeverages",
+              "label": "الطعام والمشروبات"
+            },
+            {
+              "value": "beautyAndFashion",
+              "label": "الجمال والأزياء"
+            },
+            {
+              "value": "logisticsAndDelivery",
+              "label": "الخدمات اللوجستية والتوصيل"
+            },
+            {
+              "value": "corporateServices",
+              "label": "الخدمات المؤسسية"
+            },
+            {
+              "value": "other",
+              "label": "أخرى"
+            }
+          ]
+        },
+        "contactInfo": {
+          "title": "معلومات الاتصال"
+        },
+        "phoneNumber": {
+          "label": "رقم الجوال",
+          "placeholder": "أدخل رقم الجوال"
+        },
+        "email": {
+          "label": "عنوان البريد الإلكتروني",
+          "placeholder": "أدخل عنوان البريد الإلكتروني"
+        },
+        "accountSecurity": {
+          "title": "أمان الحساب"
+        },
+        "password": {
+          "label": "كلمة المرور",
+          "placeholder": "أدخل كلمة المرور"
+        },
+        "passwordConfirm": {
+          "label": "تأكيد كلمة المرور",
+          "placeholder": "أعد إدخال كلمة المرور"
+        },
+        "errors": {
+          "brandNameRequired": "اسم العلامة التجارية مطلوب",
+          "brandNameMinLength": "يجب أن يتكون اسم العلامة التجارية من حرفين على الأقل",
+          "brandNameMaxLength": "يجب أن يتكون اسم العلامة التجارية من أقل من 50 حرفًا",
+          "ownerFullNameRequired": "الاسم الكامل للمالك مطلوب",
+          "ownerFullNameMinLength": "يجب أن يتكون الاسم الكامل من حرفين على الأقل",
+          "ownerFullNameMaxLength": "يجب أن يتكون الاسم الكامل من أقل من 100 حرف",
+          "serviceTypeRequired": "يرجى اختيار نوع خدمة واحد على الأقل",
+          "phoneNumberRequired": "رقم الهاتف مطلوب",
+          "phoneNumberInvalid": "يرجى إدخال رقم هاتف صحيح",
+          "emailRequired": "البريد الإلكتروني مطلوب",
+          "emailInvalid": "يرجى إدخال عنوان بريد إلكتروني صحيح",
+          "passwordRequired": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
+          "passwordComplexity": "كلمة المرور تتكون من حروف وأرقام فقط، وبها حرف ورقم على الأقل",
+          "passwordConfirmRequired": "يرجى تأكيد كلمة المرور",
+          "passwordsDoNotMatch": "كلمات المرور غير متطابقة"
+        }
+      },
+      "serviceData": {
+        "title": "تفاصيل الخدمة أو سوق هلا",
+        "description": "عرّف الزوار على خدماتك والمناطق التي تغطيها.",
+        "serviceDescription": {
+          "title": "نبذة عن الخدمة",
+          "label": "وصف مختصر للخدمة",
+          "placeholder": "أدخل وصفًا مختصرًا"
+        },
+        "eventPlanning": {
+          "title": "خدمات تنظيم الفعاليات والمناسبات",
+          "options": [
+            {
+              "value": "hallAndLoungeRentals",
+              "label": "تأجير القاعات والصالات"
+            },
+            {
+              "value": "tableOrganizationAndSeating",
+              "label": "تنظيم الطاولات وترتيب الجلوس"
+            },
+            {
+              "value": "flowerAndDecoration",
+              "label": "تنسيق الزهور والديكورات"
+            },
+            {
+              "value": "partyAndWeddingCoordination",
+              "label": "تنسيق الحفلات والأعراس"
+            },
+            {
+              "value": "digitalAndPrintedInvitation",
+              "label": "تصميم الدعوات الرقمية والمطبوعة"
+            },
+            {
+              "value": "hospitalityServices",
+              "label": "خدمات الضيافة (قهوة، شاي، مشروبات)"
+            }
+          ]
+        },
+        "mediaProduction": {
+          "title": "التصوير والإنتاج",
+          "options": [
+            {
+              "value": "photoAndVideoForOccasions",
+              "label": "التصوير والفيديو للمناسبات"
+            },
+            {
+              "value": "eventVideoEditing",
+              "label": "مونتاج فيديو الفعاليات"
+            },
+            {
+              "value": "aerialDronePhotography",
+              "label": "التصوير الجوي بالطائرات المسيرة"
+            },
+            {
+              "value": "eventVideoMontage",
+              "label": "مونتاج فيديو الفعاليات"
+            }
+          ]
+        },
+        "giftsAndGiveaways": {
+          "title": "الهدايا والتوزيعات",
+          "options": [
+            {
+              "value": "guestGiftAndDistribution",
+              "label": "تحضير هدايا الضيوف والتوزيعات"
+            },
+            {
+              "value": "chocolateAndIncenseBoxes",
+              "label": "صناديق الشوكولاتة والبخور"
+            },
+            {
+              "value": "giftWrappingAndCustomDesigns",
+              "label": "تغليف الهدايا وتصاميم مخصصة"
+            },
+            {
+              "value": "congratulationsAndGiftCards",
+              "label": "بطاقات التهنئة والهدايا"
+            }
+          ]
+        },
+        "foodAndBeverages": {
+          "title": "الطعام والمشروبات",
+          "options": [
+            {
+              "value": "occasionCakes",
+              "label": "كيك المناسبات (أعراس، أعياد ميلاد، نجاح، إلخ)"
+            },
+            {
+              "value": "traditionalOrInternationalCuisine",
+              "label": "المأكولات التقليدية أو العالمية"
+            },
+            {
+              "value": "slaughterAndRice",
+              "label": "الذبح والأرز"
+            },
+            {
+              "value": "mobileFoodTrucks",
+              "label": "شاحنات الطعام المتنقلة (قهوة، فشار)"
+            },
+            {
+              "value": "completeHospitalityBuffet",
+              "label": "بوفيه الضيافة الكامل"
+            }
+          ]
+        },
+        "beautyAndFashion": {
+          "title": "الجمال والأزياء",
+          "options": [
+            {
+              "value": "homeBeautyServices",
+              "label": "خدمات التجميل المنزلية (مكياج، شعر)"
+            },
+            {
+              "value": "weddingAndOccasionDressRentals",
+              "label": "تأجير فساتين الأعراس والمناسبات"
+            },
+            {
+              "value": "abayaDesignAndWomensTailoring",
+              "label": "تصميم العبايات وخياطة النساء"
+            },
+            {
+              "value": "barberAndGroomingSalons",
+              "label": "صالونات الحلاقة والتجميل"
+            },
+            {
+              "value": "mensClothingTailoring",
+              "label": "خياطة ملابس الرجال"
+            }
+          ]
+        },
+        "logisticsAndDelivery": {
+          "title": "الخدمات اللوجستية والتوصيل",
+          "options": [
+            {
+              "value": "vipDriverAndHospitality",
+              "label": "خدمات السائقين VIP والضيافة"
+            },
+            {
+              "value": "giftAndOrderDelivery",
+              "label": "توصيل الهدايا والطلبات"
+            },
+            {
+              "value": "guestTransportationCoordination",
+              "label": "تنسيق نقل الضيوف بالباصات"
+            },
+            {
+              "value": "occasionCarRentals",
+              "label": "تأجير سيارات المناسبات (كاديلاك، GMC...)"
+            }
+          ]
+        },
+        "corporateServices": {
+          "title": "الخدمات المؤسسية والجهات",
+          "options": [
+            {
+              "value": "conferenceAndExhibitionOrganization",
+              "label": "تنظيم المؤتمرات والمعارض"
+            },
+            {
+              "value": "corporatePromotionalGiftPreparation",
+              "label": "تحضير الهدايا الترويجية المؤسسية"
+            },
+            {
+              "value": "officialPrintingAndDesignSolutions",
+              "label": "حلول الطباعة والتصميم الرسمية"
+            },
+            {
+              "value": "guestReceptionAndRegistration",
+              "label": "خدمة استقبال وتسجيل الضيوف"
+            }
+          ]
+        },
+        "supportServices": {
+          "title": "الخدمات المساندة",
+          "options": [
+            {
+              "value": "eventPlanners",
+              "label": "منسقو الفعاليات"
+            },
+            {
+              "value": "guestCoordinators",
+              "label": "منسقو الضيوف والمراسم"
+            },
+            {
+              "value": "receptionStaff",
+              "label": "موظفو الاستقبال والتسجيل"
+            },
+            {
+              "value": "entrySupervisors",
+              "label": "مشرفو الدخول"
+            }
+          ]
+        },
+        "technicalServices": {
+          "title": "خدمات تقنية وداعمة",
+          "options": [
+            {
+              "value": "liveStreaming",
+              "label": "خدمات البث المباشر"
+            },
+            {
+              "value": "ticketingPlatforms",
+              "label": "منصات الشكاوى المدفوعة"
+            },
+            {
+              "value": "arVrServices",
+              "label": "خدمات الواقع المعزز"
+            }
+          ]
+        },
+        "soundLightingEntertainment": {
+          "title": "الصوت والإضاءة والترفيه",
+          "options": [
+            {
+              "value": "professionalSoundSystems",
+              "label": "أنظمة الصوت الاحترافية"
+            },
+            {
+              "value": "lightingVisualEffects",
+              "label": "الإضاءة والمؤثرات البصرية"
+            },
+            {
+              "value": "musicalEntertainment",
+              "label": "الفرق الموسيقية والترفيهية"
+            }
+          ]
+        },
+        "hallsAndVenues": {
+          "title": "القاعات والأماكن",
+          "options": [
+            {
+              "value": "eventHalls",
+              "label": "قاعات المناسبات"
+            },
+            {
+              "value": "privateResthouses",
+              "label": "استراحات وفيلات خاصة"
+            },
+            {
+              "value": "hotelBallrooms",
+              "label": "صالات الفنادق"
+            }
+          ]
+        },
+        "city": {
+          "label": "المدينة",
+          "placeholder": "أدخل اسم المدينة"
+        },
+        "coverageArea": {
+          "title": "منطقة التغطية",
+          "options": [
+            {
+              "value": "local",
+              "label": "محلي داخل المملكة"
+            },
+            {
+              "value": "regional",
+              "label": "إقليمي"
+            },
+            {
+              "value": "specificAreas",
+              "label": "مناطق محددة"
+            }
+          ]
+        },
+        "location": {
+          "title": "موقع المنشأة الرئيسي",
+          "allCities": "جميع المدن",
+          "region": "المنطقة",
+          "loading": "جاري التحميل...",
+          "selectRegion": "اختر المنطقة",
+          "city": "المدينة",
+          "districts": "الأحياء",
+          "coverageLabel": "نطاق التغطية:",
+          "entireRegion": "المنطقة بالكامل",
+          "entireCity": "المدينة بالكامل",
+          "selectedDistricts": "{{count}} حي محدد",
+          "allDistricts": "جميع الأحياء",
+          "districtsSelected": "{{count}} حي محدد",
+          "searchDistrict": "بحث في الأحياء..."
+        },
+        "otherInfo": {
+          "title": "معلومات إضافية"
+        },
+        "otherData": {
+          "label": "معلومات أخرى (اختياري)",
+          "placeholder": "أضف أي معلومات إضافية تود مشاركتها..."
+        },
+        "errors": {
+          "serviceDescriptionRequired": "وصف الخدمة مطلوب",
+          "serviceDescriptionMinLength": "يجب أن يتكون وصف الخدمة من 10 أحرف على الأقل",
+          "serviceDescriptionMaxLength": "يجب أن يتكون وصف الخدمة من أقل من 500 حرف",
+          "cityRequired": "المدينة مطلوبة",
+          "cityMinLength": "يجب أن تتكون المدينة من حرفين على الأقل",
+          "coverageAreaRequired": "يرجى اختيار منطقة تغطية واحدة على الأقل",
+          "regionRequired": "المنطقة مطلوبة"
+        }
+      },
+      "samplesAndPackages": {
+        "title": "الصور والعروض والأسعار",
+        "description": "ارفع صور أعمالك وحدد حزم خدماتك وأسعارك.",
+        "portfolioImages": {
+          "label": "رفع 3 صور من اعمالك السابقة",
+          "placeholder": "ارفع صور الأعمال"
+        },
+        "businessLogo": {
+          "label": "شعار النشاط التجاري (إن وجد)",
+          "placeholder": "ارفع شعار العمل"
+        },
+        "pricePackages": {
+          "label": "قوائم الأسعار أو الباقات",
+          "placeholder": "صف حزم خدماتك وأسعارك"
+        },
+        "errors": {
+          "portfolioImagesRequired": "صورة عمل واحدة على الأقل مطلوبة",
+          "businessLogoRequired": "شعار العمل مطلوب",
+          "pricePackagesRequired": "وصف حزم الأسعار مطلوب",
+          "pricePackagesMinLength": "يجب أن يتكون وصف حزم الأسعار من 10 أحرف على الأقل"
+        }
+      },
+      "commercialVerification": {
+        "title": "التحقق التجاري",
+        "description": "ارفع المستندات المطلوبة للتحقق التجاري.",
+        "commercialRegistrationCopy": {
+          "label": "نسخة السجل التجاري",
+          "placeholder": "ارفع نسخة السجل التجاري"
+        },
+        "nationalOrResidencyId": {
+          "label": "الهوية الوطنية أو الإقامة",
+          "placeholder": "ارفع الهوية الوطنية أو الإقامة"
+        },
+        "commercialRecord": {
+          "title": "السجل التجاري",
+          "label": "رقم السجل التجارى",
+          "placeholder": "ارفع السجل التجاري",
+          "numberPlaceholder": "أدخل رقم السجل التجارى",
+          "hint": "يجب أن يكون 10 أرقام (مثال: 1234567890)",
+          "invalidFormat": "رقم السجل التجاري يجب أن يكون 10 أرقام"
+        },
+        "nationalId": {
+          "title": "الهوية الوطنية",
+          "label": "رقم الهوية الوطنية",
+          "placeholder": "أدخل رقم الهوية الوطنية",
+          "imagePlaceholder": "ارفع صورة الهوية الوطنية",
+          "hint": "يجب أن يكون 10 أرقام ويبدأ بـ 1 (مواطن) أو 2 (مقيم)",
+          "invalidFormat": "رقم الهوية يجب أن يكون 10 أرقام ويبدأ بـ 1 أو 2"
+        },
+        "otherData": {
+          "label": "مستندات أخرى",
+          "placeholder": "ارفع أي مستندات أخرى مطلوبة"
+        }
+      },
+      "paymentData": {
+        "title": "سياسة التعامل والدفع",
+        "description": "حدد سياسات الدفع والاسترداد الخاصة بك.",
+        "payment_type": {
+          "title": "سياسة الاسترداد",
+          "options": [
+            {
+              "value": "full_refund",
+              "label": "استرداد كامل خلال 24 ساعة"
+            },
+            {
+              "value": "partial_refund",
+              "label": "استرداد جزئي"
+            },
+            {
+              "value": "no_refund",
+              "label": "لا يوجد استرداد"
+            }
+          ]
+        },
+        "payment_options_list": {
+          "title": "خيارات الدفع",
+          "options": [
+            {
+              "value": "cash",
+              "label": "نقداً"
+            },
+            {
+              "value": "bank_transfer",
+              "label": "تحويل بنكي"
+            },
+            {
+              "value": "visa",
+              "label": "فيزا"
+            }
+          ]
+        },
+        "refundPolicy": {
+          "terms": {
+            "label": "شروط الاسترداد",
+            "placeholder": "صف شروط الاسترداد الخاصة بك"
+          },
+          "options": {
+            "fullRefund": {
+              "label": "سياسة الاسترداد"
+            }
+          }
+        },
+        "termsForRefund": {
+          "label": "شروط الاسترداد",
+          "placeholder": "صف شروط الاسترداد الخاصة بك"
+        },
+        "company": {
+          "title": "معلومات المنشأة",
+          "fields": {
+            "name": {
+              "label": "اسم الجهة/المنشأة الرسمية",
+              "placeholder": "ادخل اسم الشركة الرسمي"
+            },
+            "license": {
+              "label": "السجل التجاري أو رقم الترخيص",
+              "placeholder": "ادخل رقم السجل التجاري"
+            },
+            "tax": {
+              "label": "الرقم الضريبي (اختياري)",
+              "placeholder": "ادخل الرقم الضريبي"
+            }
+          }
+        },
+        "address": {
+          "title": "العنوان الوطني",
+          "fields": {
+            "city": {
+              "label": "المدينة",
+              "placeholder": "اختر اسم المدينة"
+            },
+            "neighborhood": {
+              "label": "الحي",
+              "placeholder": "اختر الحي"
+            },
+            "street": {
+              "label": "اسم الشارع",
+              "placeholder": "ادخل اسم الشارع"
+            },
+            "buildingNumber": {
+              "label": "رقم المبنى",
+              "placeholder": "ادخل رقم المبنى"
+            },
+            "additionalNumber": {
+              "label": "الرقم الإضافي",
+              "placeholder": "ادخل الرقم الإضافي"
+            },
+            "postalCode": {
+              "label": "الرقم البريدي",
+              "placeholder": "ادخل الرقم البريدي"
+            },
+            "unitType": {
+              "label": "نوع الوحدة (اختياري)",
+              "placeholder": "ادخل نوع الوحدة"
+            },
+            "unitNumber": {
+              "label": "رقم الوحدة (اختياري)",
+              "placeholder": "ادخل رقم الوحدة"
+            }
+          }
+        },
+        "paymentMethods": {
+          "title": "خيارات الدفع",
+          "options": [
+            {
+              "label": "مدى",
+              "value": "mada"
+            },
+            {
+              "label": "تحويل بنكي",
+              "value": "bank_transfer"
+            },
+            {
+              "label": "فاتورة",
+              "value": "invoice"
+            }
+          ]
+        },
+        "paymentMechanism": {
+          "title": "طريقة الدفع"
+        },
+        "paymentOptions": {
+          "title": "خيارات الدفع",
+          "options": [
+            {
+              "label": "مدى",
+              "value": "mada"
+            },
+            {
+              "label": "تحويل بنكي",
+              "value": "bank_transfer"
+            },
+            {
+              "label": "فاتورة",
+              "value": "invoice"
+            }
+          ]
+        },
+        "errors": {
+          "companyNameRequired": "اسم الشركة مطلوب",
+          "licenseNumberRequired": "رقم السجل التجاري أو الترخيص مطلوب",
+          "cityRequired": "المدينة مطلوبة",
+          "neighborhoodRequired": "الحي مطلوب",
+          "streetRequired": "الشارع مطلوب",
+          "buildingNumberRequired": "رقم المبنى مطلوب",
+          "additionalNumberRequired": "الرقم الإضافي مطلوب",
+          "postalCodeRequired": "الرقم البريدي مطلوب",
+          "paymentMethodRequired": "يرجى اختيار طريقة دفع واحدة على الأقل"
+        }
+      },
+      "otherLinksAndData": {
+        "title": "روابط وبيانات إضافية",
+        "description": "شارك روابط وسائل التواصل الاجتماعي ومعلومات إضافية.",
+        "socialLinksTitle": "روابط التواصل الاجتماعي",
+        "filesAndDocumentsTitle": "الملفات والمستندات",
+        "facebookLink": {
+          "label": "رابط فيسبوك",
+          "placeholder": "أدخل رابط حساب فيسبوك"
+        },
+        "tiktokLink": {
+          "label": "رابط تيك توك",
+          "placeholder": "أدخل رابط حساب تيك توك"
+        },
+        "instagramLink": {
+          "label": "رابط إنستغرام",
+          "placeholder": "أدخل رابط حساب إنستغرام"
+        },
+        "linkedinLink": {
+          "label": "رابط لينكد إن",
+          "placeholder": "أدخل رابط حساب لينكد إن"
+        },
+        "websiteLink": {
+          "label": "رابط الموقع الإلكتروني",
+          "placeholder": "أدخل رابط الموقع الإلكتروني"
+        },
+        "additionalServices": {
+          "label": "خدمات إضافية",
+          "placeholder": "صف أي خدمات إضافية"
+        },
+        "cv": {
+          "label": "السيرة الذاتية",
+          "placeholder": "ارفع سيرتك الذاتية"
+        },
+        "profileFile": {
+          "label": "ملف الملف الشخصي",
+          "placeholder": "ارفع ملف الملف الشخصي"
+        },
+        "errors": {
+          "cvRequired": "السيرة الذاتية مطلوبة",
+          "profileFileRequired": "ملف الملف الشخصي مطلوب"
+        }
+      },
+      "summary": {
+        "title": "ملخص الطلب",
+        "description": "يرجى مراجعة جميع المعلومات التي قدمتها قبل إرسال طلبك",
+        "submit": "إرسال الطلب"
+      },
+      "submitting": "جاري الإرسال...",
+      "successMessage": "تم إنشاء الحساب بنجاح",
+      "errorMessage": "حدث خطأ أثناء إنشاء الحساب. يرجى المحاولة مرة أخرى."
+    },
+    "host": {
+      "account": {
+        "title": "معلومات الحساب",
+        "name": {
+          "label": "الاسم",
+          "placeholder": "ادخل اسمك"
+        },
+        "email": {
+          "label": "البريد الإلكتروني",
+          "placeholder": "ادخل البريد الإلكتروني"
+        },
+        "password": {
+          "label": "كلمة المرور",
+          "placeholder": "ادخل كلمة المرور"
+        },
+        "confirmPassword": {
+          "label": "تأكيد كلمة المرور",
+          "placeholder": "أعد إدخال كلمة المرور"
+        }
+      },
+      "company": {
+        "title": "معلومات الشركة",
+        "logo": {
+          "label": "الشعار",
+          "placeholder": "قم بتحميل شعار الشركة"
+        },
+        "name": {
+          "label": "اسم الشركة",
+          "placeholder": "ادخل اسم الشركة"
+        }
+      }
+    },
+    "hostSignup": {
+      "greeting": {
+        "title": "مرحبًا بك في هلا",
+        "subtitle": "أنشئ حسابك وابدأ رحلتك معنا في تنظيم المناسبات والفعاليات بأسلوب عصري ومميز."
+      },
+      "title": "إنشاء حسابك",
+      "description": "سجل للبدء في تنظيم فعالياتك مع هلا",
+      "emailLogin": {
+        "email": {
+          "label": "البريد الإلكتروني",
+          "placeholder": "أدخل بريدك الإلكتروني"
+        },
+        "password": {
+          "label": "كلمة المرور",
+          "placeholder": "أدخل كلمة المرور"
+        },
+        "forgotPassword": "نسيت كلمة المرور",
+        "rememberMe": "تذكرني",
+        "loginWithOTP": "تسجيل الدخول بكلمة مرور مؤقتة"
+      },
+      "phoneNumber": "رقم الهاتف",
+      "otpLogin": {
+        "phoneNumber": "رقم الهاتف",
+        "verification": "التحقق",
+        "editPhone": "إلغاء",
+        "loginWithEmail": "تسجيل الدخول بالبريد الإلكتروني"
+      },
+      "otp": {
+        "back": "رجوع",
+        "title": "تحقق من رقمك",
+        "subtitle": "أرسلنا رمز تحقق مكون من 6 أرقام إلى رقم هاتفك",
+        "enterCode": "يرجى إدخال الرمز المكون من 6 أرقام",
+        "invalidCode": "رمز التحقق غير صحيح",
+        "didntReceive": "لم تستلم الرمز؟",
+        "resend": "إعادة الإرسال",
+        "resendIn": "إعادة الإرسال خلال",
+        "verify": "تحقق"
+      },
+      "buttons": {
+        "login": "إنشاء حساب",
+        "verify": "تحقق",
+        "createAccount": "إنشاء حساب",
+        "sendCode": "إرسال الرمز"
+      },
+      "formBottom": {
+        "orContinueWith": "أو استمر باستخدام",
+        "haveAccount": "لديك حساب بالفعل؟",
+        "login": "تسجيل الدخول"
+      },
+      "errors": {
+        "emailRequired": "البريد الإلكتروني مطلوب",
+        "invalidEmail": "عنوان بريد إلكتروني غير صحيح",
+        "passwordMinLength": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
+        "passwordComplexity": "كلمة المرور تتكون من حروف وأرقام فقط، وبها حرف ورقم على الأقل",
+        "invalidPassword": "كلمة المرور غير صحيحة، تحقق منها وحاول مرة أخرى.",
+        "phoneNumberInvalid": "رقم الهاتف غير صحيح، يرجى التحقق والمحاولة مرة أخرى",
+        "usernameRequired": "اسم المستخدم مطلوب",
+        "usernameMinLength": "اسم المستخدم يجب أن يكون 3 أحرف على الأقل",
+        "passwordConfirmRequired": "يرجى تأكيد كلمة المرور",
+        "passwordsDoNotMatch": "كلمات المرور غير متطابقة"
+      }
+    },
+    "continueSignup": {
+      "title": "اكمل ملفك الشخصي",
+      "description": "بعض المعلومات الأساسية لنتمكن من خدمتك بأفضل شكل",
+      "personalInfo": {
+        "title": "معلومات شخصية",
+        "fullName": {
+          "label": "اسمك بالكامل",
+          "placeholder": "أدخل اسمك بالكامل"
+        },
+        "email": {
+          "label": "البريد الالكتروني",
+          "placeholder": "davd@dffr.com"
+        },
+        "newPassword": {
+          "label": "كلمة مرور جديدة",
+          "placeholder": "ادخل كلمة مرور جديدة"
+        },
+        "confirmPassword": {
+          "label": "تأكيد كلمة المرور",
+          "placeholder": "أعد ادخال كلمة المرور الجديدة"
+        }
+      },
+      "serviceSelection": {
+        "title": "اختر الخدمة المقدمة",
+        "question": "ما نوع الحدث الذي تريد تنظيمه",
+        "organizerInvitation": {
+          "title": "دعوتك عبر منصتك",
+          "description": "حل احترافي للكيانات، لوحة تحكم مخصصة مع ميزات متعددة"
+        },
+        "onUsInvitation": {
+          "title": "دعوتك علينا",
+          "description": "فريق هلا يتولى كل شيء من تصميم وارسال ومتابعة الحضور وتذكير الضيوف"
+        },
+        "inYourHandsInvitation": {
+          "title": "دعوتك بيدك",
+          "description": "صمم وارسل دعواتك بسهولة عبر الواتساب مع كود QR خاص لكل ضيف!"
+        },
+        "features": {
+          "largeScaleCompetitivePricing": "أسعار تنافسية للتجار ذوي الحجم الكبير",
+          "customReportsAnalytics": "تقارير وتحليلات مخصصة",
+          "phoneSupportPriority": "أولوية دعم الهاتف 24/7",
+          "globalLocalSales": "البيع العالمي المحلي (50 سوقا)",
+          "designSendGuestTracking": "تصميم إرسال ومتابعة الحضور",
+          "designSendWhatsappQRCodes": "صمم وارسل دعواتك بسهولة عبر الواتساب مع كود QR خاص لكل ضيف!",
+          "additional": "20+ مزايا إضافية إضغط للمزيد"
+        }
+      },
+      "nextButton": "التالي",
+      "selectButton": "اختر الباقة",
+      "errors": {
+        "fullNameRequired": "الاسم كاملا مطلوب",
+        "fullNameMinLength": "الاسم كاملا يجب أن لا يقل عن حرفين",
+        "emailRequired": "البريد الالكتروني مطلوب",
+        "invalidEmail": "قم بإدخال بريد إلكتروني صحيح مثال example@domain.com",
+        "passwordMinLength": "على الاقل 8احرف",
+        "passwordComplexity": "تتكون من حروف وأرقام فقط، وبها حرف ورقم على الأقل",
+        "passwordSpecialChar": "بدون رموز",
+        "confirmPasswordRequired": "تأكيد كلمة المرور مطلوب",
+        "passwordsDoNotMatch": "كلمات المرور غير متطابقة"
+      }
+    }
+  },
+  "validation": {
+    "required": "هذا الحقل مطلوب",
+    "invalidEmail": "يرجى إدخال بريد إلكتروني صحيح",
+    "invalidSaudiPhone": "يرجى إدخال رقم هاتف سعودي صحيح",
+    "passwordMinLength": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
+    "passwordMaxLength": "كلمة المرور يجب أن تكون أقل من 128 حرف",
+    "passwordComplexity": "كلمة المرور تتكون من حروف وأرقام فقط، وبها حرف ورقم على الأقل",
+    "passwordMismatch": "كلمات المرور غير متطابقة",
+    "nameMinLength": "الاسم يجب أن يكون حرفين على الأقل",
+    "otpLength": "رمز التحقق يجب أن يكون 6 أرقام",
+    "otpInvalid": "رمز التحقق يجب أن يحتوي على أرقام فقط"
+  }
+}

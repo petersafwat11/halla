@@ -1,0 +1,56 @@
+{
+  "continueSignup": {
+    "title": "Complete Your Profile",
+    "description": "Some basic information to help us provide the best service",
+    "personalInfo": {
+      "title": "Personal Information",
+      "fullName": {
+        "label": "Full Name",
+        "placeholder": "Enter your full name"
+      },
+      "email": {
+        "label": "Email Address",
+        "placeholder": "david@dffr.com"
+      },
+      "newPassword": {
+        "label": "New Password",
+        "placeholder": "**********"
+      },
+      "confirmPassword": {
+        "label": "Confirm Password",
+        "placeholder": "**********"
+      }
+    },
+    "serviceSelection": {
+      "title": "Choose the Service Provided",
+      "question": "What type of event do you want to organize?",
+      "organizerInvitation": {
+        "title": "Your Invitation through Your Organizer",
+        "description": "Professional solution for entities, custom control panel with multiple features"
+      },
+      "onUsInvitation": {
+        "title": "Your Invitation is On Us",
+        "description": "Halaa application provides everything from design, sending, and tracking attendance, and serving guests"
+      },
+      "inYourHandsInvitation": {
+        "title": "Your Invitation in Your Hands",
+        "description": "Design and send your invitations easily via WhatsApp with a special QR code for each guest!"
+      }
+    },
+    "nextButton": "Next",
+    "selectButton": "Select Plan",
+    "errors": {
+      "fullNameRequired": "Full name is required",
+      "fullNameMinLength": "Full name must be at least 2 characters",
+      "emailRequired": "Email is required",
+      "invalidEmail": "Please enter a valid email address",
+      "passwordMinLength": "Password must be at least 8 characters",
+      "passwordComplexity": "Use letters and numbers only, with at least one of each",
+      "passwordSpecialChar": "Do not use symbols",
+      "confirmPasswordRequired": "Confirm password is required",
+      "passwordsDoNotMatch": "Passwords do not match",
+      "usernameMinLength": "Username must be at least 3 characters",
+      "passwordConfirmRequired": "Please confirm your password"
+    }
+  }
+}

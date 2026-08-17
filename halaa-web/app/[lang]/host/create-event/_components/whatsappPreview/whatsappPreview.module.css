@@ -1,0 +1,445 @@
+/* ══════════════════════════════════════════════════
+   WhatsApp Preview — Phone Mockup
+   Outer card uses brand tokens. Inside the phone we
+   keep authentic WhatsApp colors (modern 2024 palette).
+══════════════════════════════════════════════════ */
+
+/* ─── Outer card ──────────────────────────────── */
+.previewContainer {
+  display: flex;
+  width: 32rem;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.previewCard {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  width: 100%;
+  border-radius: 1.6rem;
+  background: var(--color-natural-50);
+  border: 1px solid var(--color-primary-100);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.05),
+    0 10px 32px rgba(81, 60, 39, 0.08);
+  overflow: hidden;
+}
+
+.previewHeader {
+  display: flex;
+  padding: 1.4rem 2rem;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  width: 100%;
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-50) 0%,
+    var(--color-primary-100) 100%
+  );
+  border-bottom: 1px solid var(--color-primary-100);
+}
+
+.previewTitle {
+  color: var(--color-primary-800);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0;
+  letter-spacing: 0.02px;
+}
+
+/* ─── Phone frame ─────────────────────────────── */
+.phoneWrap {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 2rem 2.4rem;
+  width: 100%;
+  box-sizing: border-box;
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      var(--color-primary-50) 0%,
+      transparent 70%
+    ),
+    var(--color-natural-50);
+}
+
+.phone {
+  width: 100%;
+  /* Bound the device to the viewport so the mockup never grows "very long";
+     the chat area scrolls within it on shorter screens. */
+  height: min(76vh, 60rem);
+  max-height: 60rem;
+  background: #efeae2;
+  border-radius: 2.8rem;
+  overflow: hidden;
+  position: relative;
+  isolation: isolate;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.06),
+    0 0 0 8px #1c1c1e,
+    0 0 0 9px #2a2a2c,
+    0 18px 40px rgba(0, 0, 0, 0.22),
+    0 6px 12px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── iOS-style status bar ────────────────────── */
+.statusBar {
+  height: 2.4rem;
+  background: #00a884;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.6rem;
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  font-feature-settings: "tnum" on;
+  direction: ltr;
+  flex-shrink: 0;
+}
+
+.statusBarTime {
+  letter-spacing: 0.02px;
+}
+
+.statusBarRight {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  opacity: 0.95;
+}
+
+.statusBarIcon {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ─── Notch ───────────────────────────────────── */
+.notch {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 9rem;
+  height: 1.8rem;
+  background: #1c1c1e;
+  border-radius: 0 0 1.2rem 1.2rem;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.notch::before {
+  content: "";
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: #2a2a2c;
+}
+
+.notch::after {
+  content: "";
+  width: 3rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: #2a2a2c;
+}
+
+/* ─── WhatsApp header bar (modern) ────────────── */
+.waBar {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  background: #00a884;
+  padding: 0.9rem 1.2rem 1rem;
+  direction: ltr;
+  flex-shrink: 0;
+}
+
+.waBarLeft {
+  display: flex;
+  align-items: center;
+  opacity: 0.95;
+  flex-shrink: 0;
+}
+
+.waAvatar {
+  width: 3.4rem;
+  height: 3.4rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ffffff 0%, #f3f3f3 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #00785a;
+  font-size: 1.4rem;
+  font-weight: 800;
+  flex-shrink: 0;
+  box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.6);
+}
+
+.waInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.waName {
+  color: #fff;
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.02px;
+}
+
+.waStatus {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 1.05rem;
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: 0.01px;
+}
+
+.waActions {
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+  opacity: 0.9;
+  flex-shrink: 0;
+}
+
+/* ─── Chat area ───────────────────────────────── */
+.chatArea {
+  background-color: #efeae2;
+  background-image:
+    radial-gradient(
+      circle at 25% 25%,
+      rgba(0, 0, 0, 0.025) 1px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      circle at 75% 75%,
+      rgba(0, 0, 0, 0.025) 1px,
+      transparent 1.5px
+    );
+  background-size: 24px 24px, 24px 24px;
+  background-position: 0 0, 12px 12px;
+  padding: 1.4rem 1rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  flex: 1;
+  /* Scroll within the bounded phone instead of stretching it tall. */
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ─── Message card (received, full width) ─────── */
+.msgCard {
+  width: 100%;
+  background: #fff;
+  border-radius: 0.4rem 0.9rem 0.9rem 0.9rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+  box-shadow:
+    0 1px 1px rgba(11, 20, 26, 0.08),
+    0 1px 0.5px rgba(11, 20, 26, 0.06);
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.msgCard::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -0.5rem;
+  width: 0.6rem;
+  height: 1.2rem;
+  background: #fff;
+  clip-path: polygon(100% 0, 0 0, 100% 60%);
+}
+
+.msgImageWrap {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  /* Cap the tall invitation image so the bubble doesn't dominate the
+     preview; the image is contained (fully visible) within the cap. */
+  max-height: min(34vh, 26rem);
+  overflow: hidden;
+  background: linear-gradient(160deg, #f7f1e6 0%, #ece2cf 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin: 0.4rem 0.4rem 0;
+  border-radius: 0.6rem;
+  flex-shrink: 0;
+}
+
+.msgImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.msgBody {
+  padding: 0.9rem 1rem 0.3rem;
+  color: #111b21;
+  font-size: 1.25rem;
+  font-weight: 400;
+  line-height: 1.7;
+  direction: rtl;
+  text-align: right;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+}
+
+.msgPlaceholder {
+  padding: 1.2rem 1rem 0.3rem;
+  color: #8696a0;
+  font-size: 1.15rem;
+  font-weight: 400;
+  line-height: 1.55;
+  direction: rtl;
+  text-align: right;
+  font-style: italic;
+  margin: 0;
+}
+
+.msgMeta {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  padding: 0.15rem 0.8rem 0.65rem;
+  direction: ltr;
+}
+
+.msgTime {
+  color: #667781;
+  font-size: 1rem;
+  line-height: 1;
+  font-feature-settings: "tnum" on;
+}
+
+/* ─── CTA buttons (full width, below card) ────── */
+.ctaGroup {
+  width: 100%;
+  background: #fff;
+  border-radius: 0.9rem;
+  overflow: hidden;
+  box-shadow:
+    0 1px 1px rgba(11, 20, 26, 0.08),
+    0 1px 0.5px rgba(11, 20, 26, 0.06);
+  flex-shrink: 0;
+}
+
+.ctaBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  width: 100%;
+  padding: 1.05rem 1rem;
+  background: transparent;
+  border: none;
+  cursor: default;
+  color: #027eb5;
+  font-size: 1.25rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.02px;
+  font-family: inherit;
+}
+
+.ctaDivider {
+  height: 1px;
+  background: #e9edef;
+}
+
+/* ─── Input bar ───────────────────────────────── */
+.inputBar {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.7rem 0.9rem 0.9rem;
+  background: #f0f2f5;
+  flex-shrink: 0;
+}
+
+.inputField {
+  flex: 1;
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.75rem 1.3rem;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 1px 1px rgba(11, 20, 26, 0.04);
+}
+
+.inputPlaceholder {
+  color: #8696a0;
+  font-size: 1.15rem;
+  direction: rtl;
+}
+
+.micBtn {
+  width: 3.8rem;
+  height: 3.8rem;
+  border-radius: 50%;
+  background: #00a884;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+/* ─── Tablet/Mobile breakpoints ───────────────── */
+@media (max-width: 1100px) {
+  .previewContainer {
+    width: 30rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .previewContainer {
+    display: none;
+  }
+
+  .previewContainer.forceShow {
+    display: flex !important;
+    width: 100%;
+    max-width: 32rem;
+  }
+
+  .previewContainer.forceShow .previewCard {
+    width: 100%;
+  }
+
+  .previewContainer.forceShow .phoneWrap {
+    padding: 1.5rem 1.4rem 1.8rem;
+  }
+
+  .previewContainer.forceShow .phone {
+    height: min(68dvh, 52rem);
+  }
+
+  .previewContainer.forceShow .msgImageWrap {
+    max-height: min(24dvh, 18rem);
+  }
+}

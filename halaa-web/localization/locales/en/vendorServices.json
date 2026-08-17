@@ -1,0 +1,134 @@
+{
+  "pageTitle": "Services",
+  "pageSubtitle": "Here's a quick overview of your activities and invitations",
+  "buttons": {
+    "addService": "Add Service",
+    "complaints": "Complaints",
+    "promoteProfile": "Promote Profile",
+    "available": "Available",
+    "unavailable": "Unavailable",
+    "delete": "Delete",
+    "edit": "Edit"
+  },
+  "search": {
+    "placeholder": "Search for service"
+  },
+  "stats": {
+    "totalRating": "Total Rating",
+    "inactiveServices": "Inactive Services",
+    "activeServices": "Active Services",
+    "totalServices": "Total Services",
+    "increase": "Increase",
+    "decrease": "Decrease"
+  },
+  "service": {
+    "defaultTitle": "Service",
+    "price": "SAR"
+  },
+  "errors": {
+    "loadFailed": "Failed to load services",
+    "boundary": "Failed to load vendor dashboard",
+    "update_failed": "Failed to update service",
+    "delete_failed": "Failed to delete service"
+  },
+  "success": {
+    "updated": "Service updated successfully",
+    "deleted": "Service deleted successfully"
+  },
+  "confirmDelete": {
+    "title": "Delete service",
+    "message": "Are you sure you want to delete this service? This action cannot be undone.",
+    "confirm": "Delete",
+    "cancel": "Cancel"
+  },
+  "noSearchResults": "No services match your search",
+  "noServices": "No services available",
+  "filters": {
+    "allServices": "All Services"
+  },
+  "addServicePopup": {
+    "title": "Add New Service",
+    "editTitle": "Edit Service",
+    "imageUpload": {
+      "label": "Service Image",
+      "placeholder": "Upload Image"
+    },
+    "serviceType": {
+      "label": "Service Type",
+      "placeholder": "Choose Service Type"
+    },
+    "serviceName": {
+      "label": "Service name (English)",
+      "placeholder": "Enter Service Name"
+    },
+    "serviceNameAr": {
+      "label": "Service name (Arabic)",
+      "placeholder": "أدخل اسم الخدمة بالعربية"
+    },
+    "description": {
+      "label": "Service description (English)",
+      "placeholder": "Enter Service Description"
+    },
+    "descriptionAr": {
+      "label": "Service description (Arabic)",
+      "placeholder": "أدخل وصف الخدمة بالعربية"
+    },
+    "price": {
+      "label": "Service Price",
+      "placeholder": "Enter Service Price"
+    },
+    "duration": {
+      "label": "Service Duration",
+      "placeholder": "e.g., 8-12 hours"
+    },
+    "included": {
+      "label": "What's Included",
+      "placeholder": "Type an item and press Enter",
+      "removeHint": "Click to remove"
+    },
+    "category": {
+      "label": "Choose Category",
+      "placeholder": "Select from categories below"
+    },
+    "serviceTypes": {
+      "eventPlanning": "Event Planning",
+      "mediaProduction": "Media Production",
+      "giftsAndGiveaways": "Gifts & Giveaways",
+      "foodAndBeverages": "Food & Beverages",
+      "beautyAndFashion": "Beauty & Fashion",
+      "logisticsAndDelivery": "Logistics & Delivery",
+      "corporateServices": "Corporate Services",
+      "supportServices": "Support Services",
+      "technicalServices": "Technical Services",
+      "soundLightingEntertainment": "Sound, Lighting & Entertainment",
+      "hallsAndVenues": "Halls & Venues"
+    },
+    "tags": {
+      "weddings": "Weddings",
+      "graduation": "Graduation",
+      "birthdays": "Birthdays",
+      "corporate": "Corporate Events",
+      "engagement": "Engagement",
+      "babyShower": "Baby Shower"
+    },
+    "submit": "Create",
+    "update": "Update",
+    "cancel": "Cancel",
+    "submitting": "Creating...",
+    "updating": "Updating...",
+    "success": "Service added successfully",
+    "updateSuccess": "Service updated successfully",
+    "error": "Failed to add service",
+    "updateError": "Failed to update service",
+    "validation": {
+      "serviceNameMinLength": "Service name must be at least 2 characters",
+      "serviceNameMaxLength": "Service name must be less than 100 characters",
+      "serviceTypeRequired": "Service type is required",
+      "descriptionMinLength": "Description must be at least 10 characters",
+      "descriptionMaxLength": "Description must be less than 1000 characters",
+      "priceRequired": "Price is required",
+      "priceInvalid": "Please enter a valid price",
+      "durationMaxLength": "Duration must be less than 100 characters"
+    }
+  }
+}

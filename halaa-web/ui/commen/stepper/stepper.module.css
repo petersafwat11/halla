@@ -1,0 +1,234 @@
+.container {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.6rem;
+    padding: 2.4rem;
+    width: 100%;
+    max-width: 39.6rem;
+    min-width: 28rem;
+    height: 100%;
+    position: relative;
+    overflow-y: hidden;
+  }
+}
+.steps {
+  display: flex;
+  padding: 2.4rem;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-end;
+  gap: 0;
+  flex: 1;
+  align-self: stretch;
+  border-radius: 1.2rem;
+  background: #fff;
+  box-shadow: 0px 0px 16px 0px rgba(0, 0, 0, 0.06);
+  width: 100%;
+}
+.step_line {
+  width: 1px;
+  height: 1.9rem;
+  background: #e2dbd6;
+  margin-right: 1.2rem;
+}
+.step {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 3.2rem;
+  width: 100%;
+}
+.step_number {
+  display: flex;
+  width: 2.4rem;
+  height: 2.4rem;
+  justify-content: center;
+  align-items: center;
+  aspect-ratio: 1/1;
+  border-radius: 9999px;
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 1.6rem;
+  letter-spacing: 0.056rem;
+  background: #e2dbd6;
+  color: var(--color-title);
+}
+.current_step_number {
+  background: #e3cbb4;
+  color: #c28e5c;
+}
+.completed_step_number {
+  background: #2ecc71;
+  color: #fff;
+}
+.step_text {
+  display: flex;
+  flex-direction: column;
+}
+.step_title {
+  color: var(--color-title);
+  font-size: 1.2rem;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1.6rem;
+  letter-spacing: 0.06rem;
+}
+.current_step_title {
+  color: #c28e5c;
+}
+.completed_step_title {
+  color: #2ecc71;
+}
+.step_description {
+  font-size: 1.4rem;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 2rem;
+  letter-spacing: 0.014rem;
+  color: var(--color-description);
+}
+.current_step_description {
+  color: #c28e5c;
+}
+.completed_step_description {
+  color: #2ecc71;
+}
+.buttons {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.prev_button,
+.next_button {
+  color: var(--color-primary);
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 1.6rem;
+  letter-spacing: 0.056rem;
+  display: flex;
+  width: 17.4rem;
+  height: 4.8rem;
+  padding: 1.6rem;
+  justify-content: center;
+  align-items: center;
+  gap: 1.2rem;
+  border-radius: 1.2rem;
+}
+.next_button {
+  background: #f5ece4;
+  color: var(--color-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.next_button:not([disabled]) {
+  cursor: pointer;
+}
+
+.next_button.active {
+  background: var(--color-primary-bg);
+  color: #fff;
+}
+
+.next_button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.mobile_container {
+  display: block;
+  background-color: transparent;
+  max-width: 100%;
+  margin: 0 auto 2.4rem;
+  padding: 0;
+  width: 100%;
+}
+
+@media (min-width: 900px) {
+  .mobile_container {
+    display: none;
+  }
+}
+.mobile_content {
+  background-color: #fff;
+  padding: 1.6rem 2rem;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 1.6rem;
+  border-radius: 1.2rem;
+  box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.05);
+}
+
+@media (max-width: 480px) {
+  .mobile_content {
+    padding: 1.2rem 1.6rem;
+    gap: 1.2rem;
+  }
+}
+.mobile_step_number_container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  min-width: 4.8rem;
+  width: 4.8rem;
+  height: 4.8rem;
+  background: linear-gradient(135deg, #c28e5c 0%, #d4a574 100%);
+  box-shadow: 0px 2px 8px rgba(194, 142, 92, 0.25);
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .mobile_step_number_container {
+    min-width: 4rem;
+    width: 4rem;
+    height: 4rem;
+  }
+}
+
+.mobile_step_number {
+  color: #fff;
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1.6rem;
+  letter-spacing: 0.02em;
+}
+
+@media (max-width: 480px) {
+  .mobile_step_number {
+    font-size: 1.2rem;
+  }
+}
+.mobile_step_desc_container {
+  flex: 1;
+  color: var(--color-title);
+  font-size: 1.6rem;
+  font-weight: 600;
+  line-height: 2.4rem;
+  letter-spacing: 0.01em;
+}
+
+@media (max-width: 768px) {
+  .mobile_step_desc_container {
+    font-size: 1.5rem;
+    line-height: 2.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .mobile_step_desc_container {
+    font-size: 1.4rem;
+    line-height: 2rem;
+  }
+}
+
+.completed_step_line {
+  background: #217343;
+}

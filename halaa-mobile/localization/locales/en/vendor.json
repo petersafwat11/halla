@@ -1,0 +1,317 @@
+{
+  "defaultVendorName": "Service Provider",
+  "greeting": "Welcome",
+  "currency": "SAR",
+
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "You have {{count}} active services"
+  },
+
+  "actions": {
+    "addService": "Add Service",
+    "viewServices": "View Services",
+    "support": "Support"
+  },
+
+  "stats": {
+    "rating": "Rating",
+    "activeServices": "Active Services",
+    "inactiveServices": "Inactive Services",
+    "totalServices": "Total Services"
+  },
+
+  "orders": {
+    "recentOrders": "Recent Orders",
+    "orders": "orders",
+    "noOrders": "No Orders Yet",
+    "noOrdersDescription": "You haven't received any orders yet. Keep your services active to start receiving bookings.",
+    "customer": "Customer",
+    "eventDate": "Event Date",
+    "price": "Price"
+  },
+
+  "orderStatus": {
+    "pending": "Pending",
+    "confirmed": "Confirmed",
+    "completed": "Completed",
+    "cancelled": "Cancelled"
+  },
+
+  "insights": {
+    "title": "Performance Insights",
+    "avgRating": "Average Rating",
+    "activeServices": "Active Services",
+    "inactiveServices": "Inactive Services"
+  },
+
+  "categories": {
+    "photography": "Photography",
+    "catering": "Catering",
+    "decoration": "Decoration",
+    "entertainment": "Entertainment",
+    "venue": "Venue",
+    "planning": "Event Planning"
+  },
+
+  "settings": {
+    "title": "Settings",
+    "saveChanges": "Save Changes",
+    "changePhoto": "Change Photo",
+    "uploadImage": "Upload Image",
+    "changeImage": "Change Image",
+    "imageSelected": "Image Selected",
+    "addImages": "Add Images",
+    "saveSuccess": "Settings saved successfully",
+    "saveError": "Failed to save settings. Please try again.",
+    "imagePickError": "Failed to pick image. Please try again.",
+
+    "tabs": {
+      "accountSetup": "Account Setup",
+      "notifications": "Notifications"
+    },
+
+    "personalInfo": {
+      "title": "Personal Information",
+      "description": "Update your personal details and profile picture",
+      "avatar": "Profile Picture",
+      "name": "Full Name",
+      "namePlaceholder": "Enter your full name",
+      "email": "Email Address",
+      "emailPlaceholder": "Enter your email address"
+    },
+
+    "serviceDetails": {
+      "title": "Service Details",
+      "subtitle": "Provide information about your services and business",
+      "description": "Service Description",
+      "descriptionPlaceholder": "Describe your services in detail",
+      "categories": "Service Categories",
+      "categoriesPlaceholder": "Select service categories",
+      "location": "Service Location",
+      "nationalId": "National ID",
+      "nationalIdPlaceholder": "Enter your national ID number",
+      "nationalIdImage": "National ID Image",
+      "commercialRecord": "Commercial Record Image"
+    },
+
+    "imagesAndPricing": {
+      "title": "Images & Pricing",
+      "description": "Upload portfolio images and pricing packages",
+      "portfolioImages": "Portfolio Images",
+      "pricePackages": "Price Packages",
+      "noPortfolioImages": "No portfolio images yet",
+      "noPricePackages": "No price packages yet"
+    },
+
+    "additionalLinks": {
+      "title": "Social Links",
+      "description": "Add your social media and website links",
+      "website": "Website",
+      "instagram": "Instagram",
+      "facebook": "Facebook",
+      "twitter": "Twitter",
+      "tiktok": "TikTok"
+    },
+
+    "permissions": {
+      "title": "Permission Required",
+      "message": "We need permission to access your photos to upload images."
+    },
+
+    "notifications": {
+      "comingSoon": "Coming Soon",
+      "comingSoonDescription": "Notification settings will be available in the next update."
+    },
+
+    "validation": {
+      "nameRequired": "Name is required",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Invalid email format",
+      "descriptionRequired": "Service description is required",
+      "nationalIdRequired": "National ID is required",
+      "categoriesRequired": "At least one category is required",
+      "locationRequired": "Service location is required",
+      "invalidUrl": "Invalid URL format"
+    }
+  },
+
+  "tickets": {
+    "title": "Support Tickets",
+    "createTicket": "Create Ticket",
+    "editTicket": "Edit Ticket",
+    "createFirst": "Create Your First Ticket",
+    "noTickets": "No Tickets",
+    "noTicketsDescription": "You haven't created any support tickets yet.",
+    "searchPlaceholder": "Search tickets...",
+    "deleteConfirm": "Delete Ticket",
+    "deleteConfirmMessage": "Are you sure you want to delete this ticket?",
+    "deleteSuccess": "Ticket deleted successfully",
+    "deleteError": "Failed to delete ticket",
+    "createSuccess": "Ticket created successfully",
+    "updateSuccess": "Ticket updated successfully",
+    "submitError": "Failed to submit ticket. Please try again.",
+
+    "type": "Ticket Type",
+    "priorityLabel": "Priority",
+    "message": "Message",
+    "messagePlaceholder": "Describe your issue or question in detail...",
+
+    "types": {
+      "technical": "Technical Issue",
+      "billing": "Billing",
+      "general": "General Inquiry",
+      "complaint": "Complaint"
+    },
+
+    "priority": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+
+    "status": {
+      "open": "Open",
+      "in_progress": "In Progress",
+      "resolved": "Resolved",
+      "closed": "Closed"
+    },
+
+    "filter": {
+      "all": "All",
+      "open": "Open",
+      "in_progress": "In Progress",
+      "resolved": "Resolved",
+      "closed": "Closed"
+    },
+
+    "validation": {
+      "typeRequired": "Ticket type is required",
+      "messageRequired": "Message is required",
+      "messageTooShort": "Message must be at least 10 characters"
+    }
+  },
+
+  "common": {
+    "loading": "Loading...",
+    "success": "Success",
+    "error": "Error",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "update": "Update",
+    "viewAll": "View All"
+  },
+
+  "services": {
+    "title": "Add New Service",
+    "editTitle": "Edit Service",
+    "update": "Update",
+    "updateSuccess": "Service updated successfully",
+    "updateError": "Failed to update service",
+    "imageLabel": "Service Image",
+    "imagePlaceholder": "Upload Image",
+    "nameLabel": "Service name (English)",
+    "namePlaceholder": "Enter service name",
+    "nameArLabel": "Service name (Arabic)",
+    "nameArPlaceholder": "أدخل اسم الخدمة بالعربية",
+    "typeLabel": "Service Type",
+    "typePlaceholder": "Choose service type",
+    "typeModalTitle": "Choose Service Type",
+    "descLabel": "Service description (English)",
+    "descPlaceholder": "Enter service description",
+    "descArLabel": "Service description (Arabic)",
+    "descArPlaceholder": "أدخل وصف الخدمة بالعربية",
+    "priceLabel": "Service Price",
+    "pricePlaceholder": "Enter service price",
+    "durationLabel": "Service Duration",
+    "durationPlaceholder": "e.g., 8-12 hours",
+    "includedLabel": "What's Included",
+    "includedPlaceholder": "Type an item and press +",
+    "tagsLabel": "Choose Category",
+    "create": "Create",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "available": "Available",
+    "unavailable": "Unavailable",
+    "person": "person",
+    "people": "people",
+    "photo": "photo",
+    "photos": "photos",
+    "filterAll": "All Services",
+    "filterActive": "Active",
+    "filterInactive": "Inactive",
+    "searchPlaceholder": "Search for service",
+    "noServices": "No services",
+    "noServicesHint": "Add your first service now",
+    "addService": "Add Service",
+    "deleteConfirm": "Delete Service",
+    "deleteConfirmMessage": "Are you sure you want to delete this service?",
+    "deleteSuccess": "Service deleted successfully",
+    "deleteError": "Failed to delete service",
+    "addSuccess": "Service added successfully",
+    "addError": "Failed to add service",
+    "toggleSuccess": "Service status updated",
+    "toggleError": "Failed to update service status",
+    "serviceTypes": {
+      "eventPlanning": "Event Planning",
+      "mediaProduction": "Media Production",
+      "giftsAndGiveaways": "Gifts & Giveaways",
+      "foodAndBeverages": "Food & Beverages",
+      "beautyAndFashion": "Beauty & Fashion",
+      "logisticsAndDelivery": "Logistics & Delivery",
+      "corporateServices": "Corporate Services",
+      "supportServices": "Support Services",
+      "technicalServices": "Technical Services",
+      "soundLightingEntertainment": "Sound, Lighting & Entertainment",
+      "hallsAndVenues": "Halls & Venues"
+    },
+    "tags": {
+      "weddings": "Weddings",
+      "graduation": "Graduation",
+      "birthdays": "Birthdays",
+      "corporate": "Corporate Events",
+      "engagement": "Engagement",
+      "baby_shower": "Baby Shower"
+    },
+    "validation": {
+      "nameMinLength": "Service name must be more than 2 characters",
+      "typeRequired": "Service type is required",
+      "descriptionMinLength": "Service description must be more than 10 characters",
+      "priceRequired": "Service price is required",
+      "durationMaxLength": "Service duration must be less than 100 characters"
+    }
+  },
+
+  "validation": {
+    "ownerNameRequired": "Owner name is required",
+    "ownerNameMinLength": "Name must be at least 2 characters",
+    "ownerNameMaxLength": "Name must be less than 100 characters",
+    "brandNameRequired": "Brand name is required",
+    "brandNameMinLength": "Brand name must be at least 2 characters",
+    "brandNameMaxLength": "Brand name must be less than 100 characters",
+    "emailRequired": "Email is required",
+    "emailInvalid": "Invalid email format",
+    "phoneInvalid": "Invalid phone number format",
+    "phoneRequired": "Phone number is required",
+    "descriptionMaxLength": "Description must not exceed 1000 characters",
+    "nationalIdInvalid": "National ID must be 10 digits",
+    "invalidUrl": "Invalid URL format",
+    "currentPasswordRequired": "Current password is required",
+    "newPasswordRequired": "New password is required",
+    "passwordMinLength": "Password must be at least 8 characters",
+    "passwordMismatch": "Passwords do not match",
+    "passwordConfirmRequired": "Please confirm your password",
+    "otpRequired": "Verification code is required",
+    "otpInvalid": "Verification code must be 4-8 digits",
+    "otpFormat": "Verification code must be 4-8 digits",
+    "passwordChangeCurrentRequired": "Current password is required to change password"
+  },
+  "errors": {
+    "fetchFailed": "Failed to Load Data",
+    "fetchFailedMessage": "Unable to load data. Please try again.",
+    "fetchDataMessage": "Unable to load vendor data. Please try again.",
+    "fetchTicketsMessage": "Unable to load tickets. Please try again."
+  }
+}

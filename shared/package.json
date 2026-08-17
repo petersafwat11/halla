@@ -1,0 +1,40 @@
+{
+  "name": "@halaa/shared",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "lint": "eslint . --max-warnings 0",
+    "legal:verify": "node scripts/verify-legal.mjs",
+    "aso:verify": "node scripts/validate-aso-metadata.mjs"
+  },
+  "exports": {
+    ".": "./src/index.js",
+    "./schemas": "./src/schemas/index.js",
+    "./schemas/*": "./src/schemas/*.js",
+    "./api/paths": "./src/api/paths.js",
+    "./api/*": "./src/api/*.js",
+    "./errors": "./src/errors/index.js",
+    "./constants": "./src/constants/index.js",
+    "./constants/*": "./src/constants/*.js",
+    "./constants/eventCategories.cjs": "./src/constants/eventCategories.cjs",
+    "./utils": "./src/utils/index.js",
+    "./utils/*": "./src/utils/*.js",
+    "./hooks": "./src/hooks/index.js",
+    "./hooks/*": "./src/hooks/*.js",
+    "./legal": "./src/legal/index.js",
+    "./legal/*": "./src/legal/*.js",
+    "./brand": "./src/brand/index.js",
+    "./brand/*": "./src/brand/*.js"
+  },
+  "dependencies": {
+    "xlsx": "npm:@e965/xlsx@^0.20.3"
+  },
+  "peerDependencies": {
+    "zod": "^3 || ^4"
+  },
+  "peerDependenciesMeta": {
+    "zod": { "optional": false }
+  }
+}

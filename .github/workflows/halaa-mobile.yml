@@ -1,0 +1,41 @@
+name: halaa-mobile
+
+on:
+  pull_request:
+    paths:
+      - "halaa-mobile/**"
+      - "shared/**"
+      - ".github/workflows/halaa-mobile.yml"
+  push:
+    branches: [master]
+    paths:
+      - "halaa-mobile/**"
+      - "shared/**"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: halaa-mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Install (workspaces from repo root)
+        working-directory: .
+        run: npm install --no-audit --no-fund
+      - name: Lint shared
+        working-directory: shared
+        run: npm run lint
+      - name: Lint halaa-mobile
+        run: npm run lint
+      - name: Expo config check
+        run: npx --yes expo config --type public > /dev/null
+      - name: Metro bundle (production, android)
+        run: npx --yes expo export --platform android --output-dir /tmp/halaa-mobile-export --no-bytecode
+        env:
+          EXPO_NO_TELEMETRY: "1"

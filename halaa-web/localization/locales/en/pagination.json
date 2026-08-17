@@ -1,0 +1,17 @@
+{
+  "showing": "Showing",
+  "of": "of",
+  "items": "items",
+  "perPage": "Per page",
+  "page": "Page",
+  "previous": "Previous",
+  "next": "Next",
+  "firstPage": "First page",
+  "lastPage": "Last page",
+  "previousPage": "Previous page",
+  "nextPage": "Next page",
+  "goToPage": "Go to page",
+  "noResults": "No results",
+  "loadingMore": "Loading...",
+  "showingResults": "Showing {{start}} - {{end}} of {{total}} results"
+}

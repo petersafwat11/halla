@@ -1,0 +1,206 @@
+/* Carousel wrapper — mirrors the host home-page EventTemplatesSection so the
+   step-3 picker matches it visually. min-width:0 lets the flex track shrink
+   inside the wizard's narrow form column instead of forcing overflow. */
+.carouselWrapper {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+}
+
+/* Horizontal scroll track */
+.templatesTrack {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  gap: 2.4rem;
+  /* Extra top padding so the card hover lift (translateY(-4px)) isn't shaved
+     by the parent section's overflow: clip. */
+  padding: 8px 0 12px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  align-items: stretch;
+}
+
+.templatesTrack::-webkit-scrollbar {
+  display: none;
+}
+
+/* Template card */
+.templateCard {
+  width: 154px;
+  height: 187px;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border-radius: 4.66px;
+  box-shadow: 0 0.779px 2.337px rgba(0, 0, 0, 0.1),
+    0 0.779px 1.558px -0.779px rgba(0, 0, 0, 0.1);
+}
+
+.templateCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.templateCard.selected {
+  box-shadow: 0 0 0 2px #2a8c5b;
+}
+
+.templateCardInner {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  align-items: flex-start;
+  border-radius: 4.66px;
+  background: #fffaea;
+  overflow: hidden;
+  position: relative;
+}
+
+.templateImage {
+  width: 129px;
+  height: 172px;
+  border-radius: 8px;
+  object-fit: cover;
+  margin: 8px auto;
+}
+
+/* Selected check */
+.checkmark {
+  position: absolute;
+  top: 0.6rem;
+  inset-inline-end: 0.6rem;
+  z-index: 10;
+  color: #2a8c5b;
+  font-size: 2rem;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Carousel controls (prev / dots / next) */
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.6rem;
+  margin-top: 0.4rem;
+  width: 100%;
+}
+
+.ctrlBtn {
+  width: 3.6rem;
+  height: 3.6rem;
+  border-radius: 50%;
+  background: #fff;
+  border: 1.5px solid #e8d7c2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #6b4e33;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.ctrlBtn:hover:not(:disabled) {
+  background: #c28e5c;
+  border-color: #c28e5c;
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(194, 142, 92, 0.3);
+}
+
+.ctrlBtn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.dots {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  max-width: 60%;
+}
+
+.dot {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: #e8d7c2;
+  transition: all 0.25s ease;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.dotActive {
+  width: 2rem;
+  border-radius: 0.35rem;
+  background: #c28e5c;
+}
+
+/* Tablet */
+@media (max-width: 768px) {
+  .templatesTrack {
+    gap: 1.2rem;
+    padding: 8px 0 8px;
+  }
+
+  .templateCard {
+    width: 120px;
+    height: 146px;
+  }
+
+  .templateImage {
+    width: 100px;
+    height: 133px;
+    margin: 6px auto;
+    border-radius: 6px;
+  }
+
+  .checkmark {
+    font-size: 1.6rem;
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .ctrlBtn {
+    width: 3.2rem;
+    height: 3.2rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 550px) {
+  .templateCard {
+    width: 104px;
+    height: 126px;
+  }
+
+  .templateImage {
+    width: 86px;
+    height: 115px;
+    margin: 5px auto;
+    border-radius: 6px;
+  }
+}

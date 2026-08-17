@@ -1,0 +1,32 @@
+# Dependencies
+/node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Environment variables — secrets MUST NOT be committed.
+# `config.env` and the DB cert were previously tracked; see SECURITY_NOTES.md
+# for the required `git rm --cached`, key-rotation, and history-purge steps.
+# Use config.env.example as the template.
+config.env
+*.env
+!config.env.example
+certs/
+*.pem
+
+# IDE
+.idea
+.vscode
+
+# OS
+.DS_Store
+Thumbs.db
+# Logs
+logs
+*.log
+/.taqnyat-owner-template-submission-state.json
+/.taqnyat-owner-two-button-submission-state.json
+/.taqnyat-owner-*-state.json
+
+# Claude
+.claude/

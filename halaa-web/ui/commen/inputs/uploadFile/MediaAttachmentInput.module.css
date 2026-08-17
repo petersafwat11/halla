@@ -1,0 +1,132 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2c2c2c;
+  margin: 0;
+}
+
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 18px 16px;
+  border: 1.5px dashed #d7c3ac;
+  border-radius: 12px;
+  background: #faf6f0;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.dropzone:hover:not(:disabled) {
+  border-color: #c28e5c;
+  background: #f6efe4;
+}
+
+.dropzone:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.addBadge {
+  font-size: 14px;
+  font-weight: 600;
+  color: #c28e5c;
+}
+
+.hint {
+  font-size: 12px;
+  color: #8a8a8a;
+}
+
+.preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ececec;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.thumbWrap {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #1e1e1e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.thumb {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+}
+
+.fileMeta {
+  flex: 1;
+  min-width: 0;
+}
+
+.fileName {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2c2c2c;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fileSize {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #8a8a8a;
+}
+
+.removeBtn {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: #f3f3f3;
+  color: #666;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.removeBtn:hover:not(:disabled) {
+  background: #f5d6d6;
+  color: #e74c3c;
+}
+
+.removeBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.error {
+  margin: 0;
+  font-size: 12px;
+  color: #e74c3c;
+}

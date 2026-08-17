@@ -1,0 +1,23 @@
+.confirm_btn,
+.confirm_btn_disabled {
+  display: flex;
+  min-height: 4.8rem;
+  padding: 1.6rem;
+  justify-content: center;
+  align-items: center;
+  gap: 1.2rem;
+  border-radius: 1.2rem;
+  background: #c28e5c;
+  cursor: pointer;
+  text-align: center;
+  font-size: 1.6rem;
+  font-weight: 600;
+  line-height: 2.4rem;
+  color: white;
+
+  letter-spacing: 0.08px;
+}
+.confirm_btn_disabled {
+  background: #f5ece4;
+  color: #cea57d;
+}

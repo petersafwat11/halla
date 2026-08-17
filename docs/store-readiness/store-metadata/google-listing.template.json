@@ -1,0 +1,40 @@
+{
+  "$schema": "./listing.schema.md",
+  "_meta": {
+    "platform": "google",
+    "templateVersion": "0.1.0-DRAFT",
+    "session": "6",
+    "date": "2026-07-02",
+    "approvalGate": "OWNER_AND_COUNSEL_REQUIRED",
+    "rule": "Only approved:true fields are derived from ALREADY-SIGNED facts. Persuasive/marketing fields are BLOCKED_NEEDS_OWNER. No keyword stuffing, no unverifiable 'best/#1' claims, no price promotions, no fake testimonials, no misleading store badges (Play policy).",
+    "packageName": "com.halla.app",
+    "primaryLocale": "ar",
+    "reusesSession5BlockedItems": ["legalEntityName", "supportEmail", "phone/WhatsApp", "postalAddress", "supportResponseSla"]
+  },
+  "shared": {
+    "packageName": { "approved": true, "value": "com.halla.app" },
+    "category": { "approved": false, "status": "BLOCKED_NEEDS_OWNER", "proposal": "LIFESTYLE", "note": "Owner to confirm (LIFESTYLE vs PRODUCTIVITY vs BUSINESS)." },
+    "tags": { "approved": false, "status": "BLOCKED_NEEDS_OWNER", "note": "Play store tags — owner-gated." },
+    "contactEmail": { "approved": false, "status": "BLOCKED_NEEDS_OWNER", "note": "Session-5 blocked support email (support@halaa.net vs support@halaa.com.sa). Provisional halaa.com.sa; owner must confirm." },
+    "contactPhone": { "approved": false, "status": "BLOCKED_NEEDS_OWNER", "note": "Session-5 blocked phone (+966552619282 provisional)." },
+    "contactWebsite": { "approved": true, "value": "https://halaa.com.sa" },
+    "privacyPolicyUrl": { "approved": true, "value": "https://halaa.com.sa/ar/privacy", "note": "Locale variants: /ar/privacy, /en/privacy." },
+    "dataDeletionUrl": { "approved": true, "value": "https://halaa.com.sa/ar/delete-account", "note": "Public deletion-policy resource + in-app deletion (Session 4)." },
+    "availability": { "approved": true, "value": ["SA"], "note": "Saudi Arabia only (signed D2)." },
+    "appAccessInstructions": { "approved": false, "status": "BLOCKED_NEEDS_OWNER", "note": "Reviewer login. Use scripts/seedReviewerAccounts.js (REV-01): personal-host, business-host (business_quarterly), vendor. Credentials are env-only — provide the actual reviewer credentials at submission time (never commit them)." }
+  },
+  "localizations": {
+    "ar": {
+      "name": { "approved": true, "value": "هلا", "limit": 30, "unit": "char" },
+      "shortDescription": { "approved": false, "status": "BLOCKED_NEEDS_OWNER", "limit": 80, "unit": "char", "proposal": "أنشئ مناسباتك، أرسل دعوات رقمية عبر واتساب، وتتبّع الحضور." },
+      "fullDescription": { "approved": false, "status": "BLOCKED_NEEDS_OWNER", "limit": 4000, "unit": "char", "factsAvailable": "Truthful feature set: event creation/management, digital invitation design, WhatsApp invitation sending (no affiliation implied), real-time attendance/check-in, guest/RSVP management, vendor marketplace discovery, business features, report/block controls. 34-plan/22-add-on catalog; subscriptions + one-time packages + add-ons; prices/VAT shown by Google Play." },
+      "releaseNotes": { "approved": false, "status": "BLOCKED_NEEDS_OWNER", "limit": 500, "unit": "char" }
+    },
+    "en-US": {
+      "name": { "approved": true, "value": "Halaa", "limit": 30, "unit": "char" },
+      "shortDescription": { "approved": false, "status": "BLOCKED_NEEDS_OWNER", "limit": 80, "unit": "char", "proposal": "Create events, send digital WhatsApp invitations, track attendance live." },
+      "fullDescription": { "approved": false, "status": "BLOCKED_NEEDS_OWNER", "limit": 4000, "unit": "char", "factsAvailable": "Same truthful feature set as ar." },
+      "releaseNotes": { "approved": false, "status": "BLOCKED_NEEDS_OWNER", "limit": 500, "unit": "char" }
+    }
+  }
+}

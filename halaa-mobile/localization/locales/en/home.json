@@ -1,0 +1,71 @@
+{
+  "welcome": "Welcome",
+  "guest": "Guest",
+  "createEvent": {
+    "businessActivationRequired": "Activate your subscription to create an event"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "stats": {
+      "totalEvents": "Total Events",
+      "upcomingEvents": "Upcoming Events",
+      "completedEvents": "Completed Events",
+      "all": "All",
+      "activeEvents": "Active",
+      "endedEvents": "Ended",
+      "draftEvents": "Drafts"
+    },
+    "submitTemplate": {
+      "successTitle": "Done",
+      "successMessage": "Template submitted for approval",
+      "errorTitle": "Error",
+      "errorMessage": "Failed to submit template"
+    }
+  },
+  "quickActions": {
+    "title": "Quick Actions",
+    "createEvent": "Create Event",
+    "viewEvents": "View All Events",
+    "manageGuests": "Manage Guests"
+  },
+  "notifyStaff": {
+    "successTitle": "Done",
+    "successMessage": "Notification sent to the team",
+    "errorTitle": "Error",
+    "errorMessage": "Failed to send notification"
+  },
+  "lastEvent": {
+    "untitled": "Untitled event",
+    "guests": "guests",
+    "noResponse": "No response",
+    "declined": "Declined",
+    "approved": "Approved",
+    "quota": {
+      "remainingInvites": "Remaining invites",
+      "unlimited": "Unlimited"
+    },
+    "buttons": {
+      "testMessage": "Test message",
+      "scheduleEvent": "Schedule sending",
+      "notifyStaff": "Notify staff",
+      "notifying": "Sending...",
+      "viewStats": "View stats",
+      "sharePostEvent": "Share post-event",
+      "editEvent": "Edit event"
+    },
+    "status": {
+      "draft": "Draft",
+      "scheduled": "Scheduled",
+      "live": "Live",
+      "completed": "Ended",
+      "suspended": "Suspended",
+      "default": "Saved"
+    },
+    "dropdown": {
+      "eventDetails": "Event details",
+      "guestList": "Guest list",
+      "invitationDesign": "Invitation design",
+      "invitationCustomization": "Invitation customization"
+    }
+  }
+}

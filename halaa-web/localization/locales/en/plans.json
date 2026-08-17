@@ -1,0 +1,221 @@
+{
+  "checkout": {
+    "method": {
+      "card": "Card",
+      "applepay": "Apple Pay",
+      "stcpay": "STC Pay"
+    },
+    "card": {
+      "name": "Cardholder name",
+      "number": "Card number",
+      "expiry": "Expiry date",
+      "cvc": "CVC"
+    },
+    "applepay": {
+      "note": "You'll be prompted by Apple Pay on the next step."
+    },
+    "errors": {
+      "nameRequired": "Cardholder name is required",
+      "nameTooShort": "Please enter full cardholder name",
+      "numberRequired": "Card number is required",
+      "numberLength": "Card number must be 15 or 16 digits",
+      "numberInvalid": "Invalid card number",
+      "expiryRequired": "Expiry date is required",
+      "expiryMonthInvalid": "Invalid month (01-12)",
+      "expiryExpired": "Card has expired",
+      "cvcRequired": "CVC is required",
+      "cvcLength": "CVC must be 3 or 4 digits",
+      "mobileRequired": "Mobile number is required",
+      "mobileFormat": "Must be a valid Saudi number (e.g. 05xxxxxxxx)"
+    }
+  },
+  "business": {
+    "subtitle": "Browse and upgrade your business subscription plan",
+    "getStarted": {
+      "subtitle": "Choose a business plan below to activate your account. You can upgrade, downgrade, or cancel anytime."
+    },
+    "currentBadge": "Current plan",
+    "noPlans": "No business plans are available in this billing period.",
+    "updatedSuccessfully": "Business settings updated successfully",
+    "updateFailed": "Failed to update business settings",
+    "logo": "Business Logo",
+    "noLogo": "No logo",
+    "changeLogo": "Change logo",
+    "description": "Business Description",
+    "descriptionPlaceholder": "Describe your business for guests and invitations…",
+    "billing": {
+      "event": "Per Event",
+      "quarterly": "Quarterly",
+      "annual": "Annual"
+    },
+    "noSub": {
+      "title": "No active subscription",
+      "message": "Your business account doesn't have an active plan yet. An administrator must activate one before you can create events or upgrade. Please contact your account manager.",
+      "cta": "Contact admin",
+      "purchaseBlocked": "Your account has no active subscription. An admin must activate your first plan."
+    },
+    "checkout": {
+      "title": "Complete your subscription",
+      "subtitle": "Review your plan and pay securely to activate it",
+      "planLabel": "Plan",
+      "setupFee": "One-time setup fee",
+      "total": "Total",
+      "pay": "Pay now",
+      "processing": "Processing…",
+      "success": "Payment received — activating your subscription.",
+      "failed": "Payment failed. Please try again.",
+      "linkUnavailableTitle": "This checkout link is no longer available",
+      "linkUnavailable": "This link may have expired, already been used, or is invalid. Please contact your account manager for a new link.",
+      "return": {
+        "confirming": "Confirming your payment…",
+        "pendingTitle": "Awaiting payment confirmation",
+        "pendingText": "We're still confirming your payment with the bank. This can take a moment.",
+        "recheck": "Check again",
+        "doneTitle": "Payment received",
+        "doneText": "Your subscription is being activated. You'll receive a confirmation email shortly. You can now sign in to your business account.",
+        "goToLogin": "Go to login",
+        "reference": "Reference"
+      }
+    }
+  },
+  "currentPlan": { "title": "Current Plan", "events": "Events", "invites": "Invites", "daysRemaining": "Days Remaining" },
+  "noActiveSubscription": { "title": "No active subscription", "subtitle": "Choose a plan below to activate your subscription" },
+  "pageTitle": "Choose Your Plan",
+  "pageSubtitle": "Select the right plan for your event",
+  "loading": "Loading...",
+  "planFamilies": { "basic": "Halaa Basic", "premium": "Halaa Premium", "business": "Halaa Business" },
+  "planFamilyDescriptions": {
+    "basic": "You manage everything yourself — we handle the tech",
+    "premium": "Our team manages everything for you"
+  },
+  "billingTypes": { "event": "Per Event", "monthly": "Monthly" },
+  "billingTypeLabels": { "event": "/ event", "monthly": "/ month" },
+  "billingTypeDescriptions": {
+    "event": "1 event — valid 90 days",
+    "monthly": "Invite Pool — unlimited events"
+  },
+  "currency": "SAR",
+  "common": {
+    "currency": { "sar": "SAR" }
+  },
+  "inviteSelector": { "label": "Select number of invites", "poolLabel": "Invite pool", "invites": "invites" },
+  "planLimits": { "invitesPerEvent": "invites/event", "invitePool": "invite pool" },
+  "taglines": {
+    "basic": "Full control of your event — manage everything yourself with the easiest steps!",
+    "premium": "Your event is on us — we manage everything on your behalf, from the first invitation to the last guest.",
+    "business": "Professional management of invitations and corporate events with the organization's official brand identity through the Halaa team — the ideal choice for companies, organizers of large recurring events, and organizations."
+  },
+  "duration": {
+    "event": "Valid for {{days}} days",
+    "monthly": "Monthly subscription — unlimited events",
+    "quarterly": "3-month subscription",
+    "annual": "Annual subscription"
+  },
+  "includes": { "basic": "All Basic features +" },
+  "compensationRow": "{{count}} compensation invites ({{percent}}% of {{base}})",
+  "setupFeeRow": "One-time setup fee: {{amount}} SAR",
+  "freeInvitesRow": "Includes {{count}} free invitations during the subscription period",
+  "whatsappTemplates": "{{count}} custom WhatsApp templates",
+  "compensation": { "title": "Free Compensation Invites", "invites": "invites" },
+  "buttons": { "subscribeNow": "Subscribe Now", "retry": "Retry", "continueToSummary": "Continue to Summary" },
+  "addons": {
+    "title": "Add-Ons", "subtitle": "Enhance your plan with optional extras",
+    "extraInvites": {
+      "title": "Extra Invites",
+      "description": "Add more invites to your plan",
+      "stackHint": "Select multiple packages to stack them — they add up. Extra invite packages don't earn compensation.",
+      "stackHintSelected": "Stacked: +{{count}} extra invites. Extra invite packages don't earn compensation."
+    },
+    "designTemplate": { "title": "Design Template", "description": "Professional invitation design by our team" },
+    "addButton": "Add", "removeButton": "Remove", "addedBadge": "Added",
+    "selectedCount_one": "1 selected", "selectedCount_other": "{{count}} selected", "clearAll": "Clear all",
+    "loading": "Loading add-ons...",
+    "loadFailed": "Could not load add-ons.",
+    "purchase": {
+      "total": "Total",
+      "cta": "Purchase selected add-ons",
+      "processing": "Processing...",
+      "noneSelected": "Select an add-on first",
+      "success": "{{count}} add-on(s) purchased",
+      "error": "Failed to purchase add-on"
+    },
+    "designTypes": {
+      "ready_made": "Ready-made design (male/female)",
+      "custom_male": "Custom male design",
+      "custom_themed": "Themed custom design",
+      "animated": "Animated background design",
+      "3d": "3D invitation design"
+    }
+  },
+  "infoNote": "Our team will contact you after subscription to complete payment and get started.",
+  "managedService": {
+    "contactWhatsApp": "Contact us on WhatsApp",
+    "whatsappMessage": "Hello, I want to inquire about event management service"
+  },
+  "errors": {
+    "loadFailed": "Failed to load plans. Please try again.",
+    "selectPlan": "Please select a plan to continue.",
+    "summaryBoundary": "We could not display the order summary. Please try again."
+  },
+  "toasts": {
+    "subscriptionCreated": "Subscription activated successfully!",
+    "subscriptionPartial": "Subscription activated; {{count}} add-on(s) need follow-up — our team will reach out.",
+    "alreadyActive": "You have an active subscription.",
+    "subscriptionFailed": "Failed to activate subscription. Please try again."
+  },
+  "summary": {
+    "title": "Order Summary",
+    "subtitle": "Review your order before payment",
+    "back": "Back",
+    "planDetails": "Plan Details",
+    "planFamilyBadges": { "basic": "Basic", "premium": "Premium" },
+    "singleEvent": "Single Event",
+    "invitePoolLabel": "{{count}} invites (pool)",
+    "invitesLabel": "{{count}} invites",
+    "unlimitedEvents": "Unlimited events",
+    "singleEvent90Days": "1 event — 90 days",
+    "compensationInvitesLabel": "{{count}} compensation invites",
+    "totalInvitesLabel": "Total invites",
+    "totalInvitesBreakdown": "{{base}} plan invites + {{compensation}} bonus (15% compensation).",
+    "totalInvitesBreakdownWithExtras": "{{base}} plan + {{extras}} extra packages + {{compensation}} bonus (15% on base only).",
+    "compensationHint": "+15% bonus invites on your base plan invites — free. Extra invite packages don't earn compensation.",
+    "totalPoolHint": "Base invites + extra packages + compensation = the total invites you can send.",
+    "poolModelHint": "Pool plan: many events share this invite pool.",
+    "perEventModelHint": "Per-event plan: 1 event with these total invites.",
+    "billingPeriodLabel": "Billing Period:",
+    "periods": {
+      "monthly": "30 days",
+      "event": "90 days (1 event)"
+    },
+    "discount": {
+      "title": "Discount Code",
+      "placeholder": "Enter discount code",
+      "apply": "Apply",
+      "remove": "Remove",
+      "success": "✓ Code \"{{code}}\" — {{amount}} SAR off",
+      "invalidDefault": "Invalid discount code",
+      "networkError": "Could not verify code. Please try again"
+    },
+    "payment": {
+      "title": "Payment Summary",
+      "planPrice": "Plan Price",
+      "discount": "Discount",
+      "total": "Total",
+      "method": "Payment Method"
+    },
+    "proceed": {
+      "cta": "Activate Subscription",
+      "processing": "Activating..."
+    },
+    "terms": "By clicking Complete Payment, you agree to our Terms of Service and Privacy Policy",
+    "addonItems": {
+      "extra_invites": "Extra Invites +{{quantity}}",
+      "design_template": "Design Template"
+    },
+    "invitePool": "Invite Pool",
+    "validDays": "Valid for",
+    "days": "days",
+    "compensationInvites": "compensation invites",
+    "oneEvent": "1 event"
+  }
+}

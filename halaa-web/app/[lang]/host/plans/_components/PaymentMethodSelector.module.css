@@ -1,0 +1,261 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+  width: 100%;
+}
+
+/* ---------- Tabs ---------- */
+.tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.2rem;
+  margin-bottom: 1.6rem;
+}
+
+.tab {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.2rem 0.8rem;
+  border: 2px solid var(--color-natural-250);
+  border-radius: var(--radius-12);
+  background: var(--color-natural-50);
+  cursor: pointer;
+  min-height: 5.6rem;
+  transition: border-color 200ms ease, background 200ms ease, box-shadow 200ms ease, transform 150ms ease;
+}
+
+.tab:hover {
+  border-color: var(--color-primary-300);
+  background: var(--color-primary-50);
+  transform: translateY(-2px);
+}
+
+.tabActive {
+  border-color: var(--color-primary-500);
+  background: var(--color-primary-100);
+  box-shadow: 0 4px 12px rgba(194, 142, 92, 0.12);
+}
+
+.tabContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+}
+
+.tabLabel {
+  font-family: var(--font-ar);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-secondary-900);
+}
+
+.tabLogoWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.6rem;
+  opacity: 0.85;
+}
+
+.tabActive .tabLogoWrap {
+  opacity: 1;
+}
+
+/* ---------- Card brand logos ---------- */
+.brandChips {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+/* Fixed-size white chip; logos are centered and scaled to fit so the three
+   different native aspect ratios (Visa/mada are wide, Mastercard near-square)
+   look uniform side by side. */
+.brandChip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 4.8rem;
+  height: 3.2rem;
+  padding: 0.4rem 0.6rem;
+  background: #fff;
+  border: 1px solid var(--color-natural-250);
+  border-radius: var(--radius-8);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.08);
+}
+
+/* Small brand badge shown inside the card-number field. */
+.fieldBrandBox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.6rem;
+  height: 2.2rem;
+}
+
+/* Shared image rule: never distort, always fit the parent box. */
+.brandImg {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* ---------- Fields ---------- */
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.label {
+  font-family: var(--font-ar);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-natural-700);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+}
+
+.fieldExpiry {
+  grid-column: 1;
+}
+
+.fieldCvc {
+  grid-column: 2;
+}
+
+.input {
+  width: 100%;
+  height: 4.6rem;
+  padding: 0 1.2rem;
+  border: 1px solid var(--form-border);
+  border-radius: var(--radius-12);
+  background: var(--form-bg);
+  font-family: var(--font-ar);
+  font-size: 1.4rem;
+  color: var(--form-fg-filled);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.input::placeholder {
+  color: var(--form-fg);
+}
+
+.input:hover {
+  border-color: var(--color-primary-300);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--form-border-focused);
+  box-shadow: 0 0 0 3px rgba(194, 142, 92, 0.12);
+}
+
+.inputError {
+  border-color: var(--color-error-500) !important;
+  background-color: var(--color-error-50) !important;
+}
+
+.errorText {
+  font-family: var(--font-ar);
+  font-size: 1.15rem;
+  color: var(--color-error-600);
+  margin-top: 0.3rem;
+  font-weight: 500;
+}
+
+/* Card number with leading icon */
+.inputWithIcon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.brandIconWrapper {
+  position: absolute;
+  left: 1.2rem;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+  z-index: 2;
+  height: 2.2rem;
+}
+
+[dir="rtl"] .brandIconWrapper {
+  left: auto;
+  right: 1.2rem;
+}
+
+.inputWithIconField {
+  padding-left: 5.2rem;
+}
+
+[dir="rtl"] .inputWithIconField {
+  padding-left: 1.2rem;
+  padding-right: 5.2rem;
+}
+
+/* Inline note */
+.note {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.2rem 0 0;
+  padding: 0.7rem 1rem;
+  background: var(--color-natural-150);
+  border: 1px solid var(--color-natural-200);
+  border-radius: var(--radius-8);
+  font-family: var(--font-ar);
+  font-size: 1.15rem;
+  color: var(--color-natural-450);
+  line-height: 1.5;
+}
+
+.noteIcon {
+  font-size: 1.2rem;
+  color: var(--color-primary-500);
+  flex-shrink: 0;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 480px) {
+  .tabs {
+    gap: 0.6rem;
+  }
+
+  .row { gap: 0.8rem; }
+
+  .input {
+    height: 4.2rem;
+    font-size: 1.25rem;
+  }
+
+  .inputWithIconField {
+    padding-left: 4.8rem;
+  }
+
+  [dir="rtl"] .inputWithIconField {
+    padding-left: 1.2rem;
+    padding-right: 4.8rem;
+  }
+}

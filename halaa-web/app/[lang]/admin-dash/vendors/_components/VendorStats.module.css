@@ -1,0 +1,19 @@
+.iconTotal {
+  color: #c28e5c;
+  font-size: 2.4rem;
+}
+
+.iconApproved {
+  color: #2a8c5b;
+  font-size: 2.4rem;
+}
+
+.iconPending {
+  color: #d38200;
+  font-size: 2.4rem;
+}
+
+.iconRejected {
+  color: #c0392b;
+  font-size: 2.4rem;
+}

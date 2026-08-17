@@ -1,0 +1,132 @@
+{
+  "header": {
+    "title": "Payments",
+    "subtitle": "Monitor and manage platform events",
+    "dateRange": "Date Range"
+  },
+  "stats": {
+    "currentMonthRevenue": "Current Month Revenue",
+    "lastMonthRevenue": "Last Month Revenue",
+    "totalTransactions": "Total Transactions"
+  },
+  "table": {
+    "title": "Transactions List",
+    "searchPlaceholder": "Search transactions...",
+    "filter": "Filter",
+    "export": "Export",
+    "exporting": "Exporting…",
+    "refundedTag": "refunded",
+    "columns": {
+      "id": "Transaction ID",
+      "name": "Name",
+      "amount": "Amount",
+      "currency": "Currency",
+      "planType": "Description",
+      "paymentMethod": "Payment Method",
+      "method": "Method",
+      "transactionId": "Transaction ID",
+      "status": "Status",
+      "createdAt": "Created Date",
+      "actions": "Actions"
+    },
+    "status": {
+      "all": "All",
+      "successful": "Successful",
+      "completed": "Completed",
+      "pending": "Pending",
+      "pending_3ds": "Awaiting 3-D Secure",
+      "authorized": "Authorized",
+      "captured": "Captured",
+      "failed": "Failed",
+      "refunded": "Refunded",
+      "partially_refunded": "Partially refunded",
+      "voided": "Voided",
+      "cancelled": "Cancelled"
+    },
+    "method": {
+      "creditcard": "Card",
+      "applepay": "Apple Pay",
+      "samsungpay": "Samsung Pay",
+      "stcpay": "STC Pay",
+      "token": "Saved card"
+    }
+  },
+  "actions": {
+    "refund": "Refund",
+    "capture": "Capture",
+    "void": "Void",
+    "viewDetails": "View details",
+    "refundTitle": "Refund Payment",
+    "captureTitle": "Capture Payment",
+    "voidTitle": "Void Payment",
+    "confirmRefund": "Confirm Refund",
+    "confirmCapture": "Confirm Capture",
+    "confirmVoid": "Confirm Void",
+    "refunding": "Refunding...",
+    "capturing": "Capturing...",
+    "voiding": "Voiding...",
+    "refundAmount": "Refund amount",
+    "captureAmount": "Capture amount",
+    "amountPlaceholder": "Leave blank for full amount",
+    "refundAmountHint": "Leave empty to refund the full remaining amount",
+    "captureAmountHint": "Leave empty to capture the full authorized amount",
+    "deductInvites": "Invites to deduct from the host's pool",
+    "deductInvitesPlaceholder": "Leave blank to deduct none",
+    "deductInvitesHint": "Optional. Claws back this many invites from the host's pool alongside the partial refund.",
+    "reason": "Reason (optional)",
+    "reasonPlaceholder": "Enter a reason for the refund...",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close"
+  },
+  "dateRange": {
+    "all": "All",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "thisWeek": "This week",
+    "lastWeek": "Last week",
+    "thisMonth": "This month",
+    "lastMonth": "Last month",
+    "from": "From",
+    "to": "To",
+    "confirm": "Confirm",
+    "cancel": "Cancel"
+  },
+  "pagination": {
+    "prev": "Previous",
+    "next": "Next"
+  },
+  "errors": {
+    "loadFailed": "Failed to load payments"
+  },
+  "empty": {
+    "title": "No payments found"
+  },
+  "export": {
+    "success": "Payments exported"
+  },
+  "refund": {
+    "success": "Refund issued"
+  },
+  "capture": {
+    "success": "Payment captured"
+  },
+  "void": {
+    "success": "Payment voided"
+  },
+  "detail": {
+    "title": "Payment details",
+    "id": "Payment ID",
+    "status": "Status",
+    "amount": "Amount",
+    "alreadyRefunded": "Already refunded",
+    "remaining": "Remaining",
+    "method": "Payment method",
+    "moyasarId": "Moyasar ID",
+    "createdAt": "Created at",
+    "capturedAt": "Captured at",
+    "voidedAt": "Voided at",
+    "refundedAt": "Refunded at",
+    "refunds": "Refunds"
+  }
+}

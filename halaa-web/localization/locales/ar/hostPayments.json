@@ -1,0 +1,79 @@
+{
+  "title": "المدفوعات",
+  "loading": "جارٍ التحميل…",
+  "errors": {
+    "loadFailed": "فشل تحميل المدفوعات"
+  },
+  "export": {
+    "success": "تم تصدير المدفوعات"
+  },
+  "table": {
+    "title": "قائمة المدفوعات",
+    "columns": {
+      "service": "نوع الخدمة",
+      "amount": "المبلغ",
+      "date": "تاريخ العملية",
+      "status": "حاله العملية",
+      "method": "طريقة الدفع",
+      "transactionId": "رقم العملية"
+    },
+    "status": {
+      "success": "ناجحة",
+      "completed": "مكتملة",
+      "pending": "معلقة",
+      "pending_3ds": "في انتظار التحقق الآمن",
+      "authorized": "مفوضة",
+      "captured": "مقبوضة",
+      "cancelled": "ملغية",
+      "failed": "فشلت",
+      "refunded": "مستردة",
+      "partially_refunded": "مستردة جزئيًا",
+      "voided": "ملغاة"
+    },
+    "method": {
+      "creditcard": "بطاقة",
+      "applepay": "آبل باي",
+      "samsungpay": "سامسونج باي",
+      "stcpay": "إس تي سي باي",
+      "token": "بطاقة محفوظة"
+    },
+    "actions": {
+      "delete": "حذف",
+      "deleteAll": "حذف الكل",
+      "actions": "الإجراءات"
+    },
+    "filter": {
+      "title": "التصفية",
+      "all": "الكل",
+      "success": "ناجحة",
+      "pending": "معلقة",
+      "cancelled": "ملغية"
+    },
+    "export": "تصدير البيانات",
+    "search": "بحث في المدفوعات...",
+    "labels": {
+      "actions": "الإجراءات",
+      "filter": "التصفية",
+      "export": "تصدير البيانات",
+      "moreOptions": "خيارات إضافية"
+    }
+  },
+  "return": {
+    "title": "حالة الدفع",
+    "confirming": "جاري التأكيد من البنك…",
+    "missingId": "مرجع الدفعة مفقود",
+    "timeout": "ما زلنا نؤكد دفعتك. سنرسل لك بريدًا إلكترونيًا عند الاكتمال.",
+    "error": "فشل تأكيد الدفعة",
+    "backHome": "العودة إلى لوحة التحكم",
+    "status": {
+      "pending": "معلقة",
+      "pending_3ds": "في انتظار التحقق الآمن",
+      "authorized": "مفوضة",
+      "paid": "مدفوعة",
+      "captured": "مقبوضة",
+      "failed": "فشلت",
+      "refunded": "مستردة",
+      "voided": "ملغاة"
+    }
+  }
+}

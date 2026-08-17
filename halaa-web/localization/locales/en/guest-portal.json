@@ -1,0 +1,49 @@
+{
+  "guestPortal": {
+    "errors": {
+      "title": "Unable to load invitation",
+      "notFound": "Invitation not found. Please check your link.",
+      "forbidden": "This invitation link is no longer valid.",
+      "notAcceptingRsvps": "This event is no longer accepting RSVPs.",
+      "network": "Network error. Please check your connection and try again.",
+      "unknown": "Something went wrong. Please try again."
+    },
+    "confirmed": {
+      "title": "You're confirmed!",
+      "welcome": "Welcome, {{name}} — we're delighted you'll be joining us."
+    },
+    "pass": {
+      "label": "Entry Pass · بطاقة الدخول",
+      "title": "Your entry pass · بطاقة دخولك",
+      "welcome": "Welcome, {{name}} — here is your entry pass.",
+      "showCode": "Please show this code to enter · يُرجى إبراز الكود للدخول",
+      "guests": "Guests · ضيوف",
+      "keepHandy": "Keep this code handy and show it at the door · يُرجى الاحتفاظ بهذا الرمز لإبرازه عند الدخول"
+    },
+    "info": {
+      "title": "You're invited!",
+      "body": "Welcome, {{name}} — we'd be delighted to have you with us."
+    },
+    "declined": {
+      "title": "Thank you for letting us know",
+      "body": "We'll truly miss you, {{name}}. Thank you for taking the time to reply — you're welcome anytime."
+    },
+    "hostedBy": "Hosted by {{host}}",
+    "fields": {
+      "date": "Date",
+      "venue": "Venue",
+      "message": "Message (optional)",
+      "messagePlaceholder": "Add a note for the host",
+      "dietary": "Dietary restrictions (optional)",
+      "plusOnes": "Plus ones (optional)"
+    },
+    "invite": {
+      "greeting": "Hi {{name}}, will you be joining us?"
+    },
+    "actions": {
+      "confirm": "Confirm",
+      "decline": "Decline",
+      "change": "Change my response"
+    }
+  }
+}

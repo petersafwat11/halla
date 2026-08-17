@@ -1,0 +1,108 @@
+.popupLayout {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  overflow-y: auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+/* Full size popup - large editors (e.g. templateForm). Capped to a
+   balanced, contained size on big screens so the preview + form stay in
+   proportion (was 1440×900, which left the form far too wide). */
+.popupLayoutContent {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(94vw, 1000px);
+  height: min(90vh, 840px);
+  transform: translate(-50%, -50%);
+  min-width: 300px;
+  min-height: 300px;
+  background-color: #fff;
+  padding: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Medium popup - fixed 580px width for standard forms (default) */
+.popupLayoutContentMedium {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 580px;
+  max-width: 90%;
+  max-height: 90vh;
+  background-color: #fff;
+  padding: 0;
+  border-radius: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Auto-sizing popup - adapts to child content */
+.popupLayoutContentAuto {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 300px;
+  max-width: 90%;
+  max-height: 90vh;
+  background-color: #fff;
+  padding: 0;
+  border-radius: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .popupLayoutContent {
+    width: 90%;
+    height: 90%;
+    border-radius: 12px;
+  }
+
+  .popupLayoutContentMedium {
+    width: 95%;
+    max-width: 95%;
+    border-radius: 12px;
+  }
+
+  .popupLayoutContentAuto {
+    min-width: 280px;
+    max-width: 95%;
+    max-height: 95vh;
+    border-radius: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* .popupLayout {
+    align-items: flex-start;
+    padding: 0;
+  }
+ */
+  /* .popupLayoutContent {
+    position: relative;
+    left: auto;
+    top: auto;
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    min-height: 100vh;
+    max-height: none;
+    border-radius: 0;
+    margin: 0;
+  } */
+}

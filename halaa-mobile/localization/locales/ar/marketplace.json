@@ -1,0 +1,91 @@
+{
+  "title": "سوق هلا",
+  "search": {
+    "placeholder": "ابحث عن أي شيء...",
+    "filter": "تصفية"
+  },
+  "sections": {
+    "title": "الأقسام",
+    "all": "الكل",
+    "eventPlanning": "تخطيط الفعاليات",
+    "mediaProduction": "الإنتاج الإعلامي",
+    "giftsAndGiveaways": "الهدايا والتوزيعات",
+    "foodAndBeverages": "الأطعمة والمشروبات",
+    "beautyAndFashion": "الجمال والأزياء",
+    "logisticsAndDelivery": "اللوجستيات والتوصيل",
+    "corporateServices": "خدمات الشركات",
+    "supportServices": "خدمات الدعم",
+    "technicalServices": "الخدمات التقنية",
+    "soundLightingEntertainment": "الصوت والإضاءة والترفيه",
+    "hallsAndVenues": "القاعات والأماكن"
+  },
+  "filters": {
+    "title": "التصفية",
+    "section": "القسم",
+    "allSections": "جميع الأقسام",
+    "region": "المنطقة",
+    "allRegions": "جميع المناطق",
+    "city": "المدينة",
+    "allCities": "جميع المدن",
+    "districts": "الأحياء",
+    "priceRange": "نطاق السعر",
+    "minPrice": "من",
+    "maxPrice": "إلى",
+    "rating": "التقييم",
+    "allRatings": "الكل",
+    "4stars": "4+ نجوم",
+    "3stars": "3+ نجوم",
+    "2stars": "2+ نجوم",
+    "reset": "إعادة تعيين",
+    "apply": "تطبيق التصفية"
+  },
+  "vendor": {
+    "defaultName": "خدمة",
+    "defaultLocation": "المملكة العربية السعودية",
+    "callNow": "اتصل الآن",
+    "viewProfile": "عرض التفاصيل",
+    "viewProfileFor": "عرض ملف {{name}}",
+    "moreInfo": "المزيد من المعلومات",
+    "users": "مستخدم",
+    "sar": "ريال",
+    "serviceDuration": "المدة",
+    "price": "السعر",
+    "priceOnRequest": "السعر عند الطلب",
+    "startsFrom": "يبدأ من",
+    "whatsIncluded": "ما هو مدرج",
+    "contactInfo": "معلومات الاتصال",
+    "providedBy": "مقدم الخدمة",
+    "whatsapp": "واتساب",
+    "aboutVendor": "عن المزود",
+    "portfolio": "معرض الأعمال",
+    "ourServices": "خدماتنا",
+    "backToMarketplace": "العودة إلى السوق",
+    "share": "مشاركة",
+    "meetVendor": "تعرّف على {{name}}",
+    "servicesHeadline": "خدمات لمناسبتك",
+    "portfolioHeadline": "نماذج مختارة من الأعمال",
+    "contactHeadline": "تواصل مع المزود",
+    "contactDescription": "تواصل مباشرة مع المزود للاستفسار عن التوفر والأسعار وتفاصيل مناسبتك.",
+    "website": "الموقع الإلكتروني",
+    "noServices": "لم ينشر هذا المزود خدمات بعد.",
+    "askAboutService": "استفسر عن الخدمة",
+    "requestService": "طلب الخدمة",
+    "requestQuote": "طلب عرض سعر",
+    "email": "البريد الإلكتروني"
+  },
+  "results": {
+    "title": "{{count}} مزود",
+    "subtitle": "مزودون معتمدون لمناسبتك"
+  },
+  "noResults": {
+    "title": "لا توجد نتائج",
+    "description": "حاول تعديل التصفيات أو مصطلحات البحث"
+  },
+  "loading": "جاري التحميل...",
+  "errors": {
+    "loadFailed": "فشل تحميل المزودين",
+    "profileLoadFailed": "ملف هذا المزود غير متاح",
+    "retry": "حاول مرة أخرى",
+    "categoriesLoadFailed": "تعذر تحميل الفئات"
+  }
+}

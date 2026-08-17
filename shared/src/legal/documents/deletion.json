@@ -1,0 +1,130 @@
+{
+  "ar": {
+    "documentType": "deletion",
+    "version": "2026-07-02",
+    "locale": "ar",
+    "authoritativeLanguage": "ar",
+    "effectiveDate": null,
+    "lastUpdated": "02 يوليو 2026",
+    "ownerApproval": "BLOCKED_NEEDS_OWNER",
+    "badge": "حذف الحساب والبيانات",
+    "title": "سياسة حذف الحساب والبيانات",
+    "subtitle": "منصة هلا",
+    "changeSummary": "توصيف السلوك الفعلي المطبّق لحذف الحساب (بنية أولية بانتظار اعتماد المدد القانونية).",
+    "sections": [
+      {
+        "id": "article-1",
+        "num": "1",
+        "label": "البند الأول",
+        "title": "كيفية طلب الحذف",
+        "body": "يمكنك طلب حذف حسابك من داخل التطبيق عبر إعدادات الحساب، أو عبر صفحة حذف الحساب العلنية على الويب دون الحاجة لتثبيت التطبيق. يتطلب الحذف تسجيل الدخول وإعادة التحقق من هويتك لتأكيد أن الحساب يخصك. كما يمكنك مراسلتنا من البريد الإلكتروني المسجل في حسابك لطلب الحذف. [BLOCKED_NEEDS_OWNER: تأكيد بريد الدعم وقناة التواصل الرسمية]."
+      },
+      {
+        "id": "article-2",
+        "num": "2",
+        "label": "البند الثاني",
+        "title": "ما الذي يُحذف",
+        "body": "عند اكتمال الطلب تُحذف أو تُجهَّل بياناتك الشخصية، وتشمل: ملفك الشخصي واسمك وبريدك ورقم هاتفك وصورتك ورموز الإشعارات، وبيانات مقدّم الخدمة إن وُجدت، ومناسباتك وبيانات ضيوفك وقوائم المنظّمين، والمحتوى اللاحق للمناسبة من صور وتعليقات، وتذاكر الدعم والإشعارات وتفضيلاتها، وسجلات قبول الشروط وبلاغات الحظر والإبلاغ المرتبطة بك. كما تُحذف الصور والملفات المخزّنة في التخزين السحابي المرتبطة بحسابك."
+      },
+      {
+        "id": "article-3",
+        "num": "3",
+        "label": "البند الثالث",
+        "title": "ما الذي يُحتفظ به ولماذا",
+        "body": "لأسباب نظامية وضريبية ومكافحة الاحتيال، نحتفظ بسجلات مالية وتدقيقية مُجهّلة الهوية غير مرتبطة بمعرّفات شخصية قابلة للاستعادة، وتشمل: سجلات المدفوعات والاشتراكات وسجلات التدقيق وارتباطات الحسابات التجارية. تبقى هذه السجلات بصيغة لا تسمح بإعادة ربطها بك بعد حذف بياناتك الشخصية. [BLOCKED_NEEDS_OWNER: تحديد المدة النظامية الدقيقة للاحتفاظ لكل فئة والأساس القانوني المعتمد من المستشار]."
+      },
+      {
+        "id": "article-4",
+        "num": "4",
+        "label": "البند الرابع",
+        "title": "الاشتراكات في المتجر",
+        "body": "حذف حسابك في هلا لا يلغي أي اشتراك عبر App Store أو Google Play. لإيقاف التجديد والخصم يجب إلغاء الاشتراك من المتجر نفسه. وتبقى المشتريات والاشتراكات مرتبطة بحساب المتجر الأصلي (Apple/Google) ومعرّف المستخدم الأصلي لدى هلا، ولا تُنقل تلقائياً إلى حساب آخر."
+      },
+      {
+        "id": "article-5",
+        "num": "5",
+        "label": "البند الخامس",
+        "title": "مزوّدو الخدمات الخارجيون",
+        "body": "نُسجّل التزاماً بحذف أو معالجة بياناتك لدى مزوّدي الخدمات الخارجيين المعنيين. تُحتفظ سجلات مزوّد خدمة الفوترة (RevenueCat) مرتبطةً بالمعرّف الأصلي للفوترة لأغراض محاسبية وضريبية دون نقل بين الحسابات. تُزال رموز الإشعارات من الحساب مباشرةً. أما سجلات التشخيص ورسائل الإشعار لدى المزوّدين فتُعالَج وفق التزامات الحذف المسجّلة. [BLOCKED_NEEDS_OWNER: قائمة المزوّدين النهائية ومدد احتفاظهم]."
+      },
+      {
+        "id": "article-6",
+        "num": "6",
+        "label": "البند السادس",
+        "title": "المدة المتوقعة للإكمال",
+        "body": "تُحذف معظم البيانات فور تنفيذ الطلب، بما في ذلك إبطال جلسات الدخول فوراً. تكتمل أي عمليات تنظيف متبقية للملفات المخزّنة في الخلفية، ولا يُعتبر الطلب مكتملاً حتى تُحذف كل ملفاتك الشخصية فعلياً؛ فإن تعذّر حذف ملف يعاد المحاولة تلقائياً حتى الاكتمال. [BLOCKED_NEEDS_OWNER: تثبيت مدة الإكمال المعلنة، مثل 30 يوماً]."
+      },
+      {
+        "id": "article-7",
+        "num": "7",
+        "label": "البند السابع",
+        "title": "متابعة الطلب والدعم",
+        "body": "عند تقديم الطلب يظهر لك رقم الطلب وحالته المباشرة. يمكنك متابعة الحالة أو التواصل مع الدعم للتصعيد. [BLOCKED_NEEDS_OWNER: بريد/هاتف الدعم الرسمي ومدة الاستجابة]."
+      }
+    ]
+  },
+  "en": {
+    "documentType": "deletion",
+    "version": "2026-07-02",
+    "locale": "en",
+    "authoritativeLanguage": "ar",
+    "effectiveDate": null,
+    "lastUpdated": "02 July 2026",
+    "ownerApproval": "BLOCKED_NEEDS_OWNER",
+    "badge": "Account & Data Deletion",
+    "title": "Account and Data Deletion Policy",
+    "subtitle": "Halaa Platform",
+    "changeSummary": "Describes the actually-implemented deletion behavior (initial structure; retention durations pending legal sign-off).",
+    "sections": [
+      {
+        "id": "article-1",
+        "num": "1",
+        "label": "Article One",
+        "title": "How to Request Deletion",
+        "body": "You can request deletion of your account from within the app via Account Settings, or from the public account-deletion web page without installing the app. Deletion requires signing in and re-authenticating to confirm the account is yours. You may also email us from the email registered on your account to request deletion. [BLOCKED_NEEDS_OWNER: confirm the official support email and contact channel]."
+      },
+      {
+        "id": "article-2",
+        "num": "2",
+        "label": "Article Two",
+        "title": "What Is Deleted",
+        "body": "When the request completes, your personal data is deleted or anonymized. This includes: your profile, name, email, phone number, avatar, and push tokens; vendor/service data if any; your events, guest data, and staff lists; post-event content such as photos and comments; support tickets, notifications, and notification preferences; and terms-acceptance, block, and report records linked to you. Photos and files stored in cloud storage that are associated with your account are also deleted."
+      },
+      {
+        "id": "article-3",
+        "num": "3",
+        "label": "Article Three",
+        "title": "What Is Retained and Why",
+        "body": "For legal, tax, and anti-fraud reasons we retain pseudonymized financial and audit records that are not linked to restorable personal identifiers. These include payment records, subscription records, audit logs, and business-account links. Such records remain in a form that cannot be re-associated with you after your personal data is deleted. [BLOCKED_NEEDS_OWNER: specify the exact statutory retention period per category and the legal basis approved by counsel]."
+      },
+      {
+        "id": "article-4",
+        "num": "4",
+        "label": "Article Four",
+        "title": "Store Subscriptions",
+        "body": "Deleting your Halaa account does NOT cancel any App Store or Google Play subscription. To stop renewal and billing you must cancel the subscription in the store itself. Purchases and subscriptions stay tied to the original store account (Apple/Google) and your original Halaa user ID; they are not automatically transferred to another account."
+      },
+      {
+        "id": "article-5",
+        "num": "5",
+        "label": "Article Five",
+        "title": "Third-Party Processors",
+        "body": "We record an obligation to delete or process your data with the relevant third-party processors. Billing-provider records (RevenueCat) are retained tied to the original billing identifier for accounting and tax purposes, with no cross-account transfer. Push tokens are removed from the account immediately. Diagnostic and messaging-provider records are handled according to the recorded erasure obligations. [BLOCKED_NEEDS_OWNER: finalize the processor list and their retention periods]."
+      },
+      {
+        "id": "article-6",
+        "num": "6",
+        "label": "Article Six",
+        "title": "Expected Completion Time",
+        "body": "Most data is removed immediately upon request, including immediate invalidation of your login sessions. Any remaining cleanup of stored files completes in the background, and the request is not considered complete until every one of your personal files is actually deleted; if a file cannot be deleted, the deletion is retried automatically until it succeeds. [BLOCKED_NEEDS_OWNER: confirm the published completion window, e.g. 30 days]."
+      },
+      {
+        "id": "article-7",
+        "num": "7",
+        "label": "Article Seven",
+        "title": "Tracking Your Request and Support",
+        "body": "When you submit the request you are shown a request ID and its live status. You can follow the status or contact support to escalate. [BLOCKED_NEEDS_OWNER: official support email/phone and response-time commitment]."
+      }
+    ]
+  }
+}

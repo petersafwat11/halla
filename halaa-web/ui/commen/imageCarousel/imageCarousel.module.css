@@ -1,0 +1,71 @@
+.container {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  position: relative;
+}
+.image_container {
+  width: 100%;
+  height: 100vh;
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+}
+.image {
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+}
+.image_active {
+  opacity: 1;
+}
+.scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.7) 0%,
+    rgba(0, 0, 0, 0.35) 30%,
+    rgba(0, 0, 0, 0) 60%
+  );
+  pointer-events: none;
+}
+.text_container {
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  margin-bottom: 5.6rem;
+  margin-right: 6rem;
+}
+.title {
+  font-size: 6.98rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+}
+.arabic_title {
+  color: #c28e5c;
+}
+.description {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 2.18rem;
+  font-weight: 500;
+  line-height: 3.19rem;
+}
+.dots {
+  display: flex;
+  gap: 1.1rem;
+}
+.dot,
+.active_dot {
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.9);
+}
+.active_dot {
+  background-color: #c28e5c;
+}

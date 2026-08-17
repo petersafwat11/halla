@@ -1,0 +1,176 @@
+.container {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 1.2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e8e8e8;
+  overflow: hidden;
+}
+
+@media screen and (max-width: 768px) {
+  .container {
+    border-radius: 0.8rem;
+  }
+}
+.tableHeadSection {
+  display: flex;
+  padding: 1.6rem 2rem;
+  justify-content: space-between;
+  width: 100%;
+  align-items: center;
+  border-bottom: 2px solid #f0f0f0;
+  background: #fafafa;
+}
+
+.tableHeadTitle {
+  color: #2c2c2c;
+  font-size: 1.8rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.tableHeadActions {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  flex-wrap: wrap;
+}
+.inputContainer {
+  position: relative;
+  display: flex;
+  width: 22rem;
+  padding: 0.8rem 1.2rem;
+  align-items: center;
+  gap: 1rem;
+  border-radius: 0.8rem;
+  background: #fff;
+  border: 1px solid #d0d0d0;
+  transition: all 0.2s ease;
+}
+
+.inputContainer:focus-within {
+  border-color: #c28e5c;
+  box-shadow: 0 0 0 3px rgba(194, 142, 92, 0.1);
+}
+
+.inputContainer input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 1.4rem;
+  font-weight: 500;
+  line-height: 1.5;
+  color: #2c2c2c;
+}
+
+.inputContainer input::placeholder {
+  color: #999;
+}
+.filter {
+  display: flex;
+  padding: clamp(0.6rem, 1.5vw, 0.8rem) clamp(1rem, 2vw, 1.2rem);
+  align-items: center;
+  gap: 0.8rem;
+  border-radius: 0.8rem;
+  background: #f7f7f7;
+  color: #656565;
+  font-size: clamp(1.1rem, 2vw, 1.2rem);
+  font-weight: 600;
+  line-height: 1.33;
+  letter-spacing: 0.06rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.filter:hover {
+  background: #eeeeee;
+}
+.options {
+  display: flex;
+  width: 233px;
+  padding: 16px;
+  flex-direction: column;
+  gap: 8px;
+  border-radius: 12px;
+  background: #fff;
+}
+.option {
+  display: flex;
+  padding: 12px 0;
+  gap: 1.6rem;
+  font-size: 1.6rem;
+  font-weight: 500;
+  line-height: 2.4rem;
+  letter-spacing: 0.08rem;
+  color: #2c2c2c;
+}
+.export {
+  display: flex;
+  padding: 0.8rem 1.4rem;
+  align-items: center;
+  gap: 0.8rem;
+  border-radius: 0.8rem;
+  background: #c28e5c;
+  color: #fff;
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 1.5;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  border: none;
+}
+
+.export:hover {
+  background: #a67c52;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(194, 142, 92, 0.3);
+}
+@media screen and (max-width: 768px) {
+  .tableHeadSection {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.2rem;
+    padding: 1.6rem;
+  }
+  .tableHeadTitle {
+    font-size: 1.4rem;
+  }
+  .tableHeadActions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  .inputContainer,
+  .export {
+    width: 100%;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .tableHeadSection {
+    padding: 1.2rem;
+    gap: 1rem;
+  }
+  .tableHeadTitle {
+    font-size: 1.3rem;
+  }
+  .filter,
+  .export {
+    font-size: 1.1rem;
+    padding: 0.8rem 1rem;
+  }
+}
+
+@media screen and (max-width: 400px) {
+  .tableHeadSection {
+    padding: 1rem;
+  }
+  .tableHeadTitle {
+    font-size: 1.2rem;
+  }
+}

@@ -1,0 +1,147 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  min-height: 100vh;
+  background: var(--Content-bg-Card-Bg-artboard, #f9f4ef);
+  padding-bottom: 40px;
+  box-sizing: border-box;
+}
+
+.header {
+  display: flex;
+  width: 100%;
+  padding: 40px 44px;
+  align-items: center;
+  gap: 12px;
+  box-sizing: border-box;
+}
+
+.pageTitle {
+  color: var(--Natural-900, #2c2c2c);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 28px;
+  margin: 0;
+}
+
+.content {
+  display: flex;
+  padding: 0 40px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
+  align-self: stretch;
+  max-width: 1240px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.sectionsContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 24px;
+  width: 100%;
+  padding: 24px 0;
+  box-sizing: border-box;
+}
+
+.dataSection {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 24px;
+  width: 100%;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding-top: 16px;
+}
+
+.cancelButton {
+  display: flex;
+  width: 141px;
+  padding: 12px 16px;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--Button-Outliner-border-active, #d6b392);
+  background: var(--Button-Outliner-bg-active, #fff);
+  color: var(--Button-Outliner-foreground-active, #6b4e33);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 24px;
+  letter-spacing: 0.08px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.cancelButton:hover {
+  background: var(--Content-bg-Card-bg-5, #f9f4ef);
+}
+
+@media (max-width: 1024px) {
+  .header {
+    padding: 32px 24px;
+  }
+
+  .content {
+    padding: 0 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding: 20px 16px;
+  }
+
+  .pageTitle {
+    font-size: 20px;
+    line-height: 24px;
+  }
+
+  .content {
+    padding: 0 16px;
+  }
+
+  .sectionsContainer {
+    gap: 16px;
+    padding: 16px 0;
+  }
+
+  .dataSection {
+    gap: 16px;
+  }
+
+  .actions {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .cancelButton {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 16px 12px;
+  }
+
+  .content {
+    padding: 0 12px;
+  }
+
+  .pageTitle {
+    font-size: 18px;
+    line-height: 22px;
+  }
+}

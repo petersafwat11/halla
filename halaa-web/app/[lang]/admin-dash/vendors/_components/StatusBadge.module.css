@@ -1,0 +1,12 @@
+.statusBadge {
+  display: inline-flex;
+  padding: 0.3rem 1.2rem;
+  justify-content: center;
+  align-items: center;
+  border-radius: 9999px;
+}
+
+.statusBadge span {
+  font-family: Cairo, sans-serif;
+  font-size: 1.2rem;
+}

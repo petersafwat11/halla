@@ -1,0 +1,141 @@
+{
+  "header": {
+    "title": "المدراء",
+    "subtitle": "راقب وأدر أحداث المنصة",
+    "dateRange": "حدد مدة زمنية",
+    "addModerator": "ضيف مشرف"
+  },
+  "dateRange": {
+    "all": "الكل",
+    "allTime": "الكل",
+    "today": "اليوم",
+    "yesterday": "أمس",
+    "thisWeek": "هذا الأسبوع",
+    "lastWeek": "آخر أسبوع",
+    "thisMonth": "هذا الشهر",
+    "lastMonth": "آخر شهر",
+    "lastQuarter": "آخر 3 أشهر",
+    "lastYear": "آخر سنة",
+    "confirm": "تأكيد",
+    "apply": "تطبيق",
+    "cancel": "إلغاء",
+    "months": ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"]
+  },
+  "addModerator": {
+    "title": "إضافة مشرف",
+    "username": "اسم المشرف",
+    "usernamePlaceholder": "ادخل اسم المشرف",
+    "email": "البريد الإلكتروني",
+    "emailPlaceholder": "ادخل البريد الإلكتروني",
+    "phoneNumber": "رقم الهاتف",
+    "phoneNumberPlaceholder": "ادخل رقم الهاتف",
+    "jobTitle": "المسمى الوظيفي",
+    "jobTitlePlaceholder": "ادخل المسمى الوظيفي",
+    "permissions": "الصلاحيات",
+    "save": "حفظ",
+    "cancel": "الغاء",
+    "saving": "جاري الحفظ...",
+    "success": "تم إضافة المشرف بنجاح",
+    "error": "فشل في إضافة المشرف"
+  },
+  "editModerator": {
+    "title": "تعديل مشرف",
+    "update": "تحديث",
+    "updating": "جاري التحديث...",
+    "success": "تم تحديث المشرف بنجاح",
+    "error": "فشل في تحديث المشرف"
+  },
+  "deleteModerator": {
+    "success": "تم حذف المشرف بنجاح",
+    "error": "فشل في حذف المشرف"
+  },
+  "confirmDelete": {
+    "message": "هل أنت متأكد من حذف هذا المشرف؟"
+  },
+  "stats": {
+    "superAdmin": "مشرف رئيسى",
+    "moderators": "المشرفين",
+    "activeModerators": "مشرفين نشطين",
+    "suspendedModerators": "مشرفين موقوفون"
+  },
+  "table": {
+    "title": "قائمة المدراء",
+    "searchPlaceholder": "ابحث عن مدير",
+    "filter": "التصفية",
+    "export": "تصدير",
+    "selectRows": "يرجى اختيار المشرفين للحذف",
+    "statusUpdated": "تم تحديث الحالة بنجاح",
+    "columns": {
+      "username": "اسم المستخدم",
+      "phoneNumber": "رقم الهاتف",
+      "email": "البريد الإلكتروني",
+      "title": "المسمى الوظيفي",
+      "status": "الحالة",
+      "createdAt": "تاريخ الانضمام",
+      "actions": "الإجراءات",
+      "name": "الاسم",
+      "phone": "الهاتف",
+      "role": "الدور"
+    },
+    "status": {
+      "active": "نشط",
+      "suspended": "موقوف",
+      "inactive": "غير نشط",
+      "pending": "قيد الانتظار"
+    },
+    "actions": {
+      "suspend": "ايقاف",
+      "delete": "حذف",
+      "edit": "تعديل"
+    }
+  },
+  "moderators": {
+    "stats": {
+      "total": "إجمالي المشرفين",
+      "allTime": "جميع الأوقات",
+      "active": "المشرفين النشطين",
+      "activeNow": "نشط الآن",
+      "pending": "قيد الانتظار",
+      "awaitingActivation": "في انتظار التفعيل",
+      "inactive": "غير نشط",
+      "deactivated": "معطل"
+    },
+    "edit": "تعديل",
+    "suspend": "إيقاف",
+    "activate": "تفعيل",
+    "delete": "حذف",
+    "bulkDelete": "حذف المحدد",
+    "title": "إدارة المشرفين",
+    "addModerator": "إضافة مشرف جديد",
+    "editModerator": "تعديل المشرف",
+    "columns": {
+      "name": "الاسم",
+      "email": "البريد الإلكتروني",
+      "phone": "الهاتف",
+      "role": "الدور",
+      "status": "الحالة",
+      "createdAt": "تاريخ الإضافة"
+    },
+    "filter": {
+      "all": "الكل",
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "roles": {
+      "moderator": "مشرف",
+      "admin": "مدير"
+    },
+    "form": {
+      "name": "الاسم",
+      "namePlaceholder": "أدخل اسم المشرف",
+      "email": "البريد الإلكتروني",
+      "emailPlaceholder": "example@email.com",
+      "phone": "رقم الهاتف",
+      "phonePlaceholder": "05xxxxxxxx",
+      "password": "كلمة المرور",
+      "passwordPlaceholder": "اتركه فارغاً للإنشاء التلقائي",
+      "role": "الدور",
+      "selectRole": "اختر الدور"
+    }
+  }
+}

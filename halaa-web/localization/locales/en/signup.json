@@ -1,0 +1,908 @@
+{
+  "signupForm": {
+    "step": "Step",
+    "submitting": "Submitting...",
+    "personalInfo": {
+      "title": "Personal Information",
+      "name": {
+        "label": "Full Name",
+        "placeholder": "Enter Name"
+      },
+      "errors": {
+        "nameMinLength": "Name must be at least 2 characters",
+        "nameMaxLength": "Name must be less than 50 characters"
+      }
+    },
+    "initialForm": {
+      "title": "Service Selection",
+      "description": "What type of event do you want to organize?",
+      "service": {
+        "label": "Choose the service",
+        "placeholder": "Select service type",
+        "options": {
+          "hosted": "We handle your invitation",
+          "selfService": "Handle it yourself"
+        },
+        "descriptions": {
+          "hosted": "Halaa team handles everything from design to sending and tracking attendance.",
+          "selfService": "Design and send your invitation easily via WhatsApp with a unique QR code for each guest!"
+        },
+        "errors": {
+          "serviceRequired": "Please select a service type"
+        }
+      },
+      "buttons": {
+        "confirm": "Confirm",
+        "continueButton": "Continue",
+        "backButton": "Back",
+        "submitButton": "Create Account"
+      }
+    },
+    "vendor": {
+      "welcomeTitle": "Welcome Dear Merchant",
+      "welcomeDescription": "Complete Your Profile",
+      "title": "Complete Your Profile",
+      "description": "Follow these steps to create your account as a service provider and start displaying your services on the Halaa platform.",
+      "steps": {
+        "identity": "Basic Account Information",
+        "serviceData": "Service or Halaa Marketplace Details",
+        "samplesAndPackages": "Images, Offers & Prices",
+        "commercialVerification": "Commercial Verification",
+        "commercialVerificationDescription": "Upload required documents for commercial verification.",
+        "paymentData": "Dealing & Payment Policy",
+        "otherLinksAndData": "Additional Links (Optional)",
+        "summary": "Application Summary"
+      },
+      "identity": {
+        "title": "Basic Account Information",
+        "description": "Enter your personal and business information to start creating your account as a service provider.",
+        "businessInfo": {
+          "title": "Business Information"
+        },
+        "brandName": {
+          "label": "Brand Name",
+          "placeholder": "Enter brand name"
+        },
+        "ownerFullName": {
+          "label": "Account Owner Full Name",
+          "placeholder": "Enter full name"
+        },
+        "serviceType": {
+          "title": "Service Type",
+          "options": [
+            {
+              "value": "eventPlanning",
+              "label": "Event Planning"
+            },
+            {
+              "value": "mediaProduction",
+              "label": "Media Production"
+            },
+            {
+              "value": "giftsAndPromotionalBags",
+              "label": "Gifts & Promotional Bags"
+            },
+            {
+              "value": "foodAndBeverages",
+              "label": "Food & Beverages"
+            },
+            {
+              "value": "beautyAndFashion",
+              "label": "Beauty & Fashion"
+            },
+            {
+              "value": "logisticsAndDelivery",
+              "label": "Logistics & Delivery"
+            },
+            {
+              "value": "corporateServices",
+              "label": "Corporate Services"
+            },
+            {
+              "value": "other",
+              "label": "Other"
+            }
+          ]
+        },
+        "contactInfo": {
+          "title": "Contact Information"
+        },
+        "phoneNumber": {
+          "label": "Mobile Number",
+          "placeholder": "Enter mobile number"
+        },
+        "email": {
+          "label": "Email Address",
+          "placeholder": "Enter email address"
+        },
+        "accountSecurity": {
+          "title": "Account Security"
+        },
+        "password": {
+          "label": "Password",
+          "placeholder": "Enter password"
+        },
+        "passwordConfirm": {
+          "label": "Confirm Password",
+          "placeholder": "Re-enter password"
+        },
+        "errors": {
+          "brandNameRequired": "Brand name is required",
+          "brandNameMinLength": "Brand name must be at least 2 characters",
+          "brandNameMaxLength": "Brand name must be less than 50 characters",
+          "ownerFullNameRequired": "Owner full name is required",
+          "ownerFullNameMinLength": "Owner full name must be at least 2 characters",
+          "ownerFullNameMaxLength": "Owner full name must be less than 100 characters",
+          "serviceTypeRequired": "Please select at least one service type",
+          "phoneNumberRequired": "Phone number is required",
+          "phoneNumberInvalid": "Please enter a valid phone number",
+          "emailRequired": "Email is required",
+          "emailInvalid": "Please enter a valid email address",
+          "passwordRequired": "Password must be at least 8 characters",
+          "passwordComplexity": "Use letters and numbers only, with at least one of each",
+          "passwordConfirmRequired": "Please confirm your password",
+          "passwordsDoNotMatch": "Passwords do not match"
+        }
+      },
+      "serviceData": {
+        "title": "Service or Halaa Marketplace Details",
+        "description": "Introduce visitors to your services and the areas you cover.",
+        "serviceDescription": {
+          "title": "Service Overview",
+          "label": "Brief Service Description",
+          "placeholder": "Enter brief description"
+        },
+        "eventPlanning": {
+          "title": "Event Planning & Occasion Services",
+          "options": [
+            {
+              "value": "HalaandLoungeRentals",
+              "label": "Hall and Lounge Rentals"
+            },
+            {
+              "value": "tableOrganizationAndSeating",
+              "label": "Table Organization and Seating Arrangement"
+            },
+            {
+              "value": "flowerAndDecoration",
+              "label": "Flower and Decoration Coordination"
+            },
+            {
+              "value": "partyAndWeddingCoordination",
+              "label": "Party and Wedding Coordination"
+            },
+            {
+              "value": "digitalAndPrintedInvitation",
+              "label": "Digital and Printed Invitation Design"
+            },
+            {
+              "value": "hospitalityServices",
+              "label": "Hospitality Services (Coffee, Tea, Beverages)"
+            }
+          ]
+        },
+        "mediaProduction": {
+          "title": "Photography & Production",
+          "options": [
+            {
+              "value": "photoAndVideoForOccasions",
+              "label": "Photography and Video for Occasions"
+            },
+            {
+              "value": "eventVideoEditing",
+              "label": "Event Video Editing"
+            },
+            {
+              "value": "aerialDronePhotography",
+              "label": "Aerial Drone Photography"
+            },
+            {
+              "value": "eventVideoMontage",
+              "label": "Event Video Montage"
+            }
+          ]
+        },
+        "giftsAndGiveaways": {
+          "title": "Gifts & Distributions",
+          "options": [
+            {
+              "value": "guestGiftAndDistribution",
+              "label": "Guest Gift and Distribution Preparation"
+            },
+            {
+              "value": "chocolateAndIncenseBoxes",
+              "label": "Chocolate and Incense Boxes"
+            },
+            {
+              "value": "giftWrappingAndCustomDesigns",
+              "label": "Gift Wrapping and Custom Designs"
+            },
+            {
+              "value": "congratulationsAndGiftCards",
+              "label": "Congratulations and Gift Cards"
+            }
+          ]
+        },
+        "foodAndBeverages": {
+          "title": "Food & Beverages",
+          "options": [
+            {
+              "value": "occasionCakes",
+              "label": "Occasion Cakes (Weddings, Birthdays, Success, etc.)"
+            },
+            {
+              "value": "traditionalOrInternationalCuisine",
+              "label": "Traditional or International Cuisine"
+            },
+            {
+              "value": "slaughterAndRice",
+              "label": "Slaughter and Rice"
+            },
+            {
+              "value": "mobileFoodTrucks",
+              "label": "Mobile Food Trucks (Coffee Bar, Popcorn)"
+            },
+            {
+              "value": "completeHospitalityBuffet",
+              "label": "Complete Hospitality Buffet"
+            }
+          ]
+        },
+        "beautyAndFashion": {
+          "title": "Beauty & Fashion",
+          "options": [
+            {
+              "value": "homeBeautyServices",
+              "label": "Home Beauty Services (Makeup, Hair)"
+            },
+            {
+              "value": "weddingAndOccasionDressRentals",
+              "label": "Wedding and Occasion Dress Rentals"
+            },
+            {
+              "value": "abayaDesignAndWomensTailoring",
+              "label": "Abaya Design and Women's Tailoring"
+            },
+            {
+              "value": "barberAndGroomingSalons",
+              "label": "Barber and Grooming Salons"
+            },
+            {
+              "value": "mensClothingTailoring",
+              "label": "Men's Clothing Tailoring"
+            }
+          ]
+        },
+        "logisticsAndDelivery": {
+          "title": "Logistics & Delivery",
+          "options": [
+            {
+              "value": "vipDriverAndHospitality",
+              "label": "VIP Driver and Hospitality Services"
+            },
+            {
+              "value": "giftAndOrderDelivery",
+              "label": "Gift and Order Delivery"
+            },
+            {
+              "value": "guestTransportationCoordination",
+              "label": "Guest Transportation Coordination with Buses"
+            },
+            {
+              "value": "occasionCarRentals",
+              "label": "Occasion Car Rentals (Cadillac, GMC...)"
+            }
+          ]
+        },
+        "corporateServices": {
+          "title": "Corporate & Entity Services",
+          "options": [
+            {
+              "value": "conferenceAndExhibitionOrganization",
+              "label": "Conference and Exhibition Organization"
+            },
+            {
+              "value": "corporatePromotionalGiftPreparation",
+              "label": "Corporate Promotional Gift Preparation"
+            },
+            {
+              "value": "officialPrintingAndDesignSolutions",
+              "label": "Official Printing and Design Solutions"
+            },
+            {
+              "value": "guestReceptionAndRegistration",
+              "label": "Guest Reception and Registration Service"
+            }
+          ]
+        },
+        "supportServices": {
+          "title": "Support Services",
+          "options": [
+            {
+              "value": "eventPlanners",
+              "label": "Event Planners"
+            },
+            {
+              "value": "guestCoordinators",
+              "label": "Guest Coordinators"
+            },
+            {
+              "value": "receptionStaff",
+              "label": "Reception Staff"
+            },
+            {
+              "value": "entrySupervisors",
+              "label": "Entry Supervisors"
+            }
+          ]
+        },
+        "technicalServices": {
+          "title": "Technical and Support Services",
+          "options": [
+            {
+              "value": "liveStreaming",
+              "label": "Live Streaming Services"
+            },
+            {
+              "value": "ticketingPlatforms",
+              "label": "Ticketing Platforms"
+            },
+            {
+              "value": "arVrServices",
+              "label": "AR/VR Services"
+            }
+          ]
+        },
+        "soundLightingEntertainment": {
+          "title": "Sound, Lighting, and Entertainment",
+          "options": [
+            {
+              "value": "professionalSoundSystems",
+              "label": "Professional Sound Systems"
+            },
+            {
+              "value": "lightingVisualEffects",
+              "label": "Lighting & Visual Effects"
+            },
+            {
+              "value": "musicalEntertainment",
+              "label": "Musical Entertainment"
+            }
+          ]
+        },
+        "hallsAndVenues": {
+          "title": "Halls and Venues",
+          "options": [
+            {
+              "value": "eventHalls",
+              "label": "Event Halls"
+            },
+            {
+              "value": "privateResthouses",
+              "label": "Private Resthouses & Villas"
+            },
+            {
+              "value": "hotelBallrooms",
+              "label": "Hotel Ballrooms"
+            }
+          ]
+        },
+        "city": {
+          "label": "City",
+          "placeholder": "Enter city name"
+        },
+        "coverageArea": {
+          "title": "Coverage Area",
+          "options": [
+            {
+              "value": "local",
+              "label": "Local in Saudi Arabia"
+            },
+            {
+              "value": "regional",
+              "label": "Regional"
+            },
+            {
+              "value": "specificAreas",
+              "label": "Specific Areas"
+            }
+          ]
+        },
+        "location": {
+          "title": "Main Establishment Location",
+          "allCities": "All Cities",
+          "region": "Region",
+          "loading": "Loading...",
+          "selectRegion": "Select Region",
+          "city": "City",
+          "districts": "Districts",
+          "coverageLabel": "Coverage:",
+          "entireRegion": "Entire Region",
+          "entireCity": "Entire City",
+          "selectedDistricts": "{{count}} district selected",
+          "allDistricts": "All Districts",
+          "districtsSelected": "{{count}} districts selected",
+          "searchDistrict": "Search districts..."
+        },
+        "otherInfo": {
+          "title": "Additional Information"
+        },
+        "otherData": {
+          "label": "Other Information (Optional)",
+          "placeholder": "Add any additional information you'd like to share..."
+        },
+        "errors": {
+          "serviceDescriptionRequired": "Service description is required",
+          "serviceDescriptionMinLength": "Service description must be at least 10 characters",
+          "serviceDescriptionMaxLength": "Service description must be less than 500 characters",
+          "cityRequired": "City is required",
+          "cityMinLength": "City must be at least 2 characters",
+          "coverageAreaRequired": "Please select at least one coverage area",
+          "regionRequired": "Region is required"
+        }
+      },
+      "samplesAndPackages": {
+        "title": "Images, Offers & Prices",
+        "description": "Upload your portfolio images and define your service packages and pricing.",
+        "portfolioImages": {
+          "label": "Portfolio Images",
+          "placeholder": "Upload portfolio images"
+        },
+        "businessLogo": {
+          "label": "Business Logo",
+          "placeholder": "Upload business logo"
+        },
+        "pricePackages": {
+          "label": "Price Packages",
+          "placeholder": "Describe your service packages and pricing"
+        },
+        "errors": {
+          "portfolioImagesRequired": "At least one portfolio image is required",
+          "businessLogoRequired": "Business logo is required",
+          "pricePackagesRequired": "Price packages description is required",
+          "pricePackagesMinLength": "Price packages description must be at least 10 characters"
+        }
+      },
+      "commercialVerification": {
+        "title": "Commercial Verification",
+        "description": "Upload required documents for commercial verification.",
+        "commercialRegistrationCopy": {
+          "label": "Commercial Registration Copy",
+          "placeholder": "Upload commercial registration copy"
+        },
+        "nationalOrResidencyId": {
+          "label": "National ID or Residency ID",
+          "placeholder": "Upload national ID or residency ID"
+        },
+        "commercialRecord": {
+          "title": "Commercial Record",
+          "label": "Commercial Registration Number",
+          "placeholder": "Upload commercial record",
+          "numberPlaceholder": "Enter commercial registration number",
+          "hint": "Must be 10 digits (e.g., 1234567890)",
+          "invalidFormat": "Commercial registration number must be 10 digits"
+        },
+        "nationalId": {
+          "title": "National ID",
+          "label": "National ID Number",
+          "placeholder": "Enter your national ID number",
+          "imagePlaceholder": "Upload national ID image",
+          "hint": "Must be 10 digits starting with 1 (citizen) or 2 (resident)",
+          "invalidFormat": "National ID must be 10 digits starting with 1 or 2"
+        },
+        "otherData": {
+          "label": "Other Documents",
+          "placeholder": "Upload any other required documents"
+        }
+      },
+      "paymentData": {
+        "title": "Dealing & Payment Policy",
+        "description": "Define your payment and refund policies.",
+        "payment_type": {
+          "title": "Refund Policy",
+          "options": [
+            {
+              "value": "full_refund",
+              "label": "Full refund within 24 hours"
+            },
+            {
+              "value": "partial_refund",
+              "label": "Partial refund"
+            },
+            {
+              "value": "no_refund",
+              "label": "No refund"
+            }
+          ]
+        },
+        "payment_options_list": {
+          "title": "Payment Options",
+          "options": [
+            {
+              "value": "cash",
+              "label": "Cash"
+            },
+            {
+              "value": "bank_transfer",
+              "label": "Bank Transfer"
+            },
+            {
+              "value": "visa",
+              "label": "Visa"
+            }
+          ]
+        },
+        "refundPolicy": {
+          "terms": {
+            "label": "Terms for Refund",
+            "placeholder": "Describe your terms for refund"
+          },
+          "options": {
+            "fullRefund": {
+              "label": "Refund Policy"
+            }
+          }
+        },
+        "termsForRefund": {
+          "label": "Terms for Refund",
+          "placeholder": "Describe your terms for refund"
+        },
+        "company": {
+          "title": "Company Information",
+          "fields": {
+            "name": {
+              "label": "Official Company/Entity Name",
+              "placeholder": "Enter official company name"
+            },
+            "license": {
+              "label": "Commercial Register or License Number",
+              "placeholder": "Enter commercial register number"
+            },
+            "tax": {
+              "label": "Tax Number (Optional)",
+              "placeholder": "Enter tax number"
+            }
+          }
+        },
+        "address": {
+          "title": "National Address",
+          "fields": {
+            "city": {
+              "label": "City",
+              "placeholder": "Enter city"
+            },
+            "neighborhood": {
+              "label": "Neighborhood",
+              "placeholder": "Enter neighborhood"
+            },
+            "street": {
+              "label": "Street",
+              "placeholder": "Enter street name"
+            },
+            "buildingNumber": {
+              "label": "Building Number",
+              "placeholder": "Enter building number"
+            },
+            "additionalNumber": {
+              "label": "Additional Number",
+              "placeholder": "Enter additional number"
+            },
+            "postalCode": {
+              "label": "Postal Code",
+              "placeholder": "Enter postal code"
+            },
+            "unitType": {
+              "label": "Unit Type (Optional)",
+              "placeholder": "Enter unit type"
+            },
+            "unitNumber": {
+              "label": "Unit Number (Optional)",
+              "placeholder": "Enter unit number"
+            }
+          }
+        },
+        "paymentMethods": {
+          "title": "Payment Options",
+          "options": [
+            {
+              "label": "Mada",
+              "value": "mada"
+            },
+            {
+              "label": "Bank Transfer",
+              "value": "bank_transfer"
+            },
+            {
+              "label": "Invoice",
+              "value": "invoice"
+            }
+          ]
+        },
+        "paymentMechanism": {
+          "title": "Payment Mechanism"
+        },
+        "paymentOptions": {
+          "title": "Payment Options",
+          "options": [
+            {
+              "label": "Mada",
+              "value": "mada"
+            },
+            {
+              "label": "Bank Transfer",
+              "value": "bank_transfer"
+            },
+            {
+              "label": "Invoice",
+              "value": "invoice"
+            }
+          ]
+        },
+        "errors": {
+          "companyNameRequired": "Company name is required",
+          "licenseNumberRequired": "License number is required",
+          "cityRequired": "City is required",
+          "neighborhoodRequired": "Neighborhood is required",
+          "streetRequired": "Street is required",
+          "buildingNumberRequired": "Building number is required",
+          "additionalNumberRequired": "Additional number is required",
+          "postalCodeRequired": "Postal code is required",
+          "paymentMethodRequired": "Please select at least one payment method"
+        }
+      },
+      "otherLinksAndData": {
+        "title": "Additional Links & Data",
+        "description": "Share your social media links and additional information.",
+        "socialLinksTitle": "Social Media Links",
+        "filesAndDocumentsTitle": "Files and Documents",
+        "facebookLink": {
+          "label": "Facebook Link",
+          "placeholder": "Enter Facebook profile link"
+        },
+        "tiktokLink": {
+          "label": "TikTok Link",
+          "placeholder": "Enter TikTok profile link"
+        },
+        "instagramLink": {
+          "label": "Instagram Link",
+          "placeholder": "Enter Instagram profile link"
+        },
+        "linkedinLink": {
+          "label": "LinkedIn Link",
+          "placeholder": "Enter LinkedIn profile link"
+        },
+        "websiteLink": {
+          "label": "Website Link",
+          "placeholder": "Enter website link"
+        },
+        "additionalServices": {
+          "label": "Additional Services",
+          "placeholder": "Describe any additional services"
+        },
+        "cv": {
+          "label": "CV/Resume",
+          "placeholder": "Upload your CV or resume"
+        },
+        "profileFile": {
+          "label": "Profile File",
+          "placeholder": "Upload profile file"
+        },
+        "errors": {
+          "cvRequired": "CV/Resume is required",
+          "profileFileRequired": "Profile file is required"
+        }
+      },
+      "summary": {
+        "title": "Application Summary",
+        "description": "Please review all the information you've provided before submitting your application.",
+        "submit": "Submit Application"
+      },
+      "submitting": "Submitting...",
+      "successMessage": "Account created successfully",
+      "errorMessage": "An error occurred while creating your account. Please try again."
+    },
+    "host": {
+      "account": {
+        "title": "Account Information",
+        "name": {
+          "label": "Name",
+          "placeholder": "Enter your name"
+        },
+        "email": {
+          "label": "Email",
+          "placeholder": "Enter your email"
+        },
+        "password": {
+          "label": "Password",
+          "placeholder": "Enter password"
+        },
+        "confirmPassword": {
+          "label": "Confirm Password",
+          "placeholder": "Re-enter password"
+        }
+      },
+      "company": {
+        "title": "Company Information",
+        "logo": {
+          "label": "Logo",
+          "placeholder": "Upload company logo"
+        },
+        "name": {
+          "label": "Company Name",
+          "placeholder": "Enter company name"
+        }
+      }
+    },
+    "errors": {
+      "arabicNameRequired": "Organization name in Arabic is required",
+      "arabicNameMinLength": "Arabic name must be at least 2 characters",
+      "arabicNameMaxLength": "Arabic name must be less than 50 characters",
+      "arabicNameFormat": "Arabic name must contain only Arabic letters and spaces",
+      "englishNameRequired": "Organization name in English is required",
+      "englishNameMinLength": "English name must be at least 2 characters",
+      "englishNameMaxLength": "English name must be less than 50 characters",
+      "englishNameFormat": "English name must contain only English letters and spaces",
+      "logoRequired": "Logo is required",
+      "primaryColorRequired": "Primary color is required",
+      "invalidColorFormat": "Invalid color format",
+      "secondaryColorRequired": "Secondary color is required",
+      "invalidFontFamily": "Invalid font family format"
+    },
+    "brandingOptions": {
+      "favicon": {
+        "label": "Favicon (optional)",
+        "placeholder": "Upload favicon"
+      },
+      "themeStyle": {
+        "label": "Theme Style",
+        "options": [
+          "Light",
+          "Dark",
+          "Auto"
+        ]
+      }
+    },
+    "language": {
+      "label": "Platform Language",
+      "options": [
+        "Arabic",
+        "English"
+      ]
+    },
+    "hostSignup": {
+      "greeting": {
+        "title": "Welcome to Halaa",
+        "subtitle": "Create your account and start your journey with us in organizing events and occasions in a modern and unique way."
+      },
+      "title": "Create Your Account",
+      "description": "Sign up to start organizing your events with Halaa",
+      "emailLogin": {
+        "email": {
+          "label": "Email",
+          "placeholder": "Enter your email"
+        },
+        "password": {
+          "label": "Password",
+          "placeholder": "Enter your password"
+        },
+        "forgotPassword": "Forgot Password",
+        "rememberMe": "Remember Me",
+        "loginWithOTP": "Login with temporary password"
+      },
+      "phoneNumber": "Phone Number",
+      "otpLogin": {
+        "phoneNumber": "Phone Number",
+        "verification": "Verification",
+        "editPhone": "Cancel",
+        "loginWithEmail": "Login with email"
+      },
+      "otp": {
+        "back": "Back",
+        "title": "Verify Your Number",
+        "subtitle": "We sent a 6-digit verification code to your phone number",
+        "enterCode": "Please enter the 6-digit code",
+        "invalidCode": "Invalid verification code",
+        "didntReceive": "Didn't receive the code?",
+        "resend": "Resend",
+        "resendIn": "Resend in",
+        "verify": "Verify"
+      },
+      "buttons": {
+        "login": "Sign Up",
+        "verify": "Verify",
+        "createAccount": "Create Account",
+        "sendCode": "Send Code"
+      },
+      "formBottom": {
+        "orContinueWith": "Or continue using",
+        "haveAccount": "Already have an account?",
+        "login": "Sign In"
+      },
+      "errors": {
+        "emailRequired": "Email is required",
+        "invalidEmail": "Invalid email address",
+        "passwordMinLength": "Password must be at least 8 characters",
+        "passwordComplexity": "Use letters and numbers only, with at least one of each",
+        "invalidPassword": "Password is incorrect, check it and try again.",
+        "phoneNumberInvalid": "Phone number is incorrect, please check and try again",
+        "usernameRequired": "Username is required",
+        "usernameMinLength": "Username must be at least 3 characters",
+        "passwordConfirmRequired": "Please confirm your password",
+        "passwordsDoNotMatch": "Passwords do not match"
+      }
+    },
+    "continueSignup": {
+      "title": "Complete Your Profile",
+      "description": "Some basic information to help us provide the best service",
+      "personalInfo": {
+        "title": "Personal Information",
+        "fullName": {
+          "label": "Full Name",
+          "placeholder": "Enter your full name"
+        },
+        "email": {
+          "label": "Email Address",
+          "placeholder": "david@dffr.com"
+        },
+        "newPassword": {
+          "label": "New Password",
+          "placeholder": "**********"
+        },
+        "confirmPassword": {
+          "label": "Confirm Password",
+          "placeholder": "**********"
+        }
+      },
+      "serviceSelection": {
+        "title": "Choose the Service Provided",
+        "question": "What type of event do you want to organize?",
+        "organizerInvitation": {
+          "title": "Your Invitation through Your Organizer",
+          "description": "Professional solution for entities, custom control panel with multiple features"
+        },
+        "onUsInvitation": {
+          "title": "Your Invitation is On Us",
+          "description": "Halaa application provides everything from design, sending, and tracking attendance, and serving guests"
+        },
+        "inYourHandsInvitation": {
+          "title": "Your Invitation in Your Hands",
+          "description": "Design and send your invitations easily via WhatsApp with a special QR code for each guest!"
+        },
+        "features": {
+          "largeScaleCompetitivePricing": "Large-scale competitive pricing",
+          "customReportsAnalytics": "Custom reports and analytics",
+          "phoneSupportPriority": "24/7 phone support priority",
+          "globalLocalSales": "Global and local sales (50 markets)",
+          "designSendGuestTracking": "Design, send, and guest tracking",
+          "designSendWhatsappQRCodes": "Design and send invitations easily via WhatsApp with QR codes for each guest!",
+          "additional": "20+ additional features - click for more"
+        }
+      },
+      "nextButton": "Next",
+      "selectButton": "Select Package",
+      "errors": {
+        "fullNameRequired": "Full name is required",
+        "fullNameMinLength": "Full name must be at least 2 characters",
+        "emailRequired": "Email is required",
+        "invalidEmail": "Please enter a valid email address",
+        "passwordMinLength": "Password must be at least 8 characters",
+        "passwordComplexity": "Use letters and numbers only, with at least one of each",
+        "passwordSpecialChar": "Do not use symbols",
+        "confirmPasswordRequired": "Confirm password is required",
+        "passwordsDoNotMatch": "Passwords do not match"
+      }
+    }
+  },
+  "validation": {
+    "required": "This field is required",
+    "invalidEmail": "Please enter a valid email",
+    "invalidSaudiPhone": "Please enter a valid Saudi phone number",
+    "passwordMinLength": "Password must be at least 8 characters",
+    "passwordMaxLength": "Password must be less than 128 characters",
+    "passwordComplexity": "Use letters and numbers only, with at least one of each",
+    "passwordMismatch": "Passwords do not match",
+    "nameMinLength": "Name must be at least 2 characters",
+    "otpLength": "Verification code must be 6 digits",
+    "otpInvalid": "Verification code must contain only numbers"
+  }
+}

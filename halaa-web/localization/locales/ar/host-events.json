@@ -1,0 +1,62 @@
+{
+  "table": {
+    "columns": {
+      "eventTitle": "اسم المناسبة",
+      "eventMaker": "منظم المناسبة",
+      "eventType": "نوع المناسبة",
+      "confirmed": "تم التأكيد",
+      "declined": "تم الرفض",
+      "noResponse": "لم يرد",
+      "dateTime": "التاريخ والوقت",
+      "status": "الحالة"
+    },
+    "filter": "التصفية",
+    "export": "تصدير",
+    "eventsList": "قائمة المناسبات",
+    "exportSuccess": "تم تصدير البيانات بنجاح",
+    "exportError": "فشل تصدير البيانات",
+    "actions": {
+      "show": "عرض",
+      "delete": "حذف",
+      "deleteSelected": "حذف المحدد"
+    },
+    "deleteTitle": "حذف المناسبة",
+    "bulkDeleteTitle": "حذف المناسبات المحددة",
+    "deleteConfirm": "هل أنت متأكد من حذف هذه المناسبة؟ لا يمكن التراجع عن هذا الإجراء.",
+    "bulkDeleteConfirm": "هل أنت متأكد من حذف {{count}} مناسبة؟ لا يمكن التراجع عن هذا الإجراء.",
+    "confirmDelete": "تأكيد الحذف",
+    "cancelDelete": "إلغاء",
+    "deleteSuccess": "تم حذف المناسبة بنجاح",
+    "deleteError": "فشل حذف المناسبة. يرجى المحاولة مرة أخرى",
+    "bulkDeleteSuccess": "تم حذف {{count}} مناسبة بنجاح",
+    "bulkDeleteError": "فشل حذف المناسبات. يرجى المحاولة مرة أخرى"
+  },
+  "eventTypes": {
+    "birthday": "عيد ميلاد",
+    "wedding": "زفاف",
+    "graduation": "تخرج",
+    "conference": "مؤتمر",
+    "meeting": "اجتماع",
+    "party": "حفلة",
+    "other": "أخرى"
+  },
+  "eventStatus": {
+    "published": "منشور",
+    "pending_scheduling": "في انتظار الجدولة",
+    "ended": "منتهي",
+    "suspended": "معلق",
+    "live": "مباشرة",
+    "scheduled": "مجدولة",
+    "completed": "منتهية",
+    "cancelled": "ملغية"
+  },
+  "errors": {
+    "noEventId": "معرف المناسبة غير موجود",
+    "noToken": "رمز المصادقة غير موجود",
+    "eventNotFound": "المناسبة غير موجودة أو ليس لديك صلاحية حذفها",
+    "unauthorized": "غير مصرح لك بتنفيذ هذا الإجراء",
+    "deleteError": "فشل حذف المناسبة. يرجى المحاولة مرة أخرى"
+  },
+  "confirmDelete": "هل أنت متأكد من حذف هذه المناسبة؟ لا يمكن التراجع عن هذا الإجراء.",
+  "deleteSuccess": "تم حذف المناسبة بنجاح"
+}

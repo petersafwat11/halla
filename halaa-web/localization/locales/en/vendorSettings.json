@@ -1,0 +1,129 @@
+{
+  "pageTitle": "Settings",
+  "tabs": {
+    "services": "Services",
+    "accountSetup": "Account Setup"
+  },
+  "personalInfo": {
+    "title": "Personal Account Information",
+    "storeLogo": "Halaa Marketplace Logo",
+    "uploadImage": "Upload Images",
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "Enter your full name",
+    "businessName": "Business Name",
+    "businessNamePlaceholder": "Enter your business name",
+    "email": "Email",
+    "emailPlaceholder": "Enter your email",
+    "emailValidationExample": "Please enter a valid email example: example@domain.com",
+    "phoneWhatsapp": "Phone / WhatsApp",
+    "phonePlaceholder": "+966 5XX XXX XXXX",
+    "verifyEmail": "Verify Email",
+    "password": "Password",
+    "passwordPlaceholder": "*****************************",
+    "currentPassword": "Current Password",
+    "currentPasswordPlaceholder": "••••••••",
+    "newPassword": "New Password",
+    "newPasswordPlaceholder": "••••••••",
+    "confirmPassword": "Confirm Password",
+    "confirmPasswordPlaceholder": "••••••••",
+    "changePassword": "Change Password",
+    "logout": "Logout",
+    "clickToView": "Click to view",
+    "noLogo": "No logo"
+  },
+  "serviceDetails": {
+    "title": "Service or Halaa Marketplace Details",
+    "nationalIdLabel": "National ID Number - Residence Number",
+    "commercialRegister": "Commercial Register Copy (Optional)",
+    "otherLicenses": "Other Licenses (Optional)",
+    "serviceDescription": "Brief Service Description",
+    "serviceDescriptionPlaceholder": "We offer comprehensive services for organizing events and celebrations, including digital and printed invitation design, guest gift and distribution preparation, and hall and lounge rental. We're here to help make every occasion unforgettable.",
+    "activities": "Various Activities",
+    "activityList": {
+      "digitalInvitations": "Digital and Printed Invitation Design",
+      "videoEditing": "Event Video Editing",
+      "guestGifts": "Guest Gifts and Distribution Preparation",
+      "hallRental": "Hall and Lounge Rental",
+      "tableArrangement": "Table Organization and Seating Arrangement"
+    },
+    "coverageArea": "Coverage Area",
+    "coverageAreaLocal": "Local",
+    "city": "City",
+    "uploaded": "Uploaded",
+    "fileSize": "MB",
+    "clickToView": "Click to view",
+    "noImage": "No image",
+    "uploadLicense": "Upload license image",
+    "uploadCommercial": "Upload commercial record",
+    "serviceLocation": "Service Location",
+    "region": "Region",
+    "districts": "Districts",
+    "allCities": "All cities",
+    "allDistricts": "All districts",
+    "documentPreview": "Document Preview",
+    "selectRegion": "Select region",
+    "selectedCount": "{{count}} selected",
+    "selectDistricts": "Select districts",
+    "search": "Search...",
+    "selectCityFirst": "Select city first"
+  },
+  "imagesAndPricing": {
+    "title": "Images, Offers and Pricing",
+    "previousWorkImages": "Images of Previous Work",
+    "priceListsAndPackages": "Price Lists and Packages",
+    "uploaded": "Uploaded",
+    "clickToView": "Click to view",
+    "noImages": "No images",
+    "addImages": "Add images",
+    "savedImages": "Saved images",
+    "newUploads": "New uploads",
+    "confirmDelete": "Delete this image?",
+    "invalidFormat": "Only JPEG, PNG, GIF, WebP files are accepted"
+  },
+  "paymentPolicy": {
+    "title": "Payment and Transaction Policy",
+    "cancellationPolicy": "Cancellation and Refund Terms",
+    "paymentMethod": "Payment Method",
+    "paymentOptions": "Payment Options"
+  },
+  "additionalLinks": {
+    "title": "Additional Links",
+    "websiteLink": "Website Link",
+    "instagramLink": "Instagram Link",
+    "profileFile": "Profile File",
+    "facebookLink": "Facebook",
+    "twitterLink": "Twitter",
+    "tiktokLink": "TikTok"
+  },
+  "buttons": {
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "edit": "Edit"
+  },
+  "messages": {
+    "saveSuccess": "Changes saved successfully",
+    "saveError": "Failed to save changes"
+  },
+  "errors": {
+    "boundary": "Failed to load settings"
+  },
+  "validation": {
+    "ownerNameRequired": "Owner name is required",
+    "ownerNameMinLength": "Name must be at least 2 characters",
+    "ownerNameMaxLength": "Name must be less than 100 characters",
+    "brandNameRequired": "Business name is required",
+    "brandNameMinLength": "Business name must be at least 2 characters",
+    "brandNameMaxLength": "Business name must be less than 100 characters",
+    "emailRequired": "Email is required",
+    "emailInvalid": "Invalid email format",
+    "phoneInvalid": "Invalid phone number format",
+    "phoneRequired": "Phone number is required",
+    "descriptionMaxLength": "Description must not exceed 1000 characters",
+    "nationalIdInvalid": "National ID must be 10 digits",
+    "invalidUrl": "Invalid URL format",
+    "passwordMinLength": "Password must be at least 8 characters",
+    "passwordMismatch": "Passwords do not match",
+    "currentPasswordRequired": "Current password is required to change password"
+  }
+}

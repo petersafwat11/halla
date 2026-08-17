@@ -1,0 +1,32 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--Padding-space-24, 24px);
+  padding: 4rem;
+  width: 100%;
+  min-height: 100vh;
+  /* background: var(--Content-bg-body-bg, #fafafa); */
+}
+
+/* Quick Look Section - Cards and Chart */
+.quickLook {
+  /* display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--Padding-space-24, 24px); */
+  width: 100%;
+}
+
+/* Table Section */
+.tableSection {
+  width: 100%;
+  border-radius: var(--Corner-raduis-Defualt, 12px);
+  background: var(--Content-bg-Card-bg-1, #fff);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  padding: var(--Padding-space-24, 24px);
+}
+
+@media (max-width: 1024px) {
+  .page {
+    padding: 20px;
+  }
+}

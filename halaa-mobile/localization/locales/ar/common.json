@@ -1,0 +1,104 @@
+{
+  "success": "بنجاح",
+  "templates": "قوالب المناسبات",
+  "templates_categories_error": "تعذر تحميل الفئات",
+  "templates_load_error": "تعذر تحميل القوالب",
+  "no_templates_available": "لا توجد قوالب متاحة",
+  "common": { "all": "الكل" },
+  "buttons": {
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "add": "إضافة",
+    "confirm": "تأكيد",
+    "back": "رجوع",
+    "next": "التالي",
+    "done": "تم",
+    "retry": "إعادة المحاولة",
+    "refresh": "تحديث"
+  },
+  "messages": {
+    "loading": "جاري التحميل...",
+    "noData": "لا توجد بيانات متاحة",
+    "error": "حدث خطأ ما",
+    "success": "تمت العملية بنجاح",
+    "networkError": "خطأ في الاتصال بالشبكة",
+    "tryAgain": "يرجى المحاولة مرة أخرى"
+  },
+  "navigation": {
+    "home": "الرئيسية",
+    "events": "المناسبات",
+    "marketplace": "سوق هلا",
+    "plans": "الباقات",
+    "tickets": "الشكاوى",
+    "profile": "الملف الشخصي",
+    "settings": "الإعدادات",
+    "dashboard": "لوحة التحكم",
+    "hosts": "العملاء",
+    "more": "المزيد"
+  },
+  "notifications": {
+    "title": "الإشعارات",
+    "markAllRead": "تحديد الكل كمقروء",
+    "clearAll": "مسح الكل",
+    "clearAllConfirm": "هل أنت متأكد من مسح جميع الإشعارات؟",
+    "loadMore": "تحميل المزيد",
+    "loading": "جاري التحميل...",
+    "empty": {
+      "title": "لا توجد إشعارات",
+      "message": "أنت على اطلاع بكل شيء! تحقق لاحقاً."
+    },
+    "delete": "حذف",
+    "justNow": "الآن"
+  },
+  "fonts": {
+    "cairo": { "displayName": "القاهرة" },
+    "inter": { "displayName": "إنتر" },
+    "lato": { "displayName": "لاتو" },
+    "amiri": { "displayName": "أميري" },
+    "ibm_plex_arabic": { "displayName": "IBM Plex Sans Arabic" },
+    "noto_sans_arabic": { "displayName": "Noto Sans Arabic" }
+  },
+  "validation": {
+    "invalidSaudiPhone": "رقم الهاتف يجب أن يبدأ بـ 5 ويتكون من 9 أرقام",
+    "invalidEmail": "يرجى إدخال بريد إلكتروني صحيح",
+    "required": "هذا الحقل مطلوب",
+    "passwordMinLength": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
+    "passwordMaxLength": "كلمة المرور يجب أن لا تتجاوز 128 حرف",
+    "passwordComplexity": "كلمة المرور تتكون من حروف وأرقام فقط، وبها حرف ورقم على الأقل",
+    "otpLength": "رمز التحقق يجب أن يكون 6 أرقام",
+    "otpInvalid": "رمز التحقق يجب أن يحتوي على أرقام فقط",
+    "usernameMin": "اسم المستخدم يجب أن يكون حرفين على الأقل",
+    "usernameMax": "اسم المستخدم يجب أن يكون أقل من 50 حرف",
+    "emailInvalid": "يرجى إدخال بريد إلكتروني صحيح",
+    "passwordMin": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
+    "passwordsDoNotMatch": "كلمات المرور غير متطابقة",
+    "currentPasswordRequired": "كلمة المرور الحالية مطلوبة لتعيين كلمة مرور جديدة"
+  },
+  "date": {
+    "months": {
+      "0": "يناير",
+      "1": "فبراير",
+      "2": "مارس",
+      "3": "أبريل",
+      "4": "مايو",
+      "5": "يونيو",
+      "6": "يوليو",
+      "7": "أغسطس",
+      "8": "سبتمبر",
+      "9": "أكتوبر",
+      "10": "نوفمبر",
+      "11": "ديسمبر"
+    },
+    "days": {
+      "0": "الأحد",
+      "1": "الإثنين",
+      "2": "الثلاثاء",
+      "3": "الأربعاء",
+      "4": "الخميس",
+      "5": "الجمعة",
+      "6": "السبت"
+    }
+  }
+}

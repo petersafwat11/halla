@@ -1,0 +1,71 @@
+{
+  "welcome": "مرحباً",
+  "guest": "ضيف",
+  "createEvent": {
+    "businessActivationRequired": "فعّل اشتراكك لإنشاء مناسبة"
+  },
+  "dashboard": {
+    "title": "لوحة التحكم",
+    "stats": {
+      "totalEvents": "إجمالي المناسبات",
+      "upcomingEvents": "المناسبات القادمة",
+      "completedEvents": "المناسبات المكتملة",
+      "all": "الكل",
+      "activeEvents": "النشطة",
+      "endedEvents": "المنتهية",
+      "draftEvents": "المسودات"
+    },
+    "submitTemplate": {
+      "successTitle": "تم",
+      "successMessage": "تم إرسال القالب للموافقة",
+      "errorTitle": "خطأ",
+      "errorMessage": "فشل في إرسال القالب"
+    }
+  },
+  "quickActions": {
+    "title": "الإجراءات السريعة",
+    "createEvent": "إنشاء مناسبة",
+    "viewEvents": "عرض جميع المناسبات",
+    "manageGuests": "إدارة الضيوف"
+  },
+  "notifyStaff": {
+    "successTitle": "تم",
+    "successMessage": "تم إرسال الإشعار للفريق",
+    "errorTitle": "خطأ",
+    "errorMessage": "فشل إرسال الإشعار"
+  },
+  "lastEvent": {
+    "untitled": "مناسبة بدون عنوان",
+    "guests": "ضيف",
+    "noResponse": "لم يرد",
+    "declined": "معتذر",
+    "approved": "موافق",
+    "quota": {
+      "remainingInvites": "الدعوات المتبقية",
+      "unlimited": "غير محدود"
+    },
+    "buttons": {
+      "testMessage": "رسالة تجريبية",
+      "scheduleEvent": "جدولة الارسال",
+      "notifyStaff": "إشعار الفريق",
+      "notifying": "جارٍ الإرسال...",
+      "viewStats": "عرض الإحصائيات",
+      "sharePostEvent": "مشاركة ما بعد المناسبة",
+      "editEvent": "تعديل المناسبة"
+    },
+    "status": {
+      "draft": "مسودة",
+      "scheduled": "مجدول",
+      "live": "نشطة",
+      "completed": "انتهى",
+      "suspended": "موقوف",
+      "default": "محفوظة"
+    },
+    "dropdown": {
+      "eventDetails": "تفاصيل المناسبة",
+      "guestList": "قائمة الضيوف",
+      "invitationDesign": "تصميم الدعوة",
+      "invitationCustomization": "تخصيص الدعوة"
+    }
+  }
+}

@@ -1,0 +1,242 @@
+/* ========================================
+   PAGE LAYOUT
+   ======================================== */
+.page {
+  width: 100%;
+  max-width: 100%;
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+.contentWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ========================================
+   HEADER SECTION
+   ======================================== */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.headerContent {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header .title {
+  color: var(--Content-Text-Text-title-black, #2c2c2c);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+}
+
+.header .backButton {
+  cursor: pointer;
+  color: var(--Content-Text-Text-title-black, #2c2c2c);
+  transition: opacity 0.2s, transform 0.2s;
+  font-size: 24px;
+}
+
+.header .backButton:hover {
+  opacity: 0.7;
+  transform: translateX(-4px); /* Hint at back direction (LTR) */
+}
+
+.header .actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.overview {
+  /* This targets the CardLayout in EventStats */
+  width: 100%;
+  padding: 24px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
+}
+
+/* ========================================
+   MEMBERS DATA / GUEST TABLE
+   ======================================== */
+.membersData {
+  width: 100%;
+}
+
+.rightCol {
+  width: 100%;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 1024px) {
+  .membersData {
+    grid-template-columns: 1fr; /* Stack vertically on tablets */
+  }
+}
+
+@media (max-width: 768px) {
+  .page {
+    padding: 1rem;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .header .actions {
+    width: 100%;
+    justify-content: flex-start;
+    overflow-x: visible; /* Changed from auto to visible for dropdowns */
+    flex-wrap: wrap;
+  }
+}
+
+/* ========================================
+   NEW ACTION STYLES (From LastEventStats)
+   ======================================== */
+.dropdownWrapper {
+  position: relative;
+}
+
+.dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  /* right: 0; Remove right:0 to avoid stretching if not needed, or keep if full width desired on mobile */
+  margin-top: 8px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  z-index: 100;
+  min-width: 180px; /* Ensure decent width */
+  animation: dropdownSlide 0.2s ease-out;
+}
+
+/* Adjust dropdown position for RTL if needed, usually just swapping left/right in CSS or reliance on logical properties */
+[dir="rtl"] .dropdown {
+  left: auto;
+  right: 0;
+}
+
+@keyframes dropdownSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdownItem {
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  text-align: start; /* handle both LTR/RTL */
+  background: #fff;
+  border: none;
+  color: #2c2c2c;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  cursor: pointer;
+  transition: background 0.2s;
+  border-bottom: 1px solid #f2f2f2;
+}
+
+.dropdownItem:last-child {
+  border-bottom: none;
+}
+
+.dropdownItem:hover {
+  background: #f9f4ef;
+}
+
+.outlineButton {
+  display: flex;
+  height: 40px; /* Slightly taller for header */
+  padding: 0 16px;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  border-radius: 8px; /* Match other rounded corners */
+  border: 1px solid #d6b392;
+  background: #fff;
+  cursor: pointer;
+  color: #6b4e33;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.outlineButton:hover {
+  background: #f9f4ef;
+}
+
+.primaryButton {
+  display: flex;
+  height: 40px;
+  padding: 0 16px;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  border-radius: 8px;
+  background: #c28e5c;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.primaryButton:hover {
+  background: #b07d4d;
+}
+
+.dangerButton {
+  display: flex;
+  height: 40px;
+  padding: 0 16px;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  border-radius: 8px;
+  border: 1px solid #fee2e2;
+  background: #fff;
+  cursor: pointer;
+  color: #dc2626;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.dangerButton:hover {
+  background: #fef2f2;
+  border-color: #fecaca;
+}

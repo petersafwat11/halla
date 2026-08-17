@@ -1,0 +1,172 @@
+/* ── Section ── */
+.prRoot { padding: 6rem 3rem; background: var(--color-primary-50); }
+.prInner { max-width: 1200px; margin: 0 auto; }
+
+/* ── Header ── */
+.prHdr { text-align: center; margin-bottom: 5.6rem; }
+.prTitle { font-size: clamp(2.8rem, 3vw, 4rem); font-weight: 700; color: var(--color-secondary-700); margin: 0 0 1.6rem; letter-spacing: -.02em; }
+
+/* ── Selector card ── */
+.prSelector { max-width: 480px; margin: 0 auto 4rem; background: var(--color-natural-50); border-radius: 2rem; border: 1.5px solid color-mix(in srgb, var(--color-primary-500) 14%, transparent); box-shadow: 0 6px 36px color-mix(in srgb, var(--color-secondary-600) 9%, transparent), 0 1px 6px color-mix(in srgb, var(--color-secondary-600) 5%, transparent); overflow: hidden; }
+.prSegWrap { padding: 1.2rem 1.2rem .9rem; }
+.prSegTrack { display: flex; background: var(--color-primary-100); border-radius: 9999px; padding: .35rem; box-shadow: inset 0 1.5px 5px color-mix(in srgb, var(--color-secondary-600) 13%, transparent); }
+.prSegBtn { flex: 1; display: flex; align-items: center; justify-content: center; gap: .8rem; padding: .9rem 1.4rem; border: none; background: transparent; border-radius: 9999px; cursor: pointer; transition: all 260ms cubic-bezier(.4, 0, .2, 1); }
+.prSegIcon { font-size: 1.6rem; line-height: 1; flex-shrink: 0; }
+.prSegBody { display: flex; flex-direction: column; align-items: flex-start; gap: .05rem; }
+.prSegLabel { font-size: 1.35rem; font-weight: 700; color: var(--color-accent-500); transition: color 260ms ease; line-height: 1.25; }
+.prSegSub { font-size: .95rem; color: var(--color-accent-300); transition: color 260ms ease; line-height: 1.2; }
+.prSegBtn.active { background: var(--color-natural-50); box-shadow: 0 2px 14px color-mix(in srgb, var(--color-secondary-600) 14%, transparent), 0 1px 4px color-mix(in srgb, var(--color-secondary-600) 7%, transparent); }
+.prSegBtn.active .prSegLabel { color: var(--color-secondary-700); }
+.prSegBtn.active .prSegSub { color: var(--color-primary-500); }
+.prSegBtn:hover:not(.active) .prSegLabel { color: var(--color-secondary-400); }
+
+.prSep { height: 1px; background: var(--color-primary-100); margin: 0 1.2rem; }
+
+/* ── Second row: plan-type or billing ── */
+.prBillRow { padding: .85rem 1.2rem 1.1rem; }
+.prBillTrack { display: flex; border: 1.5px solid color-mix(in srgb, var(--color-primary-500) 40%, transparent); border-radius: 1rem; overflow: hidden; width: 100%; }
+.prBillBtn { flex: 1; display: flex; align-items: center; justify-content: center; gap: .65rem; padding: .85rem 1.2rem; border: none; background: var(--color-natural-50); cursor: pointer; font-size: 1.35rem; font-weight: 600; color: var(--color-accent-500); transition: all 220ms ease; white-space: nowrap; }
+.prBillBtn + .prBillBtn { border-inline-start: 1.5px solid color-mix(in srgb, var(--color-primary-500) 40%, transparent); }
+.prBillBtn.active { background: var(--color-primary-500); color: var(--color-natural-50); }
+.prBillBtn:hover:not(.active) { background: var(--color-primary-100); color: var(--color-secondary-400); }
+
+/* ── Host single card ── */
+.prHostCard { max-width: 600px; margin: 0 auto; background: var(--color-natural-50); border-radius: 2.4rem; padding: 3.5rem; border: none; box-shadow: 0 4px 24px color-mix(in srgb, var(--color-secondary-600) 10%, transparent); display: flex; flex-direction: column; gap: 2rem; }
+.prHostCardTop {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+  text-align: center;
+}
+
+/* ── Guest selector ── */
+.prGuestTrack { display: grid; grid-template-columns: repeat(5, 1fr); gap: .55rem; }
+.prGuestBtn { display: flex; flex-direction: column; align-items: center; gap: .2rem; padding: .55rem .35rem; border: 2px solid var(--color-primary-200); border-radius: .8rem; background: var(--color-natural-50); cursor: pointer; transition: all 220ms ease; }
+.prGuestBtn.active { border-color: var(--color-primary-500); background: var(--color-primary-100); }
+.prGuestNum { font-size: 1.5rem; font-weight: 800; color: var(--color-primary-500); line-height: 1; }
+.prGuestUnit { font-size: .95rem; font-weight: 500; color: var(--color-accent-500); }
+.prGuestBtn.active .prGuestNum { color: var(--color-primary-700); }
+.prGuestBtn.active .prGuestUnit { color: var(--color-primary-700); }
+.prGuestBtn:hover:not(.active) { border-color: var(--color-primary-300); background: var(--color-primary-50); }
+
+/* ── Host card price ── */
+.prHostPrice { display: flex; align-items: baseline; gap: .5rem; justify-content: center; }
+.prHostPriceNum { font-size: 4.8rem; font-weight: 800; color: var(--color-secondary-700); line-height: 1; }
+
+/* ── Features ── */
+.prFeatSection { flex: 1; }
+
+/* ── CTA footer ── */
+.prCardFooter { display: flex; flex-direction: column; gap: 1.5rem; }
+
+/* ── CTA button ── */
+.prBtn { width: 100%; padding: 1.25rem; border: none; border-radius: 1rem; background: var(--color-primary-500); color: var(--color-natural-50); font-size: 1.5rem; font-weight: 700; cursor: pointer; transition: all 250ms ease; text-decoration: none; display: block; text-align: center; }
+.prBtn:hover { background: var(--color-primary-700); transform: translateY(-2px); }
+.prBtnDark { background: var(--color-secondary-700); box-shadow: 0 4px 16px var(--color-black-20); }
+.prBtnDark:hover { background: var(--color-secondary-800); }
+
+/* ── Tagline (used in business cards) ── */
+.prCardTagline {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.55;
+  color: var(--color-primary-500);
+}
+
+/* ── Grid ── */
+.prGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem; max-width: 860px; margin: 0 auto; }
+
+/* ── Carousel wrapper ── */
+.carouselWrapper {
+  width: 100%;
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+/* ── Carousel controls (hidden on desktop) ── */
+.controls { display: none; }
+
+.ctrlBtn {
+  width: 3.6rem;
+  height: 3.6rem;
+  border-radius: 50%;
+  background: var(--color-natural-50);
+  border: 1.5px solid var(--color-primary-200);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all .2s ease;
+  color: var(--color-secondary-400);
+  flex-shrink: 0;
+}
+.ctrlBtn:hover:not(:disabled) {
+  background: var(--color-primary-500);
+  border-color: var(--color-primary-500);
+  color: var(--color-natural-50);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--color-primary-500) 30%, transparent);
+}
+.ctrlBtn:disabled { opacity: .3; cursor: default; }
+
+.dots { display: flex; align-items: center; gap: 0.8rem; flex-wrap: nowrap; overflow: hidden; }
+.dot {
+  width: 0.7rem; height: 0.7rem; border-radius: 50%;
+  background: var(--color-primary-200);
+  transition: all .25s ease; cursor: pointer; border: none; padding: 0; flex-shrink: 0;
+}
+.dotActive { width: 2rem; border-radius: 0.35rem; background: var(--color-primary-500); }
+
+/* ── Responsive ── */
+@media (max-width: 860px) {
+  .carouselWrapper {
+    max-width: none;
+    width: 100%;
+  }
+  .prHostCard { padding: 2.5rem }
+
+  .prGrid {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 2rem;
+    padding: 0.8rem 0 1rem;
+    grid-template-columns: unset;
+    max-width: none;
+  }
+  .prGrid::-webkit-scrollbar { display: none; }
+
+  .prGrid > * {
+    flex-shrink: 0;
+    width: min(80vw, 400px);
+    scroll-snap-align: center;
+  }
+
+  .controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1.6rem;
+    padding: 0;
+  }
+}
+@media (max-width: 640px) {
+  .prRoot { padding: 5.5rem 2rem; }
+  .prSelector { max-width: 100%; }
+  .prSegBtn { padding: .8rem 1rem; gap: .6rem; }
+  .prSegLabel { font-size: 1.25rem; }
+  .prSegSub { display: none; }
+  .prGuestTrack { gap: .4rem; }
+  .prGuestBtn { padding: .5rem .3rem; }
+  .prGuestNum { font-size: 1.3rem; }
+  .prGuestUnit { font-size: .85rem; }
+  .prHostPriceNum { font-size: 3.6rem; }
+  .prGrid { gap: 1.5rem; }
+  .prGrid > * { width: min(85vw, 360px); }
+  .controls { margin-top: 1.4rem; }
+}

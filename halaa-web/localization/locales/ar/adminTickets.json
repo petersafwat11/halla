@@ -1,0 +1,144 @@
+{
+  "attachment": {
+    "title": "المرفق",
+    "viewImage": "عرض الصورة",
+    "viewVideo": "عرض الفيديو",
+    "close": "إغلاق",
+    "openNewTab": "فتح في علامة تبويب جديدة"
+  },
+  "header": {
+    "title": "تذاكر الدعم",
+    "subtitle": "إدارة وحل تذاكر الدعم",
+    "dateRange": "نطاق التاريخ"
+  },
+  "stats": {
+    "totalTickets": "إجمالي التذاكر",
+    "openTickets": "التذاكر المفتوحة",
+    "resolvedTickets": "التذاكر المحلولة",
+    "inProgressTickets": "قيد المعالجة"
+  },
+  "table": {
+    "title": "قائمة التذاكر",
+    "searchPlaceholder": "البحث في التذاكر...",
+    "filter": "التصفية",
+    "export": "تصدير",
+    "columns": {
+      "ticketNumber": "رقم التذكرة",
+      "ticketType": "النوع",
+      "submittedBy": "مقدم الطلب",
+      "priority": "الأولوية",
+      "assignedTo": "المكلف",
+      "status": "الحالة",
+      "createdAt": "تاريخ الإنشاء"
+    }
+  },
+  "status": {
+    "open": "مفتوحة",
+    "inProgress": "قيد المعالجة",
+    "in_progress": "قيد المعالجة",
+    "waitingResponse": "بانتظار الرد",
+    "waiting_response": "بانتظار الرد",
+    "resolved": "محلولة",
+    "closed": "مغلقة"
+  },
+  "priority": {
+    "low": "منخفضة",
+    "normal": "عادية",
+    "medium": "متوسطة",
+    "high": "عالية",
+    "urgent": "عاجلة"
+  },
+  "ticketType": {
+    "technical": "فني",
+    "payment": "دفع",
+    "event": "فعالية",
+    "user": "مستخدم",
+    "other": "أخرى",
+    "inquiry": "استفسار",
+    "issue": "مشكلة",
+    "request": "طلب",
+    "suggestion": "اقتراح"
+  },
+  "actions": {
+    "viewDetails": "عرض التفاصيل",
+    "assign": "تكليف",
+    "resolve": "حل",
+    "reopen": "إعادة فتح",
+    "delete": "حذف",
+    "viewResolution": "عرض الحل",
+    "back": "رجوع"
+  },
+  "assign": {
+    "title": "تعيين التذكرة",
+    "ticketMessage": "الرسالة",
+    "currentlyAssigned": "معين حالياً إلى",
+    "selectModeratorLabel": "اختر المشرف",
+    "selectPlaceholder": "-- اختر مشرف --",
+    "superAdmin": "مدير عام",
+    "admin": "مدير",
+    "moderator": "مشرف",
+    "loading": "جاري تحميل المشرفين...",
+    "selectModerator": "يرجى اختيار مشرف",
+    "success": "تم تعيين التذكرة بنجاح",
+    "error": "فشل في تعيين التذكرة",
+    "fetchError": "فشل في جلب قائمة المشرفين",
+    "cancel": "إلغاء",
+    "submit": "تعيين",
+    "assigning": "جاري التعيين..."
+  },
+  "close": {
+    "title": "حل التذكرة",
+    "user": "المستخدم",
+    "type": "النوع",
+    "status": "الحالة",
+    "priority": "الأولوية",
+    "originalMessage": "الرسالة الأصلية",
+    "previousResolution": "الحل السابق",
+    "resolutionLabel": "رسالة الحل",
+    "resolutionPlaceholder": "اكتب ملخص الحل أو سبب الإغلاق هنا...",
+    "emptyMessage": "يرجى إدخال رسالة الحل",
+    "success": "تم حل التذكرة بنجاح",
+    "error": "فشل في حل التذكرة",
+    "cancel": "إلغاء",
+    "submit": "حل التذكرة",
+    "closing": "جاري الحل..."
+  },
+  "viewResolution": {
+    "title": "تفاصيل الحل",
+    "resolutionMessage": "رسالة الحل",
+    "resolvedBy": "تم الحل بواسطة",
+    "resolvedAt": "تاريخ الحل",
+    "close": "إغلاق"
+  },
+  "bulkActions": {
+    "resolve": "حل المحدد",
+    "delete": "حذف المحدد"
+  },
+  "errors": {
+    "loadFailed": "فشل في تحميل التذاكر"
+  },
+  "messages": {
+    "confirmDelete": "هل أنت متأكد من حذف هذه التذكرة؟",
+    "confirmBulkDelete": "هل أنت متأكد من حذف التذاكر المحددة؟",
+    "deleteSuccess": "تم حذف التذكرة بنجاح",
+    "deleteError": "فشل في حذف التذكرة",
+    "bulkDeleteSuccess": "تم حذف التذاكر بنجاح",
+    "bulkDeleteError": "فشل في حذف التذاكر",
+    "statusUpdateSuccess": "تم تحديث الحالة بنجاح",
+    "selectRows": "يرجى تحديد الصفوف",
+    "reopenSuccess": "تم إعادة فتح التذكرة بنجاح",
+    "reopenError": "فشل في إعادة فتح التذكرة",
+    "updateError": "فشل في تحديث التذكرة"
+  },
+  "dateRange": {
+    "all": "الكل",
+    "today": "اليوم",
+    "yesterday": "أمس",
+    "thisWeek": "هذا الأسبوع",
+    "lastWeek": "الأسبوع الماضي",
+    "thisMonth": "هذا الشهر",
+    "lastMonth": "الشهر الماضي",
+    "confirm": "تأكيد",
+    "cancel": "إلغاء"
+  }
+}

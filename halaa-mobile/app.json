@@ -1,0 +1,137 @@
+{
+  "expo": {
+    "name": "Halaa",
+    "slug": "halla",
+    "version": "1.0.0",
+    "scheme": "halaa",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "android": {
+      "package": "com.halaa.app",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION"
+      ],
+      "blockedPermissions": [
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA",
+        "android.permission.WRITE_CONTACTS"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "halaa.com.sa",
+              "pathPrefix": "/change-password"
+            },
+            {
+              "scheme": "https",
+              "host": "halaa.com.sa",
+              "pathPrefix": "/ar/change-password"
+            },
+            {
+              "scheme": "https",
+              "host": "halaa.com.sa",
+              "pathPrefix": "/en/change-password"
+            },
+            {
+              "scheme": "https",
+              "host": "halaa.com.sa",
+              "pathPrefix": "/invitation"
+            },
+            {
+              "scheme": "https",
+              "host": "halaa.com.sa",
+              "pathPrefix": "/ar/invitation"
+            },
+            {
+              "scheme": "https",
+              "host": "halaa.com.sa",
+              "pathPrefix": "/en/invitation"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
+    },
+    "ios": {
+      "bundleIdentifier": "com.halaa.app",
+      "buildNumber": "1",
+      "supportsTablet": true,
+      "associatedDomains": [
+        "applinks:halaa.com.sa"
+      ],
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "plugins": [
+      "expo-localization",
+      "expo-font",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "يستخدم هلا موقعك لمساعدتك في اختيار موقع المناسبة على الخريطة. Halaa uses your location to help you pick the event location on the map.",
+          "locationAlwaysAndWhenInUsePermission": false,
+          "locationAlwaysPermission": false
+        }
+      ],
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "نستخدم جهات اتصالك فقط لتختار ضيوف هذه المناسبة. لا نرفع دفتر هاتفك. Halaa accesses your contacts only so you can choose guests for this event; your phonebook is never uploaded."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "يستخدم هلا صور جهازك لإضافة صور المناسبات والملف الشخصي وصور الخدمات. Halaa uses your photos to add event, profile, and service images.",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#c28e5c"
+        }
+      ],
+      "expo-document-picker",
+      "expo-splash-screen",
+      "@sentry/react-native/expo"
+    ],
+    "newArchEnabled": true,
+    "sdkVersion": "54.0.0",
+    "extra": {
+      "eas": {
+        "projectId": "d5570c5a-d11b-4716-81d6-108939d72b22"
+      }
+    },
+    "owner": "petersafwat"
+  }
+}
