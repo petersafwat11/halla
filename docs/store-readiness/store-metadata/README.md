@@ -31,7 +31,7 @@ only fails on an actual over-limit value.
 ## Facts that ARE approved (safe to submit)
 
 - **App name:** `هلا` / `Halaa` (matches `app.json`; ≤30 chars both).
-- **Bundle/package:** `com.halla.app`.
+- **Bundle/package:** `com.halaa.app`.
 - **Availability:** Saudi Arabia only (signed D2).
 - **Legal/support/marketing URLs:** `https://halaa.com.sa/<lang>/{privacy,terms,refund,community-rules,support,delete-account}` and `https://halaa.com.sa/<lang>` (Session 5 — live + indexable).
 - **Feature set** (truthful, from code): event creation/management, digital
@@ -59,12 +59,11 @@ Persuasive/marketing (owner sign-off) — **per platform × AR/EN**:
 11. **Screenshot captions** — derive from the approved description (same gate).
 12. **Age-rating questionnaire** — final answers (owner).
 
-Contact/identity (carried over from Session 5 — do NOT re-resolve, reuse the
-existing `BLOCKED_NEEDS_OWNER` placeholders):
+Contact/identity status (updated by the 2026-08-13 legal/privacy audit):
 
-13. **Legal entity name** — 2-way conflict.
-14. **Support email** — 2-way conflict (`support@halaa.net` vs `support@halaa.com.sa`).
-15. **Support phone / WhatsApp** — provisional `+966552619282`.
+13. **Legal entity name** — working English value selected; exact English and Arabic Commercial Registration names still require confirmation.
+14. **Support email** — approved `support@halaa.com.sa`; `.net` is stale and prohibited.
+15. **Support phone / WhatsApp** — approved normalized value `+966552619282`.
 16. **Postal address** — provisional Jeddah address.
 17. **Support response SLA / hours**.
 18. **Data-safety legal characterizations + retention durations** (`RETENTION_MATRIX_FINALIZED=false`).

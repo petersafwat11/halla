@@ -14,12 +14,10 @@ import AppStoreButtons from "../../commen/AppStoreButtons/AppStoreButtons";
 import { useTranslation } from "react-i18next";
 import { LEGAL_CONTACT } from "@halaa/shared/legal";
 
-// Single source of truth for contact (`@halaa/shared/legal`). PROVISIONAL and
-// owner-gated (BLOCKED_NEEDS_OWNER): the support email conflict (halaa.net vs
-// halaa.com.sa) resolves to the domain-consistent halaa.com.sa placeholder here
-// until the owner confirms — no more per-file hardcoded contact strings.
-const SUPPORT_EMAIL = LEGAL_CONTACT.supportEmail.provisional;
-const PHONE = LEGAL_CONTACT.phone.provisional;
+// Single source of truth for owner-approved contact facts.
+const SUPPORT_EMAIL = LEGAL_CONTACT.supportEmail.value;
+const PHONE = LEGAL_CONTACT.phone.value;
+const PHONE_DISPLAY = LEGAL_CONTACT.phone.display;
 const PHONE_DIGITS = String(PHONE).replace(/[^0-9+]/g, "");
 
 const Footer = ({ lang = "ar" }) => {
@@ -37,7 +35,7 @@ const Footer = ({ lang = "ar" }) => {
           <div className={styles.contactInfo}>
             <a href={`tel:${PHONE_DIGITS}`} className={styles.contactLink}>
               <Image src="/svg/phone.svg" alt="phone" width={18} height={18} className={styles.contactIcon} />
-              <span dir="ltr" style={{ unicodeBidi: "embed", display: "inline-block" }}>{PHONE}</span>
+              <span dir="ltr" style={{ unicodeBidi: "embed", display: "inline-block" }}>{PHONE_DISPLAY}</span>
             </a>
 
             <a href={`mailto:${SUPPORT_EMAIL}`} className={styles.contactLink}>

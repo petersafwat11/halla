@@ -6,6 +6,7 @@ import styles from "./page.module.css";
 import ImageCarousel from "@/ui/commen/imageCarousel/ImageCarousel";
 import LangToggle from "@/ui/common/LangToggle";
 import { usePathname } from "next/navigation";
+import LegalSurfaceLinks from "@/ui/common/LegalSurfaceLinks";
 
 const Page = ({ children }) => {
   const pathname = usePathname();
@@ -31,6 +32,10 @@ const Page = ({ children }) => {
             </div>
           </header>
           {children}
+          <LegalSurfaceLinks
+            lang={lang}
+            documents={["terms", "privacy", "community-rules", "support"]}
+          />
         </div>
         {shouldShowSlider && (
           <div className={styles.left}>

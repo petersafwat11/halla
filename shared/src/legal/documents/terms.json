@@ -1,12 +1,12 @@
 {
   "ar": {
     "documentType": "terms",
-    "version": "2026-02-03",
+    "version": "2026-08-13",
     "locale": "ar",
     "authoritativeLanguage": "ar",
-    "effectiveDate": null,
-    "lastUpdated": "24 نوفمبر 2025",
-    "ownerApproval": "BLOCKED_NEEDS_OWNER",
+    "effectiveDate": "13 أغسطس 2026",
+    "lastUpdated": "13 أغسطس 2026",
+    "ownerApproval": "OWNER_APPROVED",
     "badge": "الشروط والأحكام",
     "title": "الشروط والأحكام",
     "subtitle": "منصة هلا",
@@ -17,7 +17,7 @@
         "num": "1",
         "label": "المادة الأولى",
         "title": "التعاريف",
-        "body": "لأغراض هذه الشروط والأحكام، يقصد بالشركة مؤسسة هلا الرقمية للتقنية بصفتها المالك والمشغل لمنصة وتطبيق هلا والمسجلة لدى وزارة التجارة في المملكة العربية السعودية. ويقصد بمنصة وتطبيق هلا المنصة الإلكترونية والتطبيق المرتبط بها اللذان يهدفان إلى خدمة أصحاب المناسبات مثل حفلات الزفاف والخطوبة والتخرج والاستقبالات والاجتماعات العائلية وغيرها، من خلال إدارة وتوجيه الدعوات وتنظيم دخول المدعوين وإدارة بياناتهم. ويقصد بالمستخدم أي شخص طبيعي أو اعتباري يقوم باستخدام منصة أو تطبيق هلا بأي صفة كانت، سواء كان زائراً أو صاحب مناسبة أو داعياً إضافياً أو مدعوّاً أو مشرف بوابة أو مصمم بطاقات دعوة أو ممثلاً عن جهة أو مؤسسة أو شركة."
+        "body": "لأغراض هذه الشروط والأحكام، يقصد بالشركة افاق هلا للاتصالات والمعلومات (Afaq hala Company For Communications and Information) بصفتها المالك والمشغل لمنصة وتطبيق هلا والمسجلة لدى وزارة التجارة في المملكة العربية السعودية. ويقصد بمنصة وتطبيق هلا المنصة الإلكترونية والتطبيق المرتبط بها لخدمة أصحاب المناسبات والمنشآت ومقدّمي الخدمات والضيوف من خلال إدارة الدعوات والمناسبات والحضور والخدمات المرتبطة بها. ويقصد بالمستخدم أي شخص طبيعي أو اعتباري يستخدم منصة أو تطبيق هلا بأي صفة."
       },
       {
         "id": "article-2",
@@ -101,14 +101,14 @@
         "num": "13",
         "label": "المادة الثالثة عشرة",
         "title": "سياسة البيع والشراء والدفع",
-        "body": "تحتفظ الشركة بحقها في تعديل أسعار الخدمات والمنتجات المتاحة عبر منصة وتطبيق هلا في أي وقت، وعلى المستخدم الاطلاع على الأسعار المحدثة قبل إتمام عملية الشراء. وتتيح الشركة وسائل دفع معتمدة مثل البطاقات الائتمانية وبطاقات مدى ووسائل الدفع الرقمية والتحويل البنكي، ويجوز لها إضافة أو إيقاف أي وسيلة دفع وفقاً لتقديرها. ويقر المستخدم بالتأكد من توافر الرصيد الكافي في وسيلة الدفع التي يستخدمها، وبأن المبالغ المدفوعة نظير الخدمات التي تم تنفيذها وجرى من خلالها إرسال الدعوات لا تكون قابلة للاسترداد إلا في الحالات التي تعلنها الشركة صراحةً. وفي حال عدم سداد رسوم خدمة أو مناسبة جديدة خلال المدة التي تحددها الشركة، يحق للشركة تعليق المناسبة أو حذفها بعد مدة قد تصل إلى ثلاثين يوماً، كما يحق لها تعليق أو إيقاف الحساب في حال تراكم مناسبات غير مسددة. وتكون رسوم الخدمات غير شاملة لأي مصاريف تحويل أو ضرائب أو رسوم حكومية أخرى ما لم يذكر خلاف ذلك، ويتحمل المستخدم تلك التكاليف عند الاقتضاء."
+        "body": "يجوز للشركة تعديل أسعار الخدمات والمنتجات، وعلى المستخدم مراجعة السعر والضريبة المعروضين قبل الشراء. تشمل وسائل الدفع المتاحة البطاقات الائتمانية وبطاقات مدى ووسائل الدفع الرقمية والتحويل البنكي ومشتريات Apple أو Google داخل التطبيق بحسب المنتج والمنصة. تخضع الاشتراكات وباقات المناسبات والدعوات الإضافية وخدمات التصميم أو التخصيص لأحكام سياسة الإلغاء والاشتراكات والاسترداد المنشورة؛ ولا يُسترد الجزء المستهلك أو العمل المنفذ، مع بقاء الحقوق الإلزامية المقررة نظاماً. وقد يؤدي عدم السداد إلى تعليق الخدمة أو المناسبة أو الحساب وفق هذه الشروط. ولا تشمل الرسوم مصاريف التحويل أو الضرائب أو الرسوم الحكومية ما لم يُذكر خلاف ذلك."
       },
       {
         "id": "article-14",
         "num": "14",
         "label": "المادة الرابعة عشرة",
         "title": "سياسة الاسترجاع والإلغاء",
-        "body": "يجوز للمستخدم، وفقاً للضوابط التي تعتمدها الشركة، طلب إلغاء المناسبة واسترجاع المبلغ المدفوع إذا لم يكن قد استخدم أو أرسل أي من بطاقات الدعوة المرتبطة بتلك المناسبة، وكان طلب الإلغاء قبل موعد المناسبة بمدة لا تقل عن اثنتين وسبعين ساعة. وإذا تضمنت الخدمة طلب تصميم خاص مدفوع، فيجوز للشركة خصم قيمة التصميم الذي تم تنفيذه واسترجاع باقي المبلغ للمستخدم متى استوفى شروط الإلغاء المشار إليها. وتحتفظ الشركة بحقها في بيان الحالات التي يقبل فيها الاسترجاع أو يرفض، بما يتوافق مع طبيعة الخدمة الرقمية."
+        "body": "تُطبّق سياسة الإلغاء والاشتراكات والاسترداد المنشورة باعتبارها المرجع التفصيلي. وبوجه عام، يجوز استرداد باقة مناسبة غير مستخدمة إذا لم تُرسل دعوات وكان الطلب قبل المناسبة باثنتين وسبعين ساعة على الأقل. يؤدي إلغاء الاشتراك إلى وقف التجديد التالي مع استمرار الوصول حتى نهاية الفترة المدفوعة ولا ينشئ استرداداً نسبياً تلقائياً. الدعوات والأرصدة المستهلكة والعمل المنفذ أو تكاليف التصميم والتهيئة التي بدأت غير قابلة للاسترداد؛ ويجوز مراجعة الجزء غير المستخدم عند إمكان عكسه فنياً. تتولى Apple أو Google طلبات استرداد مشتريات المتجر وفق سياساتهما، ولا تحد هذه الأحكام من الحقوق الإلزامية المقررة نظاماً."
       },
       {
         "id": "article-15",
@@ -143,7 +143,7 @@
         "num": "19",
         "label": "المادة التاسعة عشرة",
         "title": "حدود المسؤولية",
-        "body": "تُقدّم منصة وتطبيق هلا والخدمات المرتبطة بهما كما هي ووفقاً لما هو متاح دون أي ضمانات صريحة أو ضمنية تتعلق بملاءمة الخدمات لغرض معين أو بخلوها من الأخطاء أو بانقطاعها أو باستمرارية عملها دون أعطال. ولا تتحمل الشركة أو موظفوها أو وكلاؤها أو مرخِّصوها أي مسؤولية عن أي أضرار مباشرة أو غير مباشرة أو تبعية أو خاصة أو طارئة تنشأ عن استخدام المنصة أو التطبيق أو العجز عن استخدامهما أو الاعتماد على أي من خدماتهما أو عن تعطل أنظمة الاتصالات أو مزودي الخدمات أو عدم وصول بعض الدعوات أو تأخرها، وذلك في الحدود التي يسمح بها النظام. ويقر المستخدم بأن مسؤولية الشركة في الاحتفاظ بالبيانات لا تتجاوز مدة سنتين."
+        "body": "تُقدّم منصة وتطبيق هلا والخدمات المرتبطة بهما كما هي ووفقاً لما هو متاح دون ضمان تشغيل خالٍ تماماً من الانقطاع أو الأخطاء. وتكون المسؤولية عن الأضرار الناشئة عن الاستخدام أو تعطل الاتصالات أو مزوّدي الخدمات في الحدود التي يسمح بها النظام. تخضع مدة الاحتفاظ بالبيانات لسياسة الخصوصية وسياسة حذف الحساب والالتزامات النظامية، ولا يسري عليها حد عام مدته سنتان."
       },
       {
         "id": "article-20",
@@ -177,8 +177,8 @@
         "id": "article-24",
         "num": "24",
         "label": "المادة الرابعة والعشرون",
-        "title": "الإعلانات",
-        "body": "تقر بأن بعض خدمات منصة وتطبيق هلا قد تكون مدعومة بإيرادات إعلانية، وبناءً على ذلك يجوز للشركة عرض إعلانات ومواد ترويجية في مساحات مخصصة داخل المنصة أو التطبيق أو ضمن الرسائل التسويقية، وقد تستهدف هذه الإعلانات محتوى أو استفسارات أو بيانات استخدام معينة، ويعد استمرارك في استخدام الخدمات قبولاً منك بظهور تلك الإعلانات."
+        "title": "الاتصالات التسويقية",
+        "body": "لا تستخدم هلا حالياً بيانات المستخدم للتتبع الإعلاني عبر تطبيقات أو مواقع شركات أخرى. ولا تُرسل الاتصالات التسويقية الاختيارية إلا وفق السند النظامي المناسب مع توفير وسيلة للانسحاب. ولا يُعد استمرار استخدام الخدمة موافقة على تسويق اختياري غير مرتبط بتقديمها."
       },
       {
         "id": "article-25",
@@ -198,12 +198,12 @@
   },
   "en": {
     "documentType": "terms",
-    "version": "2026-02-03",
+    "version": "2026-08-13",
     "locale": "en",
     "authoritativeLanguage": "ar",
-    "effectiveDate": null,
-    "lastUpdated": "03 February 2026",
-    "ownerApproval": "BLOCKED_NEEDS_OWNER",
+    "effectiveDate": "13 August 2026",
+    "lastUpdated": "13 August 2026",
+    "ownerApproval": "OWNER_APPROVED",
     "badge": "Terms & Conditions",
     "title": "Terms and Conditions",
     "subtitle": "Halaa Platform",
@@ -214,7 +214,7 @@
         "num": "1",
         "label": "Article One",
         "title": "Definitions",
-        "body": "For the purposes of these Terms and Conditions, \"the Company\" refers to Halaa Digital Technology Establishment, as the owner and operator of the Halaa Platform and Application, duly registered with the Ministry of Commerce in the Kingdom of Saudi Arabia.\n\n\"Halaa Platform and Application\" refers to the electronic platform and its associated mobile application intended to serve event hosts — such as weddings, engagements, graduations, receptions, family gatherings, and similar events — by managing and directing invitations, organizing guest entry, and managing guest data.\n\n\"User\" refers to any natural or legal person who uses the Halaa Platform or Application in any capacity whatsoever, whether as a visitor, event host, additional inviter, invitee, gate supervisor, invitation designer, or representative of an entity, institution, or company."
+        "body": "For these Terms, \"the Company\" means Afaq hala Company For Communications and Information (افاق هلا للاتصالات والمعلومات), owner and operator of the Halaa Platform and Application and registered with the Ministry of Commerce in the Kingdom of Saudi Arabia. The Halaa Platform and Application serve personal and business event hosts, vendors, guests, and event staff through invitation, event, attendance, and related service management. A User is any natural or legal person using the Platform or Application in any capacity."
       },
       {
         "id": "article-2",
@@ -298,14 +298,14 @@
         "num": "13",
         "label": "Article Thirteen",
         "title": "Sales, Purchases, and Payments",
-        "body": "The Company may modify service prices at any time. Users must review current pricing before purchase.\n\nAccepted payment methods include credit cards, Mada cards, digital payments, and bank transfers.\n\nExecuted services and sent invitations are non-refundable except where expressly stated. Failure to pay may result in suspension or deletion of events or accounts. Service fees exclude transfer fees, taxes, or governmental charges unless stated otherwise."
+        "body": "The Company may modify service and product prices; users must review the displayed price and tax before purchase. Available payment methods may include credit cards, Mada, digital payments, bank transfers, and Apple or Google in-app purchases, depending on the product and platform. Subscriptions, event packages, extra invitations, and design or customization services are governed by the published Cancellation, Subscription & Refund Policy. Consumed benefits and completed work are not refundable, subject always to mandatory legal rights. Non-payment may result in suspension of a service, event, or account. Fees exclude transfer costs, taxes, or governmental charges unless stated otherwise."
       },
       {
         "id": "article-14",
         "num": "14",
         "label": "Article Fourteen",
         "title": "Refund and Cancellation Policy",
-        "body": "Users may request cancellation and refunds in accordance with Company guidelines if no invitations have been sent and the request is made at least 72 hours before the event.\n\nCustom design fees may be deducted. The Company retains discretion regarding refund eligibility based on the digital nature of services."
+        "body": "The published Cancellation, Subscription & Refund Policy is the detailed controlling policy. In summary, an unused event package may be refundable where no invitations were sent and the request is made at least 72 hours before the event. Cancelling a subscription stops the next renewal while access continues through the paid period and does not automatically create a prorated refund. Consumed invitations or credits and completed design or provisioning work are not refundable; an unused portion may be reviewed when technically reversible. Apple or Google handles refunds for store purchases under its policies. Nothing in these terms limits mandatory rights under applicable law."
       },
       {
         "id": "article-15",
@@ -340,7 +340,7 @@
         "num": "19",
         "label": "Article Nineteen",
         "title": "Limitation of Liability",
-        "body": "The Platform and services are provided \"as is\" and \"as available\" without warranties of uninterrupted or error-free operation.\n\nThe Company shall not be liable for direct or indirect damages arising from use, inability to use, communication failures, service delays, or data loss, to the extent permitted by law. The Company's obligation to retain data does not exceed two (2) years."
+        "body": "The Platform and services are provided \"as is\" and \"as available\" without a guarantee of completely uninterrupted or error-free operation. Liability for loss arising from use, communications failures, or service-provider outages applies only to the extent permitted by law. Data retention is governed by the Privacy Policy, Account and Data Deletion Policy, and applicable legal obligations; no general two-year maximum applies."
       },
       {
         "id": "article-20",
@@ -374,8 +374,8 @@
         "id": "article-24",
         "num": "24",
         "label": "Article Twenty-Four",
-        "title": "Advertising",
-        "body": "Some services may be supported by advertising. The Company may display promotional materials within the Platform or marketing communications. Continued use constitutes acceptance of such advertising."
+        "title": "Marketing Communications",
+        "body": "Halaa does not currently use user data to track users for advertising across other companies' apps or websites. Optional marketing communications are sent only under an appropriate legal basis with a way to opt out. Continued service use is not consent to unrelated optional marketing."
       },
       {
         "id": "article-25",

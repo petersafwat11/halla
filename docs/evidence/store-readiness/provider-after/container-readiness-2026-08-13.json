@@ -1,0 +1,57 @@
+{
+  "checkpoint": "APP_CONTAINERS_IN_PROGRESS",
+  "observedAt": "2026-08-13T03:43:51.8320732+03:00",
+  "sourceCommit": "4d0c815e69548f52d6323e1e97f41fd79ac7322f",
+  "catalog": {
+    "version": "1.0.0",
+    "hash": "7410b2c6f950400ddfe62d0d2ba9e50caee361ca0594e5b6505b89e5050c0071",
+    "manifestSha256": "ba74c791a3ad103dd4950de88b6b40673af38bb7882add2e5ca25f4fd3faded7",
+    "verification": "pass_26_of_26"
+  },
+  "apple": {
+    "bundleIdRegistered": true,
+    "bundleId": "com.halaa.app",
+    "capabilities": [
+      "ASSOCIATED_DOMAINS",
+      "PUSH_NOTIFICATIONS",
+      "IN_APP_PURCHASE"
+    ],
+    "appContainerCreated": true,
+    "appStoreConnectAppId": "6800947115",
+    "name": "Halaa",
+    "primaryLanguage": "Arabic",
+    "sku": "HALAA-IOS-001",
+    "submissionAttempted": false
+  },
+  "googlePlay": {
+    "name": "Halaa",
+    "packageName": "com.halaa.app",
+    "defaultLanguage": "Arabic",
+    "applicationType": "APP",
+    "pricing": "FREE",
+    "appContainerCreated": false,
+    "ownerDeclarationsPending": [
+      "DEVELOPER_PROGRAM_POLICIES",
+      "PLAY_APP_SIGNING_TERMS",
+      "US_EXPORT_LAWS"
+    ],
+    "releaseUploaded": false
+  },
+  "revenueCat": {
+    "projectId": "projc49d20a4",
+    "appleConfigurationPrepared": true,
+    "appleConfigurationCreated": false,
+    "blocker": "APPLE_IN_APP_PURCHASE_P8_KEY_REQUIRED",
+    "googleConfigurationCreated": false
+  },
+  "eas": {
+    "authenticatedAccount": "petersafwat",
+    "projectId": "d5570c5a-d11b-4716-81d6-108939d72b22",
+    "expoDoctor": "pass_18_of_18",
+    "mobileTests": "pass_36_of_36",
+    "previewEnvironmentVariablesConfigured": false,
+    "buildStarted": false
+  },
+  "externalSubmissions": 0,
+  "secretsCaptured": false
+}

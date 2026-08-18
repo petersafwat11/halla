@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "mode": "DRY_RUN",
+  "externalWrites": 0,
+  "provider": "revenueCat",
+  "stage": "full",
+  "source": {
+    "catalogVersion": "1.0.0",
+    "catalogHash": "20d07092eeb8684a3a82acc987bd07355f3e1952ed47e6ec50c966315aca8499",
+    "manifestSha256": "cd2b56ef217d10663569156f7a2a0d830822dc99ed50d2893edce63b0d0e6939"
+  },
+  "actualStateBasis": "READ_ONLY_EXPORT",
+  "actualStateHash": "cc2fb0053ef6c3912ae4afdf9de7db8a625602d4a96186a32145df2422a2168f",
+  "blockers": [],
+  "conflicts": [],
+  "operations": [],
+  "planHash": "56c216d7a5825a43da83a2500f1a0c954b82b708300e5efe3648372f2955229c"
+}

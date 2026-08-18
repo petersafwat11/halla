@@ -14,7 +14,11 @@ const servicesService = require('./services.service');
  */
 exports.getPublicServices = catchAsync(async (req, res) => {
   const { page, limit, ...filters } = req.query;
-  const options = { page: parseInt(page) || 1, limit: parseInt(limit) || 20 };
+  const options = {
+    page: parseInt(page) || 1,
+    limit: parseInt(limit) || 20,
+    viewerId: req.user?._id,
+  };
 
   const result = await servicesService.getPublicServices(filters, options);
 
@@ -50,7 +54,12 @@ exports.getMyStats = catchAsync(async (req, res) => {
 exports.getService = catchAsync(async (req, res) => {
   const isVendorOwner = req.user?.role === 'vendor';
   const ownerId = isVendorOwner ? req.user._id : null;
-  const result = await servicesService.getServiceById(req.params.id, ownerId, !isVendorOwner);
+  const result = await servicesService.getServiceById(
+    req.params.id,
+    ownerId,
+    !isVendorOwner,
+    req.user?._id
+  );
   sendSuccess(res, result);
 });
 

@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "catalogHash": "7410b2c6f950400ddfe62d0d2ba9e50caee361ca0594e5b6505b89e5050c0071",
+  "generatedLocalizationDescriptionsApproved": true,
+  "apple": {
+    "pricePointIds": {},
+    "subscriptionLevels": {
+      "com.halaa.business_annual": 1,
+      "com.halaa.business_quarterly": 1,
+      "com.halaa.premium_monthly_200": 2,
+      "com.halaa.premium_monthly_150": 3,
+      "com.halaa.premium_monthly_100": 4,
+      "com.halaa.premium_monthly_75": 5,
+      "com.halaa.premium_monthly_50": 6,
+      "com.halaa.premium_monthly_25": 7,
+      "com.halaa.basic_monthly_200": 8,
+      "com.halaa.basic_monthly_150": 9,
+      "com.halaa.basic_monthly_100": 10,
+      "com.halaa.basic_monthly_75": 11,
+      "com.halaa.basic_monthly_50": 12,
+      "com.halaa.basic_monthly_25": 13
+    }
+  },
+  "revenueCat": {
+    "existingTestStoreDisposition": null
+  },
+  "approvalEvidence": {
+    "approvedAt": "2026-08-16",
+    "approvedBy": "owner-delegated user in Codex task",
+    "scope": [
+      "generated AR/EN product copy",
+      "frozen catalog SAR target prices",
+      "proposed Apple subscription levels"
+    ]
+  }
+}

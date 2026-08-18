@@ -26,7 +26,12 @@ exports.getPublicVendors = catchAsync(async (req, res) => {
   if (req.query.rating !== undefined) filters.rating = req.query.rating;
 
   const language = req.query.lang || req.headers['accept-language'];
-  const result = await vendorsService.getPublicVendors(filters, { page, limit, language });
+  const result = await vendorsService.getPublicVendors(filters, {
+    page,
+    limit,
+    language,
+    viewerId: req.user?._id,
+  });
   sendPaginated(res, result.data, result.pagination);
 });
 
@@ -36,7 +41,10 @@ exports.getPublicVendors = catchAsync(async (req, res) => {
  */
 exports.getPublicVendor = catchAsync(async (req, res) => {
   const language = req.query.lang || req.headers['accept-language'];
-  const result = await vendorsService.getPublicVendorById(req.params.vendorId, { language });
+  const result = await vendorsService.getPublicVendorById(req.params.vendorId, {
+    language,
+    viewerId: req.user?._id,
+  });
   sendSuccess(res, result);
 });
 

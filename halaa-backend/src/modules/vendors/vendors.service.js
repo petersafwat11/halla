@@ -16,6 +16,7 @@ const {
 const { NotFoundError } = require("../../shared/errors");
 const { signStoredImage, signStoredImages } = require("../../shared/utils/s3Upload");
 const { normalizePhoneNumber, validateAndFormatPhone } = require("../../shared/utils/phone");
+const moderationService = require("../moderation/moderation.service");
 
 const PUBLIC_VENDOR_SELECT = [
   "name",
@@ -174,13 +175,21 @@ class VendorsService {
     const limit = Math.min(100, Math.max(1, Number(options.limit) || 12));
     const language = safeLanguage(options.language);
     const query = this._buildPublicVendorQuery(filters);
+    const blocked = await moderationService.getBlockedKeySet("user", options.viewerId);
+    const blockedVendorIds = [...blocked]
+      .filter((key) => key.startsWith("user:"))
+      .map((key) => key.slice("user:".length));
+    if (blockedVendorIds.length) query._id = { $nin: blockedVendorIds };
 
     if (hasValue(filters.minPrice) || hasValue(filters.maxPrice)) {
       const priceQuery = { status: SERVICE_STATUS.ACTIVE, isPublic: true, price: {} };
       if (hasValue(filters.minPrice)) priceQuery.price.$gte = Number(filters.minPrice);
       if (hasValue(filters.maxPrice)) priceQuery.price.$lte = Number(filters.maxPrice);
       const ids = await Service.distinct("vendorId", priceQuery);
-      query._id = { $in: ids.length ? ids : [null] };
+      query._id = {
+        ...(query._id || {}),
+        $in: ids.length ? ids : [null],
+      };
     }
 
     const candidateDocs = await User.find(query).select(PUBLIC_VENDOR_SELECT).lean();
@@ -206,6 +215,8 @@ class VendorsService {
 
   async getPublicVendorById(vendorId, options = {}) {
     if (!mongoose.isValidObjectId(vendorId)) throw new NotFoundError("Vendor");
+    const blocked = await moderationService.getBlockedKeySet("user", options.viewerId);
+    if (blocked.has(`user:${vendorId}`)) throw new NotFoundError("Vendor");
     const vendor = await User.findOne({
       _id: vendorId,
       role: "vendor",

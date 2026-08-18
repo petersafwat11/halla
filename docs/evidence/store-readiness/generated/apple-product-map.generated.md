@@ -39,7 +39,6 @@ One row per store-eligible product. `consumable` / `auto_renewable_subscription`
 | com.halaa.business_event_150 | consumable | Halaa Business 150 Invites | 540 | business_plans |
 | com.halaa.business_event_200 | consumable | Halaa Business 200 Invites | 700 | business_plans |
 | com.halaa.business_quarterly | auto_renewable_subscription | Halaa Business — 3-Month Subscription | 3000 | business_plans |
-| com.halaa.business_annual | auto_renewable_subscription | Halaa Business — Annual Subscription | 10000 | business_plans |
 | com.halaa.extra_invites_10 | consumable | 10 Extra Invites | 40 | host_addons |
 | com.halaa.extra_invites_20 | consumable | 20 Extra Invites | 80 | host_addons |
 | com.halaa.extra_invites_30 | consumable | 30 Extra Invites | 120 | host_addons |

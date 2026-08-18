@@ -1,5 +1,5 @@
 /**
- * Canonical legal documents (structure — content pending owner/counsel sign-off).
+ * Canonical legal documents with owner-approved AR/EN copy.
  *
  * The authoritative content lives as inert JSON under `./documents/*.json` in the
  * `{ ar, en }` render shape that BOTH the web `LegalPage` and the mobile
@@ -9,9 +9,8 @@
  * legal-manifest generation time (JSON is language-agnostic), mirroring the
  * commerce catalog manifest.
  *
- * IMPORTANT: no document here is legally approved. Every doc carries
- * `ownerApproval: "BLOCKED_NEEDS_OWNER"` until Saudi counsel/owner signs the exact
- * copy, entity/contact data, retention periods, and refund/subscription wording.
+ * Every document records `ownerApproval: "OWNER_APPROVED"`. Counsel review and
+ * production publication remain separate release evidence where applicable.
  */
 
 import privacy from "./documents/privacy.json";

@@ -11,35 +11,19 @@
  * /delete-account page, and the privacy policy.
  */
 
-// Collections retained for legal/accounting/anti-fraud reasons. The user record
-// they reference is anonymized, so these rows are pseudonymized (no restorable
-// personal identifiers), not personal data.
-const RETAINED = [
-  {
-    collection: "payments",
-    reason: "Financial/accounting and tax/audit obligations",
-    durationDays: 365 * 10,
-    pseudonymized: true,
-  },
-  {
-    collection: "subscriptions",
-    reason: "Billing history and chargeback/refund audit",
-    durationDays: 365 * 10,
-    pseudonymized: true,
-  },
-  {
-    collection: "auditlogs",
-    reason: "Security/abuse audit trail (IDs + actions only; no restored PII)",
-    durationDays: 365 * 7,
-    pseudonymized: true,
-  },
-  {
-    collection: "businessplanassignments",
-    reason: "B2B contract accounting",
-    durationDays: 365 * 10,
-    pseudonymized: true,
-  },
-];
+const operations = require("../legal/privacyOperations.generated.json");
+
+// Compatibility view used by the deletion disclosure/API. Durations now come
+// from the generated owner-approved operations contract, never hand-maintained.
+const RETAINED = operations.retentionRules.map((rule) => ({
+  collection: rule.collection,
+  reason: rule.legalBasis,
+  durationDays: rule.durationDays || rule.durationYears * 365,
+  durationYears: rule.durationYears || null,
+  retentionAnchor: rule.retentionAnchor,
+  pseudonymized: true,
+  policyRuleId: rule.id,
+}));
 
 // Flip via env once legal confirms the retained-field list/reasons/durations.
 const LEGAL_FINALIZED = process.env.RETENTION_MATRIX_FINALIZED === "true";
@@ -52,4 +36,10 @@ const DISCLOSURE = {
     "بعد الحذف نزيل بياناتك الشخصية نهائيًا (الملف الشخصي والمناسبات والضيوف والصور والتعليقات والتذاكر والإشعارات). ولأسباب قانونية وضريبية ومكافحة الاحتيال نحتفظ بسجلات مالية وتدقيقية مجهّلة الهوية (المدفوعات والاشتراكات وسجلات التدقيق) للمدة التي يفرضها القانون، وهي غير مرتبطة بمعرّفات شخصية قابلة للاستعادة.",
 };
 
-module.exports = { RETAINED, LEGAL_FINALIZED, DISCLOSURE };
+module.exports = {
+  RETAINED,
+  LEGAL_FINALIZED,
+  DISCLOSURE,
+  POLICY_HASH: operations.policyHash,
+  POLICY_VERSION: operations.policyVersion,
+};

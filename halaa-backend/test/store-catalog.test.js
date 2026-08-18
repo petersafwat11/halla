@@ -50,10 +50,10 @@ test("exactly 34 database plans, correct per planType", () => {
   });
 });
 
-test("exactly 32 store-eligible plans (18 event consumables + 14 subscriptions)", () => {
-  assert.equal(storePlans.length, 32);
+test("exactly 31 store-eligible plans (18 event consumables + 13 subscriptions)", () => {
+  assert.equal(storePlans.length, 31);
   assert.equal(counts.eventConsumables, 18);
-  assert.equal(counts.subscriptions, 14);
+  assert.equal(counts.subscriptions, 13);
 });
 
 test("exactly 22 add-ons, all store-eligible", () => {
@@ -63,15 +63,15 @@ test("exactly 22 add-ons, all store-eligible", () => {
   assert.equal(DESIGN_TEMPLATE_TIERS.length, 5);
 });
 
-test("exactly 54 proposed store products per platform", () => {
-  assert.equal(counts.proposedProductsPerPlatform, 54);
+test("exactly 53 proposed store products per platform", () => {
+  assert.equal(counts.proposedProductsPerPlatform, 53);
   const iosIds = catalog.filter((e) => e.iosProductId).map((e) => e.iosProductId);
   const androidIds = catalog.filter((e) => e.androidProductId).map((e) => e.androidProductId);
-  assert.equal(iosIds.length, 54);
-  assert.equal(androidIds.length, 54);
+  assert.equal(iosIds.length, 53);
+  assert.equal(androidIds.length, 53);
 });
 
-test("zero trial / unlimited store products", () => {
+test("zero trial / unlimited / business_annual store products", () => {
   for (const e of catalog) {
     if (e.isTrial || e.isUnlimited || e.planType === "trial" || e.planType === "unlimited") {
       assert.equal(e.storeEligible, false, `${e.internalCode} must not be store-eligible`);
@@ -82,7 +82,16 @@ test("zero trial / unlimited store products", () => {
       assert.equal(e.isProviderExcluded, true);
     }
   }
-  assert.equal(counts.nonStore, 2);
+  // business_annual removed from stores by owner directive (2026-08-16):
+  // internal/admin-only like trial & unlimited — zero store products anywhere.
+  const annual = catalog.find((e) => e.internalCode === "business_annual");
+  assert.equal(annual.storeEligible, false);
+  assert.equal(annual.kind, "internal");
+  assert.equal(annual.iosProductId, null);
+  assert.equal(annual.androidProductId, null);
+  assert.equal(annual.revenueCatEntitlementId, null);
+  assert.equal(annual.hasManagedAcquisitionPath, true);
+  assert.equal(counts.nonStore, 3);
 });
 
 // ── membership / no ten-tier ──────────────────────────────────────────────────
@@ -270,9 +279,9 @@ test("no consumable or add-on carries the recurring entitlement id", () => {
       assert.equal(e.revenueCatEntitlementId, null, `${e.internalCode} must not carry an entitlement`);
     }
   }
-  // Exactly the 14 subscriptions carry it.
+  // Exactly the 13 store subscriptions carry it (business_annual is internal).
   const withEnt = catalog.filter((e) => e.revenueCatEntitlementId === RECURRING_ENTITLEMENT_ID);
-  assert.equal(withEnt.length, 14);
+  assert.equal(withEnt.length, 13);
   assert.ok(withEnt.every((e) => e.kind === "subscription"));
 });
 
@@ -385,20 +394,21 @@ test("all generated artifacts are reproducible and currently synchronized", () =
 });
 
 // ── runtime product→code maps (the RevenueCat webhook consumer) ────────────────
-test("generated product→code maps: 32 plans, 22 add-ons, com.halaa.<code>, no trial/unlimited", () => {
+test("generated product→code maps: 31 plans, 22 add-ons, com.halaa.<code>, no trial/unlimited/annual", () => {
   const planMap = commerce.getStorePlanProductMap();
   const addonMap = commerce.getStoreAddonProductMap();
 
   // ios id === android id, so one key per store-eligible product.
-  assert.equal(Object.keys(planMap).length, 32);
+  assert.equal(Object.keys(planMap).length, 31);
   assert.equal(Object.keys(addonMap).length, 22);
 
   for (const [productId, code] of [...Object.entries(planMap), ...Object.entries(addonMap)]) {
     assert.equal(productId, `com.halaa.${code}`, `${productId} must be com.halaa.<code>`);
   }
-  // trial / unlimited must never resolve a store product.
+  // trial / unlimited / business_annual must never resolve a store product.
   assert.ok(!("com.halaa.trial" in planMap), "trial must not be in the plan map");
   assert.ok(!("com.halaa.unlimited" in planMap), "unlimited must not be in the plan map");
+  assert.ok(!("com.halaa.business_annual" in planMap), "business_annual must not be in the plan map");
 
   // Maps must resolve real catalog codes (no orphan values).
   const codes = new Set(catalog.map((e) => e.internalCode));

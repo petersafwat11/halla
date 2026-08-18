@@ -15,9 +15,8 @@ import { useParams } from "next/navigation";
 import { apiRequest } from "@/services/http";
 import { LEGAL_CONTACT } from "@halaa/shared/legal";
 
-// Single source of truth for contact (`@halaa/shared/legal`); PROVISIONAL +
-// owner-gated (BLOCKED_NEEDS_OWNER) until the support-email conflict is resolved.
-const SUPPORT_EMAIL = LEGAL_CONTACT.supportEmail.provisional;
+// Owner-approved support contact from the shared legal source.
+const SUPPORT_EMAIL = LEGAL_CONTACT.supportEmail.value;
 
 const COPY = {
   title: { en: "Delete your Halaa account", ar: "حذف حساب هلا" },

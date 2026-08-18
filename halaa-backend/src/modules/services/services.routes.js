@@ -15,7 +15,7 @@ const express = require('express');
 const router = express.Router();
 
 const servicesController = require('./services.controller');
-const { protect } = require('../../shared/middleware/auth');
+const { protect, optionalAuth } = require('../../shared/middleware/auth');
 const { restrictTo } = require('../../shared/middleware/rbac');
 const {
   validateObjectId,
@@ -93,6 +93,7 @@ const { requireUserUgcTerms } = require('../moderation/requireUgcTerms');
  */
 router.get(
   '/public',
+  optionalAuth,
   validateZod(getPublicServicesQuerySchema, 'query'),
   servicesController.getPublicServices
 );

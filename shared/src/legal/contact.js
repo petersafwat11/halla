@@ -1,64 +1,59 @@
 /**
  * Single source of truth for legal/brand contact identity (P1-06 / P1-07).
  *
- * There is currently a REAL conflict across the codebase that only the
- * owner/counsel can resolve; until then every value here is a marked placeholder
- * (`BLOCKED_NEEDS_OWNER`). Consumers should render these via the approved-source
- * path and must NOT reintroduce hardcoded contact strings.
+ * Owner-confirmed identity and contact facts live here. Consumers must not
+ * reintroduce hardcoded contact strings.
  *
- * Known conflicts to resolve (do not guess):
- *   - Support email: `support@halaa.net` (web LegalPage + Footer) vs
- *     `support@halaa.com.sa` (web delete-account page).
- *   - Legal entity name: "Halaa Digital Technology Establishment /
- *     مؤسسة هلا الرقمية للتقنية" (privacy + terms docs) vs
- *     "Afaq hala Company For Communications and Information" (web footer).
- *
- * `PROVISIONAL` values below are the DEFENSIBLE current placeholders (domain-
- * consistent with all infra and POLICY_URLS = halaa.com.sa) but are NOT approved.
+ * Approved 2026-08-13: support@halaa.com.sa and +966552619282.
+ * Official CR names confirmed 2026-08-13.
  */
 
-const BLOCKED = "BLOCKED_NEEDS_OWNER";
-
 export const LEGAL_CONTACT = Object.freeze({
-  approved: false,
-  // Approved legal entity name — NOT confirmed (two conflicting names exist).
+  approved: true,
   legalEntityName: {
-    approved: false,
-    status: BLOCKED,
-    ar: BLOCKED,
-    en: BLOCKED,
-    conflicts: [
-      "مؤسسة هلا الرقمية للتقنية / Halaa Digital Technology Establishment (privacy + terms)",
-      "Afaq hala Company For Communications and Information (web footer)",
-    ],
+    approved: true,
+    status: "OWNER_APPROVED",
+    ar: "افاق هلا للاتصالات والمعلومات",
+    en: "Afaq hala Company For Communications and Information",
+    note: "Owner-confirmed exact Arabic CR name and official English translation.",
   },
   brandName: Object.freeze({ ar: "هلا", en: "Halaa" }),
   supportEmail: {
-    approved: false,
-    status: BLOCKED,
-    conflicts: ["support@halaa.net (LegalPage + Footer)", "support@halaa.com.sa (delete-account)"],
-    // Domain-consistent provisional (matches POLICY_URLS host); owner must confirm.
+    approved: true,
+    status: "OWNER_APPROVED",
+    value: "support@halaa.com.sa",
+    // Compatibility alias for existing consumers.
     provisional: "support@halaa.com.sa",
   },
   whatsapp: {
-    approved: false,
-    status: BLOCKED,
+    approved: true,
+    status: "OWNER_APPROVED",
+    value: "+966552619282",
+    display: "+966 55 261 9282",
     provisional: "+966552619282",
   },
   phone: {
-    approved: false,
-    status: BLOCKED,
+    approved: true,
+    status: "OWNER_APPROVED",
+    value: "+966552619282",
+    display: "+966 55 261 9282",
     provisional: "+966552619282",
   },
   postalAddress: {
-    approved: false,
-    status: BLOCKED,
+    approved: true,
+    status: "OWNER_APPROVED_REGISTERED_ADDRESS",
     provisional: {
       ar: "شارع المتحف - جدة - الرمز البريدي 23326",
-      en: "Museum Street, Jeddah, Postal Code 23326",
+      en: "Museum Street, Jeddah, Postal Code 23326, Saudi Arabia",
     },
+    note: "Owner confirmed this is the registered legal address.",
   },
-  responseSla: { approved: false, status: BLOCKED },
+  responseSla: {
+    approved: true,
+    status: "OWNER_APPROVED_NO_PUBLISHED_HOURS_OR_NUMERIC_SLA",
+    en: "Requests are reviewed as soon as reasonably possible and within any period required by applicable law.",
+    ar: "تُراجع الطلبات في أقرب وقت ممكن بصورة معقولة وخلال أي مدة تفرضها الأنظمة المعمول بها.",
+  },
   // Canonical public domain (infra-confirmed; used to build policy URLs).
   domain: "halaa.com.sa",
 });

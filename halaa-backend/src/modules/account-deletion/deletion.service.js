@@ -43,6 +43,11 @@ const Ticket = require("../../../models/TicketModel");
 const PostEventContent = require("../../../models/PostEventContentModel");
 const Service = require("../../../models/ServiceModel");
 const Subscription = require("../../../models/SubscriptionModel");
+const Payment = require("../../../models/PaymentModel");
+const BusinessPlanAssignment = require("../../../models/BusinessPlanAssignmentModel");
+const RevenueCatEvent = require("../../../models/RevenueCatEventModel");
+const AuditLog = require("../../../models/AuditLogModel");
+const OutboundMessage = require("../../../models/OutboundMessageModel");
 const Addon = require("../../../models/AddonModel");
 const EventEntitlement = require("../../../models/EventEntitlementModel");
 const TermsAcceptance = require("../../../models/TermsAcceptanceModel");
@@ -111,6 +116,7 @@ async function deleteKeys(keys) {
  */
 async function runDeletion({ userId, channel = "app" }) {
   const user = await User.findById(userId);
+  const privacyDeletedAt = new Date();
   const latest = await AccountDeletionRequest.findOne({ userId }).sort({
     createdAt: -1,
   });
@@ -271,6 +277,19 @@ async function runDeletion({ userId, channel = "app" }) {
     true
   );
 
+  // Provider delivery payloads can contain recipient phone numbers and event
+  // context. Delete Halaa's local copies for the account and its events; the
+  // provider-side Taqnyat obligation is recorded separately below.
+  await run(
+    "delete_outbound_message_logs",
+    async () => {
+      await OutboundMessage.deleteMany({
+        $or: [{ user: userId }, ...(eventIds.length ? [{ event: { $in: eventIds } }] : [])],
+      });
+    },
+    true
+  );
+
   // 7) Moderation + UGC-acceptance PII: TermsAcceptance (stores IP), the user's
   //    own Blocks, and Reports the user filed or that name the user as the
   //    reported actor (contain content snapshots / reporter linkage).
@@ -305,9 +324,33 @@ async function runDeletion({ userId, channel = "app" }) {
       await Addon.deleteMany({ userId });
       await EventEntitlement.deleteMany({ userId });
       // Retained rows: strip free-text notes/reasons that may hold PII.
-      await Subscription.updateMany(
+      await Subscription.updateMany({ userId }, { $set: { notes: null, cancelReason: null, privacySubjectDeletedAt: privacyDeletedAt } });
+      await Payment.updateMany(
         { userId },
-        { $set: { notes: null, cancelReason: null } }
+        { $set: { description: null, metadata: {}, redirectUrl: null, callbackUrl: null, privacySubjectDeletedAt: privacyDeletedAt } }
+      );
+      await Payment.updateMany({ userId, "refunds.0": { $exists: true } }, { $unset: { "refunds.$[].reason": "" } });
+      await BusinessPlanAssignment.updateMany(
+        { businessUserId: userId },
+        { $set: { grantReason: null, discountCode: null, tokenHash: null, privacySubjectDeletedAt: privacyDeletedAt } }
+      );
+      await BusinessPlanAssignment.updateMany(
+        { businessUserId: userId, "deliveryAttempts.0": { $exists: true } },
+        { $unset: { "deliveryAttempts.$[].error": "" } }
+      );
+      await RevenueCatEvent.updateMany(
+        { userId },
+        { $set: { aliases: [], rawPayload: null, error: null, privacySubjectDeletedAt: privacyDeletedAt } }
+      );
+      await RevenueCatEvent.updateMany(
+        { userId, "resolutionHistory.0": { $exists: true } },
+        { $unset: { "resolutionHistory.$[].note": "" } }
+      );
+      // AuditLog intentionally blocks Mongoose updates. Native collection
+      // access is used only for this privacy scrub and retains the action/time.
+      await AuditLog.collection.updateMany(
+        { $or: [{ performedBy: userId }, { targetType: "user", targetId: userId }] },
+        { $set: { performedBy: null, changes: {}, metadata: {}, ipAddress: null, userAgent: null, "request.query": null, "error.message": null } }
       );
     },
     true
@@ -345,6 +388,12 @@ async function runDeletion({ userId, channel = "app" }) {
             mobile: "",
             phoneNumber: "",
             username: "",
+            password: "",
+            passwordChangedAt: "",
+            passwordResetToken: "",
+            passwordResetExpires: "",
+            emailVerificationCode: "",
+            emailVerificationExpires: "",
             avatar: "",
             pushTokens: "",
             "profile.vendorData": "",

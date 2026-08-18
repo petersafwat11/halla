@@ -1,14 +1,14 @@
 {
   "ar": {
     "documentType": "refund",
-    "version": "2026-07-02",
+    "version": "2026-08-13",
     "locale": "ar",
     "authoritativeLanguage": "ar",
-    "effectiveDate": "01 مارس 2026",
-    "lastUpdated": "02 يوليو 2026",
-    "ownerApproval": "BLOCKED_NEEDS_OWNER",
+    "effectiveDate": "13 أغسطس 2026",
+    "lastUpdated": "13 أغسطس 2026",
+    "ownerApproval": "OWNER_APPROVED",
     "badge": "سياسة الإلغاء والاسترداد",
-    "title": "سياسة الإلغاء والتأجيل",
+    "title": "سياسة الإلغاء والاشتراكات والاسترداد",
     "subtitle": "منصة هلا",
     "changeSummary": "توحيد المصدر القانوني وإضافة أحكام فوترة المتاجر (اشتراكات، عناصر استهلاكية، تصميم، استرداد المتجر).",
     "sections": [
@@ -38,7 +38,7 @@
         "num": "4",
         "label": "البند الرابع",
         "title": "عدم أهلية الخدمة للاسترجاع بعد الاستخدام",
-        "body": "لا يحق للمستخدم استرجاع أي مبالغ إذا تم إرسال أي بطاقة دعوة أو استخدام أي جزء من الخدمة، سواء بشكل كامل أو جزئي، لأن الخدمة تُعد منفذة فور الإرسال."
+        "body": "لا يُسترد الجزء الذي استُهلك من الخدمة، بما في ذلك الدعوات التي أُرسلت أو الأرصدة التي استُخدمت. ويجوز لهلا مراجعة الجزء غير المستخدم للاسترداد أو عكس الرصيد عندما يكون ذلك ممكناً فنياً ووفق قناة الدفع والأنظمة المعمول بها."
       },
       {
         "id": "article-5",
@@ -87,21 +87,21 @@
         "num": "11",
         "label": "البند الحادي عشر",
         "title": "الاشتراكات عبر App Store و Google Play",
-        "body": "الاشتراكات المُشتراة داخل التطبيق تتجدّد تلقائياً (شهرياً أو ربع سنوي أو سنوياً) عبر حساب المتجر (Apple/Google) ما لم تُلغِ التجديد قبل نهاية الفترة الحالية. تُدار عمليات الإلغاء وطلبات الاسترداد لهذه الاشتراكات من خلال المتجر نفسه ووفق سياساته، ولا تملك هلا سلطة استرداد مباشرة على مشتريات المتجر. ويؤدي إلغاء الاشتراك إلى إيقاف التجديد مع بقاء الوصول حتى نهاية الفترة المدفوعة."
+        "body": "الاشتراكات المُشتراة داخل التطبيق تتجدّد تلقائياً (شهرياً أو ربع سنوي أو سنوياً) عبر حساب المتجر (Apple/Google) ما لم تُلغِ التجديد قبل نهاية الفترة الحالية. يؤدي الإلغاء إلى إيقاف التجديد التالي مع بقاء الوصول حتى نهاية الفترة المدفوعة، ولا ينشئ استرداداً نسبياً تلقائياً. تُدار طلبات استرداد مشتريات المتجر من خلال Apple أو Google ووفق سياسات المتجر، ولا تملك هلا سلطة استرداد مباشرة عليها. وتُراجع اشتراكات الويب، إن وُجدت، وفق حالة الاستخدام ومزوّد الدفع والأنظمة المعمول بها."
       },
       {
         "id": "article-12",
         "num": "12",
         "label": "البند الثاني عشر",
         "title": "العناصر الاستهلاكية (باقات المناسبات والدعوات الإضافية)",
-        "body": "العناصر الاستهلاكية مثل باقات المناسبة والدعوات الإضافية تُضاف إلى رصيدك عند الشراء وتُستهلك بالاستخدام، وهي غير قابلة للاستعادة عبر «استعادة المشتريات» بعد استهلاكها. وفي حال استرداد لم يُستهلك، يُستعاد الرصيد غير المستخدم فقط دون النزول تحت ما تم استهلاكه بالفعل."
+        "body": "العناصر الاستهلاكية مثل باقات المناسبات والدعوات الإضافية تُضاف إلى رصيدك عند الشراء وتُستهلك بالاستخدام، وهي غير قابلة للاستعادة عبر «استعادة المشتريات» بعد استهلاكها. الدعوات أو الأرصدة المستهلكة غير قابلة للاسترداد. وإذا وافق مزوّد الدفع أو المتجر على استرداد رصيد غير مستهلك، يُعكس الجزء غير المستخدم فقط ولا يمكن أن يقل الرصيد عن الكمية التي استُهلكت بالفعل."
       },
       {
         "id": "article-13",
         "num": "13",
         "label": "البند الثالث عشر",
         "title": "خدمات التصميم والتخصيص",
-        "body": "تُعد طلبات التصميم الخاص خدمة مُدارة تبدأ فور الشراء (طلب → لوحة الإدارة → تعيين مصمم → تنسيق عبر واتساب → تنفيذ ومراجعات → إكمال)، وهي غير قابلة للاسترداد من لحظة إنشاء الطلب. وتُقدَّم خدمة تخصيص الأعمال كخدمة مُدارة عبر الإدارة. [BLOCKED_NEEDS_OWNER: الصياغة القانونية النهائية لعدم القابلية للاسترداد ومعالجة الحالات الاستثنائية]."
+        "body": "تُعد طلبات التصميم الخاص وتخصيص الأعمال خدمات مُدارة يبدأ تنفيذها عند إنشاء طلب التنفيذ وإرساله للمعالجة الإدارية أو تعيينه للمتخصص. لا يُسترد الجزء الذي نُفّذ أو أي تكلفة تصميم أو تهيئة بدأت فعلياً. إذا لم يبدأ العمل، أو تعذّر على هلا تقديم الخدمة، أو وقع تحصيل مكرر أو خطأ فني مثبت، تُحال الحالة إلى مراجعة يدوية لاسترداد مناسب وفق حالة التنفيذ وقناة الدفع والأنظمة المعمول بها."
       },
       {
         "id": "article-14",
@@ -115,20 +115,20 @@
         "num": "15",
         "label": "البند الخامس عشر",
         "title": "الضرائب والتواصل",
-        "body": "تُعرض الأسعار والضرائب المطبّقة (ضريبة القيمة المضافة في المملكة العربية السعودية بنسبة 15%) من خلال المتجر أو مزوّد الدفع المعني عند الشراء. للاستفسار عن الفواتير أو الاسترداد يمكنك التواصل مع الدعم. [BLOCKED_NEEDS_OWNER: بريد/هاتف الدعم ومدة الاستجابة]."
+        "body": "تُعرض الأسعار والضرائب المطبّقة (ضريبة القيمة المضافة في المملكة العربية السعودية بنسبة 15%) من خلال المتجر أو مزوّد الدفع المعني عند الشراء. للاستفسار عن الفواتير أو الاسترداد تواصل عبر support@halaa.com.sa أو ‎+966 55 261 9282. لا تحد هذه السياسة من أي حقوق إلزامية يمنحها النظام المعمول به."
       }
     ]
   },
   "en": {
     "documentType": "refund",
-    "version": "2026-07-02",
+    "version": "2026-08-13",
     "locale": "en",
     "authoritativeLanguage": "ar",
-    "effectiveDate": "01 March 2026",
-    "lastUpdated": "02 July 2026",
-    "ownerApproval": "BLOCKED_NEEDS_OWNER",
+    "effectiveDate": "13 August 2026",
+    "lastUpdated": "13 August 2026",
+    "ownerApproval": "OWNER_APPROVED",
     "badge": "Cancellation & Refund Policy",
-    "title": "Cancellation & Postponement Policy",
+    "title": "Cancellation, Subscription & Refund Policy",
     "subtitle": "Halaa Platform",
     "changeSummary": "Consolidated shared source and added store-billing provisions (subscriptions, consumables, design, store refunds).",
     "sections": [
@@ -158,7 +158,7 @@
         "num": "4",
         "label": "Article Four",
         "title": "Non-Refundability After Service Use",
-        "body": "The user shall not be entitled to any refund if any invitation has been sent or any part of the service has been used, whether fully or partially, as the service is deemed executed upon dispatch."
+        "body": "The consumed portion of a service is not refundable, including invitations already sent or credits already used. Halaa may review an unused portion for refund or balance reversal when technically possible and consistent with the payment channel and applicable law."
       },
       {
         "id": "article-5",
@@ -207,21 +207,21 @@
         "num": "11",
         "label": "Article Eleven",
         "title": "Subscriptions via the App Store and Google Play",
-        "body": "Subscriptions purchased in-app auto-renew (monthly, quarterly, or annually) through your store account (Apple/Google) unless you cancel renewal before the end of the current period. Cancellations and refund requests for these subscriptions are handled by the store itself and under its policies; Halaa has no direct refund authority over store purchases. Cancelling a subscription stops renewal while access continues until the end of the paid period."
+        "body": "Subscriptions purchased in-app auto-renew (monthly, quarterly, or annually) through your store account (Apple/Google) unless you cancel renewal before the end of the current period. Cancellation stops the next renewal while access continues until the end of the paid period; it does not automatically create a prorated refund. Apple or Google handles refund requests for store purchases under its policies, and Halaa has no direct refund authority over them. Web subscriptions, if offered, are reviewed according to usage, the payment provider, and applicable law."
       },
       {
         "id": "article-12",
         "num": "12",
         "label": "Article Twelve",
         "title": "Consumables (Event Packages and Extra Invites)",
-        "body": "Consumable items such as event packages and extra invites are added to your balance at purchase and are used up as you consume them; they are not restorable via \"Restore Purchases\" once consumed. In the event of a refund for an unconsumed balance, only the unused portion is reversed and never below what has already been consumed."
+        "body": "Consumable items such as event packages and extra invites are added to your balance at purchase and are used up as you consume them; they are not restorable via \"Restore Purchases\" once consumed. Consumed invitations or credits are not refundable. If the payment provider or store approves a refund of an unconsumed balance, only the unused portion is reversed and the balance is never reduced below what was already consumed."
       },
       {
         "id": "article-13",
         "num": "13",
         "label": "Article Thirteen",
         "title": "Design and Customization Services",
-        "body": "Custom design requests are a managed service that begins upon purchase (request → admin dashboard → designer assignment → coordination over WhatsApp → production and revisions → completion) and are non-refundable from the moment the request is created. Business customization is provided as an admin-managed service. [BLOCKED_NEEDS_OWNER: final legal wording for non-refundability and handling of exceptional cases]."
+        "body": "Custom design and business-customization requests are managed services whose fulfillment starts when the work request is created and sent for administrative processing or assigned to a specialist. Work already performed and design or provisioning costs already begun are not refundable. If work has not started, Halaa cannot provide the service, a duplicate charge occurs, or a verified technical error prevents fulfillment, the case is manually reviewed for an appropriate refund according to fulfillment state, payment channel, and applicable law."
       },
       {
         "id": "article-14",
@@ -235,7 +235,7 @@
         "num": "15",
         "label": "Article Fifteen",
         "title": "Taxes and Contact",
-        "body": "Prices and applicable taxes (Saudi Value Added Tax at 15%) are shown by the relevant store or payment provider at purchase. For billing or refund inquiries you can contact support. [BLOCKED_NEEDS_OWNER: support email/phone and response time]."
+        "body": "Prices and applicable taxes (Saudi Value Added Tax at 15%) are shown by the relevant store or payment provider at purchase. For billing or refund inquiries contact support@halaa.com.sa or +966 55 261 9282. Nothing in this policy limits mandatory rights available under applicable law."
       }
     ]
   }

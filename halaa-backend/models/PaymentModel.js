@@ -108,6 +108,7 @@ const paymentSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
+    privacySubjectDeletedAt: { type: Date, default: null },
 
     // ─── ACTIVATION TARGETS (sparse) ───
     // A payment may activate either a subscription, an addon, or both
@@ -244,6 +245,8 @@ paymentSchema.index(
 );
 paymentSchema.index({ userId: 1, status: 1, createdAt: -1 });
 paymentSchema.index({ status: 1, createdAt: -1 });
+paymentSchema.index({ status: 1, updatedAt: 1 }, { name: "retention_status_updated" });
+paymentSchema.index({ privacySubjectDeletedAt: 1 }, { name: "retention_subject_deleted" });
 paymentSchema.index(
   { status: 1, initiatedAt: 1 },
   { partialFilterExpression: { status: { $in: ["pending", "pending_3ds"] } } }

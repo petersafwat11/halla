@@ -12,6 +12,7 @@ import {
   useBusinessCheckoutSubmit,
 } from "@/hooks/business";
 import { toastUtils } from "@/utils/toastUtils";
+import LegalSurfaceLinks from "@/ui/common/LegalSurfaceLinks";
 import styles from "./checkout.module.css";
 
 const PENDING_STATUS = "pending_payment";
@@ -277,6 +278,10 @@ const BusinessCheckoutPage = () => {
                 <FaLock className={styles.securityIcon} />
                 <span>{t("summary.terms")}</span>
               </div>
+              <LegalSurfaceLinks
+                lang={lang}
+                documents={["terms", "privacy", "refund", "support"]}
+              />
             </div>
           </div>
         </div>

@@ -1,0 +1,1497 @@
+{
+  "projectId": "projc49d20a4",
+  "requiredTransferBehavior": "KEEP_WITH_ORIGINAL_APP_USER_ID",
+  "products": [
+    {
+      "connectionKey": "ios:basic_event_100",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.basic_event_100",
+      "displayName": "Halaa Basic 100 Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:basic_event_100",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.basic_event_100",
+      "displayName": "Halaa Basic 100 Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:basic_event_150",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.basic_event_150",
+      "displayName": "Halaa Basic 150 Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:basic_event_150",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.basic_event_150",
+      "displayName": "Halaa Basic 150 Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:basic_event_200",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.basic_event_200",
+      "displayName": "Halaa Basic 200 Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:basic_event_200",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.basic_event_200",
+      "displayName": "Halaa Basic 200 Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:basic_event_25",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.basic_event_25",
+      "displayName": "Halaa Basic 25 Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:basic_event_25",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.basic_event_25",
+      "displayName": "Halaa Basic 25 Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:basic_event_50",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.basic_event_50",
+      "displayName": "Halaa Basic 50 Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:basic_event_50",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.basic_event_50",
+      "displayName": "Halaa Basic 50 Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:basic_event_75",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.basic_event_75",
+      "displayName": "Halaa Basic 75 Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:basic_event_75",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.basic_event_75",
+      "displayName": "Halaa Basic 75 Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:basic_monthly_100",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.basic_monthly_100",
+      "displayName": "Halaa Basic Monthly 100 Invites",
+      "type": "subscription",
+      "duration": "P1M",
+      "consumable": false,
+      "entitlement": "recurring_access"
+    },
+    {
+      "connectionKey": "android:basic_monthly_100",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.basic_monthly_100:monthly",
+      "displayName": "Halaa Basic Monthly 100 Invites",
+      "type": "subscription",
+      "duration": "P1M",
+      "consumable": false,
+      "entitlement": "recurring_access"
+    },
+    {
+      "connectionKey": "ios:basic_monthly_150",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.basic_monthly_150",
+      "displayName": "Halaa Basic Monthly 150 Invites",
+      "type": "subscription",
+      "duration": "P1M",
+      "consumable": false,
+      "entitlement": "recurring_access"
+    },
+    {
+      "connectionKey": "android:basic_monthly_150",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.basic_monthly_150:monthly",
+      "displayName": "Halaa Basic Monthly 150 Invites",
+      "type": "subscription",
+      "duration": "P1M",
+      "consumable": false,
+      "entitlement": "recurring_access"
+    },
+    {
+      "connectionKey": "ios:basic_monthly_200",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.basic_monthly_200",
+      "displayName": "Halaa Basic Monthly 200 Invites",
+      "type": "subscription",
+      "duration": "P1M",
+      "consumable": false,
+      "entitlement": "recurring_access"
+    },
+    {
+      "connectionKey": "android:basic_monthly_200",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.basic_monthly_200:monthly",
+      "displayName": "Halaa Basic Monthly 200 Invites",
+      "type": "subscription",
+      "duration": "P1M",
+      "consumable": false,
+      "entitlement": "recurring_access"
+    },
+    {
+      "connectionKey": "ios:basic_monthly_25",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.basic_monthly_25",
+      "displayName": "Halaa Basic Monthly 25 Invites",
+      "type": "subscription",
+      "duration": "P1M",
+      "consumable": false,
+      "entitlement": "recurring_access"
+    },
+    {
+      "connectionKey": "android:basic_monthly_25",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.basic_monthly_25:monthly",
+      "displayName": "Halaa Basic Monthly 25 Invites",
+      "type": "subscription",
+      "duration": "P1M",
+      "consumable": false,
+      "entitlement": "recurring_access"
+    },
+    {
+      "connectionKey": "ios:basic_monthly_50",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.basic_monthly_50",
+      "displayName": "Halaa Basic Monthly 50 Invites",
+      "type": "subscription",
+      "duration": "P1M",
+      "consumable": false,
+      "entitlement": "recurring_access"
+    },
+    {
+      "connectionKey": "android:basic_monthly_50",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.basic_monthly_50:monthly",
+      "displayName": "Halaa Basic Monthly 50 Invites",
+      "type": "subscription",
+      "duration": "P1M",
+      "consumable": false,
+      "entitlement": "recurring_access"
+    },
+    {
+      "connectionKey": "ios:basic_monthly_75",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.basic_monthly_75",
+      "displayName": "Halaa Basic Monthly 75 Invites",
+      "type": "subscription",
+      "duration": "P1M",
+      "consumable": false,
+      "entitlement": "recurring_access"
+    },
+    {
+      "connectionKey": "android:basic_monthly_75",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.basic_monthly_75:monthly",
+      "displayName": "Halaa Basic Monthly 75 Invites",
+      "type": "subscription",
+      "duration": "P1M",
+      "consumable": false,
+      "entitlement": "recurring_access"
+    },
+    {
+      "connectionKey": "ios:business_customization",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.business_customization",
+      "displayName": "Business Branding Customization",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:business_customization",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.business_customization",
+      "displayName": "Business Branding Customization",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:business_event_100",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.business_event_100",
+      "displayName": "Halaa Business 100 Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:business_event_100",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.business_event_100",
+      "displayName": "Halaa Business 100 Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:business_event_150",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.business_event_150",
+      "displayName": "Halaa Business 150 Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:business_event_150",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.business_event_150",
+      "displayName": "Halaa Business 150 Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:business_event_200",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.business_event_200",
+      "displayName": "Halaa Business 200 Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:business_event_200",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.business_event_200",
+      "displayName": "Halaa Business 200 Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:business_event_25",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.business_event_25",
+      "displayName": "Halaa Business 25 Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:business_event_25",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.business_event_25",
+      "displayName": "Halaa Business 25 Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:business_event_50",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.business_event_50",
+      "displayName": "Halaa Business 50 Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:business_event_50",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.business_event_50",
+      "displayName": "Halaa Business 50 Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:business_event_75",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.business_event_75",
+      "displayName": "Halaa Business 75 Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:business_event_75",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.business_event_75",
+      "displayName": "Halaa Business 75 Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:business_quarterly",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.business_quarterly",
+      "displayName": "Halaa Business — 3-Month Subscription",
+      "type": "subscription",
+      "duration": "P3M",
+      "consumable": false,
+      "entitlement": "recurring_access"
+    },
+    {
+      "connectionKey": "android:business_quarterly",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.business_quarterly:quarterly",
+      "displayName": "Halaa Business — 3-Month Subscription",
+      "type": "subscription",
+      "duration": "P3M",
+      "consumable": false,
+      "entitlement": "recurring_access"
+    },
+    {
+      "connectionKey": "ios:design_template_3d",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.design_template_3d",
+      "displayName": "3D invitation design",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:design_template_3d",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.design_template_3d",
+      "displayName": "3D invitation design",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:design_template_animated",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.design_template_animated",
+      "displayName": "Animated background design",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:design_template_animated",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.design_template_animated",
+      "displayName": "Animated background design",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:design_template_custom_male",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.design_template_custom_male",
+      "displayName": "Custom male design",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:design_template_custom_male",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.design_template_custom_male",
+      "displayName": "Custom male design",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:design_template_custom_themed",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.design_template_custom_themed",
+      "displayName": "Themed custom design",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:design_template_custom_themed",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.design_template_custom_themed",
+      "displayName": "Themed custom design",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:design_template_ready_made",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.design_template_ready_made",
+      "displayName": "Ready-made design (male/female)",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:design_template_ready_made",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.design_template_ready_made",
+      "displayName": "Ready-made design (male/female)",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:extra_invites_10",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.extra_invites_10",
+      "displayName": "10 Extra Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:extra_invites_10",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.extra_invites_10",
+      "displayName": "10 Extra Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:extra_invites_100",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.extra_invites_100",
+      "displayName": "100 Extra Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:extra_invites_100",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.extra_invites_100",
+      "displayName": "100 Extra Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:extra_invites_125",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.extra_invites_125",
+      "displayName": "125 Extra Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:extra_invites_125",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.extra_invites_125",
+      "displayName": "125 Extra Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:extra_invites_150",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.extra_invites_150",
+      "displayName": "150 Extra Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:extra_invites_150",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.extra_invites_150",
+      "displayName": "150 Extra Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:extra_invites_20",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.extra_invites_20",
+      "displayName": "20 Extra Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:extra_invites_20",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.extra_invites_20",
+      "displayName": "20 Extra Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:extra_invites_200",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.extra_invites_200",
+      "displayName": "200 Extra Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:extra_invites_200",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.extra_invites_200",
+      "displayName": "200 Extra Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:extra_invites_250",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.extra_invites_250",
+      "displayName": "250 Extra Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:extra_invites_250",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.extra_invites_250",
+      "displayName": "250 Extra Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:extra_invites_30",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.extra_invites_30",
+      "displayName": "30 Extra Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:extra_invites_30",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.extra_invites_30",
+      "displayName": "30 Extra Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:extra_invites_300",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.extra_invites_300",
+      "displayName": "300 Extra Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:extra_invites_300",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.extra_invites_300",
+      "displayName": "300 Extra Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:extra_invites_350",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.extra_invites_350",
+      "displayName": "350 Extra Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:extra_invites_350",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.extra_invites_350",
+      "displayName": "350 Extra Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:extra_invites_40",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.extra_invites_40",
+      "displayName": "40 Extra Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:extra_invites_40",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.extra_invites_40",
+      "displayName": "40 Extra Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:extra_invites_400",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.extra_invites_400",
+      "displayName": "400 Extra Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:extra_invites_400",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.extra_invites_400",
+      "displayName": "400 Extra Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:extra_invites_450",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.extra_invites_450",
+      "displayName": "450 Extra Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:extra_invites_450",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.extra_invites_450",
+      "displayName": "450 Extra Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:extra_invites_50",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.extra_invites_50",
+      "displayName": "50 Extra Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:extra_invites_50",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.extra_invites_50",
+      "displayName": "50 Extra Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:extra_invites_500",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.extra_invites_500",
+      "displayName": "500 Extra Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:extra_invites_500",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.extra_invites_500",
+      "displayName": "500 Extra Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:extra_invites_75",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.extra_invites_75",
+      "displayName": "75 Extra Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:extra_invites_75",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.extra_invites_75",
+      "displayName": "75 Extra Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:premium_event_100",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.premium_event_100",
+      "displayName": "Halaa Premium 100 Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:premium_event_100",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.premium_event_100",
+      "displayName": "Halaa Premium 100 Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:premium_event_150",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.premium_event_150",
+      "displayName": "Halaa Premium 150 Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:premium_event_150",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.premium_event_150",
+      "displayName": "Halaa Premium 150 Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:premium_event_200",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.premium_event_200",
+      "displayName": "Halaa Premium 200 Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:premium_event_200",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.premium_event_200",
+      "displayName": "Halaa Premium 200 Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:premium_event_25",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.premium_event_25",
+      "displayName": "Halaa Premium 25 Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:premium_event_25",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.premium_event_25",
+      "displayName": "Halaa Premium 25 Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:premium_event_50",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.premium_event_50",
+      "displayName": "Halaa Premium 50 Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:premium_event_50",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.premium_event_50",
+      "displayName": "Halaa Premium 50 Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:premium_event_75",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.premium_event_75",
+      "displayName": "Halaa Premium 75 Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "android:premium_event_75",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.premium_event_75",
+      "displayName": "Halaa Premium 75 Invites",
+      "type": "consumable",
+      "duration": null,
+      "consumable": true,
+      "entitlement": null
+    },
+    {
+      "connectionKey": "ios:premium_monthly_100",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.premium_monthly_100",
+      "displayName": "Halaa Premium Monthly 100 Invites",
+      "type": "subscription",
+      "duration": "P1M",
+      "consumable": false,
+      "entitlement": "recurring_access"
+    },
+    {
+      "connectionKey": "android:premium_monthly_100",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.premium_monthly_100:monthly",
+      "displayName": "Halaa Premium Monthly 100 Invites",
+      "type": "subscription",
+      "duration": "P1M",
+      "consumable": false,
+      "entitlement": "recurring_access"
+    },
+    {
+      "connectionKey": "ios:premium_monthly_150",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.premium_monthly_150",
+      "displayName": "Halaa Premium Monthly 150 Invites",
+      "type": "subscription",
+      "duration": "P1M",
+      "consumable": false,
+      "entitlement": "recurring_access"
+    },
+    {
+      "connectionKey": "android:premium_monthly_150",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.premium_monthly_150:monthly",
+      "displayName": "Halaa Premium Monthly 150 Invites",
+      "type": "subscription",
+      "duration": "P1M",
+      "consumable": false,
+      "entitlement": "recurring_access"
+    },
+    {
+      "connectionKey": "ios:premium_monthly_200",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.premium_monthly_200",
+      "displayName": "Halaa Premium Monthly 200 Invites",
+      "type": "subscription",
+      "duration": "P1M",
+      "consumable": false,
+      "entitlement": "recurring_access"
+    },
+    {
+      "connectionKey": "android:premium_monthly_200",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.premium_monthly_200:monthly",
+      "displayName": "Halaa Premium Monthly 200 Invites",
+      "type": "subscription",
+      "duration": "P1M",
+      "consumable": false,
+      "entitlement": "recurring_access"
+    },
+    {
+      "connectionKey": "ios:premium_monthly_25",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.premium_monthly_25",
+      "displayName": "Halaa Premium Monthly 25 Invites",
+      "type": "subscription",
+      "duration": "P1M",
+      "consumable": false,
+      "entitlement": "recurring_access"
+    },
+    {
+      "connectionKey": "android:premium_monthly_25",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.premium_monthly_25:monthly",
+      "displayName": "Halaa Premium Monthly 25 Invites",
+      "type": "subscription",
+      "duration": "P1M",
+      "consumable": false,
+      "entitlement": "recurring_access"
+    },
+    {
+      "connectionKey": "ios:premium_monthly_50",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.premium_monthly_50",
+      "displayName": "Halaa Premium Monthly 50 Invites",
+      "type": "subscription",
+      "duration": "P1M",
+      "consumable": false,
+      "entitlement": "recurring_access"
+    },
+    {
+      "connectionKey": "android:premium_monthly_50",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.premium_monthly_50:monthly",
+      "displayName": "Halaa Premium Monthly 50 Invites",
+      "type": "subscription",
+      "duration": "P1M",
+      "consumable": false,
+      "entitlement": "recurring_access"
+    },
+    {
+      "connectionKey": "ios:premium_monthly_75",
+      "platform": "ios",
+      "appId": null,
+      "storeIdentifier": "com.halaa.premium_monthly_75",
+      "displayName": "Halaa Premium Monthly 75 Invites",
+      "type": "subscription",
+      "duration": "P1M",
+      "consumable": false,
+      "entitlement": "recurring_access"
+    },
+    {
+      "connectionKey": "android:premium_monthly_75",
+      "platform": "android",
+      "appId": null,
+      "storeIdentifier": "com.halaa.premium_monthly_75:monthly",
+      "displayName": "Halaa Premium Monthly 75 Invites",
+      "type": "subscription",
+      "duration": "P1M",
+      "consumable": false,
+      "entitlement": "recurring_access"
+    }
+  ],
+  "entitlements": [
+    {
+      "lookupKey": "recurring_access",
+      "displayName": "Recurring access",
+      "productConnectionKeys": [
+        "ios:basic_monthly_100",
+        "android:basic_monthly_100",
+        "ios:basic_monthly_150",
+        "android:basic_monthly_150",
+        "ios:basic_monthly_200",
+        "android:basic_monthly_200",
+        "ios:basic_monthly_25",
+        "android:basic_monthly_25",
+        "ios:basic_monthly_50",
+        "android:basic_monthly_50",
+        "ios:basic_monthly_75",
+        "android:basic_monthly_75",
+        "ios:business_quarterly",
+        "android:business_quarterly",
+        "ios:premium_monthly_100",
+        "android:premium_monthly_100",
+        "ios:premium_monthly_150",
+        "android:premium_monthly_150",
+        "ios:premium_monthly_200",
+        "android:premium_monthly_200",
+        "ios:premium_monthly_25",
+        "android:premium_monthly_25",
+        "ios:premium_monthly_50",
+        "android:premium_monthly_50",
+        "ios:premium_monthly_75",
+        "android:premium_monthly_75"
+      ]
+    }
+  ],
+  "offerings": [
+    {
+      "lookupKey": "host_plans",
+      "displayName": "host_plans",
+      "packages": [
+        {
+          "lookupKey": "basic_event_100",
+          "iosConnectionKey": "ios:basic_event_100",
+          "androidConnectionKey": "android:basic_event_100"
+        },
+        {
+          "lookupKey": "basic_event_150",
+          "iosConnectionKey": "ios:basic_event_150",
+          "androidConnectionKey": "android:basic_event_150"
+        },
+        {
+          "lookupKey": "basic_event_200",
+          "iosConnectionKey": "ios:basic_event_200",
+          "androidConnectionKey": "android:basic_event_200"
+        },
+        {
+          "lookupKey": "basic_event_25",
+          "iosConnectionKey": "ios:basic_event_25",
+          "androidConnectionKey": "android:basic_event_25"
+        },
+        {
+          "lookupKey": "basic_event_50",
+          "iosConnectionKey": "ios:basic_event_50",
+          "androidConnectionKey": "android:basic_event_50"
+        },
+        {
+          "lookupKey": "basic_event_75",
+          "iosConnectionKey": "ios:basic_event_75",
+          "androidConnectionKey": "android:basic_event_75"
+        },
+        {
+          "lookupKey": "basic_monthly_100",
+          "iosConnectionKey": "ios:basic_monthly_100",
+          "androidConnectionKey": "android:basic_monthly_100"
+        },
+        {
+          "lookupKey": "basic_monthly_150",
+          "iosConnectionKey": "ios:basic_monthly_150",
+          "androidConnectionKey": "android:basic_monthly_150"
+        },
+        {
+          "lookupKey": "basic_monthly_200",
+          "iosConnectionKey": "ios:basic_monthly_200",
+          "androidConnectionKey": "android:basic_monthly_200"
+        },
+        {
+          "lookupKey": "basic_monthly_25",
+          "iosConnectionKey": "ios:basic_monthly_25",
+          "androidConnectionKey": "android:basic_monthly_25"
+        },
+        {
+          "lookupKey": "basic_monthly_50",
+          "iosConnectionKey": "ios:basic_monthly_50",
+          "androidConnectionKey": "android:basic_monthly_50"
+        },
+        {
+          "lookupKey": "basic_monthly_75",
+          "iosConnectionKey": "ios:basic_monthly_75",
+          "androidConnectionKey": "android:basic_monthly_75"
+        },
+        {
+          "lookupKey": "premium_event_100",
+          "iosConnectionKey": "ios:premium_event_100",
+          "androidConnectionKey": "android:premium_event_100"
+        },
+        {
+          "lookupKey": "premium_event_150",
+          "iosConnectionKey": "ios:premium_event_150",
+          "androidConnectionKey": "android:premium_event_150"
+        },
+        {
+          "lookupKey": "premium_event_200",
+          "iosConnectionKey": "ios:premium_event_200",
+          "androidConnectionKey": "android:premium_event_200"
+        },
+        {
+          "lookupKey": "premium_event_25",
+          "iosConnectionKey": "ios:premium_event_25",
+          "androidConnectionKey": "android:premium_event_25"
+        },
+        {
+          "lookupKey": "premium_event_50",
+          "iosConnectionKey": "ios:premium_event_50",
+          "androidConnectionKey": "android:premium_event_50"
+        },
+        {
+          "lookupKey": "premium_event_75",
+          "iosConnectionKey": "ios:premium_event_75",
+          "androidConnectionKey": "android:premium_event_75"
+        },
+        {
+          "lookupKey": "premium_monthly_100",
+          "iosConnectionKey": "ios:premium_monthly_100",
+          "androidConnectionKey": "android:premium_monthly_100"
+        },
+        {
+          "lookupKey": "premium_monthly_150",
+          "iosConnectionKey": "ios:premium_monthly_150",
+          "androidConnectionKey": "android:premium_monthly_150"
+        },
+        {
+          "lookupKey": "premium_monthly_200",
+          "iosConnectionKey": "ios:premium_monthly_200",
+          "androidConnectionKey": "android:premium_monthly_200"
+        },
+        {
+          "lookupKey": "premium_monthly_25",
+          "iosConnectionKey": "ios:premium_monthly_25",
+          "androidConnectionKey": "android:premium_monthly_25"
+        },
+        {
+          "lookupKey": "premium_monthly_50",
+          "iosConnectionKey": "ios:premium_monthly_50",
+          "androidConnectionKey": "android:premium_monthly_50"
+        },
+        {
+          "lookupKey": "premium_monthly_75",
+          "iosConnectionKey": "ios:premium_monthly_75",
+          "androidConnectionKey": "android:premium_monthly_75"
+        }
+      ]
+    },
+    {
+      "lookupKey": "business_plans",
+      "displayName": "business_plans",
+      "packages": [
+        {
+          "lookupKey": "business_event_100",
+          "iosConnectionKey": "ios:business_event_100",
+          "androidConnectionKey": "android:business_event_100"
+        },
+        {
+          "lookupKey": "business_event_150",
+          "iosConnectionKey": "ios:business_event_150",
+          "androidConnectionKey": "android:business_event_150"
+        },
+        {
+          "lookupKey": "business_event_200",
+          "iosConnectionKey": "ios:business_event_200",
+          "androidConnectionKey": "android:business_event_200"
+        },
+        {
+          "lookupKey": "business_event_25",
+          "iosConnectionKey": "ios:business_event_25",
+          "androidConnectionKey": "android:business_event_25"
+        },
+        {
+          "lookupKey": "business_event_50",
+          "iosConnectionKey": "ios:business_event_50",
+          "androidConnectionKey": "android:business_event_50"
+        },
+        {
+          "lookupKey": "business_event_75",
+          "iosConnectionKey": "ios:business_event_75",
+          "androidConnectionKey": "android:business_event_75"
+        },
+        {
+          "lookupKey": "business_quarterly",
+          "iosConnectionKey": "ios:business_quarterly",
+          "androidConnectionKey": "android:business_quarterly"
+        }
+      ]
+    },
+    {
+      "lookupKey": "host_addons",
+      "displayName": "host_addons",
+      "packages": [
+        {
+          "lookupKey": "design_template_3d",
+          "iosConnectionKey": "ios:design_template_3d",
+          "androidConnectionKey": "android:design_template_3d"
+        },
+        {
+          "lookupKey": "design_template_animated",
+          "iosConnectionKey": "ios:design_template_animated",
+          "androidConnectionKey": "android:design_template_animated"
+        },
+        {
+          "lookupKey": "design_template_custom_male",
+          "iosConnectionKey": "ios:design_template_custom_male",
+          "androidConnectionKey": "android:design_template_custom_male"
+        },
+        {
+          "lookupKey": "design_template_custom_themed",
+          "iosConnectionKey": "ios:design_template_custom_themed",
+          "androidConnectionKey": "android:design_template_custom_themed"
+        },
+        {
+          "lookupKey": "design_template_ready_made",
+          "iosConnectionKey": "ios:design_template_ready_made",
+          "androidConnectionKey": "android:design_template_ready_made"
+        },
+        {
+          "lookupKey": "extra_invites_10",
+          "iosConnectionKey": "ios:extra_invites_10",
+          "androidConnectionKey": "android:extra_invites_10"
+        },
+        {
+          "lookupKey": "extra_invites_100",
+          "iosConnectionKey": "ios:extra_invites_100",
+          "androidConnectionKey": "android:extra_invites_100"
+        },
+        {
+          "lookupKey": "extra_invites_125",
+          "iosConnectionKey": "ios:extra_invites_125",
+          "androidConnectionKey": "android:extra_invites_125"
+        },
+        {
+          "lookupKey": "extra_invites_150",
+          "iosConnectionKey": "ios:extra_invites_150",
+          "androidConnectionKey": "android:extra_invites_150"
+        },
+        {
+          "lookupKey": "extra_invites_20",
+          "iosConnectionKey": "ios:extra_invites_20",
+          "androidConnectionKey": "android:extra_invites_20"
+        },
+        {
+          "lookupKey": "extra_invites_200",
+          "iosConnectionKey": "ios:extra_invites_200",
+          "androidConnectionKey": "android:extra_invites_200"
+        },
+        {
+          "lookupKey": "extra_invites_250",
+          "iosConnectionKey": "ios:extra_invites_250",
+          "androidConnectionKey": "android:extra_invites_250"
+        },
+        {
+          "lookupKey": "extra_invites_30",
+          "iosConnectionKey": "ios:extra_invites_30",
+          "androidConnectionKey": "android:extra_invites_30"
+        },
+        {
+          "lookupKey": "extra_invites_300",
+          "iosConnectionKey": "ios:extra_invites_300",
+          "androidConnectionKey": "android:extra_invites_300"
+        },
+        {
+          "lookupKey": "extra_invites_350",
+          "iosConnectionKey": "ios:extra_invites_350",
+          "androidConnectionKey": "android:extra_invites_350"
+        },
+        {
+          "lookupKey": "extra_invites_40",
+          "iosConnectionKey": "ios:extra_invites_40",
+          "androidConnectionKey": "android:extra_invites_40"
+        },
+        {
+          "lookupKey": "extra_invites_400",
+          "iosConnectionKey": "ios:extra_invites_400",
+          "androidConnectionKey": "android:extra_invites_400"
+        },
+        {
+          "lookupKey": "extra_invites_450",
+          "iosConnectionKey": "ios:extra_invites_450",
+          "androidConnectionKey": "android:extra_invites_450"
+        },
+        {
+          "lookupKey": "extra_invites_50",
+          "iosConnectionKey": "ios:extra_invites_50",
+          "androidConnectionKey": "android:extra_invites_50"
+        },
+        {
+          "lookupKey": "extra_invites_500",
+          "iosConnectionKey": "ios:extra_invites_500",
+          "androidConnectionKey": "android:extra_invites_500"
+        },
+        {
+          "lookupKey": "extra_invites_75",
+          "iosConnectionKey": "ios:extra_invites_75",
+          "androidConnectionKey": "android:extra_invites_75"
+        }
+      ]
+    },
+    {
+      "lookupKey": "business_addons",
+      "displayName": "business_addons",
+      "packages": [
+        {
+          "lookupKey": "business_customization",
+          "iosConnectionKey": "ios:business_customization",
+          "androidConnectionKey": "android:business_customization"
+        }
+      ]
+    }
+  ]
+}

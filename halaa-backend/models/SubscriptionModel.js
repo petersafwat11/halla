@@ -66,6 +66,7 @@ const subscriptionSchema = new mongoose.Schema(
       required: [true, "Subscription must belong to a user"],
       index: true,
     },
+    privacySubjectDeletedAt: { type: Date, default: null },
 
     // ============ PLAN REFERENCE ============
     // All plan details come from populated planId
@@ -162,6 +163,8 @@ const subscriptionSchema = new mongoose.Schema(
 subscriptionSchema.index({ userId: 1, status: 1 });
 subscriptionSchema.index({ status: 1, expiresAt: 1 });
 subscriptionSchema.index({ planId: 1, status: 1 });
+subscriptionSchema.index({ status: 1, updatedAt: 1 }, { name: "retention_status_updated" });
+subscriptionSchema.index({ privacySubjectDeletedAt: 1 }, { name: "retention_subject_deleted" });
 // Idempotency backstop: one subscription per RevenueCat event id (§9.2).
 subscriptionSchema.index(
   { "metadata.rcEventId": 1 },

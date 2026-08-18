@@ -15,6 +15,7 @@ const express = require('express');
 const router = express.Router();
 
 const { validateZod } = require('../../shared/middleware/validation');
+const { optionalAuth } = require('../../shared/middleware/auth');
 const { getPublicVendorsQuerySchema } = require('./vendors.validation');
 const vendorsController = require('./vendors.controller');
 
@@ -71,7 +72,7 @@ const vendorsController = require('./vendors.controller');
  *       200:
  *         description: Vendors retrieved successfully
  */
-router.get('/public', validateZod(getPublicVendorsQuerySchema, 'query'), vendorsController.getPublicVendors);
+router.get('/public', optionalAuth, validateZod(getPublicVendorsQuerySchema, 'query'), vendorsController.getPublicVendors);
 
 /**
  * @swagger
@@ -90,7 +91,7 @@ router.get('/public', validateZod(getPublicVendorsQuerySchema, 'query'), vendors
  *       200: { description: Vendor profile retrieved successfully }
  *       404: { description: Vendor not found }
  */
-router.get('/public/:vendorId', vendorsController.getPublicVendor);
+router.get('/public/:vendorId', optionalAuth, vendorsController.getPublicVendor);
 
 /**
  * @swagger

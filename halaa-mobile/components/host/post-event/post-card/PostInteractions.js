@@ -17,6 +17,7 @@ import {
   useBlockPostEventActor,
 } from "../../../../hooks/postEvent";
 import { useLanguage } from "../../../../localization";
+import LegalLinks from "../../../legal/LegalLinks";
 
 // Inline AR/EN copy for the report/block actions (no extra i18n keys needed).
 const MOD_COPY = {
@@ -300,6 +301,10 @@ const PostInteractions = ({ post, eventId, sessionToken, t, toast }) => {
               )}
             </TouchableOpacity>
           </View>
+          <LegalLinks
+            docTypes={["terms", "community-rules"]}
+            prefix={lang === "ar" ? "بالنشر فإنك تقبل" : "By posting, you accept"}
+          />
         </View>
       )}
     </>

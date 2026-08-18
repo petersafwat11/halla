@@ -1,12 +1,12 @@
 {
   "ar": {
     "documentType": "community-rules",
-    "version": "2026-07-02",
+    "version": "2026-08-13",
     "locale": "ar",
     "authoritativeLanguage": "ar",
-    "effectiveDate": null,
-    "lastUpdated": "02 يوليو 2026",
-    "ownerApproval": "BLOCKED_NEEDS_OWNER",
+    "effectiveDate": "13 أغسطس 2026",
+    "lastUpdated": "13 أغسطس 2026",
+    "ownerApproval": "OWNER_APPROVED",
     "badge": "قواعد المجتمع",
     "title": "قواعد المجتمع ومعايير المحتوى",
     "subtitle": "منصة هلا",
@@ -45,14 +45,14 @@
         "num": "5",
         "label": "البند الخامس",
         "title": "إجراءات المراجعة والتظلّم",
-        "body": "قد تقوم المنصة بإخفاء أو إزالة المحتوى المخالف، أو تقييد الحساب أو تعليقه. ويحق للمستخدم التظلّم من أي إجراء عبر قنوات التواصل الرسمية، وتُراجع التظلّمات وفق سياسات المنصة. [BLOCKED_NEEDS_OWNER: تفاصيل آلية التظلّم والجهة المختصة بمراجعته]."
+        "body": "قد تقوم المنصة بإخفاء أو إزالة المحتوى المخالف، أو تقييد الحساب أو تعليقه. ويمكن للمستخدم الاعتراض عبر support@halaa.com.sa مع ذكر معرّف الحساب أو البلاغ دون إرسال كلمات مرور أو رموز تحقق. يراجع فريق مخوّل الاعتراض وسجل الإجراء، وقد يثبت القرار أو يعدله وفق هذه القواعد والأنظمة المعمول بها."
       },
       {
         "id": "article-6",
         "num": "6",
         "label": "البند السادس",
         "title": "أوقات الاستجابة والتصعيد الطارئ",
-        "body": "نسعى للاستجابة لبلاغات المحتوى خلال مدة معقولة. وفي حالات الخطر الوشيك على السلامة يُرجى التواصل مع الجهات المختصة مباشرة. [BLOCKED_NEEDS_OWNER: تحديد مدد الاستجابة المعلنة وقناة التصعيد الطارئ الرسمية]."
+        "body": "تُراجع بلاغات المحتوى في أقرب وقت ممكن بصورة معقولة بحسب الخطورة، من دون نشر مدة استجابة رقمية ملزمة حالياً. لا تُعد هلا خدمة طوارئ؛ وفي حالات الخطر الوشيك على السلامة يجب التواصل مباشرةً مع الجهات المختصة في المملكة العربية السعودية."
       },
       {
         "id": "article-7",
@@ -65,12 +65,12 @@
   },
   "en": {
     "documentType": "community-rules",
-    "version": "2026-07-02",
+    "version": "2026-08-13",
     "locale": "en",
     "authoritativeLanguage": "ar",
-    "effectiveDate": null,
-    "lastUpdated": "02 July 2026",
-    "ownerApproval": "BLOCKED_NEEDS_OWNER",
+    "effectiveDate": "13 August 2026",
+    "lastUpdated": "13 August 2026",
+    "ownerApproval": "OWNER_APPROVED",
     "badge": "Community Rules",
     "title": "Community Rules and Content Standards",
     "subtitle": "Halaa Platform",
@@ -109,14 +109,14 @@
         "num": "5",
         "label": "Article Five",
         "title": "Moderation and Appeals",
-        "body": "The platform may hide or remove violating content, or restrict or suspend an account. Users may appeal any action through official contact channels, and appeals are reviewed in accordance with platform policies. [BLOCKED_NEEDS_OWNER: details of the appeal mechanism and the body responsible for reviewing it]."
+        "body": "The platform may hide or remove violating content, or restrict or suspend an account. A user may appeal through support@halaa.com.sa by providing the account or report identifier, without sending passwords or verification codes. An authorized team reviews the appeal and action history and may uphold or change the decision under these rules and applicable law."
       },
       {
         "id": "article-6",
         "num": "6",
         "label": "Article Six",
         "title": "Response Times and Emergency Escalation",
-        "body": "We aim to respond to content reports within a reasonable time. In cases of imminent risk to safety, please contact the competent authorities directly. [BLOCKED_NEEDS_OWNER: define the published response targets and the official emergency escalation channel]."
+        "body": "Reports are reviewed as soon as reasonably possible according to severity; Halaa does not currently publish a binding numeric response time. Halaa is not an emergency service. If there is an imminent threat to safety, contact the competent authorities in the Kingdom of Saudi Arabia directly."
       },
       {
         "id": "article-7",

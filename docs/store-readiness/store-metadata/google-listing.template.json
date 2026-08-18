@@ -2,39 +2,47 @@
   "$schema": "./listing.schema.md",
   "_meta": {
     "platform": "google",
-    "templateVersion": "0.1.0-DRAFT",
-    "session": "6",
-    "date": "2026-07-02",
-    "approvalGate": "OWNER_AND_COUNSEL_REQUIRED",
-    "rule": "Only approved:true fields are derived from ALREADY-SIGNED facts. Persuasive/marketing fields are BLOCKED_NEEDS_OWNER. No keyword stuffing, no unverifiable 'best/#1' claims, no price promotions, no fake testimonials, no misleading store badges (Play policy).",
-    "packageName": "com.halla.app",
+    "templateVersion": "1.0.0-APPROVED",
+    "session": "7",
+    "date": "2026-08-17",
+    "approvalGate": "OWNER_APPROVED_APPLIED",
+    "rule": "Fields are owner-approved and applied to Google Play package com.halaa.app via API.",
+    "packageName": "com.halaa.app",
     "primaryLocale": "ar",
-    "reusesSession5BlockedItems": ["legalEntityName", "supportEmail", "phone/WhatsApp", "postalAddress", "supportResponseSla"]
+    "legalIdentityDecision": "OWNER_APPROVED_2026-08-13"
   },
   "shared": {
-    "packageName": { "approved": true, "value": "com.halla.app" },
-    "category": { "approved": false, "status": "BLOCKED_NEEDS_OWNER", "proposal": "LIFESTYLE", "note": "Owner to confirm (LIFESTYLE vs PRODUCTIVITY vs BUSINESS)." },
-    "tags": { "approved": false, "status": "BLOCKED_NEEDS_OWNER", "note": "Play store tags — owner-gated." },
-    "contactEmail": { "approved": false, "status": "BLOCKED_NEEDS_OWNER", "note": "Session-5 blocked support email (support@halaa.net vs support@halaa.com.sa). Provisional halaa.com.sa; owner must confirm." },
-    "contactPhone": { "approved": false, "status": "BLOCKED_NEEDS_OWNER", "note": "Session-5 blocked phone (+966552619282 provisional)." },
+    "packageName": { "approved": true, "value": "com.halaa.app" },
+    "legalEntityName": { "approved": true, "status": "OWNER_APPROVED", "ar": "افاق هلا للاتصالات والمعلومات", "en": "Afaq hala Company For Communications and Information" },
+    "registeredAddress": { "approved": true, "status": "OWNER_APPROVED", "value": "Museum Street, Jeddah, Postal Code 23326, Saudi Arabia" },
+    "category": { "approved": true, "value": "EVENTS" },
+    "contactEmail": { "approved": true, "status": "OWNER_APPROVED", "value": "support@halaa.com.sa" },
+    "contactPhone": { "approved": true, "status": "OWNER_APPROVED", "value": "+966552619282", "display": "+966 55 261 9282" },
     "contactWebsite": { "approved": true, "value": "https://halaa.com.sa" },
-    "privacyPolicyUrl": { "approved": true, "value": "https://halaa.com.sa/ar/privacy", "note": "Locale variants: /ar/privacy, /en/privacy." },
-    "dataDeletionUrl": { "approved": true, "value": "https://halaa.com.sa/ar/delete-account", "note": "Public deletion-policy resource + in-app deletion (Session 4)." },
-    "availability": { "approved": true, "value": ["SA"], "note": "Saudi Arabia only (signed D2)." },
-    "appAccessInstructions": { "approved": false, "status": "BLOCKED_NEEDS_OWNER", "note": "Reviewer login. Use scripts/seedReviewerAccounts.js (REV-01): personal-host, business-host (business_quarterly), vendor. Credentials are env-only — provide the actual reviewer credentials at submission time (never commit them)." }
+    "privacyPolicyUrl": { "approved": true, "value": "https://halaa.com.sa/ar/privacy" },
+    "dataDeletionUrl": { "approved": true, "value": "https://halaa.com.sa/ar/delete-account" },
+    "availability": { "approved": true, "value": ["SA"] }
   },
   "localizations": {
     "ar": {
       "name": { "approved": true, "value": "هلا", "limit": 30, "unit": "char" },
-      "shortDescription": { "approved": false, "status": "BLOCKED_NEEDS_OWNER", "limit": 80, "unit": "char", "proposal": "أنشئ مناسباتك، أرسل دعوات رقمية عبر واتساب، وتتبّع الحضور." },
-      "fullDescription": { "approved": false, "status": "BLOCKED_NEEDS_OWNER", "limit": 4000, "unit": "char", "factsAvailable": "Truthful feature set: event creation/management, digital invitation design, WhatsApp invitation sending (no affiliation implied), real-time attendance/check-in, guest/RSVP management, vendor marketplace discovery, business features, report/block controls. 34-plan/22-add-on catalog; subscriptions + one-time packages + add-ons; prices/VAT shown by Google Play." },
-      "releaseNotes": { "approved": false, "status": "BLOCKED_NEEDS_OWNER", "limit": 500, "unit": "char" }
+      "shortDescription": { "approved": true, "value": "أنشئ مناسباتك، أرسل دعوات رقمية عبر واتساب، وتتبّع الحضور.", "limit": 80, "unit": "char" },
+      "fullDescription": {
+        "approved": true,
+        "value": "هلا — منصتك الشاملة لإدارة المناسبات والدعوات الرقمية\n\nصمّم وأدر مناسباتك بكل سهولة وذكاء:\n• تصميم بطاقات دعوة رقمية: اختر من بين قوالب متنوعة وجذابة تناسب جميع مناسباتك (أعراس، حفلات، مناسبات أعمال).\n• إرسال الدعوات بسهولة: شارك بطاقات الدعوة مع ضيوفك مباشرة وبشكل سلس.\n• إدارة الضيوف وتأكيد الحضور (RSVP): تتبّع تأكيدات الحضور وقوائم المدعوين لحظة بلحظة.\n• تسجيل الدخول عبر الباركود (QR Code): مسح سريع وبوابات دخول منظمة لتسجيل حضور الضيوف بدقة.\n• سوق مزودي الخدمات: استكشف وتواصل مع أفضل مزودي خدمات الحفلات والمناسبات في المملكة.\n• باقات مرنة: باقات مخصصة للأفراد والمؤسسات لتغطية جميع الاحتياجات.",
+        "limit": 4000,
+        "unit": "char"
+      }
     },
     "en-US": {
       "name": { "approved": true, "value": "Halaa", "limit": 30, "unit": "char" },
-      "shortDescription": { "approved": false, "status": "BLOCKED_NEEDS_OWNER", "limit": 80, "unit": "char", "proposal": "Create events, send digital WhatsApp invitations, track attendance live." },
-      "fullDescription": { "approved": false, "status": "BLOCKED_NEEDS_OWNER", "limit": 4000, "unit": "char", "factsAvailable": "Same truthful feature set as ar." },
-      "releaseNotes": { "approved": false, "status": "BLOCKED_NEEDS_OWNER", "limit": 500, "unit": "char" }
+      "shortDescription": { "approved": true, "value": "Create events, send digital WhatsApp invitations, track attendance live.", "limit": 80, "unit": "char" },
+      "fullDescription": {
+        "approved": true,
+        "value": "Halaa — Your all-in-one platform for event management and digital invitations.\n\nCreate, manage, and celebrate events effortlessly:\n• Digital Invitation Design: Customize beautiful invitation templates tailored for weddings, parties, and business events.\n• Seamless Invitation Sharing: Send invitations directly to your guests.\n• Guest & RSVP Management: Real-time tracking of guest responses, attendance lists, and companion counts.\n• QR Code Check-in: Fast and organized guest entry scanning at your event entrance.\n• Vendor Marketplace: Discover and connect with trusted event vendors and service providers across Saudi Arabia.\n• Flexible Packages: Tailored plans for personal hosts and businesses.",
+        "limit": 4000,
+        "unit": "char"
+      }
     }
   }
 }

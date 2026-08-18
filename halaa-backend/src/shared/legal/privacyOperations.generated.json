@@ -1,0 +1,252 @@
+{
+  "schemaVersion": "1.0.0",
+  "policyVersion": "2026-08-13",
+  "effectiveDate": "2026-08-13",
+  "ownerApproval": "OWNER_APPROVED",
+  "counselStatus": "UNCONFIRMED",
+  "supportCommitment": {
+    "publishHours": false,
+    "publishNumericSla": false,
+    "timezone": "Asia/Riyadh"
+  },
+  "retentionRules": [
+    {
+      "id": "financial-payments-6y",
+      "collection": "payments",
+      "model": "Payment",
+      "triggerField": "updatedAt",
+      "deletionTriggerField": "privacySubjectDeletedAt",
+      "durationYears": 6,
+      "retentionAnchor": "end_of_calendar_year",
+      "action": "delete",
+      "legalBasis": "legal_obligation",
+      "subjectField": "userId",
+      "eligibleStatuses": [
+        "failed",
+        "refunded",
+        "voided",
+        "paid",
+        "captured",
+        "partially_refunded"
+      ]
+    },
+    {
+      "id": "billing-subscriptions-6y",
+      "collection": "subscriptions",
+      "model": "Subscription",
+      "triggerField": "updatedAt",
+      "deletionTriggerField": "privacySubjectDeletedAt",
+      "durationYears": 6,
+      "retentionAnchor": "end_of_calendar_year",
+      "action": "delete",
+      "legalBasis": "legal_obligation",
+      "subjectField": "userId",
+      "eligibleStatuses": [
+        "expired",
+        "cancelled",
+        "completed"
+      ]
+    },
+    {
+      "id": "billing-provider-events-6y",
+      "collection": "revenuecatevents",
+      "model": "RevenueCatEvent",
+      "triggerField": "updatedAt",
+      "deletionTriggerField": "privacySubjectDeletedAt",
+      "durationYears": 6,
+      "retentionAnchor": "end_of_calendar_year",
+      "action": "delete",
+      "legalBasis": "legal_obligation",
+      "subjectField": "userId",
+      "eligibleStatuses": [
+        "processed",
+        "ignored",
+        "resolved"
+      ]
+    },
+    {
+      "id": "security-audit-2y",
+      "collection": "auditlogs",
+      "model": "AuditLog",
+      "triggerField": "timestamp",
+      "durationYears": 2,
+      "retentionAnchor": "record_timestamp",
+      "action": "delete",
+      "legalBasis": "legitimate_interest_security",
+      "subjectField": "performedBy",
+      "eligibleStatuses": []
+    },
+    {
+      "id": "business-contract-6y",
+      "collection": "businessplanassignments",
+      "model": "BusinessPlanAssignment",
+      "triggerField": "updatedAt",
+      "deletionTriggerField": "privacySubjectDeletedAt",
+      "durationYears": 6,
+      "retentionAnchor": "end_of_calendar_year",
+      "action": "delete",
+      "legalBasis": "legal_obligation",
+      "subjectField": "businessUserId",
+      "eligibleStatuses": [
+        "refunded",
+        "failed",
+        "expired",
+        "cancelled",
+        "superseded"
+      ]
+    }
+  ],
+  "processors": [
+    {
+      "id": "mongodb-atlas",
+      "purpose": "database hosting",
+      "data": [
+        "accounts",
+        "events",
+        "guests",
+        "billing",
+        "ugc"
+      ],
+      "region": "ACCOUNT_CONFIRMATION_REQUIRED",
+      "retention": "Halaa policy plus provider backups",
+      "transfer": "ACCOUNT_CONFIRMATION_REQUIRED",
+      "dpaStatus": "OWNER_CONFIRMATION_REQUIRED"
+    },
+    {
+      "id": "aws-s3",
+      "purpose": "file and media storage",
+      "data": [
+        "uploads",
+        "vendor documents",
+        "event media"
+      ],
+      "region": "ACCOUNT_CONFIRMATION_REQUIRED",
+      "retention": "object lifecycle/account deletion",
+      "transfer": "ACCOUNT_CONFIRMATION_REQUIRED",
+      "dpaStatus": "OWNER_CONFIRMATION_REQUIRED"
+    },
+    {
+      "id": "moyasar",
+      "purpose": "web payment processing",
+      "data": [
+        "transaction",
+        "payment method metadata"
+      ],
+      "region": "PROVIDER_CONFIRMATION_REQUIRED",
+      "retention": "provider/legal requirements",
+      "transfer": "PROVIDER_CONFIRMATION_REQUIRED",
+      "dpaStatus": "OWNER_CONFIRMATION_REQUIRED"
+    },
+    {
+      "id": "apple",
+      "purpose": "iOS distribution and purchases",
+      "data": [
+        "store account",
+        "purchase history"
+      ],
+      "region": "provider controlled",
+      "retention": "provider/legal requirements",
+      "transfer": "provider terms",
+      "dpaStatus": "PLATFORM_TERMS_CONFIRMATION_REQUIRED"
+    },
+    {
+      "id": "google",
+      "purpose": "Android distribution, purchases and push",
+      "data": [
+        "store account",
+        "purchase history",
+        "push token"
+      ],
+      "region": "provider controlled",
+      "retention": "provider/legal requirements",
+      "transfer": "provider terms",
+      "dpaStatus": "PLATFORM_TERMS_CONFIRMATION_REQUIRED"
+    },
+    {
+      "id": "revenuecat",
+      "purpose": "purchase entitlement management",
+      "data": [
+        "pseudonymous app user id",
+        "purchase and entitlement history"
+      ],
+      "region": "ACCOUNT_CONFIRMATION_REQUIRED",
+      "retention": "billing/tax policy and provider configuration",
+      "transfer": "ACCOUNT_CONFIRMATION_REQUIRED",
+      "dpaStatus": "OWNER_CONFIRMATION_REQUIRED"
+    },
+    {
+      "id": "expo-apns-fcm",
+      "purpose": "push notifications",
+      "data": [
+        "push token",
+        "notification payload"
+      ],
+      "region": "provider controlled",
+      "retention": "delivery/diagnostic period",
+      "transfer": "provider terms",
+      "dpaStatus": "PLATFORM_TERMS_CONFIRMATION_REQUIRED"
+    },
+    {
+      "id": "sentry",
+      "purpose": "crash and performance diagnostics",
+      "data": [
+        "diagnostics",
+        "device metadata",
+        "network metadata after SDK scrubbing"
+      ],
+      "region": "ACCOUNT_CONFIRMATION_REQUIRED",
+      "retention": "ACCOUNT_CONFIRMATION_REQUIRED",
+      "transfer": "ACCOUNT_CONFIRMATION_REQUIRED",
+      "dpaStatus": "OWNER_CONFIRMATION_REQUIRED"
+    },
+    {
+      "id": "maps",
+      "purpose": "location search and map display",
+      "data": [
+        "location queries",
+        "coordinates"
+      ],
+      "region": "provider controlled",
+      "retention": "provider terms",
+      "transfer": "provider terms",
+      "dpaStatus": "PLATFORM_TERMS_CONFIRMATION_REQUIRED"
+    },
+    {
+      "id": "taqnyat",
+      "purpose": "SMS and WhatsApp delivery",
+      "data": [
+        "recipient phone",
+        "message and delivery metadata"
+      ],
+      "region": "PROVIDER_CONFIRMATION_REQUIRED",
+      "retention": "PROVIDER_CONFIRMATION_REQUIRED",
+      "transfer": "PROVIDER_CONFIRMATION_REQUIRED",
+      "dpaStatus": "OWNER_CONFIRMATION_REQUIRED"
+    },
+    {
+      "id": "email-provider",
+      "purpose": "transactional email",
+      "data": [
+        "email",
+        "message and delivery metadata"
+      ],
+      "region": "ACCOUNT_CONFIRMATION_REQUIRED",
+      "retention": "ACCOUNT_CONFIRMATION_REQUIRED",
+      "transfer": "ACCOUNT_CONFIRMATION_REQUIRED",
+      "dpaStatus": "OWNER_CONFIRMATION_REQUIRED"
+    },
+    {
+      "id": "meta-whatsapp",
+      "purpose": "user-requested invitation messaging",
+      "data": [
+        "recipient phone",
+        "message and delivery metadata"
+      ],
+      "region": "provider controlled",
+      "retention": "provider terms",
+      "transfer": "provider terms",
+      "dpaStatus": "PLATFORM_TERMS_CONFIRMATION_REQUIRED"
+    }
+  ],
+  "policyHash": "28b061780f1e0162a38080ab919acb2ec1490b68168c60934924a8cfd7f9ccfd"
+}

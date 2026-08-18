@@ -1,5 +1,10 @@
 # Halaa legal parity, policy, and mobile alignment plan
 
+> **Completion plan:** this original architecture plan has largely been implemented. Use
+> `docs/store-readiness-LEGAL-PRIVACY-COMPLETION-PLAN.md` as the authoritative remaining-work
+> plan for owner decisions, approved copy, operational privacy/retention enforcement,
+> refund/consumer-rights alignment, store disclosures, and final evidence.
+
 **Executor:** Claude Code  
 **Goal:** one legally approved, versioned source rendered consistently on web and mobile, with correct RTL/LTR layout and store-review-ready links.  
 **Legal caveat:** Claude implements structure and approved copy; Saudi counsel/owner must approve legal substance, retention periods, entity/contact data, subscription/refund wording, and minors/UGC provisions.

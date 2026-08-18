@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { Flag } from "lucide-react";
+import { Ban, Flag } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { apiRequest } from "@/services/http";
 
@@ -19,6 +20,7 @@ const REASONS = [
 ];
 
 export default function ReportVendorButton({ vendorId, label, lang = "ar" }) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const ar = lang === "ar";
@@ -42,6 +44,28 @@ export default function ReportVendorButton({ vendorId, label, lang = "ar" }) {
     } catch (e) {
       if (e?.response?.status === 401) {
         toast.info(ar ? "سجّل الدخول للإبلاغ." : "Please sign in to report.");
+      } else {
+        toast.error(ar ? "حدث خطأ ما." : "Something went wrong.");
+      }
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const blockVendor = async () => {
+    setBusy(true);
+    try {
+      await apiRequest({
+        method: "POST",
+        path: "/moderation/block",
+        data: { blockedActorType: "user", blockedActorId: vendorId },
+      });
+      toast.success(ar ? "تم حظر مقدم الخدمة وإخفاؤه." : "Vendor blocked and hidden.");
+      router.replace(`/${lang}/market-place`);
+      router.refresh();
+    } catch (e) {
+      if (e?.response?.status === 401) {
+        toast.info(ar ? "سجّل الدخول للحظر." : "Please sign in to block.");
       } else {
         toast.error(ar ? "حدث خطأ ما." : "Something went wrong.");
       }
@@ -109,6 +133,29 @@ export default function ReportVendorButton({ vendorId, label, lang = "ar" }) {
               {ar ? r.ar : r.en}
             </button>
           ))}
+          <button
+            type="button"
+            disabled={busy}
+            onClick={blockVendor}
+            style={{
+              display: "flex",
+              width: "100%",
+              alignItems: "center",
+              justifyContent: ar ? "flex-end" : "flex-start",
+              gap: 6,
+              textAlign: ar ? "right" : "left",
+              background: "none",
+              border: "none",
+              borderTop: "1px solid #eee",
+              cursor: "pointer",
+              padding: "9px 8px 8px",
+              fontSize: 13,
+              color: "#b42318",
+            }}
+          >
+            <Ban size={15} />
+            {ar ? "حظر مقدم الخدمة" : "Block vendor"}
+          </button>
         </div>
       )}
     </div>

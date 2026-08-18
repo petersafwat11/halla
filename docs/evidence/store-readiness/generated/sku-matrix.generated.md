@@ -4,7 +4,7 @@
 >
 > All Apple / Google / RevenueCat identifiers below are **PROPOSED** and **NOT yet created** in any store console. Prices are shown in SAR from the current backend catalog; the stores collect Saudi VAT (15%) and render the localized price string (PRICE-OWNER, signed 2026-07-01).
 
-**Totals:** 34 DB plans (32 store-eligible + 2 internal) · 22 add-ons · **54 proposed store products per platform**.
+**Totals:** 34 DB plans (31 store-eligible + 3 internal) · 22 add-ons · **53 proposed store products per platform**.
 
 | internal code | type | kind | audience | billing | price SAR | store? | proposed product id (ios=android) | android base plan |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -40,7 +40,7 @@
 | business_event_150 | plan | event_consumable | business_host | one_time | 540 | yes | com.halaa.business_event_150 | — |
 | business_event_200 | plan | event_consumable | business_host | one_time | 700 | yes | com.halaa.business_event_200 | — |
 | business_quarterly | plan | subscription | business_host | quarterly | 3000 | yes | com.halaa.business_quarterly | quarterly |
-| business_annual | plan | subscription | business_host | annual | 10000 | yes | com.halaa.business_annual | annual |
+| business_annual | plan | internal | business_host | none | 10000 | **no** | — | — |
 | unlimited | plan | internal | platform_internal | none | 0 | **no** | — | — |
 | extra_invites_10 | addon | addon_consumable | personal_host+business_host | one_time | 40 | yes | com.halaa.extra_invites_10 | — |
 | extra_invites_20 | addon | addon_consumable | personal_host+business_host | one_time | 80 | yes | com.halaa.extra_invites_20 | — |

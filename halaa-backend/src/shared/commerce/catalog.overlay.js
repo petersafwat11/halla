@@ -89,7 +89,26 @@ const PLAN_OVERLAY = {
   // natively; the negotiated/managed contract (quote/tax/setup) stays
   // web/admin-only — same code, no duplicate product.
   business_quarterly: { ...subscription("business_plans", "quarterly"), hasManagedAcquisitionPath: true },
-  business_annual: { ...subscription("business_plans", "annual"), hasManagedAcquisitionPath: true },
+
+  // business_annual — REMOVED from all stores by owner directive (2026-08-16):
+  // the Apple shell was deleted in App Store Connect and the product is not to
+  // be created on Google Play or RevenueCat. The plan remains in the backend
+  // catalog for the web/admin managed/negotiated acquisition path only, exactly
+  // like trial/unlimited it now creates ZERO store products.
+  business_annual: {
+    kind: "internal",
+    storeEligible: false,
+    isTrial: false,
+    isUnlimited: false,
+    fulfillment: "admin_only",
+    repurchasePolicy: "not_applicable",
+    restoreBehavior: "none",
+    refundPolicy: "not_applicable",
+    providerRefundReconcile: false,
+    providerExclusionReason: "owner_directive_2026_08_16_store_removed_managed_acquisition_only",
+    hasManagedAcquisitionPath: true,
+    setupFeeWaivedInStore: false,
+  },
 };
 
 // ── ADD-ON overlay, keyed by add-on family ─────────────────────────────────

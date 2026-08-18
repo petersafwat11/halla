@@ -41,6 +41,10 @@ const Block = require("../models/BlockModel");
 const Report = require("../models/ReportModel");
 const Subscription = require("../models/SubscriptionModel");
 const Payment = require("../models/PaymentModel");
+const BusinessPlanAssignment = require("../models/BusinessPlanAssignmentModel");
+const RevenueCatEvent = require("../models/RevenueCatEventModel");
+const AuditLog = require("../models/AuditLogModel");
+const OutboundMessage = require("../models/OutboundMessageModel");
 const AccountDeletionRequest = require("../models/AccountDeletionRequestModel");
 const ProcessorErasure = require("../models/ProcessorErasureModel");
 const StaffAccessToken = require("../models/StaffAccessTokenModel");
@@ -176,6 +180,25 @@ async function seedFullGraph(user) {
   });
   await Payment.collection.insertOne({
     userId: user._id, amount: 100, currency: "SAR", status: "paid",
+    description: "Alice private order", metadata: { email: "alice@example.com" },
+  });
+  await BusinessPlanAssignment.collection.insertOne({
+    businessUserId: user._id, planId: new mongoose.Types.ObjectId(), mode: "grant", status: "active",
+    grantReason: "Alice requested it", tokenHash: "private-link-hash", createdAt: new Date(), updatedAt: new Date(),
+  });
+  await RevenueCatEvent.collection.insertOne({
+    eventId: "rc-alice-delete", type: "INITIAL_PURCHASE", status: "processed", userId: user._id,
+    appUserId: "bill-alice-1", aliases: ["alice@example.com"], rawPayload: { email: "alice@example.com" },
+    createdAt: new Date(), updatedAt: new Date(),
+  });
+  await AuditLog.collection.insertOne({
+    action: "user.updated", performedBy: user._id, targetType: "user", targetId: user._id,
+    metadata: { email: "alice@example.com" }, ipAddress: "1.2.3.4", userAgent: "private-agent", timestamp: new Date(),
+  });
+  await OutboundMessage.collection.insertOne({
+    provider: "taqnyat", channel: "sms", effectiveChannel: "sms", messageType: "sms", status: "sent",
+    recipients: ["+966500000000"], recipientCount: 1, requestPayload: { phone: "+966500000000" },
+    event: event._id, user: user._id, createdAt: new Date(), updatedAt: new Date(),
   });
   return event;
 }
@@ -257,7 +280,23 @@ test("full deletion → no non-retained PII remains; retained rows survive; stat
   const sub = await Subscription.findOne({ userId: user._id }).lean();
   assert.ok(sub, "subscription retained");
   assert.equal(sub.notes, null, "subscription notes scrubbed");
-  assert.ok(await Payment.findOne({ userId: user._id }).lean(), "payment retained");
+  const payment = await Payment.findOne({ userId: user._id }).lean();
+  assert.ok(payment, "payment retained");
+  assert.equal(payment.description, null);
+  assert.deepEqual(payment.metadata, {});
+  assert.ok(payment.privacySubjectDeletedAt);
+  const assignment = await BusinessPlanAssignment.findOne({ businessUserId: user._id }).lean();
+  assert.equal(assignment.grantReason, null);
+  assert.equal(assignment.tokenHash, null);
+  assert.ok(assignment.privacySubjectDeletedAt);
+  const rcEvent = await RevenueCatEvent.findOne({ userId: user._id }).lean();
+  assert.deepEqual(rcEvent.aliases, []);
+  assert.equal(rcEvent.rawPayload, null);
+  assert.ok(rcEvent.privacySubjectDeletedAt);
+  const audit = await AuditLog.collection.findOne({ action: "user.updated", targetType: "user", targetId: user._id });
+  assert.equal(audit.performedBy, null);
+  assert.deepEqual(audit.metadata, {});
+  assert.equal(await OutboundMessage.countDocuments({ user: user._id }), 0);
 
   // All personal S3 objects were deleted.
   assert.ok(deleted.has("events/post-event/e1/photos/full.jpg"));

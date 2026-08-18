@@ -9,14 +9,14 @@
 | metric | value |
 | --- | --- |
 | DB plans | 34 |
-| store-eligible plans | 32 |
+| store-eligible plans | 31 |
 | add-ons (all store-eligible) | 22 |
 | store-eligible add-ons | 22 |
-| **proposed store products per platform** | **54** |
-| — subscriptions | 14 |
+| **proposed store products per platform** | **53** |
+| — subscriptions | 13 |
 | — event consumables | 18 |
 | — add-on consumables | 22 |
-| internal / non-store (trial + unlimited) | 2 |
+| internal / non-store (trial + unlimited) | 3 |
 
 ## Plans per planType
 

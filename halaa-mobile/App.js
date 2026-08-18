@@ -50,6 +50,16 @@ const sentryEnvironment = __DEV__
 // the event payload before send.
 const SENSITIVE_KEY_RE =
   /(password|token|otp|secret|authorization|cookie|national|iqama|phone|email|pushtoken)/i;
+const EMAIL_RE = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi;
+const BEARER_RE = /\bBearer\s+[A-Za-z0-9._~+/=-]+/gi;
+const SAUDI_PHONE_RE = /(?:\+?966|0)?5\d{8}/g;
+const scrubString = (value) =>
+  typeof value === "string"
+    ? value
+        .replace(EMAIL_RE, "[redacted-email]")
+        .replace(BEARER_RE, "Bearer [redacted]")
+        .replace(SAUDI_PHONE_RE, "[redacted-phone]")
+    : value;
 const redactDeep = (obj, depth = 0) => {
   if (!obj || typeof obj !== "object" || depth > 6) return;
   for (const k of Object.keys(obj)) {
@@ -57,7 +67,8 @@ const redactDeep = (obj, depth = 0) => {
       obj[k] = "[redacted]";
       continue;
     }
-    if (obj[k] && typeof obj[k] === "object") redactDeep(obj[k], depth + 1);
+    if (typeof obj[k] === "string") obj[k] = scrubString(obj[k]);
+    else if (obj[k] && typeof obj[k] === "object") redactDeep(obj[k], depth + 1);
   }
 };
 const scrubPII = (event) => {
@@ -67,8 +78,16 @@ const scrubPII = (event) => {
         delete event.request.headers[h];
       }
     }
+    delete event.request?.cookies;
+    delete event.request?.env;
+    delete event.request?.query_string;
+    if (event.request?.url) event.request.url = String(event.request.url).split("?")[0];
     redactDeep(event.extra);
     redactDeep(event.contexts);
+    redactDeep(event.tags);
+    redactDeep(event.breadcrumbs);
+    redactDeep(event.exception);
+    if (event.message) event.message = scrubString(event.message);
     if (event.request?.data) redactDeep(event.request.data);
     // Drop user email/ip — keep only an opaque id if present.
     if (event.user) {
@@ -95,6 +114,11 @@ Sentry.init({
   tracesSampleRate: __DEV__ ? 1.0 : 0.2,
   sendDefaultPii: false,
   beforeSend: scrubPII,
+  beforeSendTransaction: scrubPII,
+  beforeBreadcrumb: (breadcrumb) => {
+    redactDeep(breadcrumb);
+    return breadcrumb;
+  },
 });
 
 // ------------------------------------------------- //
@@ -218,6 +242,8 @@ function AppContent() {
   // mount. Covers foreground/background taps (listener) and cold-start taps
   // (getLastNotificationResponseAsync).
   useEffect(() => {
+    if (Platform.OS === "web") return undefined;
+
     setupAndroidChannel();
 
     const sub = Notifications.addNotificationResponseReceivedListener(
@@ -247,18 +273,9 @@ function AppContent() {
     await changeLanguage(code);
   };
 
-  // User must pick a language before using the app
-  if (!hasSelectedLanguage) {
-    return (
-      <View style={styles.centered}>
-        <LanguageSelector onLanguageSelect={handleLanguageSelect} />
-        <StatusBar style="auto" />
-      </View>
-    );
-  }
-
-  // Deep-link config. Links use the `halaa://` scheme (declared in
-  // app.json) plus universal-link variants for the production domain.
+  // Hooks must run in the same order on the language-picker render and after
+  // a language is selected. Keeping this memo above the early return prevents
+  // the first-run transition from adding a hook mid-render.
   const linking = useMemo(
     () => ({
       // The locale-prefixed universal-link variants are listed BEFORE the bare
@@ -292,6 +309,16 @@ function AppContent() {
     }),
     []
   );
+
+  // User must pick a language before using the app
+  if (!hasSelectedLanguage) {
+    return (
+      <View style={styles.centered}>
+        <LanguageSelector onLanguageSelect={handleLanguageSelect} />
+        <StatusBar style="auto" />
+      </View>
+    );
+  }
 
   return (
     <NavigationContainer ref={navigationRef} linking={linking}>

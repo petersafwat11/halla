@@ -88,6 +88,7 @@ const revenueCatEventSchema = new mongoose.Schema(
 
     // ── resolved links (filled during processing) ────────────────────────────
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    privacySubjectDeletedAt: { type: Date, default: null },
     subscriptionId: { type: mongoose.Schema.Types.ObjectId, ref: "Subscription" },
     paymentId: { type: mongoose.Schema.Types.ObjectId, ref: "Payment" },
     eventEntitlementId: { type: mongoose.Schema.Types.ObjectId, ref: "EventEntitlement" },
@@ -103,6 +104,8 @@ const revenueCatEventSchema = new mongoose.Schema(
 revenueCatEventSchema.index({ status: 1, createdAt: -1 });
 // Reclaim sweep: find stuck `processing` leases past their deadline.
 revenueCatEventSchema.index({ processing: 1, leaseUntil: 1 });
+revenueCatEventSchema.index({ status: 1, updatedAt: 1 }, { name: "retention_status_updated" });
+revenueCatEventSchema.index({ privacySubjectDeletedAt: 1 }, { name: "retention_subject_deleted" });
 
 module.exports =
   mongoose.models.RevenueCatEvent ||

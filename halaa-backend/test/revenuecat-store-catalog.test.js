@@ -20,15 +20,17 @@ const { STORE_SAFE_FIELDS } = require("../src/shared/commerce");
 // Fields that must NEVER appear in the store-safe projection.
 const FORBIDDEN = ["price", "currency", "apiKey", "webhookAuth", "secret", "REVENUECAT_API_KEY"];
 
-test("returns only store-eligible entries — trial/unlimited never leak", () => {
+test("returns only store-eligible entries — trial/unlimited/business_annual never leak", () => {
   const cat = commerce.getStoreSafeCatalog();
   assert.ok(cat.length > 0, "catalog must not be empty");
-  // 32 store-eligible plans + 22 add-ons = 54 store products.
-  assert.equal(cat.length, 54);
+  // 31 store-eligible plans + 22 add-ons = 53 store products
+  // (business_annual removed from stores by owner directive, 2026-08-16).
+  assert.equal(cat.length, 53);
   for (const e of cat) {
     assert.equal(e.storeEligible, true);
     assert.equal(e.isTrial, false);
     assert.equal(e.isUnlimited, false);
+    assert.notEqual(e.internalCode, "business_annual");
   }
 });
 

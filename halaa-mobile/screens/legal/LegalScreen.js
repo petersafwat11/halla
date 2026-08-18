@@ -26,7 +26,9 @@ import {
  * with Dynamic Type (font scaling is left enabled); cards shrink rather than clip.
  */
 const LegalScreen = ({ data }) => {
-  const { t } = useTranslation("settings");
+  const { t, currentLanguage } = useTranslation("settings");
+  const isRtl = currentLanguage === "ar";
+  const localizedText = isRtl ? styles.rtlText : styles.ltrText;
 
   const sections = Array.isArray(data?.sections) ? data.sections : [];
 
@@ -39,22 +41,22 @@ const LegalScreen = ({ data }) => {
           contentContainerStyle={styles.scrollContent}
         >
           {/* Document heading */}
-          <View style={styles.header}>
+          <View style={[styles.header, isRtl ? styles.alignEnd : styles.alignStart]}>
             {!!data?.badge && (
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{data.badge}</Text>
+              <View style={[styles.badge, isRtl ? styles.alignSelfEnd : styles.alignSelfStart]}>
+                <Text style={[styles.badgeText, localizedText]}>{data.badge}</Text>
               </View>
             )}
             {!!data?.title && (
-              <Text style={styles.title} accessibilityRole="header">
+              <Text style={[styles.title, localizedText]} accessibilityRole="header">
                 {data.title}
               </Text>
             )}
             {!!data?.subtitle && (
-              <Text style={styles.subtitle}>{data.subtitle}</Text>
+              <Text style={[styles.subtitle, localizedText]}>{data.subtitle}</Text>
             )}
             {!!data?.lastUpdated && (
-              <Text style={styles.lastUpdated}>
+              <Text style={[styles.lastUpdated, localizedText]}>
                 {t("legal.lastUpdated", { defaultValue: "Last updated" })}:{" "}
                 {data.lastUpdated}
               </Text>
@@ -66,7 +68,7 @@ const LegalScreen = ({ data }) => {
             const paragraphs = String(section.body || "").split("\n\n");
             return (
               <View key={section.id} style={styles.card}>
-                <View style={styles.cardHeader}>
+                <View style={[styles.cardHeader, isRtl && styles.cardHeaderRtl]}>
                   {/* Section number stays visually stable (LTR digit) while the
                       title/body follow the ambient locale direction. */}
                   <View style={styles.numBadge}>
@@ -74,10 +76,10 @@ const LegalScreen = ({ data }) => {
                   </View>
                   <View style={styles.cardHeaderText}>
                     {!!section.label && (
-                      <Text style={styles.sectionLabel}>{section.label}</Text>
+                      <Text style={[styles.sectionLabel, localizedText]}>{section.label}</Text>
                     )}
                     {!!section.title && (
-                      <Text style={styles.sectionTitle} accessibilityRole="header">
+                      <Text style={[styles.sectionTitle, localizedText]} accessibilityRole="header">
                         {section.title}
                       </Text>
                     )}
@@ -87,7 +89,7 @@ const LegalScreen = ({ data }) => {
                 {paragraphs.map((paragraph, index) => (
                   <Text
                     key={`${section.id}-p${index}`}
-                    style={styles.paragraph}
+                    style={[styles.paragraph, localizedText]}
                   >
                     {paragraph}
                   </Text>
@@ -166,6 +168,9 @@ const styles = StyleSheet.create({
     gap: spacing[12],
     marginBottom: spacing[12],
   },
+  cardHeaderRtl: {
+    flexDirection: "row-reverse",
+  },
   numBadge: {
     width: 32,
     height: 32,
@@ -200,6 +205,26 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_400Regular",
     color: colors.natural[450],
     marginTop: spacing[8],
+  },
+  alignStart: {
+    alignItems: "flex-start",
+  },
+  alignEnd: {
+    alignItems: "flex-end",
+  },
+  alignSelfStart: {
+    alignSelf: "flex-start",
+  },
+  alignSelfEnd: {
+    alignSelf: "flex-end",
+  },
+  rtlText: {
+    textAlign: "right",
+    writingDirection: "rtl",
+  },
+  ltrText: {
+    textAlign: "left",
+    writingDirection: "ltr",
   },
 });
 

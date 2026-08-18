@@ -9,6 +9,7 @@ import {
 import { handleError } from "@/services/errorHandlingService";
 import CommentList from "@/components/postEvent/CommentList";
 import EmojiPicker from "./EmojiPicker";
+import LegalSurfaceLinks from "@/ui/common/LegalSurfaceLinks";
 import styles from "./commentSection.module.css";
 
 const MAX_IMAGES = 4;
@@ -110,6 +111,10 @@ const CommentSection = ({ eventId, inputRef }) => {
 
       {/* Composer */}
       <form className={styles.composer} onSubmit={handleSubmit}>
+        <LegalSurfaceLinks
+          lang={i18n.resolvedLanguage}
+          documents={["terms", "community-rules"]}
+        />
         {files.length > 0 && (
           <div className={styles.previewChips}>
             {files.map((f, i) => (

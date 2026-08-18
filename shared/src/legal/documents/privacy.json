@@ -1,37 +1,37 @@
 {
   "ar": {
     "documentType": "privacy",
-    "version": "2026-03-01",
+    "version": "2026-08-13",
     "locale": "ar",
     "authoritativeLanguage": "ar",
-    "effectiveDate": "01 مارس 2026",
-    "lastUpdated": "01 مارس 2026",
-    "ownerApproval": "BLOCKED_NEEDS_OWNER",
+    "effectiveDate": "13 أغسطس 2026",
+    "lastUpdated": "13 أغسطس 2026",
+    "ownerApproval": "OWNER_APPROVED",
     "badge": "سياسة الخصوصية",
     "title": "سياسة الخصوصية",
     "subtitle": "منصة هلا",
-    "changeSummary": "توحيد المصدر القانوني في حزمة مشتركة (بنية فقط).",
+    "changeSummary": "مواءمة السياسة مع البيانات والصلاحيات والمزوّدين والحذف والاحتفاظ الفعلي في تطبيقات هلا.",
     "sections": [
       {
         "id": "article-1",
         "num": "1",
         "label": "البند الأول",
         "title": "التعاريف",
-        "body": "يقصد بمؤسسة هلا الرقمية للتقنية الجهة المالكة والمشغلة لمنصة هلا والمسجلة رسمياً لدى وزارة التجارة. ويقصد بمنصة هلا المنصة الإلكترونية التي تقدم خدمات إدارة المناسبات وتصميم وإرسال الدعوات وتنظيم دخول المدعوين. ويقصد بالمستخدم أي شخص يستخدم المنصة أو أي خدمة تقدم من خلالها، سواء بصفته زائراً أو صاحب مناسبة أو داعياً أو مدعواً أو مشرف بوابة أو مصمماً. ويقصد بالبيانات الشخصية كل معلومة تتعلق بشخص طبيعي محدد أو قابل للتحديد بصورة مباشرة أو غير مباشرة، وذلك وفقاً لأحكام نظام حماية البيانات الشخصية المعمول به في المملكة العربية السعودية."
+        "body": "يقصد بهلا منصة إدارة المناسبات والدعوات التي تملكها وتشغّلها افاق هلا للاتصالات والمعلومات (Afaq hala Company For Communications and Information)، والمسجّلة لدى وزارة التجارة في المملكة العربية السعودية. ويقصد بالمستخدم أي شخص يستخدم المنصة أو خدماتها، بما في ذلك صاحب المناسبة أو المنشأة أو مقدّم الخدمة أو الضيف أو المنظّم. ويقصد بالبيانات الشخصية كل معلومة تتعلق بشخص طبيعي محدد أو قابل للتحديد بصورة مباشرة أو غير مباشرة وفق الأنظمة المعمول بها في المملكة العربية السعودية."
       },
       {
         "id": "article-2",
         "num": "2",
         "label": "البند الثاني",
         "title": "نطاق التطبيق والموافقة",
-        "body": "تسري أحكام هذه السياسة على جميع البيانات الشخصية التي تقوم مؤسسة هلا بجمعها أو معالجتها أو استخدامها عبر المنصة أو عبر أي وسيلة اتصال مرتبطة بها. ويعد استخدام المستخدم للمنصة إقراراً منه بقبوله الكامل لأحكام هذه السياسة وموافقته على ما تتضمنه من تنظيمات، كما يعد استمرار استخدامه للمنصة بعد نشر أي تحديثات قبولاً صريحاً بالتعديلات التي تطرأ عليها."
+        "body": "تسري هذه السياسة على البيانات الشخصية التي تعالجها هلا عبر الموقع وتطبيقات الجوال وواجهات البرمجة والدعم وقنوات الرسائل المرتبطة بالخدمة. ولا يُعامل مجرد قبول هذه السياسة كموافقة على أغراض اختيارية مستقلة مثل التسويق؛ تُطلب الموافقة المنفصلة عندما يكون ذلك هو السند النظامي المناسب. وتُعرض التغييرات الجوهرية للمستخدم بالطريقة المناسبة قبل سريانها عندما يلزم ذلك."
       },
       {
         "id": "article-3",
         "num": "3",
         "label": "البند الثالث",
         "title": "جمع البيانات الشخصية",
-        "body": "تقوم منصة هلا بجمع البيانات التي يقدمها المستخدم طوعاً عند التسجيل أو تنفيذ الطلبات أو استخدام الخدمات، وتشمل البيانات التي يدوّنها بنفسه مثل اسمه ورقم هاتفه وبريده الإلكتروني وبيانات ضيوفه وموقع المناسبة ومعلومات الدفع اللازمة لإتمام العمليات، مع التأكيد على أن المنصة لا تقوم بتخزين بيانات بطاقات الائتمان وإنما تُرسل مباشرة عبر مزودي خدمات الدفع المرخصين.\n\nكما تقوم المنصة تلقائياً بجمع بيانات تقنية تتعلق باستخدام الخدمة، مثل نوع الجهاز، ونظام التشغيل، والمتصفح، وعنوان بروتوكول الإنترنت، ووقت الاستخدام، وأنماط التفاعل داخل المنصة."
+        "body": "قد نجمع بيانات الحساب والتواصل (الاسم والبريد ورقم الجوال)، وبيانات المنشأة ومقدّم الخدمة ووثائق التحقق، وبيانات المناسبات والضيوف والرد والحضور والموقع، والمحتوى والملفات والصور ومقاطع الفيديو والتعليقات وتذاكر الدعم، وسجل المشتريات والاشتراكات والاسترداد. وقد تتضمن معلومات الضيف التي يقدّمها المستخدم قيوداً غذائية أو معلومات حساسة؛ يجب ألا يضيف المستخدم إلا ما يلزم وبسند مشروع.\n\nبإذن اختياري، يقرأ التطبيق الاسم وأرقام الهاتف من جهات الاتصال على الجهاز لعرضها محلياً، ولا يرفع دفتر الهاتف كاملاً؛ لا تُرسل إلى هلا إلا جهات الاتصال التي يختارها المستخدم لإضافتها كضيوف. وبإذن اختياري قد يستخدم التطبيق موقع الجهاز أو نقطة يحددها المستخدم على الخريطة لاختيار موقع المناسبة، كما يصل إلى الصور أو المستندات التي يختارها المستخدم للرفع.\n\nنجمع أيضاً معرّفات الحساب والمعاملة، ورمز الإشعارات، ونوع الجهاز والنظام وإصدار التطبيق، وعنوان IP وبيانات المتصفح ووقت الوصول والتفاعل والأعطال والأداء. لا تخزّن هلا رقم البطاقة الكامل أو رمز الأمان؛ يتولى مزوّد الدفع أو المتجر معالجة بيانات الدفع، وقد نحتفظ ببيانات محدودة مثل نوع الوسيلة وآخر أربعة أرقام ومعرّفات المعاملة لأغراض المحاسبة والدعم."
       },
       {
         "id": "article-4",
@@ -52,21 +52,21 @@
         "num": "6",
         "label": "البند السادس",
         "title": "مشاركة البيانات والإفصاح عنها",
-        "body": "لا تقوم منصة هلا ببيع البيانات الشخصية للمستخدم أو تأجيرها أو تداولها مع أي طرف ثالث لأغراض تسويقية. ومع ذلك، يجوز للمؤسسة مشاركة بعض البيانات مع أطراف تقدم خدمات تشغيلية مساندة مثل خدمات الدفع الإلكتروني، والرسائل النصية، والاستضافة السحابية، والدعم التقني، وذلك في حدود ما يقتضيه تنفيذ الخدمة فقط. كما يجوز الإفصاح عن البيانات إذا كان ذلك تنفيذاً لالتزام قانوني أو امتثالاً لأمر قضائي أو لحماية حقوق المؤسسة أو منع إساءة استخدام المنصة."
+        "body": "لا تبيع هلا البيانات الشخصية ولا تستخدمها للتتبع الإعلاني عبر تطبيقات أو مواقع شركات أخرى. وقد تعالج البيانات، حسب الميزة المستخدمة، لدى MongoDB Atlas وAWS/S3 للاستضافة والتخزين، وMoyasar لمدفوعات الويب، وApple وGoogle وRevenueCat للمشتريات داخل التطبيق، وExpo وAPNs وFCM للإشعارات، وSentry للتشخيص، وGoogle Maps للخرائط، وTaqnyat ومزوّدي الرسائل والبريد، وMeta/WhatsApp كقناة إرسال يختارها المستخدم. تُشارك البيانات بالقدر اللازم لتقديم الخدمة أو الأمن أو الامتثال، وقد تختلف صفة كل طرف بين معالج ومستلم مستقل وفق الخدمة وشروطه. كما يجوز الإفصاح عند وجود التزام نظامي أو أمر من جهة مختصة أو لحماية الحقوق ومنع الاحتيال وإساءة الاستخدام."
       },
       {
         "id": "article-7",
         "num": "7",
         "label": "البند السابع",
         "title": "مدة الاحتفاظ بالبيانات",
-        "body": "تحتفظ المؤسسة بالبيانات الشخصية طوال المدة اللازمة لتحقيق الأغراض التي جُمعت من أجلها أو للمدة التي تفرضها الأنظمة واللوائح، وفي حال قيام المستخدم بإنشاء طلب دون استكماله، يتم الاحتفاظ بالبيانات لمدة ثلاثة أشهر فقط ثم حذفها بشكل نهائي ما لم يكن الاحتفاظ ضرورياً لالتزام نظامي."
+        "body": "تُحتفظ بيانات الحساب والمناسبة والمحتوى طوال الحاجة لتقديم الخدمة أو حتى الحذف أو انتهاء الغرض، ثم تُحذف أو تُجهّل ما لم يلزم الاحتفاظ بها نظاماً. بعد حذف الحساب تُحذف أو تُجهّل البيانات الشخصية وفق سياسة حذف الحساب، مع الاحتفاظ بسجلات مالية واشتراكات وارتباطات تعاقدية مُجهّلة الهوية لمدة عمل قدرها ست سنوات، وسجلات أمن ومكافحة إساءة الاستخدام لمدة عمل قدرها سنتان، أو مدة أطول عند وجود التزام نظامي أو نزاع أو تحقيق.\n\nلا تنشر هلا حالياً وعداً آلياً بحذف كل طلب غير مكتمل بعد ثلاثة أشهر لأن هذا المؤقت غير مطبق على جميع مسارات الطلبات. وستُحدّث هذه السياسة عند اعتماد وتنفيذ جدول حذف آلي نهائي. وتبقى المدد الدقيقة خاضعة لاعتماد المستشار القانوني قبل نشر النسخة النهائية."
       },
       {
         "id": "article-8",
         "num": "8",
         "label": "البند الثامن",
         "title": "حقوق المستخدم",
-        "body": "يحق للمستخدم طلب الوصول إلى بياناته الشخصية أو طلب تصحيحها أو تحديثها أو طلب حذفها أو الاعتراض على معالجتها في الحالات التي يسمح بها النظام، كما يحق له سحب موافقته على المعالجة متى كانت قائمة على الموافقة، ويتم تنفيذ الطلبات بعد التحقق من هوية مقدم الطلب وبالحدود المقررة نظاماً."
+        "body": "يمكن للمستخدم الوصول إلى كثير من بياناته وتصحيحها من إعدادات الحساب، وطلب حذف الحساب من داخل التطبيق أو من صفحة حذف الحساب على الويب. ولطلبات الوصول أو التصحيح أو الاعتراض أو سحب موافقة اختيارية، يمكن التواصل عبر support@halaa.com.sa. نتحقق من هوية مقدم الطلب وننفذ الحقوق في الحدود والمدد التي تقررها الأنظمة المعمول بها. حذف حساب هلا لا يلغي اشتراك Apple أو Google؛ يجب إلغاء التجديد من المتجر."
       },
       {
         "id": "article-9",
@@ -87,43 +87,43 @@
         "num": "11",
         "label": "البند الحادي عشر",
         "title": "التواصل والاستفسارات",
-        "body": "يمكن للمستخدم التواصل مع المؤسسة بشأن أي استفسار يتعلق بالخصوصية أو بحماية البيانات من خلال وسائل الاتصال المعتمدة والمذكورة في صفحة التواصل داخل المنصة، مع العلم أن المؤسسة قد تقوم بتسجيل بعض المكالمات لضمان جودة الخدمة والامتثال التنظيمي."
+        "body": "لاستفسارات الخصوصية أو ممارسة الحقوق، تواصل عبر support@halaa.com.sa أو ‎+966 55 261 9282، أو استخدم صفحة الدعم أو حذف الحساب. لا تدّعي هلا تسجيل المكالمات ما لم تُفعّل هذه الممارسة ويُقدّم إشعار مناسب قبل التسجيل."
       }
     ]
   },
   "en": {
     "documentType": "privacy",
-    "version": "2026-03-01",
+    "version": "2026-08-13",
     "locale": "en",
     "authoritativeLanguage": "ar",
-    "effectiveDate": "01 March 2026",
-    "lastUpdated": "01 March 2026",
-    "ownerApproval": "BLOCKED_NEEDS_OWNER",
+    "effectiveDate": "13 August 2026",
+    "lastUpdated": "13 August 2026",
+    "ownerApproval": "OWNER_APPROVED",
     "badge": "Privacy Policy",
     "title": "Privacy Policy",
     "subtitle": "Halaa Platform",
-    "changeSummary": "Consolidated into a single shared source (structure only).",
+    "changeSummary": "Aligned the policy with Halaa's verified data, permissions, processors, deletion flow, and working retention schedule.",
     "sections": [
       {
         "id": "article-1",
         "num": "1",
         "label": "Article One",
         "title": "Definitions",
-        "body": "\"Halaa Digital Technology Establishment\" refers to the entity that owns and operates the Halaa Platform and is officially registered with the Ministry of Commerce in the Kingdom of Saudi Arabia.\n\n\"Halaa Platform\" refers to the electronic platform that provides event management services, including invitation design and delivery and guest entry organization.\n\n\"User\" refers to any person who uses the platform or any of its services, whether as a visitor, event host, inviter, invitee, gate supervisor, or designer.\n\n\"Personal Data\" refers to any information relating to an identified or identifiable natural person, directly or indirectly, in accordance with the Personal Data Protection Law applicable in the Kingdom of Saudi Arabia."
+        "body": "Halaa is the event and invitation-management platform owned and operated by Afaq hala Company For Communications and Information (افاق هلا للاتصالات والمعلومات), registered with the Ministry of Commerce in the Kingdom of Saudi Arabia. A User is anyone who uses the platform or its services, including a personal or business host, vendor, guest, or event staff member. Personal Data means information relating directly or indirectly to an identified or identifiable natural person under applicable Saudi law."
       },
       {
         "id": "article-2",
         "num": "2",
         "label": "Article Two",
         "title": "Scope of Application and Consent",
-        "body": "This Privacy Policy applies to all personal data collected, processed, or used by Halaa through the platform or any related communication channels.\n\nBy using the platform, the user acknowledges and agrees to be bound by the terms of this Privacy Policy. Continued use of the platform following the publication of any updates shall constitute explicit acceptance of such amendments."
+        "body": "This policy applies to personal data processed through Halaa's website, mobile applications, APIs, support operations, and service-related messaging channels. Acceptance of this policy is not treated as consent to unrelated optional purposes such as marketing; separate consent is requested where consent is the appropriate legal basis. Material changes are presented appropriately before they take effect where required."
       },
       {
         "id": "article-3",
         "num": "3",
         "label": "Article Three",
         "title": "Collection of Personal Data",
-        "body": "Halaa collects personal data voluntarily provided by users when registering, placing requests, or using platform services. This includes information entered directly by the user, such as name, phone number, email address, guest details, event location, and payment information necessary to complete transactions.\n\nThe platform does not store credit card information; payment data is transmitted directly to licensed payment service providers.\n\nAdditionally, the platform automatically collects technical data related to service usage, such as device type, operating system, browser type, IP address, time of access, and interaction patterns within the platform."
+        "body": "We may collect account and contact data (name, email, and mobile number); business/vendor profile and verification documents; event, guest, RSVP, check-in, venue/location, and staff data; uploaded content, documents, photos, videos, comments, and support tickets; and purchase, subscription, and refund history. Guest information supplied by a user may include dietary restrictions or other sensitive information; users must provide only what is necessary and lawful.\n\nWith optional permission, the app reads names and phone numbers from the device address book to display them locally. It does not upload the whole address book; only contacts the user explicitly selects to add as guests are sent to Halaa. With optional permission, the app may use the device location or a point selected on a map to choose an event venue, and it accesses only photos or documents selected for upload.\n\nWe also collect account and transaction identifiers, push tokens, device/OS/app version, IP address, browser and access time, product interactions, crash data, and performance diagnostics. Halaa does not store full card numbers or security codes. The payment provider or store processes payment credentials; Halaa may retain limited payment-method details such as type, last four digits, and transaction identifiers for accounting and support."
       },
       {
         "id": "article-4",
@@ -144,21 +144,21 @@
         "num": "6",
         "label": "Article Six",
         "title": "Data Sharing and Disclosure",
-        "body": "Halaa does not sell, rent, or trade users' personal data with third parties for marketing purposes.\n\nHowever, certain data may be shared with service providers that support platform operations — such as electronic payment services, SMS providers, cloud hosting, and technical support — strictly to the extent necessary to deliver the service.\n\nData may also be disclosed where required by law, court order, or to protect Halaa's rights or prevent misuse of the platform."
+        "body": "Halaa does not sell personal data and does not use it to track users for advertising across other companies' apps or websites. Depending on the feature used, data may be processed by MongoDB Atlas and AWS/S3 for hosting and storage; Moyasar for web payments; Apple, Google, and RevenueCat for in-app purchases; Expo, APNs, and FCM for notifications; Sentry for diagnostics; Google Maps for maps; Taqnyat and email/SMS providers; and Meta/WhatsApp as a user-selected messaging channel. Data is disclosed only as needed for service delivery, security, compliance, or support, and a provider may act as a processor or independent recipient under its own terms. Data may also be disclosed to satisfy law or a competent-authority order, protect rights, or prevent fraud and abuse."
       },
       {
         "id": "article-7",
         "num": "7",
         "label": "Article Seven",
         "title": "Data Retention Period",
-        "body": "Personal data is retained for as long as necessary to fulfill the purposes for which it was collected or as required by applicable laws and regulations.\n\nIf a user creates a request without completing it, the associated data will be retained for a period of three (3) months and then permanently deleted, unless retention is required by law."
+        "body": "Account, event, and content data is retained while needed to provide the service or until deletion or the purpose ends, then deleted or anonymized unless retention is legally required. After account deletion, personal data is deleted or anonymized under the Account and Data Deletion Policy. The current working schedule retains pseudonymized financial, subscription, and business-contract records for six years and security/abuse audit records for two years, or longer where a legal obligation, dispute, or investigation applies.\n\nHalaa does not currently promise that every incomplete request is automatically deleted after three months because that timer is not implemented across every request path. This policy will be updated when a final automated deletion schedule is approved and implemented. Exact periods remain subject to Saudi-counsel approval before this draft is published."
       },
       {
         "id": "article-8",
         "num": "8",
         "label": "Article Eight",
         "title": "User Rights",
-        "body": "Users have the right to request access to their personal data, request correction or updating, request deletion, or object to processing in cases permitted by law.\n\nUsers may also withdraw consent where processing is based on consent. Requests will be processed after verification of the requester's identity and within the limits prescribed by applicable regulations."
+        "body": "Users can access and correct much of their information through account settings and can request account deletion in the app or on the public account-deletion page. For access, correction, objection, or withdrawal of optional consent, contact support@halaa.com.sa. We verify the requester's identity and handle rights within the scope and periods required by applicable law. Deleting a Halaa account does not cancel an Apple or Google subscription; renewal must be cancelled in the store."
       },
       {
         "id": "article-9",
@@ -179,7 +179,7 @@
         "num": "11",
         "label": "Article Eleven",
         "title": "Contact and Inquiries",
-        "body": "Users may contact Halaa regarding any privacy or data protection inquiries through the official communication channels listed on the platform's Contact Us page.\n\nPlease note that some calls may be recorded for quality assurance and regulatory compliance purposes."
+        "body": "For privacy inquiries or rights requests, contact support@halaa.com.sa or +966 55 261 9282, or use the Support or Account Deletion page. Halaa does not claim to record calls unless that practice is enabled and an appropriate notice is given before recording."
       }
     ]
   }

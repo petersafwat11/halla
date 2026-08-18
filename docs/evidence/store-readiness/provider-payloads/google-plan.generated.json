@@ -1,0 +1,2351 @@
+{
+  "schemaVersion": 1,
+  "mode": "DRY_RUN",
+  "externalWrites": 0,
+  "provider": "google",
+  "stage": "full",
+  "source": {
+    "catalogVersion": "1.0.0",
+    "catalogHash": "20d07092eeb8684a3a82acc987bd07355f3e1952ed47e6ec50c966315aca8499",
+    "manifestSha256": "cd2b56ef217d10663569156f7a2a0d830822dc99ed50d2893edce63b0d0e6939"
+  },
+  "actualStateBasis": "READ_ONLY_EXPORT",
+  "actualStateHash": "bf6e432806a6bd935878eb70c99057f0a24529548cb8e9e07cc59761ec8c3ab8",
+  "blockers": [],
+  "conflicts": [],
+  "operations": [
+    {
+      "id": "88d084bce71dae6bf05905bc",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.basic_event_100",
+      "payload": {
+        "code": "basic_event_100",
+        "productId": "com.halaa.basic_event_100",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.basic_event_100",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بيسك 100 دعوة",
+            "description": "باقة بيسك لمرة واحدة تشمل 100 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Basic 100 Invites",
+            "description": "One-time Basic package: 100 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "350",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "7f1eb075fbd896abeaa15028",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.basic_event_150",
+      "payload": {
+        "code": "basic_event_150",
+        "productId": "com.halaa.basic_event_150",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.basic_event_150",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بيسك 150 دعوة",
+            "description": "باقة بيسك لمرة واحدة تشمل 150 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Basic 150 Invites",
+            "description": "One-time Basic package: 150 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "525",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "1dae9c67233056cbd51c0ee0",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.basic_event_200",
+      "payload": {
+        "code": "basic_event_200",
+        "productId": "com.halaa.basic_event_200",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.basic_event_200",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بيسك 200 دعوة",
+            "description": "باقة بيسك لمرة واحدة تشمل 200 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Basic 200 Invites",
+            "description": "One-time Basic package: 200 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "700",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "ba375a417295176a160d4167",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.basic_event_25",
+      "payload": {
+        "code": "basic_event_25",
+        "productId": "com.halaa.basic_event_25",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.basic_event_25",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بيسك 25 دعوة",
+            "description": "باقة بيسك لمرة واحدة تشمل 25 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Basic 25 Invites",
+            "description": "One-time Basic package: 25 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "95",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "c782632e30185478faa15b7d",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.basic_event_50",
+      "payload": {
+        "code": "basic_event_50",
+        "productId": "com.halaa.basic_event_50",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.basic_event_50",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بيسك 50 دعوة",
+            "description": "باقة بيسك لمرة واحدة تشمل 50 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Basic 50 Invites",
+            "description": "One-time Basic package: 50 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "185",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "e58ce23eb01cf3e3a3894a40",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.basic_event_75",
+      "payload": {
+        "code": "basic_event_75",
+        "productId": "com.halaa.basic_event_75",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.basic_event_75",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بيسك 75 دعوة",
+            "description": "باقة بيسك لمرة واحدة تشمل 75 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Basic 75 Invites",
+            "description": "One-time Basic package: 75 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "270",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "9ea72e984765aa2449ae97d4",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.basic_monthly_100",
+      "payload": {
+        "code": "basic_monthly_100",
+        "productId": "com.halaa.basic_monthly_100",
+        "type": "SUBSCRIPTION",
+        "basePlanId": "monthly",
+        "duration": "P1M",
+        "storeIdentifier": "com.halaa.basic_monthly_100:monthly",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بيسك 100 — شهري",
+            "description": "اشتراك بيسك شهري يشمل 100 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Basic 100 Monthly",
+            "description": "Monthly Basic plan: 100 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "450",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": false,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": "recurring_access"
+      }
+    },
+    {
+      "id": "af92b473fd50d2963b77b026",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.basic_monthly_150",
+      "payload": {
+        "code": "basic_monthly_150",
+        "productId": "com.halaa.basic_monthly_150",
+        "type": "SUBSCRIPTION",
+        "basePlanId": "monthly",
+        "duration": "P1M",
+        "storeIdentifier": "com.halaa.basic_monthly_150:monthly",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بيسك 150 — شهري",
+            "description": "اشتراك بيسك شهري يشمل 150 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Basic 150 Monthly",
+            "description": "Monthly Basic plan: 150 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "675",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": false,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": "recurring_access"
+      }
+    },
+    {
+      "id": "be774fbbd6d58a442defb454",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.basic_monthly_200",
+      "payload": {
+        "code": "basic_monthly_200",
+        "productId": "com.halaa.basic_monthly_200",
+        "type": "SUBSCRIPTION",
+        "basePlanId": "monthly",
+        "duration": "P1M",
+        "storeIdentifier": "com.halaa.basic_monthly_200:monthly",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بيسك 200 — شهري",
+            "description": "اشتراك بيسك شهري يشمل 200 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Basic 200 Monthly",
+            "description": "Monthly Basic plan: 200 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "900",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": false,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": "recurring_access"
+      }
+    },
+    {
+      "id": "df4f341f9d4d92ee8fab37ee",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.basic_monthly_25",
+      "payload": {
+        "code": "basic_monthly_25",
+        "productId": "com.halaa.basic_monthly_25",
+        "type": "SUBSCRIPTION",
+        "basePlanId": "monthly",
+        "duration": "P1M",
+        "storeIdentifier": "com.halaa.basic_monthly_25:monthly",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بيسك 25 — شهري",
+            "description": "اشتراك بيسك شهري يشمل 25 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Basic 25 Monthly",
+            "description": "Monthly Basic plan: 25 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "125",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": false,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": "recurring_access"
+      }
+    },
+    {
+      "id": "d9aa3968cfb81db26ce147bc",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.basic_monthly_50",
+      "payload": {
+        "code": "basic_monthly_50",
+        "productId": "com.halaa.basic_monthly_50",
+        "type": "SUBSCRIPTION",
+        "basePlanId": "monthly",
+        "duration": "P1M",
+        "storeIdentifier": "com.halaa.basic_monthly_50:monthly",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بيسك 50 — شهري",
+            "description": "اشتراك بيسك شهري يشمل 50 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Basic 50 Monthly",
+            "description": "Monthly Basic plan: 50 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "240",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": false,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": "recurring_access"
+      }
+    },
+    {
+      "id": "dfca3e510fca3a204b2a98fe",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.basic_monthly_75",
+      "payload": {
+        "code": "basic_monthly_75",
+        "productId": "com.halaa.basic_monthly_75",
+        "type": "SUBSCRIPTION",
+        "basePlanId": "monthly",
+        "duration": "P1M",
+        "storeIdentifier": "com.halaa.basic_monthly_75:monthly",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بيسك 75 — شهري",
+            "description": "اشتراك بيسك شهري يشمل 75 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Basic 75 Monthly",
+            "description": "Monthly Basic plan: 75 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "350",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": false,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": "recurring_access"
+      }
+    },
+    {
+      "id": "7db126c90f92682396290b6e",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.business_customization",
+      "payload": {
+        "code": "business_customization",
+        "productId": "com.halaa.business_customization",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.business_customization",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "تخصيص هوية العلامة",
+            "description": "صفحة مخصصة وأربعة قوالب واتساب",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Business Brand Customization",
+            "description": "Custom page and four WhatsApp templates",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "2500",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "9a250c67edf0441fffb53656",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.business_event_100",
+      "payload": {
+        "code": "business_event_100",
+        "productId": "com.halaa.business_event_100",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.business_event_100",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا أعمال 100 دعوة",
+            "description": "باقة أعمال لمرة واحدة تشمل 100 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Business 100 Invites",
+            "description": "One-time Business package: 100 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "370",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "f615f70e2a106674c8a6f703",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.business_event_150",
+      "payload": {
+        "code": "business_event_150",
+        "productId": "com.halaa.business_event_150",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.business_event_150",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا أعمال 150 دعوة",
+            "description": "باقة أعمال لمرة واحدة تشمل 150 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Business 150 Invites",
+            "description": "One-time Business package: 150 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "540",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "06d67a2afd0d587928de07a4",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.business_event_200",
+      "payload": {
+        "code": "business_event_200",
+        "productId": "com.halaa.business_event_200",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.business_event_200",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا أعمال 200 دعوة",
+            "description": "باقة أعمال لمرة واحدة تشمل 200 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Business 200 Invites",
+            "description": "One-time Business package: 200 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "700",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "048963dbc44a82d582164584",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.business_event_25",
+      "payload": {
+        "code": "business_event_25",
+        "productId": "com.halaa.business_event_25",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.business_event_25",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا أعمال 25 دعوة",
+            "description": "باقة أعمال لمرة واحدة تشمل 25 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Business 25 Invites",
+            "description": "One-time Business package: 25 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "100",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "245352a22ecd1671d79dc703",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.business_event_50",
+      "payload": {
+        "code": "business_event_50",
+        "productId": "com.halaa.business_event_50",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.business_event_50",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا أعمال 50 دعوة",
+            "description": "باقة أعمال لمرة واحدة تشمل 50 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Business 50 Invites",
+            "description": "One-time Business package: 50 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "195",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "75be1676f71211324a9c8d5d",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.business_event_75",
+      "payload": {
+        "code": "business_event_75",
+        "productId": "com.halaa.business_event_75",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.business_event_75",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا أعمال 75 دعوة",
+            "description": "باقة أعمال لمرة واحدة تشمل 75 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Business 75 Invites",
+            "description": "One-time Business package: 75 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "285",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "9164a9cb5456a1281d90dd80",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.business_quarterly",
+      "payload": {
+        "code": "business_quarterly",
+        "productId": "com.halaa.business_quarterly",
+        "type": "SUBSCRIPTION",
+        "basePlanId": "quarterly",
+        "duration": "P3M",
+        "storeIdentifier": "com.halaa.business_quarterly:quarterly",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا أعمال — 3 أشهر",
+            "description": "اشتراك أعمال لمدة 3 أشهر",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Business 3 Months",
+            "description": "Business subscription billed every 3 months",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "3000",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": false,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": "recurring_access"
+      }
+    },
+    {
+      "id": "ce3f477da8cb513a9a6b4c8b",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.design_template_3d",
+      "payload": {
+        "code": "design_template_3d",
+        "productId": "com.halaa.design_template_3d",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.design_template_3d",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "تصميم دعوة ثلاثية الأبعاد",
+            "description": "تصميم دعوة مخصص ثلاثي الأبعاد",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "3D Invitation Design",
+            "description": "Custom three-dimensional invitation design",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "500",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "3059eef6ffb8edcb8366c17a",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.design_template_animated",
+      "payload": {
+        "code": "design_template_animated",
+        "productId": "com.halaa.design_template_animated",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.design_template_animated",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "تصميم دعوة متحركة",
+            "description": "تصميم دعوة بخلفيات متحركة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Animated Invitation Design",
+            "description": "Invitation design with animated backgrounds",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "350",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "5f67eaeda0cdfc256b2d920e",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.design_template_custom_male",
+      "payload": {
+        "code": "design_template_custom_male",
+        "productId": "com.halaa.design_template_custom_male",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.design_template_custom_male",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "تصميم دعوة رجالية مخصصة",
+            "description": "تصميم مخصص لدعوات الرجال",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Custom Men's Invitation",
+            "description": "Custom invitation design for men",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "200",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "362f89c58befe027d408573d",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.design_template_custom_themed",
+      "payload": {
+        "code": "design_template_custom_themed",
+        "productId": "com.halaa.design_template_custom_themed",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.design_template_custom_themed",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "تصميم دعوة حسب الثيم",
+            "description": "تصميم دعوة مخصص حسب ثيم المناسبة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Custom Themed Invitation",
+            "description": "Custom invitation matching your event theme",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "275",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "9bd9e5024063e8407e82c087",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.design_template_ready_made",
+      "payload": {
+        "code": "design_template_ready_made",
+        "productId": "com.halaa.design_template_ready_made",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.design_template_ready_made",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "تصميم دعوة جاهزة",
+            "description": "تصميم جاهز لدعوات الرجال أو النساء",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Ready-made Invitation Design",
+            "description": "Ready-made design for men or women",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "200",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "b20f75e8433893a2b9c94682",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.extra_invites_10",
+      "payload": {
+        "code": "extra_invites_10",
+        "productId": "com.halaa.extra_invites_10",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.extra_invites_10",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "10 دعوة إضافية",
+            "description": "إضافة 10 دعوة إلى رصيدك",
+            "descriptionSource": "catalog"
+          },
+          {
+            "locale": "en-US",
+            "name": "10 Extra Invites",
+            "description": "Add 10 invitations to your balance",
+            "descriptionSource": "catalog"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "40",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "d8940555b9a9352f53252fb7",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.extra_invites_100",
+      "payload": {
+        "code": "extra_invites_100",
+        "productId": "com.halaa.extra_invites_100",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.extra_invites_100",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "100 دعوة إضافية",
+            "description": "إضافة 100 دعوة إلى رصيدك",
+            "descriptionSource": "catalog"
+          },
+          {
+            "locale": "en-US",
+            "name": "100 Extra Invites",
+            "description": "Add 100 invitations to your balance",
+            "descriptionSource": "catalog"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "400",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "c6a9a6b3f204c2d9c604aabc",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.extra_invites_125",
+      "payload": {
+        "code": "extra_invites_125",
+        "productId": "com.halaa.extra_invites_125",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.extra_invites_125",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "125 دعوة إضافية",
+            "description": "إضافة 125 دعوة إلى رصيدك",
+            "descriptionSource": "catalog"
+          },
+          {
+            "locale": "en-US",
+            "name": "125 Extra Invites",
+            "description": "Add 125 invitations to your balance",
+            "descriptionSource": "catalog"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "500",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "85316245037122fe06c1f591",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.extra_invites_150",
+      "payload": {
+        "code": "extra_invites_150",
+        "productId": "com.halaa.extra_invites_150",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.extra_invites_150",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "150 دعوة إضافية",
+            "description": "إضافة 150 دعوة إلى رصيدك",
+            "descriptionSource": "catalog"
+          },
+          {
+            "locale": "en-US",
+            "name": "150 Extra Invites",
+            "description": "Add 150 invitations to your balance",
+            "descriptionSource": "catalog"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "600",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "0afaab1c08eedecc4719129a",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.extra_invites_20",
+      "payload": {
+        "code": "extra_invites_20",
+        "productId": "com.halaa.extra_invites_20",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.extra_invites_20",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "20 دعوة إضافية",
+            "description": "إضافة 20 دعوة إلى رصيدك",
+            "descriptionSource": "catalog"
+          },
+          {
+            "locale": "en-US",
+            "name": "20 Extra Invites",
+            "description": "Add 20 invitations to your balance",
+            "descriptionSource": "catalog"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "80",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "5fe405ddb8f1e69556a0606a",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.extra_invites_200",
+      "payload": {
+        "code": "extra_invites_200",
+        "productId": "com.halaa.extra_invites_200",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.extra_invites_200",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "200 دعوة إضافية",
+            "description": "إضافة 200 دعوة إلى رصيدك",
+            "descriptionSource": "catalog"
+          },
+          {
+            "locale": "en-US",
+            "name": "200 Extra Invites",
+            "description": "Add 200 invitations to your balance",
+            "descriptionSource": "catalog"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "800",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "d2b2ad229c8a7578c054e36d",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.extra_invites_250",
+      "payload": {
+        "code": "extra_invites_250",
+        "productId": "com.halaa.extra_invites_250",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.extra_invites_250",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "250 دعوة إضافية",
+            "description": "إضافة 250 دعوة إلى رصيدك",
+            "descriptionSource": "catalog"
+          },
+          {
+            "locale": "en-US",
+            "name": "250 Extra Invites",
+            "description": "Add 250 invitations to your balance",
+            "descriptionSource": "catalog"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "1000",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "3f90735b367179ae56d68882",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.extra_invites_30",
+      "payload": {
+        "code": "extra_invites_30",
+        "productId": "com.halaa.extra_invites_30",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.extra_invites_30",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "30 دعوة إضافية",
+            "description": "إضافة 30 دعوة إلى رصيدك",
+            "descriptionSource": "catalog"
+          },
+          {
+            "locale": "en-US",
+            "name": "30 Extra Invites",
+            "description": "Add 30 invitations to your balance",
+            "descriptionSource": "catalog"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "120",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "6439b1ec745a27a24332ccb4",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.extra_invites_300",
+      "payload": {
+        "code": "extra_invites_300",
+        "productId": "com.halaa.extra_invites_300",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.extra_invites_300",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "300 دعوة إضافية",
+            "description": "إضافة 300 دعوة إلى رصيدك",
+            "descriptionSource": "catalog"
+          },
+          {
+            "locale": "en-US",
+            "name": "300 Extra Invites",
+            "description": "Add 300 invitations to your balance",
+            "descriptionSource": "catalog"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "1200",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "bcfbe84c3d608df2629279b5",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.extra_invites_350",
+      "payload": {
+        "code": "extra_invites_350",
+        "productId": "com.halaa.extra_invites_350",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.extra_invites_350",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "350 دعوة إضافية",
+            "description": "إضافة 350 دعوة إلى رصيدك",
+            "descriptionSource": "catalog"
+          },
+          {
+            "locale": "en-US",
+            "name": "350 Extra Invites",
+            "description": "Add 350 invitations to your balance",
+            "descriptionSource": "catalog"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "1400",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "31c59aeb311d84cbbf0b1ab5",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.extra_invites_40",
+      "payload": {
+        "code": "extra_invites_40",
+        "productId": "com.halaa.extra_invites_40",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.extra_invites_40",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "40 دعوة إضافية",
+            "description": "إضافة 40 دعوة إلى رصيدك",
+            "descriptionSource": "catalog"
+          },
+          {
+            "locale": "en-US",
+            "name": "40 Extra Invites",
+            "description": "Add 40 invitations to your balance",
+            "descriptionSource": "catalog"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "160",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "3bafa372e456f08f3b40e13d",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.extra_invites_400",
+      "payload": {
+        "code": "extra_invites_400",
+        "productId": "com.halaa.extra_invites_400",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.extra_invites_400",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "400 دعوة إضافية",
+            "description": "إضافة 400 دعوة إلى رصيدك",
+            "descriptionSource": "catalog"
+          },
+          {
+            "locale": "en-US",
+            "name": "400 Extra Invites",
+            "description": "Add 400 invitations to your balance",
+            "descriptionSource": "catalog"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "1600",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "fa8b6f6e132d077ef2fc984e",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.extra_invites_450",
+      "payload": {
+        "code": "extra_invites_450",
+        "productId": "com.halaa.extra_invites_450",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.extra_invites_450",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "450 دعوة إضافية",
+            "description": "إضافة 450 دعوة إلى رصيدك",
+            "descriptionSource": "catalog"
+          },
+          {
+            "locale": "en-US",
+            "name": "450 Extra Invites",
+            "description": "Add 450 invitations to your balance",
+            "descriptionSource": "catalog"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "1800",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "a10144d84b4437060711b891",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.extra_invites_50",
+      "payload": {
+        "code": "extra_invites_50",
+        "productId": "com.halaa.extra_invites_50",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.extra_invites_50",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "50 دعوة إضافية",
+            "description": "إضافة 50 دعوة إلى رصيدك",
+            "descriptionSource": "catalog"
+          },
+          {
+            "locale": "en-US",
+            "name": "50 Extra Invites",
+            "description": "Add 50 invitations to your balance",
+            "descriptionSource": "catalog"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "200",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "5d6dda3384e25d52fb93b69a",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.extra_invites_500",
+      "payload": {
+        "code": "extra_invites_500",
+        "productId": "com.halaa.extra_invites_500",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.extra_invites_500",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "500 دعوة إضافية",
+            "description": "إضافة 500 دعوة إلى رصيدك",
+            "descriptionSource": "catalog"
+          },
+          {
+            "locale": "en-US",
+            "name": "500 Extra Invites",
+            "description": "Add 500 invitations to your balance",
+            "descriptionSource": "catalog"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "2000",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "4c88fa6e668afaea7ada326e",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.extra_invites_75",
+      "payload": {
+        "code": "extra_invites_75",
+        "productId": "com.halaa.extra_invites_75",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.extra_invites_75",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "75 دعوة إضافية",
+            "description": "إضافة 75 دعوة إلى رصيدك",
+            "descriptionSource": "catalog"
+          },
+          {
+            "locale": "en-US",
+            "name": "75 Extra Invites",
+            "description": "Add 75 invitations to your balance",
+            "descriptionSource": "catalog"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "300",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "aaded6b0b8cd45a2117d0309",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.premium_event_100",
+      "payload": {
+        "code": "premium_event_100",
+        "productId": "com.halaa.premium_event_100",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.premium_event_100",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بريميوم 100 دعوة",
+            "description": "باقة بريميوم لمرة واحدة تشمل 100 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Premium 100 Invites",
+            "description": "One-time Premium package: 100 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "450",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "b1047d80044cad953f3d94d3",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.premium_event_150",
+      "payload": {
+        "code": "premium_event_150",
+        "productId": "com.halaa.premium_event_150",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.premium_event_150",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بريميوم 150 دعوة",
+            "description": "باقة بريميوم لمرة واحدة تشمل 150 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Premium 150 Invites",
+            "description": "One-time Premium package: 150 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "675",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "79cc1ed812cdf36b28e2c64e",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.premium_event_200",
+      "payload": {
+        "code": "premium_event_200",
+        "productId": "com.halaa.premium_event_200",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.premium_event_200",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بريميوم 200 دعوة",
+            "description": "باقة بريميوم لمرة واحدة تشمل 200 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Premium 200 Invites",
+            "description": "One-time Premium package: 200 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "900",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "72012adb22143352d8337f35",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.premium_event_25",
+      "payload": {
+        "code": "premium_event_25",
+        "productId": "com.halaa.premium_event_25",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.premium_event_25",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بريميوم 25 دعوة",
+            "description": "باقة بريميوم لمرة واحدة تشمل 25 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Premium 25 Invites",
+            "description": "One-time Premium package: 25 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "120",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "c54ac4a6801f06671ecd3b3b",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.premium_event_50",
+      "payload": {
+        "code": "premium_event_50",
+        "productId": "com.halaa.premium_event_50",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.premium_event_50",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بريميوم 50 دعوة",
+            "description": "باقة بريميوم لمرة واحدة تشمل 50 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Premium 50 Invites",
+            "description": "One-time Premium package: 50 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "235",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "fe901f6ce6b7cb00831bea51",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.premium_event_75",
+      "payload": {
+        "code": "premium_event_75",
+        "productId": "com.halaa.premium_event_75",
+        "type": "ONE_TIME_PRODUCT",
+        "basePlanId": null,
+        "duration": null,
+        "storeIdentifier": "com.halaa.premium_event_75",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بريميوم 75 دعوة",
+            "description": "باقة بريميوم لمرة واحدة تشمل 75 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Premium 75 Invites",
+            "description": "One-time Premium package: 75 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "345",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": true,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": null
+      }
+    },
+    {
+      "id": "8b1bf87d989fa75c810f75be",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.premium_monthly_100",
+      "payload": {
+        "code": "premium_monthly_100",
+        "productId": "com.halaa.premium_monthly_100",
+        "type": "SUBSCRIPTION",
+        "basePlanId": "monthly",
+        "duration": "P1M",
+        "storeIdentifier": "com.halaa.premium_monthly_100:monthly",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بريميوم 100 — شهري",
+            "description": "اشتراك بريميوم شهري يشمل 100 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Premium 100 Monthly",
+            "description": "Monthly Premium plan: 100 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "540",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": false,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": "recurring_access"
+      }
+    },
+    {
+      "id": "73a8c56e044314821b55652e",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.premium_monthly_150",
+      "payload": {
+        "code": "premium_monthly_150",
+        "productId": "com.halaa.premium_monthly_150",
+        "type": "SUBSCRIPTION",
+        "basePlanId": "monthly",
+        "duration": "P1M",
+        "storeIdentifier": "com.halaa.premium_monthly_150:monthly",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بريميوم 150 — شهري",
+            "description": "اشتراك بريميوم شهري يشمل 150 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Premium 150 Monthly",
+            "description": "Monthly Premium plan: 150 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "810",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": false,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": "recurring_access"
+      }
+    },
+    {
+      "id": "bc48be8e07be6bd2882079f3",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.premium_monthly_200",
+      "payload": {
+        "code": "premium_monthly_200",
+        "productId": "com.halaa.premium_monthly_200",
+        "type": "SUBSCRIPTION",
+        "basePlanId": "monthly",
+        "duration": "P1M",
+        "storeIdentifier": "com.halaa.premium_monthly_200:monthly",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بريميوم 200 — شهري",
+            "description": "اشتراك بريميوم شهري يشمل 200 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Premium 200 Monthly",
+            "description": "Monthly Premium plan: 200 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "1080",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": false,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": "recurring_access"
+      }
+    },
+    {
+      "id": "ffe9fbd777a220216cec4b1d",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.premium_monthly_25",
+      "payload": {
+        "code": "premium_monthly_25",
+        "productId": "com.halaa.premium_monthly_25",
+        "type": "SUBSCRIPTION",
+        "basePlanId": "monthly",
+        "duration": "P1M",
+        "storeIdentifier": "com.halaa.premium_monthly_25:monthly",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بريميوم 25 — شهري",
+            "description": "اشتراك بريميوم شهري يشمل 25 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Premium 25 Monthly",
+            "description": "Monthly Premium plan: 25 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "150",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": false,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": "recurring_access"
+      }
+    },
+    {
+      "id": "dfa97c02e7eb0a01dcc9e341",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.premium_monthly_50",
+      "payload": {
+        "code": "premium_monthly_50",
+        "productId": "com.halaa.premium_monthly_50",
+        "type": "SUBSCRIPTION",
+        "basePlanId": "monthly",
+        "duration": "P1M",
+        "storeIdentifier": "com.halaa.premium_monthly_50:monthly",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بريميوم 50 — شهري",
+            "description": "اشتراك بريميوم شهري يشمل 50 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Premium 50 Monthly",
+            "description": "Monthly Premium plan: 50 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "285",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": false,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": "recurring_access"
+      }
+    },
+    {
+      "id": "8bbeef0657a60eef638b15fb",
+      "provider": "google",
+      "phase": 30,
+      "action": "verify_or_update_product",
+      "key": "com.halaa.premium_monthly_75",
+      "payload": {
+        "code": "premium_monthly_75",
+        "productId": "com.halaa.premium_monthly_75",
+        "type": "SUBSCRIPTION",
+        "basePlanId": "monthly",
+        "duration": "P1M",
+        "storeIdentifier": "com.halaa.premium_monthly_75:monthly",
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بريميوم 75 — شهري",
+            "description": "اشتراك بريميوم شهري يشمل 75 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Premium 75 Monthly",
+            "description": "Monthly Premium plan: 75 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "regionalAvailability": [
+          {
+            "regionCode": "SA",
+            "newSubscriberAvailability": true
+          }
+        ],
+        "targetPrice": {
+          "currencyCode": "SAR",
+          "units": "420",
+          "nanos": 0
+        },
+        "otherRegionsAvailability": false,
+        "consumeAfterVerifiedGrant": false,
+        "desiredState": "DRAFT_UNTIL_REVENUECAT_VALIDATED",
+        "entitlement": "recurring_access"
+      }
+    }
+  ],
+  "planHash": "31551e46101409cbc56e18b27a309b994a92c4a688261980db4bafe8b8b86e54"
+}

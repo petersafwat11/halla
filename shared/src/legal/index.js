@@ -4,9 +4,9 @@
  * it reads the same `./documents/*.json` via `fs` to generate a hashed policy
  * manifest (see `halaa-backend/scripts/generateLegalManifest.js`).
  *
- * NOTHING here is legally approved. Every document carries
- * `ownerApproval: "BLOCKED_NEEDS_OWNER"` and contact values live in `./contact`
- * as marked placeholders until owner/counsel signs off.
+ * Owner-approved identity, contact facts, copy, and effective dates live here.
+ * Any separate counsel or publication gate must be tracked without changing
+ * the exact owner-approval record.
  */
 
 export {

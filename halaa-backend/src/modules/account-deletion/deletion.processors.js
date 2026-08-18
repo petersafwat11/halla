@@ -15,11 +15,10 @@
  * erasure request. A trailing post-deletion RevenueCat webhook is separately
  * classified as `account_deleted` by the billing engine (revenuecat.service).
  *
- * Sentry / messaging (Taqnyat/email/SMS/push): no server-side erasure API is
- * wired in this codebase. These are recorded as `pending` obligations (Sentry
- * scrubs PII at ingest via beforeSend; a formal user-scoped purge, if required,
- * is an ops/manual action tracked by this record). Push tokens were already
- * removed from the User doc during anonymization, so `push` is `not_applicable`.
+ * Sentry receives no stable Halaa user identifier and SDK-side PII scrubbing is
+ * enforced, so an account-scoped request is `not_applicable`. Messaging
+ * providers remain `pending` for manual retention/erasure confirmation. Push
+ * tokens are removed from the User doc, so `push` is `not_applicable`.
  */
 
 const ProcessorErasure = require("../../../models/ProcessorErasureModel");
@@ -61,15 +60,21 @@ async function recordObligations({ deletionRequestId, userId, billingUserId }) {
     {
       processor: "sentry",
       externalRef: null,
-      status: "pending",
+      status: "not_applicable",
       reason:
-        "Crash/diagnostic data: Sentry scrubs PII at ingest; user-scoped purge is a manual ops action if required.",
+        "No stable Halaa user identifier is sent by the SDK; PII is disabled and scrubbed before ingest, so no account-scoped erasure key exists.",
     },
     {
       processor: "taqnyat",
       externalRef: null,
       status: "pending",
       reason: "Outbound WhatsApp/SMS delivery logs at provider — erasure obligation recorded.",
+    },
+    {
+      processor: "email",
+      externalRef: null,
+      status: "pending",
+      reason: "Transactional email delivery logs at the configured provider — erasure/retention review recorded.",
     },
     {
       processor: "push",
@@ -94,7 +99,7 @@ async function recordObligations({ deletionRequestId, userId, billingUserId }) {
  * should block a `completed` status? `retained_by_policy` and `not_applicable`
  * are terminal (do NOT block). `pending`/`requested`/`failed` block.
  *
- * NOTE: by default the recorded Sentry/messaging obligations are `pending`,
+ * NOTE: by default the recorded messaging obligations are `pending`,
  * which would keep a request in `pending_retry` indefinitely. That is
  * intentional ONLY if an automated resolver exists; since resolution here is a
  * manual ops action, we treat `pending` processor rows as NON-blocking for the

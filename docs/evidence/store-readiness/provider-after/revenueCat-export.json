@@ -1,0 +1,4458 @@
+{
+  "provider": "revenueCat",
+  "project": {
+    "id": "projc49d20a4",
+    "name": "Halaa",
+    "createdAt": 1785962281508
+  },
+  "apps": [
+    {
+      "created_at": 1785962281656,
+      "custom_url_scheme": "rc-2e43d34e6e",
+      "id": "app2e43d34e6e",
+      "name": "Test Store",
+      "object": "app",
+      "project_id": "projc49d20a4",
+      "type": "test_store"
+    },
+    {
+      "app_store": {
+        "app_store_connect_api_key_configured": false,
+        "app_store_connect_vendor_number": null,
+        "bundle_id": "com.halaa.app",
+        "custom_url_scheme": "rc-63720480d5",
+        "subscription_key_configured": true
+      },
+      "created_at": 1786583068142,
+      "custom_url_scheme": "rc-63720480d5",
+      "id": "app63720480d5",
+      "name": "Halaa (App Store)",
+      "object": "app",
+      "project_id": "projc49d20a4",
+      "type": "app_store"
+    },
+    {
+      "created_at": 1786583139084,
+      "custom_url_scheme": "rc-c8bcc56e96",
+      "id": "appc8bcc56e96",
+      "name": "Halaa (Play Store)",
+      "object": "app",
+      "play_store": {
+        "custom_url_scheme": "rc-c8bcc56e96",
+        "package_name": "com.halaa.app"
+      },
+      "project_id": "projc49d20a4",
+      "type": "play_store"
+    }
+  ],
+  "products": [
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914301899,
+      "display_name": "200 Extra Invites",
+      "id": "prod02c16525a7",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.extra_invites_200",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914314444,
+      "display_name": "Halaa Premium 200 Invites",
+      "id": "prod02d380a809",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.premium_event_200",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914306480,
+      "display_name": "Halaa Business 100 Invites",
+      "id": "prod0446d02db0",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.business_event_100",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914304725,
+      "display_name": "Halaa Premium 25 Invites",
+      "id": "prod058772eef5",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.premium_event_25",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914319356,
+      "display_name": "20 Extra Invites",
+      "id": "prod060d51144f",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.extra_invites_20",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914297177,
+      "display_name": "Halaa Premium Monthly 100 Invites",
+      "id": "prod081a14a0fe",
+      "object": "product",
+      "one_time": null,
+      "state": "active",
+      "store_identifier": "com.halaa.premium_monthly_100",
+      "subscription": {
+        "duration": null,
+        "grace_period_duration": null,
+        "trial_duration": null
+      },
+      "type": "subscription"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914309372,
+      "display_name": "Ready-made design (male/female)",
+      "id": "prod0909b8086b",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.design_template_ready_made",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914315055,
+      "display_name": "50 Extra Invites",
+      "id": "prod09b31a4406",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.extra_invites_50",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914303344,
+      "display_name": "125 Extra Invites",
+      "id": "prod09bc515d77",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.extra_invites_125",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914300988,
+      "display_name": "Halaa Business 25 Invites",
+      "id": "prod0eaf10c4ab",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.business_event_25",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914311186,
+      "display_name": "125 Extra Invites",
+      "id": "prod122227989c",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.extra_invites_125",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914317616,
+      "display_name": "Themed custom design",
+      "id": "prod15379033f1",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.design_template_custom_themed",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914304356,
+      "display_name": "Halaa Premium 75 Invites",
+      "id": "prod168b5c74ac",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.premium_event_75",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914299294,
+      "display_name": "Halaa Business 75 Invites",
+      "id": "prod1db8e9294e",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.business_event_75",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914299707,
+      "display_name": "250 Extra Invites",
+      "id": "prod1e47ba3585",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.extra_invites_250",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914296189,
+      "display_name": "100 Extra Invites",
+      "id": "prod22d0462e60",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.extra_invites_100",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914294952,
+      "display_name": "Halaa Basic 25 Invites",
+      "id": "prod24032c20e0",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.basic_event_25",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914298062,
+      "display_name": "Halaa Business 50 Invites",
+      "id": "prod2404ede4ea",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.business_event_50",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914315438,
+      "display_name": "Halaa Basic 75 Invites",
+      "id": "prod28375fffba",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.basic_event_75",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914317146,
+      "display_name": "Halaa Premium Monthly 75 Invites",
+      "id": "prod298abcc8ab",
+      "object": "product",
+      "one_time": null,
+      "state": "active",
+      "store_identifier": "com.halaa.premium_monthly_75",
+      "subscription": {
+        "duration": null,
+        "grace_period_duration": null,
+        "trial_duration": null
+      },
+      "type": "subscription"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914295951,
+      "display_name": "450 Extra Invites",
+      "id": "prod2d0c9930ec",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.extra_invites_450",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914310431,
+      "display_name": "Halaa Business 150 Invites",
+      "id": "prod30c384cac6",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.business_event_150",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914297873,
+      "display_name": "Halaa Basic 200 Invites",
+      "id": "prod326efb22d2",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.basic_event_200",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914293923,
+      "display_name": "Halaa Premium Monthly 100 Invites",
+      "id": "prod32a3f8487b",
+      "object": "product",
+      "one_time": null,
+      "state": "active",
+      "store_identifier": "com.halaa.premium_monthly_100:monthly",
+      "subscription": {
+        "duration": null,
+        "grace_period_duration": null,
+        "trial_duration": null
+      },
+      "type": "subscription"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914293500,
+      "display_name": "500 Extra Invites",
+      "id": "prod33b794c31f",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.extra_invites_500",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914292194,
+      "display_name": "450 Extra Invites",
+      "id": "prod367dba18c2",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.extra_invites_450",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914306297,
+      "display_name": "400 Extra Invites",
+      "id": "prod37eb65c416",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.extra_invites_400",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914318931,
+      "display_name": "300 Extra Invites",
+      "id": "prod3be0dcb1a5",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.extra_invites_300",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914313386,
+      "display_name": "Halaa Basic 50 Invites",
+      "id": "prod3db1f3b091",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.basic_event_50",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914297682,
+      "display_name": "Halaa Premium Monthly 150 Invites",
+      "id": "prod4311d44295",
+      "object": "product",
+      "one_time": null,
+      "state": "active",
+      "store_identifier": "com.halaa.premium_monthly_150",
+      "subscription": {
+        "duration": null,
+        "grace_period_duration": null,
+        "trial_duration": null
+      },
+      "type": "subscription"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914292388,
+      "display_name": "Halaa Premium Monthly 75 Invites",
+      "id": "prod4c5fd842f6",
+      "object": "product",
+      "one_time": null,
+      "state": "active",
+      "store_identifier": "com.halaa.premium_monthly_75:monthly",
+      "subscription": {
+        "duration": null,
+        "grace_period_duration": null,
+        "trial_duration": null
+      },
+      "type": "subscription"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914293294,
+      "display_name": "Themed custom design",
+      "id": "prod59327a8c12",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.design_template_custom_themed",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914305333,
+      "display_name": "Halaa Basic 50 Invites",
+      "id": "prod5c9d6217eb",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.basic_event_50",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914319794,
+      "display_name": "Halaa Premium Monthly 50 Invites",
+      "id": "prod5d9866751b",
+      "object": "product",
+      "one_time": null,
+      "state": "active",
+      "store_identifier": "com.halaa.premium_monthly_50",
+      "subscription": {
+        "duration": null,
+        "grace_period_duration": null,
+        "trial_duration": null
+      },
+      "type": "subscription"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914317802,
+      "display_name": "40 Extra Invites",
+      "id": "prod5e08e81eb4",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.extra_invites_40",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914318742,
+      "display_name": "Halaa Business 75 Invites",
+      "id": "prod623f81f6dd",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.business_event_75",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914302374,
+      "display_name": "400 Extra Invites",
+      "id": "prod6354e8c400",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.extra_invites_400",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914306107,
+      "display_name": "Halaa Business 50 Invites",
+      "id": "prod64d186e12b",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.business_event_50",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914310717,
+      "display_name": "20 Extra Invites",
+      "id": "prod64eb41c000",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.extra_invites_20",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914298433,
+      "display_name": "300 Extra Invites",
+      "id": "prod650b69c52e",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.extra_invites_300",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914320352,
+      "display_name": "Halaa Basic Monthly 100 Invites",
+      "id": "prod666a437c2d",
+      "object": "product",
+      "one_time": null,
+      "state": "active",
+      "store_identifier": "com.halaa.basic_monthly_100",
+      "subscription": {
+        "duration": null,
+        "grace_period_duration": null,
+        "trial_duration": null
+      },
+      "type": "subscription"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914307490,
+      "display_name": "Halaa Basic Monthly 25 Invites",
+      "id": "prod66724d32db",
+      "object": "product",
+      "one_time": null,
+      "state": "active",
+      "store_identifier": "com.halaa.basic_monthly_25:monthly",
+      "subscription": {
+        "duration": null,
+        "grace_period_duration": null,
+        "trial_duration": null
+      },
+      "type": "subscription"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914311409,
+      "display_name": "Halaa Basic Monthly 200 Invites",
+      "id": "prod669fbe38a7",
+      "object": "product",
+      "one_time": null,
+      "state": "active",
+      "store_identifier": "com.halaa.basic_monthly_200:monthly",
+      "subscription": {
+        "duration": null,
+        "grace_period_duration": null,
+        "trial_duration": null
+      },
+      "type": "subscription"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914291999,
+      "display_name": "Halaa Premium 150 Invites",
+      "id": "prod6b4ac3d040",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.premium_event_150",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914305902,
+      "display_name": "Halaa Premium 150 Invites",
+      "id": "prod6be5bb0ec6",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.premium_event_150",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914316460,
+      "display_name": "Halaa Basic Monthly 200 Invites",
+      "id": "prod6c01a46f6b",
+      "object": "product",
+      "one_time": null,
+      "state": "active",
+      "store_identifier": "com.halaa.basic_monthly_200",
+      "subscription": {
+        "duration": null,
+        "grace_period_duration": null,
+        "trial_duration": null
+      },
+      "type": "subscription"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914300396,
+      "display_name": "Halaa Basic 25 Invites",
+      "id": "prod6e82a4fd94",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.basic_event_25",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914315246,
+      "display_name": "Business Branding Customization",
+      "id": "prod70c0e7ba82",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.business_customization",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914301216,
+      "display_name": "Custom male design",
+      "id": "prod725459d4b7",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.design_template_custom_male",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914297423,
+      "display_name": "Halaa Basic 100 Invites",
+      "id": "prod75cb329047",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.basic_event_100",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914306918,
+      "display_name": "350 Extra Invites",
+      "id": "prod7d390ef5b0",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.extra_invites_350",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914316064,
+      "display_name": "Halaa Business 100 Invites",
+      "id": "prod7f9ef25ac5",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.business_event_100",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914298246,
+      "display_name": "Halaa Basic 100 Invites",
+      "id": "prod80d16fba89",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.basic_event_100",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914309160,
+      "display_name": "Halaa Business 200 Invites",
+      "id": "prod823074e777",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.business_event_200",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914312045,
+      "display_name": "Halaa Premium Monthly 200 Invites",
+      "id": "prod84994b288a",
+      "object": "product",
+      "one_time": null,
+      "state": "active",
+      "store_identifier": "com.halaa.premium_monthly_200:monthly",
+      "subscription": {
+        "duration": null,
+        "grace_period_duration": null,
+        "trial_duration": null
+      },
+      "type": "subscription"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914316963,
+      "display_name": "3D invitation design",
+      "id": "prod8c7a8574d6",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.design_template_3d",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914300599,
+      "display_name": "Halaa Business 200 Invites",
+      "id": "prod93babed44a",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.business_event_200",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914300153,
+      "display_name": "Halaa Premium Monthly 200 Invites",
+      "id": "prod963a304304",
+      "object": "product",
+      "one_time": null,
+      "state": "active",
+      "store_identifier": "com.halaa.premium_monthly_200",
+      "subscription": {
+        "duration": null,
+        "grace_period_duration": null,
+        "trial_duration": null
+      },
+      "type": "subscription"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914307985,
+      "display_name": "Halaa Premium 100 Invites",
+      "id": "prod96c08a2a8f",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.premium_event_100",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914316651,
+      "display_name": "30 Extra Invites",
+      "id": "prod99a5b258c0",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.extra_invites_30",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914319611,
+      "display_name": "150 Extra Invites",
+      "id": "prod99d56229f7",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.extra_invites_150",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914303899,
+      "display_name": "500 Extra Invites",
+      "id": "prod99e89956e3",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.extra_invites_500",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914295717,
+      "display_name": "250 Extra Invites",
+      "id": "prod9e210f6b62",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.extra_invites_250",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914311642,
+      "display_name": "50 Extra Invites",
+      "id": "prod9f011f177d",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.extra_invites_50",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914295222,
+      "display_name": "Halaa Basic 150 Invites",
+      "id": "prod9f6f466400",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.basic_event_150",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914291798,
+      "display_name": "Halaa Premium 50 Invites",
+      "id": "proda2ebe5d14d",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.premium_event_50",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914304926,
+      "display_name": "10 Extra Invites",
+      "id": "proda3b092f2ba",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.extra_invites_10",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914314659,
+      "display_name": "Halaa Basic Monthly 100 Invites",
+      "id": "proda3f89c8d69",
+      "object": "product",
+      "one_time": null,
+      "state": "active",
+      "store_identifier": "com.halaa.basic_monthly_100:monthly",
+      "subscription": {
+        "duration": null,
+        "grace_period_duration": null,
+        "trial_duration": null
+      },
+      "type": "subscription"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914318355,
+      "display_name": "Custom male design",
+      "id": "proda5ff114c57",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.design_template_custom_male",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914312540,
+      "display_name": "Halaa Basic 75 Invites",
+      "id": "proda7badfeb16",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.basic_event_75",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914304538,
+      "display_name": "Animated background design",
+      "id": "proda831bbc2bd",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.design_template_animated",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914309610,
+      "display_name": "Halaa Premium Monthly 25 Invites",
+      "id": "proda952ff1176",
+      "object": "product",
+      "one_time": null,
+      "state": "active",
+      "store_identifier": "com.halaa.premium_monthly_25",
+      "subscription": {
+        "duration": null,
+        "grace_period_duration": null,
+        "trial_duration": null
+      },
+      "type": "subscription"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914296438,
+      "display_name": "3D invitation design",
+      "id": "prodaacfad9caa",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.design_template_3d",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914312964,
+      "display_name": "Halaa Premium 75 Invites",
+      "id": "prodab03bb469c",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.premium_event_75",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914302836,
+      "display_name": "350 Extra Invites",
+      "id": "prodacfe14bd4f",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.extra_invites_350",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914304170,
+      "display_name": "Animated background design",
+      "id": "prodae2151b100",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.design_template_animated",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914293081,
+      "display_name": "Halaa Business — 3-Month Subscription",
+      "id": "prodaf83d21c26",
+      "object": "product",
+      "one_time": null,
+      "state": "active",
+      "store_identifier": "com.halaa.business_quarterly",
+      "subscription": {
+        "duration": null,
+        "grace_period_duration": null,
+        "trial_duration": null
+      },
+      "type": "subscription"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914320534,
+      "display_name": "Halaa Basic Monthly 25 Invites",
+      "id": "prodb23ca31836",
+      "object": "product",
+      "one_time": null,
+      "state": "active",
+      "store_identifier": "com.halaa.basic_monthly_25",
+      "subscription": {
+        "duration": null,
+        "grace_period_duration": null,
+        "trial_duration": null
+      },
+      "type": "subscription"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914315625,
+      "display_name": "Halaa Premium 100 Invites",
+      "id": "prodb75e66c450",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.premium_event_100",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914310960,
+      "display_name": "150 Extra Invites",
+      "id": "prodb8db5b1bf0",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.extra_invites_150",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914314215,
+      "display_name": "Halaa Business — 3-Month Subscription",
+      "id": "prodb924014424",
+      "object": "product",
+      "one_time": null,
+      "state": "active",
+      "store_identifier": "com.halaa.business_quarterly:quarterly",
+      "subscription": {
+        "duration": null,
+        "grace_period_duration": null,
+        "trial_duration": null
+      },
+      "type": "subscription"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914302606,
+      "display_name": "Ready-made design (male/female)",
+      "id": "prodba50f3cdf9",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.design_template_ready_made",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914305131,
+      "display_name": "75 Extra Invites",
+      "id": "prodbb378b7959",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.extra_invites_75",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914295462,
+      "display_name": "Halaa Premium 50 Invites",
+      "id": "prodc0b3064e29",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.premium_event_50",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914301422,
+      "display_name": "30 Extra Invites",
+      "id": "prodc5a2d9b96c",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.extra_invites_30",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914319168,
+      "display_name": "Halaa Business 150 Invites",
+      "id": "prodc61fbd3645",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.business_event_150",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914318545,
+      "display_name": "Halaa Basic Monthly 50 Invites",
+      "id": "prodc911e3c958",
+      "object": "product",
+      "one_time": null,
+      "state": "active",
+      "store_identifier": "com.halaa.basic_monthly_50:monthly",
+      "subscription": {
+        "duration": null,
+        "grace_period_duration": null,
+        "trial_duration": null
+      },
+      "type": "subscription"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914299076,
+      "display_name": "200 Extra Invites",
+      "id": "prodcb2eed52b9",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.extra_invites_200",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914298888,
+      "display_name": "Halaa Basic 200 Invites",
+      "id": "prodcb8a95a31a",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.basic_event_200",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914296685,
+      "display_name": "10 Extra Invites",
+      "id": "prodcce0dc656e",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.extra_invites_10",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914311831,
+      "display_name": "Halaa Basic Monthly 50 Invites",
+      "id": "prodcdc22d5d36",
+      "object": "product",
+      "one_time": null,
+      "state": "active",
+      "store_identifier": "com.halaa.basic_monthly_50",
+      "subscription": {
+        "duration": null,
+        "grace_period_duration": null,
+        "trial_duration": null
+      },
+      "type": "subscription"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914317412,
+      "display_name": "Halaa Premium 25 Invites",
+      "id": "prodcfa8dc3781",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.premium_event_25",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914314863,
+      "display_name": "Halaa Premium 200 Invites",
+      "id": "prodd302e81265",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.premium_event_200",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914312757,
+      "display_name": "Halaa Basic Monthly 150 Invites",
+      "id": "prodd5860294fb",
+      "object": "product",
+      "one_time": null,
+      "state": "active",
+      "store_identifier": "com.halaa.basic_monthly_150",
+      "subscription": {
+        "duration": null,
+        "grace_period_duration": null,
+        "trial_duration": null
+      },
+      "type": "subscription"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914299508,
+      "display_name": "Halaa Business 25 Invites",
+      "id": "proddb713f8f87",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.business_event_25",
+      "subscription": null,
+      "type": "consumable"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914316257,
+      "display_name": "Halaa Premium Monthly 50 Invites",
+      "id": "proddd87ac7ea7",
+      "object": "product",
+      "one_time": null,
+      "state": "active",
+      "store_identifier": "com.halaa.premium_monthly_50:monthly",
+      "subscription": {
+        "duration": null,
+        "grace_period_duration": null,
+        "trial_duration": null
+      },
+      "type": "subscription"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914294448,
+      "display_name": "Halaa Basic Monthly 75 Invites",
+      "id": "prode1b75540bd",
+      "object": "product",
+      "one_time": null,
+      "state": "active",
+      "store_identifier": "com.halaa.basic_monthly_75:monthly",
+      "subscription": {
+        "duration": null,
+        "grace_period_duration": null,
+        "trial_duration": null
+      },
+      "type": "subscription"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914310215,
+      "display_name": "Halaa Basic 150 Invites",
+      "id": "prode4de6fe4d6",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.basic_event_150",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "app63720480d5",
+      "created_at": 1786914300794,
+      "display_name": "Halaa Basic Monthly 75 Invites",
+      "id": "prodea348f8026",
+      "object": "product",
+      "one_time": null,
+      "state": "active",
+      "store_identifier": "com.halaa.basic_monthly_75",
+      "subscription": {
+        "duration": null,
+        "grace_period_duration": null,
+        "trial_duration": null
+      },
+      "type": "subscription"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914313881,
+      "display_name": "Halaa Basic Monthly 150 Invites",
+      "id": "prodef600895e4",
+      "object": "product",
+      "one_time": null,
+      "state": "active",
+      "store_identifier": "com.halaa.basic_monthly_150:monthly",
+      "subscription": {
+        "duration": null,
+        "grace_period_duration": null,
+        "trial_duration": null
+      },
+      "type": "subscription"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914294210,
+      "display_name": "Halaa Premium Monthly 25 Invites",
+      "id": "prodf16e95e48f",
+      "object": "product",
+      "one_time": null,
+      "state": "active",
+      "store_identifier": "com.halaa.premium_monthly_25:monthly",
+      "subscription": {
+        "duration": null,
+        "grace_period_duration": null,
+        "trial_duration": null
+      },
+      "type": "subscription"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914291597,
+      "display_name": "100 Extra Invites",
+      "id": "prodf5ca6dba7d",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.extra_invites_100",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914313169,
+      "display_name": "Business Branding Customization",
+      "id": "prodfb7bf259af",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.business_customization",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914298657,
+      "display_name": "Halaa Premium Monthly 150 Invites",
+      "id": "prodfcb668bd0d",
+      "object": "product",
+      "one_time": null,
+      "state": "active",
+      "store_identifier": "com.halaa.premium_monthly_150:monthly",
+      "subscription": {
+        "duration": null,
+        "grace_period_duration": null,
+        "trial_duration": null
+      },
+      "type": "subscription"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914308646,
+      "display_name": "75 Extra Invites",
+      "id": "prodfcf96c3bb0",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.extra_invites_75",
+      "subscription": null,
+      "type": "one_time"
+    },
+    {
+      "app_id": "appc8bcc56e96",
+      "created_at": 1786914293699,
+      "display_name": "40 Extra Invites",
+      "id": "prodfd38d95e0d",
+      "object": "product",
+      "one_time": {
+        "is_consumable": true
+      },
+      "state": "active",
+      "store_identifier": "com.halaa.extra_invites_40",
+      "subscription": null,
+      "type": "one_time"
+    }
+  ],
+  "entitlements": [
+    {
+      "created_at": 1786914321670,
+      "display_name": "Recurring access",
+      "id": "entlc134047d68",
+      "lookup_key": "recurring_access",
+      "object": "entitlement",
+      "project_id": "projc49d20a4",
+      "state": "active",
+      "products": [
+        {
+          "app_id": "app63720480d5",
+          "created_at": 1786914297177,
+          "display_name": "Halaa Premium Monthly 100 Invites",
+          "id": "prod081a14a0fe",
+          "object": "product",
+          "one_time": null,
+          "state": "active",
+          "store_identifier": "com.halaa.premium_monthly_100",
+          "subscription": {
+            "duration": null,
+            "grace_period_duration": null,
+            "trial_duration": null
+          },
+          "type": "subscription"
+        },
+        {
+          "app_id": "app63720480d5",
+          "created_at": 1786914317146,
+          "display_name": "Halaa Premium Monthly 75 Invites",
+          "id": "prod298abcc8ab",
+          "object": "product",
+          "one_time": null,
+          "state": "active",
+          "store_identifier": "com.halaa.premium_monthly_75",
+          "subscription": {
+            "duration": null,
+            "grace_period_duration": null,
+            "trial_duration": null
+          },
+          "type": "subscription"
+        },
+        {
+          "app_id": "appc8bcc56e96",
+          "created_at": 1786914293923,
+          "display_name": "Halaa Premium Monthly 100 Invites",
+          "id": "prod32a3f8487b",
+          "object": "product",
+          "one_time": null,
+          "state": "active",
+          "store_identifier": "com.halaa.premium_monthly_100:monthly",
+          "subscription": {
+            "duration": null,
+            "grace_period_duration": null,
+            "trial_duration": null
+          },
+          "type": "subscription"
+        },
+        {
+          "app_id": "app63720480d5",
+          "created_at": 1786914297682,
+          "display_name": "Halaa Premium Monthly 150 Invites",
+          "id": "prod4311d44295",
+          "object": "product",
+          "one_time": null,
+          "state": "active",
+          "store_identifier": "com.halaa.premium_monthly_150",
+          "subscription": {
+            "duration": null,
+            "grace_period_duration": null,
+            "trial_duration": null
+          },
+          "type": "subscription"
+        },
+        {
+          "app_id": "appc8bcc56e96",
+          "created_at": 1786914292388,
+          "display_name": "Halaa Premium Monthly 75 Invites",
+          "id": "prod4c5fd842f6",
+          "object": "product",
+          "one_time": null,
+          "state": "active",
+          "store_identifier": "com.halaa.premium_monthly_75:monthly",
+          "subscription": {
+            "duration": null,
+            "grace_period_duration": null,
+            "trial_duration": null
+          },
+          "type": "subscription"
+        },
+        {
+          "app_id": "app63720480d5",
+          "created_at": 1786914319794,
+          "display_name": "Halaa Premium Monthly 50 Invites",
+          "id": "prod5d9866751b",
+          "object": "product",
+          "one_time": null,
+          "state": "active",
+          "store_identifier": "com.halaa.premium_monthly_50",
+          "subscription": {
+            "duration": null,
+            "grace_period_duration": null,
+            "trial_duration": null
+          },
+          "type": "subscription"
+        },
+        {
+          "app_id": "app63720480d5",
+          "created_at": 1786914320352,
+          "display_name": "Halaa Basic Monthly 100 Invites",
+          "id": "prod666a437c2d",
+          "object": "product",
+          "one_time": null,
+          "state": "active",
+          "store_identifier": "com.halaa.basic_monthly_100",
+          "subscription": {
+            "duration": null,
+            "grace_period_duration": null,
+            "trial_duration": null
+          },
+          "type": "subscription"
+        },
+        {
+          "app_id": "appc8bcc56e96",
+          "created_at": 1786914307490,
+          "display_name": "Halaa Basic Monthly 25 Invites",
+          "id": "prod66724d32db",
+          "object": "product",
+          "one_time": null,
+          "state": "active",
+          "store_identifier": "com.halaa.basic_monthly_25:monthly",
+          "subscription": {
+            "duration": null,
+            "grace_period_duration": null,
+            "trial_duration": null
+          },
+          "type": "subscription"
+        },
+        {
+          "app_id": "appc8bcc56e96",
+          "created_at": 1786914311409,
+          "display_name": "Halaa Basic Monthly 200 Invites",
+          "id": "prod669fbe38a7",
+          "object": "product",
+          "one_time": null,
+          "state": "active",
+          "store_identifier": "com.halaa.basic_monthly_200:monthly",
+          "subscription": {
+            "duration": null,
+            "grace_period_duration": null,
+            "trial_duration": null
+          },
+          "type": "subscription"
+        },
+        {
+          "app_id": "app63720480d5",
+          "created_at": 1786914316460,
+          "display_name": "Halaa Basic Monthly 200 Invites",
+          "id": "prod6c01a46f6b",
+          "object": "product",
+          "one_time": null,
+          "state": "active",
+          "store_identifier": "com.halaa.basic_monthly_200",
+          "subscription": {
+            "duration": null,
+            "grace_period_duration": null,
+            "trial_duration": null
+          },
+          "type": "subscription"
+        },
+        {
+          "app_id": "appc8bcc56e96",
+          "created_at": 1786914312045,
+          "display_name": "Halaa Premium Monthly 200 Invites",
+          "id": "prod84994b288a",
+          "object": "product",
+          "one_time": null,
+          "state": "active",
+          "store_identifier": "com.halaa.premium_monthly_200:monthly",
+          "subscription": {
+            "duration": null,
+            "grace_period_duration": null,
+            "trial_duration": null
+          },
+          "type": "subscription"
+        },
+        {
+          "app_id": "app63720480d5",
+          "created_at": 1786914300153,
+          "display_name": "Halaa Premium Monthly 200 Invites",
+          "id": "prod963a304304",
+          "object": "product",
+          "one_time": null,
+          "state": "active",
+          "store_identifier": "com.halaa.premium_monthly_200",
+          "subscription": {
+            "duration": null,
+            "grace_period_duration": null,
+            "trial_duration": null
+          },
+          "type": "subscription"
+        },
+        {
+          "app_id": "appc8bcc56e96",
+          "created_at": 1786914314659,
+          "display_name": "Halaa Basic Monthly 100 Invites",
+          "id": "proda3f89c8d69",
+          "object": "product",
+          "one_time": null,
+          "state": "active",
+          "store_identifier": "com.halaa.basic_monthly_100:monthly",
+          "subscription": {
+            "duration": null,
+            "grace_period_duration": null,
+            "trial_duration": null
+          },
+          "type": "subscription"
+        },
+        {
+          "app_id": "app63720480d5",
+          "created_at": 1786914309610,
+          "display_name": "Halaa Premium Monthly 25 Invites",
+          "id": "proda952ff1176",
+          "object": "product",
+          "one_time": null,
+          "state": "active",
+          "store_identifier": "com.halaa.premium_monthly_25",
+          "subscription": {
+            "duration": null,
+            "grace_period_duration": null,
+            "trial_duration": null
+          },
+          "type": "subscription"
+        },
+        {
+          "app_id": "app63720480d5",
+          "created_at": 1786914293081,
+          "display_name": "Halaa Business — 3-Month Subscription",
+          "id": "prodaf83d21c26",
+          "object": "product",
+          "one_time": null,
+          "state": "active",
+          "store_identifier": "com.halaa.business_quarterly",
+          "subscription": {
+            "duration": null,
+            "grace_period_duration": null,
+            "trial_duration": null
+          },
+          "type": "subscription"
+        },
+        {
+          "app_id": "app63720480d5",
+          "created_at": 1786914320534,
+          "display_name": "Halaa Basic Monthly 25 Invites",
+          "id": "prodb23ca31836",
+          "object": "product",
+          "one_time": null,
+          "state": "active",
+          "store_identifier": "com.halaa.basic_monthly_25",
+          "subscription": {
+            "duration": null,
+            "grace_period_duration": null,
+            "trial_duration": null
+          },
+          "type": "subscription"
+        },
+        {
+          "app_id": "appc8bcc56e96",
+          "created_at": 1786914314215,
+          "display_name": "Halaa Business — 3-Month Subscription",
+          "id": "prodb924014424",
+          "object": "product",
+          "one_time": null,
+          "state": "active",
+          "store_identifier": "com.halaa.business_quarterly:quarterly",
+          "subscription": {
+            "duration": null,
+            "grace_period_duration": null,
+            "trial_duration": null
+          },
+          "type": "subscription"
+        },
+        {
+          "app_id": "appc8bcc56e96",
+          "created_at": 1786914318545,
+          "display_name": "Halaa Basic Monthly 50 Invites",
+          "id": "prodc911e3c958",
+          "object": "product",
+          "one_time": null,
+          "state": "active",
+          "store_identifier": "com.halaa.basic_monthly_50:monthly",
+          "subscription": {
+            "duration": null,
+            "grace_period_duration": null,
+            "trial_duration": null
+          },
+          "type": "subscription"
+        },
+        {
+          "app_id": "app63720480d5",
+          "created_at": 1786914311831,
+          "display_name": "Halaa Basic Monthly 50 Invites",
+          "id": "prodcdc22d5d36",
+          "object": "product",
+          "one_time": null,
+          "state": "active",
+          "store_identifier": "com.halaa.basic_monthly_50",
+          "subscription": {
+            "duration": null,
+            "grace_period_duration": null,
+            "trial_duration": null
+          },
+          "type": "subscription"
+        },
+        {
+          "app_id": "app63720480d5",
+          "created_at": 1786914312757,
+          "display_name": "Halaa Basic Monthly 150 Invites",
+          "id": "prodd5860294fb",
+          "object": "product",
+          "one_time": null,
+          "state": "active",
+          "store_identifier": "com.halaa.basic_monthly_150",
+          "subscription": {
+            "duration": null,
+            "grace_period_duration": null,
+            "trial_duration": null
+          },
+          "type": "subscription"
+        },
+        {
+          "app_id": "appc8bcc56e96",
+          "created_at": 1786914316257,
+          "display_name": "Halaa Premium Monthly 50 Invites",
+          "id": "proddd87ac7ea7",
+          "object": "product",
+          "one_time": null,
+          "state": "active",
+          "store_identifier": "com.halaa.premium_monthly_50:monthly",
+          "subscription": {
+            "duration": null,
+            "grace_period_duration": null,
+            "trial_duration": null
+          },
+          "type": "subscription"
+        },
+        {
+          "app_id": "appc8bcc56e96",
+          "created_at": 1786914294448,
+          "display_name": "Halaa Basic Monthly 75 Invites",
+          "id": "prode1b75540bd",
+          "object": "product",
+          "one_time": null,
+          "state": "active",
+          "store_identifier": "com.halaa.basic_monthly_75:monthly",
+          "subscription": {
+            "duration": null,
+            "grace_period_duration": null,
+            "trial_duration": null
+          },
+          "type": "subscription"
+        },
+        {
+          "app_id": "app63720480d5",
+          "created_at": 1786914300794,
+          "display_name": "Halaa Basic Monthly 75 Invites",
+          "id": "prodea348f8026",
+          "object": "product",
+          "one_time": null,
+          "state": "active",
+          "store_identifier": "com.halaa.basic_monthly_75",
+          "subscription": {
+            "duration": null,
+            "grace_period_duration": null,
+            "trial_duration": null
+          },
+          "type": "subscription"
+        },
+        {
+          "app_id": "appc8bcc56e96",
+          "created_at": 1786914313881,
+          "display_name": "Halaa Basic Monthly 150 Invites",
+          "id": "prodef600895e4",
+          "object": "product",
+          "one_time": null,
+          "state": "active",
+          "store_identifier": "com.halaa.basic_monthly_150:monthly",
+          "subscription": {
+            "duration": null,
+            "grace_period_duration": null,
+            "trial_duration": null
+          },
+          "type": "subscription"
+        },
+        {
+          "app_id": "appc8bcc56e96",
+          "created_at": 1786914294210,
+          "display_name": "Halaa Premium Monthly 25 Invites",
+          "id": "prodf16e95e48f",
+          "object": "product",
+          "one_time": null,
+          "state": "active",
+          "store_identifier": "com.halaa.premium_monthly_25:monthly",
+          "subscription": {
+            "duration": null,
+            "grace_period_duration": null,
+            "trial_duration": null
+          },
+          "type": "subscription"
+        },
+        {
+          "app_id": "appc8bcc56e96",
+          "created_at": 1786914298657,
+          "display_name": "Halaa Premium Monthly 150 Invites",
+          "id": "prodfcb668bd0d",
+          "object": "product",
+          "one_time": null,
+          "state": "active",
+          "store_identifier": "com.halaa.premium_monthly_150:monthly",
+          "subscription": {
+            "duration": null,
+            "grace_period_duration": null,
+            "trial_duration": null
+          },
+          "type": "subscription"
+        }
+      ]
+    }
+  ],
+  "offerings": [
+    {
+      "created_at": 1786914321480,
+      "display_name": "business_plans",
+      "id": "ofrng5f6d62e49b",
+      "is_current": false,
+      "lookup_key": "business_plans",
+      "metadata": null,
+      "object": "offering",
+      "paywall_id": null,
+      "project_id": "projc49d20a4",
+      "state": "active",
+      "packages": [
+        {
+          "created_at": 1786914327143,
+          "display_name": "business_event_100",
+          "id": "pkge4424379856",
+          "lookup_key": "business_event_100",
+          "object": "package",
+          "position": 1,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914306480,
+                "display_name": "Halaa Business 100 Invites",
+                "id": "prod0446d02db0",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.business_event_100",
+                "subscription": null,
+                "type": "consumable"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914316064,
+                "display_name": "Halaa Business 100 Invites",
+                "id": "prod7f9ef25ac5",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.business_event_100",
+                "subscription": null,
+                "type": "one_time"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914333755,
+          "display_name": "business_event_150",
+          "id": "pkgef6b9657e30",
+          "lookup_key": "business_event_150",
+          "object": "package",
+          "position": 2,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914310431,
+                "display_name": "Halaa Business 150 Invites",
+                "id": "prod30c384cac6",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.business_event_150",
+                "subscription": null,
+                "type": "consumable"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914319168,
+                "display_name": "Halaa Business 150 Invites",
+                "id": "prodc61fbd3645",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.business_event_150",
+                "subscription": null,
+                "type": "one_time"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914326486,
+          "display_name": "business_event_75",
+          "id": "pkgec318739d5d",
+          "lookup_key": "business_event_75",
+          "object": "package",
+          "position": 3,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914299294,
+                "display_name": "Halaa Business 75 Invites",
+                "id": "prod1db8e9294e",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.business_event_75",
+                "subscription": null,
+                "type": "one_time"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914318742,
+                "display_name": "Halaa Business 75 Invites",
+                "id": "prod623f81f6dd",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.business_event_75",
+                "subscription": null,
+                "type": "consumable"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914329569,
+          "display_name": "business_event_200",
+          "id": "pkge4e6a7eb358",
+          "lookup_key": "business_event_200",
+          "object": "package",
+          "position": 4,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914309160,
+                "display_name": "Halaa Business 200 Invites",
+                "id": "prod823074e777",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.business_event_200",
+                "subscription": null,
+                "type": "one_time"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914300599,
+                "display_name": "Halaa Business 200 Invites",
+                "id": "prod93babed44a",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.business_event_200",
+                "subscription": null,
+                "type": "consumable"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914327553,
+          "display_name": "business_event_25",
+          "id": "pkgeb8b522b589",
+          "lookup_key": "business_event_25",
+          "object": "package",
+          "position": 5,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914300988,
+                "display_name": "Halaa Business 25 Invites",
+                "id": "prod0eaf10c4ab",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.business_event_25",
+                "subscription": null,
+                "type": "one_time"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914299508,
+                "display_name": "Halaa Business 25 Invites",
+                "id": "proddb713f8f87",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.business_event_25",
+                "subscription": null,
+                "type": "consumable"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914333108,
+          "display_name": "business_event_50",
+          "id": "pkge6e55ccb475",
+          "lookup_key": "business_event_50",
+          "object": "package",
+          "position": 6,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914298062,
+                "display_name": "Halaa Business 50 Invites",
+                "id": "prod2404ede4ea",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.business_event_50",
+                "subscription": null,
+                "type": "consumable"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914306107,
+                "display_name": "Halaa Business 50 Invites",
+                "id": "prod64d186e12b",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.business_event_50",
+                "subscription": null,
+                "type": "one_time"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914329361,
+          "display_name": "business_quarterly",
+          "id": "pkge18566d04d2",
+          "lookup_key": "business_quarterly",
+          "object": "package",
+          "position": 7,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914293081,
+                "display_name": "Halaa Business — 3-Month Subscription",
+                "id": "prodaf83d21c26",
+                "object": "product",
+                "one_time": null,
+                "state": "active",
+                "store_identifier": "com.halaa.business_quarterly",
+                "subscription": {
+                  "duration": null,
+                  "grace_period_duration": null,
+                  "trial_duration": null
+                },
+                "type": "subscription"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914314215,
+                "display_name": "Halaa Business — 3-Month Subscription",
+                "id": "prodb924014424",
+                "object": "product",
+                "one_time": null,
+                "state": "active",
+                "store_identifier": "com.halaa.business_quarterly:quarterly",
+                "subscription": {
+                  "duration": null,
+                  "grace_period_duration": null,
+                  "trial_duration": null
+                },
+                "type": "subscription"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "created_at": 1786914320722,
+      "display_name": "business_addons",
+      "id": "ofrng6d3b808d79",
+      "is_current": false,
+      "lookup_key": "business_addons",
+      "metadata": null,
+      "object": "offering",
+      "paywall_id": null,
+      "project_id": "projc49d20a4",
+      "state": "active",
+      "packages": [
+        {
+          "created_at": 1786914334763,
+          "display_name": "business_customization",
+          "id": "pkge78f0de71fe",
+          "lookup_key": "business_customization",
+          "object": "package",
+          "position": 1,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914315246,
+                "display_name": "Business Branding Customization",
+                "id": "prod70c0e7ba82",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.business_customization",
+                "subscription": null,
+                "type": "consumable"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914313169,
+                "display_name": "Business Branding Customization",
+                "id": "prodfb7bf259af",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.business_customization",
+                "subscription": null,
+                "type": "one_time"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "created_at": 1786914254266,
+      "display_name": "Host plans",
+      "id": "ofrng8aa4564fd2",
+      "is_current": true,
+      "lookup_key": "host_plans",
+      "metadata": null,
+      "object": "offering",
+      "paywall_id": null,
+      "project_id": "projc49d20a4",
+      "state": "active",
+      "packages": [
+        {
+          "created_at": 1786914321862,
+          "display_name": "basic_event_100",
+          "id": "pkge77519dd8b1",
+          "lookup_key": "basic_event_100",
+          "object": "package",
+          "position": 1,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914297423,
+                "display_name": "Halaa Basic 100 Invites",
+                "id": "prod75cb329047",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.basic_event_100",
+                "subscription": null,
+                "type": "consumable"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914298246,
+                "display_name": "Halaa Basic 100 Invites",
+                "id": "prod80d16fba89",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.basic_event_100",
+                "subscription": null,
+                "type": "one_time"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914322056,
+          "display_name": "premium_monthly_25",
+          "id": "pkgea5d775c8b5",
+          "lookup_key": "premium_monthly_25",
+          "object": "package",
+          "position": 1,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914309610,
+                "display_name": "Halaa Premium Monthly 25 Invites",
+                "id": "proda952ff1176",
+                "object": "product",
+                "one_time": null,
+                "state": "active",
+                "store_identifier": "com.halaa.premium_monthly_25",
+                "subscription": {
+                  "duration": null,
+                  "grace_period_duration": null,
+                  "trial_duration": null
+                },
+                "type": "subscription"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914294210,
+                "display_name": "Halaa Premium Monthly 25 Invites",
+                "id": "prodf16e95e48f",
+                "object": "product",
+                "one_time": null,
+                "state": "active",
+                "store_identifier": "com.halaa.premium_monthly_25:monthly",
+                "subscription": {
+                  "duration": null,
+                  "grace_period_duration": null,
+                  "trial_duration": null
+                },
+                "type": "subscription"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914325783,
+          "display_name": "basic_event_150",
+          "id": "pkge9f5ee9d446",
+          "lookup_key": "basic_event_150",
+          "object": "package",
+          "position": 2,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914295222,
+                "display_name": "Halaa Basic 150 Invites",
+                "id": "prod9f6f466400",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.basic_event_150",
+                "subscription": null,
+                "type": "consumable"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914310215,
+                "display_name": "Halaa Basic 150 Invites",
+                "id": "prode4de6fe4d6",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.basic_event_150",
+                "subscription": null,
+                "type": "one_time"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914334519,
+          "display_name": "basic_event_200",
+          "id": "pkge31e684fc9a",
+          "lookup_key": "basic_event_200",
+          "object": "package",
+          "position": 3,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914297873,
+                "display_name": "Halaa Basic 200 Invites",
+                "id": "prod326efb22d2",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.basic_event_200",
+                "subscription": null,
+                "type": "one_time"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914298888,
+                "display_name": "Halaa Basic 200 Invites",
+                "id": "prodcb8a95a31a",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.basic_event_200",
+                "subscription": null,
+                "type": "consumable"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914323030,
+          "display_name": "premium_monthly_100",
+          "id": "pkge03d639932e",
+          "lookup_key": "premium_monthly_100",
+          "object": "package",
+          "position": 4,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914297177,
+                "display_name": "Halaa Premium Monthly 100 Invites",
+                "id": "prod081a14a0fe",
+                "object": "product",
+                "one_time": null,
+                "state": "active",
+                "store_identifier": "com.halaa.premium_monthly_100",
+                "subscription": {
+                  "duration": null,
+                  "grace_period_duration": null,
+                  "trial_duration": null
+                },
+                "type": "subscription"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914293923,
+                "display_name": "Halaa Premium Monthly 100 Invites",
+                "id": "prod32a3f8487b",
+                "object": "product",
+                "one_time": null,
+                "state": "active",
+                "store_identifier": "com.halaa.premium_monthly_100:monthly",
+                "subscription": {
+                  "duration": null,
+                  "grace_period_duration": null,
+                  "trial_duration": null
+                },
+                "type": "subscription"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914331847,
+          "display_name": "basic_event_25",
+          "id": "pkge018a7aa88d",
+          "lookup_key": "basic_event_25",
+          "object": "package",
+          "position": 5,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914294952,
+                "display_name": "Halaa Basic 25 Invites",
+                "id": "prod24032c20e0",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.basic_event_25",
+                "subscription": null,
+                "type": "one_time"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914300396,
+                "display_name": "Halaa Basic 25 Invites",
+                "id": "prod6e82a4fd94",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.basic_event_25",
+                "subscription": null,
+                "type": "consumable"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914324709,
+          "display_name": "premium_monthly_75",
+          "id": "pkgefb77c1bec8",
+          "lookup_key": "premium_monthly_75",
+          "object": "package",
+          "position": 6,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914317146,
+                "display_name": "Halaa Premium Monthly 75 Invites",
+                "id": "prod298abcc8ab",
+                "object": "product",
+                "one_time": null,
+                "state": "active",
+                "store_identifier": "com.halaa.premium_monthly_75",
+                "subscription": {
+                  "duration": null,
+                  "grace_period_duration": null,
+                  "trial_duration": null
+                },
+                "type": "subscription"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914292388,
+                "display_name": "Halaa Premium Monthly 75 Invites",
+                "id": "prod4c5fd842f6",
+                "object": "product",
+                "one_time": null,
+                "state": "active",
+                "store_identifier": "com.halaa.premium_monthly_75:monthly",
+                "subscription": {
+                  "duration": null,
+                  "grace_period_duration": null,
+                  "trial_duration": null
+                },
+                "type": "subscription"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914331402,
+          "display_name": "basic_event_50",
+          "id": "pkge0ec6d4d33e",
+          "lookup_key": "basic_event_50",
+          "object": "package",
+          "position": 7,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914313386,
+                "display_name": "Halaa Basic 50 Invites",
+                "id": "prod3db1f3b091",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.basic_event_50",
+                "subscription": null,
+                "type": "one_time"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914305333,
+                "display_name": "Halaa Basic 50 Invites",
+                "id": "prod5c9d6217eb",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.basic_event_50",
+                "subscription": null,
+                "type": "consumable"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914324904,
+          "display_name": "premium_event_25",
+          "id": "pkge49dec227a0",
+          "lookup_key": "premium_event_25",
+          "object": "package",
+          "position": 8,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914304725,
+                "display_name": "Halaa Premium 25 Invites",
+                "id": "prod058772eef5",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.premium_event_25",
+                "subscription": null,
+                "type": "consumable"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914317412,
+                "display_name": "Halaa Premium 25 Invites",
+                "id": "prodcfa8dc3781",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.premium_event_25",
+                "subscription": null,
+                "type": "one_time"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914335874,
+          "display_name": "basic_monthly_200",
+          "id": "pkge4e8c1b41ac",
+          "lookup_key": "basic_monthly_200",
+          "object": "package",
+          "position": 9,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914311409,
+                "display_name": "Halaa Basic Monthly 200 Invites",
+                "id": "prod669fbe38a7",
+                "object": "product",
+                "one_time": null,
+                "state": "active",
+                "store_identifier": "com.halaa.basic_monthly_200:monthly",
+                "subscription": {
+                  "duration": null,
+                  "grace_period_duration": null,
+                  "trial_duration": null
+                },
+                "type": "subscription"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914316460,
+                "display_name": "Halaa Basic Monthly 200 Invites",
+                "id": "prod6c01a46f6b",
+                "object": "product",
+                "one_time": null,
+                "state": "active",
+                "store_identifier": "com.halaa.basic_monthly_200",
+                "subscription": {
+                  "duration": null,
+                  "grace_period_duration": null,
+                  "trial_duration": null
+                },
+                "type": "subscription"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914328230,
+          "display_name": "basic_event_75",
+          "id": "pkge7a1ed69609",
+          "lookup_key": "basic_event_75",
+          "object": "package",
+          "position": 10,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914315438,
+                "display_name": "Halaa Basic 75 Invites",
+                "id": "prod28375fffba",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.basic_event_75",
+                "subscription": null,
+                "type": "consumable"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914312540,
+                "display_name": "Halaa Basic 75 Invites",
+                "id": "proda7badfeb16",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.basic_event_75",
+                "subscription": null,
+                "type": "one_time"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914330803,
+          "display_name": "basic_monthly_100",
+          "id": "pkge968c161065",
+          "lookup_key": "basic_monthly_100",
+          "object": "package",
+          "position": 11,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914320352,
+                "display_name": "Halaa Basic Monthly 100 Invites",
+                "id": "prod666a437c2d",
+                "object": "product",
+                "one_time": null,
+                "state": "active",
+                "store_identifier": "com.halaa.basic_monthly_100",
+                "subscription": {
+                  "duration": null,
+                  "grace_period_duration": null,
+                  "trial_duration": null
+                },
+                "type": "subscription"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914314659,
+                "display_name": "Halaa Basic Monthly 100 Invites",
+                "id": "proda3f89c8d69",
+                "object": "product",
+                "one_time": null,
+                "state": "active",
+                "store_identifier": "com.halaa.basic_monthly_100:monthly",
+                "subscription": {
+                  "duration": null,
+                  "grace_period_duration": null,
+                  "trial_duration": null
+                },
+                "type": "subscription"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914325356,
+          "display_name": "basic_monthly_50",
+          "id": "pkge1c4687d93b",
+          "lookup_key": "basic_monthly_50",
+          "object": "package",
+          "position": 12,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914318545,
+                "display_name": "Halaa Basic Monthly 50 Invites",
+                "id": "prodc911e3c958",
+                "object": "product",
+                "one_time": null,
+                "state": "active",
+                "store_identifier": "com.halaa.basic_monthly_50:monthly",
+                "subscription": {
+                  "duration": null,
+                  "grace_period_duration": null,
+                  "trial_duration": null
+                },
+                "type": "subscription"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914311831,
+                "display_name": "Halaa Basic Monthly 50 Invites",
+                "id": "prodcdc22d5d36",
+                "object": "product",
+                "one_time": null,
+                "state": "active",
+                "store_identifier": "com.halaa.basic_monthly_50",
+                "subscription": {
+                  "duration": null,
+                  "grace_period_duration": null,
+                  "trial_duration": null
+                },
+                "type": "subscription"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914325989,
+          "display_name": "basic_monthly_150",
+          "id": "pkgebd3e608af6",
+          "lookup_key": "basic_monthly_150",
+          "object": "package",
+          "position": 13,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914312757,
+                "display_name": "Halaa Basic Monthly 150 Invites",
+                "id": "prodd5860294fb",
+                "object": "product",
+                "one_time": null,
+                "state": "active",
+                "store_identifier": "com.halaa.basic_monthly_150",
+                "subscription": {
+                  "duration": null,
+                  "grace_period_duration": null,
+                  "trial_duration": null
+                },
+                "type": "subscription"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914313881,
+                "display_name": "Halaa Basic Monthly 150 Invites",
+                "id": "prodef600895e4",
+                "object": "product",
+                "one_time": null,
+                "state": "active",
+                "store_identifier": "com.halaa.basic_monthly_150:monthly",
+                "subscription": {
+                  "duration": null,
+                  "grace_period_duration": null,
+                  "trial_duration": null
+                },
+                "type": "subscription"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914335415,
+          "display_name": "premium_event_100",
+          "id": "pkgefde4510ef2",
+          "lookup_key": "premium_event_100",
+          "object": "package",
+          "position": 14,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914307985,
+                "display_name": "Halaa Premium 100 Invites",
+                "id": "prod96c08a2a8f",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.premium_event_100",
+                "subscription": null,
+                "type": "one_time"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914315625,
+                "display_name": "Halaa Premium 100 Invites",
+                "id": "prodb75e66c450",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.premium_event_100",
+                "subscription": null,
+                "type": "consumable"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914327350,
+          "display_name": "basic_monthly_25",
+          "id": "pkge3771ebbc5e",
+          "lookup_key": "basic_monthly_25",
+          "object": "package",
+          "position": 15,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914307490,
+                "display_name": "Halaa Basic Monthly 25 Invites",
+                "id": "prod66724d32db",
+                "object": "product",
+                "one_time": null,
+                "state": "active",
+                "store_identifier": "com.halaa.basic_monthly_25:monthly",
+                "subscription": {
+                  "duration": null,
+                  "grace_period_duration": null,
+                  "trial_duration": null
+                },
+                "type": "subscription"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914320534,
+                "display_name": "Halaa Basic Monthly 25 Invites",
+                "id": "prodb23ca31836",
+                "object": "product",
+                "one_time": null,
+                "state": "active",
+                "store_identifier": "com.halaa.basic_monthly_25",
+                "subscription": {
+                  "duration": null,
+                  "grace_period_duration": null,
+                  "trial_duration": null
+                },
+                "type": "subscription"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914327757,
+          "display_name": "premium_event_150",
+          "id": "pkge63bfba7c37",
+          "lookup_key": "premium_event_150",
+          "object": "package",
+          "position": 16,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914291999,
+                "display_name": "Halaa Premium 150 Invites",
+                "id": "prod6b4ac3d040",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.premium_event_150",
+                "subscription": null,
+                "type": "consumable"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914305902,
+                "display_name": "Halaa Premium 150 Invites",
+                "id": "prod6be5bb0ec6",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.premium_event_150",
+                "subscription": null,
+                "type": "one_time"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914331007,
+          "display_name": "basic_monthly_75",
+          "id": "pkge99427771e9",
+          "lookup_key": "basic_monthly_75",
+          "object": "package",
+          "position": 17,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914294448,
+                "display_name": "Halaa Basic Monthly 75 Invites",
+                "id": "prode1b75540bd",
+                "object": "product",
+                "one_time": null,
+                "state": "active",
+                "store_identifier": "com.halaa.basic_monthly_75:monthly",
+                "subscription": {
+                  "duration": null,
+                  "grace_period_duration": null,
+                  "trial_duration": null
+                },
+                "type": "subscription"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914300794,
+                "display_name": "Halaa Basic Monthly 75 Invites",
+                "id": "prodea348f8026",
+                "object": "product",
+                "one_time": null,
+                "state": "active",
+                "store_identifier": "com.halaa.basic_monthly_75",
+                "subscription": {
+                  "duration": null,
+                  "grace_period_duration": null,
+                  "trial_duration": null
+                },
+                "type": "subscription"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914332250,
+          "display_name": "premium_event_200",
+          "id": "pkge96b73967f8",
+          "lookup_key": "premium_event_200",
+          "object": "package",
+          "position": 18,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914314444,
+                "display_name": "Halaa Premium 200 Invites",
+                "id": "prod02d380a809",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.premium_event_200",
+                "subscription": null,
+                "type": "one_time"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914314863,
+                "display_name": "Halaa Premium 200 Invites",
+                "id": "prodd302e81265",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.premium_event_200",
+                "subscription": null,
+                "type": "consumable"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914328458,
+          "display_name": "premium_event_75",
+          "id": "pkge12856630fd",
+          "lookup_key": "premium_event_75",
+          "object": "package",
+          "position": 19,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914304356,
+                "display_name": "Halaa Premium 75 Invites",
+                "id": "prod168b5c74ac",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.premium_event_75",
+                "subscription": null,
+                "type": "one_time"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914312964,
+                "display_name": "Halaa Premium 75 Invites",
+                "id": "prodab03bb469c",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.premium_event_75",
+                "subscription": null,
+                "type": "consumable"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914328683,
+          "display_name": "premium_monthly_200",
+          "id": "pkgeb3a71f5ba1",
+          "lookup_key": "premium_monthly_200",
+          "object": "package",
+          "position": 20,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914312045,
+                "display_name": "Halaa Premium Monthly 200 Invites",
+                "id": "prod84994b288a",
+                "object": "product",
+                "one_time": null,
+                "state": "active",
+                "store_identifier": "com.halaa.premium_monthly_200:monthly",
+                "subscription": {
+                  "duration": null,
+                  "grace_period_duration": null,
+                  "trial_duration": null
+                },
+                "type": "subscription"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914300153,
+                "display_name": "Halaa Premium Monthly 200 Invites",
+                "id": "prod963a304304",
+                "object": "product",
+                "one_time": null,
+                "state": "active",
+                "store_identifier": "com.halaa.premium_monthly_200",
+                "subscription": {
+                  "duration": null,
+                  "grace_period_duration": null,
+                  "trial_duration": null
+                },
+                "type": "subscription"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914331624,
+          "display_name": "premium_event_50",
+          "id": "pkge1db9d656a8",
+          "lookup_key": "premium_event_50",
+          "object": "package",
+          "position": 21,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914291798,
+                "display_name": "Halaa Premium 50 Invites",
+                "id": "proda2ebe5d14d",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.premium_event_50",
+                "subscription": null,
+                "type": "consumable"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914295462,
+                "display_name": "Halaa Premium 50 Invites",
+                "id": "prodc0b3064e29",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.premium_event_50",
+                "subscription": null,
+                "type": "one_time"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914332471,
+          "display_name": "premium_monthly_150",
+          "id": "pkge6945b8e094",
+          "lookup_key": "premium_monthly_150",
+          "object": "package",
+          "position": 22,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914297682,
+                "display_name": "Halaa Premium Monthly 150 Invites",
+                "id": "prod4311d44295",
+                "object": "product",
+                "one_time": null,
+                "state": "active",
+                "store_identifier": "com.halaa.premium_monthly_150",
+                "subscription": {
+                  "duration": null,
+                  "grace_period_duration": null,
+                  "trial_duration": null
+                },
+                "type": "subscription"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914298657,
+                "display_name": "Halaa Premium Monthly 150 Invites",
+                "id": "prodfcb668bd0d",
+                "object": "product",
+                "one_time": null,
+                "state": "active",
+                "store_identifier": "com.halaa.premium_monthly_150:monthly",
+                "subscription": {
+                  "duration": null,
+                  "grace_period_duration": null,
+                  "trial_duration": null
+                },
+                "type": "subscription"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914333950,
+          "display_name": "premium_monthly_50",
+          "id": "pkge943625e76f",
+          "lookup_key": "premium_monthly_50",
+          "object": "package",
+          "position": 23,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914319794,
+                "display_name": "Halaa Premium Monthly 50 Invites",
+                "id": "prod5d9866751b",
+                "object": "product",
+                "one_time": null,
+                "state": "active",
+                "store_identifier": "com.halaa.premium_monthly_50",
+                "subscription": {
+                  "duration": null,
+                  "grace_period_duration": null,
+                  "trial_duration": null
+                },
+                "type": "subscription"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914316257,
+                "display_name": "Halaa Premium Monthly 50 Invites",
+                "id": "proddd87ac7ea7",
+                "object": "product",
+                "one_time": null,
+                "state": "active",
+                "store_identifier": "com.halaa.premium_monthly_50:monthly",
+                "subscription": {
+                  "duration": null,
+                  "grace_period_duration": null,
+                  "trial_duration": null
+                },
+                "type": "subscription"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "created_at": 1786914321296,
+      "display_name": "host_addons",
+      "id": "ofrngade3a2b5dd",
+      "is_current": false,
+      "lookup_key": "host_addons",
+      "metadata": null,
+      "object": "offering",
+      "paywall_id": null,
+      "project_id": "projc49d20a4",
+      "state": "active",
+      "packages": [
+        {
+          "created_at": 1786914328976,
+          "display_name": "design_template_3d",
+          "id": "pkge436ea1626a",
+          "lookup_key": "design_template_3d",
+          "object": "package",
+          "position": 1,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914316963,
+                "display_name": "3D invitation design",
+                "id": "prod8c7a8574d6",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.design_template_3d",
+                "subscription": null,
+                "type": "consumable"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914296438,
+                "display_name": "3D invitation design",
+                "id": "prodaacfad9caa",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.design_template_3d",
+                "subscription": null,
+                "type": "one_time"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914332897,
+          "display_name": "design_template_animated",
+          "id": "pkgef2c7a621f0",
+          "lookup_key": "design_template_animated",
+          "object": "package",
+          "position": 2,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914304538,
+                "display_name": "Animated background design",
+                "id": "proda831bbc2bd",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.design_template_animated",
+                "subscription": null,
+                "type": "one_time"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914304170,
+                "display_name": "Animated background design",
+                "id": "prodae2151b100",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.design_template_animated",
+                "subscription": null,
+                "type": "consumable"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914333555,
+          "display_name": "design_template_custom_male",
+          "id": "pkge3922dbcb6b",
+          "lookup_key": "design_template_custom_male",
+          "object": "package",
+          "position": 3,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914301216,
+                "display_name": "Custom male design",
+                "id": "prod725459d4b7",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.design_template_custom_male",
+                "subscription": null,
+                "type": "consumable"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914318355,
+                "display_name": "Custom male design",
+                "id": "proda5ff114c57",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.design_template_custom_male",
+                "subscription": null,
+                "type": "one_time"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914322250,
+          "display_name": "extra_invites_250",
+          "id": "pkge117e5242ec",
+          "lookup_key": "extra_invites_250",
+          "object": "package",
+          "position": 4,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914299707,
+                "display_name": "250 Extra Invites",
+                "id": "prod1e47ba3585",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.extra_invites_250",
+                "subscription": null,
+                "type": "one_time"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914295717,
+                "display_name": "250 Extra Invites",
+                "id": "prod9e210f6b62",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.extra_invites_250",
+                "subscription": null,
+                "type": "consumable"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914322457,
+          "display_name": "extra_invites_50",
+          "id": "pkge9ce5d10e56",
+          "lookup_key": "extra_invites_50",
+          "object": "package",
+          "position": 4,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914315055,
+                "display_name": "50 Extra Invites",
+                "id": "prod09b31a4406",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.extra_invites_50",
+                "subscription": null,
+                "type": "consumable"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914311642,
+                "display_name": "50 Extra Invites",
+                "id": "prod9f011f177d",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.extra_invites_50",
+                "subscription": null,
+                "type": "one_time"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914333329,
+          "display_name": "design_template_custom_themed",
+          "id": "pkgef4c916990a",
+          "lookup_key": "design_template_custom_themed",
+          "object": "package",
+          "position": 5,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914317616,
+                "display_name": "Themed custom design",
+                "id": "prod15379033f1",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.design_template_custom_themed",
+                "subscription": null,
+                "type": "one_time"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914293294,
+                "display_name": "Themed custom design",
+                "id": "prod59327a8c12",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.design_template_custom_themed",
+                "subscription": null,
+                "type": "consumable"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914323475,
+          "display_name": "extra_invites_40",
+          "id": "pkge48788525b7",
+          "lookup_key": "extra_invites_40",
+          "object": "package",
+          "position": 6,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914317802,
+                "display_name": "40 Extra Invites",
+                "id": "prod5e08e81eb4",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.extra_invites_40",
+                "subscription": null,
+                "type": "consumable"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914293699,
+                "display_name": "40 Extra Invites",
+                "id": "prodfd38d95e0d",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.extra_invites_40",
+                "subscription": null,
+                "type": "one_time"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914324163,
+          "display_name": "extra_invites_350",
+          "id": "pkge4b29f9abb3",
+          "lookup_key": "extra_invites_350",
+          "object": "package",
+          "position": 7,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914306918,
+                "display_name": "350 Extra Invites",
+                "id": "prod7d390ef5b0",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.extra_invites_350",
+                "subscription": null,
+                "type": "consumable"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914302836,
+                "display_name": "350 Extra Invites",
+                "id": "prodacfe14bd4f",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.extra_invites_350",
+                "subscription": null,
+                "type": "one_time"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914324490,
+          "display_name": "extra_invites_400",
+          "id": "pkgecfdebf26b1",
+          "lookup_key": "extra_invites_400",
+          "object": "package",
+          "position": 8,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914306297,
+                "display_name": "400 Extra Invites",
+                "id": "prod37eb65c416",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.extra_invites_400",
+                "subscription": null,
+                "type": "consumable"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914302374,
+                "display_name": "400 Extra Invites",
+                "id": "prod6354e8c400",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.extra_invites_400",
+                "subscription": null,
+                "type": "one_time"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914335651,
+          "display_name": "extra_invites_150",
+          "id": "pkge2f25a23ee2",
+          "lookup_key": "extra_invites_150",
+          "object": "package",
+          "position": 9,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914319611,
+                "display_name": "150 Extra Invites",
+                "id": "prod99d56229f7",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.extra_invites_150",
+                "subscription": null,
+                "type": "one_time"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914310960,
+                "display_name": "150 Extra Invites",
+                "id": "prodb8db5b1bf0",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.extra_invites_150",
+                "subscription": null,
+                "type": "consumable"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914332678,
+          "display_name": "extra_invites_10",
+          "id": "pkgeab05da9be7",
+          "lookup_key": "extra_invites_10",
+          "object": "package",
+          "position": 10,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914304926,
+                "display_name": "10 Extra Invites",
+                "id": "proda3b092f2ba",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.extra_invites_10",
+                "subscription": null,
+                "type": "one_time"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914296685,
+                "display_name": "10 Extra Invites",
+                "id": "prodcce0dc656e",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.extra_invites_10",
+                "subscription": null,
+                "type": "consumable"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914325566,
+          "display_name": "design_template_ready_made",
+          "id": "pkge16a34e8ed8",
+          "lookup_key": "design_template_ready_made",
+          "object": "package",
+          "position": 11,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914309372,
+                "display_name": "Ready-made design (male/female)",
+                "id": "prod0909b8086b",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.design_template_ready_made",
+                "subscription": null,
+                "type": "consumable"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914302606,
+                "display_name": "Ready-made design (male/female)",
+                "id": "prodba50f3cdf9",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.design_template_ready_made",
+                "subscription": null,
+                "type": "one_time"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914330370,
+          "display_name": "extra_invites_100",
+          "id": "pkge535a18e87b",
+          "lookup_key": "extra_invites_100",
+          "object": "package",
+          "position": 12,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914296189,
+                "display_name": "100 Extra Invites",
+                "id": "prod22d0462e60",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.extra_invites_100",
+                "subscription": null,
+                "type": "consumable"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914291597,
+                "display_name": "100 Extra Invites",
+                "id": "prodf5ca6dba7d",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.extra_invites_100",
+                "subscription": null,
+                "type": "one_time"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914330571,
+          "display_name": "extra_invites_125",
+          "id": "pkgec3990eb38a",
+          "lookup_key": "extra_invites_125",
+          "object": "package",
+          "position": 13,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914303344,
+                "display_name": "125 Extra Invites",
+                "id": "prod09bc515d77",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.extra_invites_125",
+                "subscription": null,
+                "type": "one_time"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914311186,
+                "display_name": "125 Extra Invites",
+                "id": "prod122227989c",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.extra_invites_125",
+                "subscription": null,
+                "type": "consumable"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914326694,
+          "display_name": "extra_invites_20",
+          "id": "pkge2911231ff2",
+          "lookup_key": "extra_invites_20",
+          "object": "package",
+          "position": 14,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914319356,
+                "display_name": "20 Extra Invites",
+                "id": "prod060d51144f",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.extra_invites_20",
+                "subscription": null,
+                "type": "one_time"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914310717,
+                "display_name": "20 Extra Invites",
+                "id": "prod64eb41c000",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.extra_invites_20",
+                "subscription": null,
+                "type": "consumable"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914335214,
+          "display_name": "extra_invites_300",
+          "id": "pkge581366b3cf",
+          "lookup_key": "extra_invites_300",
+          "object": "package",
+          "position": 15,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914318931,
+                "display_name": "300 Extra Invites",
+                "id": "prod3be0dcb1a5",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.extra_invites_300",
+                "subscription": null,
+                "type": "one_time"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914298433,
+                "display_name": "300 Extra Invites",
+                "id": "prod650b69c52e",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.extra_invites_300",
+                "subscription": null,
+                "type": "consumable"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914329163,
+          "display_name": "extra_invites_450",
+          "id": "pkged5d15fbf37",
+          "lookup_key": "extra_invites_450",
+          "object": "package",
+          "position": 16,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914295951,
+                "display_name": "450 Extra Invites",
+                "id": "prod2d0c9930ec",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.extra_invites_450",
+                "subscription": null,
+                "type": "consumable"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914292194,
+                "display_name": "450 Extra Invites",
+                "id": "prod367dba18c2",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.extra_invites_450",
+                "subscription": null,
+                "type": "one_time"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914332047,
+          "display_name": "extra_invites_200",
+          "id": "pkge0307a96381",
+          "lookup_key": "extra_invites_200",
+          "object": "package",
+          "position": 17,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914301899,
+                "display_name": "200 Extra Invites",
+                "id": "prod02c16525a7",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.extra_invites_200",
+                "subscription": null,
+                "type": "one_time"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914299076,
+                "display_name": "200 Extra Invites",
+                "id": "prodcb2eed52b9",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.extra_invites_200",
+                "subscription": null,
+                "type": "consumable"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914329772,
+          "display_name": "extra_invites_30",
+          "id": "pkge9f54f2d88a",
+          "lookup_key": "extra_invites_30",
+          "object": "package",
+          "position": 18,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914316651,
+                "display_name": "30 Extra Invites",
+                "id": "prod99a5b258c0",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.extra_invites_30",
+                "subscription": null,
+                "type": "one_time"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914301422,
+                "display_name": "30 Extra Invites",
+                "id": "prodc5a2d9b96c",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.extra_invites_30",
+                "subscription": null,
+                "type": "consumable"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914331198,
+          "display_name": "extra_invites_500",
+          "id": "pkge6b82992189",
+          "lookup_key": "extra_invites_500",
+          "object": "package",
+          "position": 19,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914293500,
+                "display_name": "500 Extra Invites",
+                "id": "prod33b794c31f",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.extra_invites_500",
+                "subscription": null,
+                "type": "consumable"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914303899,
+                "display_name": "500 Extra Invites",
+                "id": "prod99e89956e3",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.extra_invites_500",
+                "subscription": null,
+                "type": "one_time"
+              }
+            }
+          ]
+        },
+        {
+          "created_at": 1786914336110,
+          "display_name": "extra_invites_75",
+          "id": "pkge2f21b6cbb7",
+          "lookup_key": "extra_invites_75",
+          "object": "package",
+          "position": 20,
+          "products": [
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "app63720480d5",
+                "created_at": 1786914305131,
+                "display_name": "75 Extra Invites",
+                "id": "prodbb378b7959",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.extra_invites_75",
+                "subscription": null,
+                "type": "consumable"
+              }
+            },
+            {
+              "eligibility_criteria": "all",
+              "product": {
+                "app_id": "appc8bcc56e96",
+                "created_at": 1786914308646,
+                "display_name": "75 Extra Invites",
+                "id": "prodfcf96c3bb0",
+                "object": "product",
+                "one_time": {
+                  "is_consumable": true
+                },
+                "state": "active",
+                "store_identifier": "com.halaa.extra_invites_75",
+                "subscription": null,
+                "type": "one_time"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "webhooks": []
+}

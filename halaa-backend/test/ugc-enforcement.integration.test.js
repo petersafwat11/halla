@@ -17,7 +17,9 @@ const db = require("./helpers/memoryDb");
 const moderationService = require("../src/modules/moderation/moderation.service");
 const { requireUserUgcTerms } = require("../src/modules/moderation/requireUgcTerms");
 const vendorsService = require("../src/modules/vendors/vendors.service");
+const servicesService = require("../src/modules/services/services.service");
 const User = require("../models/UserModel");
+const Service = require("../models/ServiceModel");
 const TermsAcceptance = require("../models/TermsAcceptanceModel");
 const { POLICY_VERSIONS } = require("../src/shared/constants/policies");
 const { USER_STATUS } = require("../src/shared/constants/status");
@@ -81,6 +83,46 @@ test("getBlockedKeySet returns the viewer's blocked actor keys for read filterin
   // Anonymous viewer → empty set (nothing filtered).
   const anon = await moderationService.getBlockedKeySet(null, null);
   assert.equal(anon.size, 0);
+});
+
+test("blocked vendors and their services are excluded from marketplace reads", async () => {
+  const viewer = await User.create({
+    name: "Viewer", email: "viewer@e.com", password: "password123",
+    role: "host", accountType: "personal",
+  });
+  const vendor = await User.create({
+    name: "Blocked Vendor", email: "blocked-vendor@e.com", password: "password123",
+    role: "vendor", status: USER_STATUS.ACTIVE,
+    profile: { vendorData: { brandName: "Blocked Studio", vendorStatus: "approved", profileCompleted: true } },
+  });
+  const service = await Service.create({
+    vendorId: vendor._id,
+    name: "Blocked service",
+    description: "Should be hidden",
+    category: "eventPlanning",
+    price: 100,
+    status: "active",
+    isPublic: true,
+  });
+
+  await moderationService.block("user", viewer._id, {
+    blockedActorType: "user",
+    blockedActorId: vendor._id,
+  });
+
+  const vendors = await vendorsService.getPublicVendors({}, { viewerId: viewer._id });
+  assert.ok(!vendors.data.some((item) => String(item.id) === String(vendor._id)));
+  await assert.rejects(
+    () => vendorsService.getPublicVendorById(String(vendor._id), { viewerId: viewer._id }),
+    (err) => err.statusCode === 404
+  );
+
+  const services = await servicesService.getPublicServices({}, { viewerId: viewer._id });
+  assert.ok(!services.data.some((item) => String(item._id || item.id) === String(service._id)));
+  await assert.rejects(
+    () => servicesService.getServiceById(String(service._id), null, false, viewer._id),
+    (err) => err.statusCode === 404
+  );
 });
 
 test("suspension: a suspended vendor is excluded from the public vendor read", async () => {

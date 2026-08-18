@@ -1,0 +1,2145 @@
+{
+  "schemaVersion": 1,
+  "mode": "DRY_RUN",
+  "externalWrites": 0,
+  "provider": "apple",
+  "stage": "prices",
+  "source": {
+    "catalogVersion": "1.0.0",
+    "catalogHash": "7410b2c6f950400ddfe62d0d2ba9e50caee361ca0594e5b6505b89e5050c0071",
+    "manifestSha256": "ba74c791a3ad103dd4950de88b6b40673af38bb7882add2e5ca25f4fd3faded7"
+  },
+  "actualStateBasis": "READ_ONLY_EXPORT",
+  "actualStateHash": "390151e8a969b6715055289ca5a1d9d7796d1b5629bb0bc62ae53795429f8bb9",
+  "blockers": [],
+  "conflicts": [],
+  "operations": [
+    {
+      "id": "fd6fe6558850cfcb58daad26",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.basic_event_100",
+      "payload": {
+        "code": "basic_event_100",
+        "productId": "com.halaa.basic_event_100",
+        "type": "CONSUMABLE",
+        "referenceName": "Halaa Basic 100 Invites",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بيسك 100 دعوة",
+            "description": "باقة بيسك لمرة واحدة تشمل 100 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Basic 100 Invites",
+            "description": "One-time Basic package: 100 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 350
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNjkzMyIsInQiOiJTQVUiLCJwIjoiMTA0NTEifQ",
+        "entitlement": null,
+        "appleResourceId": "6802006933"
+      }
+    },
+    {
+      "id": "cbafdde463b5a9a14e250609",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.basic_event_150",
+      "payload": {
+        "code": "basic_event_150",
+        "productId": "com.halaa.basic_event_150",
+        "type": "CONSUMABLE",
+        "referenceName": "Halaa Basic 150 Invites",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بيسك 150 دعوة",
+            "description": "باقة بيسك لمرة واحدة تشمل 150 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Basic 150 Invites",
+            "description": "One-time Basic package: 150 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 525
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzE1MSIsInQiOiJTQVUiLCJwIjoiMTA1MDYifQ",
+        "entitlement": null,
+        "appleResourceId": "6802007151"
+      }
+    },
+    {
+      "id": "c21bd2ef08bb40c5b29507e6",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.basic_event_200",
+      "payload": {
+        "code": "basic_event_200",
+        "productId": "com.halaa.basic_event_200",
+        "type": "CONSUMABLE",
+        "referenceName": "Halaa Basic 200 Invites",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بيسك 200 دعوة",
+            "description": "باقة بيسك لمرة واحدة تشمل 200 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Basic 200 Invites",
+            "description": "One-time Basic package: 200 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 700
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzA4OSIsInQiOiJTQVUiLCJwIjoiMTA1NDcifQ",
+        "entitlement": null,
+        "appleResourceId": "6802007089"
+      }
+    },
+    {
+      "id": "2cf860181757d0344acb1fe6",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.basic_event_25",
+      "payload": {
+        "code": "basic_event_25",
+        "productId": "com.halaa.basic_event_25",
+        "type": "CONSUMABLE",
+        "referenceName": "Halaa Basic 25 Invites",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بيسك 25 دعوة",
+            "description": "باقة بيسك لمرة واحدة تشمل 25 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Basic 25 Invites",
+            "description": "One-time Basic package: 25 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 95
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzEyNyIsInQiOiJTQVUiLCJwIjoiMTAyNzcifQ",
+        "entitlement": null,
+        "appleResourceId": "6802007127"
+      }
+    },
+    {
+      "id": "8ad9f6348715b6e7c2e2f41a",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.basic_event_50",
+      "payload": {
+        "code": "basic_event_50",
+        "productId": "com.halaa.basic_event_50",
+        "type": "CONSUMABLE",
+        "referenceName": "Halaa Basic 50 Invites",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بيسك 50 دعوة",
+            "description": "باقة بيسك لمرة واحدة تشمل 50 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Basic 50 Invites",
+            "description": "One-time Basic package: 50 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 185
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNjkwMiIsInQiOiJTQVUiLCJwIjoiMTAzODMifQ",
+        "entitlement": null,
+        "appleResourceId": "6802006902"
+      }
+    },
+    {
+      "id": "fad1d44c342ab6b2987c6907",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.basic_event_75",
+      "payload": {
+        "code": "basic_event_75",
+        "productId": "com.halaa.basic_event_75",
+        "type": "CONSUMABLE",
+        "referenceName": "Halaa Basic 75 Invites",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بيسك 75 دعوة",
+            "description": "باقة بيسك لمرة واحدة تشمل 75 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Basic 75 Invites",
+            "description": "One-time Basic package: 75 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 270
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzE1NCIsInQiOiJTQVUiLCJwIjoiMTA0MjQifQ",
+        "entitlement": null,
+        "appleResourceId": "6802007154"
+      }
+    },
+    {
+      "id": "7ca541f563771ebce33cc21e",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_subscription_price",
+      "key": "com.halaa.basic_monthly_100",
+      "payload": {
+        "code": "basic_monthly_100",
+        "productId": "com.halaa.basic_monthly_100",
+        "type": "AUTO_RENEWABLE_SUBSCRIPTION",
+        "referenceName": "Halaa Basic Monthly 100 Invites",
+        "duration": "P1M",
+        "subscriptionGroupReferenceName": "halaa_recurring",
+        "subscriptionLevel": 10,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بيسك 100 — شهري",
+            "description": "اشتراك بيسك شهري يشمل 100 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Basic 100 Monthly",
+            "description": "Monthly Basic plan: 100 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 450
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNjg3MyIsInQiOiJTQVUiLCJwIjoiMTA0ODQifQ",
+        "entitlement": "recurring_access",
+        "appleResourceId": "6802006873"
+      }
+    },
+    {
+      "id": "1872708602f57ceb61de012d",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_subscription_price",
+      "key": "com.halaa.basic_monthly_150",
+      "payload": {
+        "code": "basic_monthly_150",
+        "productId": "com.halaa.basic_monthly_150",
+        "type": "AUTO_RENEWABLE_SUBSCRIPTION",
+        "referenceName": "Halaa Basic Monthly 150 Invites",
+        "duration": "P1M",
+        "subscriptionGroupReferenceName": "halaa_recurring",
+        "subscriptionLevel": 9,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بيسك 150 — شهري",
+            "description": "اشتراك بيسك شهري يشمل 150 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Basic 150 Monthly",
+            "description": "Monthly Basic plan: 150 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 675
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzA5MSIsInQiOiJTQVUiLCJwIjoiMTA1NDAifQ",
+        "entitlement": "recurring_access",
+        "appleResourceId": "6802007091"
+      }
+    },
+    {
+      "id": "6ffa5d2a6f37c1f0c068551a",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_subscription_price",
+      "key": "com.halaa.basic_monthly_200",
+      "payload": {
+        "code": "basic_monthly_200",
+        "productId": "com.halaa.basic_monthly_200",
+        "type": "AUTO_RENEWABLE_SUBSCRIPTION",
+        "referenceName": "Halaa Basic Monthly 200 Invites",
+        "duration": "P1M",
+        "subscriptionGroupReferenceName": "halaa_recurring",
+        "subscriptionLevel": 8,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بيسك 200 — شهري",
+            "description": "اشتراك بيسك شهري يشمل 200 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Basic 200 Monthly",
+            "description": "Monthly Basic plan: 200 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 900
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzEzMCIsInQiOiJTQVUiLCJwIjoiMTA1OTMifQ",
+        "entitlement": "recurring_access",
+        "appleResourceId": "6802007130"
+      }
+    },
+    {
+      "id": "21370c338e4add681b32807e",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_subscription_price",
+      "key": "com.halaa.basic_monthly_25",
+      "payload": {
+        "code": "basic_monthly_25",
+        "productId": "com.halaa.basic_monthly_25",
+        "type": "AUTO_RENEWABLE_SUBSCRIPTION",
+        "referenceName": "Halaa Basic Monthly 25 Invites",
+        "duration": "P1M",
+        "subscriptionGroupReferenceName": "halaa_recurring",
+        "subscriptionLevel": 13,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بيسك 25 — شهري",
+            "description": "اشتراك بيسك شهري يشمل 25 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Basic 25 Monthly",
+            "description": "Monthly Basic plan: 25 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 125
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzAyMCIsInQiOiJTQVUiLCJwIjoiMTAzMTYifQ",
+        "entitlement": "recurring_access",
+        "appleResourceId": "6802007020"
+      }
+    },
+    {
+      "id": "b605d9531197ba1885d4fe01",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_subscription_price",
+      "key": "com.halaa.basic_monthly_50",
+      "payload": {
+        "code": "basic_monthly_50",
+        "productId": "com.halaa.basic_monthly_50",
+        "type": "AUTO_RENEWABLE_SUBSCRIPTION",
+        "referenceName": "Halaa Basic Monthly 50 Invites",
+        "duration": "P1M",
+        "subscriptionGroupReferenceName": "halaa_recurring",
+        "subscriptionLevel": 12,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بيسك 50 — شهري",
+            "description": "اشتراك بيسك شهري يشمل 50 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Basic 50 Monthly",
+            "description": "Monthly Basic plan: 50 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 240
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNjg3NCIsInQiOiJTQVUiLCJwIjoiMTA0MTQifQ",
+        "entitlement": "recurring_access",
+        "appleResourceId": "6802006874"
+      }
+    },
+    {
+      "id": "ff32bb0605b1f6b2ecf62241",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_subscription_price",
+      "key": "com.halaa.basic_monthly_75",
+      "payload": {
+        "code": "basic_monthly_75",
+        "productId": "com.halaa.basic_monthly_75",
+        "type": "AUTO_RENEWABLE_SUBSCRIPTION",
+        "referenceName": "Halaa Basic Monthly 75 Invites",
+        "duration": "P1M",
+        "subscriptionGroupReferenceName": "halaa_recurring",
+        "subscriptionLevel": 11,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بيسك 75 — شهري",
+            "description": "اشتراك بيسك شهري يشمل 75 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Basic 75 Monthly",
+            "description": "Monthly Basic plan: 75 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 350
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzIxMSIsInQiOiJTQVUiLCJwIjoiMTA0NTEifQ",
+        "entitlement": "recurring_access",
+        "appleResourceId": "6802007211"
+      }
+    },
+    {
+      "id": "3b61d4c4d54700232c395fdb",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.business_customization",
+      "payload": {
+        "code": "business_customization",
+        "productId": "com.halaa.business_customization",
+        "type": "CONSUMABLE",
+        "referenceName": "Business Branding Customization",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "تخصيص هوية العلامة",
+            "description": "صفحة مخصصة وأربعة قوالب واتساب",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Business Brand Customization",
+            "description": "Custom page and four WhatsApp templates",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 2500
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNjg5NCIsInQiOiJTQVUiLCJwIjoiMTA3NDUifQ",
+        "entitlement": null,
+        "appleResourceId": "6802006894"
+      }
+    },
+    {
+      "id": "2d5b93fe1474e66560dc4481",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.business_event_100",
+      "payload": {
+        "code": "business_event_100",
+        "productId": "com.halaa.business_event_100",
+        "type": "CONSUMABLE",
+        "referenceName": "Halaa Business 100 Invites",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا أعمال 100 دعوة",
+            "description": "باقة أعمال لمرة واحدة تشمل 100 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Business 100 Invites",
+            "description": "One-time Business package: 100 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 370
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzIzNyIsInQiOiJTQVUiLCJwIjoiMTA0NTcifQ",
+        "entitlement": null,
+        "appleResourceId": "6802007237"
+      }
+    },
+    {
+      "id": "1c316da876632720d173974b",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.business_event_150",
+      "payload": {
+        "code": "business_event_150",
+        "productId": "com.halaa.business_event_150",
+        "type": "CONSUMABLE",
+        "referenceName": "Halaa Business 150 Invites",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا أعمال 150 دعوة",
+            "description": "باقة أعمال لمرة واحدة تشمل 150 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Business 150 Invites",
+            "description": "One-time Business package: 150 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 540
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzIxMCIsInQiOiJTQVUiLCJwIjoiMTA1MDkifQ",
+        "entitlement": null,
+        "appleResourceId": "6802007210"
+      }
+    },
+    {
+      "id": "a69e2568689e3ddbcaebc9bd",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.business_event_200",
+      "payload": {
+        "code": "business_event_200",
+        "productId": "com.halaa.business_event_200",
+        "type": "CONSUMABLE",
+        "referenceName": "Halaa Business 200 Invites",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا أعمال 200 دعوة",
+            "description": "باقة أعمال لمرة واحدة تشمل 200 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Business 200 Invites",
+            "description": "One-time Business package: 200 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 700
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNjg2OCIsInQiOiJTQVUiLCJwIjoiMTA1NDcifQ",
+        "entitlement": null,
+        "appleResourceId": "6802006868"
+      }
+    },
+    {
+      "id": "72990a2825f28ba3ffc6bdb3",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.business_event_25",
+      "payload": {
+        "code": "business_event_25",
+        "productId": "com.halaa.business_event_25",
+        "type": "CONSUMABLE",
+        "referenceName": "Halaa Business 25 Invites",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا أعمال 25 دعوة",
+            "description": "باقة أعمال لمرة واحدة تشمل 25 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Business 25 Invites",
+            "description": "One-time Business package: 25 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 100
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNjg5NiIsInQiOiJTQVUiLCJwIjoiMTAyODkifQ",
+        "entitlement": null,
+        "appleResourceId": "6802006896"
+      }
+    },
+    {
+      "id": "9d20e1b7b8b7f5daf1274972",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.business_event_50",
+      "payload": {
+        "code": "business_event_50",
+        "productId": "com.halaa.business_event_50",
+        "type": "CONSUMABLE",
+        "referenceName": "Halaa Business 50 Invites",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا أعمال 50 دعوة",
+            "description": "باقة أعمال لمرة واحدة تشمل 50 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Business 50 Invites",
+            "description": "One-time Business package: 50 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 195
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzE1MiIsInQiOiJTQVUiLCJwIjoiMTAzOTUifQ",
+        "entitlement": null,
+        "appleResourceId": "6802007152"
+      }
+    },
+    {
+      "id": "cbf8c3da8e938cfbdc909b33",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.business_event_75",
+      "payload": {
+        "code": "business_event_75",
+        "productId": "com.halaa.business_event_75",
+        "type": "CONSUMABLE",
+        "referenceName": "Halaa Business 75 Invites",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا أعمال 75 دعوة",
+            "description": "باقة أعمال لمرة واحدة تشمل 75 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Business 75 Invites",
+            "description": "One-time Business package: 75 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 285
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzA1NSIsInQiOiJTQVUiLCJwIjoiMTA0MjgifQ",
+        "entitlement": null,
+        "appleResourceId": "6802007055"
+      }
+    },
+    {
+      "id": "d55cb2011d8ae69fa877f3f0",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_subscription_price",
+      "key": "com.halaa.business_quarterly",
+      "payload": {
+        "code": "business_quarterly",
+        "productId": "com.halaa.business_quarterly",
+        "type": "AUTO_RENEWABLE_SUBSCRIPTION",
+        "referenceName": "Halaa Business — 3-Month Subscription",
+        "duration": "P3M",
+        "subscriptionGroupReferenceName": "halaa_recurring",
+        "subscriptionLevel": 1,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا أعمال — 3 أشهر",
+            "description": "اشتراك أعمال لمدة 3 أشهر",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Business 3 Months",
+            "description": "Business subscription billed every 3 months",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 3000
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzE0OSIsInQiOiJTQVUiLCJwIjoiMTA3NjIifQ",
+        "entitlement": "recurring_access",
+        "appleResourceId": "6802007149"
+      }
+    },
+    {
+      "id": "408ac1361d077f89aee2e8cb",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.design_template_3d",
+      "payload": {
+        "code": "design_template_3d",
+        "productId": "com.halaa.design_template_3d",
+        "type": "CONSUMABLE",
+        "referenceName": "3D invitation design",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "تصميم دعوة ثلاثية الأبعاد",
+            "description": "تصميم دعوة مخصص ثلاثي الأبعاد",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "3D Invitation Design",
+            "description": "Custom three-dimensional invitation design",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 500
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzA3MSIsInQiOiJTQVUiLCJwIjoiMTA1MDEifQ",
+        "entitlement": null,
+        "appleResourceId": "6802007071"
+      }
+    },
+    {
+      "id": "77e868cc647afabe4fe573d0",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.design_template_animated",
+      "payload": {
+        "code": "design_template_animated",
+        "productId": "com.halaa.design_template_animated",
+        "type": "CONSUMABLE",
+        "referenceName": "Animated background design",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "تصميم دعوة متحركة",
+            "description": "تصميم دعوة بخلفيات متحركة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Animated Invitation Design",
+            "description": "Invitation design with animated backgrounds",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 350
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzE1NyIsInQiOiJTQVUiLCJwIjoiMTA0NTEifQ",
+        "entitlement": null,
+        "appleResourceId": "6802007157"
+      }
+    },
+    {
+      "id": "34b64517cbc1f5846aeb68b4",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.design_template_custom_male",
+      "payload": {
+        "code": "design_template_custom_male",
+        "productId": "com.halaa.design_template_custom_male",
+        "type": "CONSUMABLE",
+        "referenceName": "Custom male design",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "تصميم دعوة رجالية مخصصة",
+            "description": "تصميم مخصص لدعوات الرجال",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Custom Men's Invitation",
+            "description": "Custom invitation design for men",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 200
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzAyNCIsInQiOiJTQVUiLCJwIjoiMTA0MDIifQ",
+        "entitlement": null,
+        "appleResourceId": "6802007024"
+      }
+    },
+    {
+      "id": "661a2ccdde296e397a3beaca",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.design_template_custom_themed",
+      "payload": {
+        "code": "design_template_custom_themed",
+        "productId": "com.halaa.design_template_custom_themed",
+        "type": "CONSUMABLE",
+        "referenceName": "Themed custom design",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "تصميم دعوة حسب الثيم",
+            "description": "تصميم دعوة مخصص حسب ثيم المناسبة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Custom Themed Invitation",
+            "description": "Custom invitation matching your event theme",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 275
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzEzNiIsInQiOiJTQVUiLCJwIjoiMTA0MjUifQ",
+        "entitlement": null,
+        "appleResourceId": "6802007136"
+      }
+    },
+    {
+      "id": "c3e7fced3852e615b298a4c2",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.design_template_ready_made",
+      "payload": {
+        "code": "design_template_ready_made",
+        "productId": "com.halaa.design_template_ready_made",
+        "type": "CONSUMABLE",
+        "referenceName": "Ready-made design (male/female)",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "تصميم دعوة جاهزة",
+            "description": "تصميم جاهز لدعوات الرجال أو النساء",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Ready-made Invitation Design",
+            "description": "Ready-made design for men or women",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 200
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzAxOSIsInQiOiJTQVUiLCJwIjoiMTA0MDIifQ",
+        "entitlement": null,
+        "appleResourceId": "6802007019"
+      }
+    },
+    {
+      "id": "a6293efd1a6ee36737abaa9e",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.extra_invites_10",
+      "payload": {
+        "code": "extra_invites_10",
+        "productId": "com.halaa.extra_invites_10",
+        "type": "CONSUMABLE",
+        "referenceName": "10 Extra Invites",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "10 دعوة إضافية",
+            "description": "إضافة 10 دعوة إلى رصيدك",
+            "descriptionSource": "catalog"
+          },
+          {
+            "locale": "en-US",
+            "name": "10 Extra Invites",
+            "description": "Add 10 invitations to your balance",
+            "descriptionSource": "catalog"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 40
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzA1MyIsInQiOiJTQVUiLCJwIjoiMTAxMzUifQ",
+        "entitlement": null,
+        "appleResourceId": "6802007053"
+      }
+    },
+    {
+      "id": "83a2f99d86a1a2d53e5a9eae",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.extra_invites_100",
+      "payload": {
+        "code": "extra_invites_100",
+        "productId": "com.halaa.extra_invites_100",
+        "type": "CONSUMABLE",
+        "referenceName": "100 Extra Invites",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "100 دعوة إضافية",
+            "description": "إضافة 100 دعوة إلى رصيدك",
+            "descriptionSource": "catalog"
+          },
+          {
+            "locale": "en-US",
+            "name": "100 Extra Invites",
+            "description": "Add 100 invitations to your balance",
+            "descriptionSource": "catalog"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 400
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzE1MyIsInQiOiJTQVUiLCJwIjoiMTA0NjgifQ",
+        "entitlement": null,
+        "appleResourceId": "6802007153"
+      }
+    },
+    {
+      "id": "4d360ea0a0035e34d3704ef4",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.extra_invites_125",
+      "payload": {
+        "code": "extra_invites_125",
+        "productId": "com.halaa.extra_invites_125",
+        "type": "CONSUMABLE",
+        "referenceName": "125 Extra Invites",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "125 دعوة إضافية",
+            "description": "إضافة 125 دعوة إلى رصيدك",
+            "descriptionSource": "catalog"
+          },
+          {
+            "locale": "en-US",
+            "name": "125 Extra Invites",
+            "description": "Add 125 invitations to your balance",
+            "descriptionSource": "catalog"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 500
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzIxMyIsInQiOiJTQVUiLCJwIjoiMTA1MDEifQ",
+        "entitlement": null,
+        "appleResourceId": "6802007213"
+      }
+    },
+    {
+      "id": "e6aee01f460279ebaff3e9b6",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.extra_invites_150",
+      "payload": {
+        "code": "extra_invites_150",
+        "productId": "com.halaa.extra_invites_150",
+        "type": "CONSUMABLE",
+        "referenceName": "150 Extra Invites",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "150 دعوة إضافية",
+            "description": "إضافة 150 دعوة إلى رصيدك",
+            "descriptionSource": "catalog"
+          },
+          {
+            "locale": "en-US",
+            "name": "150 Extra Invites",
+            "description": "Add 150 invitations to your balance",
+            "descriptionSource": "catalog"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 600
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzIxMiIsInQiOiJTQVUiLCJwIjoiMTA1MjQifQ",
+        "entitlement": null,
+        "appleResourceId": "6802007212"
+      }
+    },
+    {
+      "id": "aea361c91d36becff6fe646e",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.extra_invites_20",
+      "payload": {
+        "code": "extra_invites_20",
+        "productId": "com.halaa.extra_invites_20",
+        "type": "CONSUMABLE",
+        "referenceName": "20 Extra Invites",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "20 دعوة إضافية",
+            "description": "إضافة 20 دعوة إلى رصيدك",
+            "descriptionSource": "catalog"
+          },
+          {
+            "locale": "en-US",
+            "name": "20 Extra Invites",
+            "description": "Add 20 invitations to your balance",
+            "descriptionSource": "catalog"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 80
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzAxNiIsInQiOiJTQVUiLCJwIjoiMTAyNDEifQ",
+        "entitlement": null,
+        "appleResourceId": "6802007016"
+      }
+    },
+    {
+      "id": "9398280e01554225b2582b6f",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.extra_invites_200",
+      "payload": {
+        "code": "extra_invites_200",
+        "productId": "com.halaa.extra_invites_200",
+        "type": "CONSUMABLE",
+        "referenceName": "200 Extra Invites",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "200 دعوة إضافية",
+            "description": "إضافة 200 دعوة إلى رصيدك",
+            "descriptionSource": "catalog"
+          },
+          {
+            "locale": "en-US",
+            "name": "200 Extra Invites",
+            "description": "Add 200 invitations to your balance",
+            "descriptionSource": "catalog"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 800
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzA0NCIsInQiOiJTQVUiLCJwIjoiMTA1NzAifQ",
+        "entitlement": null,
+        "appleResourceId": "6802007044"
+      }
+    },
+    {
+      "id": "8760cc6bea7b39b6711e5944",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.extra_invites_250",
+      "payload": {
+        "code": "extra_invites_250",
+        "productId": "com.halaa.extra_invites_250",
+        "type": "CONSUMABLE",
+        "referenceName": "250 Extra Invites",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "250 دعوة إضافية",
+            "description": "إضافة 250 دعوة إلى رصيدك",
+            "descriptionSource": "catalog"
+          },
+          {
+            "locale": "en-US",
+            "name": "250 Extra Invites",
+            "description": "Add 250 invitations to your balance",
+            "descriptionSource": "catalog"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 1000
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzAyMSIsInQiOiJTQVUiLCJwIjoiMTA2MTYifQ",
+        "entitlement": null,
+        "appleResourceId": "6802007021"
+      }
+    },
+    {
+      "id": "2c4d8dd5f622a392ac656b80",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.extra_invites_30",
+      "payload": {
+        "code": "extra_invites_30",
+        "productId": "com.halaa.extra_invites_30",
+        "type": "CONSUMABLE",
+        "referenceName": "30 Extra Invites",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "30 دعوة إضافية",
+            "description": "إضافة 30 دعوة إلى رصيدك",
+            "descriptionSource": "catalog"
+          },
+          {
+            "locale": "en-US",
+            "name": "30 Extra Invites",
+            "description": "Add 30 invitations to your balance",
+            "descriptionSource": "catalog"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 120
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzA1MCIsInQiOiJTQVUiLCJwIjoiMTAzMTEifQ",
+        "entitlement": null,
+        "appleResourceId": "6802007050"
+      }
+    },
+    {
+      "id": "0d99e2acbb9cfd68b14221a3",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.extra_invites_300",
+      "payload": {
+        "code": "extra_invites_300",
+        "productId": "com.halaa.extra_invites_300",
+        "type": "CONSUMABLE",
+        "referenceName": "300 Extra Invites",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "300 دعوة إضافية",
+            "description": "إضافة 300 دعوة إلى رصيدك",
+            "descriptionSource": "catalog"
+          },
+          {
+            "locale": "en-US",
+            "name": "300 Extra Invites",
+            "description": "Add 300 invitations to your balance",
+            "descriptionSource": "catalog"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 1200
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzEzOSIsInQiOiJTQVUiLCJwIjoiMTA2MzgifQ",
+        "entitlement": null,
+        "appleResourceId": "6802007139"
+      }
+    },
+    {
+      "id": "5e6cd943e2a1e5c85bb5670e",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.extra_invites_350",
+      "payload": {
+        "code": "extra_invites_350",
+        "productId": "com.halaa.extra_invites_350",
+        "type": "CONSUMABLE",
+        "referenceName": "350 Extra Invites",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "350 دعوة إضافية",
+            "description": "إضافة 350 دعوة إلى رصيدك",
+            "descriptionSource": "catalog"
+          },
+          {
+            "locale": "en-US",
+            "name": "350 Extra Invites",
+            "description": "Add 350 invitations to your balance",
+            "descriptionSource": "catalog"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 1400
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzA0NyIsInQiOiJTQVUiLCJwIjoiMTA2NjAifQ",
+        "entitlement": null,
+        "appleResourceId": "6802007047"
+      }
+    },
+    {
+      "id": "9121ecd487bfc60eef444ef1",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.extra_invites_40",
+      "payload": {
+        "code": "extra_invites_40",
+        "productId": "com.halaa.extra_invites_40",
+        "type": "CONSUMABLE",
+        "referenceName": "40 Extra Invites",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "40 دعوة إضافية",
+            "description": "إضافة 40 دعوة إلى رصيدك",
+            "descriptionSource": "catalog"
+          },
+          {
+            "locale": "en-US",
+            "name": "40 Extra Invites",
+            "description": "Add 40 invitations to your balance",
+            "descriptionSource": "catalog"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 160
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzE5MiIsInQiOiJTQVUiLCJwIjoiMTAzNTYifQ",
+        "entitlement": null,
+        "appleResourceId": "6802007192"
+      }
+    },
+    {
+      "id": "4c2c5b9cff43938c5ec51f34",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.extra_invites_400",
+      "payload": {
+        "code": "extra_invites_400",
+        "productId": "com.halaa.extra_invites_400",
+        "type": "CONSUMABLE",
+        "referenceName": "400 Extra Invites",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "400 دعوة إضافية",
+            "description": "إضافة 400 دعوة إلى رصيدك",
+            "descriptionSource": "catalog"
+          },
+          {
+            "locale": "en-US",
+            "name": "400 Extra Invites",
+            "description": "Add 400 invitations to your balance",
+            "descriptionSource": "catalog"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 1600
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzIxNCIsInQiOiJTQVUiLCJwIjoiMTA2ODMifQ",
+        "entitlement": null,
+        "appleResourceId": "6802007214"
+      }
+    },
+    {
+      "id": "39cafa0aa5d43cc166b2eb19",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.extra_invites_450",
+      "payload": {
+        "code": "extra_invites_450",
+        "productId": "com.halaa.extra_invites_450",
+        "type": "CONSUMABLE",
+        "referenceName": "450 Extra Invites",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "450 دعوة إضافية",
+            "description": "إضافة 450 دعوة إلى رصيدك",
+            "descriptionSource": "catalog"
+          },
+          {
+            "locale": "en-US",
+            "name": "450 Extra Invites",
+            "description": "Add 450 invitations to your balance",
+            "descriptionSource": "catalog"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 1800
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNjg5NSIsInQiOiJTQVUiLCJwIjoiMTA3MDUifQ",
+        "entitlement": null,
+        "appleResourceId": "6802006895"
+      }
+    },
+    {
+      "id": "a56be258dd23001f89b311a5",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.extra_invites_50",
+      "payload": {
+        "code": "extra_invites_50",
+        "productId": "com.halaa.extra_invites_50",
+        "type": "CONSUMABLE",
+        "referenceName": "50 Extra Invites",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "50 دعوة إضافية",
+            "description": "إضافة 50 دعوة إلى رصيدك",
+            "descriptionSource": "catalog"
+          },
+          {
+            "locale": "en-US",
+            "name": "50 Extra Invites",
+            "description": "Add 50 invitations to your balance",
+            "descriptionSource": "catalog"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 200
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzA1NiIsInQiOiJTQVUiLCJwIjoiMTA0MDIifQ",
+        "entitlement": null,
+        "appleResourceId": "6802007056"
+      }
+    },
+    {
+      "id": "a282f894c74b0b13f12d0da7",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.extra_invites_500",
+      "payload": {
+        "code": "extra_invites_500",
+        "productId": "com.halaa.extra_invites_500",
+        "type": "CONSUMABLE",
+        "referenceName": "500 Extra Invites",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "500 دعوة إضافية",
+            "description": "إضافة 500 دعوة إلى رصيدك",
+            "descriptionSource": "catalog"
+          },
+          {
+            "locale": "en-US",
+            "name": "500 Extra Invites",
+            "description": "Add 500 invitations to your balance",
+            "descriptionSource": "catalog"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 2000
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzEyMyIsInQiOiJTQVUiLCJwIjoiMTA3MjkifQ",
+        "entitlement": null,
+        "appleResourceId": "6802007123"
+      }
+    },
+    {
+      "id": "657ae39d22f09db7283b19d7",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.extra_invites_75",
+      "payload": {
+        "code": "extra_invites_75",
+        "productId": "com.halaa.extra_invites_75",
+        "type": "CONSUMABLE",
+        "referenceName": "75 Extra Invites",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "75 دعوة إضافية",
+            "description": "إضافة 75 دعوة إلى رصيدك",
+            "descriptionSource": "catalog"
+          },
+          {
+            "locale": "en-US",
+            "name": "75 Extra Invites",
+            "description": "Add 75 invitations to your balance",
+            "descriptionSource": "catalog"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 300
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzE4NiIsInQiOiJTQVUiLCJwIjoiMTA0MzUifQ",
+        "entitlement": null,
+        "appleResourceId": "6802007186"
+      }
+    },
+    {
+      "id": "05551bca92b9c44068dabc53",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.premium_event_100",
+      "payload": {
+        "code": "premium_event_100",
+        "productId": "com.halaa.premium_event_100",
+        "type": "CONSUMABLE",
+        "referenceName": "Halaa Premium 100 Invites",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بريميوم 100 دعوة",
+            "description": "باقة بريميوم لمرة واحدة تشمل 100 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Premium 100 Invites",
+            "description": "One-time Premium package: 100 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 450
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzAxOCIsInQiOiJTQVUiLCJwIjoiMTA0ODQifQ",
+        "entitlement": null,
+        "appleResourceId": "6802007018"
+      }
+    },
+    {
+      "id": "a4e5f4c726b62eeb2ff665ce",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.premium_event_150",
+      "payload": {
+        "code": "premium_event_150",
+        "productId": "com.halaa.premium_event_150",
+        "type": "CONSUMABLE",
+        "referenceName": "Halaa Premium 150 Invites",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بريميوم 150 دعوة",
+            "description": "باقة بريميوم لمرة واحدة تشمل 150 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Premium 150 Invites",
+            "description": "One-time Premium package: 150 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 675
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzEwMCIsInQiOiJTQVUiLCJwIjoiMTA1NDAifQ",
+        "entitlement": null,
+        "appleResourceId": "6802007100"
+      }
+    },
+    {
+      "id": "644fd9c42223704958cb3812",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.premium_event_200",
+      "payload": {
+        "code": "premium_event_200",
+        "productId": "com.halaa.premium_event_200",
+        "type": "CONSUMABLE",
+        "referenceName": "Halaa Premium 200 Invites",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بريميوم 200 دعوة",
+            "description": "باقة بريميوم لمرة واحدة تشمل 200 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Premium 200 Invites",
+            "description": "One-time Premium package: 200 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 900
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzE4MiIsInQiOiJTQVUiLCJwIjoiMTA1OTMifQ",
+        "entitlement": null,
+        "appleResourceId": "6802007182"
+      }
+    },
+    {
+      "id": "b7620dc4567825c1d29d27f1",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.premium_event_25",
+      "payload": {
+        "code": "premium_event_25",
+        "productId": "com.halaa.premium_event_25",
+        "type": "CONSUMABLE",
+        "referenceName": "Halaa Premium 25 Invites",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بريميوم 25 دعوة",
+            "description": "باقة بريميوم لمرة واحدة تشمل 25 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Premium 25 Invites",
+            "description": "One-time Premium package: 25 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 120
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzEwMiIsInQiOiJTQVUiLCJwIjoiMTAzMTEifQ",
+        "entitlement": null,
+        "appleResourceId": "6802007102"
+      }
+    },
+    {
+      "id": "9509b963dfec36a304f44876",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.premium_event_50",
+      "payload": {
+        "code": "premium_event_50",
+        "productId": "com.halaa.premium_event_50",
+        "type": "CONSUMABLE",
+        "referenceName": "Halaa Premium 50 Invites",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بريميوم 50 دعوة",
+            "description": "باقة بريميوم لمرة واحدة تشمل 50 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Premium 50 Invites",
+            "description": "One-time Premium package: 50 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 235
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzE4NCIsInQiOiJTQVUiLCJwIjoiMTA0MTIifQ",
+        "entitlement": null,
+        "appleResourceId": "6802007184"
+      }
+    },
+    {
+      "id": "b3b769987010b2cf3d7fcd40",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_iap_price",
+      "key": "com.halaa.premium_event_75",
+      "payload": {
+        "code": "premium_event_75",
+        "productId": "com.halaa.premium_event_75",
+        "type": "CONSUMABLE",
+        "referenceName": "Halaa Premium 75 Invites",
+        "duration": null,
+        "subscriptionGroupReferenceName": null,
+        "subscriptionLevel": null,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بريميوم 75 دعوة",
+            "description": "باقة بريميوم لمرة واحدة تشمل 75 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Premium 75 Invites",
+            "description": "One-time Premium package: 75 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 345
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNjg3NSIsInQiOiJTQVUiLCJwIjoiMTA0NDgifQ",
+        "entitlement": null,
+        "appleResourceId": "6802006875"
+      }
+    },
+    {
+      "id": "63c6e28c73ec3deac648c3f4",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_subscription_price",
+      "key": "com.halaa.premium_monthly_100",
+      "payload": {
+        "code": "premium_monthly_100",
+        "productId": "com.halaa.premium_monthly_100",
+        "type": "AUTO_RENEWABLE_SUBSCRIPTION",
+        "referenceName": "Halaa Premium Monthly 100 Invites",
+        "duration": "P1M",
+        "subscriptionGroupReferenceName": "halaa_recurring",
+        "subscriptionLevel": 4,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بريميوم 100 — شهري",
+            "description": "اشتراك بريميوم شهري يشمل 100 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Premium 100 Monthly",
+            "description": "Monthly Premium plan: 100 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 540
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzA5MCIsInQiOiJTQVUiLCJwIjoiMTA1MDkifQ",
+        "entitlement": "recurring_access",
+        "appleResourceId": "6802007090"
+      }
+    },
+    {
+      "id": "2732b80475ad0472703ba42f",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_subscription_price",
+      "key": "com.halaa.premium_monthly_150",
+      "payload": {
+        "code": "premium_monthly_150",
+        "productId": "com.halaa.premium_monthly_150",
+        "type": "AUTO_RENEWABLE_SUBSCRIPTION",
+        "referenceName": "Halaa Premium Monthly 150 Invites",
+        "duration": "P1M",
+        "subscriptionGroupReferenceName": "halaa_recurring",
+        "subscriptionLevel": 3,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بريميوم 150 — شهري",
+            "description": "اشتراك بريميوم شهري يشمل 150 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Premium 150 Monthly",
+            "description": "Monthly Premium plan: 150 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 810
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzAxNyIsInQiOiJTQVUiLCJwIjoiMTA1NzIifQ",
+        "entitlement": "recurring_access",
+        "appleResourceId": "6802007017"
+      }
+    },
+    {
+      "id": "94abd64a237c4f9e3cce48d9",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_subscription_price",
+      "key": "com.halaa.premium_monthly_200",
+      "payload": {
+        "code": "premium_monthly_200",
+        "productId": "com.halaa.premium_monthly_200",
+        "type": "AUTO_RENEWABLE_SUBSCRIPTION",
+        "referenceName": "Halaa Premium Monthly 200 Invites",
+        "duration": "P1M",
+        "subscriptionGroupReferenceName": "halaa_recurring",
+        "subscriptionLevel": 2,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بريميوم 200 — شهري",
+            "description": "اشتراك بريميوم شهري يشمل 200 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Premium 200 Monthly",
+            "description": "Monthly Premium plan: 200 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 1080
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzE0OCIsInQiOiJTQVUiLCJwIjoiMTA2MjQifQ",
+        "entitlement": "recurring_access",
+        "appleResourceId": "6802007148"
+      }
+    },
+    {
+      "id": "ed7a6878d323e279a9eb1600",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_subscription_price",
+      "key": "com.halaa.premium_monthly_25",
+      "payload": {
+        "code": "premium_monthly_25",
+        "productId": "com.halaa.premium_monthly_25",
+        "type": "AUTO_RENEWABLE_SUBSCRIPTION",
+        "referenceName": "Halaa Premium Monthly 25 Invites",
+        "duration": "P1M",
+        "subscriptionGroupReferenceName": "halaa_recurring",
+        "subscriptionLevel": 7,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بريميوم 25 — شهري",
+            "description": "اشتراك بريميوم شهري يشمل 25 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Premium 25 Monthly",
+            "description": "Monthly Premium plan: 25 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 150
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNjg2NiIsInQiOiJTQVUiLCJwIjoiMTAzNDUifQ",
+        "entitlement": "recurring_access",
+        "appleResourceId": "6802006866"
+      }
+    },
+    {
+      "id": "aeab04687d0a649d4c5bc09f",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_subscription_price",
+      "key": "com.halaa.premium_monthly_50",
+      "payload": {
+        "code": "premium_monthly_50",
+        "productId": "com.halaa.premium_monthly_50",
+        "type": "AUTO_RENEWABLE_SUBSCRIPTION",
+        "referenceName": "Halaa Premium Monthly 50 Invites",
+        "duration": "P1M",
+        "subscriptionGroupReferenceName": "halaa_recurring",
+        "subscriptionLevel": 6,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بريميوم 50 — شهري",
+            "description": "اشتراك بريميوم شهري يشمل 50 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Premium 50 Monthly",
+            "description": "Monthly Premium plan: 50 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 285
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNzE0MiIsInQiOiJTQVUiLCJwIjoiMTA0MjgifQ",
+        "entitlement": "recurring_access",
+        "appleResourceId": "6802007142"
+      }
+    },
+    {
+      "id": "73136f5916df577e9e8a10c2",
+      "provider": "apple",
+      "phase": 40,
+      "action": "set_subscription_price",
+      "key": "com.halaa.premium_monthly_75",
+      "payload": {
+        "code": "premium_monthly_75",
+        "productId": "com.halaa.premium_monthly_75",
+        "type": "AUTO_RENEWABLE_SUBSCRIPTION",
+        "referenceName": "Halaa Premium Monthly 75 Invites",
+        "duration": "P1M",
+        "subscriptionGroupReferenceName": "halaa_recurring",
+        "subscriptionLevel": 5,
+        "localizations": [
+          {
+            "locale": "ar-SA",
+            "name": "هلا بريميوم 75 — شهري",
+            "description": "اشتراك بريميوم شهري يشمل 75 دعوة",
+            "descriptionSource": "generated_fallback"
+          },
+          {
+            "locale": "en-US",
+            "name": "Halaa Premium 75 Monthly",
+            "description": "Monthly Premium plan: 75 invitations",
+            "descriptionSource": "generated_fallback"
+          }
+        ],
+        "availability": [
+          "SAU"
+        ],
+        "targetPrice": {
+          "currency": "SAR",
+          "amount": 420
+        },
+        "applePricePointId": "eyJzIjoiNjgwMjAwNjkzMiIsInQiOiJTQVUiLCJwIjoiMTA0NzQifQ",
+        "entitlement": "recurring_access",
+        "appleResourceId": "6802006932"
+      }
+    }
+  ],
+  "deferred": [
+    {
+      "key": "com.halaa.business_annual",
+      "reason": "PRICE_POINT_APPROVAL_DEFERRED"
+    }
+  ],
+  "planHash": "c00108a7c266f273b5e45b61546e14c37954e487f850c79d2abc1c385d89bcd1"
+}

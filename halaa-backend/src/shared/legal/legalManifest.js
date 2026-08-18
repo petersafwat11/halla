@@ -21,7 +21,7 @@ const ORIGIN = `https://${DOMAIN}`;
 
 // Manifest schema version — hand-bumped only when the manifest STRUCTURE changes
 // (not when content changes; content changes are reflected by per-doc hashes).
-const MANIFEST_VERSION = "1.0.0";
+const MANIFEST_VERSION = "1.1.0";
 
 // documentType (canonical) -> public web route slug under /[lang]/.
 // `deletion` maps to the existing public `delete-account` page. These MUST match
@@ -98,6 +98,9 @@ function buildEntry(documentType, doc) {
       `legal ${documentType}: AR/EN version mismatch (ar=${per.ar.version} en=${per.en.version})`
     );
   }
+  if (!per.ar.effectiveDate || !per.en.effectiveDate) {
+    throw new Error(`legal ${documentType}: missing owner-approved effective date`);
+  }
 
   const ownerApproval = per.ar.ownerApproval || "BLOCKED_NEEDS_OWNER";
 
@@ -105,8 +108,9 @@ function buildEntry(documentType, doc) {
     documentType,
     slug: ROUTE_SLUGS[documentType],
     version: per.ar.version,
+    effectiveDate: { ar: per.ar.effectiveDate, en: per.en.effectiveDate },
     authoritativeLanguage: per.ar.authoritativeLanguage || "ar",
-    // Reflects that nothing here is legally approved yet.
+    // Reflect the explicit owner decision; counsel/publication is a separate gate.
     ownerApproval,
     approved: ownerApproval !== "BLOCKED_NEEDS_OWNER",
     urls: { ar: canonicalUrl(documentType, "ar"), en: canonicalUrl(documentType, "en") },

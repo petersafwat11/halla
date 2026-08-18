@@ -79,20 +79,27 @@ Object.getOwnPropertyNames(OriginalTextInput).forEach((key) => {
   }
 });
 
-try {
-  Object.defineProperty(RN, "Text", {
-    get() {
-      return CustomText;
-    },
-    configurable: true,
-  });
-  Object.defineProperty(RN, "TextInput", {
-    get() {
-      return CustomTextInput;
-    },
-    configurable: true,
-  });
-} catch (e) {
-  RN.Text = CustomText;
-  RN.TextInput = CustomTextInput;
-}
+const installOverride = (key, component) => {
+  const descriptor = Object.getOwnPropertyDescriptor(RN, key);
+
+  // React Native Web exposes module exports as non-configurable getter-only
+  // properties. Attempting the old assignment fallback throws before the app
+  // can render. Native CommonJS exports remain configurable/writable, so keep
+  // the override there and safely leave the web export untouched otherwise.
+  if (!descriptor || descriptor.configurable) {
+    Object.defineProperty(RN, key, {
+      get() {
+        return component;
+      },
+      configurable: true,
+    });
+    return;
+  }
+
+  if (descriptor.writable) {
+    RN[key] = component;
+  }
+};
+
+installOverride("Text", CustomText);
+installOverride("TextInput", CustomTextInput);

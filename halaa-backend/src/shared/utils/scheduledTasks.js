@@ -1389,6 +1389,33 @@ const scheduleAccountDeletionRetry = () => {
   });
 };
 
+// Owner-approved retention policy. Disabled until deployment explicitly opts
+// in. Dry-run is the default even when scheduled, so a production deploy cannot
+// delete data merely because the cron code exists.
+const schedulePrivacyRetention = () => {
+  if (process.env.RETENTION_ENFORCEMENT_ENABLED !== "true") return;
+  cron.schedule("0 3 * * *", async () => {
+    const result = await cronLease.withLease(
+      "privacy_retention",
+      async () => {
+        try {
+          const { runRetention } = require("../../modules/privacy/retention.service");
+          const dryRun = process.env.RETENTION_EXECUTION_CONFIRMED !== "true";
+          const run = await runRetention({
+            dryRun,
+            batchSize: Number(process.env.RETENTION_BATCH_SIZE) || 250,
+          });
+          console.log(`[Cron] privacy_retention: run=${run.runId} mode=${run.mode} status=${run.status}`);
+        } catch (err) {
+          console.error("[Cron] privacy_retention error:", err.message);
+        }
+      },
+      { ttlMs: 55 * 60 * 1000 }
+    );
+    if (!result.ran) console.log("[Cron] privacy_retention — skipped (lease held by another node)");
+  });
+};
+
 // Expire stale business checkout links hourly. Retained
 // records — `expireStale` only flips pending_payment → expired, never deletes.
 const scheduleBusinessLinkExpiry = () => {
@@ -1419,6 +1446,7 @@ const initScheduledTasks = () => {
   scheduleSubscriptionRenewal();
   scheduleBusinessLinkExpiry();
   scheduleAccountDeletionRetry();
+  schedulePrivacyRetention();
 
   console.log("[Cron] Scheduled tasks initialized:");
   console.log("  - Event reminders (host): Daily at 8:00 AM");
@@ -1434,6 +1462,7 @@ const initScheduledTasks = () => {
   console.log("  - Scheduled notification delivery: Every 5 minutes");
   console.log("  - Payment reconciliation: Every 5 minutes");
   console.log("  - Subscription renewal (Moyasar invoice): Daily at 2:00 AM");
+  console.log("  - Privacy retention: Daily at 3:00 AM when explicitly enabled (dry-run unless execution confirmed)");
 };
 
 module.exports = {

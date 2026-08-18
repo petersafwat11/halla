@@ -39,7 +39,6 @@
 | com.halaa.business_event_150 | inapp | — | consume | Halaa Business 150 Invites | 540 |
 | com.halaa.business_event_200 | inapp | — | consume | Halaa Business 200 Invites | 700 |
 | com.halaa.business_quarterly | subs | quarterly | — | Halaa Business — 3-Month Subscription | 3000 |
-| com.halaa.business_annual | subs | annual | — | Halaa Business — Annual Subscription | 10000 |
 | com.halaa.extra_invites_10 | inapp | — | consume | 10 Extra Invites | 40 |
 | com.halaa.extra_invites_20 | inapp | — | consume | 20 Extra Invites | 80 |
 | com.halaa.extra_invites_30 | inapp | — | consume | 30 Extra Invites | 120 |

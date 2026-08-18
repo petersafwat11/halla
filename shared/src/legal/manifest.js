@@ -54,6 +54,7 @@ export const LEGAL_MANIFEST = Object.freeze(
       slug: LEGAL_ROUTES[documentType],
       // Version is per-locale in the document; they are kept in lockstep.
       version: ar.version || en.version || null,
+      effectiveDate: Object.freeze({ ar: ar.effectiveDate || null, en: en.effectiveDate || null }),
       authoritativeLanguage: ar.authoritativeLanguage || "ar",
       ownerApproval: ar.ownerApproval || "BLOCKED_NEEDS_OWNER",
       urls: Object.freeze({

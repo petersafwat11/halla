@@ -5,6 +5,7 @@ import { FaLock } from "react-icons/fa";
 import { IoIosArrowForward } from "react-icons/io";
 import { useValidateDiscount } from "@/hooks/discounts";
 import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
+import LegalSurfaceLinks from "@/ui/common/LegalSurfaceLinks";
 import PaymentMethodSelector from "../_components/PaymentMethodSelector";
 import PlanSummaryCard from "./_components/PlanSummaryCard";
 import DiscountCodeCard from "./_components/DiscountCodeCard";
@@ -28,7 +29,8 @@ const Summary = ({
   cardData,
   stcMobile,
 }) => {
-  const { t } = useTranslation("plans");
+  const { t, i18n } = useTranslation("plans");
+  const currentLocale = i18n.resolvedLanguage === "en" ? "en" : "ar";
 
   const [discountCode, setDiscountCode] = useState("");
   const [discountAmount, setDiscountAmount] = useState(0);
@@ -251,6 +253,10 @@ const Summary = ({
               </div>
 
               <p className={styles.termsNotice}>{t("summary.terms")}</p>
+              <LegalSurfaceLinks
+                lang={currentLocale}
+                documents={["terms", "privacy", "refund", "support"]}
+              />
             </div>
           </div>
         </div>

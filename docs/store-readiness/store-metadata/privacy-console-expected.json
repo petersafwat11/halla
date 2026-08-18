@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0.0",
+  "package": "com.halaa.app",
+  "global": {
+    "dataCollected": true,
+    "dataSold": false,
+    "tracking": false,
+    "advertising": false,
+    "encryptedInTransit": true,
+    "accountDeletion": true
+  },
+  "apple": {
+    "allTracking": false,
+    "collectedTypes": [
+      "contact_info.name",
+      "contact_info.email",
+      "contact_info.phone",
+      "health",
+      "location.precise",
+      "location.coarse",
+      "sensitive_info",
+      "contacts.selected",
+      "user_content.photos_videos",
+      "user_content.customer_support",
+      "user_content.other",
+      "identifiers.user_id",
+      "identifiers.device_id",
+      "purchases.purchase_history",
+      "usage.product_interaction",
+      "diagnostics.crash",
+      "diagnostics.performance",
+      "diagnostics.other"
+    ],
+    "notCollectedTypes": [
+      "contact_info.physical_address",
+      "financial.payment_info",
+      "financial.credit_info",
+      "financial.other",
+      "browsing_history",
+      "search_history",
+      "usage.advertising_data"
+    ]
+  },
+  "google": {
+    "deletionUrl": "https://halaa.com.sa/en/delete-account",
+    "independentSecurityReview": false,
+    "collectedTypes": [
+      "personal.name",
+      "personal.email",
+      "personal.user_ids",
+      "personal.phone",
+      "personal.address",
+      "personal.other",
+      "financial.purchase_history",
+      "health.health_info",
+      "location.approximate",
+      "location.precise",
+      "messages.other_in_app",
+      "media.photos",
+      "media.videos",
+      "files.documents",
+      "contacts.selected",
+      "activity.app_interactions",
+      "performance.crash_logs",
+      "performance.diagnostics",
+      "identifiers.device_or_other"
+    ]
+  }
+}

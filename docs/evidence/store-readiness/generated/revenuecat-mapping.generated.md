@@ -23,7 +23,6 @@ Recurring access is derived from ONE entitlement: `recurring_access` (PROPOSED `
 | business_event_150 | consumable | com.halaa.business_event_150 | — | event_consumable |
 | business_event_200 | consumable | com.halaa.business_event_200 | — | event_consumable |
 | business_quarterly | subscription | com.halaa.business_quarterly | recurring_access | subscription |
-| business_annual | subscription | com.halaa.business_annual | recurring_access | subscription |
 
 ## Offering `host_addons`
 

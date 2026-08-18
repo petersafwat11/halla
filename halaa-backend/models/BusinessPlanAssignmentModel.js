@@ -95,6 +95,7 @@ const businessPlanAssignmentSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
+    privacySubjectDeletedAt: { type: Date, default: null },
     planId: { type: mongoose.Schema.Types.ObjectId, ref: 'Plan', required: true },
     planCode: { type: String, default: null },
 
@@ -153,6 +154,8 @@ businessPlanAssignmentSchema.index(
     name: 'one_actionable_assignment_per_business',
   }
 );
+businessPlanAssignmentSchema.index({ status: 1, updatedAt: 1 }, { name: 'retention_status_updated' });
+businessPlanAssignmentSchema.index({ privacySubjectDeletedAt: 1 }, { name: 'retention_subject_deleted' });
 
 // Unique hashed token among live tokens.
 businessPlanAssignmentSchema.index(

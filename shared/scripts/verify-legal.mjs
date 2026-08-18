@@ -8,7 +8,7 @@
  *   - a required document or locale is missing;
  *   - AR/EN section ids differ (order or values);
  *   - AR/EN versions differ;
- *   - a document's ownerApproval is not the expected BLOCKED_NEEDS_OWNER gate;
+ *   - a document lacks the recorded OWNER_APPROVED state;
  *   - the registry (manifest.js LEGAL_ROUTES) and the documents disagree;
  *   - a canonical URL is non-HTTPS / placeholder / missing its locale;
  *   - the mobile-hardlinked {terms,privacy,refund} slugs drift.
@@ -85,11 +85,17 @@ for (const documentType of Object.keys(DOCUMENT_FILES)) {
         if (typeof s.body !== "string" || !s.body.length) {
           fail(`${documentType} (${locale}): section ${s && s.id} body must be a non-empty string`);
         }
+        if (/\[BLOCKED_NEEDS_OWNER|support@halaa\.net|Halaa Digital Technology Establishment/.test(s.body || "")) {
+          fail(`${documentType} (${locale}): section ${s && s.id} contains stale or internal placeholder copy`);
+        }
       });
     }
     if (!d.version) fail(`${documentType} (${locale}): missing version`);
-    if (d.ownerApproval !== "BLOCKED_NEEDS_OWNER") {
-      fail(`${documentType} (${locale}): ownerApproval must be BLOCKED_NEEDS_OWNER until signed (got ${d.ownerApproval})`);
+    if (d.ownerApproval !== "OWNER_APPROVED") {
+      fail(`${documentType} (${locale}): ownerApproval must record OWNER_APPROVED (got ${d.ownerApproval})`);
+    }
+    if (!d.effectiveDate) {
+      fail(`${documentType} (${locale}): missing approved effectiveDate`);
     }
   }
   if (doc.ar && doc.en) {
@@ -98,6 +104,12 @@ for (const documentType of Object.keys(DOCUMENT_FILES)) {
     if (arIds !== enIds) fail(`${documentType}: AR/EN section ids differ`);
     if (doc.ar.version !== doc.en.version) {
       fail(`${documentType}: AR/EN version mismatch (${doc.ar.version} vs ${doc.en.version})`);
+    }
+    if (doc.ar.lastUpdated !== "13 أغسطس 2026" || doc.en.lastUpdated !== "13 August 2026") {
+      fail(`${documentType}: lastUpdated is not synchronized to the current legal draft`);
+    }
+    if (doc.ar.effectiveDate !== "13 أغسطس 2026" || doc.en.effectiveDate !== "13 August 2026") {
+      fail(`${documentType}: effectiveDate is not synchronized to the owner-approved date`);
     }
   }
 }

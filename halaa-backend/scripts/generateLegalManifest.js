@@ -7,8 +7,8 @@
  *   node scripts/generateLegalManifest.js --check  # CI drift gate (exit 1 on drift)
  *
  * Source of truth: shared/src/legal/documents/*.json (read via
- * src/shared/legal/legalContent.js). All content is owner-gated
- * (ownerApproval: BLOCKED_NEEDS_OWNER) until counsel signs off.
+ * src/shared/legal/legalContent.js). Owner approval is recorded in each source;
+ * counsel/publication status is tracked as a separate release gate.
  */
 
 const fs = require("fs");
@@ -37,14 +37,14 @@ function renderInventory(manifest) {
   lines.push("|---|---|---|---|---|---|");
   for (const d of manifest.documents) {
     lines.push(
-      `| ${d.documentType} | ${d.version} | ${d.approved ? "yes" : "**NO (BLOCKED_NEEDS_OWNER)**"} | ${d.urls.ar} | ${d.urls.en} | ${d.sectionIds.length} |`
+      `| ${d.documentType} | ${d.version} | ${d.approved ? "yes (OWNER_APPROVED)" : "**NO**"} | ${d.urls.ar} | ${d.urls.en} | ${d.sectionIds.length} |`
     );
   }
   lines.push("");
   lines.push(
-    "> Every document is `ownerApproval: BLOCKED_NEEDS_OWNER`. Counsel/owner must " +
-      "sign the exact copy, entity/contact data, retention periods, and " +
-      "refund/subscription wording before any document is treated as approved.\n"
+    "> Every document records `ownerApproval: OWNER_APPROVED` for the exact copy, " +
+      "identity, contact data, retention periods, effective date, and refund rules. " +
+      "Counsel and production publication evidence remain separate gates.\n"
   );
   return lines.join("\n");
 }

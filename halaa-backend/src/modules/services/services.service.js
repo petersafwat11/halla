@@ -14,6 +14,7 @@ const { extractStoredRef, signStoredImage } = require('../../shared/utils/s3Uplo
 const logger = require('../../shared/utils/logger');
 const { logAudit } = require('../../shared/utils/auditLog');
 const locationsService = require('../locations/locations.service');
+const moderationService = require('../moderation/moderation.service');
 
 class ServicesService {
   /**
@@ -24,10 +25,16 @@ class ServicesService {
     const { page = 1, limit = 20 } = options;
     const skip = (page - 1) * limit;
 
-    const approvedVendorIds = await User.distinct('_id', {
+    let approvedVendorIds = await User.distinct('_id', {
       role: 'vendor',
       'profile.vendorData.vendorStatus': VENDOR_STATUS.APPROVED,
     });
+    const blocked = await moderationService.getBlockedKeySet('user', options.viewerId);
+    if (blocked.size) {
+      approvedVendorIds = approvedVendorIds.filter(
+        (id) => !blocked.has(`user:${id}`)
+      );
+    }
 
     let query = {
       status: SERVICE_STATUS.ACTIVE,
@@ -36,7 +43,11 @@ class ServicesService {
     };
 
     if (filters.category) query.category = filters.category;
-    if (filters.vendorId) query.vendorId = filters.vendorId;
+    if (filters.vendorId) {
+      query.vendorId = approvedVendorIds.some((id) => String(id) === String(filters.vendorId))
+        ? filters.vendorId
+        : { $in: [] };
+    }
     if (filters.search) {
       const escaped = filters.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       query.$or = [
@@ -127,7 +138,7 @@ class ServicesService {
    * Vendors are scoped to their own services; non-vendors only see public+active
    * services and trigger a best-effort view counter increment.
    */
-  async getServiceById(serviceId, vendorId = null, trackView = false) {
+  async getServiceById(serviceId, vendorId = null, trackView = false, viewerId = null) {
     const query = { _id: serviceId };
     if (vendorId) {
       query.vendorId = vendorId;
@@ -137,10 +148,21 @@ class ServicesService {
     }
 
     const service = await Service.findOne(query)
-      .populate('vendorId', 'name avatar email mobile phoneNumber profile.vendorData.brandName profile.vendorData.businessLogo profile.vendorData.socialLinks profile.vendorData.serviceDescription profile.vendorData.rating profile.vendorData.numberOfRatings');
+      .populate('vendorId', 'name avatar email mobile phoneNumber profile.vendorData.vendorStatus profile.vendorData.brandName profile.vendorData.businessLogo profile.vendorData.socialLinks profile.vendorData.serviceDescription profile.vendorData.rating profile.vendorData.numberOfRatings');
 
     if (!service) {
       throw new NotFoundError('Service');
+    }
+
+    if (!vendorId && service.vendorId?.profile?.vendorData?.vendorStatus !== VENDOR_STATUS.APPROVED) {
+      throw new NotFoundError('Service');
+    }
+
+    if (!vendorId && viewerId && service.vendorId?._id) {
+      const blocked = await moderationService.getBlockedKeySet('user', viewerId);
+      if (blocked.has(`user:${service.vendorId._id}`)) {
+        throw new NotFoundError('Service');
+      }
     }
 
     if (trackView) {

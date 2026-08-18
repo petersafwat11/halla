@@ -93,10 +93,10 @@ test("deletion document maps to the existing public delete-account route", () =>
   assert.equal(del.urls.en, "https://halaa.com.sa/en/delete-account");
 });
 
-test("EVERY document is owner-gated (nothing silently approved)", () => {
+test("EVERY document records the explicit owner approval", () => {
   for (const d of manifest.documents) {
-    assert.equal(d.approved, false, `${d.documentType} must not be approved without owner signoff`);
-    assert.equal(d.ownerApproval, "BLOCKED_NEEDS_OWNER");
+    assert.equal(d.approved, true, `${d.documentType} must reflect the recorded owner signoff`);
+    assert.equal(d.ownerApproval, "OWNER_APPROVED");
   }
 });
 
@@ -128,14 +128,14 @@ test("refund document carries the store-billing sections (signed substance)", ()
   assert.equal(refund.en.sections.length, 15);
   const enText = refund.en.sections.map((s) => s.body).join("\n");
   assert.match(enText, /auto-renew/i);
-  assert.match(enText, /non-refundable from the moment the request is created/i); // DEC-03L
+  assert.match(enText, /work already performed.*not refundable/i); // managed-service fulfillment boundary
   assert.match(enText, /not automatically transferred/i); // DEC-04 keep-with-original
   assert.match(enText, /15%/); // Saudi VAT
 });
 
 test("deletion document reflects the actual implemented behavior (factual)", () => {
   const enText = docs.deletion.en.sections.map((s) => s.body).join("\n");
-  assert.match(enText, /retried automatically/i); // truthful pending_retry
+  assert.match(enText, /failed file deletion is retried/i); // truthful pending_retry
   assert.match(enText, /RevenueCat/); // retained_by_policy
   assert.match(enText, /does NOT cancel/i); // store subscription warning
 });
@@ -159,5 +159,5 @@ test("generated markdown inventory exists and lists all documents", () => {
   for (const documentType of EXPECTED_DOCS) {
     assert.ok(md.includes(documentType), `inventory must mention ${documentType}`);
   }
-  assert.match(md, /BLOCKED_NEEDS_OWNER/);
+  assert.match(md, /OWNER_APPROVED/);
 });

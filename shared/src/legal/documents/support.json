@@ -1,16 +1,16 @@
 {
   "ar": {
     "documentType": "support",
-    "version": "2026-07-02",
+    "version": "2026-08-13",
     "locale": "ar",
     "authoritativeLanguage": "ar",
-    "effectiveDate": null,
-    "lastUpdated": "02 يوليو 2026",
-    "ownerApproval": "BLOCKED_NEEDS_OWNER",
+    "effectiveDate": "13 أغسطس 2026",
+    "lastUpdated": "13 أغسطس 2026",
+    "ownerApproval": "OWNER_APPROVED",
     "badge": "الدعم والتواصل",
     "title": "الدعم والتواصل",
     "subtitle": "منصة هلا",
-    "changeSummary": "بنية صفحة الدعم والتواصل — قيم التواصل بانتظار الاعتماد الرسمي.",
+    "changeSummary": "توحيد بريد الدعم والهاتف والعنوان وإزالة وعود ساعات العمل ومدة الاستجابة غير المعتمدة.",
     "sections": [
       {
         "id": "article-1",
@@ -24,21 +24,21 @@
         "num": "2",
         "label": "البند الثاني",
         "title": "قنوات التواصل الرسمية",
-        "body": "البريد الإلكتروني للدعم: [BLOCKED_NEEDS_OWNER: توحيد بريد الدعم الرسمي — يوجد حالياً تعارض بين support@halaa.net و support@halaa.com.sa].\n\nواتساب/الهاتف: [BLOCKED_NEEDS_OWNER: تأكيد الرقم الرسمي].\n\nالعنوان: [BLOCKED_NEEDS_OWNER: تأكيد العنوان البريدي للجهة المالكة]."
+        "body": "البريد الإلكتروني للدعم: support@halaa.com.sa.\n\nواتساب/الهاتف: ‎+966 55 261 9282.\n\nالعنوان البريدي المستخدم للتواصل: شارع المتحف، جدة، الرمز البريدي 23326، المملكة العربية السعودية."
       },
       {
         "id": "article-3",
         "num": "3",
         "label": "البند الثالث",
         "title": "الجهة المالكة والمشغّلة",
-        "body": "[BLOCKED_NEEDS_OWNER: الاسم النظامي المعتمد للجهة المالكة — يوجد حالياً تعارض بين «مؤسسة هلا الرقمية للتقنية» المذكورة في وثائق الخصوصية والشروط، و«Afaq hala Company For Communications and Information» المذكورة في تذييل الموقع]. مسجّلة لدى وزارة التجارة في المملكة العربية السعودية."
+        "body": "الجهة المالكة والمشغّلة هي افاق هلا للاتصالات والمعلومات (Afaq hala Company For Communications and Information)، والمسجّلة لدى وزارة التجارة في المملكة العربية السعودية."
       },
       {
         "id": "article-4",
         "num": "4",
         "label": "البند الرابع",
         "title": "أوقات الاستجابة",
-        "body": "[BLOCKED_NEEDS_OWNER: تحديد أوقات العمل ومدة الاستجابة المعلنة للدعم]."
+        "body": "تُراجع الطلبات في أقرب وقت ممكن بصورة معقولة. ولا تنشر هلا حالياً ساعات عمل أو مدة استجابة رقمية ملزمة. وتُعالج طلبات الخصوصية وحذف الحساب خلال المدد التي تفرضها الأنظمة المعمول بها."
       },
       {
         "id": "article-5",
@@ -51,16 +51,16 @@
   },
   "en": {
     "documentType": "support",
-    "version": "2026-07-02",
+    "version": "2026-08-13",
     "locale": "en",
     "authoritativeLanguage": "ar",
-    "effectiveDate": null,
-    "lastUpdated": "02 July 2026",
-    "ownerApproval": "BLOCKED_NEEDS_OWNER",
+    "effectiveDate": "13 August 2026",
+    "lastUpdated": "13 August 2026",
+    "ownerApproval": "OWNER_APPROVED",
     "badge": "Support & Contact",
     "title": "Support & Contact",
     "subtitle": "Halaa Platform",
-    "changeSummary": "Support/contact page structure — contact values pending official approval.",
+    "changeSummary": "Unified support email, phone, and address; removed unapproved business-hours and response-time promises.",
     "sections": [
       {
         "id": "article-1",
@@ -74,21 +74,21 @@
         "num": "2",
         "label": "Article Two",
         "title": "Official Contact Channels",
-        "body": "Support email: [BLOCKED_NEEDS_OWNER: consolidate the official support email — there is currently a conflict between support@halaa.net and support@halaa.com.sa].\n\nWhatsApp/Phone: [BLOCKED_NEEDS_OWNER: confirm the official number].\n\nAddress: [BLOCKED_NEEDS_OWNER: confirm the owning entity's postal address]."
+        "body": "Support email: support@halaa.com.sa.\n\nWhatsApp/Phone: +966 55 261 9282.\n\nContact postal address: Museum Street, Jeddah, Postal Code 23326, Saudi Arabia."
       },
       {
         "id": "article-3",
         "num": "3",
         "label": "Article Three",
         "title": "Owner and Operator",
-        "body": "[BLOCKED_NEEDS_OWNER: the approved legal name of the owning entity — there is currently a conflict between \"Halaa Digital Technology Establishment\" cited in the Privacy and Terms documents and \"Afaq hala Company For Communications and Information\" cited in the website footer]. Registered with the Ministry of Commerce in the Kingdom of Saudi Arabia."
+        "body": "The owner and operator is Afaq hala Company For Communications and Information (افاق هلا للاتصالات والمعلومات), registered with the Ministry of Commerce in the Kingdom of Saudi Arabia."
       },
       {
         "id": "article-4",
         "num": "4",
         "label": "Article Four",
         "title": "Response Times",
-        "body": "[BLOCKED_NEEDS_OWNER: define support hours and the published response-time commitment]."
+        "body": "Requests are reviewed as soon as reasonably possible. Halaa does not currently publish binding support hours or a numeric response-time commitment. Privacy and account-deletion requests are handled within the periods required by applicable law."
       },
       {
         "id": "article-5",

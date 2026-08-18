@@ -1,0 +1,2074 @@
+{
+  "provider": "google",
+  "packageName": "com.halaa.app",
+  "subscriptions": [
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.basic_monthly_100",
+      "basePlans": [
+        {
+          "basePlanId": "monthly",
+          "regionalConfigs": [
+            {
+              "regionCode": "SA",
+              "newSubscriberAvailability": true,
+              "price": {
+                "currencyCode": "SAR",
+                "units": "450"
+              }
+            }
+          ],
+          "state": "DRAFT",
+          "autoRenewingBasePlanType": {
+            "billingPeriodDuration": "P1M",
+            "gracePeriodDuration": "P7D",
+            "resubscribeState": "RESUBSCRIBE_STATE_ACTIVE",
+            "prorationMode": "SUBSCRIPTION_PRORATION_MODE_CHARGE_ON_NEXT_BILLING_DATE",
+            "legacyCompatibleSubscriptionOfferId": ""
+          }
+        }
+      ],
+      "listings": [
+        {
+          "title": "هلا بيسك 100 — شهري",
+          "languageCode": "ar",
+          "description": "اشتراك بيسك شهري يشمل 100 دعوة"
+        },
+        {
+          "title": "Halaa Basic 100 Monthly",
+          "languageCode": "en-US",
+          "description": "Monthly Basic plan: 100 invitations"
+        }
+      ],
+      "taxAndComplianceSettings": {
+        "eeaWithdrawalRightType": "WITHDRAWAL_RIGHT_SERVICE"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.basic_monthly_150",
+      "basePlans": [
+        {
+          "basePlanId": "monthly",
+          "regionalConfigs": [
+            {
+              "regionCode": "SA",
+              "newSubscriberAvailability": true,
+              "price": {
+                "currencyCode": "SAR",
+                "units": "675"
+              }
+            }
+          ],
+          "state": "DRAFT",
+          "autoRenewingBasePlanType": {
+            "billingPeriodDuration": "P1M",
+            "gracePeriodDuration": "P7D",
+            "resubscribeState": "RESUBSCRIBE_STATE_ACTIVE",
+            "prorationMode": "SUBSCRIPTION_PRORATION_MODE_CHARGE_ON_NEXT_BILLING_DATE",
+            "legacyCompatibleSubscriptionOfferId": ""
+          }
+        }
+      ],
+      "listings": [
+        {
+          "title": "هلا بيسك 150 — شهري",
+          "languageCode": "ar",
+          "description": "اشتراك بيسك شهري يشمل 150 دعوة"
+        },
+        {
+          "title": "Halaa Basic 150 Monthly",
+          "languageCode": "en-US",
+          "description": "Monthly Basic plan: 150 invitations"
+        }
+      ],
+      "taxAndComplianceSettings": {
+        "eeaWithdrawalRightType": "WITHDRAWAL_RIGHT_SERVICE"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.basic_monthly_200",
+      "basePlans": [
+        {
+          "basePlanId": "monthly",
+          "regionalConfigs": [
+            {
+              "regionCode": "SA",
+              "newSubscriberAvailability": true,
+              "price": {
+                "currencyCode": "SAR",
+                "units": "900"
+              }
+            }
+          ],
+          "state": "DRAFT",
+          "autoRenewingBasePlanType": {
+            "billingPeriodDuration": "P1M",
+            "gracePeriodDuration": "P7D",
+            "resubscribeState": "RESUBSCRIBE_STATE_ACTIVE",
+            "prorationMode": "SUBSCRIPTION_PRORATION_MODE_CHARGE_ON_NEXT_BILLING_DATE",
+            "legacyCompatibleSubscriptionOfferId": ""
+          }
+        }
+      ],
+      "listings": [
+        {
+          "title": "هلا بيسك 200 — شهري",
+          "languageCode": "ar",
+          "description": "اشتراك بيسك شهري يشمل 200 دعوة"
+        },
+        {
+          "title": "Halaa Basic 200 Monthly",
+          "languageCode": "en-US",
+          "description": "Monthly Basic plan: 200 invitations"
+        }
+      ],
+      "taxAndComplianceSettings": {
+        "eeaWithdrawalRightType": "WITHDRAWAL_RIGHT_SERVICE"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.basic_monthly_25",
+      "basePlans": [
+        {
+          "basePlanId": "monthly",
+          "regionalConfigs": [
+            {
+              "regionCode": "SA",
+              "newSubscriberAvailability": true,
+              "price": {
+                "currencyCode": "SAR",
+                "units": "125"
+              }
+            }
+          ],
+          "state": "DRAFT",
+          "autoRenewingBasePlanType": {
+            "billingPeriodDuration": "P1M",
+            "gracePeriodDuration": "P7D",
+            "resubscribeState": "RESUBSCRIBE_STATE_ACTIVE",
+            "prorationMode": "SUBSCRIPTION_PRORATION_MODE_CHARGE_ON_NEXT_BILLING_DATE",
+            "legacyCompatibleSubscriptionOfferId": ""
+          }
+        }
+      ],
+      "listings": [
+        {
+          "title": "هلا بيسك 25 — شهري",
+          "languageCode": "ar",
+          "description": "اشتراك بيسك شهري يشمل 25 دعوة"
+        },
+        {
+          "title": "Halaa Basic 25 Monthly",
+          "languageCode": "en-US",
+          "description": "Monthly Basic plan: 25 invitations"
+        }
+      ],
+      "taxAndComplianceSettings": {
+        "eeaWithdrawalRightType": "WITHDRAWAL_RIGHT_SERVICE"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.basic_monthly_50",
+      "basePlans": [
+        {
+          "basePlanId": "monthly",
+          "regionalConfigs": [
+            {
+              "regionCode": "SA",
+              "newSubscriberAvailability": true,
+              "price": {
+                "currencyCode": "SAR",
+                "units": "240"
+              }
+            }
+          ],
+          "state": "DRAFT",
+          "autoRenewingBasePlanType": {
+            "billingPeriodDuration": "P1M",
+            "gracePeriodDuration": "P7D",
+            "resubscribeState": "RESUBSCRIBE_STATE_ACTIVE",
+            "prorationMode": "SUBSCRIPTION_PRORATION_MODE_CHARGE_ON_NEXT_BILLING_DATE",
+            "legacyCompatibleSubscriptionOfferId": ""
+          }
+        }
+      ],
+      "listings": [
+        {
+          "title": "هلا بيسك 50 — شهري",
+          "languageCode": "ar",
+          "description": "اشتراك بيسك شهري يشمل 50 دعوة"
+        },
+        {
+          "title": "Halaa Basic 50 Monthly",
+          "languageCode": "en-US",
+          "description": "Monthly Basic plan: 50 invitations"
+        }
+      ],
+      "taxAndComplianceSettings": {
+        "eeaWithdrawalRightType": "WITHDRAWAL_RIGHT_SERVICE"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.basic_monthly_75",
+      "basePlans": [
+        {
+          "basePlanId": "monthly",
+          "regionalConfigs": [
+            {
+              "regionCode": "SA",
+              "newSubscriberAvailability": true,
+              "price": {
+                "currencyCode": "SAR",
+                "units": "350"
+              }
+            }
+          ],
+          "state": "DRAFT",
+          "autoRenewingBasePlanType": {
+            "billingPeriodDuration": "P1M",
+            "gracePeriodDuration": "P7D",
+            "resubscribeState": "RESUBSCRIBE_STATE_ACTIVE",
+            "prorationMode": "SUBSCRIPTION_PRORATION_MODE_CHARGE_ON_NEXT_BILLING_DATE",
+            "legacyCompatibleSubscriptionOfferId": ""
+          }
+        }
+      ],
+      "listings": [
+        {
+          "title": "هلا بيسك 75 — شهري",
+          "languageCode": "ar",
+          "description": "اشتراك بيسك شهري يشمل 75 دعوة"
+        },
+        {
+          "title": "Halaa Basic 75 Monthly",
+          "languageCode": "en-US",
+          "description": "Monthly Basic plan: 75 invitations"
+        }
+      ],
+      "taxAndComplianceSettings": {
+        "eeaWithdrawalRightType": "WITHDRAWAL_RIGHT_SERVICE"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.business_quarterly",
+      "basePlans": [
+        {
+          "basePlanId": "quarterly",
+          "regionalConfigs": [
+            {
+              "regionCode": "SA",
+              "newSubscriberAvailability": true,
+              "price": {
+                "currencyCode": "SAR",
+                "units": "3000"
+              }
+            }
+          ],
+          "state": "DRAFT",
+          "autoRenewingBasePlanType": {
+            "billingPeriodDuration": "P3M",
+            "gracePeriodDuration": "P14D",
+            "resubscribeState": "RESUBSCRIBE_STATE_ACTIVE",
+            "prorationMode": "SUBSCRIPTION_PRORATION_MODE_CHARGE_ON_NEXT_BILLING_DATE",
+            "legacyCompatibleSubscriptionOfferId": ""
+          }
+        }
+      ],
+      "listings": [
+        {
+          "title": "هلا أعمال — 3 أشهر",
+          "languageCode": "ar",
+          "description": "اشتراك أعمال لمدة 3 أشهر"
+        },
+        {
+          "title": "Halaa Business 3 Months",
+          "languageCode": "en-US",
+          "description": "Business subscription billed every 3 months"
+        }
+      ],
+      "taxAndComplianceSettings": {
+        "eeaWithdrawalRightType": "WITHDRAWAL_RIGHT_SERVICE"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.premium_monthly_100",
+      "basePlans": [
+        {
+          "basePlanId": "monthly",
+          "regionalConfigs": [
+            {
+              "regionCode": "SA",
+              "newSubscriberAvailability": true,
+              "price": {
+                "currencyCode": "SAR",
+                "units": "540"
+              }
+            }
+          ],
+          "state": "DRAFT",
+          "autoRenewingBasePlanType": {
+            "billingPeriodDuration": "P1M",
+            "gracePeriodDuration": "P7D",
+            "resubscribeState": "RESUBSCRIBE_STATE_ACTIVE",
+            "prorationMode": "SUBSCRIPTION_PRORATION_MODE_CHARGE_ON_NEXT_BILLING_DATE",
+            "legacyCompatibleSubscriptionOfferId": ""
+          }
+        }
+      ],
+      "listings": [
+        {
+          "title": "هلا بريميوم 100 — شهري",
+          "languageCode": "ar",
+          "description": "اشتراك بريميوم شهري يشمل 100 دعوة"
+        },
+        {
+          "title": "Halaa Premium 100 Monthly",
+          "languageCode": "en-US",
+          "description": "Monthly Premium plan: 100 invitations"
+        }
+      ],
+      "taxAndComplianceSettings": {
+        "eeaWithdrawalRightType": "WITHDRAWAL_RIGHT_SERVICE"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.premium_monthly_150",
+      "basePlans": [
+        {
+          "basePlanId": "monthly",
+          "regionalConfigs": [
+            {
+              "regionCode": "SA",
+              "newSubscriberAvailability": true,
+              "price": {
+                "currencyCode": "SAR",
+                "units": "810"
+              }
+            }
+          ],
+          "state": "DRAFT",
+          "autoRenewingBasePlanType": {
+            "billingPeriodDuration": "P1M",
+            "gracePeriodDuration": "P7D",
+            "resubscribeState": "RESUBSCRIBE_STATE_ACTIVE",
+            "prorationMode": "SUBSCRIPTION_PRORATION_MODE_CHARGE_ON_NEXT_BILLING_DATE",
+            "legacyCompatibleSubscriptionOfferId": ""
+          }
+        }
+      ],
+      "listings": [
+        {
+          "title": "هلا بريميوم 150 — شهري",
+          "languageCode": "ar",
+          "description": "اشتراك بريميوم شهري يشمل 150 دعوة"
+        },
+        {
+          "title": "Halaa Premium 150 Monthly",
+          "languageCode": "en-US",
+          "description": "Monthly Premium plan: 150 invitations"
+        }
+      ],
+      "taxAndComplianceSettings": {
+        "eeaWithdrawalRightType": "WITHDRAWAL_RIGHT_SERVICE"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.premium_monthly_200",
+      "basePlans": [
+        {
+          "basePlanId": "monthly",
+          "regionalConfigs": [
+            {
+              "regionCode": "SA",
+              "newSubscriberAvailability": true,
+              "price": {
+                "currencyCode": "SAR",
+                "units": "1080"
+              }
+            }
+          ],
+          "state": "DRAFT",
+          "autoRenewingBasePlanType": {
+            "billingPeriodDuration": "P1M",
+            "gracePeriodDuration": "P7D",
+            "resubscribeState": "RESUBSCRIBE_STATE_ACTIVE",
+            "prorationMode": "SUBSCRIPTION_PRORATION_MODE_CHARGE_ON_NEXT_BILLING_DATE",
+            "legacyCompatibleSubscriptionOfferId": ""
+          }
+        }
+      ],
+      "listings": [
+        {
+          "title": "هلا بريميوم 200 — شهري",
+          "languageCode": "ar",
+          "description": "اشتراك بريميوم شهري يشمل 200 دعوة"
+        },
+        {
+          "title": "Halaa Premium 200 Monthly",
+          "languageCode": "en-US",
+          "description": "Monthly Premium plan: 200 invitations"
+        }
+      ],
+      "taxAndComplianceSettings": {
+        "eeaWithdrawalRightType": "WITHDRAWAL_RIGHT_SERVICE"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.premium_monthly_25",
+      "basePlans": [
+        {
+          "basePlanId": "monthly",
+          "regionalConfigs": [
+            {
+              "regionCode": "SA",
+              "newSubscriberAvailability": true,
+              "price": {
+                "currencyCode": "SAR",
+                "units": "150"
+              }
+            }
+          ],
+          "state": "DRAFT",
+          "autoRenewingBasePlanType": {
+            "billingPeriodDuration": "P1M",
+            "gracePeriodDuration": "P7D",
+            "resubscribeState": "RESUBSCRIBE_STATE_ACTIVE",
+            "prorationMode": "SUBSCRIPTION_PRORATION_MODE_CHARGE_ON_NEXT_BILLING_DATE",
+            "legacyCompatibleSubscriptionOfferId": ""
+          }
+        }
+      ],
+      "listings": [
+        {
+          "title": "هلا بريميوم 25 — شهري",
+          "languageCode": "ar",
+          "description": "اشتراك بريميوم شهري يشمل 25 دعوة"
+        },
+        {
+          "title": "Halaa Premium 25 Monthly",
+          "languageCode": "en-US",
+          "description": "Monthly Premium plan: 25 invitations"
+        }
+      ],
+      "taxAndComplianceSettings": {
+        "eeaWithdrawalRightType": "WITHDRAWAL_RIGHT_SERVICE"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.premium_monthly_50",
+      "basePlans": [
+        {
+          "basePlanId": "monthly",
+          "regionalConfigs": [
+            {
+              "regionCode": "SA",
+              "newSubscriberAvailability": true,
+              "price": {
+                "currencyCode": "SAR",
+                "units": "285"
+              }
+            }
+          ],
+          "state": "DRAFT",
+          "autoRenewingBasePlanType": {
+            "billingPeriodDuration": "P1M",
+            "gracePeriodDuration": "P7D",
+            "resubscribeState": "RESUBSCRIBE_STATE_ACTIVE",
+            "prorationMode": "SUBSCRIPTION_PRORATION_MODE_CHARGE_ON_NEXT_BILLING_DATE",
+            "legacyCompatibleSubscriptionOfferId": ""
+          }
+        }
+      ],
+      "listings": [
+        {
+          "title": "هلا بريميوم 50 — شهري",
+          "languageCode": "ar",
+          "description": "اشتراك بريميوم شهري يشمل 50 دعوة"
+        },
+        {
+          "title": "Halaa Premium 50 Monthly",
+          "languageCode": "en-US",
+          "description": "Monthly Premium plan: 50 invitations"
+        }
+      ],
+      "taxAndComplianceSettings": {
+        "eeaWithdrawalRightType": "WITHDRAWAL_RIGHT_SERVICE"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.premium_monthly_75",
+      "basePlans": [
+        {
+          "basePlanId": "monthly",
+          "regionalConfigs": [
+            {
+              "regionCode": "SA",
+              "newSubscriberAvailability": true,
+              "price": {
+                "currencyCode": "SAR",
+                "units": "420"
+              }
+            }
+          ],
+          "state": "DRAFT",
+          "autoRenewingBasePlanType": {
+            "billingPeriodDuration": "P1M",
+            "gracePeriodDuration": "P7D",
+            "resubscribeState": "RESUBSCRIBE_STATE_ACTIVE",
+            "prorationMode": "SUBSCRIPTION_PRORATION_MODE_CHARGE_ON_NEXT_BILLING_DATE",
+            "legacyCompatibleSubscriptionOfferId": ""
+          }
+        }
+      ],
+      "listings": [
+        {
+          "title": "هلا بريميوم 75 — شهري",
+          "languageCode": "ar",
+          "description": "اشتراك بريميوم شهري يشمل 75 دعوة"
+        },
+        {
+          "title": "Halaa Premium 75 Monthly",
+          "languageCode": "en-US",
+          "description": "Monthly Premium plan: 75 invitations"
+        }
+      ],
+      "taxAndComplianceSettings": {
+        "eeaWithdrawalRightType": "WITHDRAWAL_RIGHT_SERVICE"
+      }
+    }
+  ],
+  "oneTimeProducts": [
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.basic_event_100",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "هلا بيسك 100 دعوة",
+          "description": "باقة بيسك لمرة واحدة تشمل 100 دعوة"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "Halaa Basic 100 Invites",
+          "description": "One-time Basic package: 100 invitations"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "350"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.basic_event_150",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "هلا بيسك 150 دعوة",
+          "description": "باقة بيسك لمرة واحدة تشمل 150 دعوة"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "Halaa Basic 150 Invites",
+          "description": "One-time Basic package: 150 invitations"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "525"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.basic_event_200",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "هلا بيسك 200 دعوة",
+          "description": "باقة بيسك لمرة واحدة تشمل 200 دعوة"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "Halaa Basic 200 Invites",
+          "description": "One-time Basic package: 200 invitations"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "700"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.basic_event_25",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "هلا بيسك 25 دعوة",
+          "description": "باقة بيسك لمرة واحدة تشمل 25 دعوة"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "Halaa Basic 25 Invites",
+          "description": "One-time Basic package: 25 invitations"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "95"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.basic_event_50",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "هلا بيسك 50 دعوة",
+          "description": "باقة بيسك لمرة واحدة تشمل 50 دعوة"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "Halaa Basic 50 Invites",
+          "description": "One-time Basic package: 50 invitations"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "185"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.basic_event_75",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "هلا بيسك 75 دعوة",
+          "description": "باقة بيسك لمرة واحدة تشمل 75 دعوة"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "Halaa Basic 75 Invites",
+          "description": "One-time Basic package: 75 invitations"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "270"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.business_customization",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "تخصيص هوية العلامة",
+          "description": "صفحة مخصصة وأربعة قوالب واتساب"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "Business Brand Customization",
+          "description": "Custom page and four WhatsApp templates"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "2500"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.business_event_100",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "هلا أعمال 100 دعوة",
+          "description": "باقة أعمال لمرة واحدة تشمل 100 دعوة"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "Halaa Business 100 Invites",
+          "description": "One-time Business package: 100 invitations"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "370"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.business_event_150",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "هلا أعمال 150 دعوة",
+          "description": "باقة أعمال لمرة واحدة تشمل 150 دعوة"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "Halaa Business 150 Invites",
+          "description": "One-time Business package: 150 invitations"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "540"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.business_event_200",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "هلا أعمال 200 دعوة",
+          "description": "باقة أعمال لمرة واحدة تشمل 200 دعوة"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "Halaa Business 200 Invites",
+          "description": "One-time Business package: 200 invitations"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "700"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.business_event_25",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "هلا أعمال 25 دعوة",
+          "description": "باقة أعمال لمرة واحدة تشمل 25 دعوة"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "Halaa Business 25 Invites",
+          "description": "One-time Business package: 25 invitations"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "100"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.business_event_50",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "هلا أعمال 50 دعوة",
+          "description": "باقة أعمال لمرة واحدة تشمل 50 دعوة"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "Halaa Business 50 Invites",
+          "description": "One-time Business package: 50 invitations"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "195"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.business_event_75",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "هلا أعمال 75 دعوة",
+          "description": "باقة أعمال لمرة واحدة تشمل 75 دعوة"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "Halaa Business 75 Invites",
+          "description": "One-time Business package: 75 invitations"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "285"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.design_template_3d",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "تصميم دعوة ثلاثية الأبعاد",
+          "description": "تصميم دعوة مخصص ثلاثي الأبعاد"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "3D Invitation Design",
+          "description": "Custom three-dimensional invitation design"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "500"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.design_template_animated",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "تصميم دعوة متحركة",
+          "description": "تصميم دعوة بخلفيات متحركة"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "Animated Invitation Design",
+          "description": "Invitation design with animated backgrounds"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "350"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.design_template_custom_male",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "تصميم دعوة رجالية مخصصة",
+          "description": "تصميم مخصص لدعوات الرجال"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "Custom Men's Invitation",
+          "description": "Custom invitation design for men"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "200"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.design_template_custom_themed",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "تصميم دعوة حسب الثيم",
+          "description": "تصميم دعوة مخصص حسب ثيم المناسبة"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "Custom Themed Invitation",
+          "description": "Custom invitation matching your event theme"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "275"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.design_template_ready_made",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "تصميم دعوة جاهزة",
+          "description": "تصميم جاهز لدعوات الرجال أو النساء"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "Ready-made Invitation Design",
+          "description": "Ready-made design for men or women"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "200"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.extra_invites_10",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "10 دعوة إضافية",
+          "description": "إضافة 10 دعوة إلى رصيدك"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "10 Extra Invites",
+          "description": "Add 10 invitations to your balance"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "40"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.extra_invites_100",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "100 دعوة إضافية",
+          "description": "إضافة 100 دعوة إلى رصيدك"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "100 Extra Invites",
+          "description": "Add 100 invitations to your balance"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "400"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.extra_invites_125",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "125 دعوة إضافية",
+          "description": "إضافة 125 دعوة إلى رصيدك"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "125 Extra Invites",
+          "description": "Add 125 invitations to your balance"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "500"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.extra_invites_150",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "150 دعوة إضافية",
+          "description": "إضافة 150 دعوة إلى رصيدك"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "150 Extra Invites",
+          "description": "Add 150 invitations to your balance"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "600"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.extra_invites_20",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "20 دعوة إضافية",
+          "description": "إضافة 20 دعوة إلى رصيدك"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "20 Extra Invites",
+          "description": "Add 20 invitations to your balance"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "80"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.extra_invites_200",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "200 دعوة إضافية",
+          "description": "إضافة 200 دعوة إلى رصيدك"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "200 Extra Invites",
+          "description": "Add 200 invitations to your balance"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "800"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.extra_invites_250",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "250 دعوة إضافية",
+          "description": "إضافة 250 دعوة إلى رصيدك"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "250 Extra Invites",
+          "description": "Add 250 invitations to your balance"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "1000"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.extra_invites_30",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "30 دعوة إضافية",
+          "description": "إضافة 30 دعوة إلى رصيدك"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "30 Extra Invites",
+          "description": "Add 30 invitations to your balance"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "120"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.extra_invites_300",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "300 دعوة إضافية",
+          "description": "إضافة 300 دعوة إلى رصيدك"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "300 Extra Invites",
+          "description": "Add 300 invitations to your balance"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "1200"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.extra_invites_350",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "350 دعوة إضافية",
+          "description": "إضافة 350 دعوة إلى رصيدك"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "350 Extra Invites",
+          "description": "Add 350 invitations to your balance"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "1400"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.extra_invites_40",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "40 دعوة إضافية",
+          "description": "إضافة 40 دعوة إلى رصيدك"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "40 Extra Invites",
+          "description": "Add 40 invitations to your balance"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "160"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.extra_invites_400",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "400 دعوة إضافية",
+          "description": "إضافة 400 دعوة إلى رصيدك"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "400 Extra Invites",
+          "description": "Add 400 invitations to your balance"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "1600"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.extra_invites_450",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "450 دعوة إضافية",
+          "description": "إضافة 450 دعوة إلى رصيدك"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "450 Extra Invites",
+          "description": "Add 450 invitations to your balance"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "1800"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.extra_invites_50",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "50 دعوة إضافية",
+          "description": "إضافة 50 دعوة إلى رصيدك"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "50 Extra Invites",
+          "description": "Add 50 invitations to your balance"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "200"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.extra_invites_500",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "500 دعوة إضافية",
+          "description": "إضافة 500 دعوة إلى رصيدك"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "500 Extra Invites",
+          "description": "Add 500 invitations to your balance"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "2000"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.extra_invites_75",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "75 دعوة إضافية",
+          "description": "إضافة 75 دعوة إلى رصيدك"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "75 Extra Invites",
+          "description": "Add 75 invitations to your balance"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "300"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.premium_event_100",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "هلا بريميوم 100 دعوة",
+          "description": "باقة بريميوم لمرة واحدة تشمل 100 دعوة"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "Halaa Premium 100 Invites",
+          "description": "One-time Premium package: 100 invitations"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "450"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.premium_event_150",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "هلا بريميوم 150 دعوة",
+          "description": "باقة بريميوم لمرة واحدة تشمل 150 دعوة"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "Halaa Premium 150 Invites",
+          "description": "One-time Premium package: 150 invitations"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "675"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.premium_event_200",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "هلا بريميوم 200 دعوة",
+          "description": "باقة بريميوم لمرة واحدة تشمل 200 دعوة"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "Halaa Premium 200 Invites",
+          "description": "One-time Premium package: 200 invitations"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "900"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.premium_event_25",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "هلا بريميوم 25 دعوة",
+          "description": "باقة بريميوم لمرة واحدة تشمل 25 دعوة"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "Halaa Premium 25 Invites",
+          "description": "One-time Premium package: 25 invitations"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "120"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.premium_event_50",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "هلا بريميوم 50 دعوة",
+          "description": "باقة بريميوم لمرة واحدة تشمل 50 دعوة"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "Halaa Premium 50 Invites",
+          "description": "One-time Premium package: 50 invitations"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "235"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    },
+    {
+      "packageName": "com.halaa.app",
+      "productId": "com.halaa.premium_event_75",
+      "listings": [
+        {
+          "languageCode": "ar",
+          "title": "هلا بريميوم 75 دعوة",
+          "description": "باقة بريميوم لمرة واحدة تشمل 75 دعوة"
+        },
+        {
+          "languageCode": "en-US",
+          "title": "Halaa Premium 75 Invites",
+          "description": "One-time Premium package: 75 invitations"
+        }
+      ],
+      "purchaseOptions": [
+        {
+          "purchaseOptionId": "buy",
+          "state": "DRAFT",
+          "buyOption": {
+            "legacyCompatible": true
+          },
+          "regionalPricingAndAvailabilityConfigs": [
+            {
+              "regionCode": "SA",
+              "price": {
+                "currencyCode": "SAR",
+                "units": "345"
+              },
+              "availability": "AVAILABLE"
+            }
+          ]
+        }
+      ],
+      "regionsVersion": {
+        "version": "2025/03"
+      }
+    }
+  ]
+}

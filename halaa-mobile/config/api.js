@@ -162,6 +162,7 @@ export const ENDPOINTS = {
     // REPORT: report a user/vendor (e.g. vendor public profile). Post-event
     // guest report/block use the event-scoped /post-event/:id/report|block.
     REPORT: "/moderation/report",
+    BLOCK: "/moderation/block",
   },
 
   VENDORS: {

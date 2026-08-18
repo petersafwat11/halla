@@ -68,14 +68,14 @@ test("AR/EN section ids are parallel per document (mobile parity)", () => {
   }
 });
 
-test("nothing is silently approved (owner gate present)", () => {
+test("every legal document records explicit owner approval", () => {
   for (const documentType of Object.keys(FILES)) {
     const doc = read(documentType);
     for (const locale of LOCALES) {
       assert.equal(
         doc[locale].ownerApproval,
-        "BLOCKED_NEEDS_OWNER",
-        `${documentType} (${locale}) must stay owner-gated`
+        "OWNER_APPROVED",
+        `${documentType} (${locale}) must reflect owner approval`
       );
     }
   }

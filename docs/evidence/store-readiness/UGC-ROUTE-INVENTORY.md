@@ -54,9 +54,9 @@ justified decision rather than an open gap.
 | GET `/post-event/:eventId/content` | guest.routes.js:81 | ✅ `getForGuest` | ✅ `isPublished` | n/a |
 | GET `/post-event/:eventId/posts/:postId/comments` | guest.routes.js:189 | ✅ `getBlockedKeySet` | ✅ `!isHidden` | n/a |
 | GET `/post-event/:eventId/comments` | guest.routes.js:248 | ✅ `getBlockedKeySet` | ✅ `!isHidden` | n/a |
-| GET `/vendors/public` | vendors.service.js:172 | ⚠ not viewer-block-filtered | n/a | ✅ `status=ACTIVE` + `vendorStatus=APPROVED` |
-| GET `/vendors/public/:id` | vendors.service.js:209 | ⚠ not viewer-block-filtered | n/a | ✅ 404 unless `status=ACTIVE` + `APPROVED` |
-| GET `/services/public`, `/services/:id` | services.routes.js:88,161 | ⚠ not viewer-block-filtered | ✅ `status=ACTIVE`+`isPublic` | ✅ vendor `APPROVED` |
+| GET `/vendors/public` | vendors.service.js | ✅ optional-auth viewer filter | n/a | ✅ `status=ACTIVE` + `vendorStatus=APPROVED` |
+| GET `/vendors/public/:id` | vendors.service.js | ✅ blocked vendor returns 404 | n/a | ✅ 404 unless `status=ACTIVE` + `APPROVED` |
+| GET `/services/public`, `/services/:id` | services.service.js | ✅ optional-auth viewer filter | ✅ `status=ACTIVE`+`isPublic` | ✅ vendor `APPROVED` |
 
 **Suspension IS enforced** on the public vendor/service reads: the moderation `suspend`
 action sets `User.status=SUSPENDED`, and every public read filters `status=USER_STATUS.ACTIVE`
@@ -64,18 +64,11 @@ action sets `User.status=SUSPENDED`, and every public read filters `status=USER_
 `hide/remove` mutates the exact media/comment/service (`_mutateContent`) so those reads drop
 it. Proven for suspension in the enforcement test.
 
-## Remaining gaps (documented, lower priority)
+## Remaining deployment gate
 
-1. **Viewer-block filtering on the public vendor/service marketplace reads** — post-event
-   reads filter by `getBlockedKeySet`, but the largely-anonymous public marketplace does not
-   (there is usually no authenticated blocker in that context). If a signed-in guest blocks a
-   vendor, that vendor is not yet hidden from *that guest's* marketplace browse. Recommended:
-   thread the optional viewer into `getPublicVendors`/`getPublicVendorById` and drop
-   `getBlockedKeySet` matches. Not done this session to avoid changing the public read
-   contract without the frontend consuming a viewer identity.
-2. **services create/update text filter** — vendor service `name`/`description` are shown
-   publicly and rely on post-hoc moderation `hide/remove` rather than a pre-write
-   `containsProhibited`. Recommended: add `assertCleanText` in the service create/update path
-   (mirrors the vendorData profile filter).
-3. `UGC_TERMS_ENFORCED=true` must be flipped in production **after** the new clients are the
+1. `UGC_TERMS_ENFORCED=true` must be flipped in production **after** the new clients are the
    live minimum (deploy-sequencing, by design).
+
+Viewer-aware marketplace blocking and pre-write service text filtering are implemented and
+covered by integration/unit tests. Anonymous marketplace behavior remains public by design;
+an authenticated viewer's block list is applied when a valid access token is present.

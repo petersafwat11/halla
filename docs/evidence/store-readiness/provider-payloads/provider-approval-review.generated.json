@@ -1,0 +1,1184 @@
+{
+  "schemaVersion": 1,
+  "status": "AWAITING_EXPLICIT_OWNER_APPROVAL",
+  "externalWrites": 0,
+  "localizationLimits": {
+    "nameCharacters": 30,
+    "descriptionCharacters": 45
+  },
+  "applePriceSelection": {
+    "baseTerritory": "SAU",
+    "currency": "SAR",
+    "exactPricePointIdsStatus": "RESOLVE_AFTER_APPROVED_PRODUCT_SHELL_CREATION"
+  },
+  "subscriptionLevelSemantics": "1 is the highest service level; larger numbers are lower levels",
+  "subscriptionGroupRisk": "All 14 subscriptions share one group; sandbox testing must confirm personal and business eligibility separation.",
+  "products": [
+    {
+      "code": "basic_event_100",
+      "productId": "com.halaa.basic_event_100",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 350,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "هلا بيسك 100 دعوة",
+          "description": "باقة بيسك لمرة واحدة تشمل 100 دعوة",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "Halaa Basic 100 Invites",
+          "description": "One-time Basic package: 100 invitations",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    },
+    {
+      "code": "basic_event_150",
+      "productId": "com.halaa.basic_event_150",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 525,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "هلا بيسك 150 دعوة",
+          "description": "باقة بيسك لمرة واحدة تشمل 150 دعوة",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "Halaa Basic 150 Invites",
+          "description": "One-time Basic package: 150 invitations",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    },
+    {
+      "code": "basic_event_200",
+      "productId": "com.halaa.basic_event_200",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 700,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "هلا بيسك 200 دعوة",
+          "description": "باقة بيسك لمرة واحدة تشمل 200 دعوة",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "Halaa Basic 200 Invites",
+          "description": "One-time Basic package: 200 invitations",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    },
+    {
+      "code": "basic_event_25",
+      "productId": "com.halaa.basic_event_25",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 95,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "هلا بيسك 25 دعوة",
+          "description": "باقة بيسك لمرة واحدة تشمل 25 دعوة",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "Halaa Basic 25 Invites",
+          "description": "One-time Basic package: 25 invitations",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    },
+    {
+      "code": "basic_event_50",
+      "productId": "com.halaa.basic_event_50",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 185,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "هلا بيسك 50 دعوة",
+          "description": "باقة بيسك لمرة واحدة تشمل 50 دعوة",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "Halaa Basic 50 Invites",
+          "description": "One-time Basic package: 50 invitations",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    },
+    {
+      "code": "basic_event_75",
+      "productId": "com.halaa.basic_event_75",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 270,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "هلا بيسك 75 دعوة",
+          "description": "باقة بيسك لمرة واحدة تشمل 75 دعوة",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "Halaa Basic 75 Invites",
+          "description": "One-time Basic package: 75 invitations",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    },
+    {
+      "code": "basic_monthly_100",
+      "productId": "com.halaa.basic_monthly_100",
+      "type": "AUTO_RENEWABLE_SUBSCRIPTION",
+      "duration": "P1M",
+      "targetPriceSar": 450,
+      "proposedSubscriptionLevel": 10,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "هلا بيسك 100 — شهري",
+          "description": "اشتراك بيسك شهري يشمل 100 دعوة",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "Halaa Basic 100 Monthly",
+          "description": "Monthly Basic plan: 100 invitations",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    },
+    {
+      "code": "basic_monthly_150",
+      "productId": "com.halaa.basic_monthly_150",
+      "type": "AUTO_RENEWABLE_SUBSCRIPTION",
+      "duration": "P1M",
+      "targetPriceSar": 675,
+      "proposedSubscriptionLevel": 9,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "هلا بيسك 150 — شهري",
+          "description": "اشتراك بيسك شهري يشمل 150 دعوة",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "Halaa Basic 150 Monthly",
+          "description": "Monthly Basic plan: 150 invitations",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    },
+    {
+      "code": "basic_monthly_200",
+      "productId": "com.halaa.basic_monthly_200",
+      "type": "AUTO_RENEWABLE_SUBSCRIPTION",
+      "duration": "P1M",
+      "targetPriceSar": 900,
+      "proposedSubscriptionLevel": 8,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "هلا بيسك 200 — شهري",
+          "description": "اشتراك بيسك شهري يشمل 200 دعوة",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "Halaa Basic 200 Monthly",
+          "description": "Monthly Basic plan: 200 invitations",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    },
+    {
+      "code": "basic_monthly_25",
+      "productId": "com.halaa.basic_monthly_25",
+      "type": "AUTO_RENEWABLE_SUBSCRIPTION",
+      "duration": "P1M",
+      "targetPriceSar": 125,
+      "proposedSubscriptionLevel": 13,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "هلا بيسك 25 — شهري",
+          "description": "اشتراك بيسك شهري يشمل 25 دعوة",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "Halaa Basic 25 Monthly",
+          "description": "Monthly Basic plan: 25 invitations",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    },
+    {
+      "code": "basic_monthly_50",
+      "productId": "com.halaa.basic_monthly_50",
+      "type": "AUTO_RENEWABLE_SUBSCRIPTION",
+      "duration": "P1M",
+      "targetPriceSar": 240,
+      "proposedSubscriptionLevel": 12,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "هلا بيسك 50 — شهري",
+          "description": "اشتراك بيسك شهري يشمل 50 دعوة",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "Halaa Basic 50 Monthly",
+          "description": "Monthly Basic plan: 50 invitations",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    },
+    {
+      "code": "basic_monthly_75",
+      "productId": "com.halaa.basic_monthly_75",
+      "type": "AUTO_RENEWABLE_SUBSCRIPTION",
+      "duration": "P1M",
+      "targetPriceSar": 350,
+      "proposedSubscriptionLevel": 11,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "هلا بيسك 75 — شهري",
+          "description": "اشتراك بيسك شهري يشمل 75 دعوة",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "Halaa Basic 75 Monthly",
+          "description": "Monthly Basic plan: 75 invitations",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    },
+    {
+      "code": "business_customization",
+      "productId": "com.halaa.business_customization",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 2500,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "تخصيص هوية العلامة",
+          "description": "صفحة مخصصة وأربعة قوالب واتساب",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "Business Brand Customization",
+          "description": "Custom page and four WhatsApp templates",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    },
+    {
+      "code": "business_event_100",
+      "productId": "com.halaa.business_event_100",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 370,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "هلا أعمال 100 دعوة",
+          "description": "باقة أعمال لمرة واحدة تشمل 100 دعوة",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "Halaa Business 100 Invites",
+          "description": "One-time Business package: 100 invitations",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    },
+    {
+      "code": "business_event_150",
+      "productId": "com.halaa.business_event_150",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 540,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "هلا أعمال 150 دعوة",
+          "description": "باقة أعمال لمرة واحدة تشمل 150 دعوة",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "Halaa Business 150 Invites",
+          "description": "One-time Business package: 150 invitations",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    },
+    {
+      "code": "business_event_200",
+      "productId": "com.halaa.business_event_200",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 700,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "هلا أعمال 200 دعوة",
+          "description": "باقة أعمال لمرة واحدة تشمل 200 دعوة",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "Halaa Business 200 Invites",
+          "description": "One-time Business package: 200 invitations",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    },
+    {
+      "code": "business_event_25",
+      "productId": "com.halaa.business_event_25",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 100,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "هلا أعمال 25 دعوة",
+          "description": "باقة أعمال لمرة واحدة تشمل 25 دعوة",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "Halaa Business 25 Invites",
+          "description": "One-time Business package: 25 invitations",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    },
+    {
+      "code": "business_event_50",
+      "productId": "com.halaa.business_event_50",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 195,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "هلا أعمال 50 دعوة",
+          "description": "باقة أعمال لمرة واحدة تشمل 50 دعوة",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "Halaa Business 50 Invites",
+          "description": "One-time Business package: 50 invitations",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    },
+    {
+      "code": "business_event_75",
+      "productId": "com.halaa.business_event_75",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 285,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "هلا أعمال 75 دعوة",
+          "description": "باقة أعمال لمرة واحدة تشمل 75 دعوة",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "Halaa Business 75 Invites",
+          "description": "One-time Business package: 75 invitations",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    },
+    {
+      "code": "business_quarterly",
+      "productId": "com.halaa.business_quarterly",
+      "type": "AUTO_RENEWABLE_SUBSCRIPTION",
+      "duration": "P3M",
+      "targetPriceSar": 3000,
+      "proposedSubscriptionLevel": 1,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "هلا أعمال — 3 أشهر",
+          "description": "اشتراك أعمال لمدة 3 أشهر",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "Halaa Business 3 Months",
+          "description": "Business subscription billed every 3 months",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    },
+    {
+      "code": "design_template_3d",
+      "productId": "com.halaa.design_template_3d",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 500,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "تصميم دعوة ثلاثية الأبعاد",
+          "description": "تصميم دعوة مخصص ثلاثي الأبعاد",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "3D Invitation Design",
+          "description": "Custom three-dimensional invitation design",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    },
+    {
+      "code": "design_template_animated",
+      "productId": "com.halaa.design_template_animated",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 350,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "تصميم دعوة متحركة",
+          "description": "تصميم دعوة بخلفيات متحركة",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "Animated Invitation Design",
+          "description": "Invitation design with animated backgrounds",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    },
+    {
+      "code": "design_template_custom_male",
+      "productId": "com.halaa.design_template_custom_male",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 200,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "تصميم دعوة رجالية مخصصة",
+          "description": "تصميم مخصص لدعوات الرجال",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "Custom Men's Invitation",
+          "description": "Custom invitation design for men",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    },
+    {
+      "code": "design_template_custom_themed",
+      "productId": "com.halaa.design_template_custom_themed",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 275,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "تصميم دعوة حسب الثيم",
+          "description": "تصميم دعوة مخصص حسب ثيم المناسبة",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "Custom Themed Invitation",
+          "description": "Custom invitation matching your event theme",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    },
+    {
+      "code": "design_template_ready_made",
+      "productId": "com.halaa.design_template_ready_made",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 200,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "تصميم دعوة جاهزة",
+          "description": "تصميم جاهز لدعوات الرجال أو النساء",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "Ready-made Invitation Design",
+          "description": "Ready-made design for men or women",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    },
+    {
+      "code": "extra_invites_10",
+      "productId": "com.halaa.extra_invites_10",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 40,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "10 دعوة إضافية",
+          "description": "إضافة 10 دعوة إلى رصيدك",
+          "descriptionSource": "catalog"
+        },
+        {
+          "locale": "en-US",
+          "name": "10 Extra Invites",
+          "description": "Add 10 invitations to your balance",
+          "descriptionSource": "catalog"
+        }
+      ]
+    },
+    {
+      "code": "extra_invites_100",
+      "productId": "com.halaa.extra_invites_100",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 400,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "100 دعوة إضافية",
+          "description": "إضافة 100 دعوة إلى رصيدك",
+          "descriptionSource": "catalog"
+        },
+        {
+          "locale": "en-US",
+          "name": "100 Extra Invites",
+          "description": "Add 100 invitations to your balance",
+          "descriptionSource": "catalog"
+        }
+      ]
+    },
+    {
+      "code": "extra_invites_125",
+      "productId": "com.halaa.extra_invites_125",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 500,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "125 دعوة إضافية",
+          "description": "إضافة 125 دعوة إلى رصيدك",
+          "descriptionSource": "catalog"
+        },
+        {
+          "locale": "en-US",
+          "name": "125 Extra Invites",
+          "description": "Add 125 invitations to your balance",
+          "descriptionSource": "catalog"
+        }
+      ]
+    },
+    {
+      "code": "extra_invites_150",
+      "productId": "com.halaa.extra_invites_150",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 600,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "150 دعوة إضافية",
+          "description": "إضافة 150 دعوة إلى رصيدك",
+          "descriptionSource": "catalog"
+        },
+        {
+          "locale": "en-US",
+          "name": "150 Extra Invites",
+          "description": "Add 150 invitations to your balance",
+          "descriptionSource": "catalog"
+        }
+      ]
+    },
+    {
+      "code": "extra_invites_20",
+      "productId": "com.halaa.extra_invites_20",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 80,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "20 دعوة إضافية",
+          "description": "إضافة 20 دعوة إلى رصيدك",
+          "descriptionSource": "catalog"
+        },
+        {
+          "locale": "en-US",
+          "name": "20 Extra Invites",
+          "description": "Add 20 invitations to your balance",
+          "descriptionSource": "catalog"
+        }
+      ]
+    },
+    {
+      "code": "extra_invites_200",
+      "productId": "com.halaa.extra_invites_200",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 800,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "200 دعوة إضافية",
+          "description": "إضافة 200 دعوة إلى رصيدك",
+          "descriptionSource": "catalog"
+        },
+        {
+          "locale": "en-US",
+          "name": "200 Extra Invites",
+          "description": "Add 200 invitations to your balance",
+          "descriptionSource": "catalog"
+        }
+      ]
+    },
+    {
+      "code": "extra_invites_250",
+      "productId": "com.halaa.extra_invites_250",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 1000,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "250 دعوة إضافية",
+          "description": "إضافة 250 دعوة إلى رصيدك",
+          "descriptionSource": "catalog"
+        },
+        {
+          "locale": "en-US",
+          "name": "250 Extra Invites",
+          "description": "Add 250 invitations to your balance",
+          "descriptionSource": "catalog"
+        }
+      ]
+    },
+    {
+      "code": "extra_invites_30",
+      "productId": "com.halaa.extra_invites_30",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 120,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "30 دعوة إضافية",
+          "description": "إضافة 30 دعوة إلى رصيدك",
+          "descriptionSource": "catalog"
+        },
+        {
+          "locale": "en-US",
+          "name": "30 Extra Invites",
+          "description": "Add 30 invitations to your balance",
+          "descriptionSource": "catalog"
+        }
+      ]
+    },
+    {
+      "code": "extra_invites_300",
+      "productId": "com.halaa.extra_invites_300",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 1200,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "300 دعوة إضافية",
+          "description": "إضافة 300 دعوة إلى رصيدك",
+          "descriptionSource": "catalog"
+        },
+        {
+          "locale": "en-US",
+          "name": "300 Extra Invites",
+          "description": "Add 300 invitations to your balance",
+          "descriptionSource": "catalog"
+        }
+      ]
+    },
+    {
+      "code": "extra_invites_350",
+      "productId": "com.halaa.extra_invites_350",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 1400,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "350 دعوة إضافية",
+          "description": "إضافة 350 دعوة إلى رصيدك",
+          "descriptionSource": "catalog"
+        },
+        {
+          "locale": "en-US",
+          "name": "350 Extra Invites",
+          "description": "Add 350 invitations to your balance",
+          "descriptionSource": "catalog"
+        }
+      ]
+    },
+    {
+      "code": "extra_invites_40",
+      "productId": "com.halaa.extra_invites_40",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 160,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "40 دعوة إضافية",
+          "description": "إضافة 40 دعوة إلى رصيدك",
+          "descriptionSource": "catalog"
+        },
+        {
+          "locale": "en-US",
+          "name": "40 Extra Invites",
+          "description": "Add 40 invitations to your balance",
+          "descriptionSource": "catalog"
+        }
+      ]
+    },
+    {
+      "code": "extra_invites_400",
+      "productId": "com.halaa.extra_invites_400",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 1600,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "400 دعوة إضافية",
+          "description": "إضافة 400 دعوة إلى رصيدك",
+          "descriptionSource": "catalog"
+        },
+        {
+          "locale": "en-US",
+          "name": "400 Extra Invites",
+          "description": "Add 400 invitations to your balance",
+          "descriptionSource": "catalog"
+        }
+      ]
+    },
+    {
+      "code": "extra_invites_450",
+      "productId": "com.halaa.extra_invites_450",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 1800,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "450 دعوة إضافية",
+          "description": "إضافة 450 دعوة إلى رصيدك",
+          "descriptionSource": "catalog"
+        },
+        {
+          "locale": "en-US",
+          "name": "450 Extra Invites",
+          "description": "Add 450 invitations to your balance",
+          "descriptionSource": "catalog"
+        }
+      ]
+    },
+    {
+      "code": "extra_invites_50",
+      "productId": "com.halaa.extra_invites_50",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 200,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "50 دعوة إضافية",
+          "description": "إضافة 50 دعوة إلى رصيدك",
+          "descriptionSource": "catalog"
+        },
+        {
+          "locale": "en-US",
+          "name": "50 Extra Invites",
+          "description": "Add 50 invitations to your balance",
+          "descriptionSource": "catalog"
+        }
+      ]
+    },
+    {
+      "code": "extra_invites_500",
+      "productId": "com.halaa.extra_invites_500",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 2000,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "500 دعوة إضافية",
+          "description": "إضافة 500 دعوة إلى رصيدك",
+          "descriptionSource": "catalog"
+        },
+        {
+          "locale": "en-US",
+          "name": "500 Extra Invites",
+          "description": "Add 500 invitations to your balance",
+          "descriptionSource": "catalog"
+        }
+      ]
+    },
+    {
+      "code": "extra_invites_75",
+      "productId": "com.halaa.extra_invites_75",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 300,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "75 دعوة إضافية",
+          "description": "إضافة 75 دعوة إلى رصيدك",
+          "descriptionSource": "catalog"
+        },
+        {
+          "locale": "en-US",
+          "name": "75 Extra Invites",
+          "description": "Add 75 invitations to your balance",
+          "descriptionSource": "catalog"
+        }
+      ]
+    },
+    {
+      "code": "premium_event_100",
+      "productId": "com.halaa.premium_event_100",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 450,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "هلا بريميوم 100 دعوة",
+          "description": "باقة بريميوم لمرة واحدة تشمل 100 دعوة",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "Halaa Premium 100 Invites",
+          "description": "One-time Premium package: 100 invitations",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    },
+    {
+      "code": "premium_event_150",
+      "productId": "com.halaa.premium_event_150",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 675,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "هلا بريميوم 150 دعوة",
+          "description": "باقة بريميوم لمرة واحدة تشمل 150 دعوة",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "Halaa Premium 150 Invites",
+          "description": "One-time Premium package: 150 invitations",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    },
+    {
+      "code": "premium_event_200",
+      "productId": "com.halaa.premium_event_200",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 900,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "هلا بريميوم 200 دعوة",
+          "description": "باقة بريميوم لمرة واحدة تشمل 200 دعوة",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "Halaa Premium 200 Invites",
+          "description": "One-time Premium package: 200 invitations",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    },
+    {
+      "code": "premium_event_25",
+      "productId": "com.halaa.premium_event_25",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 120,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "هلا بريميوم 25 دعوة",
+          "description": "باقة بريميوم لمرة واحدة تشمل 25 دعوة",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "Halaa Premium 25 Invites",
+          "description": "One-time Premium package: 25 invitations",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    },
+    {
+      "code": "premium_event_50",
+      "productId": "com.halaa.premium_event_50",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 235,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "هلا بريميوم 50 دعوة",
+          "description": "باقة بريميوم لمرة واحدة تشمل 50 دعوة",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "Halaa Premium 50 Invites",
+          "description": "One-time Premium package: 50 invitations",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    },
+    {
+      "code": "premium_event_75",
+      "productId": "com.halaa.premium_event_75",
+      "type": "CONSUMABLE",
+      "duration": null,
+      "targetPriceSar": 345,
+      "proposedSubscriptionLevel": null,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "هلا بريميوم 75 دعوة",
+          "description": "باقة بريميوم لمرة واحدة تشمل 75 دعوة",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "Halaa Premium 75 Invites",
+          "description": "One-time Premium package: 75 invitations",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    },
+    {
+      "code": "premium_monthly_100",
+      "productId": "com.halaa.premium_monthly_100",
+      "type": "AUTO_RENEWABLE_SUBSCRIPTION",
+      "duration": "P1M",
+      "targetPriceSar": 540,
+      "proposedSubscriptionLevel": 4,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "هلا بريميوم 100 — شهري",
+          "description": "اشتراك بريميوم شهري يشمل 100 دعوة",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "Halaa Premium 100 Monthly",
+          "description": "Monthly Premium plan: 100 invitations",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    },
+    {
+      "code": "premium_monthly_150",
+      "productId": "com.halaa.premium_monthly_150",
+      "type": "AUTO_RENEWABLE_SUBSCRIPTION",
+      "duration": "P1M",
+      "targetPriceSar": 810,
+      "proposedSubscriptionLevel": 3,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "هلا بريميوم 150 — شهري",
+          "description": "اشتراك بريميوم شهري يشمل 150 دعوة",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "Halaa Premium 150 Monthly",
+          "description": "Monthly Premium plan: 150 invitations",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    },
+    {
+      "code": "premium_monthly_200",
+      "productId": "com.halaa.premium_monthly_200",
+      "type": "AUTO_RENEWABLE_SUBSCRIPTION",
+      "duration": "P1M",
+      "targetPriceSar": 1080,
+      "proposedSubscriptionLevel": 2,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "هلا بريميوم 200 — شهري",
+          "description": "اشتراك بريميوم شهري يشمل 200 دعوة",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "Halaa Premium 200 Monthly",
+          "description": "Monthly Premium plan: 200 invitations",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    },
+    {
+      "code": "premium_monthly_25",
+      "productId": "com.halaa.premium_monthly_25",
+      "type": "AUTO_RENEWABLE_SUBSCRIPTION",
+      "duration": "P1M",
+      "targetPriceSar": 150,
+      "proposedSubscriptionLevel": 7,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "هلا بريميوم 25 — شهري",
+          "description": "اشتراك بريميوم شهري يشمل 25 دعوة",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "Halaa Premium 25 Monthly",
+          "description": "Monthly Premium plan: 25 invitations",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    },
+    {
+      "code": "premium_monthly_50",
+      "productId": "com.halaa.premium_monthly_50",
+      "type": "AUTO_RENEWABLE_SUBSCRIPTION",
+      "duration": "P1M",
+      "targetPriceSar": 285,
+      "proposedSubscriptionLevel": 6,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "هلا بريميوم 50 — شهري",
+          "description": "اشتراك بريميوم شهري يشمل 50 دعوة",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "Halaa Premium 50 Monthly",
+          "description": "Monthly Premium plan: 50 invitations",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    },
+    {
+      "code": "premium_monthly_75",
+      "productId": "com.halaa.premium_monthly_75",
+      "type": "AUTO_RENEWABLE_SUBSCRIPTION",
+      "duration": "P1M",
+      "targetPriceSar": 420,
+      "proposedSubscriptionLevel": 5,
+      "localizations": [
+        {
+          "locale": "ar-SA",
+          "name": "هلا بريميوم 75 — شهري",
+          "description": "اشتراك بريميوم شهري يشمل 75 دعوة",
+          "descriptionSource": "generated_fallback"
+        },
+        {
+          "locale": "en-US",
+          "name": "Halaa Premium 75 Monthly",
+          "description": "Monthly Premium plan: 75 invitations",
+          "descriptionSource": "generated_fallback"
+        }
+      ]
+    }
+  ]
+}

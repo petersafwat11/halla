@@ -103,6 +103,32 @@ export default function VendorPublicProfileScreen({ route, navigation }) {
       { text: t("cancel", "Cancel"), style: "cancel" },
     ]);
   };
+  const blockVendor = async () => {
+    try {
+      const res = await apiFetch(ENDPOINTS.MODERATION.BLOCK, {
+        method: "POST",
+        body: { blockedActorType: "user", blockedActorId: vendor.id },
+      });
+      if (!res.ok) throw new Error("block_failed");
+      Alert.alert(
+        t("vendor.blocked", "Vendor blocked"),
+        t("vendor.blockedMsg", "This vendor will no longer appear in your marketplace."),
+        [{ text: t("ok", "OK"), onPress: () => navigation.goBack() }]
+      );
+    } catch {
+      Alert.alert(t("errors.generic", "Something went wrong"));
+    }
+  };
+  const handleBlock = () => {
+    Alert.alert(
+      t("vendor.block", "Block vendor"),
+      t("vendor.blockConfirm", "Hide this vendor and their services from your marketplace?"),
+      [
+        { text: t("cancel", "Cancel"), style: "cancel" },
+        { text: t("vendor.block", "Block vendor"), style: "destructive", onPress: blockVendor },
+      ]
+    );
+  };
   const categories = (vendor.categories || []).map((key) => t(`sections.${key}`, key));
   const services = vendor.services || [];
   const portfolio = vendor.portfolio || [];
@@ -118,6 +144,7 @@ export default function VendorPublicProfileScreen({ route, navigation }) {
             <TouchableOpacity style={styles.roundButton} onPress={() => navigation.goBack()} accessibilityLabel={t("vendor.backToMarketplace")}><DirectionalIonicon name="arrow-back" size={22} color={colors.natural[50]} /></TouchableOpacity>
             <TouchableOpacity style={styles.roundButton} onPress={share} accessibilityLabel={t("vendor.share")}><Ionicons name="share-outline" size={22} color={colors.natural[50]} /></TouchableOpacity>
             <TouchableOpacity style={styles.roundButton} onPress={handleReport} accessibilityLabel={t("vendor.report", "Report vendor")}><Ionicons name="flag-outline" size={20} color={colors.natural[50]} /></TouchableOpacity>
+            <TouchableOpacity style={styles.roundButton} onPress={handleBlock} accessibilityLabel={t("vendor.block", "Block vendor")}><Ionicons name="ban-outline" size={20} color={colors.natural[50]} /></TouchableOpacity>
           </View>
         </View>
 

@@ -87,7 +87,7 @@
       { "q": "What is the compensation credit system?", "a": "Compensation credits are extra invite slots granted on top of your plan's guest count. When a guest declines, you can use these credits to invite someone else in their place and ensure your event is fully attended." },
       { "q": "Is my data safe with Halaa?", "a": "Yes, we use the highest security and encryption standards to protect your data and your guests' data, in accordance with international best practices and data protection regulations." },
       { "q": "Can I try the Halaa platform for free?", "a": "Yes, you can create a new account for free and try the platform with a limited number of trial invitations." },
-      { "q": "Can I cancel my subscription at any time?", "a": "Yes, you can cancel anytime with no additional fees. Your subscription continues until the end of the paid period and the prepaid plan amount is non-refundable." }
+      { "q": "Can I cancel my subscription at any time?", "a": "Yes. Cancelling stops the next renewal and your access continues until the end of the paid period. Cancellation does not automatically create a prorated refund. Refund eligibility depends on the purchase channel and the Cancellation & Refund Policy; Apple or Google handles refund requests for subscriptions bought through its store." }
     ]
   },
   "pricing": {
@@ -208,6 +208,7 @@
       { "name": "Privacy Policy", "href": "/privacy" },
       { "name": "Cancellation & Refund", "href": "/refund" },
       { "name": "Community Rules", "href": "/community-rules" },
+      { "name": "Account & Data Deletion", "href": "/delete-account" },
       { "name": "Support & Contact", "href": "/support" }
     ],
     "copyright": "© 2026 Halaa. All rights reserved.",

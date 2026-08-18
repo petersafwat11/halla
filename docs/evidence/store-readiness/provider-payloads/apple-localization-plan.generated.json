@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "mode": "DRY_RUN",
+  "externalWrites": 0,
+  "provider": "apple",
+  "stage": "localization",
+  "source": {
+    "catalogVersion": "1.0.0",
+    "catalogHash": "20d07092eeb8684a3a82acc987bd07355f3e1952ed47e6ec50c966315aca8499",
+    "manifestSha256": "cd2b56ef217d10663569156f7a2a0d830822dc99ed50d2893edce63b0d0e6939"
+  },
+  "actualStateBasis": "READ_ONLY_EXPORT",
+  "actualStateHash": "3fcaebbbfcbad99b6218eb63055b1938327fac876ea6d59ece2ec1c6b4e58aee",
+  "blockers": [],
+  "conflicts": [],
+  "operations": [],
+  "planHash": "22652f98ada3e01444a6d3a776e4112c60d85e03993fefbde5ece7af1abb4648"
+}

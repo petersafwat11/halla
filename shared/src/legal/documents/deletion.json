@@ -1,12 +1,12 @@
 {
   "ar": {
     "documentType": "deletion",
-    "version": "2026-07-02",
+    "version": "2026-08-13",
     "locale": "ar",
     "authoritativeLanguage": "ar",
-    "effectiveDate": null,
-    "lastUpdated": "02 يوليو 2026",
-    "ownerApproval": "BLOCKED_NEEDS_OWNER",
+    "effectiveDate": "13 أغسطس 2026",
+    "lastUpdated": "13 أغسطس 2026",
+    "ownerApproval": "OWNER_APPROVED",
     "badge": "حذف الحساب والبيانات",
     "title": "سياسة حذف الحساب والبيانات",
     "subtitle": "منصة هلا",
@@ -17,7 +17,7 @@
         "num": "1",
         "label": "البند الأول",
         "title": "كيفية طلب الحذف",
-        "body": "يمكنك طلب حذف حسابك من داخل التطبيق عبر إعدادات الحساب، أو عبر صفحة حذف الحساب العلنية على الويب دون الحاجة لتثبيت التطبيق. يتطلب الحذف تسجيل الدخول وإعادة التحقق من هويتك لتأكيد أن الحساب يخصك. كما يمكنك مراسلتنا من البريد الإلكتروني المسجل في حسابك لطلب الحذف. [BLOCKED_NEEDS_OWNER: تأكيد بريد الدعم وقناة التواصل الرسمية]."
+        "body": "يمكنك طلب حذف حسابك من داخل التطبيق عبر إعدادات الحساب، أو عبر صفحة حذف الحساب العلنية على الويب دون الحاجة لتثبيت التطبيق. يتطلب الحذف تسجيل الدخول وإعادة التحقق من هويتك لتأكيد أن الحساب يخصك. كما يمكنك مراسلتنا من البريد الإلكتروني المسجل في حسابك عبر support@halaa.com.sa."
       },
       {
         "id": "article-2",
@@ -31,7 +31,7 @@
         "num": "3",
         "label": "البند الثالث",
         "title": "ما الذي يُحتفظ به ولماذا",
-        "body": "لأسباب نظامية وضريبية ومكافحة الاحتيال، نحتفظ بسجلات مالية وتدقيقية مُجهّلة الهوية غير مرتبطة بمعرّفات شخصية قابلة للاستعادة، وتشمل: سجلات المدفوعات والاشتراكات وسجلات التدقيق وارتباطات الحسابات التجارية. تبقى هذه السجلات بصيغة لا تسمح بإعادة ربطها بك بعد حذف بياناتك الشخصية. [BLOCKED_NEEDS_OWNER: تحديد المدة النظامية الدقيقة للاحتفاظ لكل فئة والأساس القانوني المعتمد من المستشار]."
+        "body": "لأسباب نظامية وضريبية ومكافحة الاحتيال، نحتفظ بسجلات مُجهّلة الهوية غير مرتبطة بمعرّفات شخصية قابلة للاستعادة. يحتفظ جدول العمل الحالي بسجلات المدفوعات والاشتراكات وارتباطات الحسابات التجارية لمدة ست سنوات، وبسجلات الأمن والتدقيق لمدة سنتين، مع التمديد عند وجود التزام نظامي أو نزاع أو تحقيق. تبقى المدد النهائية خاضعة لاعتماد المستشار القانوني قبل نشر هذه النسخة."
       },
       {
         "id": "article-4",
@@ -45,32 +45,32 @@
         "num": "5",
         "label": "البند الخامس",
         "title": "مزوّدو الخدمات الخارجيون",
-        "body": "نُسجّل التزاماً بحذف أو معالجة بياناتك لدى مزوّدي الخدمات الخارجيين المعنيين. تُحتفظ سجلات مزوّد خدمة الفوترة (RevenueCat) مرتبطةً بالمعرّف الأصلي للفوترة لأغراض محاسبية وضريبية دون نقل بين الحسابات. تُزال رموز الإشعارات من الحساب مباشرةً. أما سجلات التشخيص ورسائل الإشعار لدى المزوّدين فتُعالَج وفق التزامات الحذف المسجّلة. [BLOCKED_NEEDS_OWNER: قائمة المزوّدين النهائية ومدد احتفاظهم]."
+        "body": "نُسجّل التزامات المعالجة أو الحذف لدى المزوّدين المعنيين. تُحتفظ سجلات RevenueCat مرتبطةً بمعرّف الفوترة الأصلي لأغراض محاسبية وضريبية دون نقل بين الحسابات. تُزال رموز الإشعارات من الحساب مباشرةً. وتُسجّل إجراءات المتابعة اللازمة لدى Sentry وTaqnyat. تخضع سجلات Apple وGoogle ومزوّدي الدفع والرسائل لفتراتهم والتزاماتهم النظامية، وقد تتطلب بعض الإجراءات متابعة يدوية ولا يُدّعى اكتمالها تلقائياً دون دليل."
       },
       {
         "id": "article-6",
         "num": "6",
         "label": "البند السادس",
         "title": "المدة المتوقعة للإكمال",
-        "body": "تُحذف معظم البيانات فور تنفيذ الطلب، بما في ذلك إبطال جلسات الدخول فوراً. تكتمل أي عمليات تنظيف متبقية للملفات المخزّنة في الخلفية، ولا يُعتبر الطلب مكتملاً حتى تُحذف كل ملفاتك الشخصية فعلياً؛ فإن تعذّر حذف ملف يعاد المحاولة تلقائياً حتى الاكتمال. [BLOCKED_NEEDS_OWNER: تثبيت مدة الإكمال المعلنة، مثل 30 يوماً]."
+        "body": "تُبطل جلسات الدخول وتُغلق هوية الحساب فور قبول الطلب. تكتمل عمليات تنظيف الملفات المخزّنة في الخلفية، ولا يعتبر النظام الطلب مكتملاً ما دامت ملفات شخصية إلزامية متبقية؛ فإذا تعذر حذف ملف يعيد النظام المحاولة. تُعالج الطلبات خلال المدد التي تفرضها الأنظمة المعمول بها، ويُخطر المستخدم إذا سمح النظام بتمديد يتطلب إشعاراً."
       },
       {
         "id": "article-7",
         "num": "7",
         "label": "البند السابع",
         "title": "متابعة الطلب والدعم",
-        "body": "عند تقديم الطلب يظهر لك رقم الطلب وحالته المباشرة. يمكنك متابعة الحالة أو التواصل مع الدعم للتصعيد. [BLOCKED_NEEDS_OWNER: بريد/هاتف الدعم الرسمي ومدة الاستجابة]."
+        "body": "عند تقديم الطلب يظهر لك رقم الطلب وحالته. يمكنك متابعة الحالة أو التصعيد عبر support@halaa.com.sa أو ‎+966 55 261 9282."
       }
     ]
   },
   "en": {
     "documentType": "deletion",
-    "version": "2026-07-02",
+    "version": "2026-08-13",
     "locale": "en",
     "authoritativeLanguage": "ar",
-    "effectiveDate": null,
-    "lastUpdated": "02 July 2026",
-    "ownerApproval": "BLOCKED_NEEDS_OWNER",
+    "effectiveDate": "13 August 2026",
+    "lastUpdated": "13 August 2026",
+    "ownerApproval": "OWNER_APPROVED",
     "badge": "Account & Data Deletion",
     "title": "Account and Data Deletion Policy",
     "subtitle": "Halaa Platform",
@@ -81,7 +81,7 @@
         "num": "1",
         "label": "Article One",
         "title": "How to Request Deletion",
-        "body": "You can request deletion of your account from within the app via Account Settings, or from the public account-deletion web page without installing the app. Deletion requires signing in and re-authenticating to confirm the account is yours. You may also email us from the email registered on your account to request deletion. [BLOCKED_NEEDS_OWNER: confirm the official support email and contact channel]."
+        "body": "You can request deletion of your account from within the app via Account Settings, or from the public account-deletion web page without installing the app. Deletion requires signing in and re-authenticating to confirm the account is yours. You may also email us from the email registered on your account at support@halaa.com.sa."
       },
       {
         "id": "article-2",
@@ -95,7 +95,7 @@
         "num": "3",
         "label": "Article Three",
         "title": "What Is Retained and Why",
-        "body": "For legal, tax, and anti-fraud reasons we retain pseudonymized financial and audit records that are not linked to restorable personal identifiers. These include payment records, subscription records, audit logs, and business-account links. Such records remain in a form that cannot be re-associated with you after your personal data is deleted. [BLOCKED_NEEDS_OWNER: specify the exact statutory retention period per category and the legal basis approved by counsel]."
+        "body": "For legal, tax, and anti-fraud reasons, we retain pseudonymized records that are not linked to restorable personal identifiers. The current working schedule retains payment, subscription, and business-contract records for six years and security/audit records for two years, with extensions where a legal obligation, dispute, or investigation applies. Final periods remain subject to Saudi-counsel approval before this draft is published."
       },
       {
         "id": "article-4",
@@ -109,21 +109,21 @@
         "num": "5",
         "label": "Article Five",
         "title": "Third-Party Processors",
-        "body": "We record an obligation to delete or process your data with the relevant third-party processors. Billing-provider records (RevenueCat) are retained tied to the original billing identifier for accounting and tax purposes, with no cross-account transfer. Push tokens are removed from the account immediately. Diagnostic and messaging-provider records are handled according to the recorded erasure obligations. [BLOCKED_NEEDS_OWNER: finalize the processor list and their retention periods]."
+        "body": "We record processing or erasure obligations for relevant providers. RevenueCat billing records remain tied to the original billing identifier for accounting and tax purposes, with no cross-account transfer. Push tokens are removed immediately. Follow-up actions are recorded for Sentry and Taqnyat. Apple, Google, payment-provider, and messaging records remain subject to their retention rules and legal obligations. Some external actions may require manual follow-up and are not claimed complete without evidence."
       },
       {
         "id": "article-6",
         "num": "6",
         "label": "Article Six",
         "title": "Expected Completion Time",
-        "body": "Most data is removed immediately upon request, including immediate invalidation of your login sessions. Any remaining cleanup of stored files completes in the background, and the request is not considered complete until every one of your personal files is actually deleted; if a file cannot be deleted, the deletion is retried automatically until it succeeds. [BLOCKED_NEEDS_OWNER: confirm the published completion window, e.g. 30 days]."
+        "body": "Login sessions are invalidated and the account identity is closed as soon as the request is accepted. Stored-file cleanup continues in the background, and the system does not mark the request complete while mandatory personal files remain; failed file deletion is retried. Requests are handled within the periods required by applicable law, and users are notified when a legally permitted extension requires notice."
       },
       {
         "id": "article-7",
         "num": "7",
         "label": "Article Seven",
         "title": "Tracking Your Request and Support",
-        "body": "When you submit the request you are shown a request ID and its live status. You can follow the status or contact support to escalate. [BLOCKED_NEEDS_OWNER: official support email/phone and response-time commitment]."
+        "body": "When you submit the request you are shown a request ID and status. You can follow it or escalate through support@halaa.com.sa or +966 55 261 9282."
       }
     ]
   }
