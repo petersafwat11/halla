@@ -227,6 +227,7 @@ export const logout = async ({ accessToken, refreshToken } = {}) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "X-Client": "mobile",
         ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
       },
       body: JSON.stringify({ refreshToken }),

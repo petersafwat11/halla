@@ -90,9 +90,10 @@ export const useAuthStore = create((set, get) => ({
    * Cold-launch session restore.
    *
    * Reads the refresh token from secure storage, asks the backend to rotate
-   * it (which also returns the latest `user` snapshot). On any failure we
-   * land in `unauthenticated` — there is no fallback to a stale local copy,
-   * by design: if the server says we're out, we're out.
+   * it (which also returns the latest `user` snapshot). A definitive auth
+   * rejection clears the session. On a transient network/server failure we
+   * retain the encrypted local shadow and let the next API request retry the
+   * refresh, preventing an offline launch from looking like a forced logout.
    */
   restoreSession: async () => {
     try {
@@ -105,8 +106,27 @@ export const useAuthStore = create((set, get) => ({
       // Route through refreshTokens() to avoid cold-launch races with early apiFetch() calls
       const freshToken = await get().refreshTokens();
       if (!freshToken) {
+        // refreshTokens() clears secure storage only for a definitive auth
+        // rejection. If the credential is still present, this was transient.
+        const retainedRefreshToken = await loadRefreshToken();
+        if (retainedRefreshToken) {
+          const shadow = await loadUserShadow();
+          const shadowRole = shadow?.role;
+          if (shadowRole) {
+            set({
+              user: shadow,
+              token: null,
+              refreshToken: retainedRefreshToken,
+              role: shadowRole,
+              status: "authenticated",
+              error: null,
+            });
+            return;
+          }
+        }
+
         if (get().status !== "authenticated") {
-          set({ status: "unauthenticated" });
+          set({ status: "unauthenticated", token: null, refreshToken: null });
         }
         return;
       }

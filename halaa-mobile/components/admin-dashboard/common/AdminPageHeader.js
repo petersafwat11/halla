@@ -183,13 +183,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignSelf: "center",
     gap: spacing[8],
-    paddingHorizontal: spacing[14],
-    paddingVertical: spacing[8],
+    paddingHorizontal: spacing[16],
+    height: 44,
     borderRadius: borderRadius[20],
     backgroundColor: backgrounds.card[1],
     borderWidth: 1,
     borderColor: colors.natural[200],
-    minHeight: 38,
+    minWidth: 72,
     flexShrink: 0,
   },
   chipActive: {
@@ -198,7 +198,8 @@ const styles = StyleSheet.create({
   },
   chipText: {
     fontSize: typography.fontSize.label.large,
-    fontWeight: typography.fontWeight.medium,
+    fontFamily: "Cairo_600SemiBold",
+    fontWeight: typography.fontWeight.semibold,
     color: colors.natural[500],
   },
   chipTextActive: {

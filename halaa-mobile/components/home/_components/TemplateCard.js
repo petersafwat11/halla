@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Image,
@@ -7,6 +7,8 @@ import {
   Animated,
   StyleSheet,
 } from "react-native";
+import { ENDPOINTS, resolveApiUrl } from "../../../config/api";
+import { useAuthStore } from "../../../stores/authStore";
 
 const CARD_WIDTH = 123;
 
@@ -17,7 +19,10 @@ export default function TemplateCard({
   cardSpacing,
   isSelected,
   onPress,
+  fallbackSource,
 }) {
+  const token = useAuthStore((state) => state.token);
+  const [remoteFailed, setRemoteFailed] = useState(false);
   const inputRange = [
     (index - 1) * (CARD_WIDTH + cardSpacing),
     index * (CARD_WIDTH + cardSpacing),
@@ -38,8 +43,26 @@ export default function TemplateCard({
 
   // Prefer the full rendered preview (with the invitation text baked in) over
   // the bare thumbnail/background — this is what web shows.
-  const imgUri = template.imageUrl || template.thumbnailUrl;
-  const imgSource = template.src || (imgUri ? { uri: imgUri } : null);
+  const templateId = String(template?._id || template?.id || "");
+  const isDatabaseTemplate = /^[a-f\d]{24}$/i.test(templateId);
+  const imgSource = useMemo(() => {
+    if (template.src) return template.src;
+    if (remoteFailed && fallbackSource) return fallbackSource;
+
+    const rawUri =
+      template.thumbnailUrl ||
+      template.imageUrl ||
+      (isDatabaseTemplate ? ENDPOINTS.TEMPLATES.ASSET(templateId) : null);
+    if (!rawUri) return fallbackSource || null;
+
+    const uri = resolveApiUrl(rawUri);
+    return {
+      uri,
+      ...(token ? { headers: { Authorization: `Bearer ${token}`, "X-Client": "mobile" } } : {}),
+    };
+  }, [fallbackSource, isDatabaseTemplate, remoteFailed, template, templateId, token]);
+
+  useEffect(() => setRemoteFailed(false), [templateId]);
 
   return (
     <TouchableOpacity onPress={() => onPress(template)} activeOpacity={0.8}>
@@ -56,6 +79,7 @@ export default function TemplateCard({
               source={imgSource}
               style={styles.image}
               resizeMode="cover"
+              onError={() => setRemoteFailed(true)}
             />
           ) : (
             <View style={[styles.image, styles.placeholder]} />

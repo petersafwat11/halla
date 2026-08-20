@@ -134,6 +134,12 @@ export const apiFetch = async (path, options = {}) => {
   const buildInit = (token, signal) => ({
     method,
     headers: {
+      // The backend returns refresh tokens in the JSON body only to native
+      // clients. React Native can retain Set-Cookie values internally, so
+      // cookie-presence alone is not a reliable way for the server to tell a
+      // native request from a browser request. Keep this marker on every
+      // mobile call, including password rotation and silent refresh.
+      "X-Client": "mobile",
       ...(!isFormData && body ? { "Content-Type": "application/json" } : {}),
       ...(token && !skipAuth ? { Authorization: `Bearer ${token}` } : {}),
       ...headers,

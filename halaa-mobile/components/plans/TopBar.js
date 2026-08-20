@@ -12,15 +12,12 @@ import { colors, spacing, typography } from "../../styles/tokens";
 import DirectionalIonicon from "../common/DirectionalIonicon";
 
 /**
- * Symmetric three-column app bar (P1-08).
+ * Logical-start app bar.
  *
- * Layout: [ start slot ] [ centered title ] [ end slot ]
- *  - start / end slots are equal-width and hold 44x44 controls (or custom
- *    content), so the title is mathematically centered independent of the side
- *    controls and does NOT shift between RTL and LTR.
- *  - The bar is direction-agnostic: it uses logical start/end via a plain `row`
- *    (React Native auto-flips `row` under the inherited layout direction),
- *    so there is NO hardcoded `row-reverse` and no manual double reversal.
+ * Layout: [ back + page title ] ........ [ optional actions ]
+ * The title intentionally sits beside the back affordance instead of floating
+ * in the center of the safe area. A plain `row` follows the inherited RTL/LTR
+ * layout, so Arabic places this cluster on the right and English on the left.
  *  - The back chevron is chosen once from the resolved layout direction.
  *  - Minimum touch target is 44x44; the title truncates and exposes a
  *    screen-reader header label.
@@ -48,7 +45,7 @@ const TopBar = ({
     }
   };
 
-  // Logical start slot: back control > custom content > spacer.
+  // Logical start control: back control > custom content > nothing.
   const renderStart = () => {
     if (showBack) {
       return (
@@ -70,10 +67,10 @@ const TopBar = ({
     if (leftContent) {
       return <View style={styles.slotContent}>{leftContent}</View>;
     }
-    return <View style={styles.control} />;
+    return null;
   };
 
-  // Logical end slot: custom content > spacer (keeps title centered).
+  // Logical end slot: custom content > touch-target-sized balance slot.
   const renderEnd = () => {
     if (rightContent) {
       return <View style={[styles.slotContent, styles.slotEnd]}>{rightContent}</View>;
@@ -86,11 +83,9 @@ const TopBar = ({
       <StatusBar barStyle="light-content" backgroundColor={colors.primary[500]} />
 
       <View style={styles.content}>
-        {/* Absolutely-centered title layer: centered across the full bar width,
-            independent of the side slots, so it never shifts between RTL/LTR.
-            Rendered behind the slots and padded away from the 44px controls. */}
-        {!!title && (
-          <View style={styles.titleLayer} pointerEvents="none">
+        <View style={styles.startCluster}>
+          {renderStart()}
+          {!!title && (
             <Text
               style={styles.title}
               numberOfLines={1}
@@ -99,11 +94,8 @@ const TopBar = ({
             >
               {title}
             </Text>
-          </View>
-        )}
-
-        <View style={styles.startSlot}>{renderStart()}</View>
-        <View style={styles.spacer} />
+          )}
+        </View>
         <View style={styles.endSlot}>{renderEnd()}</View>
       </View>
     </View>
@@ -123,19 +115,18 @@ const styles = StyleSheet.create({
     minHeight: 57,
     width: "100%",
   },
-  // Equal-width side slots keep the absolutely-centered title balanced.
-  startSlot: {
-    minWidth: TOUCH,
-    justifyContent: "center",
-    alignItems: "flex-start",
+  startCluster: {
+    flex: 1,
+    minWidth: 0,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing[4],
   },
   endSlot: {
-    minWidth: TOUCH,
+    minWidth: 0,
     justifyContent: "center",
     alignItems: "flex-end",
-  },
-  spacer: {
-    flex: 1,
+    flexShrink: 0,
   },
   control: {
     width: TOUCH,
@@ -150,17 +141,10 @@ const styles = StyleSheet.create({
   slotEnd: {
     alignItems: "flex-end",
   },
-  // Title layer spans the whole bar and centers its text; the 44px horizontal
-  // insets keep long titles from colliding with the corner controls.
-  titleLayer: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: TOUCH + spacing[8],
-  },
   title: {
-    textAlign: "center",
-    fontSize: typography.fontSize.body.medium,
+    flexShrink: 1,
+    fontFamily: "Cairo_600SemiBold",
+    fontSize: typography.fontSize.title.medium,
     fontWeight: typography.fontWeight.semibold,
     color: colors.natural[50],
   },

@@ -20,6 +20,17 @@ export const API_BASE_URL =
 export const WEB_BASE_URL =
   process.env.EXPO_PUBLIC_WEB_URL || "https://halaa.com.sa";
 
+/** Resolve either a shared endpoint path or a backend-returned asset URL. */
+export const resolveApiUrl = (path) => {
+  if (!path || /^https?:\/\//i.test(path)) return path;
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  const versionPath = API_BASE_URL.match(/\/api\/v\d+\/?$/)?.[0]?.replace(/\/$/, "");
+  if (versionPath && normalizedPath.startsWith(versionPath)) {
+    return `${API_BASE_URL.slice(0, -versionPath.length)}${normalizedPath}`;
+  }
+  return `${API_BASE_URL.replace(/\/$/, "")}${normalizedPath}`;
+};
+
 export const ENDPOINTS = {
   AUTH: {
     LOGIN: API_PATHS.auth.login,
@@ -230,6 +241,7 @@ export const ENDPOINTS = {
 
   TEMPLATES: {
     LIST: API_PATHS.templates.list,
+    ASSET: API_PATHS.templates.asset,
     CATEGORIES: API_PATHS.templates.categories,
   },
 

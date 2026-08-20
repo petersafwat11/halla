@@ -20,14 +20,15 @@ const StatChip = ({ item }) => {
   };
   return (
     <View style={styles.statChip}>
+      <View style={[styles.statAccent, { backgroundColor: iconConfig.color }]} />
       <View style={[styles.statIconBox, { backgroundColor: `${iconConfig.color}18` }]}>
-        <Ionicons name={iconConfig.name} size={18} color={iconConfig.color} />
+        <Ionicons name={iconConfig.name} size={20} color={iconConfig.color} />
       </View>
       <View style={styles.statTextCol}>
         <Text style={styles.statValue}>{item.value ?? "—"}</Text>
-        <Text style={styles.statLabel} numberOfLines={1}>{item.title}</Text>
+        <Text style={styles.statLabel} numberOfLines={2}>{item.title}</Text>
         {item.subtitle ? (
-          <Text style={styles.statSubtitle} numberOfLines={1}>{item.subtitle}</Text>
+          <Text style={styles.statSubtitle} numberOfLines={2}>{item.subtitle}</Text>
         ) : null}
       </View>
     </View>
@@ -51,40 +52,57 @@ const styles = StyleSheet.create({
   statChip: {
     flexBasis: "47%",
     flex: 1,
-    flexDirection: "row",
+    minHeight: 142,
     alignItems: "center",
-    gap: spacing[10],
+    justifyContent: "center",
+    gap: spacing[8],
     backgroundColor: backgrounds.card[1],
     borderRadius: borderRadius[12],
-    padding: spacing[12],
+    paddingHorizontal: spacing[12],
+    paddingVertical: spacing[16],
     borderWidth: 1,
     borderColor: colors.natural[200],
+    overflow: "hidden",
+  },
+  statAccent: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 3,
   },
   statIconBox: {
-    width: 36,
-    height: 36,
-    borderRadius: borderRadius[8],
+    width: 40,
+    height: 40,
+    borderRadius: borderRadius[12],
     justifyContent: "center",
     alignItems: "center",
     flexShrink: 0,
   },
-  statTextCol: { flex: 1 },
+  statTextCol: {
+    alignItems: "center",
+    gap: 2,
+  },
   statValue: {
-    fontSize: typography.fontSize.title.medium,
+    fontSize: typography.fontSize.title.large,
     fontWeight: typography.fontWeight.semibold,
     color: colors.natural[900],
+    textAlign: "center",
   },
   statLabel: {
     fontSize: typography.fontSize.label.small,
     color: colors.natural[450],
-    fontWeight: typography.fontWeight.regular,
-    marginTop: 1,
+    fontFamily: "Cairo_500Medium",
+    fontWeight: typography.fontWeight.medium,
+    textAlign: "center",
+    lineHeight: 18,
   },
   statSubtitle: {
     fontSize: typography.fontSize.label.small,
     color: colors.natural[350],
     fontWeight: typography.fontWeight.regular,
-    marginTop: 1,
+    textAlign: "center",
+    lineHeight: 17,
   },
 });
 

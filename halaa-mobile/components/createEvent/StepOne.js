@@ -64,7 +64,7 @@ const StepOne = () => {
   const { control, setValue, watch } = useFormContext();
   const { t, currentLanguage } = useTranslation("createEvent");
   const { data: subData } = useMySubscription();
-  const isTrial = subData?.data?.subscription?.[0]?.planCode === "trial";
+  const isTrial = subData?.data?.subscription?.planCode === "trial";
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   // Earliest selectable event date enforces the backend event-date floor:

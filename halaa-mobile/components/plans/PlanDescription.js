@@ -2,7 +2,8 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
-import { formatNumber, formatPercent, isolateLtr, isolateRtl } from "@halaa/shared/utils/locale";
+import { formatNumber, formatPercent } from "@halaa/shared/utils/locale";
+import { isolateLtr, isolateRtl } from "@halaa/shared/utils/bidi";
 import { COMPENSATION_PERCENTAGE } from "@halaa/shared/constants/plans";
 
 /**
@@ -29,8 +30,9 @@ const PlanDescription = ({
 
   if (!plan) return null;
 
-  const bullets =
-    (plan.featureBullets && plan.featureBullets[activeLang]) || [];
+  const localizedBullets =
+    plan.featureBullets && plan.featureBullets[activeLang];
+  const bullets = Array.isArray(localizedBullets) ? localizedBullets : [];
   const family = plan.planFamily;
   const billingType = plan.billingType;
   const setupFee = Number(plan.setupFeeAmount) || 0;

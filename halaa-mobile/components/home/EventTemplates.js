@@ -13,6 +13,8 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
+import { resolveApiUrl } from "../../config/api";
+import { useAuthStore } from "../../stores/authStore";
 import DirectionalIonicon from "../common/DirectionalIonicon";
 import TemplateCategoryChips from "./_components/TemplateCategoryChips";
 import TemplateCard from "./_components/TemplateCard";
@@ -149,6 +151,7 @@ const LOCAL_TEMPLATES = [
 const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
   const { t, currentLanguage, isRTL } = useTranslation("common");
   const locale = currentLanguage;
+  const token = useAuthStore((state) => state.token);
 
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [scrollX] = useState(new Animated.Value(0));
@@ -180,6 +183,17 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
   }, [templatesData, templatesError]);
 
   const maxIdx = Math.max(0, templates.length - 1);
+  const previewImageSource = React.useMemo(() => {
+    if (!previewTemplate) return null;
+    if (previewTemplate.src) return previewTemplate.src;
+    const raw = previewTemplate.imageUrl || previewTemplate.thumbnailUrl;
+    if (!raw) return null;
+    const uri = resolveApiUrl(raw);
+    return {
+      uri,
+      ...(token ? { headers: { Authorization: `Bearer ${token}`, "X-Client": "mobile" } } : {}),
+    };
+  }, [previewTemplate, token]);
 
   // RTL indexing strategy (plan §3.1.6 / Phase 6 audit): on iOS an RTL
   // horizontal ScrollView reports contentOffset.x as 0 at the leading
@@ -280,6 +294,7 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
                     cardSpacing={CARD_SPACING}
                     isSelected={isSelected}
                     onPress={handleTemplatePress}
+                    fallbackSource={LOCAL_TEMPLATES[index % LOCAL_TEMPLATES.length]?.src}
                   />
                 );
               })}
@@ -361,9 +376,9 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
                   </TouchableOpacity>
                 </View>
                 <View style={styles.modalBody}>
-                  {previewTemplate?.src && (
+                  {previewImageSource && (
                     <Image
-                      source={previewTemplate.src}
+                      source={previewImageSource}
                       style={styles.modalImage}
                       resizeMode="contain"
                     />

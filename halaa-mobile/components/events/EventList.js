@@ -322,7 +322,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 12,
     flexDirection: "column",
-    alignItems: "flex-start",
+    alignItems: "center",
     gap: 8,
     borderRadius: 14,
     backgroundColor: "#FFF",
@@ -346,12 +346,14 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_700Bold",
     color: "#2C2C2C",
     lineHeight: 28,
+    textAlign: "center",
   },
   statLabel: {
     fontSize: 11,
     fontFamily: "Cairo_500Medium",
     color: "#656565",
     lineHeight: 16,
+    textAlign: "center",
   },
   searchRow: {
     flexDirection: "row",

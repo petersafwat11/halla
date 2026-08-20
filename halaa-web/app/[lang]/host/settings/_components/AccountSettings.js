@@ -45,6 +45,10 @@ const AccountSettings = ({ user = {} }) => {
 
   const onSubmit = async (formData) => {
     try {
+      const profileChanged =
+        formData.username !== (user.username || "") ||
+        formData.email !== (user.email || "");
+
       if (formData.password) {
         const res = await updatePasswordMutation.mutateAsync({
           currentPassword: formData.currentPassword,
@@ -56,16 +60,19 @@ const AccountSettings = ({ user = {} }) => {
         }
       }
 
-      const profileData = { username: formData.username, email: formData.email };
-      const response = await updateProfileMutation.mutateAsync(profileData);
+      let response = null;
+      if (profileChanged) {
+        const profileData = { username: formData.username, email: formData.email };
+        response = await updateProfileMutation.mutateAsync(profileData);
 
-      if (response.status === "success") {
-        toastUtils.success(response.message || t("account_updated_successfully"));
+        if (response.status === "success") {
+          toastUtils.success(response.message || t("account_updated_successfully"));
+        }
       }
 
       reset({
-        username: response.data?.user?.username || formData.username,
-        email: response.data?.user?.email || formData.email,
+        username: response?.data?.user?.username || formData.username,
+        email: response?.data?.user?.email || formData.email,
         currentPassword: "",
         password: "",
         confirmPassword: "",

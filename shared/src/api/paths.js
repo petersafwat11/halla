@@ -300,6 +300,7 @@ const PATHS = {
   templates: {
     list: "/templates",
     getById: (id) => `/templates/${id}`,
+    asset: (id) => `/templates/${id}/asset`,
     categories: "/template-categories",
     fonts: "/fonts",
     adminList: "/admin/templates",
