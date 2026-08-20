@@ -61,11 +61,21 @@ const PlansScreen = () => {
   // returns, but we drop them explicitly regardless.
   const STORE_HIDDEN = useMemo(() => new Set(["trial", "unlimited"]), []);
   const basicPlans = useMemo(
-    () => (response?.data?.basic?.[billingType] || []).filter((p) => !STORE_HIDDEN.has(p?.planType)),
+    () => {
+      const plans = response?.data?.basic?.[billingType];
+      return (Array.isArray(plans) ? plans : []).filter(
+        (p) => p && !STORE_HIDDEN.has(p.planType)
+      );
+    },
     [response, billingType, STORE_HIDDEN]
   );
   const premiumPlans = useMemo(
-    () => (response?.data?.premium?.[billingType] || []).filter((p) => !STORE_HIDDEN.has(p?.planType)),
+    () => {
+      const plans = response?.data?.premium?.[billingType];
+      return (Array.isArray(plans) ? plans : []).filter(
+        (p) => p && !STORE_HIDDEN.has(p.planType)
+      );
+    },
     [response, billingType, STORE_HIDDEN]
   );
 

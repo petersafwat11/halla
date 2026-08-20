@@ -69,7 +69,12 @@ export default function Marketplace({ navigation }) {
       <TopBar title={`${t("title")}${total ? ` (${total})` : ""}`} onBack={() => navigation?.goBack()} showBack={false} />
       <View style={styles.content}>
         <SearchAndFilter searchQuery={searchInput} onSearch={setSearchInput} onFilterPress={() => setFiltersOpen(true)} activeFiltersCount={activeFilterCount} />
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categories}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.categoriesScroll}
+          contentContainerStyle={styles.categories}
+        >
           {[{ key: "all", label: t("sections.all") }, ...categories.map((item) => ({ key: item.key, label: i18n.language === "ar" ? item.nameAr : item.nameEn }))].map((item) => {
             const active = filters.serviceType === item.key;
             return (
@@ -91,6 +96,7 @@ export default function Marketplace({ navigation }) {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.primary[500] },
   content: { flex: 1, backgroundColor: backgrounds.artboard },
+  categoriesScroll: { flexGrow: 0, flexShrink: 0 },
   categories: { paddingHorizontal: spacing[16], paddingBottom: spacing[12], gap: spacing[8] },
   category: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: spacing[14] || 14, paddingVertical: 9, borderRadius: 999, borderWidth: 1, borderColor: colors.natural[250], backgroundColor: colors.natural[50] },
   categoryActive: { borderColor: colors.primary[500], backgroundColor: colors.primary[500] },

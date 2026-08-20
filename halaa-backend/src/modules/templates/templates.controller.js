@@ -18,6 +18,15 @@ exports.getById = catchAsync(async (req, res) => {
   sendSuccess(res, { template: tpl });
 });
 
+exports.getAsset = catchAsync(async (req, res) => {
+  const variant = req.query.variant === "original" ? "original" : "thumbnail";
+  const asset = await service.getAsset(req.params.id, variant);
+  res.set("Content-Type", asset.contentType);
+  res.set("Cache-Control", "private, max-age=3600");
+  if (asset.etag) res.set("ETag", asset.etag);
+  res.status(200).send(asset.body);
+});
+
 // ── Admin ───────────────────────────────────────────────────────────────────
 exports.adminList = catchAsync(async (req, res) => {
   const templates = await service.listForAdmin({

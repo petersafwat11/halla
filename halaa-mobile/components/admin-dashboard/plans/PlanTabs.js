@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
 import { useTranslation } from "../../../localization";
-import { colors, spacing, borderRadius, textStyles, backgrounds } from "../../../styles/tokens";
+import { colors, spacing, borderRadius, typography, backgrounds } from "../../../styles/tokens";
 
 const TABS = [
   { key: "all",         labelKey: "plans.tabs.all" },
@@ -19,6 +19,7 @@ const PlanTabs = ({ activeTab, onTabChange }) => {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
+        style={styles.scroll}
         contentContainerStyle={styles.container}
       >
         {TABS.map((tab) => {
@@ -42,28 +43,38 @@ const PlanTabs = ({ activeTab, onTabChange }) => {
 
 const styles = StyleSheet.create({
   wrapper: {
-    backgroundColor: backgrounds.card[1],
-    borderBottomWidth: 1,
-    borderBottomColor: colors.natural[200],
+    backgroundColor: backgrounds.artboard,
+  },
+  scroll: {
+    flexGrow: 0,
+    flexShrink: 0,
   },
   container: {
     flexDirection: "row",
     paddingHorizontal: spacing[16],
-    paddingVertical: spacing[12],
+    paddingVertical: spacing[8],
     gap: spacing[8],
   },
   tab: {
     paddingHorizontal: spacing[16],
-    paddingVertical: spacing[8],
+    height: 44,
+    minWidth: 72,
     borderRadius: borderRadius[20],
-    backgroundColor: colors.natural[150],
+    backgroundColor: backgrounds.card[1],
     alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: colors.natural[200],
+    flexShrink: 0,
   },
   activeTab: {
     backgroundColor: colors.primary[500],
+    borderColor: colors.primary[500],
   },
   tabText: {
-    ...textStyles.labelMedium,
+    fontFamily: "Cairo_600SemiBold",
+    fontSize: typography.fontSize.label.large,
+    fontWeight: typography.fontWeight.semibold,
     color: colors.natural[500],
   },
   activeTabText: {

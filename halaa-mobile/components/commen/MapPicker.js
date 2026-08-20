@@ -13,7 +13,6 @@ import {
 } from "react-native";
 import { useFormContext, Controller } from "react-hook-form";
 import { Ionicons } from "@expo/vector-icons";
-import MapView, { Marker, PROVIDER_DEFAULT } from "react-native-maps";
 import * as Location from "expo-location";
 import DirectionalIonicon from "../common/DirectionalIonicon";
 import { fetchWithTimeout } from "../../services/http";
@@ -32,34 +31,22 @@ const MapPickerInner = ({ onChange, value, error, label, placeholder, disabled }
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(value || DEFAULT_LOCATION);
-  const [region, setRegion] = useState({
-    latitude: value?.latitude || 24.7136,
-    longitude: value?.longitude || 46.6753,
-    latitudeDelta: 0.05,
-    longitudeDelta: 0.05,
-  });
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
-  const mapRef = useRef(null);
   const searchTimeoutRef = useRef(null);
 
   // Update forms hydrate after mount. Keep the modal marker/region aligned
   // with the database value instead of retaining the create-flow default.
   useEffect(() => {
     if (!value) return;
-    const latitude = Number(value.latitude);
-    const longitude = Number(value.longitude);
     setSelectedLocation(value);
-    if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
-      const nextRegion = {
-        latitude,
-        longitude,
-        latitudeDelta: 0.05,
-        longitudeDelta: 0.05,
-      };
-      setRegion(nextRegion);
-      if (isOpen) mapRef.current?.animateToRegion(nextRegion);
-    }
-  }, [isOpen, value]);
+  }, [value]);
+
+  useEffect(
+    () => () => {
+      if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    },
+    []
+  );
 
   const searchLocation = async (query) => {
     if (!query || query.trim().length < 3) {
@@ -88,12 +75,6 @@ const MapPickerInner = ({ onChange, value, error, label, placeholder, disabled }
     searchTimeoutRef.current = setTimeout(() => searchLocation(text), 500);
   };
 
-  const animateTo = (latitude, longitude) => {
-    const r = { latitude, longitude, latitudeDelta: 0.05, longitudeDelta: 0.05 };
-    setRegion(r);
-    mapRef.current?.animateToRegion(r);
-  };
-
   const getCurrentLocation = async () => {
     setIsLoadingLocation(true);
     try {
@@ -104,7 +85,7 @@ const MapPickerInner = ({ onChange, value, error, label, placeholder, disabled }
       }
       // Coarse accuracy only — the app no longer requests ACCESS_FINE_LOCATION
       // (§7.2). City/area precision is enough to pick an event location, and the
-      // user can still fine-tune by dragging the pin or searching by text.
+      // user can still choose an exact result or enter the address directly.
       const location = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Low,
       });
@@ -117,7 +98,6 @@ const MapPickerInner = ({ onChange, value, error, label, placeholder, disabled }
           latitude, longitude,
           city: addr.city || "", country: addr.country || "",
         });
-        animateTo(latitude, longitude);
       }
     } catch (err) {
       console.error("Location error:", err);
@@ -136,36 +116,17 @@ const MapPickerInner = ({ onChange, value, error, label, placeholder, disabled }
       city: result.address?.city || result.address?.town || "",
       country: result.address?.country || "",
     });
-    animateTo(lat, lon);
     setSearchQuery("");
     setSearchResults([]);
     Keyboard.dismiss();
   };
 
-  const handleMapPress = async (event) => {
-    const { latitude, longitude } = event.nativeEvent.coordinate;
-    try {
-      const addresses = await Location.reverseGeocodeAsync({ latitude, longitude });
-      if (addresses?.length > 0) {
-        const addr = addresses[0];
-        setSelectedLocation({
-          address: `${addr.street || ""} ${addr.city || ""} ${addr.country || ""}`.trim(),
-          latitude, longitude,
-          city: addr.city || "", country: addr.country || "",
-        });
-      } else {
-        setSelectedLocation({
-          address: `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`,
-          latitude, longitude, city: "", country: "",
-        });
-      }
-    } catch (err) {
-      console.error("Reverse geocode error:", err);
-      setSelectedLocation({
-        address: `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`,
-        latitude, longitude, city: "", country: "",
-      });
-    }
+  const useTypedAddress = () => {
+    const address = searchQuery.trim();
+    if (address.length < 3) return;
+    setSelectedLocation({ address, city: "", country: "" });
+    setSearchResults([]);
+    Keyboard.dismiss();
   };
 
   const handleConfirm = () => {
@@ -270,27 +231,14 @@ const MapPickerInner = ({ onChange, value, error, label, placeholder, disabled }
               </View>
             )}
 
-            <View style={styles.mapContainer}>
-              <MapView
-                ref={mapRef}
-                style={styles.map}
-                provider={PROVIDER_DEFAULT}
-                initialRegion={region}
-                onPress={handleMapPress}
-                showsUserLocation
-                showsMyLocationButton={false}
-                showsCompass={false}
-              >
-                <Marker
-                  coordinate={{
-                    latitude: selectedLocation.latitude,
-                    longitude: selectedLocation.longitude,
-                  }}
-                  title="الموقع المختار"
-                  description={selectedLocation.address}
-                  pinColor="#C28E5C"
-                />
-              </MapView>
+            <View style={styles.locationPanel}>
+              <View style={styles.locationIntroIcon}>
+                <Ionicons name="location-outline" size={34} color="#C28E5C" />
+              </View>
+              <Text style={styles.locationIntroTitle}>حدّد موقع المناسبة بأمان</Text>
+              <Text style={styles.locationIntroText}>
+                ابحث عن المدينة أو الشارع أو استخدم موقعك الحالي. يمكنك أيضًا اعتماد العنوان المكتوب مباشرة.
+              </Text>
 
               <TouchableOpacity
                 style={styles.currentLocationButton}
@@ -301,18 +249,32 @@ const MapPickerInner = ({ onChange, value, error, label, placeholder, disabled }
                 {isLoadingLocation ? (
                   <ActivityIndicator size="small" color="#FFF" />
                 ) : (
-                  <Ionicons name="locate" size={24} color="#FFF" />
+                  <Ionicons name="locate" size={20} color="#FFF" />
                 )}
+                <Text style={styles.currentLocationText}>استخدام موقعي الحالي</Text>
               </TouchableOpacity>
+
+              {searchQuery.trim().length >= 3 && !isSearching ? (
+                <TouchableOpacity
+                  style={styles.typedAddressButton}
+                  onPress={useTypedAddress}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="create-outline" size={18} color="#6B4E33" />
+                  <Text style={styles.typedAddressText} numberOfLines={2}>
+                    استخدام «{searchQuery.trim()}» كعنوان
+                  </Text>
+                </TouchableOpacity>
+              ) : null}
 
               {selectedLocation.address ? (
                 <View style={styles.selectedAddressCard}>
                   <View style={styles.addressIconContainer}>
-                    <Ionicons name="location" size={20} color="#C28E5C" />
+                    <Ionicons name="checkmark-circle" size={22} color="#2A8C5B" />
                   </View>
                   <View style={styles.addressTextContainer}>
                     <Text style={styles.addressLabel}>الموقع المختار</Text>
-                    <Text style={styles.addressText} numberOfLines={2}>
+                    <Text style={styles.addressText} numberOfLines={3}>
                       {selectedLocation.address}
                     </Text>
                   </View>
@@ -436,22 +398,92 @@ const styles = StyleSheet.create({
     flex: 1, fontSize: 14, fontFamily: "Cairo_400Regular", color: "#2C2C2C", textAlign: "right",
   },
   separator: { height: 1, backgroundColor: "#F0F0F0", marginHorizontal: 20 },
-  mapContainer: { flex: 1, position: "relative" },
-  map: { flex: 1 },
+  locationPanel: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+    backgroundColor: "#FCFAF8",
+  },
+  locationIntroIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#F5ECE4",
+    marginBottom: 12,
+  },
+  locationIntroTitle: {
+    fontSize: 17,
+    fontFamily: "Cairo_700Bold",
+    color: "#2C2C2C",
+    textAlign: "center",
+  },
+  locationIntroText: {
+    marginTop: 4,
+    marginBottom: 16,
+    maxWidth: 320,
+    fontSize: 12,
+    lineHeight: 19,
+    fontFamily: "Cairo_400Regular",
+    color: "#656565",
+    textAlign: "center",
+  },
   currentLocationButton: {
-    position: "absolute", bottom: 24, right: 20, width: 56, height: 56, borderRadius: 28,
-    backgroundColor: "#C28E5C", justifyContent: "center", alignItems: "center",
-    shadowColor: "#000", shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3, shadowRadius: 8, elevation: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    width: "100%",
+    maxWidth: 320,
+    minHeight: 46,
+    borderRadius: 12,
+    backgroundColor: "#C28E5C",
+    paddingHorizontal: 16,
+  },
+  currentLocationText: {
+    fontSize: 13,
+    fontFamily: "Cairo_600SemiBold",
+    color: "#FFF",
+  },
+  typedAddressButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    width: "100%",
+    maxWidth: 320,
+    marginTop: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E3CBB4",
+    backgroundColor: "#FFF",
+  },
+  typedAddressText: {
+    flex: 1,
+    fontSize: 12,
+    fontFamily: "Cairo_600SemiBold",
+    color: "#6B4E33",
   },
   selectedAddressCard: {
-    position: "absolute", top: 16, left: 16, right: 16, backgroundColor: "#FFF",
-    borderRadius: 16, padding: 16, flexDirection: "row", alignItems: "flex-start", gap: 12,
-    shadowColor: "#000", shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15, shadowRadius: 8, elevation: 5,
+    width: "100%",
+    maxWidth: 320,
+    marginTop: 14,
+    backgroundColor: "#FFF",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#BDDCCB",
+    padding: 14,
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
   },
   addressIconContainer: {
-    width: 40, height: 40, borderRadius: 20, backgroundColor: "#F9F4EF",
+    width: 38, height: 38, borderRadius: 12, backgroundColor: "#EAF4EF",
     justifyContent: "center", alignItems: "center",
   },
   addressTextContainer: { flex: 1 },

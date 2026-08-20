@@ -33,5 +33,8 @@ jobs:
         env:
           NODE_ENV: test
           DRY_RUN: "true"
+          DATABASE: mongodb://127.0.0.1:27017/halaa_ci
+          JWT_SECRET: ci-only-jwt-secret-not-used-outside-smoke-test-1234567890
+          MOYASAR_API_KEY: ci-only-placeholder
       - name: Catalog verify (store SKU drift + contracts)
         run: npm run catalog:verify

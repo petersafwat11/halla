@@ -34,7 +34,13 @@ const safeJson = async (response) => {
 export const requestJson = async (path, init = {}) => {
   let response;
   try {
-    response = await fetchWithTimeout(buildUrl(path), init);
+    response = await fetchWithTimeout(buildUrl(path), {
+      ...init,
+      headers: {
+        "X-Client": "mobile",
+        ...(init.headers || {}),
+      },
+    });
   } catch (err) {
     throw apiErrorFromTransport(err);
   }

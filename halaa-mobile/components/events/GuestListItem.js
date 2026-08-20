@@ -228,7 +228,8 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 16,
     borderWidth: 1,
-    borderEndWidth: 6,
+    // Logical start = right in Arabic and left in English.
+    borderStartWidth: 6,
     borderColor: "#C28E5C",
     gap: 12,
     shadowColor: "#000",
@@ -250,7 +251,7 @@ const styles = StyleSheet.create({
   containerSelected: {
     borderColor: "#C28E5C",
     borderWidth: 2,
-    borderEndWidth: 6,
+    borderStartWidth: 6,
     backgroundColor: "#FBF6F0",
   },
   checkbox: {

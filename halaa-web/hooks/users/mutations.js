@@ -48,12 +48,17 @@ export const useUserMutation = (action) => {
           path: API_PATHS.users.updateMyPassword,
           data: passwordData,
         }),
-      onSuccess: () => {
+      onSuccess: (response) => {
         // Clear the must-change-password gate (cookie drives the middleware
         // redirect; store flag drives any client guard) now that the user has
-        // rotated their password.
+        // rotated their password. The backend has also atomically replaced
+        // both HttpOnly cookies; keep the client user snapshot synchronized
+        // with that same response instead of waiting for a later profile read.
         Cookies.remove("mustChangePassword");
-        useAuthStore.getState().updateUser({ mustChangePassword: false });
+        const rotatedUser = response?.data?.user;
+        useAuthStore.getState().updateUser(
+          rotatedUser || { mustChangePassword: false }
+        );
       },
     },
 

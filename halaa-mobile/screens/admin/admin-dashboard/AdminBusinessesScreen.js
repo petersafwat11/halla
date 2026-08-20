@@ -107,6 +107,7 @@ const AdminBusinessesScreen = ({ navigation }) => {
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
+            style={styles.filterScroll}
             contentContainerStyle={styles.filterRow}
           >
             {FILTERS.map((f) => {
@@ -175,20 +176,30 @@ const styles = StyleSheet.create({
     gap: spacing[8],
     paddingVertical: spacing[4],
   },
+  filterScroll: {
+    flexGrow: 0,
+    flexShrink: 0,
+  },
   chip: {
     paddingHorizontal: spacing[16],
-    paddingVertical: spacing[8],
+    height: 44,
+    minWidth: 72,
     borderRadius: borderRadius[20],
     backgroundColor: backgrounds.card[1],
     borderWidth: 1,
     borderColor: colors.natural[200],
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
   },
   chipActive: {
     backgroundColor: colors.primary[500],
     borderColor: colors.primary[500],
   },
   chipText: {
-    fontSize: typography.fontSize.body.small,
+    fontFamily: "Cairo_600SemiBold",
+    fontSize: typography.fontSize.label.large,
+    fontWeight: typography.fontWeight.semibold,
     color: colors.natural[700],
   },
   chipTextActive: {

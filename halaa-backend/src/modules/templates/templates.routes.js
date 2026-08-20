@@ -77,6 +77,10 @@ hostRouter.use(protect);
  */
 hostRouter.get("/", validateZod(hostListQuerySchema, "query"), controller.list);
 
+// Authenticated image proxy. The production S3 bucket is private, so direct
+// bucket URLs are not renderable by mobile/web clients.
+hostRouter.get("/:id/asset", validateObjectId("id"), controller.getAsset);
+
 /**
  * @swagger
  * /templates/{id}:

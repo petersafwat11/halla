@@ -165,6 +165,26 @@ async function processImage(s3Key) {
 
 const LIST_LIMIT = 200;
 
+/**
+ * Template objects live in a private S3 bucket in production. Exposing the
+ * stored bucket URL made every mobile card fail with 403. Return stable API
+ * asset URLs instead; the asset route below authenticates the caller and
+ * streams the object through the backend.
+ */
+function withAssetUrls(doc) {
+  if (!doc) return doc;
+  const plain = doc.toObject ? doc.toObject() : { ...doc };
+  const id = String(plain._id || plain.id || "");
+  if (!id) return plain;
+  const backendBase = String(process.env.BACKEND_URL || "").replace(/\/$/, "");
+  const assetBase = `${backendBase}/api/v2/templates/${id}/asset`;
+  return {
+    ...plain,
+    imageUrl: `${assetBase}?variant=original`,
+    thumbnailUrl: `${assetBase}?variant=thumbnail`,
+  };
+}
+
 // Categories whose templates / chips are intentionally hidden from the
 // host-facing endpoints (home page + create-event step 3). They drive
 // admin/internal flows — post-event content and staff/moderator entry —
@@ -181,11 +201,12 @@ async function listForHost({ category } = {}) {
     query.categories = { $nin: HOST_HIDDEN_CATEGORY_CODES };
   }
 
-  return Template.find(query)
+  const docs = await Template.find(query)
     .select("-imageS3Key -createdBy -updatedBy -version -__v")
     .sort({ sortOrder: 1, createdAt: -1 })
     .limit(LIST_LIMIT)
     .lean();
+  return docs.map(withAssetUrls);
 }
 
 async function listForAdmin({ query: rawQuery = {}, actor } = {}) {
@@ -205,16 +226,52 @@ async function listForAdmin({ query: rawQuery = {}, actor } = {}) {
     ];
   }
 
-  return Template.find(query)
+  const docs = await Template.find(query)
     .sort({ sortOrder: 1, createdAt: -1 })
     .limit(LIST_LIMIT)
     .lean();
+  return docs.map(withAssetUrls);
 }
 
 async function getById(id) {
   const doc = await Template.findById(id).lean();
   if (!doc || doc.deletedAt) throw new NotFoundError("Template");
-  return doc;
+  return withAssetUrls(doc);
+}
+
+async function getAsset(id, variant = "thumbnail") {
+  const doc = await Template.findById(id)
+    .select("imageS3Key thumbnailS3Key active deletedAt")
+    .lean();
+  if (!doc || doc.deletedAt || !doc.active) throw new NotFoundError("Template");
+
+  const key =
+    variant === "original"
+      ? doc.imageS3Key
+      : doc.thumbnailS3Key || doc.imageS3Key;
+  if (!key) throw new NotFoundError("Template image");
+
+  const client = getS3();
+  if (!client) {
+    throw new AppError("Template storage is not configured", 503, "S3_NOT_CONFIGURED");
+  }
+
+  const object = await client.send(
+    new GetObjectCommand({ Bucket: process.env.AWS_S3_BUCKET, Key: key })
+  );
+  const bytes = object.Body?.transformToByteArray
+    ? await object.Body.transformToByteArray()
+    : Buffer.concat(await (async () => {
+        const chunks = [];
+        for await (const chunk of object.Body) chunks.push(chunk);
+        return chunks;
+      })());
+
+  return {
+    body: Buffer.isBuffer(bytes) ? bytes : Buffer.from(bytes),
+    contentType: object.ContentType || (key.endsWith(".webp") ? "image/webp" : "image/jpeg"),
+    etag: object.ETag || null,
+  };
 }
 
 async function createTemplate(payload, actor) {
@@ -243,7 +300,7 @@ async function createTemplate(payload, actor) {
       metadata: { nameEn: doc.nameEn, categories: doc.categories },
     });
 
-    return doc;
+    return withAssetUrls(doc);
   } catch (err) {
     await deleteS3Key(s3Key).catch(() => {});
     if (processed?.thumbnailS3Key) await deleteS3Key(processed.thumbnailS3Key).catch(() => {});
@@ -316,7 +373,7 @@ async function updateTemplate(id, payload, actor) {
       metadata: { nameEn: doc.nameEn, version: doc.version },
     });
 
-    return doc;
+    return withAssetUrls(doc);
   } catch (err) {
     if (s3Key && s3Key !== oldImageKey) await deleteS3Key(s3Key).catch(() => {});
     if (newProcessed?.thumbnailS3Key) await deleteS3Key(newProcessed.thumbnailS3Key).catch(() => {});
@@ -374,7 +431,7 @@ async function duplicateTemplate(id, actor) {
     metadata: { sourceId: src._id, nameEn: clone.nameEn },
   });
 
-  return clone;
+  return withAssetUrls(clone);
 }
 
 // ============================================
@@ -446,6 +503,7 @@ module.exports = {
   listForHost,
   listForAdmin,
   getById,
+  getAsset,
   createTemplate,
   updateTemplate,
   deleteTemplate,

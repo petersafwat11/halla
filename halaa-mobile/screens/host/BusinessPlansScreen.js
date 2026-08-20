@@ -75,7 +75,10 @@ const BusinessPlansScreen = () => {
   const loadError = plansError || subError;
 
   const tierPlans = useMemo(
-    () => response?.data?.[billingTier] || [],
+    () => {
+      const plans = response?.data?.[billingTier];
+      return Array.isArray(plans) ? plans.filter(Boolean) : [];
+    },
     [response, billingTier]
   );
 

@@ -60,12 +60,14 @@ const CurrentPlanCard = ({ subscription, usage }) => {
 
   const daysRemaining = subscription.daysRemaining || 0;
 
-  const eventsPercent = eventsUnlimited
+  const eventsPercentRaw = eventsUnlimited
     ? 0
     : eventsLimit > 0
       ? (eventsUsed / eventsLimit) * 100
       : 0;
-  const guestsPercent = guestsLimit > 0 ? (guestsUsed / guestsLimit) * 100 : 0;
+  const guestsPercentRaw = guestsLimit > 0 ? (guestsUsed / guestsLimit) * 100 : 0;
+  const eventsPercent = Number.isFinite(eventsPercentRaw) ? eventsPercentRaw : 0;
+  const guestsPercent = Number.isFinite(guestsPercentRaw) ? guestsPercentRaw : 0;
 
   return (
     <View style={styles.card}>
