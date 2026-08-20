@@ -3,8 +3,6 @@ import { registerRootComponent } from "expo";
 
 import App from "./App";
 
-// Note: I18nManager.forceRTL() doesn't work in Expo Go
-// We use flexDirection: "row-reverse" and context-based RTL control instead
 console.log("[index.js] App starting...");
 
 // registerRootComponent calls AppRegistry.registerComponent('main', () => App);

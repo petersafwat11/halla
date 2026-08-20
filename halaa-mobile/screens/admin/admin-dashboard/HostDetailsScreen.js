@@ -7,6 +7,7 @@ import { useAdminHostById, useUpdateHostStatus } from "../../../hooks";
 import { useAuthStore } from "../../../stores/authStore";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
+import { formatDate } from "@halaa/shared/utils/locale";
 import { canEditPage, PAGES } from "../../../utils/adminPermissions";
 import TopBar from "../../../components/plans/TopBar";
 import DirectionalIonicon from "../../../components/common/DirectionalIonicon";
@@ -17,12 +18,7 @@ import HostEventsList from "../../../components/admin-dashboard/hosts/HostEvents
 import SubscriptionModal from "../../../components/admin-dashboard/hosts/SubscriptionModal";
 import { backgrounds, spacing, colors, borderRadius, typography, textStyles } from "../../../styles/tokens";
 
-const fmtDate = (d, locale) => {
-  if (!d) return "—";
-  return new Date(d).toLocaleDateString(locale === "ar" ? "ar-SA" : "en-US", {
-    year: "numeric", month: "short", day: "numeric",
-  });
-};
+const fmtDate = (d, locale) => (d ? formatDate(d, locale) : "—");
 
 const capitalize = (s) => (typeof s === "string" && s.length ? s[0].toUpperCase() + s.slice(1) : s);
 

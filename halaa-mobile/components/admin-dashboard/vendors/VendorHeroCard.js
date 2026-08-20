@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
   contactText: {
     fontSize: typography.fontSize.body.small,
     color: colors.natural[500],
-    marginLeft: spacing[4],
+    marginStart: spacing[4],
   },
   badgeRow: {
     flexDirection: "row",
@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    marginRight: spacing[4],
+    marginEnd: spacing[4],
   },
   statusLabel: {
     fontSize: typography.fontSize.label.large,
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.label.large,
     fontWeight: typography.fontWeight.semibold,
     color: colors.warning[500],
-    marginLeft: spacing[4],
+    marginStart: spacing[4],
   },
 });
 

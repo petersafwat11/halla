@@ -39,7 +39,8 @@
     "verificationCodeError": "فشل إرسال رمز التحقق",
     "invalidVerificationCode": "رمز التحقق غير صحيح",
     "emailVerified": "تم التحقق من البريد الإلكتروني بنجاح",
-    "verificationError": "فشل التحقق من البريد الإلكتروني"
+    "verificationError": "فشل التحقق من البريد الإلكتروني",
+    "wrongCurrentPassword": "كلمة المرور الحالية غير صحيحة"
   },
   "deleteAccount": {
     "button": "حذف الحساب",

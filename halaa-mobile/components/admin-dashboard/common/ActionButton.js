@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   icon: {
-    marginRight: spacing[8],
+    marginEnd: spacing[8],
   },
   text: {
     fontSize: typography.fontSize.body.medium,

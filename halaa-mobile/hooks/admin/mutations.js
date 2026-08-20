@@ -700,8 +700,10 @@ const _envelopeOf = async (promise) => {
 export function useAssignTicket() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ ticketId, assigneeId }) => {
-      const response = await _envelopeOf(ticketsApi.assignTicket(ticketId, assigneeId));
+    mutationFn: async ({ ticketId, assigneeId, notes }) => {
+      const response = await _envelopeOf(
+        ticketsApi.assignTicket(ticketId, assigneeId, notes),
+      );
       return assertOk(response);
     },
     onSuccess: async () => {

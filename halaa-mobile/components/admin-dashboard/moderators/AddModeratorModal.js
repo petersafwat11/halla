@@ -398,7 +398,7 @@ const styles = StyleSheet.create({
     borderColor: colors.error[500],
   },
   inputIcon: {
-    marginRight: spacing[12],
+    marginEnd: spacing[12],
   },
   input: {
     flex: 1,

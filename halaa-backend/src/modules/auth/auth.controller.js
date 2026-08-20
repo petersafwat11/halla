@@ -487,3 +487,10 @@ exports.verifyEmail = catchAsync(async (req, res) => {
   sendSuccess(res, null, "Email verified successfully");
 });
 
+// Shared auth helpers for controllers that issue tokens / set auth cookies
+exports.setAuthCookies = setAuthCookies;
+exports.clearAuthCookies = clearAuthCookies;
+exports.requestContext = requestContext;
+exports.isBrowserClient = isBrowserClient;
+exports.sendAuthResponse = sendAuthResponse;
+

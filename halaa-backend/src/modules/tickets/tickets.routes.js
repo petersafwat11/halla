@@ -281,6 +281,9 @@ router
  *             properties:
  *               assigneeId:
  *                 type: string
+ *               notes:
+ *                 type: string
+ *                 maxLength: 2000
  *     responses:
  *       200:
  *         description: Ticket assigned successfully

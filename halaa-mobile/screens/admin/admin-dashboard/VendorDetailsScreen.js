@@ -7,6 +7,7 @@ import { useAdminVendorById, useUpdateVendorStatus } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 import { useAuthStore } from "../../../stores/authStore";
 import { useTranslation } from "../../../localization";
+import { formatDate } from "@halaa/shared/utils/locale";
 import { canEditPage, PAGES } from "../../../utils/adminPermissions";
 import TopBar from "../../../components/plans/TopBar";
 import DirectionalIonicon from "../../../components/common/DirectionalIonicon";
@@ -21,12 +22,7 @@ const getImageUrl = (path) => {
   return `${IMAGE_BASE}${path.startsWith("/") ? path : `/${path}`}`;
 };
 
-const fmtDate = (d, locale) => {
-  if (!d) return "—";
-  return new Date(d).toLocaleDateString(locale === "ar" ? "ar-SA" : "en-US", {
-    year: "numeric", month: "long", day: "numeric",
-  });
-};
+const fmtDate = (d, locale) => (d ? formatDate(d, locale) : "—");
 
 const IdentitySection = ({ vendor, roleData, t, currentLanguage }) => (
   <SectionCard title={t("vendorDetails.identity", "Identity")} icon="person-outline">

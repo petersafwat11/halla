@@ -59,7 +59,7 @@ const BusinessPlanCard = ({
           {name}
         </Text>
         <View style={styles.priceRow}>
-          <Text style={styles.priceNum}>{(price || 0).toLocaleString()}</Text>
+          <Text style={styles.priceNum}>{formatNumber(price || 0, lang)}</Text>
           <SarIcon size={20} color={colors.secondary[700]} />
         </View>
       </View>

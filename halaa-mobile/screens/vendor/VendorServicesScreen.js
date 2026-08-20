@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
+import { formatNumber } from "@halaa/shared/utils/locale";
 import Services from "../../components/vendor/home/Services";
 import AddServicePopup from "../../components/vendor/home/AddServicePopup";
 import { useVendorServices } from "../../hooks";
@@ -22,8 +23,9 @@ import { useToast } from "../../contexts/ToastContext";
 import { getImageUrl } from "../../utils/imageUtils";
 
 const VendorServicesScreen = ({ navigation }) => {
-  const { t } = useTranslation("vendor");
+  const { t, i18n } = useTranslation("vendor");
   const toast = useToast();
+  const currentLanguage = i18n.language || "ar";
   const [addPopupVisible, setAddPopupVisible] = useState(false);
   const [editingService, setEditingService] = useState(null);
 
@@ -47,23 +49,13 @@ const VendorServicesScreen = ({ navigation }) => {
       name: s.name,
       imageUri: getImageUrl(s.image),
       categories: s.tags || [],
-      price: s.price?.toLocaleString() || "0",
+      price: formatNumber(s.price, currentLanguage) || "0",
       isAvailable: s.status === "active",
       rating: s.rating || 0,
       category: s.category,
-      // Raw fields for edit pre-fill
-      _raw: {
-        nameAr: s.nameAr || "",
-        description: s.description || "",
-        descriptionAr: s.descriptionAr || "",
-        serviceType: s.category || "",
-        price: s.price != null ? String(s.price) : "",
-        included: s.included || [],
-        tags: s.tags || [],
-        image: s.image,
-      },
+      _raw: s,
     }));
-  }, [services]);
+  }, [services, currentLanguage]);
 
   const handleDeleteService = useCallback(
     (serviceId) => {
@@ -78,7 +70,7 @@ const VendorServicesScreen = ({ navigation }) => {
             onPress: () => {
               deleteServiceMutation.mutate(serviceId, {
                 onSuccess: () => toast.success(t("services.deleteSuccess")),
-                onError: () => toast.error(t("services.deleteError")),
+                onError: (err) => toast.error(err?.message || t("services.deleteError")),
               });
             },
           },
@@ -92,7 +84,7 @@ const VendorServicesScreen = ({ navigation }) => {
     (serviceId) => {
       toggleStatusMutation.mutate(serviceId, {
         onSuccess: () => toast.success(t("services.toggleSuccess")),
-        onError: () => toast.error(t("services.toggleError")),
+        onError: (err) => toast.error(err?.message || t("services.toggleError")),
       });
     },
     [toggleStatusMutation, toast, t],
@@ -114,15 +106,15 @@ const VendorServicesScreen = ({ navigation }) => {
   const handleAddServiceSubmit = useCallback(
     (formData) => {
       const payload = {
-        name: formData.serviceName,
-        nameAr: formData.serviceNameAr,
+        name: formData.serviceName?.trim(),
+        nameAr: formData.serviceNameAr?.trim() || "",
         category: formData.serviceType,
-        description: formData.description,
-        descriptionAr: formData.descriptionAr,
-        price: formData.price,
-        included: formData.included,
+        description: formData.description?.trim(),
+        descriptionAr: formData.descriptionAr?.trim() || "",
+        price: Number(formData.price),
+        included: formData.included || [],
         image: formData.serviceImage,
-        tags: formData.tags,
+        tags: formData.tags || [],
       };
 
       if (editingService) {
@@ -135,7 +127,7 @@ const VendorServicesScreen = ({ navigation }) => {
               setAddPopupVisible(false);
               setEditingService(null);
             },
-            onError: () => toast.error(t("services.updateError")),
+            onError: (err) => toast.error(err?.message || t("services.updateError")),
           },
         );
       } else {
@@ -145,7 +137,7 @@ const VendorServicesScreen = ({ navigation }) => {
             toast.success(t("services.addSuccess"));
             setAddPopupVisible(false);
           },
-          onError: () => toast.error(t("services.addError")),
+          onError: (err) => toast.error(err?.message || t("services.addError")),
         });
       }
     },

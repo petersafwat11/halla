@@ -36,19 +36,27 @@ const _resolveMimeType = (image) => {
   return "image/jpeg";
 };
 
-const buildServiceFormData = (data) => {
+export const buildServiceFormData = (data) => {
   const formData = new FormData();
-  if (data.name) formData.append("name", data.name);
-  if (data.nameAr) formData.append("nameAr", data.nameAr);
-  if (data.category) formData.append("category", data.category);
-  if (data.description) formData.append("description", data.description);
-  if (data.descriptionAr) formData.append("descriptionAr", data.descriptionAr);
+  if (data.name != null) formData.append("name", data.name);
+  if (data.nameAr != null) formData.append("nameAr", data.nameAr);
+  if (data.category != null) formData.append("category", data.category);
+  if (data.description != null) formData.append("description", data.description);
+  if (data.descriptionAr != null) formData.append("descriptionAr", data.descriptionAr);
   if (data.price != null) formData.append("price", String(data.price));
-  if (Array.isArray(data.included)) {
-    formData.append("included", JSON.stringify(data.included));
+  if (data.included != null) {
+    formData.append(
+      "included",
+      JSON.stringify(Array.isArray(data.included) ? data.included : [])
+    );
   }
-  if (data.tags?.length) formData.append("tags", JSON.stringify(data.tags));
-  if (data.image?.uri) {
+  if (data.tags != null) {
+    formData.append(
+      "tags",
+      JSON.stringify(Array.isArray(data.tags) ? data.tags : [])
+    );
+  }
+  if (data.image?.uri && !/^https?:\/\//i.test(data.image.uri)) {
     formData.append("image", {
       uri: data.image.uri,
       type: _resolveMimeType(data.image),
@@ -63,7 +71,12 @@ export const vendorApi = {
     _request(ENDPOINTS.SERVICES.STATS, { method: "GET" }, "Failed to get vendor stats"),
 
   getServices: () =>
-    _request(ENDPOINTS.SERVICES.BASE, { method: "GET" }, "Failed to get services"),
+    _requestWithQuery(
+      ENDPOINTS.SERVICES.BASE,
+      { limit: 100 },
+      { method: "GET" },
+      "Failed to get services",
+    ),
 
   toggleServiceStatus: (serviceId) =>
     _request(

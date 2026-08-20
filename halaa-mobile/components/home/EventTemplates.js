@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   Animated,
+  Platform,
   TouchableOpacity,
   Modal,
   Image,
@@ -180,6 +181,14 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
 
   const maxIdx = Math.max(0, templates.length - 1);
 
+  // RTL indexing strategy (plan §3.1.6 / Phase 6 audit): on iOS an RTL
+  // horizontal ScrollView reports contentOffset.x as 0 at the leading
+  // (right) edge and NEGATIVE offsets when scrolling toward the end.
+  // Android RTL keeps positive offsets from the leading edge. Normalize the
+  // sign so scrollToIdx()/handleMomentumScrollEnd() agree on both platforms
+  // and preserve the selected index, pagination, and scroll direction.
+  const OFFSET_SIGN = isRTL && Platform.OS === "ios" ? -1 : 1;
+
   const handleTemplatePress = (template) => {
     if (onSelectTemplate) {
       onSelectTemplate(template);
@@ -191,12 +200,12 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
   const scrollToIdx = (i) => {
     const clamped = Math.min(Math.max(0, i), maxIdx);
     setActiveIdx(clamped);
-    scrollRef.current?.scrollTo({ x: clamped * STEP, animated: true });
+    scrollRef.current?.scrollTo({ x: OFFSET_SIGN * clamped * STEP, animated: true });
   };
 
   const handleMomentumEnd = (e) => {
     const x = e.nativeEvent.contentOffset.x;
-    const i = Math.round(x / STEP);
+    const i = Math.round((x / STEP) * OFFSET_SIGN);
     setActiveIdx(Math.min(Math.max(0, i), maxIdx));
   };
 
@@ -211,9 +220,7 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={[styles.title, { textAlign: isRTL ? "right" : "left" }]}>
-          {t("templates", "قوالب المناسبات")}
-        </Text>
+        <Text style={styles.title}>{t("templates", "قوالب المناسبات")}</Text>
       </View>
 
       {loadingCats ? (
@@ -256,10 +263,7 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
               snapToInterval={STEP}
               decelerationRate="fast"
               style={styles.scrollView}
-              contentContainerStyle={[
-                styles.templatesContent,
-                { flexDirection: isRTL ? "row-reverse" : "row" },
-              ]}
+              contentContainerStyle={styles.templatesContent}
               onScroll={onScroll}
               onMomentumScrollEnd={handleMomentumEnd}
               scrollEventThrottle={16}
@@ -286,11 +290,10 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
                 <TouchableOpacity
                   style={[
                     styles.ctrlBtn,
-                    (isRTL ? activeIdx >= maxIdx : activeIdx <= 0) &&
-                      styles.ctrlBtnDisabled,
+                    activeIdx <= 0 && styles.ctrlBtnDisabled,
                   ]}
-                  onPress={isRTL ? goNext : goPrev}
-                  disabled={isRTL ? activeIdx >= maxIdx : activeIdx <= 0}
+                  onPress={goPrev}
+                  disabled={activeIdx <= 0}
                   activeOpacity={0.7}
                 >
                   <DirectionalIonicon
@@ -316,11 +319,10 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
                 <TouchableOpacity
                   style={[
                     styles.ctrlBtn,
-                    (isRTL ? activeIdx <= 0 : activeIdx >= maxIdx) &&
-                      styles.ctrlBtnDisabled,
+                    activeIdx >= maxIdx && styles.ctrlBtnDisabled,
                   ]}
-                  onPress={isRTL ? goPrev : goNext}
-                  disabled={isRTL ? activeIdx <= 0 : activeIdx >= maxIdx}
+                  onPress={goNext}
+                  disabled={activeIdx >= maxIdx}
                   activeOpacity={0.7}
                 >
                   <DirectionalIonicon
@@ -345,8 +347,8 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
           <View style={styles.modalOverlay}>
             <TouchableWithoutFeedback>
               <View style={styles.modalContent}>
-                <View style={[styles.modalHeader, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
-                  <Text style={[styles.modalTitle, { textAlign: isRTL ? "right" : "left" }]}>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>
                     {locale === "ar"
                       ? previewTemplate?.nameAr || previewTemplate?.nameEn
                       : previewTemplate?.nameEn || previewTemplate?.nameAr}
@@ -491,7 +493,9 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   modalHeader: {
+    flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,

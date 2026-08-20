@@ -1,8 +1,16 @@
 {
   "pageTitle": "Business Plans",
   "loading": "Loading plans...",
-  "currentPlan": { "title": "Current Plan", "events": "Events", "invites": "Invites", "daysRemaining": "Days Remaining" },
-  "noActiveSubscription": { "title": "No active subscription", "subtitle": "Choose a plan below to activate your subscription" },
+  "currentPlan": {
+    "title": "Current Plan",
+    "events": "Events",
+    "invites": "Invites",
+    "daysRemaining": "Days Remaining"
+  },
+  "noActiveSubscription": {
+    "title": "No active subscription",
+    "subtitle": "Choose a plan below to activate your subscription"
+  },
   "business": {
     "pageTitle": "Business Plans",
     "currentBadge": "Current Plan",
@@ -22,26 +30,53 @@
     "quarterly": "3-Month Pool",
     "annual": "Annual Pool"
   },
-  "planFamilies": { "basic": "Halaa Basic", "premium": "Halaa Premium" },
+  "planFamilies": {
+    "basic": "Halaa Basic",
+    "premium": "Halaa Premium"
+  },
   "popular": "Most Popular",
   "planFamilyDescriptions": {
     "basic": "Self-managed — you handle everything",
     "premium": "Fully managed by our team"
   },
-  "billingTypes": { "event": "Per Event", "monthly": "Monthly Pool" },
-  "billingTypeLabels": { "event": "/ event", "monthly": "/ month" },
+  "billingTypes": {
+    "event": "Per Event",
+    "monthly": "Monthly Pool"
+  },
+  "billingTypeLabels": {
+    "event": "/ event",
+    "monthly": "/ month"
+  },
   "billingTypeDescriptions": {
     "event": "1 event — valid 90 days",
     "monthly": "Invite Pool — unlimited events — 30 days"
   },
-  "inviteSelector": { "label": "Select invite count", "poolLabel": "Invite pool", "invites": "invites" },
+  "inviteSelector": {
+    "label": "Select invite count",
+    "poolLabel": "Invite pool",
+    "invites": "invites"
+  },
   "currency": "SAR",
   "common": {
-    "currency": { "sar": "SAR" }
+    "currency": {
+      "sar": "SAR"
+    }
   },
-  "compensation": { "title": "Free Compensation Invites", "invites": "compensation invites" },
-  "buttons": { "subscribeNow": "Contact Us", "subscribeAction": "Subscribe Now", "continueToSummary": "Continue to Summary" },
-  "errors": { "loadFailed": "Failed to load plans", "selectPlan": "Please select a plan.", "noPlansAvailable": "No plans available", "retry": "Retry" },
+  "compensation": {
+    "title": "Free Compensation Invites",
+    "invites": "compensation invites"
+  },
+  "buttons": {
+    "subscribeNow": "Contact Us",
+    "subscribeAction": "Subscribe Now",
+    "continueToSummary": "Continue to Summary"
+  },
+  "errors": {
+    "loadFailed": "Failed to load plans",
+    "selectPlan": "Please select a plan.",
+    "noPlansAvailable": "No plans available",
+    "retry": "Retry"
+  },
   "eventTab": {
     "hint": "1 event per plan — valid 90 days · 1,200 SAR one-time setup fee",
     "validity": "Valid 90 days",
@@ -81,7 +116,10 @@
       "description": "Add more invites to your plan",
       "stackHint": "Pick multiple packages — they add up. Extra packages don't earn the 15% compensation bonus."
     },
-    "designTemplate": { "title": "Design Template", "description": "Professional invitation design by our team" },
+    "designTemplate": {
+      "title": "Design Template",
+      "description": "Professional invitation design by our team"
+    },
     "designTypes": {
       "ready_made": "Ready-made design (male/female)",
       "custom_male": "Custom male design",
@@ -110,7 +148,9 @@
       "title": "Fulfillment status",
       "pending": "Processing — your add-on will be applied shortly."
     },
-    "history": { "title": "Your add-ons" }
+    "history": {
+      "title": "Your add-ons"
+    }
   },
   "summary": {
     "title": "Order Summary",
@@ -230,7 +270,18 @@
       "restoreFailed": "Could not restore purchases",
       "manage": "Manage subscription",
       "unavailable": "Unavailable",
-      "processing": "Purchase received — your plan will activate shortly."
+      "processing": "Purchase received — your plan will activate shortly.",
+      "reasons": {
+        "sdk_unconfigured": "In-app purchase service is not configured in this build.",
+        "user_unidentified": "Your billing identity could not be verified. Please sign in again and retry.",
+        "catalog_error": "Could not load the plan catalog from the server.",
+        "offerings_error": "Could not reach the store to fetch prices.",
+        "entry_missing": "This plan is not currently offered on the store.",
+        "not_store_eligible": "This plan is not sold through the app store.",
+        "package_missing": "The plan’s store product could not be found.",
+        "price_missing": "The store price has not arrived yet. Please try again shortly."
+      },
+      "reasonWithSupport": "Unavailable — {{reason}} You can contact support."
     }
   },
   "features": {
@@ -247,23 +298,56 @@
     "quarterly": "3-month subscription",
     "annual": "Annual subscription"
   },
-  "includes": { "basic": "All Basic features +" },
+  "includes": {
+    "basic": "All Basic features +"
+  },
   "compensationRow": "{{count}} compensation invites ({{percent}}% of {{base}})",
   "setupFeeRow": "One-time setup fee: {{amount}} SAR",
   "freeInvitesRow": "Includes {{count}} free invitations during the subscription period",
   "whatsappTemplates": "{{count}} custom WhatsApp templates",
-  "badges": { "selected": "Selected" },
-  "monthlyPlan": { "durationNote": "Valid 30 days — unlimited events" },
+  "badges": {
+    "selected": "Selected"
+  },
+  "monthlyPlan": {
+    "durationNote": "Valid 30 days — unlimited events"
+  },
   "iapStates": {
-    "pending": { "title": "Processing your purchase", "body": "We're confirming your purchase with the store. This can take a moment." },
-    "active": { "title": "You're all set", "body": "Your subscription is now active." },
-    "fulfilled": { "title": "Purchase complete", "body": "Your purchase has been applied to your account." },
-    "consumed": { "title": "Already used", "body": "This item has already been used." },
-    "superseded": { "title": "Replaced", "body": "This purchase was replaced by a newer one." },
-    "refund_required": { "title": "Action needed", "body": "Something went wrong applying this purchase. Our team will process a refund — please contact support." },
-    "refunded": { "title": "Refunded", "body": "This purchase has been refunded." },
-    "manual_review": { "title": "Under review", "body": "Your purchase needs a quick review by our team. We'll follow up shortly." },
-    "failed": { "title": "Purchase not completed", "body": "We couldn't complete this purchase. If you were charged, please contact support." }
+    "pending": {
+      "title": "Processing your purchase",
+      "body": "We're confirming your purchase with the store. This can take a moment."
+    },
+    "active": {
+      "title": "You're all set",
+      "body": "Your subscription is now active."
+    },
+    "fulfilled": {
+      "title": "Purchase complete",
+      "body": "Your purchase has been applied to your account."
+    },
+    "consumed": {
+      "title": "Already used",
+      "body": "This item has already been used."
+    },
+    "superseded": {
+      "title": "Replaced",
+      "body": "This purchase was replaced by a newer one."
+    },
+    "refund_required": {
+      "title": "Action needed",
+      "body": "Something went wrong applying this purchase. Our team will process a refund — please contact support."
+    },
+    "refunded": {
+      "title": "Refunded",
+      "body": "This purchase has been refunded."
+    },
+    "manual_review": {
+      "title": "Under review",
+      "body": "Your purchase needs a quick review by our team. We'll follow up shortly."
+    },
+    "failed": {
+      "title": "Purchase not completed",
+      "body": "We couldn't complete this purchase. If you were charged, please contact support."
+    }
   },
   "iapFlow": {
     "checking": "Checking eligibility…",

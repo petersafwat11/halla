@@ -85,8 +85,8 @@ exports.updateStatus = catchAsync(async (req, res) => {
  * PATCH /api/v2/tickets/:id/assign
  */
 exports.assignTicket = catchAsync(async (req, res) => {
-  const { assigneeId } = req.body;
-  const result = await ticketsService.assignTicket(req.params.id, assigneeId);
+  const { assigneeId, notes } = req.body;
+  const result = await ticketsService.assignTicket(req.params.id, assigneeId, notes);
   sendSuccess(res, result, "Ticket assigned successfully");
 });
 

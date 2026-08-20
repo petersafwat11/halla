@@ -20,6 +20,7 @@ import {
 import { useAuthStore } from "../../../stores/authStore";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
+import { formatDate as formatLocaleDate, formatDateTime as formatLocaleDateTime } from "@halaa/shared/utils/locale";
 import { canEditPage, canDeleteOnPage, PAGES } from "../../../utils/adminPermissions";
 import TopBar from "../../../components/plans/TopBar";
 import DirectionalIonicon from "../../../components/common/DirectionalIonicon";
@@ -40,22 +41,20 @@ const PRIORITY_CONFIG = {
   urgent: { color: "#E74C3C", bg: "#FDEDEC", labelKey: "urgent" },
 };
 
-const formatDate = (d, includeTime = false) => {
-  if (!d) return "—";
-  const opts = { year: "numeric", month: "short", day: "numeric" };
-  if (includeTime) { opts.hour = "2-digit"; opts.minute = "2-digit"; }
-  return new Date(d).toLocaleDateString("en-US", opts);
-};
-
 const TicketDetailsScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const { ticketId } = route.params;
-  const { t } = useTranslation("admin");
+  const { t, currentLanguage } = useTranslation("admin");
   const toast = useToast();
   const role = useAuthStore((s) => s.user?.role);
   const canEdit = canEditPage(role, PAGES.TICKETS);
   const canDelete = canDeleteOnPage(role, PAGES.TICKETS);
+
+  const formatDate = (d, includeTime = false) => {
+    if (!d) return "—";
+    return includeTime ? formatLocaleDateTime(d, currentLanguage) : formatLocaleDate(d, currentLanguage);
+  };
 
   const { data: resp, isLoading, error, refetch } = useAdminTicketById(ticketId);
   const deleteTicket = useDeleteAdminTicket();
@@ -71,6 +70,7 @@ const TicketDetailsScreen = () => {
     id: raw.id, ticketNumber: raw.ticketNumber, subject: raw.subject,
     message: raw.message, status: raw.status || "open", priority: raw.priority || "medium",
     category: raw.category, submittedBy: raw.user, assignedTo: raw.assignedTo,
+    assignmentNote: raw.assignmentNote,
     resolution: raw.resolution, createdAt: raw.createdAt, updatedAt: raw.updatedAt,
   } : null;
 
@@ -146,6 +146,17 @@ const TicketDetailsScreen = () => {
                   <Text style={styles.resolutionMetaText}>{t("ticketDetails.resolvedBy")} {resolvedBy}{ticket.resolution.at ? ` · ${formatDate(ticket.resolution.at)}` : ""}</Text>
                 </View>
               )}
+            </View>
+          </TicketSectionCard>
+        )}
+
+        {ticket.assignmentNote && (
+          <TicketSectionCard
+            title={t("ticketDetails.assignmentNotes")}
+            icon="document-text-outline"
+          >
+            <View style={styles.messageBlock}>
+              <Text style={styles.messageText}>{ticket.assignmentNote}</Text>
             </View>
           </TicketSectionCard>
         )}

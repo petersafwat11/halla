@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     minHeight: 50,
   },
   inputRowError: { borderColor: "#C0392B" },
-  inputIcon: { marginRight: 8 },
+  inputIcon: { marginEnd: 8 },
   input: {
     flex: 1,
     fontSize: 15,

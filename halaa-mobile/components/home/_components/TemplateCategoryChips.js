@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   content: {
-    paddingRight: 0,
+    paddingEnd: 0,
     gap: 8,
     flexDirection: "row",
   },

@@ -1,13 +1,16 @@
 import React from "react";
+import { useTranslation } from "../../../localization";
+import { formatDate } from "@halaa/shared/utils/locale";
 import { getStatusVisual } from "../../../constants/statusColors";
 import AdminListItem from "../common/AdminListItem";
 
 const PaymentListItem = ({ payment, onPress }) => {
+  const { currentLanguage } = useTranslation();
   const currency = payment.currency || "SAR";
   const amount = payment.amount != null ? `${payment.amount} ${currency}` : "—";
   const avatarColor = getStatusVisual(payment.status, "payment").fg;
   const formattedDate = payment.createdAt
-    ? new Date(payment.createdAt).toLocaleDateString()
+    ? formatDate(payment.createdAt, currentLanguage)
     : null;
 
   // Method + last4 + Moyasar id mirror the web detail row for parity.

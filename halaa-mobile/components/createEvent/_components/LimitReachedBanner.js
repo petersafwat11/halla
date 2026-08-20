@@ -24,7 +24,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#FCD34D",
   },
-  limitReachedIcon: { fontSize: 20, marginRight: 12 },
+  limitReachedIcon: { fontSize: 20, marginEnd: 12 },
   limitReachedContent: { flex: 1 },
   limitReachedText: { fontSize: 14, fontFamily: "Cairo_600SemiBold", color: "#92400E", marginBottom: 4 },
   upgradeHint: { fontSize: 12, fontFamily: "Cairo_400Regular", color: "#92400E" },

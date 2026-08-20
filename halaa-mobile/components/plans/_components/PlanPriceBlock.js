@@ -1,11 +1,12 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { useTranslation } from "../../../localization";
+import { formatNumber } from "@halaa/shared/utils/locale";
 import { colors, spacing, typography } from "../../../styles/tokens";
 import SarIcon from "../../commen/SarIcon";
 
 const PlanPriceBlock = ({ planFamily, price }) => {
-  const { t } = useTranslation("plans");
+  const { t, currentLanguage } = useTranslation("plans");
   const name = planFamily ? t(`planFamilies.${planFamily}`) : "";
   const tagline = planFamily
     ? t(`taglines.${planFamily}`, { defaultValue: "" })
@@ -16,7 +17,7 @@ const PlanPriceBlock = ({ planFamily, price }) => {
       <View style={styles.cardTopRow}>
         <Text style={styles.cardName}>{name}</Text>
         <View style={styles.priceRow}>
-          <Text style={styles.priceNum}>{(price || 0).toLocaleString()}</Text>
+          <Text style={styles.priceNum}>{formatNumber(price || 0, currentLanguage)}</Text>
           <SarIcon size={20} color={colors.secondary[700]} />
         </View>
       </View>

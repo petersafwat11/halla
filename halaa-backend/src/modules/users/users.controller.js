@@ -1,6 +1,11 @@
 const catchAsync = require("../../shared/utils/catchAsync");
 const { sendSuccess } = require("../../shared/utils/responseHelper");
 const usersService = require("./users.service");
+const {
+  setAuthCookies,
+  requestContext,
+  sendAuthResponse,
+} = require("../auth/auth.controller");
 
 exports.getMyProfile = catchAsync(async (req, res) => {
   const result = await usersService.getMyProfile(req.user._id);
@@ -22,9 +27,19 @@ exports.updateMyPassword = catchAsync(async (req, res) => {
     req.user._id,
     currentPassword,
     newPassword,
-    passwordConfirm
+    passwordConfirm,
+    requestContext(req)
   );
-  sendSuccess(res, result, "Password updated successfully");
+
+  setAuthCookies(res, result);
+
+  sendAuthResponse(res, {
+    user: result.user,
+    accessToken: result.accessToken,
+    refreshToken: result.refreshToken,
+    statusCode: 200,
+    message: "Password updated successfully",
+  });
 });
 
 exports.updateMyProfileSection = catchAsync(async (req, res) => {

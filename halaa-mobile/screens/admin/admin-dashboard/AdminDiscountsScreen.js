@@ -154,7 +154,7 @@ const AdminDiscountsScreen = () => {
               canEdit={canEdit}
               canDelete={canDelete}
               onEdit={(d) => setFormModal({ visible: true, discount: d })}
-              onToggle={handleToggle}
+              onToggleActive={handleToggle}
               onDelete={handleDelete}
             />
           )}

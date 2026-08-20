@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
   galleryImage: {
     width: 200,
     height: 200,
-    marginRight: 4,
+    marginEnd: 4,
     backgroundColor: "#f0e8e0",
   },
   videoPlaceholder: {

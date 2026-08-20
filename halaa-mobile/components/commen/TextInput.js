@@ -7,6 +7,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { useFormContext, Controller } from "react-hook-form";
+import { useInputDirection } from "../../hooks/useInputDirection";
 
 /**
  * Inner field renderer. Hoisted out of the Controller `render` prop so the
@@ -35,6 +36,8 @@ const TextInputField = ({
 }) => {
   const [isFocused, setIsFocused] = React.useState(false);
   const inputRef = React.useRef(null);
+  // Localized prose: value/placeholder follow the active locale direction.
+  const directionStyle = useInputDirection("localized");
 
   return (
     <View style={styles.container}>
@@ -55,7 +58,7 @@ const TextInputField = ({
         <RNTextInput
           {...extraProps}
           ref={inputRef}
-          style={[styles.input, multiline && styles.inputMultiline, style]}
+          style={[styles.input, directionStyle, multiline && styles.inputMultiline, style]}
           placeholder={placeholder}
           placeholderTextColor="#999"
           value={value ?? ""}
@@ -177,7 +180,7 @@ const styles = StyleSheet.create({
     textAlignVertical: "top",
   },
   iconContainer: {
-    marginRight: 8,
+    marginEnd: 8,
   },
   errorText: {
     fontSize: 12,

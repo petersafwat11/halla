@@ -1,13 +1,94 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   View,
   Text,
   TextInput as RNTextInput,
   StyleSheet,
-  TouchableOpacity
+  TouchableOpacity,
+  Pressable,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Controller, useFormContext } from "react-hook-form";
+import { useTranslation } from "../../localization";
+import { useInputDirection } from "../../hooks/useInputDirection";
+
+/**
+ * Hoisted field renderer to satisfy Rules-of-Hooks and stabilize focus state.
+ */
+const PasswordInputField = ({
+  label,
+  placeholder,
+  disabled,
+  value,
+  error,
+  onChange,
+  onBlur,
+  extraProps,
+}) => {
+  const [isFocused, setIsFocused] = useState(false);
+  const [isSecure, setIsSecure] = useState(true);
+  const inputRef = useRef(null);
+  const { t } = useTranslation("common");
+  // Passwords are an intrinsically LTR token class.
+  const directionStyle = useInputDirection("ltr");
+
+  return (
+    <View style={styles.container}>
+      {label && <Text style={styles.label}>{label}</Text>}
+      <Pressable
+        onPress={() => !disabled && inputRef.current?.focus()}
+        style={[
+          styles.inputContainer,
+          isFocused && styles.inputContainerFocused,
+          error && styles.inputContainerError,
+          disabled && styles.inputContainerDisabled,
+        ]}
+      >
+        <Ionicons
+          name="lock-closed-outline"
+          size={20}
+          color="#999"
+          style={styles.icon}
+        />
+        <RNTextInput
+          {...extraProps}
+          ref={inputRef}
+          style={[styles.input, directionStyle]}
+          placeholder={placeholder}
+          placeholderTextColor="#999"
+          value={value || ""}
+          onChangeText={onChange}
+          onBlur={() => {
+            setIsFocused(false);
+            onBlur?.();
+          }}
+          onFocus={() => setIsFocused(true)}
+          secureTextEntry={isSecure}
+          autoCapitalize="none"
+          editable={!disabled}
+        />
+        <TouchableOpacity
+          onPress={() => setIsSecure(!isSecure)}
+          style={styles.eyeButton}
+          accessibilityRole="button"
+          accessibilityLabel={
+            isSecure
+              ? t("showPassword", { defaultValue: "Show password" })
+              : t("hidePassword", { defaultValue: "Hide password" })
+          }
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <Ionicons
+            name={isSecure ? "eye-off-outline" : "eye-outline"}
+            size={20}
+            color="#999"
+          />
+        </TouchableOpacity>
+      </Pressable>
+      {error && <Text style={styles.errorText}>{error.message}</Text>}
+    </View>
+  );
+};
 
 const PasswordInput = ({
   name,
@@ -18,7 +99,6 @@ const PasswordInput = ({
   ...props
 }) => {
   const { control } = useFormContext();
-  const [isSecure, setIsSecure] = useState(true);
 
   return (
     <Controller
@@ -27,62 +107,19 @@ const PasswordInput = ({
       rules={rules}
       render={({
         field: { onChange, onBlur, value },
-        fieldState: { error }
-      }) => {
-        const [isFocused, setIsFocused] = useState(false);
-
-        return (
-          <View style={styles.container}>
-            {label && <Text style={styles.label}>{label}</Text>}
-            <View
-              style={[
-                styles.inputContainer,
-                isFocused && styles.inputContainerFocused,
-                error && styles.inputContainerError,
-                disabled && styles.inputContainerDisabled,
-              ]}
-            >
-              <Ionicons
-                name="lock-closed-outline"
-                size={20}
-                color="#999"
-                style={styles.icon}
-              />
-              <RNTextInput
-                style={styles.input}
-                placeholder={placeholder}
-                placeholderTextColor="#999"
-                value={value || ""}
-                onChangeText={onChange}
-                onBlur={() => {
-                  setIsFocused(false);
-                  onBlur();
-                }}
-                onFocus={() => setIsFocused(true)}
-                secureTextEntry={isSecure}
-                autoCapitalize="none"
-                editable={!disabled}
-                {...props}
-              />
-              <TouchableOpacity
-                onPress={() => setIsSecure(!isSecure)}
-                style={[styles.eyeIcon]}
-              >
-                <Ionicons
-                  name={isSecure ? "eye-off-outline" : "eye-outline"}
-                  size={20}
-                  color="#999"
-                />
-              </TouchableOpacity>
-            </View>
-            {error && (
-              <Text style={[styles.errorText]}>
-                {error.message}
-              </Text>
-            )}
-          </View>
-        );
-      }}
+        fieldState: { error },
+      }) => (
+        <PasswordInputField
+          label={label}
+          placeholder={placeholder}
+          disabled={disabled}
+          value={value}
+          error={error}
+          onChange={onChange}
+          onBlur={onBlur}
+          extraProps={props}
+        />
+      )}
     />
   );
 };
@@ -90,15 +127,16 @@ const PasswordInput = ({
 const styles = StyleSheet.create({
   container: {
     marginBottom: 16,
-    width: "100%"
-  },  label: {
+    width: "100%",
+  },
+  label: {
     fontSize: 14,
     fontFamily: "Cairo_600SemiBold",
     color: "#2c2c2c",
     marginBottom: 8,
-    textAlign: "left",
-    width: "100%"
-  },  inputContainer: {
+    width: "100%",
+  },
+  inputContainer: {
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
@@ -107,35 +145,42 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     minHeight: 50,
     paddingHorizontal: 16,
-    width: "100%"
-  },  inputContainerFocused: {
+    width: "100%",
+    gap: 8,
+  },
+  inputContainerFocused: {
     borderColor: "#c28e5c",
-    borderWidth: 2
+    borderWidth: 2,
   },
   inputContainerError: {
-    borderColor: "#e74c3c"
+    borderColor: "#e74c3c",
   },
   inputContainerDisabled: {
     backgroundColor: "#f5f5f5",
-    opacity: 0.6
+    opacity: 0.6,
   },
   icon: {
-    marginRight: 8
-  },  input: {
+    marginEnd: 4,
+  },
+  input: {
     flex: 1,
     fontSize: 15,
     fontFamily: "Cairo_400Regular",
     color: "#2c2c2c",
-    paddingVertical: 12
-  },  eyeIcon: {
-    padding: 4,
-    marginLeft: 8
-  },  errorText: {
+    paddingVertical: 12,
+  },
+  eyeButton: {
+    width: 44,
+    height: 44,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  errorText: {
     fontSize: 12,
     fontFamily: "Cairo_400Regular",
     color: "#e74c3c",
     marginTop: 4,
-    textAlign: "left"
-  },});
+  },
+});
 
 export default PasswordInput;

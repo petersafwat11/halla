@@ -1,9 +1,13 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { formatDate } from "@halaa/shared/utils/locale";
+import { useTranslation } from "../../../localization";
 import { colors, spacing, borderRadius, textStyles, backgrounds } from "../../../styles/tokens";
 
-const TicketHeroCard = ({ ticket, statusCfg, priorityCfg, statusLabel, priorityLabel, t, onResolve }) => (
+const TicketHeroCard = ({ ticket, statusCfg, priorityCfg, statusLabel, priorityLabel, t, onResolve }) => {
+  const { currentLanguage } = useTranslation();
+  return (
   <View style={styles.heroCard}>
     <View style={[styles.heroAccent, { backgroundColor: statusCfg.color }]} />
     <View style={styles.heroBody}>
@@ -24,11 +28,12 @@ const TicketHeroCard = ({ ticket, statusCfg, priorityCfg, statusLabel, priorityL
             <Text style={styles.categoryChipText}>{ticket.category}</Text>
           </View>
         )}
-        <Text style={styles.heroDate}>{new Date(ticket.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}</Text>
+        <Text style={styles.heroDate}>{formatDate(ticket.createdAt, currentLanguage)}</Text>
       </View>
     </View>
   </View>
-);
+  );
+};
 
 const styles = StyleSheet.create({
   heroCard: { backgroundColor: backgrounds.card[1], borderRadius: borderRadius[16], flexDirection: "row", overflow: "hidden", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 },
@@ -38,7 +43,7 @@ const styles = StyleSheet.create({
   heroTicketNum: { fontSize: 12, color: colors.natural[450], fontWeight: "600" },
   heroSubject: { ...textStyles.titleLarge, color: colors.natural[900] },
   heroStatusRow: { flexDirection: "row", alignItems: "center", gap: spacing[8], flexWrap: "wrap", marginTop: spacing[4] },
-  heroDate: { fontSize: 12, color: colors.natural[400], marginLeft: "auto" },
+  heroDate: { fontSize: 12, color: colors.natural[400], marginStart: "auto" },
   statusChip: { flexDirection: "row", alignItems: "center", gap: spacing[4], paddingHorizontal: spacing[8], paddingVertical: spacing[4], borderRadius: borderRadius[20] },
   statusChipText: { fontSize: 12, fontWeight: "600" },
   priorityChip: { paddingHorizontal: spacing[8], paddingVertical: spacing[4], borderRadius: borderRadius[20] },

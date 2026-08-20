@@ -100,7 +100,7 @@ const RatingModal = ({ visible, onClose, vendor, onSave, loading }) => {
               <View style={styles.starsContainer}>{renderStars()}</View>
               {rating > 0 && (
                 <Text style={styles.ratingText}>
-                  {rating} {rating === 1 ? "★" : "★★"}
+                  {t("vendors.rating.summary", { rating })}
                 </Text>
               )}
               {!!ratingError && (
@@ -125,21 +125,23 @@ const RatingModal = ({ visible, onClose, vendor, onSave, loading }) => {
           </ScrollView>
 
           <View style={styles.footer}>
-            <ActionButton
-              title={t("vendors.rating.cancel")}
-              onPress={handleClose}
-              variant="outline"
-              style={styles.button}
-              disabled={loading}
-            />
-            <ActionButton
-              title={t("vendors.rating.save")}
-              onPress={handleSave}
-              variant="primary"
-              style={styles.button}
-              loading={loading}
-              disabled={loading}
-            />
+            <View style={styles.buttonWrapper}>
+              <ActionButton
+                label={t("common.cancel", "إلغاء")}
+                onPress={handleClose}
+                variant="secondary"
+                disabled={loading}
+              />
+            </View>
+            <View style={styles.buttonWrapper}>
+              <ActionButton
+                label={t("common.save", "حفظ")}
+                onPress={handleSave}
+                variant="primary"
+                loading={loading}
+                disabled={loading}
+              />
+            </View>
           </View>
         </View>
       </View>
@@ -240,7 +242,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.natural[200],
   },
-  button: {
+  buttonWrapper: {
     flex: 1,
   },
 });

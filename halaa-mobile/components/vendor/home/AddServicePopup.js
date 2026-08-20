@@ -20,6 +20,8 @@ import {
   SERVICE_TYPES,
 } from "../../../utils/schemas/vendorServiceSchema";
 import TagsSelector from "./TagsSelector";
+import { useToast } from "../../../contexts/ToastContext";
+import { getImageUrl } from "../../../utils/imageUtils";
 
 const AddServicePopup = ({
   visible = false,
@@ -29,6 +31,7 @@ const AddServicePopup = ({
   editingService = null,
 }) => {
   const { t } = useTranslation("vendor");
+  const toast = useToast();
   const slideAnim = React.useRef(new Animated.Value(1000)).current;
   const [selectedTags, setSelectedTags] = useState([]);
   const [included, setIncluded] = useState([]);
@@ -53,18 +56,23 @@ const AddServicePopup = ({
   useEffect(() => {
     if (visible) {
       if (editingService?._raw) {
+        const raw = editingService._raw;
         // Pre-fill form with existing service data
         reset({
-          serviceName: editingService.name || "",
-          serviceNameAr: editingService._raw.nameAr || "",
-          serviceType: editingService._raw.serviceType || "",
-          description: editingService._raw.description || "",
-          descriptionAr: editingService._raw.descriptionAr || "",
-          price: editingService._raw.price || "",
-          serviceImage: undefined,
+          serviceName: editingService.name || raw.name || "",
+          serviceNameAr: raw.nameAr || "",
+          serviceType: raw.category || "",
+          description: raw.description || "",
+          descriptionAr: raw.descriptionAr || "",
+          price: String(raw.price ?? ""),
+          serviceImage: raw.image
+            ? { uri: getImageUrl(raw.image) }
+            : editingService.imageUri
+              ? { uri: editingService.imageUri }
+              : undefined,
         });
-        setSelectedTags(editingService._raw.tags || []);
-        setIncluded(editingService._raw.included || []);
+        setSelectedTags(raw.tags || []);
+        setIncluded(raw.included || []);
         setIncludedInput("");
       } else {
         reset();
@@ -139,6 +147,12 @@ const AddServicePopup = ({
       tags: selectedTags,
       included,
     });
+  };
+
+  const handleInvalid = (errors) => {
+    const firstError =
+      Object.values(errors)[0]?.message || t("services.validation.fixErrors");
+    toast.error(firstError);
   };
 
   return (
@@ -291,7 +305,7 @@ const AddServicePopup = ({
                 styles.submitButton,
                 isLoading && styles.submitButtonLoading,
               ]}
-              onPress={handleSubmit(handleFormSubmit)}
+              onPress={handleSubmit(handleFormSubmit, handleInvalid)}
               disabled={isLoading}
               activeOpacity={0.7}
             >

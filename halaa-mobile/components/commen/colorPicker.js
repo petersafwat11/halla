@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: "Cairo_400Regular",
     color: "#2c2c2c"
-  },  icon: { marginLeft: "auto" },  errorText: {
+  },  icon: { marginStart: "auto" },  errorText: {
     fontSize: 12,
     fontFamily: "Cairo_400Regular",
     color: "#e74c3c",

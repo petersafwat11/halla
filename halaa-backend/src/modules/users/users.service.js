@@ -8,6 +8,8 @@ const {
   deleteFromS3,
 } = require("../../shared/utils/s3Upload");
 const otpService = require("../auth/otp.service");
+const authService = require("../auth/auth.service");
+const { logAudit } = require("../../shared/utils/auditLog");
 const logger = require("../../shared/utils/logger");
 const { containsProhibited } = require("../../shared/utils/contentFilter");
 const {
@@ -119,12 +121,14 @@ class UsersService {
     return { user: await user.toPublicJSON() };
   }
 
-  async updateMyPassword(userId, currentPassword, newPassword, passwordConfirm) {
+  async updateMyPassword(userId, currentPassword, newPassword, passwordConfirm, context = {}) {
     const user = await User.findById(userId).select("+password");
     if (!user) throw new NotFoundError("User");
 
     if (!(await user.comparePassword(currentPassword))) {
-      throw new ValidationError("Current password is incorrect");
+      const err = new ValidationError("Current password is incorrect");
+      err.code = "CURRENT_PASSWORD_INVALID";
+      throw err;
     }
 
     if (newPassword !== passwordConfirm) {
@@ -138,7 +142,23 @@ class UsersService {
     if (user.mustChangePassword) user.mustChangePassword = false;
     await user.save();
 
-    return { success: true };
+    await authService.revokeAllForUser(user._id);
+    const tokens = await authService.issueTokenPair(user, context);
+
+    logAudit({
+      action: "auth.password_changed",
+      actor: { _id: user._id, role: user.role },
+      targetType: "user",
+      targetId: user._id,
+      metadata: { ip: context.ip },
+    }).catch(() => {});
+
+    return {
+      success: true,
+      user: await authService.sanitizeUser(user),
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+    };
   }
 
   async updateMyProfileSection(userId, section, data, files = {}) {

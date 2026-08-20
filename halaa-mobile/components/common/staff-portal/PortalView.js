@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
-  portalHeaderLeft: { flex: 1, marginRight: 12 },
+  portalHeaderLeft: { flex: 1, marginEnd: 12 },
   eventTitle: {
     fontSize: 18,
     fontFamily: "Cairo_700Bold",
@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
     borderColor: "#DFDFDF",
     minHeight: 46,
   },
-  searchIcon: { marginRight: 8 },
+  searchIcon: { marginEnd: 8 },
   searchInput: {
     flex: 1,
     fontSize: 14,

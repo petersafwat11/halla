@@ -191,12 +191,65 @@ export const mobileAccountSettingsSchema = z
     newPassword: z
       .string()
       .optional()
-      .refine((val) => !val || val.length >= 8, "validation.passwordMin"),
+      .refine(
+        (val) =>
+          !val ||
+          (val.length >= 8 &&
+            val.length <= 128 &&
+            PASSWORD_COMPLEXITY_REGEX.test(val)),
+        "validation.passwordComplexity"
+      ),
     confirmPassword: z.string().optional(),
   })
   .refine(
     (data) => {
-      if (data.newPassword && data.newPassword.length > 0) {
+      const hasCurrent =
+        !!data.currentPassword && data.currentPassword.trim().length > 0;
+      const hasNew = !!data.newPassword && data.newPassword.length > 0;
+      if (hasCurrent) {
+        return hasNew;
+      }
+      return true;
+    },
+    {
+      message: "validation.newPasswordRequired",
+      path: ["newPassword"],
+    }
+  )
+  .refine(
+    (data) => {
+      const hasCurrent =
+        !!data.currentPassword && data.currentPassword.trim().length > 0;
+      const hasNew = !!data.newPassword && data.newPassword.length > 0;
+      if (hasNew) {
+        return hasCurrent;
+      }
+      return true;
+    },
+    {
+      message: "validation.currentPasswordRequired",
+      path: ["currentPassword"],
+    }
+  )
+  .refine(
+    (data) => {
+      const hasConfirm =
+        !!data.confirmPassword && data.confirmPassword.trim().length > 0;
+      const hasNew = !!data.newPassword && data.newPassword.length > 0;
+      if (hasConfirm) {
+        return hasNew;
+      }
+      return true;
+    },
+    {
+      message: "validation.newPasswordRequired",
+      path: ["newPassword"],
+    }
+  )
+  .refine(
+    (data) => {
+      const hasNew = !!data.newPassword && data.newPassword.length > 0;
+      if (hasNew) {
         return data.confirmPassword === data.newPassword;
       }
       return true;
@@ -204,18 +257,6 @@ export const mobileAccountSettingsSchema = z
     {
       message: "validation.passwordsDoNotMatch",
       path: ["confirmPassword"],
-    }
-  )
-  .refine(
-    (data) => {
-      if (data.newPassword && data.newPassword.length > 0) {
-        return !!data.currentPassword;
-      }
-      return true;
-    },
-    {
-      message: "validation.currentPasswordRequired",
-      path: ["currentPassword"],
     }
   );
 

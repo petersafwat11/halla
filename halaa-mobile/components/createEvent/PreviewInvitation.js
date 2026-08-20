@@ -19,6 +19,7 @@ import { Ionicons } from "@expo/vector-icons";
 import {
   resolveTaqnyatPlaceholders,
   buildTaqnyatPreviewContext,
+  formatDate,
 } from "@halaa/shared/utils";
 import { useTranslation } from "../../localization";
 import { useAuthStore } from "../../stores/authStore";
@@ -55,23 +56,15 @@ const PreviewInvitation = ({
   location = "",
   invitationType = DEFAULT_INVITATION_TYPE,
 }) => {
-  const { t } = useTranslation("createEvent");
+  const { t, currentLanguage } = useTranslation("createEvent");
   const hostName = useAuthStore(
     (state) => state.user?.name || state.user?.username || ""
   );
 
   const formattedDate = useMemo(() => {
     if (!eventDate) return "";
-    try {
-      return new Date(eventDate).toLocaleDateString("ar-SA", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
-    } catch {
-      return "";
-    }
-  }, [eventDate]);
+    return formatDate(eventDate, currentLanguage || "ar");
+  }, [eventDate, currentLanguage]);
 
   const resolvedBody = useMemo(() => {
     if (!previewBody) return "";

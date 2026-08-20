@@ -45,8 +45,6 @@ const AdminHostsScreen = ({ navigation }) => {
   const [subModalVisible, setSubModalVisible] = useState(false);
   const [selectedHostForSub, setSelectedHostForSub] = useState(null);
 
-  if (error) toast.error(t("common.error"));
-
   const handleManageSubscription = (host) => {
     setSelectedHostForSub(host);
     setSubModalVisible(true);

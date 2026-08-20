@@ -52,12 +52,14 @@ const AccountSettings = ({
   const onSubmit = async (data) => {
     setLoading(true);
     try {
+      let hasChanges = false;
       if (data.username !== user?.username || data.email !== user?.email) {
         const profileData = {
           username: data.username,
           email: data.email,
         };
         await onProfileUpdate(profileData);
+        hasChanges = true;
       }
 
       if (data.currentPassword && data.newPassword) {
@@ -66,9 +68,13 @@ const AccountSettings = ({
           newPassword: data.newPassword,
           confirmPassword: data.confirmPassword,
         });
+        hasChanges = true;
       }
 
-      toast.success(t("account.updateSuccess"));
+      if (hasChanges) {
+        toast.success(t("account.updateSuccess"));
+      }
+
       reset({
         username: data.username,
         email: data.email,
@@ -77,7 +83,18 @@ const AccountSettings = ({
         confirmPassword: "",
       });
     } catch (error) {
-      toast.error(error.message || t("account.updateError"));
+      if (
+        error?.code === "CURRENT_PASSWORD_INVALID" ||
+        error?.errorDetail?.code === "CURRENT_PASSWORD_INVALID" ||
+        error?.response?.data?.code === "CURRENT_PASSWORD_INVALID" ||
+        error?.message?.includes("Current password is incorrect")
+      ) {
+        toast.error(
+          t("account.wrongCurrentPassword", "كلمة المرور الحالية غير صحيحة")
+        );
+      } else {
+        toast.error(error.message || t("account.updateError"));
+      }
     } finally {
       setLoading(false);
     }

@@ -10,6 +10,151 @@ import {
 } from "react-native";
 import { useFormContext, Controller } from "react-hook-form";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "../../localization";
+
+/**
+ * Hoisted field renderer to satisfy Rules-of-Hooks.
+ */
+const DropdownInputField = ({
+  label,
+  placeholder,
+  options,
+  disabled,
+  modalTitle,
+  renderItem,
+  value,
+  error,
+  onChange,
+}) => {
+  const { t } = useTranslation("common");
+  const [isOpen, setIsOpen] = useState(false);
+
+  const selectedOption = options.find((opt) => opt.value === value) || null;
+
+  const handleSelect = (option) => {
+    onChange(option.value);
+    setIsOpen(false);
+  };
+
+  const displayValue = selectedOption?.label;
+
+  return (
+    <View style={styles.container}>
+      {label && <Text style={styles.label}>{label}</Text>}
+      <TouchableOpacity
+        style={[
+          styles.inputContainer,
+          error && styles.inputContainerError,
+          disabled && styles.inputContainerDisabled,
+        ]}
+        onPress={() => !disabled && setIsOpen(true)}
+        disabled={disabled}
+        activeOpacity={0.7}
+      >
+        <Ionicons name="chevron-down" size={20} color="#656565" />
+        <Text
+          style={[
+            styles.inputText,
+            !displayValue && styles.placeholderText,
+          ]}
+        >
+          {displayValue || placeholder}
+        </Text>
+      </TouchableOpacity>
+      {error && <Text style={styles.errorText}>{error.message}</Text>}
+
+      <Modal
+        visible={isOpen}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setIsOpen(false)}
+      >
+        <Pressable
+          style={styles.overlay}
+          onPress={() => setIsOpen(false)}
+        >
+          <Pressable
+            style={styles.modalContainer}
+            onPress={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <View style={styles.modalHeader}>
+              <TouchableOpacity
+                onPress={() => setIsOpen(false)}
+                hitSlop={8}
+              >
+                <Ionicons name="close" size={24} color="#000" />
+              </TouchableOpacity>
+              <View style={styles.modalTitleContainer}>
+                <Text style={styles.modalTitle}>{modalTitle || t("select", "اختر")}</Text>
+              </View>
+            </View>
+
+            {/* Options List */}
+            <FlatList
+              data={options}
+              keyExtractor={(item, index) =>
+                item.id || item.value || index.toString()
+              }
+              renderItem={({ item }) =>
+                renderItem ? (
+                  renderItem(item, () => handleSelect(item))
+                ) : (
+                  <TouchableOpacity
+                    style={[
+                      styles.optionItem,
+                      selectedOption?.value === item.value &&
+                        styles.optionItemSelected,
+                    ]}
+                    onPress={() => handleSelect(item)}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.optionContent}>
+                      <Text style={styles.optionText}>{item.label}</Text>
+                      {item.icon && (
+                        <View style={styles.optionIcon}>{item.icon}</View>
+                      )}
+                    </View>
+                  </TouchableOpacity>
+                )
+              }
+              contentContainerStyle={styles.optionsList}
+            />
+
+            {/* Action Buttons */}
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setIsOpen(false)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.cancelButtonText}>{t("cancel", "إلغاء")}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.confirmButton,
+                  !selectedOption && styles.confirmButtonDisabled,
+                ]}
+                onPress={() => setIsOpen(false)}
+                disabled={!selectedOption}
+                activeOpacity={0.7}
+              >
+                <Text
+                  style={[
+                    styles.confirmButtonText,
+                    !selectedOption && styles.confirmButtonTextDisabled,
+                  ]}
+                >
+                  {t("confirm", "تأكيد")}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
+    </View>
+  );
+};
 
 const DropdownInput = ({
   name,
@@ -17,147 +162,30 @@ const DropdownInput = ({
   placeholder,
   options = [],
   disabled = false,
-  modalTitle = "اختر",
+  modalTitle,
   renderItem,
   rules,
-  ...props
 }) => {
   const { control } = useFormContext();
-  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <Controller
       control={control}
       name={name}
       rules={rules}
-      render={({ field: { onChange, value }, fieldState: { error } }) => {
-        const selectedOption =
-          options.find((opt) => opt.value === value) || null;
-
-        const handleSelect = (option) => {
-          onChange(option.value);
-          setIsOpen(false);
-        };
-
-        const displayValue = options.find((opt) => opt.value === value)?.label;
-
-        return (
-          <View style={styles.container}>
-            {label && <Text style={styles.label}>{label}</Text>}
-            <TouchableOpacity
-              style={[
-                styles.inputContainer,
-                error && styles.inputContainerError,
-                disabled && styles.inputContainerDisabled,
-              ]}
-              onPress={() => !disabled && setIsOpen(true)}
-              disabled={disabled}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="chevron-down" size={20} color="#656565" />
-              <Text
-                style={[
-                  styles.inputText,
-                  !displayValue && styles.placeholderText,
-                ]}
-              >
-                {displayValue || placeholder}
-              </Text>
-            </TouchableOpacity>
-            {error && <Text style={styles.errorText}>{error.message}</Text>}
-
-            <Modal
-              visible={isOpen}
-              transparent
-              animationType="slide"
-              onRequestClose={() => setIsOpen(false)}
-            >
-              <Pressable
-                style={styles.overlay}
-                onPress={() => setIsOpen(false)}
-              >
-                <Pressable
-                  style={styles.modalContainer}
-                  onPress={(e) => e.stopPropagation()}
-                >
-                  {/* Modal Header */}
-                  <View style={styles.modalHeader}>
-                    <TouchableOpacity
-                      onPress={() => setIsOpen(false)}
-                      hitSlop={8}
-                    >
-                      <Ionicons name="close" size={24} color="#000" />
-                    </TouchableOpacity>
-                    <View style={styles.modalTitleContainer}>
-                      <Text style={styles.modalTitle}>{modalTitle}</Text>
-                    </View>
-                  </View>
-
-                  {/* Options List */}
-                  <FlatList
-                    data={options}
-                    keyExtractor={(item, index) =>
-                      item.id || item.value || index.toString()
-                    }
-                    renderItem={({ item }) =>
-                      renderItem ? (
-                        renderItem(item, () => handleSelect(item))
-                      ) : (
-                        <TouchableOpacity
-                          style={[
-                            styles.optionItem,
-                            selectedOption?.value === item.value &&
-                              styles.optionItemSelected,
-                          ]}
-                          onPress={() => handleSelect(item)}
-                          activeOpacity={0.7}
-                        >
-                          <View style={styles.optionContent}>
-                            <Text style={styles.optionText}>{item.label}</Text>
-                            {item.icon && (
-                              <View style={styles.optionIcon}>{item.icon}</View>
-                            )}
-                          </View>
-                        </TouchableOpacity>
-                      )
-                    }
-                    contentContainerStyle={styles.optionsList}
-                  />
-
-                  {/* Action Buttons */}
-                  <View style={styles.modalActions}>
-                    <TouchableOpacity
-                      style={styles.cancelButton}
-                      onPress={() => setIsOpen(false)}
-                      activeOpacity={0.7}
-                    >
-                      <Text style={styles.cancelButtonText}>إلغاء</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[
-                        styles.confirmButton,
-                        !selectedOption && styles.confirmButtonDisabled,
-                      ]}
-                      onPress={() => setIsOpen(false)}
-                      disabled={!selectedOption}
-                      activeOpacity={0.7}
-                    >
-                      <Text
-                        style={[
-                          styles.confirmButtonText,
-                          !selectedOption && styles.confirmButtonTextDisabled,
-                        ]}
-                      >
-                        تأكيد
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                </Pressable>
-              </Pressable>
-            </Modal>
-          </View>
-        );
-      }}
+      render={({ field: { onChange, value }, fieldState: { error } }) => (
+        <DropdownInputField
+          label={label}
+          placeholder={placeholder}
+          options={options}
+          disabled={disabled}
+          modalTitle={modalTitle}
+          renderItem={renderItem}
+          value={value}
+          error={error}
+          onChange={onChange}
+        />
+      )}
     />
   );
 };
@@ -178,11 +206,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    borderWidth: 1.5,
-    borderTopWidth: 1,
-    borderRightWidth: 1.5,
-    borderBottomWidth: 1,
-    borderLeftWidth: 1.5,
+    borderWidth: 1,
     borderColor: "#DFDFDF",
     borderRadius: 12,
     backgroundColor: "#FFF",

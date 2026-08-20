@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.body.small,
     color: colors.accent[500],
     flexShrink: 1,
-    marginRight: spacing[8],
+    marginEnd: spacing[8],
   },
   statValue: {
     fontFamily: "Cairo_700Bold",

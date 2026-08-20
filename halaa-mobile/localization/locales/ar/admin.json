@@ -47,7 +47,16 @@
       "open": "مفتوحة",
       "tickets": "الشكاوى",
       "other": "أخرى",
-      "noData": "لا توجد بيانات"
+      "noData": "لا توجد بيانات",
+      "trial": "تجريبي",
+      "basic_event": "أساسي — لكل مناسبة",
+      "basic_monthly": "أساسي — شهري",
+      "premium_event": "مميّز — لكل مناسبة",
+      "premium_monthly": "مميّز — شهري",
+      "business_event": "أعمال — لكل مناسبة",
+      "business_quarterly": "أعمال — ربع سنوي",
+      "business_annual": "أعمال — سنوي",
+      "unlimited": "غير محدود"
     },
     "recentHosts": {
       "title": "المضيفون الجدد",
@@ -96,7 +105,7 @@
     "addHost": "إضافة مضيف",
     "searchPlaceholder": "البحث عن المضيفين...",
     "filters": {
-      "all": "جميع المضيفين",
+      "all": "الكل",
       "active": "نشط",
       "inactive": "غير نشط",
       "suspended": "موقوف",
@@ -234,7 +243,7 @@
     "addModerator": "إضافة مشرف",
     "searchPlaceholder": "البحث عن المشرفين...",
     "filters": {
-      "all": "جميع المشرفين",
+      "all": "الكل",
       "active": "نشط",
       "inactive": "غير نشط",
       "pending": "قيد الانتظار"
@@ -397,7 +406,7 @@
     "addVendor": "إضافة مورد",
     "searchPlaceholder": "البحث عن الموردين...",
     "filters": {
-      "all": "جميع الموردين",
+      "all": "الكل",
       "active": "نشط",
       "inactive": "غير نشط",
       "pending": "قيد الانتظار",
@@ -447,6 +456,7 @@
       "review": "تعليق (اختياري)",
       "reviewPlaceholder": "اكتب تقييمك أو ملاحظاتك...",
       "selectRating": "الرجاء اختيار تقييم",
+      "summary": "{{rating}} من 5",
       "save": "إرسال",
       "cancel": "إلغاء"
     },
@@ -525,7 +535,7 @@
     "title": "المناسبات",
     "searchPlaceholder": "البحث عن المناسبات...",
     "filters": {
-      "all": "جميع المناسبات",
+      "all": "الكل",
       "upcoming": "القادمة",
       "ongoing": "الجارية",
       "scheduled": "مجدولة",
@@ -675,6 +685,7 @@
     "noSubject": "بدون موضوع",
     "noMessage": "لا يوجد محتوى الرسالة",
     "message": "الرسالة",
+    "assignmentNotes": "ملاحظات الإسناد",
     "resolution": "الحل",
     "details": "التفاصيل",
     "adminActions": "إجراءات المسؤول",
@@ -724,17 +735,21 @@
     "noSubject": "بدون موضوع",
     "assigned": "مسندة",
     "filters": {
-      "all": "جميع التذاكر",
+      "all": "الكل",
       "open": "مفتوحة",
       "inProgress": "قيد المعالجة",
+      "in_progress": "قيد المعالجة",
       "waitingResponse": "بانتظار الرد",
+      "waiting_response": "بانتظار الرد",
       "resolved": "محلولة",
       "closed": "مغلقة"
     },
     "status": {
       "open": "مفتوحة",
       "inProgress": "قيد المعالجة",
+      "in_progress": "قيد المعالجة",
       "waitingResponse": "بانتظار الرد",
+      "waiting_response": "بانتظار الرد",
       "resolved": "محلولة",
       "closed": "مغلقة"
     },
@@ -796,7 +811,7 @@
     "title": "المدفوعات",
     "searchPlaceholder": "البحث عن المدفوعات...",
     "filters": {
-      "all": "جميع المدفوعات",
+      "all": "الكل",
       "completed": "مكتملة",
       "pending": "قيد الانتظار",
       "failed": "فاشلة",

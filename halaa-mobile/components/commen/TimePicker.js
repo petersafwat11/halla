@@ -9,25 +9,12 @@ import {
 import { useFormContext, Controller } from "react-hook-form";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
-
-const formatTime = (time) => {
-  if (!time) return "";
-  const t = new Date(time);
-  const hours = t.getHours();
-  const minutes = t.getMinutes();
-  const ampm = hours >= 12 ? "مساءً" : "صباحاً";
-  const formattedHours = hours % 12 || 12;
-  const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
-  return `${formattedHours}:${formattedMinutes} ${ampm}`;
-};
+import { useTranslation } from "../../localization";
+import { formatTime as formatLocaleTime } from "@halaa/shared/utils/locale";
 
 /**
  * Inner field renderer. Hoisted out of the Controller `render` prop so the
- * `useState` hook lives at the top level of a real component — calling the
- * hook inside the render prop was a Rules-of-Hooks violation that desynced
- * the open/close state under heavy parent re-renders (e.g. inside StepThree's
- * template modal where the live canvas watches every field change). The
- * symptom was the picker refusing to open on tap (it looked "disabled").
+ * `useState` hook lives at the top level of a real component.
  */
 const TimePickerField = ({
   label,
@@ -36,6 +23,7 @@ const TimePickerField = ({
   value,
   error,
   onChange,
+  locale,
   extraProps,
 }) => {
   const [show, setShow] = useState(false);
@@ -50,7 +38,7 @@ const TimePickerField = ({
     }
   };
 
-  const displayValue = selectedTime ? formatTime(selectedTime) : "";
+  const displayValue = selectedTime ? formatLocaleTime(selectedTime, locale) : "";
 
   return (
     <View style={styles.container}>
@@ -97,6 +85,7 @@ const TimePicker = ({
   rules,
   ...props
 }) => {
+  const { currentLanguage } = useTranslation();
   const { control } = useFormContext();
 
   return (
@@ -112,6 +101,7 @@ const TimePicker = ({
           value={value}
           error={error}
           onChange={onChange}
+          locale={currentLanguage}
           extraProps={props}
         />
       )}
@@ -135,11 +125,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    borderWidth: 1.5,
-    borderTopWidth: 1,
-    borderRightWidth: 1.5,
-    borderBottomWidth: 1,
-    borderLeftWidth: 1.5,
+    borderWidth: 1,
     borderColor: "#DFDFDF",
     borderRadius: 12,
     backgroundColor: "#FFF",

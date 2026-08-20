@@ -47,7 +47,16 @@
       "open": "Open",
       "tickets": "Tickets",
       "other": "Other",
-      "noData": "No data available"
+      "noData": "No data available",
+      "trial": "Trial",
+      "basic_event": "Basic — Per Event",
+      "basic_monthly": "Basic — Monthly",
+      "premium_event": "Premium — Per Event",
+      "premium_monthly": "Premium — Monthly",
+      "business_event": "Business — Per Event",
+      "business_quarterly": "Business — Quarterly",
+      "business_annual": "Business — Annual",
+      "unlimited": "Unlimited"
     },
     "recentHosts": {
       "title": "Recent Hosts",
@@ -96,7 +105,7 @@
     "addHost": "Add Host",
     "searchPlaceholder": "Search hosts...",
     "filters": {
-      "all": "All Hosts",
+      "all": "All",
       "active": "Active",
       "inactive": "Inactive",
       "suspended": "Suspended",
@@ -397,7 +406,7 @@
     "addVendor": "Add Vendor",
     "searchPlaceholder": "Search vendors...",
     "filters": {
-      "all": "All Vendors",
+      "all": "All",
       "active": "Active",
       "inactive": "Inactive",
       "pending": "Pending",
@@ -447,6 +456,7 @@
       "review": "Comment (Optional)",
       "reviewPlaceholder": "Write your review or feedback...",
       "selectRating": "Please select a rating",
+      "summary": "{{rating}} out of 5",
       "save": "Submit",
       "cancel": "Cancel"
     },
@@ -525,7 +535,7 @@
     "title": "Events",
     "searchPlaceholder": "Search events...",
     "filters": {
-      "all": "All Events",
+      "all": "All",
       "upcoming": "Upcoming",
       "ongoing": "Ongoing",
       "scheduled": "Scheduled",
@@ -675,6 +685,7 @@
     "noSubject": "No Subject",
     "noMessage": "No message content",
     "message": "Message",
+    "assignmentNotes": "Assignment Notes",
     "resolution": "Resolution",
     "details": "Details",
     "adminActions": "Admin Actions",
@@ -724,17 +735,21 @@
     "noSubject": "No Subject",
     "assigned": "Assigned",
     "filters": {
-      "all": "All Tickets",
+      "all": "All",
       "open": "Open",
       "inProgress": "In Progress",
+      "in_progress": "In Progress",
       "waitingResponse": "Waiting Response",
+      "waiting_response": "Waiting Response",
       "resolved": "Resolved",
       "closed": "Closed"
     },
     "status": {
       "open": "Open",
       "inProgress": "In Progress",
+      "in_progress": "In Progress",
       "waitingResponse": "Waiting Response",
+      "waiting_response": "Waiting Response",
       "resolved": "Resolved",
       "closed": "Closed"
     },
@@ -796,7 +811,7 @@
     "title": "Payments",
     "searchPlaceholder": "Search payments...",
     "filters": {
-      "all": "All Payments",
+      "all": "All",
       "completed": "Completed",
       "pending": "Pending",
       "failed": "Failed",

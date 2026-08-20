@@ -322,7 +322,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   actionBtn: { flexDirection: "row", alignItems: "center", gap: 6 },
-  reportAction: { marginLeft: "auto" },
+  reportAction: { marginStart: "auto" },
   reportText: { fontSize: 13, fontFamily: "Cairo_400Regular", color: "#999" },
   actionCount: {
     fontSize: 14,

@@ -2,7 +2,7 @@
   "skip": "Skip",
   "slides": [
     {
-      "title": "Welcome to Labba!",
+      "title": "Welcome to Halaa!",
       "description": "The smartest way to organize your invitation from the first step to the event day, easily, elegantly, and effortlessly."
     },
     {
@@ -22,6 +22,6 @@
     "previous": "Previous",
     "next": "Next",
     "login": "Login",
-    "newUser": "New User"
+    "newUser": "Create account"
   }
 }

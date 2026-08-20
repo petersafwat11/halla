@@ -4,12 +4,10 @@ import {
   Text,
   View,
   TouchableOpacity,
-  Dimensions,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import LanguageReset from "./LanguageReset";
 import DirectionalIonicon from "../common/DirectionalIonicon";
-
-const { width, height } = Dimensions.get("window");
 
 const LanguageSelector = ({ onLanguageSelect }) => {
   const languages = [
@@ -17,13 +15,15 @@ const LanguageSelector = ({ onLanguageSelect }) => {
       code: "ar",
       name: "العربية",
       subtitle: "اللغة العربية",
-      flag: "🇸🇦", // Saudi Arabia flag emoji
+      flag: "🇸🇦",
+      direction: "rtl",
     },
     {
       code: "en",
       name: "English",
       subtitle: "English Language",
-      flag: "🇺🇸", // US flag emoji
+      flag: "🇺🇸",
+      direction: "ltr",
     },
   ];
 
@@ -32,65 +32,75 @@ const LanguageSelector = ({ onLanguageSelect }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <LanguageReset />
-      <View style={styles.content}>
-        {/* Header Section */}
-        <View style={styles.header}>
-          <Text style={styles.title}>اختر لغتك المفضلة</Text>
-          <Text style={styles.titleEn}>Choose Your Language</Text>
-          <Text style={styles.subtitle}>
-            يمكنك تغيير اللغة لاحقاً من الإعدادات
-          </Text>
-          <Text style={styles.subtitleEn}>
-            You can change the language later in settings
-          </Text>
-        </View>
+    <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
+      <View style={styles.container}>
+        <LanguageReset />
+        <View style={styles.content}>
+          {/* Header Section */}
+          <View style={styles.header}>
+            <Text style={styles.title}>اختر لغتك المفضلة</Text>
+            <Text style={styles.titleEn}>Choose Your Language</Text>
+            <Text style={styles.subtitle}>
+              يمكنك تغيير اللغة لاحقاً من الإعدادات
+            </Text>
+            <Text style={styles.subtitleEn}>
+              You can change the language later in settings
+            </Text>
+          </View>
 
-        {/* Language Options */}
-        <View style={styles.languageContainer}>
-          {languages.map((language) => (
-            <TouchableOpacity
-              key={language.code}
-              style={styles.languageOption}
-              onPress={() => handleLanguageSelect(language.code)}
-              activeOpacity={0.8}
-            >
-              <View style={styles.languageContent}>
-                <Text style={styles.flag}>{language.flag}</Text>
-                <View style={styles.languageText}>
-                  <Text style={styles.languageName}>{language.name}</Text>
-                  <Text style={styles.languageSubtitle}>
-                    {language.subtitle}
-                  </Text>
+          {/* Language Options */}
+          <View style={styles.languageContainer}>
+            {languages.map((language) => (
+              <TouchableOpacity
+                key={language.code}
+                style={styles.languageOption}
+                onPress={() => handleLanguageSelect(language.code)}
+                activeOpacity={0.8}
+                accessibilityRole="button"
+                accessibilityLabel={`${language.name} - ${language.subtitle}`}
+              >
+                <View style={styles.languageContent}>
+                  <Text style={styles.flag}>{language.flag}</Text>
+                  <View style={styles.languageText}>
+                    <Text
+                      style={[
+                        styles.languageName,
+                        { writingDirection: language.direction },
+                      ]}
+                    >
+                      {language.name}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.languageSubtitle,
+                        { writingDirection: language.direction },
+                      ]}
+                    >
+                      {language.subtitle}
+                    </Text>
+                  </View>
+                  <View style={styles.arrow}>
+                    <DirectionalIonicon
+                      name="arrow-forward"
+                      size={18}
+                      color="#fff"
+                    />
+                  </View>
                 </View>
-                <View style={styles.arrow}>
-                  <DirectionalIonicon
-                    name="arrow-forward"
-                    size={18}
-                    color="#fff"
-                  />
-                </View>
-              </View>
-            </TouchableOpacity>
-          ))}
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
-
-        {/* Footer */}
-        {/* <View style={styles.footer}>
-          <Text style={styles.footerText}>
-            🌍 دعم كامل للغة العربية والإنجليزية
-          </Text>
-          <Text style={styles.footerTextEn}>
-            🌍 Full support for Arabic and English
-          </Text>
-        </View> */}
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#f5f5f5",
+  },
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
@@ -144,6 +154,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 16,
     padding: 20,
+    minHeight: 56,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -152,8 +163,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 4,
-    borderWidth: 2,
-    borderColor: "transparent",
   },
   languageContent: {
     flexDirection: "row",
@@ -162,11 +171,12 @@ const styles = StyleSheet.create({
   },
   flag: {
     fontSize: 32,
-    marginRight: 16,
+    marginEnd: 16,
   },
   languageText: {
     flex: 1,
-    alignItems: "flex-start",
+    minWidth: 0,
+    flexShrink: 1,
   },
   languageName: {
     fontSize: 22,
@@ -180,35 +190,12 @@ const styles = StyleSheet.create({
     color: "#666",
   },
   arrow: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     backgroundColor: "#c28e5c",
-    borderRadius: 20,
+    borderRadius: 22,
     justifyContent: "center",
     alignItems: "center",
-  },
-  footer: {
-    alignItems: "center",
-    marginTop: 40,
-    paddingTop: 20,
-    borderTopWidth: 1,
-    borderTopColor: "#e0e0e0",
-    width: "100%",
-  },
-  footerText: {
-    fontSize: 14,
-    fontFamily: "Cairo_400Regular",
-    color: "#c28e5c",
-    textAlign: "center",
-    lineHeight: 20,
-  },
-  footerTextEn: {
-    fontSize: 12,
-    fontFamily: "Cairo_400Regular",
-    color: "#999",
-    textAlign: "center",
-    marginTop: 4,
-    lineHeight: 18,
   },
 });
 

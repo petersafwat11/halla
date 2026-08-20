@@ -5,14 +5,15 @@ import { canEditPage, canDeleteOnPage, PAGES } from "../../../utils/adminPermiss
 import { useUpdateHostStatus, useDeleteHost } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
+import { formatDate } from "@halaa/shared/utils/locale";
 import { colors } from "../../../styles/tokens";
 import AdminListItem from "../common/AdminListItem";
 
 const HostListItem = ({ host, onPress, onManageSubscription, selected = false, onSelect }) => {
-  const { id, _id, name, email, phoneNumber, subscription, status, createdAt } = host;
+  const { id, _id, name, username, email, phoneNumber, subscription, status, createdAt } = host;
   const hostId = id || _id;
 
-  const { t } = useTranslation("admin");
+  const { t, currentLanguage } = useTranslation("admin");
   const role = useAuthStore((state) => state.user?.role);
   const canEdit = canEditPage(role, PAGES.HOSTS);
   const canDelete = canDeleteOnPage(role, PAGES.HOSTS);
@@ -64,9 +65,13 @@ const HostListItem = ({ host, onPress, onManageSubscription, selected = false, o
     );
   };
 
-  const formattedDate = createdAt ? new Date(createdAt).toLocaleDateString() : null;
+  const formattedDate = createdAt ? formatDate(createdAt, currentLanguage) : null;
+  const plan = subscription?.planId;
   const planName =
-    subscription?.planId?.nameEn || subscription?.planId?.name || subscription?.planType;
+    (currentLanguage === "ar" ? plan?.nameAr : plan?.nameEn) ||
+    plan?.name ||
+    plan?.planType ||
+    subscription?.planType;
 
   const actions = [
     canEdit && {
@@ -96,7 +101,7 @@ const HostListItem = ({ host, onPress, onManageSubscription, selected = false, o
 
   return (
     <AdminListItem
-      title={name || t("hosts.labels.unnamed")}
+      title={name || username || email || t("hosts.labels.unnamed")}
       subtitle={email}
       subtitleAlt={phoneNumber ? `‪${phoneNumber}‬` : null}
       avatarColor={colors.primary[500]}

@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     minHeight: 50,
   },
-  inputIcon: { marginRight: 8 },
+  inputIcon: { marginEnd: 8 },
   input: {
     flex: 1,
     fontSize: 15,

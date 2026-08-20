@@ -1,40 +1,15 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   FlatList,
+  TextInput as RNTextInput,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import ServiceCard from "./Service";
-
-const ServiceList = React.memo(({ services, onEditService, onDeleteService, onToggleService }) => {
-  const renderService = useCallback(({ item }) => (
-    <ServiceCard
-      id={item.id}
-      name={item.name}
-      imageUri={item.imageUri}
-      categories={item.categories}
-      price={item.price}
-      isAvailable={item.isAvailable}
-      onEdit={() => onEditService?.(item)}
-      onDelete={() => onDeleteService?.(item.id)}
-      onToggle={() => onToggleService?.(item.id)}
-    />
-  ), [onEditService, onDeleteService, onToggleService]);
-
-  return (
-    <FlatList
-      data={services}
-      renderItem={renderService}
-      keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
-      contentContainerStyle={styles.listContent}
-      showsVerticalScrollIndicator={false}
-    />
-  );
-});
 
 const EmptyServiceState = React.memo(({ onAddService, t }) => (
   <View style={styles.emptyStateContainer}>
@@ -48,9 +23,17 @@ const EmptyServiceState = React.memo(({ onAddService, t }) => (
   </View>
 ));
 
-const Services = ({ services = [], onAddService, onEditService, onDeleteService, onToggleService }) => {
+const Services = ({
+  services = [],
+  onAddService,
+  onEditService,
+  onDeleteService,
+  onToggleService,
+  headerComponent = null,
+}) => {
   const { t } = useTranslation("vendor");
   const [selectedFilter, setSelectedFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const filters = [
     { id: "all", label: t("services.filterAll"), icon: "list" },
@@ -58,78 +41,131 @@ const Services = ({ services = [], onAddService, onEditService, onDeleteService,
     { id: "inactive", label: t("services.filterInactive"), icon: "circle-outline" },
   ];
 
-  const filteredServices = services.filter((service) => {
-    if (selectedFilter === "active") return service.isAvailable;
-    if (selectedFilter === "inactive") return !service.isAvailable;
-    return true;
-  });
+  const filteredServices = useMemo(() => {
+    return services.filter((service) => {
+      const matchesFilter =
+        selectedFilter === "active"
+          ? service.isAvailable
+          : selectedFilter === "inactive"
+            ? !service.isAvailable
+            : true;
+      if (!matchesFilter) return false;
+      if (!searchQuery.trim()) return true;
+      const query = searchQuery.toLowerCase().trim();
+      const nameMatch = service.name?.toLowerCase().includes(query);
+      const nameArMatch = service._raw?.nameAr?.toLowerCase().includes(query);
+      const tagMatch = service.categories?.some((c) =>
+        c?.toLowerCase().includes(query)
+      );
+      return nameMatch || nameArMatch || tagMatch;
+    });
+  }, [services, selectedFilter, searchQuery]);
 
   const handleFilterChange = useCallback((filterId) => {
     setSelectedFilter(filterId);
   }, []);
 
-  return (
-    <View style={styles.container}>
-      {/* Header with Search and Add Button */}
-      <View style={styles.headerContainer}>
-        <View style={styles.searchAndAddContainer}>
-          <TouchableOpacity
-            style={styles.addServiceButton}
-            onPress={onAddService}
-            activeOpacity={0.7}
-          >
-            <MaterialCommunityIcons name="plus" size={24} color="#FFF" />
-          </TouchableOpacity>
+  const renderService = useCallback(
+    ({ item }) => (
+      <ServiceCard
+        id={item.id}
+        name={item.name}
+        imageUri={item.imageUri}
+        categories={item.categories}
+        price={item.price}
+        isAvailable={item.isAvailable}
+        onEdit={() => onEditService?.(item)}
+        onDelete={() => onDeleteService?.(item.id)}
+        onToggle={() => onToggleService?.(item.id)}
+      />
+    ),
+    [onEditService, onDeleteService, onToggleService],
+  );
 
-          <View style={styles.searchInputContainer}>
-            <MaterialCommunityIcons name="magnify" size={16} color="#767676" />
-            <Text style={styles.searchPlaceholder}>{t("services.searchPlaceholder")}</Text>
+  const renderListHeader = useCallback(
+    () => (
+      <View>
+        {headerComponent}
+
+        {/* Header with Search and Add Button */}
+        <View style={styles.headerContainer}>
+          <View style={styles.searchAndAddContainer}>
+            <TouchableOpacity
+              style={styles.addServiceButton}
+              onPress={onAddService}
+              activeOpacity={0.7}
+            >
+              <MaterialCommunityIcons name="plus" size={24} color="#FFF" />
+            </TouchableOpacity>
+
+            <View style={styles.searchInputContainer}>
+              <MaterialCommunityIcons name="magnify" size={16} color="#767676" />
+              <RNTextInput
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                placeholder={t("services.searchPlaceholder")}
+                placeholderTextColor="#767676"
+                style={styles.searchInput}
+                textAlign="auto"
+              />
+            </View>
           </View>
         </View>
-      </View>
 
-      {/* Filter Tabs */}
-      <View style={styles.filtersContainer}>
-        {filters.map((filter) => (
-          <TouchableOpacity
-            key={filter.id}
-            style={[
-              styles.filterButton,
-              selectedFilter === filter.id && styles.filterButtonActive,
-            ]}
-            onPress={() => handleFilterChange(filter.id)}
-            activeOpacity={0.7}
-          >
-            <MaterialCommunityIcons
-              name={filter.icon}
-              size={14}
-              color={selectedFilter === filter.id ? "#C28E5C" : "#656565"}
-            />
-            <Text
+        {/* Filter Tabs */}
+        <View style={styles.filtersContainer}>
+          {filters.map((filter) => (
+            <TouchableOpacity
+              key={filter.id}
               style={[
-                styles.filterText,
-                selectedFilter === filter.id && styles.filterTextActive,
+                styles.filterButton,
+                selectedFilter === filter.id && styles.filterButtonActive,
               ]}
+              onPress={() => handleFilterChange(filter.id)}
+              activeOpacity={0.7}
             >
-              {filter.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
+              <MaterialCommunityIcons
+                name={filter.icon}
+                size={14}
+                color={selectedFilter === filter.id ? "#C28E5C" : "#656565"}
+              />
+              <Text
+                style={[
+                  styles.filterText,
+                  selectedFilter === filter.id && styles.filterTextActive,
+                ]}
+              >
+                {filter.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
       </View>
+    ),
+    [
+      headerComponent,
+      onAddService,
+      searchQuery,
+      t,
+      filters,
+      selectedFilter,
+      handleFilterChange,
+    ],
+  );
 
-      {/* Services List */}
-      <View style={{ flex: 1 }}>
-        {filteredServices.length > 0 ? (
-          <ServiceList
-            services={filteredServices}
-            onEditService={onEditService}
-            onDeleteService={onDeleteService}
-            onToggleService={onToggleService}
-          />
-        ) : (
+  return (
+    <View style={styles.container}>
+      <FlatList
+        data={filteredServices}
+        renderItem={renderService}
+        keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
+        ListHeaderComponent={renderListHeader}
+        ListEmptyComponent={
           <EmptyServiceState onAddService={onAddService} t={t} />
-        )}
-      </View>
+        }
+        contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
+      />
     </View>
   );
 };
@@ -173,12 +209,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: "#F5F5F5",
   },
-  searchPlaceholder: {
+  searchInput: {
+    flex: 1,
     fontSize: 12,
     fontFamily: "Cairo_500Medium",
-    color: "#656565",
-    lineHeight: 16,
-    letterSpacing: 0.06,
+    color: "#2C2C2C",
+    paddingVertical: 0,
   },
   filtersContainer: {
     flexDirection: "row",

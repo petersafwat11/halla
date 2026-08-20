@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   Linking,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import * as Sentry from "@sentry/react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useTranslation } from "../../localization";
@@ -21,9 +22,10 @@ import {
   useRestorePurchases,
   usePurchaseFlow,
 } from "../../hooks/purchases";
-import { canPurchase } from "../../services/purchases";
+import { canPurchase, isPurchasesAvailable } from "../../services/purchases";
 import { eventPreflight, reconcileGeneric } from "../../services/billingApi";
-import { getEntry, resolvePurchasable } from "../../services/billing/catalog";
+import { getEntry } from "../../services/billing/catalog";
+import { getPurchaseReadiness, READINESS_STATES, readinessReasonKey } from "../../services/billing/purchaseReadiness";
 import { classifyChange, selectReplacementMode, isDeferredChange } from "../../services/billing/changeMode";
 import { subscriptionCode } from "../../services/billing/currentPlan";
 import { isRestorable, showsManageSubscription } from "../../services/billing/disclosures";
@@ -63,8 +65,18 @@ const PlansSummaryScreen = () => {
   // Platform gate: web keeps the Moyasar card checkout; iOS/Android must use
   // native in-app billing (App Store / Google Play) per store policy in KSA.
   const isWeb = Platform.OS === "web";
-  const { data: offeringsAll } = useAllOfferings();
-  const { data: catalogData } = useStoreCatalog();
+  const {
+    data: offeringsAll,
+    isLoading: isOfferingsLoading,
+    error: offeringsError,
+    refetch: refetchOfferings,
+  } = useAllOfferings();
+  const {
+    data: catalogData,
+    isLoading: isCatalogLoading,
+    error: catalogError,
+    refetch: refetchCatalog,
+  } = useStoreCatalog();
   const { data: subscriptionData } = useMySubscription();
   const restoreMutation = useRestorePurchases();
   const flow = usePurchaseFlow();
@@ -76,19 +88,78 @@ const PlansSummaryScreen = () => {
   const catalogEntries = catalogData?.entries || [];
   const subscription = subscriptionData?.data?.subscription || null;
 
-  // Store catalog entry + resolved package for the plan (native only). The
-  // display price comes ONLY from the store package; a missing package disables
-  // the CTA with a safe unavailable state — never a backend price (§2/§5.5).
+  // Discrete 10-state purchase readiness model (Phase 5A / §5.5).
+  // The display price comes ONLY from the store package; a missing package
+  // disables the CTA with a safe unavailable/retry state — never a backend price.
   const storeEntry = useMemo(
     () => (isWeb ? null : getEntry(catalogEntries, selectedPlan?.code)),
     [isWeb, catalogEntries, selectedPlan]
   );
-  const resolved = useMemo(
-    () => (isWeb ? null : resolvePurchasable(catalogEntries, offeringsAll, selectedPlan?.code)),
-    [isWeb, catalogEntries, offeringsAll, selectedPlan]
-  );
-  const storePriceString = resolved?.priceString || null;
-  const storeAvailable = !!resolved?.available;
+  const readiness = useMemo(() => {
+    if (isWeb) {
+      return {
+        state: READINESS_STATES.READY,
+        ready: true,
+        entry: null,
+        pkg: null,
+        priceString: null,
+        retryable: false,
+      };
+    }
+    return getPurchaseReadiness({
+      isConfigured: isPurchasesAvailable(),
+      isUserIdentified: canPurchase(),
+      isCatalogLoading,
+      isOfferingsLoading,
+      catalogError,
+      offeringsError,
+      entries: catalogEntries,
+      offerings: offeringsAll,
+      targetCode: selectedPlan?.code,
+    });
+  }, [
+    isWeb,
+    isCatalogLoading,
+    isOfferingsLoading,
+    catalogError,
+    offeringsError,
+    catalogEntries,
+    offeringsAll,
+    selectedPlan,
+  ]);
+  const storePriceString = readiness.priceString;
+  const storeAvailable = readiness.ready;
+  // Terminal non-ready states show the precise localized reason (plan §5A);
+  // loading shows a spinner, retryable states show a retry action instead.
+  const terminalReasonKey =
+    !storeAvailable &&
+    readiness.state !== READINESS_STATES.LOADING &&
+    !readiness.retryable
+      ? readinessReasonKey(readiness.state)
+      : null;
+
+  // Privacy-safe readiness telemetry (plan §5B.8): state/counts only —
+  // never keys, receipts, phone/email, or RevenueCat customer data.
+  useEffect(() => {
+    if (isWeb || readiness.state === READINESS_STATES.READY) return;
+    try {
+      Sentry.addBreadcrumb({
+        category: "purchase.readiness",
+        message: `state=${readiness.state}`,
+        level: readiness.retryable ? "warning" : "error",
+        data: {
+          state: readiness.state,
+          retryable: readiness.retryable,
+          catalogEntries: catalogEntries.length,
+          offeringsPackages:
+            offeringsAll?.availablePackages?.length ?? null,
+          targetCode: selectedPlan?.code || null,
+        },
+      });
+    } catch (_) {
+      // Telemetry must never break the purchase surface.
+    }
+  }, [isWeb, readiness.state, readiness.retryable, catalogEntries.length, offeringsAll, selectedPlan]);
 
   // Subscription change classification → Google replacement mode (P0-07/MOB-02).
   const currentEntry = useMemo(
@@ -344,18 +415,26 @@ const PlansSummaryScreen = () => {
   // while a run is in flight. Add-ons are completed on the dedicated Add-ons
   // screen after the plan is active (each with its own preflight + reconcile).
   const runNativePurchase = () => {
-    if (!canPurchase()) {
-      toast.error(t("checkout.errors.iapUnavailable", "In-app purchases aren't available right now."));
-      return;
-    }
-    if (!storeEntry || !storeAvailable) {
-      toast.error(t("checkout.errors.planUnavailable", "This plan isn't available for purchase right now."));
+    if (!readiness.ready) {
+      if (readiness.state === READINESS_STATES.LOADING) return;
+      if (readiness.retryable) {
+        refetchCatalog();
+        refetchOfferings();
+        return;
+      }
+      // Name the precise non-secret blocker instead of a generic label.
+      const reasonKey = readinessReasonKey(readiness.state);
+      toast.error(
+        reasonKey
+          ? t(reasonKey)
+          : t("checkout.errors.planUnavailable", "This plan isn't available for purchase right now.")
+      );
       return;
     }
     const isEvent = storeEntry.kind === "event_consumable";
     flow.run({
       entry: storeEntry,
-      pkg: resolved.pkg,
+      pkg: readiness.pkg,
       operation: changeType !== "new" ? "change" : "purchase",
       changeInfo,
       // A deferred downgrade won't be active until renewal — don't poll for it.
@@ -386,7 +465,9 @@ const PlansSummaryScreen = () => {
   };
 
   const isProcessing = isWeb ? checkoutMutation.isPending : flow.isBusy;
-  const nativeUnavailable = !isWeb && !storeAvailable;
+  const nativeUnavailable = !isWeb && (!readiness.ready || readiness.state === READINESS_STATES.LOADING);
+  const nativeLoading = !isWeb && readiness.state === READINESS_STATES.LOADING;
+  const nativeRetryable = !isWeb && readiness.retryable;
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
@@ -547,13 +628,33 @@ const PlansSummaryScreen = () => {
               <View style={styles.footerTotalAmountRow}>
                 {!isWeb ? (
                   // Native: the store's actual charged price (priceString). If the
-                  // package is missing, show unavailable — never a backend price.
-                  storePriceString ? (
+                  // package is missing, show unavailable/retry — never a backend price.
+                  nativeLoading ? (
+                    <ActivityIndicator size="small" color={colors.primary[500]} />
+                  ) : nativeRetryable ? (
+                    <TouchableOpacity
+                      onPress={() => {
+                        refetchCatalog();
+                        refetchOfferings();
+                      }}
+                    >
+                      <Text style={styles.footerRetryText}>
+                        {t("common.retry", "إعادة المحاولة")}
+                      </Text>
+                    </TouchableOpacity>
+                  ) : storePriceString ? (
                     <Text style={styles.footerTotalAmount}>{storePriceString}</Text>
                   ) : (
-                    <Text style={styles.footerUnavailable}>
-                      {t("checkout.iap.unavailable", "Unavailable")}
-                    </Text>
+                    <View style={styles.footerUnavailableWrap}>
+                      <Text style={styles.footerUnavailable}>
+                        {t("checkout.iap.unavailable", "Unavailable")}
+                      </Text>
+                      {terminalReasonKey && (
+                        <Text style={styles.footerUnavailableReason}>
+                          {t(terminalReasonKey)}
+                        </Text>
+                      )}
+                    </View>
                   )
                 ) : (
                   <>
@@ -644,9 +745,9 @@ const styles = StyleSheet.create({
   },
   secureRow: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     justifyContent: "center",
-    gap: spacing[4],
+    gap: spacing[6],
     marginTop: spacing[8],
     paddingHorizontal: spacing[12],
   },
@@ -757,6 +858,23 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.body.small,
     color: colors.natural[450],
   },
+  footerUnavailableWrap: {
+    alignItems: "flex-start",
+    maxWidth: 160,
+  },
+  footerUnavailableReason: {
+    fontFamily: "Cairo_400Regular",
+    fontSize: typography.fontSize.label.small,
+    color: colors.natural[400],
+    lineHeight: 14,
+    marginTop: 2,
+  },
+  footerRetryText: {
+    fontFamily: "Cairo_600SemiBold",
+    fontSize: typography.fontSize.body.small,
+    color: colors.primary[600],
+    textDecorationLine: "underline",
+  },
   proceedButton: {
     flexDirection: "row",
     alignItems: "center",
@@ -774,7 +892,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   proceedButtonDisabled: {
-    backgroundColor: colors.primary[200],
+    backgroundColor: colors.natural[300],
     shadowOpacity: 0,
     elevation: 0,
   },

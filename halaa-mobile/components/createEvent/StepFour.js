@@ -25,6 +25,7 @@ import { Ionicons } from "@expo/vector-icons";
 import {
   resolveTaqnyatPlaceholders,
   buildTaqnyatPreviewContext,
+  formatDate,
 } from "@halaa/shared/utils";
 import { useHostTaqnyatTemplates } from "../../hooks/taqnyatTemplates";
 import { useTranslation } from "../../localization";
@@ -70,7 +71,7 @@ const StepFour = () => {
   const [showPreview, setShowPreview] = useState(false);
   const previousCategoryRef = useRef("");
   const previousInvitationTypeRef = useRef("");
-  const { t } = useTranslation("createEvent");
+  const { t, currentLanguage } = useTranslation("createEvent");
   const { width: viewportWidth } = useWindowDimensions();
   const useSingleColumnTypes = viewportWidth < 360;
 
@@ -96,19 +97,9 @@ const StepFour = () => {
   // Build a preview-resolution context once per form change so template
   // previews on screen match what the guest will receive.
   const previewContext = useMemo(() => {
-    const locale = (t("preview_date_locale", "ar-SA") || "ar-SA").toString();
-    let dateFormatted = "";
-    if (eventDate) {
-      try {
-        dateFormatted = new Date(eventDate).toLocaleDateString(locale, {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        });
-      } catch {
-        dateFormatted = "";
-      }
-    }
+    const dateFormatted = eventDate
+      ? formatDate(eventDate, currentLanguage || "ar")
+      : "";
     return buildTaqnyatPreviewContext({
       guestName: t("preview_guest_placeholder", "ضيفنا الكريم"),
       eventTitle: eventName,
@@ -117,7 +108,7 @@ const StepFour = () => {
       locationAddress: address?.address || "",
       hostName,
     });
-  }, [eventName, eventDate, eventTime, address?.address, hostName, t]);
+  }, [eventName, eventDate, eventTime, address?.address, hostName, t, currentLanguage]);
 
   const { data, isLoading, error } = useHostTaqnyatTemplates(
     {

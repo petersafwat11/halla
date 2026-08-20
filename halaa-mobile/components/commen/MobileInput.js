@@ -4,10 +4,75 @@ import {
   Text,
   TextInput as RNTextInput,
   StyleSheet,
-  Image
+  Pressable,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useFormContext, Controller } from "react-hook-form";
+import { useInputDirection } from "../../hooks/useInputDirection";
+
+/**
+ * Hoisted field renderer to satisfy Rules-of-Hooks and stabilize focus state.
+ */
+const MobileInputField = ({
+  label,
+  placeholder,
+  disabled,
+  countryCode,
+  value,
+  error,
+  onChange,
+  onBlur,
+  extraProps,
+}) => {
+  const [isFocused, setIsFocused] = useState(false);
+  const inputRef = React.useRef(null);
+
+  const hasValue = !!value && String(value).length > 0;
+  // "phone": localized (RTL) placeholder while empty, LTR digits once non-empty
+  const directionStyle = useInputDirection("phone", { hasValue });
+
+  return (
+    <View style={styles.container}>
+      {label && <Text style={styles.label}>{label}</Text>}
+      <Pressable
+        onPress={() => !disabled && inputRef.current?.focus()}
+        style={[
+          styles.inputContainer,
+          isFocused && styles.inputContainerFocused,
+          error && styles.inputContainerError,
+          disabled && styles.inputContainerDisabled,
+        ]}
+      >
+        <Ionicons
+          name="call-outline"
+          size={20}
+          color="#999"
+          style={styles.icon}
+        />
+        <View style={styles.countryCode}>
+          <Text style={styles.countryCodeText}>{countryCode}</Text>
+        </View>
+        <RNTextInput
+          {...extraProps}
+          ref={inputRef}
+          style={[styles.input, directionStyle]}
+          placeholder={placeholder}
+          placeholderTextColor="#999"
+          value={value || ""}
+          onChangeText={onChange}
+          onBlur={() => {
+            setIsFocused(false);
+            onBlur?.();
+          }}
+          onFocus={() => setIsFocused(true)}
+          keyboardType="phone-pad"
+          editable={!disabled}
+        />
+      </Pressable>
+      {error && <Text style={styles.errorText}>{error.message}</Text>}
+    </View>
+  );
+};
 
 const MobileInput = ({
   name,
@@ -27,56 +92,20 @@ const MobileInput = ({
       rules={rules}
       render={({
         field: { onChange, onBlur, value },
-        fieldState: { error }
-      }) => {
-        const [isFocused, setIsFocused] = useState(false);
-
-        return (
-          <View style={styles.container}>
-            {label && <Text style={styles.label}>{label}</Text>}
-            <View
-              style={[
-                styles.inputContainer,
-                isFocused && styles.inputContainerFocused,
-                error && styles.inputContainerError,
-                disabled && styles.inputContainerDisabled,
-              ]}
-            >
-              <Ionicons
-                name="call-outline"
-                size={20}
-                color="#999"
-                style={styles.icon}
-              />
-              <RNTextInput
-                style={styles.input}
-                placeholder={placeholder}
-                placeholderTextColor="#999"
-                value={value || ""}
-                onChangeText={onChange}
-                onBlur={() => {
-                  setIsFocused(false);
-                  onBlur();
-                }}
-                onFocus={() => setIsFocused(true)}
-                keyboardType="phone-pad"
-                editable={!disabled}
-                {...props}
-              />
-              <View
-                style={[styles.countryCode]}
-              >
-                <Text style={styles.countryCodeText}>{countryCode}</Text>
-              </View>
-            </View>
-            {error && (
-              <Text style={[styles.errorText]}>
-                {error.message}
-              </Text>
-            )}
-          </View>
-        );
-      }}
+        fieldState: { error },
+      }) => (
+        <MobileInputField
+          label={label}
+          placeholder={placeholder}
+          disabled={disabled}
+          countryCode={countryCode}
+          value={value}
+          error={error}
+          onChange={onChange}
+          onBlur={onBlur}
+          extraProps={props}
+        />
+      )}
     />
   );
 };
@@ -84,15 +113,16 @@ const MobileInput = ({
 const styles = StyleSheet.create({
   container: {
     marginBottom: 16,
-    width: "100%"
-  },  label: {
+    width: "100%",
+  },
+  label: {
     fontSize: 14,
     fontFamily: "Cairo_600SemiBold",
     color: "#2c2c2c",
     marginBottom: 8,
-    textAlign: "left",
-    width: "100%"
-  },  inputContainer: {
+    width: "100%",
+  },
+  inputContainer: {
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
@@ -101,42 +131,50 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     minHeight: 50,
     paddingHorizontal: 16,
-    width: "100%"
-  },  inputContainerFocused: {
+    width: "100%",
+    gap: 8,
+  },
+  inputContainerFocused: {
     borderColor: "#c28e5c",
-    borderWidth: 2
+    borderWidth: 2,
   },
   inputContainerError: {
-    borderColor: "#e74c3c"
+    borderColor: "#e74c3c",
   },
   inputContainerDisabled: {
     backgroundColor: "#f5f5f5",
-    opacity: 0.6
+    opacity: 0.6,
   },
   icon: {
-    marginRight: 8
-  },  input: {
+    marginEnd: 4,
+  },
+  countryCode: {
+    paddingEnd: 12,
+    marginEnd: 4,
+    borderEndWidth: 1,
+    borderEndColor: "#e0e0e0",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  countryCodeText: {
+    fontSize: 15,
+    fontFamily: "Cairo_600SemiBold",
+    color: "#2c2c2c",
+    writingDirection: "ltr",
+  },
+  input: {
     flex: 1,
     fontSize: 15,
     fontFamily: "Cairo_400Regular",
     color: "#2c2c2c",
-    paddingVertical: 12
-  },  countryCode: {
-    paddingLeft: 12,
-    marginLeft: 12,
-    borderLeftWidth: 1,
-    borderLeftColor: "#e0e0e0"
-  },  countryCodeText: {
-    fontSize: 15,
-    fontFamily: "Cairo_600SemiBold",
-    color: "#2c2c2c"
+    paddingVertical: 12,
   },
   errorText: {
     fontSize: 12,
     fontFamily: "Cairo_400Regular",
     color: "#e74c3c",
     marginTop: 4,
-    textAlign: "left"
-  },});
+  },
+});
 
 export default MobileInput;

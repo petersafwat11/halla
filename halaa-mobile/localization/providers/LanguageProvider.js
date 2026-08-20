@@ -154,13 +154,18 @@ export const LanguageProvider = ({ children }) => {
           reloadNeeded
         );
 
-        Alert.alert(
-          "Language Changed",
-          reloadNeeded
-            ? "The app language has been changed. Please relaunch the app for the layout direction to fully apply."
-            : "The app language has been changed successfully.",
-          [{ text: "OK" }]
-        );
+        const alertTitle = languageCode === "ar" ? "تم تغيير اللغة" : "Language Changed";
+        const alertMessage =
+          languageCode === "ar"
+            ? reloadNeeded
+              ? "تم تغيير لغة التطبيق. يُرجى إعادة تشغيل التطبيق لتطبيق اتجاه الواجهة بالكامل."
+              : "تم تغيير لغة التطبيق بنجاح."
+            : reloadNeeded
+              ? "The app language has been changed. Please relaunch the app for the layout direction to fully apply."
+              : "The app language has been changed successfully.";
+        const buttonText = languageCode === "ar" ? "حسناً" : "OK";
+
+        Alert.alert(alertTitle, alertMessage, [{ text: buttonText }]);
       }
     } catch (error) {
       console.error("[LanguageProvider] Error changing language:", error);

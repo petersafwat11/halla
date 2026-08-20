@@ -21,6 +21,11 @@ import Button from "../commen/Button";
 import MapPicker from "../commen/MapPicker";
 import { mobileServiceDetailsSchema as serviceDetailsSchema } from "@halaa/shared/schemas/vendor";
 import { usersApi } from "../../hooks/users/_api";
+import {
+  extractCategoriesArray,
+  buildServiceCategoriesPayload,
+  VENDOR_CATEGORY_KEYS,
+} from "../../utils/vendorHelpers";
 
 /**
  * Tile that owns BOTH ends of the single-image flow for a document field:
@@ -88,8 +93,8 @@ const ServiceDetailsForm = ({ data, onSave, onRefetch, loading }) => {
       nationalId: data?.nationalId || "",
     },
   });
-  const [serviceCategories, setServiceCategories] = useState(
-    data?.serviceCategories || []
+  const [serviceCategories, setServiceCategories] = useState(() =>
+    extractCategoriesArray(data?.serviceCategories)
   );
   const [serviceLocation, setServiceLocation] = useState(
     data?.serviceLocation || { address: "", coordinates: null }
@@ -110,7 +115,7 @@ const ServiceDetailsForm = ({ data, onSave, onRefetch, loading }) => {
       aboutEn: data?.aboutEn || "",
       nationalId: data?.nationalId || "",
     });
-    setServiceCategories(data?.serviceCategories || []);
+    setServiceCategories(extractCategoriesArray(data?.serviceCategories));
     setServiceLocation(
       data?.serviceLocation || { address: "", coordinates: null }
     );
@@ -129,14 +134,10 @@ const ServiceDetailsForm = ({ data, onSave, onRefetch, loading }) => {
     data?.commercialRecordImage,
   ]);
 
-  const categoryOptions = [
-    { label: t("categories.photography"), value: "photography" },
-    { label: t("categories.catering"), value: "catering" },
-    { label: t("categories.decoration"), value: "decoration" },
-    { label: t("categories.entertainment"), value: "entertainment" },
-    { label: t("categories.venue"), value: "venue" },
-    { label: t("categories.planning"), value: "planning" },
-  ];
+  const categoryOptions = VENDOR_CATEGORY_KEYS.map((key) => ({
+    label: t(`services.serviceTypes.${key}`, t(`serviceTypes.${key}`, key)),
+    value: key,
+  }));
 
   const pickImage = async (type) => {
     try {
@@ -210,8 +211,9 @@ const ServiceDetailsForm = ({ data, onSave, onRefetch, loading }) => {
       aboutEn: formValues.aboutEn,
       nationalId: formValues.nationalId,
     };
-    if (serviceCategories?.length) {
-      submitData.serviceCategories = serviceCategories;
+    if (Array.isArray(serviceCategories) && serviceCategories.length > 0) {
+      submitData.serviceCategories =
+        buildServiceCategoriesPayload(serviceCategories);
     }
 
     // The backend's `serviceLocation` schema is `.strict()` and only accepts
@@ -290,7 +292,9 @@ const ServiceDetailsForm = ({ data, onSave, onRefetch, loading }) => {
             </Text>
             <View style={styles.categoriesContainer}>
               {categoryOptions.map((opt) => {
-                const selected = serviceCategories.includes(opt.value);
+                const selected =
+                  Array.isArray(serviceCategories) &&
+                  serviceCategories.includes(opt.value);
                 return (
                   <TouchableOpacity
                     key={opt.value}
@@ -299,11 +303,12 @@ const ServiceDetailsForm = ({ data, onSave, onRefetch, loading }) => {
                       selected && styles.categoryChipSelected,
                     ]}
                     onPress={() => {
-                      setServiceCategories((prev) =>
-                        selected
-                          ? prev.filter((v) => v !== opt.value)
-                          : [...prev, opt.value]
-                      );
+                      setServiceCategories((prev) => {
+                        const arr = Array.isArray(prev) ? prev : [];
+                        return selected
+                          ? arr.filter((v) => v !== opt.value)
+                          : [...arr, opt.value];
+                      });
                     }}
                   >
                     <Text

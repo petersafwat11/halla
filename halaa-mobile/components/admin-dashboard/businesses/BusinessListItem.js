@@ -6,7 +6,7 @@ import { useUpdateBusinessStatus, useDeleteBusiness } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
 import { colors } from "../../../styles/tokens";
-import { getLocalized } from "@halaa/shared/utils/locale";
+import { getLocalized, formatDate } from "@halaa/shared/utils/locale";
 import AdminListItem from "../common/AdminListItem";
 
 const BusinessListItem = ({ business, onPress, onManagePlan, selected = false, onSelect }) => {
@@ -23,30 +23,35 @@ const BusinessListItem = ({ business, onPress, onManagePlan, selected = false, o
   const toast = useToast();
 
   const handleStatusChange = () => {
-    const newStatus = status === "active" ? "suspended" : "active";
-    const isSuspending = newStatus === "suspended";
-    const actionLabel = isSuspending ? t("common.suspend") : t("common.activate");
-    Alert.alert(actionLabel, `${actionLabel} "${name || ""}"?`, [
-      { text: t("common.cancel"), style: "cancel" },
-      {
-        text: actionLabel,
-        style: isSuspending ? "destructive" : "default",
-        onPress: async () => {
-          try {
-            await updateStatus.mutateAsync({ businessId, status: newStatus });
-            toast.success(t("businesses.actions.statusUpdated"));
-          } catch {
-            toast.error(t("businesses.actions.statusUpdateFailed"));
-          }
+    const isSuspended = status === "suspended";
+    const nextStatus = isSuspended ? "active" : "suspended";
+    const actionLabel = isSuspended ? t("common.activate") : t("common.suspend");
+
+    Alert.alert(
+      t("businesses.actions.statusConfirmTitle", { action: actionLabel }),
+      t("businesses.actions.statusConfirmBody", { action: actionLabel, name }),
+      [
+        { text: t("common.cancel"), style: "cancel" },
+        {
+          text: actionLabel,
+          style: isSuspended ? "default" : "destructive",
+          onPress: async () => {
+            try {
+              await updateStatus.mutateAsync({ businessId, status: nextStatus });
+              toast.success(t("common.success"));
+            } catch {
+              toast.error(t("common.error"));
+            }
+          },
         },
-      },
-    ]);
+      ],
+    );
   };
 
   const handleDelete = () => {
     Alert.alert(
-      t("businesses.deleteConfirm.title"),
-      t("businesses.deleteConfirm.message"),
+      t("businesses.actions.deleteConfirmTitle"),
+      t("businesses.actions.deleteConfirmBody", { name }),
       [
         { text: t("common.cancel"), style: "cancel" },
         {
@@ -65,7 +70,7 @@ const BusinessListItem = ({ business, onPress, onManagePlan, selected = false, o
     );
   };
 
-  const formattedDate = createdAt ? new Date(createdAt).toLocaleDateString() : null;
+  const formattedDate = createdAt ? formatDate(createdAt, i18n.language) : null;
   const planName =
     getLocalized(subscription?.planId || {}, "name", i18n.language) ||
     subscription?.planId?.code ||

@@ -1,7 +1,7 @@
 import React from "react";
 import { useTranslation } from "../../../localization";
 import { colors } from "../../../styles/tokens";
-import { getLocalized } from "@halaa/shared/utils/locale";
+import { getLocalized, formatNumber } from "@halaa/shared/utils/locale";
 import { isPoolPlan } from "@halaa/shared/constants/plans";
 import AdminListItem from "../common/AdminListItem";
 
@@ -28,14 +28,15 @@ const FAMILY_CONFIG = {
   trial:        { color: colors.natural[400],   bg: colors.natural[150],  labelKey: "plans.types.trial" },
 };
 
-const formatPrice = (amount) => {
-  if (amount === undefined || amount === null) return "—";
-  return `SAR ${Number(amount).toLocaleString()}`;
-};
-
 const PlanListItem = ({ plan, canEdit, onEdit }) => {
   const { t, i18n } = useTranslation("admin");
   if (!plan) return null;
+
+  const formatPrice = (amount) => {
+    if (amount === undefined || amount === null) return "—";
+    return `SAR ${formatNumber(Number(amount), i18n.language || "ar")}`;
+  };
+
 
   const family = familyOf(plan.planType);
   const typeConfig = FAMILY_CONFIG[family];

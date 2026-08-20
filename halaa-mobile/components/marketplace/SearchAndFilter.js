@@ -9,6 +9,8 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
+import { useInputDirection } from "../../hooks/useInputDirection";
+import { formatNumber } from "@halaa/shared/utils/locale";
 
 const SearchAndFilter = ({
   onSearch,
@@ -16,9 +18,11 @@ const SearchAndFilter = ({
   searchQuery,
   activeFiltersCount = 0,
 }) => {
-  const { t } = useTranslation("marketplace");
+  const { t, currentLanguage } = useTranslation("marketplace");
   const [isFocused, setIsFocused] = useState(false);
   const scaleAnim = React.useRef(new Animated.Value(1)).current;
+  // Explicit localized direction for the iOS search placeholder.
+  const searchDirectionStyle = useInputDirection("localized");
 
   const handleFilterPress = () => {
     Animated.sequence([
@@ -47,7 +51,7 @@ const SearchAndFilter = ({
           style={styles.searchIcon}
         />
         <TextInput
-          style={styles.searchInput}
+          style={[styles.searchInput, searchDirectionStyle]}
           placeholder={t("search.placeholder")}
           placeholderTextColor="#656565"
           value={searchQuery}
@@ -68,7 +72,9 @@ const SearchAndFilter = ({
           <Text style={styles.filterText}>{t("search.filter")}</Text>
           {activeFiltersCount > 0 && (
             <View style={styles.badge}>
-              <Text style={styles.badgeText}>{activeFiltersCount}</Text>
+              <Text style={styles.badgeText}>
+                {formatNumber(activeFiltersCount, currentLanguage)}
+              </Text>
             </View>
           )}
         </TouchableOpacity>
@@ -101,7 +107,7 @@ const styles = StyleSheet.create({
     borderColor: "#C28E5C",
   },
   searchIcon: {
-    marginRight: 8,
+    marginEnd: 8,
   },
   searchInput: {
     flex: 1,
@@ -132,7 +138,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 6,
-    marginLeft: 4,
+    marginStart: 4,
   },
   badgeText: {
     color: "#FFF",

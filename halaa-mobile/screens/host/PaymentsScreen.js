@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "../../localization";
+import { formatDateTime } from "@halaa/shared/utils/locale";
 import { useMyPayments } from "../../hooks";
 import TopBar from "../../components/plans/TopBar";
 
@@ -33,7 +34,7 @@ const StatusBadge = ({ status, label }) => {
 };
 
 const PaymentsScreen = () => {
-  const { t } = useTranslation("hostPayments");
+  const { t, currentLanguage } = useTranslation("payments");
   const [filter, setFilter] = useState("all");
   const [page, setPage] = useState(1);
   const limit = 20;
@@ -60,13 +61,7 @@ const PaymentsScreen = () => {
     return base;
   };
 
-  const formatDate = (iso) => {
-    try {
-      return new Date(iso).toLocaleString();
-    } catch {
-      return iso || "—";
-    }
-  };
+  const formatDate = (iso) => (iso ? formatDateTime(iso, currentLanguage) : "—");
 
   const renderRow = (item) => (
     <View key={item.id} style={styles.row}>

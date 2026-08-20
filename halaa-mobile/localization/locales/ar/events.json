@@ -1,5 +1,39 @@
 {
   "title": "المناسبات",
+  "guestCount_zero": "لا يوجد ضيوف",
+  "guestCount_one": "ضيف واحد",
+  "guestCount_two": "ضيفان",
+  "guestCount_few": "{{count}} ضيوف",
+  "guestCount_many": "{{count}} ضيفاً",
+  "guestCount_other": "{{count}} ضيف",
+  "list": {
+    "searchPlaceholder": "ابحث عن مناسبة...",
+    "exportTitle": "تصدير المناسبات",
+    "exportSuccess": "تم تصدير المناسبات بنجاح",
+    "exportError": "تعذر تصدير المناسبات",
+    "empty": "لا توجد مناسبات حالياً",
+    "noResults": "لا توجد نتائج للبحث",
+    "totalGuests": "إجمالي الضيوف",
+    "confirmedCount": "عدد القبول",
+    "responseRate": "معدل الاستجابة",
+    "status": {
+      "all": "الكل",
+      "live": "مباشرة",
+      "scheduled": "مجدولة",
+      "completed": "منتهية",
+      "pending_scheduling": "في انتظار الجدولة",
+      "draft": "مسودة",
+      "cancelled": "ملغية",
+      "suspended": "موقوفة"
+    },
+    "stats": {
+      "confirmed": "موافق",
+      "declined": "معتذر",
+      "noResponse": "لم يرد"
+    },
+    "untitled": "مناسبة بدون عنوان",
+    "unspecified": "غير محدد"
+  },
   "createEvent": {
     "title": "إنشاء مناسبة جديدة",
     "eventName": "اسم المناسبة",

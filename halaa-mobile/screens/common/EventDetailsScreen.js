@@ -38,6 +38,14 @@ import { useRevokeStaffAccess } from "../../hooks/staff";
 import { useSendReminder } from "../../hooks/messaging";
 
 import { EVENT_STATUS, EVENT_STATUS_GROUPS } from "@halaa/shared/constants/eventStatus";
+import {
+  formatDate as formatLocaleDate,
+  formatTime as formatLocaleTime,
+  formatDateTime as formatLocaleDateTime,
+  formatLocation as formatLocaleLocation,
+  formatNumber as formatLocaleCount,
+  isolateLtr,
+} from "@halaa/shared/utils";
 import { useAuthStore } from "../../stores/authStore";
 import { useToast } from "../../contexts/ToastContext";
 import { useTranslation } from "../../localization";
@@ -48,6 +56,7 @@ import {
 } from "../../utils/adminPermissions";
 import { saveBlobAndShare } from "../../utils/download";
 import { getStatusVisual } from "../../constants/statusColors";
+import { useInputDirection } from "../../hooks/useInputDirection";
 
 import TopBar from "../../components/plans/TopBar";
 import {
@@ -105,45 +114,15 @@ const STATUS_CONFIG = {
   failed: toCfg("failed", "failed"),
 };
 
-const formatDate = (iso) => {
-  if (!iso) return null;
-  try {
-    return new Date(iso).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  } catch {
-    return null;
-  }
-};
-
-const formatDateTime = (iso) => {
-  if (!iso) return null;
-  try {
-    return new Date(iso).toLocaleString(undefined, {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    });
-  } catch {
-    return null;
-  }
-};
-
-const buildLocationString = (loc) => {
-  if (!loc) return null;
-  const parts = [loc.name, loc.address, loc.city].filter(Boolean);
-  return parts.join(", ") || null;
-};
+const formatDate = (iso, lang) => (iso ? formatLocaleDate(iso, lang) : null);
+const formatDateTime = (iso, lang) => (iso ? formatLocaleDateTime(iso, lang) : null);
+const buildLocationString = (loc, lang) => formatLocaleLocation(loc, lang);
 
 const EventDetailsScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const { eventId } = route.params || {};
-  const { t } = useTranslation(["admin", "events", "home"]);
+  const { t, currentLanguage } = useTranslation(["admin", "events", "home"]);
   const toast = useToast();
   const role = useAuthStore((s) => s.user?.role);
   const currentUser = useAuthStore((s) => s.user);
@@ -223,6 +202,11 @@ const EventDetailsScreen = () => {
   const scrollViewRef = useRef(null);
   const tabsRef = useRef(null);
   const tabsYRef = useRef(null);
+  // Explicit localized direction for the iOS search placeholder.
+  const searchDirectionStyle = useInputDirection("localized");
+  // Intrinsically LTR values (email/phone) are isolated inside Arabic copy.
+  const isolateIfRtl = (value) =>
+    currentLanguage === "ar" ? isolateLtr(value) : value;
 
   const stats = useMemo(
     () => ({
@@ -573,7 +557,10 @@ const EventDetailsScreen = () => {
 
   const eventDate = event?.eventDetails?.date || event?.date || null;
   const eventTime = event?.eventDetails?.time || event?.time || null;
-  const locationStr = buildLocationString(event?.eventDetails?.location || event?.location);
+  const locationStr = buildLocationString(
+    event?.eventDetails?.location || event?.location,
+    currentLanguage
+  );
 
   // Remaining invites in the host's pool. A real number now for both pool and
   // per-event plans; `null` means truly unlimited (admin/super-admin). Used by
@@ -643,8 +630,8 @@ const EventDetailsScreen = () => {
               <View style={styles.titleMetaRow}>
                 <Ionicons name="calendar-outline" size={13} color={colors.natural[450]} />
                 <Text style={styles.titleMetaText}>
-                  {formatDate(eventDate) || ""}
-                  {eventTime ? `  •  ${eventTime}` : ""}
+                  {formatDate(eventDate, currentLanguage) || ""}
+                  {eventTime ? `  •  ${formatLocaleTime(eventTime, currentLanguage)}` : ""}
                 </Text>
               </View>
             )}
@@ -697,7 +684,7 @@ const EventDetailsScreen = () => {
               <Text style={styles.checkedInLabel}>
                 {t("eventDetails.checkedIn", "تم تسجيل دخولهم")}
               </Text>
-              <Text style={styles.checkedInValue}>{stats.checkedIn}</Text>
+              <Text style={styles.checkedInValue}>{formatLocaleCount(stats.checkedIn, currentLanguage)}</Text>
             </TouchableOpacity>
           )}
           <TouchableOpacity
@@ -712,7 +699,7 @@ const EventDetailsScreen = () => {
             <Text style={styles.checkedInLabel}>
               {t("eventDetails.totalGuests", "إجمالي الضيوف")}
             </Text>
-            <Text style={styles.checkedInValue}>{stats.totalGuests}</Text>
+            <Text style={styles.checkedInValue}>{formatLocaleCount(stats.totalGuests, currentLanguage)}</Text>
           </TouchableOpacity>
         </View>
 
@@ -734,7 +721,7 @@ const EventDetailsScreen = () => {
               <InfoRow
                 icon="mail-outline"
                 label={t("eventDetails.email", "البريد")}
-                value={hostEmail}
+                value={isolateIfRtl(hostEmail)}
                 last={!hostPhone}
               />
             )}
@@ -742,7 +729,7 @@ const EventDetailsScreen = () => {
               <InfoRow
                 icon="call-outline"
                 label={t("eventDetails.phone", "الجوال")}
-                value={hostPhone}
+                value={isolateIfRtl(hostPhone)}
                 last
               />
             )}
@@ -755,17 +742,24 @@ const EventDetailsScreen = () => {
             title={t("eventDetails.subscription", "الباقة")}
             icon="card-outline"
           >
-            {event.subscription.plan && (
+            {event.subscription.planType && (
               <InfoRow
                 icon="ribbon-outline"
                 label={t("eventDetails.plan", "الباقة")}
-                value={event.subscription.plan}
+                value={t(
+                  `discounts.planTypes.${event.subscription.planType}`,
+                  event.subscription.planType
+                )}
               />
             )}
             <InfoRow
               icon="people-outline"
               label={t("eventDetails.guestsRemaining", "ضيوف متبقون")}
-              value={String(event.subscription.guestsRemaining ?? "—")}
+              value={
+                event.subscription.invitesRemaining == null
+                  ? t("events:remainingInvites.unlimited", "غير محدود")
+                  : formatLocaleCount(event.subscription.invitesRemaining, currentLanguage)
+              }
               last
             />
           </SectionCard>
@@ -782,7 +776,7 @@ const EventDetailsScreen = () => {
               <Text style={styles.invitesBadgeValue}>
                 {invitesRemaining == null
                   ? t("events:remainingInvites.unlimited", "غير محدود")
-                  : invitesRemaining}
+                  : formatLocaleCount(invitesRemaining, currentLanguage)}
               </Text>
             </View>
             <Text style={styles.invitesBadgeHelp}>
@@ -836,7 +830,7 @@ const EventDetailsScreen = () => {
                   activeTab === "guests" && styles.tabTextActive,
                 ]}
               >
-                {t("eventDetails.guestsTab", "المدعوون")} ({guests.length})
+                {t("eventDetails.guestsTab", "المدعوون")} ({formatLocaleCount(guests.length, currentLanguage)})
               </Text>
             </TouchableOpacity>
 
@@ -856,7 +850,7 @@ const EventDetailsScreen = () => {
                   activeTab === "moderators" && styles.tabTextActive,
                 ]}
               >
-                {t("eventDetails.moderatorsTab", "المشرفون")} ({staffFromStats.length})
+                {t("eventDetails.moderatorsTab", "المشرفون")} ({formatLocaleCount(staffFromStats.length, currentLanguage)})
               </Text>
             </TouchableOpacity>
           </View>
@@ -873,7 +867,7 @@ const EventDetailsScreen = () => {
                 placeholderTextColor="#656565"
                 value={search}
                 onChangeText={setSearch}
-                style={styles.searchInput}
+                style={[styles.searchInput, searchDirectionStyle]}
               />
             </View>
             <TouchableOpacity
@@ -957,12 +951,12 @@ const EventDetailsScreen = () => {
                     guest={{
                       ...g,
                       responseDate: g.rsvp?.respondedAt
-                        ? formatDateTime(g.rsvp.respondedAt)
+                        ? formatDateTime(g.rsvp.respondedAt, currentLanguage)
                         : g.respondedAt
-                        ? formatDateTime(g.respondedAt)
+                        ? formatDateTime(g.respondedAt, currentLanguage)
                         : null,
                       autoReminderDate: g.invitation?.autoReminderSentAt
-                        ? formatDateTime(g.invitation.autoReminderSentAt)
+                        ? formatDateTime(g.invitation.autoReminderSentAt, currentLanguage)
                         : null,
                     }}
                     onEdit={handleEditGuest}

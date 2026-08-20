@@ -7,6 +7,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { useFormContext, Controller } from "react-hook-form";
+import { useInputDirection } from "../../hooks/useInputDirection";
 
 /**
  * Inner renderer hoisted out of the Controller `render` prop so the
@@ -33,6 +34,8 @@ const TextAreaField = ({
   const [isFocused, setIsFocused] = React.useState(false);
   const inputRef = React.useRef(null);
   const formValue = value ?? "";
+  // Localized prose: value/placeholder follow the active locale direction.
+  const directionStyle = useInputDirection("localized");
 
   return (
     <View style={styles.container}>
@@ -51,7 +54,7 @@ const TextAreaField = ({
         <RNTextInput
           {...extraProps}
           ref={inputRef}
-          style={[styles.textArea, style]}
+          style={[styles.textArea, directionStyle, style]}
           placeholder={placeholder}
           placeholderTextColor="#999"
           value={formValue}
@@ -169,7 +172,6 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_400Regular",
     color: "#999",
     marginTop: 4,
-    textAlign: "right",
   },
   errorText: {
     fontSize: 12,

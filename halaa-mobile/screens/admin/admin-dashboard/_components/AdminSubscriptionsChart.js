@@ -15,7 +15,14 @@ const AdminSubscriptionsChart = ({ subscriptionsByPlan, t }) => {
   const planEntries = Object.entries(subscriptionsByPlan);
   const totalSubs = planEntries.reduce((sum, [, count]) => sum + count, 0);
 
-  const planLabel = (key) => t(`dashboard.charts.${key.toLowerCase()}`, key);
+  const planLabel = (key) => {
+    const k = (key || "").toLowerCase();
+    const chartTrans = t(`dashboard.charts.${k}`);
+    if (chartTrans && chartTrans !== `dashboard.charts.${k}`) return chartTrans;
+    const discountTrans = t(`discounts.planTypes.${k}`);
+    if (discountTrans && discountTrans !== `discounts.planTypes.${k}`) return discountTrans;
+    return key;
+  };
 
   return (
     <View style={styles.card}>

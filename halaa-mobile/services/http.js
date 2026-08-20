@@ -173,14 +173,21 @@ export const apiFetch = async (path, options = {}) => {
   firstAttempt.cleanup();
 
   if (response.status === 401 && !skipAuth && !path.startsWith("/auth/refresh")) {
+    const currentToken = useAuthStore.getState().token;
+    // If another concurrent request already completed a token refresh while
+    // this request was in flight, replay immediately with the fresh in-memory token
+    // instead of firing a redundant /auth/refresh call.
+    const fresh =
+      currentToken && currentToken !== initialToken
+        ? currentToken
+        : await _refreshOnce();
+
     if (isFormData) {
       // FormData bodies are streams and cannot be re-read after the first
-      // fetch consumed them. Force a fresh access token but the caller has
-      // to retry uploads themselves.
-      await _refreshOnce();
+      // fetch consumed them. The fresh token is in authStore, caller retries upload.
       return response;
     }
-    const fresh = await _refreshOnce();
+
     if (fresh) {
       const retryAttempt = _makeTimeoutController(timeoutMs, externalSignal);
       try {

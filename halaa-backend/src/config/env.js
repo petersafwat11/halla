@@ -35,6 +35,7 @@ const envSchema = Joi.object({
   JWT_EXPIRES_IN: Joi.string().default('15m').description('Access token TTL (jsonwebtoken format)'),
   ACCESS_TOKEN_COOKIE_MAX_AGE_MS: Joi.number().default(15 * 60 * 1000).description('access_token cookie maxAge in ms'),
   REFRESH_TOKEN_EXPIRES_DAYS: Joi.number().default(30).description('Refresh token lifetime in days'),
+  REFRESH_GRACE_PERIOD_MS: Joi.number().default(30000).description('Refresh token replay grace period in ms'),
 
   // Email (Nodemailer)
   EMAIL_HOST: Joi.string().allow(''),
@@ -42,8 +43,6 @@ const envSchema = Joi.object({
   EMAIL_USERNAME: Joi.string().allow(''),
   EMAIL_PASSWORD: Joi.string().allow(''),
   EMAIL_FROM: Joi.string().allow(''),
-
-
 
   // WhatsApp / Taqnyat webhook security.
   // Kept schema-optional so boot never crashes during the secret-store

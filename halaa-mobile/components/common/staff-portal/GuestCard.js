@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
   },
   guestInfo: {
     flex: 1,
-    marginRight: 10,
+    marginEnd: 10,
   },
   guestName: {
     fontSize: 15,

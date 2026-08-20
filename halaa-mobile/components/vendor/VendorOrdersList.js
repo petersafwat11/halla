@@ -8,10 +8,11 @@ import {
   Image,
 } from "react-native";
 import { useTranslation } from "../../localization/hooks/useTranslation";
+import { formatDate } from "@halaa/shared/utils/locale";
 import { getStatusVisual } from "../../constants/statusColors";
 
 const VendorOrdersList = ({ orders, onOrderPress }) => {
-  const { t } = useTranslation("vendor");
+  const { t, currentLanguage } = useTranslation("vendor");
 
   const renderOrderItem = ({ item }) => {
     const statusVisual = getStatusVisual(item.status);
@@ -24,7 +25,7 @@ const VendorOrdersList = ({ orders, onOrderPress }) => {
         <View style={styles.orderInfo}>
           <Text style={styles.orderTitle}>{item.serviceName}</Text>
           <Text style={styles.orderDate}>
-            {new Date(item.createdAt).toLocaleDateString()}
+            {item.createdAt ? formatDate(item.createdAt, currentLanguage) : ""}
           </Text>
         </View>
         <View
@@ -47,7 +48,7 @@ const VendorOrdersList = ({ orders, onOrderPress }) => {
         <View style={styles.detailRow}>
           <Text style={styles.detailLabel}>{t("orders.eventDate")}:</Text>
           <Text style={styles.detailValue}>
-            {new Date(item.eventDate).toLocaleDateString()}
+            {item.eventDate ? formatDate(item.eventDate, currentLanguage) : ""}
           </Text>
         </View>
         <View style={styles.detailRow}>

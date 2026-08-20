@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { settingsApi, usersApi } from "./_api";
 import { usersKeys } from "./keys";
+import { useAuthStore } from "../../stores/authStore";
 
 export function useUpdateProfile() {
   const queryClient = useQueryClient();
@@ -20,7 +21,22 @@ export function useChangePassword() {
   return useMutation({
     mutationFn: async (passwordData) => {
       const response = await usersApi.updatePassword(passwordData);
-      return response.data;
+      const user = response?.data?.user || response?.user;
+      const accessToken = response?.token || response?.accessToken;
+      const refreshToken = response?.refreshToken;
+
+      if (accessToken && refreshToken) {
+        const authStore = useAuthStore.getState();
+        const role = user?.role || authStore.role;
+        await authStore._persistAuth({
+          user: user || authStore.user,
+          accessToken,
+          refreshToken,
+          role,
+        });
+      }
+
+      return response?.data || response;
     },
   });
 }

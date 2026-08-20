@@ -36,13 +36,23 @@ const AssignTicketModal = ({ visible, onClose, ticket, onSave }) => {
 
   const moderators = assigneesData?.data || [];
 
-  // Reset state when modal closes
+  // Initialize state when modal opens or closes
   useEffect(() => {
-    if (!visible) {
+    if (visible && ticket) {
+      const currentAssigneeId =
+        ticket.assignedTo?.id ||
+        ticket.assignedTo?._id ||
+        (typeof ticket.assignedTo === "string" ? ticket.assignedTo : "") ||
+        ticket.assignedModerator?.id ||
+        ticket.assignedModerator?._id ||
+        "";
+      setSelectedModeratorId(currentAssigneeId);
+      setNote("");
+    } else if (!visible) {
       setSelectedModeratorId("");
       setNote("");
     }
-  }, [visible]);
+  }, [visible, ticket]);
 
   /**
    * Handle save button press
@@ -57,6 +67,7 @@ const AssignTicketModal = ({ visible, onClose, ticket, onSave }) => {
       await assignTicket.mutateAsync({
         ticketId: ticket.id || ticket._id,
         assigneeId: selectedModeratorId,
+        ...(note.trim() && { notes: note.trim() }),
       });
       onSave();
       handleClose();
@@ -127,6 +138,7 @@ const AssignTicketModal = ({ visible, onClose, ticket, onSave }) => {
                       placeholderTextColor={colors.natural[400]}
                       multiline
                       numberOfLines={4}
+                      maxLength={2000}
                       textAlignVertical="top"
                     />
                   </View>

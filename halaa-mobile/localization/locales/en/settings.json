@@ -12,6 +12,10 @@
     "logout": "Logout",
     "comingSoon": "Coming soon"
   },
+  "legal": {
+    "lastUpdated": "Last updated",
+    "ugcAcceptNotice": "By posting content, you agree to:"
+  },
   "account": {
     "personalInfo": "Personal Information",
     "fullName": "Full Name",
@@ -35,6 +39,7 @@
     "saving": "Saving...",
     "updateSuccess": "Account updated successfully",
     "updateError": "Failed to update account",
+    "wrongCurrentPassword": "Current password is incorrect",
     "verificationCodeSent": "Verification code sent to your email",
     "verificationCodeError": "Failed to send verification code",
     "invalidVerificationCode": "Invalid verification code",
@@ -64,12 +69,12 @@
     "updateError": "Failed to update business profile"
   },
   "notifications": {
-    "appNotifications": "App Notifications",
-    "appNotificationsDescription": "Never miss any notification with instant in-app alerts enabled",
+    "appNotifications": "In-App Notifications",
+    "appNotificationsDescription": "Never miss a notification with instant alerts inside the app",
     "emailNotifications": "Email Notifications",
-    "emailNotificationsDescription": "Get email updates about what's happening while you're offline",
+    "emailNotificationsDescription": "Get email updates about what happens while you're away",
     "smsNotifications": "SMS Notifications",
-    "smsNotificationsDescription": "Receive important alerts via text message",
+    "smsNotificationsDescription": "Receive important alerts via text messages",
     "eventUpdates": "Event Updates",
     "eventReminders": "Event Reminders",
     "guestResponses": "Guest Responses",
@@ -82,8 +87,8 @@
     "cancel": "Cancel",
     "saveChanges": "Save Changes",
     "saving": "Saving...",
-    "updateSuccess": "Notification preferences updated successfully",
-    "updateError": "Failed to update notification preferences"
+    "updateSuccess": "Preferences updated successfully",
+    "updateError": "Failed to update preferences"
   },
   "errors": {
     "usernameMinLength": "Username must be at least 3 characters",
@@ -94,12 +99,12 @@
     "invalidPhone": "Invalid phone number",
     "currentPasswordRequired": "Current password is required",
     "passwordMinLength": "Password must be at least 8 characters",
-    "passwordComplexity": "Use letters and numbers only, with at least one of each",
+    "passwordComplexity": "Password must contain only letters and numbers, with at least one letter and one number",
     "confirmPasswordRequired": "Password confirmation is required",
     "passwordsDoNotMatch": "Passwords do not match",
     "passwordRequired": "Password is required for confirmation",
     "confirmDeletion": "Please type DELETE to confirm",
-    "invalidSaudiPhone": "Phone must start with 5 and be 9 digits"
+    "invalidSaudiPhone": "Phone number must start with 5 and be 9 digits"
   },
   "language": {
     "title": "Language",
@@ -113,6 +118,6 @@
   },
   "legal": {
     "lastUpdated": "Last updated",
-    "ugcAcceptNotice": "By publishing content you accept our:"
+    "ugcAcceptNotice": "By posting content, you agree to:"
   }
 }

@@ -26,6 +26,7 @@ const updateStatusSchema = z.object({
 
 const assignTicketSchema = z.object({
   assigneeId: objectId,
+  notes: z.string().trim().min(1).max(2000).optional(),
 }).strict();
 
 const rateTicketSchema = z.object({

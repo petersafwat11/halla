@@ -43,6 +43,7 @@ const config = {
     accessExpiresIn: env.JWT_EXPIRES_IN,            // jsonwebtoken format, e.g. '15m'
     accessCookieMaxAgeMs: env.ACCESS_TOKEN_COOKIE_MAX_AGE_MS,
     refreshExpiresDays: env.REFRESH_TOKEN_EXPIRES_DAYS,
+    refreshGracePeriodMs: env.REFRESH_GRACE_PERIOD_MS || 30000,
     refreshCookiePath: '/api/v2/auth/refresh',
   },
 
@@ -54,30 +55,13 @@ const config = {
     from: env.EMAIL_FROM || 'noreply@halaa.sa',
   },
 
-
-
   redis: {
     url: env.REDIS_URL,
     enabled: env.REDIS_ENABLED === 'true',
   },
 
-  taqnyat: {
-    apiKey: process.env.TAQNYAT_API_KEY,
-    baseUrl: process.env.TAQNYAT_BASE_URL || 'https://api.taqnyat.sa',
-    senderName: process.env.TAQNYAT_SENDER_NAME || 'HalaaApp',
-    waBaseUrl: process.env.TAQNYAT_WA_BASE_URL || 'https://api.taqnyat.sa/wa/v2',
-    webhookVerifyToken: process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN,
-    // No hardcoded default — the 24h auto-reminder cron looks up templates
-    // via (category, type) on TaqnyatTemplate. Manual nudge callers may
-    // still pass an explicit template name via the env var.
-    reminderTemplateName: process.env.TAQNYAT_REMINDER_TEMPLATE_NAME || null,
-  },
-
   frontend: {
     url: env.FRONTEND_URL,
-    // Canonical public URL for WhatsApp buttons / SMS / web routes / mobile
-    // universal links.
-    canonicalUrl: env.FRONTEND_URL || 'https://halaa.com.sa',
   },
 
   backend: {
@@ -86,21 +70,22 @@ const config = {
 
   upload: {
     path: env.UPLOAD_PATH,
-    maxFileSize: env.MAX_FILE_SIZE,
+    maxSize: env.MAX_FILE_SIZE,
   },
 
-  events: {
-    // Backend lower bound on the schedule picker. Reject schedules whose
-    // absolute UTC instant is less than `now + scheduleMinLeadHours` away,
-    // with code SCHEDULE_TOO_SOON.
-    scheduleMinLeadHours: env.SCHEDULE_MIN_LEAD_HOURS,
-    // Trial users get a shorter minimum lead time (default 15 min)
-    // so they can quickly test the scheduling flow.
-    trialScheduleMinLeadMinutes: env.TRIAL_SCHEDULE_MIN_LEAD_MINUTES,
+  export: {
+    maxRows: env.EXPORT_MAX_ROWS || 10000,
   },
 
-  // maximum rows per export
-  EXPORT_MAX_ROWS: env.EXPORT_MAX_ROWS,
+  moyasar: {
+    apiKey: env.MOYASAR_API_KEY,
+    publishableKey: env.MOYASAR_PUBLISHABLE_KEY,
+    baseUrl: env.MOYASAR_BASE_URL,
+    webhookSecret: env.MOYASAR_WEBHOOK_SECRET,
+    ipWhitelist: env.MOYASAR_WEBHOOK_IP_WHITELIST
+      ? env.MOYASAR_WEBHOOK_IP_WHITELIST.split(',').map((ip) => ip.trim()).filter(Boolean)
+      : [],
+  },
 };
 
 module.exports = config;

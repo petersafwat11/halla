@@ -50,17 +50,19 @@ function RoleCard({ role, index, onPress }) {
         useNativeDriver: true,
       }),
     ]).start();
-  }, []);
+  }, [index, opacity, translateY]);
 
   return (
     <Animated.View style={{ opacity, transform: [{ translateY }] }}>
       <TouchableOpacity
         style={[
           styles.card,
-          { borderLeftWidth: 3, borderLeftColor: role.accentColor },
+          { borderStartWidth: 3, borderStartColor: role.accentColor },
         ]}
         onPress={() => onPress(role.id)}
         activeOpacity={0.72}
+        accessibilityRole="button"
+        accessibilityLabel={`${t(role.titleKey)} - ${t(role.descKey)}`}
       >
         <View style={[styles.iconBox, { backgroundColor: role.bgColor }]}>
           <Ionicons name={role.icon} size={26} color={role.accentColor} />
@@ -104,7 +106,7 @@ export default function RoleSelectionView({ onSelectRole, onLogin }) {
         useNativeDriver: true,
       }),
     ]).start();
-  }, []);
+  }, [headerOpacity, headerY]);
 
   return (
     <View style={styles.container}>
@@ -133,8 +135,8 @@ export default function RoleSelectionView({ onSelectRole, onLogin }) {
       </View>
 
       <View style={styles.loginRow}>
-        <Text style={styles.loginText}>{t("signup.hasAccount")} </Text>
-        <TouchableOpacity onPress={onLogin}>
+        <Text style={styles.loginText}>{t("signup.hasAccount")}</Text>
+        <TouchableOpacity onPress={onLogin} accessibilityRole="link">
           <Text style={styles.loginLink}>{t("signup.signIn")}</Text>
         </TouchableOpacity>
       </View>
@@ -202,7 +204,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 10,
+    marginEnd: 10,
   },
   cardText: {
     flex: 1,
@@ -221,13 +223,14 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   chevron: {
-    marginLeft: 4,
+    marginStart: 4,
   },
   loginRow: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
     marginTop: 36,
+    gap: 6,
   },
   loginText: {
     fontSize: 14,

@@ -415,7 +415,7 @@ const styles = StyleSheet.create({
   closeButton: { padding: 4 },
   modalTitle: {
     fontSize: 16, fontFamily: "Cairo_700Bold", color: "#2C2C2C",
-    flex: 1, textAlign: "center", marginRight: 36,
+    flex: 1, textAlign: "center", marginEnd: 36,
   },
   searchContainer: { paddingHorizontal: 20, paddingVertical: 8, backgroundColor: "#FFF" },
   searchInputContainer: {

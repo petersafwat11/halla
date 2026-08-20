@@ -4,7 +4,9 @@
   "templates_categories_error": "تعذر تحميل الفئات",
   "templates_load_error": "تعذر تحميل القوالب",
   "no_templates_available": "لا توجد قوالب متاحة",
-  "common": { "all": "الكل" },
+  "common": {
+    "all": "الكل"
+  },
   "buttons": {
     "save": "حفظ",
     "cancel": "إلغاء",
@@ -53,12 +55,24 @@
     "justNow": "الآن"
   },
   "fonts": {
-    "cairo": { "displayName": "القاهرة" },
-    "inter": { "displayName": "إنتر" },
-    "lato": { "displayName": "لاتو" },
-    "amiri": { "displayName": "أميري" },
-    "ibm_plex_arabic": { "displayName": "IBM Plex Sans Arabic" },
-    "noto_sans_arabic": { "displayName": "Noto Sans Arabic" }
+    "cairo": {
+      "displayName": "القاهرة"
+    },
+    "inter": {
+      "displayName": "إنتر"
+    },
+    "lato": {
+      "displayName": "لاتو"
+    },
+    "amiri": {
+      "displayName": "أميري"
+    },
+    "ibm_plex_arabic": {
+      "displayName": "IBM Plex Sans Arabic"
+    },
+    "noto_sans_arabic": {
+      "displayName": "Noto Sans Arabic"
+    }
   },
   "validation": {
     "invalidSaudiPhone": "رقم الهاتف يجب أن يبدأ بـ 5 ويتكون من 9 أرقام",
@@ -100,5 +114,8 @@
       "5": "الجمعة",
       "6": "السبت"
     }
-  }
+  },
+  "back": "رجوع",
+  "showPassword": "إظهار كلمة المرور",
+  "hidePassword": "إخفاء كلمة المرور"
 }

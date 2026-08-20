@@ -113,31 +113,31 @@ const HomeScreen = ({ navigation }) => {
       <View style={styles.container}>
         <TopBar rightContent={topBarActions} leftContent={greetingContent} />
 
-        <View style={styles.header}>
-          <View style={styles.headerContent}>
-            <HomeHeaderContent
-              loading={loading}
-              error={error}
-              hasEvents={hasEvents}
-              event={dashboardData?.lastEvent}
-              subscription={dashboardData?.subscription}
-              onEditPress={handleEditPress}
-              onTestMessagePress={handleTestMessagePress}
-              onViewStatsPress={handleViewStatsPress}
-              onSchedulePress={handleSchedulePress}
-              onPostEventPress={handlePostEventPress}
-              onCreateEventPress={handleCreateEvent}
-              onRetry={() => refetch()}
-              t={t}
-            />
-          </View>
-        </View>
-
         <ScrollView
           style={styles.scrollView}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
         >
+          <View style={styles.header}>
+            <View style={styles.headerContent}>
+              <HomeHeaderContent
+                loading={loading}
+                error={error}
+                hasEvents={hasEvents}
+                event={dashboardData?.lastEvent}
+                subscription={dashboardData?.subscription}
+                onEditPress={handleEditPress}
+                onTestMessagePress={handleTestMessagePress}
+                onViewStatsPress={handleViewStatsPress}
+                onSchedulePress={handleSchedulePress}
+                onPostEventPress={handlePostEventPress}
+                onCreateEventPress={handleCreateEvent}
+                onRetry={() => refetch()}
+                t={t}
+              />
+            </View>
+          </View>
+
           {!loading && hasEvents && (
             <View style={styles.statsSection}>
               <StatsCards
@@ -194,6 +194,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 12,
     borderBottomRightRadius: 12,
     overflow: "hidden",
+    marginBottom: 16,
   },
   topBarActions: { flexDirection: "row", alignItems: "center", gap: 16 },
   iconButton: { width: 32, height: 32, justifyContent: "center", alignItems: "center" },
@@ -208,7 +209,7 @@ const styles = StyleSheet.create({
   },
   headerContent: { paddingHorizontal: 24, paddingTop: 0, paddingBottom: 24 },
   scrollView: { flex: 1 },
-  scrollContent: { paddingTop: 16 },
+  scrollContent: { paddingTop: 0 },
   statsSection: { marginBottom: 16 },
   templatesSection: { paddingHorizontal: 24, marginBottom: 16 },
   bottomSpacing: { height: 100 },

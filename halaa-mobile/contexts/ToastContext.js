@@ -132,7 +132,7 @@ const Toast = ({ toast, onDismiss }) => {
     <Animated.View
       style={[
         styles.toast,
-        { opacity: toast.opacity, borderLeftColor: getColor() },
+        { opacity: toast.opacity, borderStartColor: getColor() },
       ]}
     >
       <Ionicons name={getIcon()} size={24} color={getColor()} />
@@ -148,14 +148,14 @@ const styles = StyleSheet.create({
   container: {
     position: "absolute",
     top: Platform.OS === "ios" ? 60 : 40,
-    left: 20,
-    right: 20,
+    start: 20,
+    end: 20,
     zIndex: 9999,
   },
   toast: {
     backgroundColor: "#fff",
     borderRadius: 12,
-    borderLeftWidth: 4,
+    borderStartWidth: 4,
     padding: 16,
     marginBottom: 12,
     flexDirection: "row",
@@ -174,13 +174,13 @@ const styles = StyleSheet.create({
   },
   message: {
     flex: 1,
-    marginLeft: 12,
+    marginHorizontal: 12,
     fontSize: 14,
     fontFamily: "Cairo_400Regular",
     color: "#2c2c2c",
   },
   closeButton: {
     padding: 4,
-    marginLeft: 8,
+    marginStart: 8,
   },
 });

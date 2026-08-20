@@ -13,11 +13,13 @@ import Services from "../../components/vendor/home/Services";
 import AddServicePopup from "../../components/vendor/home/AddServicePopup";
 import { useAuthStore } from "../../stores/authStore";
 import { useTranslation } from "../../localization/hooks/useTranslation";
+import { formatNumber } from "@halaa/shared/utils/locale";
 import { useVendorStats, useVendorServices } from "../../hooks";
 import {
   useDeleteVendorService,
   useToggleServiceStatus,
   useAddVendorService,
+  useUpdateVendorService,
 } from "../../hooks/vendor";
 import { useToast } from "../../contexts/ToastContext";
 import NotificationBell from "../../components/notifications/NotificationBell";
@@ -25,7 +27,7 @@ import { getImageUrl } from "../../utils/imageUtils";
 
 const VendorHomeScreen = ({ navigation }) => {
   const { user } = useAuthStore();
-  const { t } = useTranslation("vendor");
+  const { t, currentLanguage } = useTranslation("vendor");
   const toast = useToast();
   const [addPopupVisible, setAddPopupVisible] = useState(false);
   const [editingService, setEditingService] = useState(null);
@@ -41,6 +43,7 @@ const VendorHomeScreen = ({ navigation }) => {
   const deleteServiceMutation = useDeleteVendorService();
   const toggleStatusMutation = useToggleServiceStatus();
   const addServiceMutation = useAddVendorService();
+  const updateServiceMutation = useUpdateVendorService();
 
   const activeServices = statsData?.activeServices || 0;
   const totalServices = statsData?.totalServices || 0;
@@ -55,10 +58,13 @@ const VendorHomeScreen = ({ navigation }) => {
       guestCount: null,
       photoCount: s.viewCount || null,
       categories: s.tags || [],
-      price: s.price?.toLocaleString() || "0",
+      price: formatNumber(s.price, currentLanguage) || "0",
       isAvailable: s.status === "active",
+      rating: s.rating || 0,
+      category: s.category,
+      _raw: s,
     }));
-  }, [services]);
+  }, [services, currentLanguage]);
 
   const handleDeleteService = useCallback(
     (serviceId) => {
@@ -70,7 +76,7 @@ const VendorHomeScreen = ({ navigation }) => {
           onPress: () => {
             deleteServiceMutation.mutate(serviceId, {
               onSuccess: () => toast.success(t("services.deleteSuccess")),
-              onError: () => toast.error(t("services.deleteError")),
+              onError: (err) => toast.error(err?.message || t("services.deleteError")),
             });
           },
         },
@@ -83,7 +89,7 @@ const VendorHomeScreen = ({ navigation }) => {
     (serviceId) => {
       toggleStatusMutation.mutate(serviceId, {
         onSuccess: () => toast.success(t("services.toggleSuccess")),
-        onError: () => toast.error(t("services.toggleError")),
+        onError: (err) => toast.error(err?.message || t("services.toggleError")),
       });
     },
     [toggleStatusMutation, toast, t],
@@ -92,25 +98,44 @@ const VendorHomeScreen = ({ navigation }) => {
   const handleAddServiceSubmit = useCallback(
     (formData) => {
       const payload = {
-        name: formData.serviceName,
-        nameAr: formData.serviceNameAr,
+        name: formData.serviceName?.trim(),
+        nameAr: formData.serviceNameAr?.trim() || "",
         category: formData.serviceType,
-        description: formData.description,
-        descriptionAr: formData.descriptionAr,
-        price: formData.price,
-        tags: formData.tags,
+        description: formData.description?.trim(),
+        descriptionAr: formData.descriptionAr?.trim() || "",
+        price: Number(formData.price),
+        tags: formData.tags || [],
+        included: formData.included || [],
         image: formData.serviceImage,
       };
-      addServiceMutation.mutate(payload, {
-        onSuccess: () => {
-          toast.success(t("services.addSuccess"));
-          setAddPopupVisible(false);
-          setEditingService(null);
-        },
-        onError: () => toast.error(t("services.addError")),
-      });
+
+      if (editingService) {
+        updateServiceMutation.mutate(
+          { serviceId: editingService.id, data: payload },
+          {
+            onSuccess: () => {
+              toast.success(t("services.updateSuccess"));
+              setAddPopupVisible(false);
+              setEditingService(null);
+            },
+            onError: (err) => {
+              toast.error(err?.message || t("services.updateError"));
+            },
+          },
+        );
+      } else {
+        addServiceMutation.mutate(payload, {
+          onSuccess: () => {
+            toast.success(t("services.addSuccess"));
+            setAddPopupVisible(false);
+          },
+          onError: (err) => {
+            toast.error(err?.message || t("services.addError"));
+          },
+        });
+      }
     },
-    [addServiceMutation, toast, t],
+    [addServiceMutation, updateServiceMutation, editingService, toast, t],
   );
 
   if (isLoading) {
@@ -148,50 +173,52 @@ const VendorHomeScreen = ({ navigation }) => {
     </View>
   );
 
+  const dashboardHeader = (
+    <View style={styles.header}>
+      <View style={styles.textureLeft}>
+        <View style={styles.textureLine1} />
+        <View style={styles.textureLine2} />
+      </View>
+      <View style={styles.textureRight}>
+        <View style={styles.textureLine1} />
+        <View style={styles.textureLine2} />
+      </View>
+
+      <View style={styles.headerContent}>
+        <Text style={styles.headerTitle}>{t("dashboard.title")}</Text>
+        <Text style={styles.headerSubtitle}>
+          {t("dashboard.subtitle", { count: totalServices })}
+        </Text>
+      </View>
+
+      {/* Stats Cards */}
+      <View style={styles.quickActions}>
+        <View style={styles.quickActionButton}>
+          <Text style={styles.statValue}>{activeServices}</Text>
+          <Text style={styles.quickActionText}>{t("stats.activeServices")}</Text>
+        </View>
+        <View style={styles.quickActionButton}>
+          <Text style={styles.statValue}>{totalServices}</Text>
+          <Text style={styles.quickActionText}>{t("stats.totalServices")}</Text>
+        </View>
+        <View style={styles.quickActionButton}>
+          <Text style={styles.statValue}>{rating}</Text>
+          <Text style={styles.quickActionText}>{t("stats.rating")}</Text>
+        </View>
+      </View>
+    </View>
+  );
+
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <StatusBar barStyle="light-content" backgroundColor="#C28E5C" />
       <View style={styles.container}>
         <TopBar rightContent={topBarActions} leftContent={greetingContent} />
 
-        {/* Header with stats cards */}
-        <View style={styles.header}>
-          <View style={styles.textureLeft}>
-            <View style={styles.textureLine1} />
-            <View style={styles.textureLine2} />
-          </View>
-          <View style={styles.textureRight}>
-            <View style={styles.textureLine1} />
-            <View style={styles.textureLine2} />
-          </View>
-
-          <View style={styles.headerContent}>
-            <Text style={styles.headerTitle}>{t("dashboard.title")}</Text>
-            <Text style={styles.headerSubtitle}>
-              {t("dashboard.subtitle", { count: totalServices })}
-            </Text>
-          </View>
-
-          {/* Stats Cards */}
-          <View style={styles.quickActions}>
-            <View style={styles.quickActionButton}>
-              <Text style={styles.statValue}>{activeServices}</Text>
-              <Text style={styles.quickActionText}>{t("stats.activeServices")}</Text>
-            </View>
-            <View style={styles.quickActionButton}>
-              <Text style={styles.statValue}>{totalServices}</Text>
-              <Text style={styles.quickActionText}>{t("stats.totalServices")}</Text>
-            </View>
-            <View style={styles.quickActionButton}>
-              <Text style={styles.statValue}>{rating}</Text>
-              <Text style={styles.quickActionText}>{t("stats.rating")}</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Services List */}
+        {/* Services List with Collapsible Golden Header */}
         <Services
           services={mappedServices}
+          headerComponent={dashboardHeader}
           onAddService={() => { setEditingService(null); setAddPopupVisible(true); }}
           onEditService={(service) => { setEditingService(service); setAddPopupVisible(true); }}
           onDeleteService={handleDeleteService}
@@ -203,7 +230,7 @@ const VendorHomeScreen = ({ navigation }) => {
         visible={addPopupVisible}
         onClose={() => { setAddPopupVisible(false); setEditingService(null); }}
         onSubmit={handleAddServiceSubmit}
-        isLoading={addServiceMutation.isPending}
+        isLoading={addServiceMutation.isPending || updateServiceMutation.isPending}
         editingService={editingService}
       />
     </SafeAreaView>

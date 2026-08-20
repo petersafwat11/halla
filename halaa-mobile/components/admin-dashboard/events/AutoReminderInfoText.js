@@ -13,6 +13,7 @@ import {
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../../localization";
+import { formatDate, formatTime } from "@halaa/shared/utils/locale";
 import { useToast } from "../../../contexts/ToastContext";
 import { useUpdateReminderSettings } from "../../../hooks/events/mutations/useEventMutation";
 import { useMySubscription } from "../../../hooks/users";
@@ -101,20 +102,8 @@ const AutoReminderInfoText = ({ event }) => {
     return `${hour12}:${minStr} ${ampm}`;
   };
 
-  const formatDateLabel = (d) => {
-    return d.toLocaleDateString(i18n.language === "ar" ? "ar-EG" : "en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
-  const formatTimeLabel = (tDate) => {
-    return tDate.toLocaleTimeString(i18n.language === "ar" ? "ar-EG" : "en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
+  const formatDateLabel = (d) => formatDate(d, i18n.language || "ar");
+  const formatTimeLabel = (tDate) => formatTime(tDate, i18n.language || "ar");
 
   const hasCustom = !!event.reminderSettings?.customReminderTime;
   const customDate = event.reminderSettings?.scheduledDate;
@@ -450,7 +439,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 8,
-    marginLeft: 8,
+    marginStart: 8,
   },
   customizeButtonText: {
     color: "#FFF",

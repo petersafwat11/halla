@@ -80,6 +80,13 @@ const TicketSchema = new mongoose.Schema(
       ref: "User",
     },
 
+    // Optional internal context supplied when an admin assigns the ticket.
+    assignmentNote: {
+      type: String,
+      trim: true,
+      maxlength: 2000,
+    },
+
     // Resolution response (required when resolving ticket)
     resolutionResponse: {
       message: String,

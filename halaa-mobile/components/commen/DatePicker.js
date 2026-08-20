@@ -10,16 +10,11 @@ import { useFormContext, Controller } from "react-hook-form";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
-import { formatTemplateDate } from "@halaa/shared/utils/formatTemplateDate";
+import { formatDate as formatLocaleDate } from "@halaa/shared/utils/locale";
 
 /**
  * Inner field renderer. Hoisted out of the Controller `render` prop so the
- * `useState` hook lives at the top level of a real component — calling the
- * hook inside the render prop was a Rules-of-Hooks violation that desynced
- * the open/close state when the parent form re-rendered heavily (e.g. inside
- * StepThree's template modal where the live canvas watches every field
- * change). The symptom was the picker refusing to open on tap (it looked
- * "disabled").
+ * `useState` hook lives at the top level of a real component.
  */
 const DatePickerField = ({
   label,
@@ -30,7 +25,7 @@ const DatePickerField = ({
   value,
   error,
   onChange,
-  formatDate,
+  locale,
   extraProps,
 }) => {
   const [show, setShow] = useState(false);
@@ -45,7 +40,7 @@ const DatePickerField = ({
     }
   };
 
-  const displayValue = selectedDate ? formatDate(selectedDate) : "";
+  const displayValue = selectedDate ? formatLocaleDate(selectedDate, locale) : "";
 
   return (
     <View style={styles.container}>
@@ -95,10 +90,8 @@ const DatePicker = ({
   rules,
   ...props
 }) => {
-  const { t } = useTranslation("common");
+  const { currentLanguage } = useTranslation();
   const { control } = useFormContext();
-
-  const formatDate = (date) => formatTemplateDate(date, t);
 
   return (
     <Controller
@@ -115,7 +108,7 @@ const DatePicker = ({
           value={value}
           error={error}
           onChange={onChange}
-          formatDate={formatDate}
+          locale={currentLanguage}
           extraProps={props}
         />
       )}
@@ -139,11 +132,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    borderWidth: 1.5,
-    borderTopWidth: 1,
-    borderRightWidth: 1.5,
-    borderBottomWidth: 1,
-    borderLeftWidth: 1.5,
+    borderWidth: 1,
     borderColor: "#DFDFDF",
     borderRadius: 12,
     backgroundColor: "#FFF",

@@ -231,14 +231,13 @@ const styles = StyleSheet.create({
     ...textStyles.labelSmall,
     color: colors.natural[400],
     marginTop: spacing[4],
-    textAlign: "right",
   },
   warningContainer: {
     backgroundColor: colors.warning[50],
     borderRadius: borderRadius[8],
     padding: spacing[12],
-    borderLeftWidth: 3,
-    borderLeftColor: colors.warning[500],
+    borderStartWidth: 3,
+    borderStartColor: colors.warning[500],
     marginTop: spacing[8],
   },
   warningText: {

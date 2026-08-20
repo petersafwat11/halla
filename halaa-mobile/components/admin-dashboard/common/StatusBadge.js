@@ -10,10 +10,12 @@ import { useTranslation } from "../../../localization";
 // `admin` namespace, so we probe them in order and fall back to a readable
 // title-cased version of the raw status when none is translated.
 const STATUS_LABEL_GROUPS = [
+  "tickets.status",
   "events.status",
   "vendors.status",
   "hosts.status",
   "businesses.status",
+  "discounts.status",
 ];
 
 const titleCase = (status) =>

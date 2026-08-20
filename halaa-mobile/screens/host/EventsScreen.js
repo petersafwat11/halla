@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
   createEventFab: {
     position: "absolute",
     bottom: 20,
-    left: 24,
+    start: 24,
     flexDirection: "row",
     alignItems: "center",
     gap: 6,

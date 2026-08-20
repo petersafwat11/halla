@@ -5,11 +5,12 @@ import { canEditPage, canDeleteOnPage, PAGES } from "../../../utils/adminPermiss
 import { useUpdateVendorStatus, useDeleteVendor } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
+import { formatDate } from "@halaa/shared/utils/locale";
 import { colors } from "../../../styles/tokens";
 import AdminListItem from "../common/AdminListItem";
 
 const VendorListItem = ({ vendor, onPress, onRate, selected = false, onSelect }) => {
-  const { t } = useTranslation("admin");
+  const { t, currentLanguage } = useTranslation("admin");
   const role = useAuthStore((s) => s.user?.role);
   const canEdit = canEditPage(role, PAGES.VENDORS);
   const canDelete = canDeleteOnPage(role, PAGES.VENDORS);
@@ -25,7 +26,7 @@ const VendorListItem = ({ vendor, onPress, onRate, selected = false, onSelect })
   const vendorStatus = vendor?.vendorStatus || vendor?.status || "pending";
 
   const displayName =
-    vendor?.brandName || vendor?.vendorData?.brandName || vendor?.username || "—";
+    vendor?.brandName || vendor?.name || vendor?.username || t("common.unknown");
   const email = vendor?.email || vendor?.vendorData?.email || "—";
   const phone =
     vendor?.phoneNumber ||
@@ -43,7 +44,7 @@ const VendorListItem = ({ vendor, onPress, onRate, selected = false, onSelect })
   const extraCount = categories.length > 1 ? categories.length - 1 : 0;
 
   const createdAt = vendor?.createdAt || vendor?.created_at || null;
-  const joinedDate = createdAt ? new Date(createdAt).toLocaleDateString() : null;
+  const joinedDate = createdAt ? formatDate(createdAt, currentLanguage) : null;
 
   // Backend returns rating (not averageRating)
   const rating = vendor?.rating;

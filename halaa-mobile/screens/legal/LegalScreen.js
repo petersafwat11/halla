@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { isolateLtr } from "@halaa/shared/utils";
 import { useTranslation } from "../../localization";
 import { TopBar } from "../../components/plans";
 import {
@@ -11,26 +12,50 @@ import {
 } from "../../styles/tokens";
 
 /**
+ * Regex for intrinsically LTR tokens inside legal paragraphs:
+ * email addresses, Saudi phone numbers, URLs, official Latin company name, store names.
+ */
+const LTR_LEGAL_TOKEN_REGEX =
+  /(?:[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}|(?:\+966|05)\s*\d{1,2}\s*\d{3}\s*\d{4}|https?:\/\/[^\s)]+|Afaq hala Company For Communications and Information|App Store|Google Play)/g;
+
+function isolateLegalParagraph(paragraph, isRtl) {
+  if (!paragraph || !isRtl) return paragraph;
+
+  // Split by LTR tokens and wrap matching tokens with Unicode isolate
+  const parts = String(paragraph).split(LTR_LEGAL_TOKEN_REGEX);
+  const matches = String(paragraph).match(LTR_LEGAL_TOKEN_REGEX);
+
+  if (!matches) return paragraph;
+
+  const result = [];
+  for (let i = 0; i < parts.length; i++) {
+    if (parts[i]) result.push(parts[i]);
+    if (matches[i]) result.push(isolateLtr(matches[i]));
+  }
+  return result.join("");
+}
+
+/**
  * Reusable legal document screen (Privacy / Terms / Community Rules / Refund /
  * Deletion / Support). Receives a localized `data` object of shape:
  *   { badge, title, subtitle, lastUpdated, sections: [{ id, num, label, title, body }] }
  * Body paragraphs are separated by "\n\n".
  *
- * Direction is handled GLOBALLY (I18nManager, set at the layout level): there is
- * NO per-component isRTL text/row branching. `flex-start`/`flex-end` are logical
- * start/end and auto-flip under RTL; `row` auto-flips to row-reverse. Text uses
- * the ambient writing direction so mixed LTR tokens (email, URLs, numbers)
- * embedded in Arabic render correctly via the platform bidi algorithm.
- *
- * Accessibility: title/section titles expose header roles and the screen scales
- * with Dynamic Type (font scaling is left enabled); cards shrink rather than clip.
+ * Direction is handled logically (root direction / I18nManager):
+ * `flex-start` aligns to the logical reading start (right in Arabic, left in English).
+ * `flexDirection: "row"` renders in logical start-to-end reading order.
  */
 const LegalScreen = ({ data }) => {
   const { t, currentLanguage } = useTranslation("settings");
   const isRtl = currentLanguage === "ar";
-  const localizedText = isRtl ? styles.rtlText : styles.ltrText;
+  const localizedTextStyle = isRtl ? styles.rtlText : styles.ltrText;
 
   const sections = Array.isArray(data?.sections) ? data.sections : [];
+
+  // Suppress top badge when normalized badge === title to prevent redundant pill duplication
+  const hasDistinctBadge =
+    !!data?.badge &&
+    String(data.badge).trim().toLowerCase() !== String(data.title || "").trim().toLowerCase();
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
@@ -41,22 +66,22 @@ const LegalScreen = ({ data }) => {
           contentContainerStyle={styles.scrollContent}
         >
           {/* Document heading */}
-          <View style={[styles.header, isRtl ? styles.alignEnd : styles.alignStart]}>
-            {!!data?.badge && (
-              <View style={[styles.badge, isRtl ? styles.alignSelfEnd : styles.alignSelfStart]}>
-                <Text style={[styles.badgeText, localizedText]}>{data.badge}</Text>
+          <View style={styles.header}>
+            {hasDistinctBadge && (
+              <View style={styles.badge}>
+                <Text style={[styles.badgeText, localizedTextStyle]}>{data.badge}</Text>
               </View>
             )}
             {!!data?.title && (
-              <Text style={[styles.title, localizedText]} accessibilityRole="header">
+              <Text style={[styles.title, localizedTextStyle]} accessibilityRole="header">
                 {data.title}
               </Text>
             )}
             {!!data?.subtitle && (
-              <Text style={[styles.subtitle, localizedText]}>{data.subtitle}</Text>
+              <Text style={[styles.subtitle, localizedTextStyle]}>{data.subtitle}</Text>
             )}
             {!!data?.lastUpdated && (
-              <Text style={[styles.lastUpdated, localizedText]}>
+              <Text style={[styles.lastUpdated, localizedTextStyle]}>
                 {t("legal.lastUpdated", { defaultValue: "Last updated" })}:{" "}
                 {data.lastUpdated}
               </Text>
@@ -68,7 +93,7 @@ const LegalScreen = ({ data }) => {
             const paragraphs = String(section.body || "").split("\n\n");
             return (
               <View key={section.id} style={styles.card}>
-                <View style={[styles.cardHeader, isRtl && styles.cardHeaderRtl]}>
+                <View style={styles.cardHeader}>
                   {/* Section number stays visually stable (LTR digit) while the
                       title/body follow the ambient locale direction. */}
                   <View style={styles.numBadge}>
@@ -76,10 +101,15 @@ const LegalScreen = ({ data }) => {
                   </View>
                   <View style={styles.cardHeaderText}>
                     {!!section.label && (
-                      <Text style={[styles.sectionLabel, localizedText]}>{section.label}</Text>
+                      <Text style={[styles.sectionLabel, localizedTextStyle]}>
+                        {section.label}
+                      </Text>
                     )}
                     {!!section.title && (
-                      <Text style={[styles.sectionTitle, localizedText]} accessibilityRole="header">
+                      <Text
+                        style={[styles.sectionTitle, localizedTextStyle]}
+                        accessibilityRole="header"
+                      >
                         {section.title}
                       </Text>
                     )}
@@ -89,9 +119,9 @@ const LegalScreen = ({ data }) => {
                 {paragraphs.map((paragraph, index) => (
                   <Text
                     key={`${section.id}-p${index}`}
-                    style={[styles.paragraph, localizedText]}
+                    style={[styles.paragraph, localizedTextStyle]}
                   >
-                    {paragraph}
+                    {isolateLegalParagraph(paragraph, isRtl)}
                   </Text>
                 ))}
               </View>
@@ -119,9 +149,9 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: spacing[20],
+    alignItems: "flex-start",
   },
   badge: {
-    // Logical start alignment — auto-flips under a global RTL direction.
     alignSelf: "flex-start",
     backgroundColor: colors.primary[100],
     borderRadius: borderRadius[20],
@@ -139,17 +169,20 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_700Bold",
     color: colors.natural[900],
     marginBottom: spacing[4],
+    alignSelf: "stretch",
   },
   subtitle: {
     fontSize: 15,
     fontFamily: "Cairo_600SemiBold",
     color: colors.primary[500],
     marginBottom: spacing[8],
+    alignSelf: "stretch",
   },
   lastUpdated: {
     fontSize: 12,
     fontFamily: "Cairo_400Regular",
     color: colors.natural[450],
+    alignSelf: "stretch",
   },
   card: {
     backgroundColor: backgrounds.card[1],
@@ -160,16 +193,10 @@ const styles = StyleSheet.create({
     borderColor: colors.natural[200],
   },
   cardHeader: {
-    // `row` auto-renders as row-reverse under a global RTL direction — no isRTL
-    // branching. `flex-start` keeps the number badge at the top when a long
-    // scaled title wraps (Dynamic Type) instead of centering + clipping.
     flexDirection: "row",
     alignItems: "flex-start",
     gap: spacing[12],
     marginBottom: spacing[12],
-  },
-  cardHeaderRtl: {
-    flexDirection: "row-reverse",
   },
   numBadge: {
     width: 32,
@@ -183,6 +210,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "Cairo_700Bold",
     color: colors.primary[500],
+    writingDirection: "ltr",
   },
   cardHeaderText: {
     flex: 1,
@@ -206,24 +234,10 @@ const styles = StyleSheet.create({
     color: colors.natural[450],
     marginTop: spacing[8],
   },
-  alignStart: {
-    alignItems: "flex-start",
-  },
-  alignEnd: {
-    alignItems: "flex-end",
-  },
-  alignSelfStart: {
-    alignSelf: "flex-start",
-  },
-  alignSelfEnd: {
-    alignSelf: "flex-end",
-  },
   rtlText: {
-    textAlign: "right",
     writingDirection: "rtl",
   },
   ltrText: {
-    textAlign: "left",
     writingDirection: "ltr",
   },
 });

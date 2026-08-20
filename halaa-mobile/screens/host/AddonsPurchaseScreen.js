@@ -25,8 +25,9 @@ import {
 } from "../../hooks/purchases";
 import { useMyAddons } from "../../hooks";
 import { addonPreflight } from "../../services/billingApi";
-import { canPurchase } from "../../services/purchases";
-import { eligibleEntries, resolvePurchasable } from "../../services/billing/catalog";
+import { canPurchase, isPurchasesAvailable } from "../../services/purchases";
+import { eligibleEntries } from "../../services/billing/catalog";
+import { getPurchaseReadiness, READINESS_STATES, readinessReasonKey } from "../../services/billing/purchaseReadiness";
 import { disclosuresFor } from "../../services/billing/disclosures";
 import TopBar from "../../components/plans/TopBar";
 import PurchaseStatusModal from "../../components/plans/PurchaseStatusModal";
@@ -42,8 +43,18 @@ const AddonsPurchaseScreen = () => {
   const toast = useToast();
   const queryClient = useQueryClient();
 
-  const { data: catalogData } = useStoreCatalog();
-  const { data: offeringsAll } = useAllOfferings();
+  const {
+    data: catalogData,
+    isLoading: isCatalogLoading,
+    error: catalogError,
+    refetch: refetchCatalog,
+  } = useStoreCatalog();
+  const {
+    data: offeringsAll,
+    isLoading: isOfferingsLoading,
+    error: offeringsError,
+    refetch: refetchOfferings,
+  } = useAllOfferings();
   const { data: myAddonsData } = useMyAddons();
   const flow = usePurchaseFlow();
 
@@ -66,18 +77,36 @@ const AddonsPurchaseScreen = () => {
     (currentLanguage === "ar" ? entry.nameAr : entry.nameEn) || entry.internalCode;
 
   const buyAddon = (entry) => {
-    if (!canPurchase()) {
-      toast.error(t("checkout.errors.iapUnavailable", "In-app purchases aren't available right now."));
-      return;
-    }
-    const resolved = resolvePurchasable(catalogEntries, offeringsAll, entry.internalCode);
-    if (!resolved.available) {
-      toast.error(t("checkout.errors.addonUnavailable", "This add-on isn't available right now."));
+    const readiness = getPurchaseReadiness({
+      isConfigured: isPurchasesAvailable(),
+      isUserIdentified: canPurchase(),
+      isCatalogLoading,
+      isOfferingsLoading,
+      catalogError,
+      offeringsError,
+      entries: catalogEntries,
+      offerings: offeringsAll,
+      targetCode: entry.internalCode,
+    });
+    if (!readiness.ready) {
+      if (readiness.state === READINESS_STATES.LOADING) return;
+      if (readiness.retryable) {
+        refetchCatalog();
+        refetchOfferings();
+        return;
+      }
+      // Name the precise non-secret blocker instead of a generic label.
+      const reasonKey = readinessReasonKey(readiness.state);
+      toast.error(
+        reasonKey
+          ? t(reasonKey)
+          : t("checkout.errors.addonUnavailable", "This add-on isn't available right now.")
+      );
       return;
     }
     flow.run({
       entry,
-      pkg: resolved.pkg,
+      pkg: readiness.pkg,
       operation: "addon",
       preflight: () => addonPreflight(entry.internalCode),
     });
@@ -94,21 +123,47 @@ const AddonsPurchaseScreen = () => {
   const historyItems = myAddonsData?.data?.addons || myAddonsData?.data || [];
 
   const renderEntry = (entry) => {
-    const resolved = resolvePurchasable(catalogEntries, offeringsAll, entry.internalCode);
+    const readiness = getPurchaseReadiness({
+      isConfigured: isPurchasesAvailable(),
+      isUserIdentified: canPurchase(),
+      isCatalogLoading,
+      isOfferingsLoading,
+      catalogError,
+      offeringsError,
+      entries: catalogEntries,
+      offerings: offeringsAll,
+      targetCode: entry.internalCode,
+    });
+    const isAvailable = readiness.ready;
+    const isLoading = readiness.state === READINESS_STATES.LOADING;
+    const isRetryable = readiness.retryable;
+    const terminalReasonKey =
+      !isAvailable && !isLoading && !isRetryable
+        ? readinessReasonKey(readiness.state)
+        : null;
+    const priceText = isAvailable
+      ? readiness.priceString
+      : isLoading
+      ? "..."
+      : t("checkout.iap.unavailable", "Unavailable");
+
     return (
       <View key={entry.internalCode} style={styles.addonRow}>
         <View style={styles.addonInfo}>
           <Text style={styles.addonName} numberOfLines={2}>
             {localizedName(entry)}
           </Text>
-          <Text style={styles.addonPrice}>
-            {resolved.available ? resolved.priceString : t("checkout.iap.unavailable", "Unavailable")}
-          </Text>
+          <Text style={styles.addonPrice}>{priceText}</Text>
+          {terminalReasonKey && (
+            <Text style={styles.addonUnavailableReason} numberOfLines={2}>
+              {t(terminalReasonKey)}
+            </Text>
+          )}
         </View>
         <TouchableOpacity
-          style={[styles.buyBtn, (!resolved.available || flow.isBusy) && styles.buyBtnDisabled]}
+          style={[styles.buyBtn, (!isAvailable || flow.isBusy) && styles.buyBtnDisabled]}
           onPress={() => buyAddon(entry)}
-          disabled={!resolved.available || flow.isBusy}
+          disabled={!isAvailable || flow.isBusy}
           activeOpacity={0.85}
         >
           <Text style={styles.buyBtnText}>{t("addons.buy", "Buy")}</Text>
@@ -253,13 +308,20 @@ const styles = StyleSheet.create({
     color: colors.primary[600],
     marginTop: 2,
   },
+  addonUnavailableReason: {
+    fontFamily: "Cairo_400Regular",
+    fontSize: typography.fontSize.label.small,
+    color: colors.natural[400],
+    lineHeight: 14,
+    marginTop: 2,
+  },
   buyBtn: {
     backgroundColor: colors.primary[500],
     paddingVertical: spacing[8],
     paddingHorizontal: spacing[16],
     borderRadius: borderRadius[8],
   },
-  buyBtnDisabled: { backgroundColor: colors.primary[200] },
+  buyBtnDisabled: { backgroundColor: colors.natural[300] },
   buyBtnText: {
     fontFamily: "Cairo_700Bold",
     fontSize: typography.fontSize.body.small,

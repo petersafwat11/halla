@@ -4,40 +4,47 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Dimensions,
 } from "react-native";
 import { useTranslation } from "../../localization";
 import DirectionalIonicon from "../common/DirectionalIonicon";
 
-const { width, height } = Dimensions.get("window");
-
 const Welcome = ({ onLogin, onSignup }) => {
   const { t } = useTranslation("welcome");
-  const slides = t("slides", { returnObjects: true });
+  const slides = t("slides", { returnObjects: true }) || [];
 
   const [currentIndex, setCurrentIndex] = useState(0);
+  const totalSlides = Array.isArray(slides) ? slides.length : 0;
+  const isFirstSlide = currentIndex === 0;
+  const isLastSlide = currentIndex === totalSlides - 1;
 
   const handleNext = () => {
-    if (currentIndex < slides.length - 1) {
+    if (currentIndex < totalSlides - 1) {
       setCurrentIndex(currentIndex + 1);
-    } else if (currentIndex === slides.length - 1) {
-      // Last slide, trigger signup
+    } else if (isLastSlide) {
       onSignup && onSignup();
     }
   };
 
-  const handlePrev = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
-    } else if (currentIndex === 0) {
-      // First slide, can go back or login
+  const handlePrevOrLogin = () => {
+    if (isFirstSlide || isLastSlide) {
       onLogin && onLogin();
+    } else {
+      setCurrentIndex(currentIndex - 1);
     }
   };
 
   const handleDotClick = (index) => {
     setCurrentIndex(index);
   };
+
+  const secondaryLabel =
+    isFirstSlide || isLastSlide
+      ? t("buttons.login")
+      : t("buttons.previous");
+
+  const primaryLabel = isLastSlide
+    ? t("buttons.newUser")
+    : t("buttons.next");
 
   return (
     <View style={styles.container}>
@@ -47,10 +54,12 @@ const Welcome = ({ onLogin, onSignup }) => {
       </Text>
 
       <View style={styles.dots}>
-        {slides.map((_, index) => (
+        {Array.from({ length: totalSlides }).map((_, index) => (
           <TouchableOpacity
             key={index}
             onPress={() => handleDotClick(index)}
+            accessibilityRole="button"
+            accessibilityLabel={`Slide ${index + 1}`}
             style={[
               styles.dot,
               currentIndex === index && styles.activeDot,
@@ -61,25 +70,28 @@ const Welcome = ({ onLogin, onSignup }) => {
       </View>
 
       <View style={styles.buttons}>
-        <TouchableOpacity style={styles.prevButton} onPress={handlePrev}>
-          <Text style={styles.prevButtonText}>
-            {currentIndex !== slides.length - 1
-              ? t("buttons.previous")
-              : t("buttons.login")}
-          </Text>
+        <TouchableOpacity
+          style={styles.prevButton}
+          onPress={handlePrevOrLogin}
+          accessibilityRole="button"
+          accessibilityLabel={secondaryLabel}
+        >
+          <Text style={styles.prevButtonText}>{secondaryLabel}</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
-          {currentIndex !== slides.length - 1 ? (
-            <View style={styles.arrowLeft}>
-              <DirectionalIonicon
-                name="chevron-forward"
-                size={24}
-                color="#fff"
-              />
-            </View>
-          ) : (
-            <Text style={styles.nextButtonText}>{t("buttons.newUser")}</Text>
+        <TouchableOpacity
+          style={styles.nextButton}
+          onPress={handleNext}
+          accessibilityRole="button"
+          accessibilityLabel={primaryLabel}
+        >
+          <Text style={styles.nextButtonText}>{primaryLabel}</Text>
+          {!isLastSlide && (
+            <DirectionalIonicon
+              name="chevron-forward"
+              size={20}
+              color="#fff"
+            />
           )}
         </TouchableOpacity>
       </View>
@@ -102,10 +114,11 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.04,
     shadowRadius: 47,
-    elevation: 8, // for Android shadow
+    elevation: 8,
     position: "relative",
     zIndex: 1,
-    width: "88%",
+    width: "100%",
+    maxWidth: 400,
   },
   title: {
     color: "#2c2c2c",
@@ -113,7 +126,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     lineHeight: 28,
     textAlign: "center",
-    marginBottom: 24,
+    marginBottom: 16,
     fontFamily: "Cairo_700Bold",
   },
   description: {
@@ -145,23 +158,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "100%",
   },
-  nextButton: {
-    padding: 5,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 12,
-    backgroundColor: "#c28e5c",
-    minWidth: 56,
-  },
-  nextButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    padding: 10,
-    fontWeight: "600",
-    lineHeight: 24,
-    letterSpacing: 0.08,
-    fontFamily: "Cairo_600SemiBold",
-  },
   prevButton: {
     paddingVertical: 12,
     paddingHorizontal: 16,
@@ -169,6 +165,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 12,
     backgroundColor: "#fff",
+    minHeight: 48,
   },
   prevButtonText: {
     color: "#6b4e33",
@@ -179,13 +176,24 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontFamily: "Cairo_600SemiBold",
   },
-  arrowLeft: {
-    width: 56,
-    padding: 12,
+  nextButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
+    gap: 8,
     borderRadius: 12,
     backgroundColor: "#c28e5c",
+    minHeight: 48,
+  },
+  nextButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+    lineHeight: 24,
+    letterSpacing: 0.08,
+    fontFamily: "Cairo_600SemiBold",
   },
 });
 

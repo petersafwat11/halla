@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import {
   FlatList,
+  ScrollView,
   StyleSheet,
   View,
   Text,
@@ -11,9 +12,12 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Svg, Path } from "react-native-svg";
+import { formatPercent, formatNumber } from "@halaa/shared/utils/locale";
 import EventListItem from "./EventListItem";
 import { useExportEvents } from "../../hooks/events/mutations/useEventMutation";
 import { saveBlobAndShare } from "../../utils/download";
+import { useTranslation } from "../../localization";
+import { useInputDirection } from "../../hooks/useInputDirection";
 
 // Same SVG icons as home StatsCards
 const PeopleIcon = ({ color }) => (
@@ -72,14 +76,14 @@ const EventList = ({
   attendanceRate = 0,
   responseRate = 0,
 }) => {
+  const { t, currentLanguage } = useTranslation("events");
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all"); // all, live, ended, pending_scheduling
+  const [statusFilter, setStatusFilter] = useState("all");
   const [exporting, setExporting] = useState(false);
   const exportEventsMutation = useExportEvents();
+  // Explicit localized direction for the iOS search placeholder.
+  const searchDirectionStyle = useInputDirection("localized");
 
-  // Host export of all events to XLSX. The blob is
-  // saved to cache and the native share sheet is opened so the user
-  // can pipe it to Files / Mail / Drive.
   const handleExport = async () => {
     if (exporting) return;
     setExporting(true);
@@ -89,16 +93,17 @@ const EventList = ({
         throw new Error("Empty export response");
       }
       const share = await saveBlobAndShare(result.blob, result.filename || "events.xlsx", {
-        dialogTitle: "تصدير المناسبات",
+        dialogTitle: t("list.exportTitle", { defaultValue: "تصدير المناسبات" }),
       });
-      // Surface only real failures; user-cancel and the no-message
-      // success path stay silent.
       if (!share.success && share.message) {
-        Alert.alert("تصدير", share.message);
+        Alert.alert(t("list.exportTitle", { defaultValue: "تصدير" }), share.message);
       }
     } catch (error) {
       console.error("[EventList] export failed:", error);
-      Alert.alert("تصدير", error.message || "تعذر تصدير المناسبات");
+      Alert.alert(
+        t("list.exportTitle", { defaultValue: "تصدير" }),
+        error.message || t("list.exportError", { defaultValue: "تعذر تصدير المناسبات" })
+      );
     } finally {
       setExporting(false);
     }
@@ -151,30 +156,44 @@ const EventList = ({
     />
   );
 
+  const filterTabs = [
+    { key: "all", label: t("list.status.all", { defaultValue: "الكل" }) },
+    { key: "live", label: t("list.status.live", { defaultValue: "مباشرة" }) },
+    { key: "scheduled", label: t("list.status.scheduled", { defaultValue: "مجدولة" }) },
+    { key: "completed", label: t("list.status.completed", { defaultValue: "منتهية" }) },
+    { key: "pending_scheduling", label: t("list.status.pending_scheduling", { defaultValue: "في انتظار الجدولة" }) },
+  ];
+
   const renderHeader = () => (
     <View style={styles.headerContainer}>
-      {/* Stats Cards — mirror the admin-dashboard StatCard look */}
+      {/* Stats Cards */}
       <View style={styles.statsContainer}>
         <View style={styles.statCard}>
           <View style={[styles.statIconBox, { backgroundColor: "#C28E5C18" }]}>
             <PeopleIcon color="#C28E5C" />
           </View>
-          <Text style={styles.statValue}>{allGuests}</Text>
-          <Text style={styles.statLabel} numberOfLines={1} adjustsFontSizeToFit>إجمالي الضيوف</Text>
+          <Text style={styles.statValue}>{formatNumber(allGuests, currentLanguage)}</Text>
+          <Text style={styles.statLabel} numberOfLines={1} adjustsFontSizeToFit>
+            {t("list.totalGuests", { defaultValue: "إجمالي الضيوف" })}
+          </Text>
         </View>
         <View style={styles.statCard}>
           <View style={[styles.statIconBox, { backgroundColor: "#2A8C5B18" }]}>
             <CheckCircleIcon color="#2A8C5B" />
           </View>
-          <Text style={styles.statValue}>{attendanceRate}</Text>
-          <Text style={styles.statLabel} numberOfLines={1} adjustsFontSizeToFit>عدد القبول</Text>
+          <Text style={styles.statValue}>{formatNumber(attendanceRate, currentLanguage)}</Text>
+          <Text style={styles.statLabel} numberOfLines={1} adjustsFontSizeToFit>
+            {t("list.confirmedCount", { defaultValue: "عدد القبول" })}
+          </Text>
         </View>
         <View style={styles.statCard}>
           <View style={[styles.statIconBox, { backgroundColor: "#D3820018" }]}>
             <ChartIcon color="#D38200" />
           </View>
-          <Text style={styles.statValue}>{responseRate}%</Text>
-          <Text style={styles.statLabel} numberOfLines={1} adjustsFontSizeToFit>معدل الاستجابة</Text>
+          <Text style={styles.statValue}>{formatPercent(responseRate, currentLanguage)}</Text>
+          <Text style={styles.statLabel} numberOfLines={1} adjustsFontSizeToFit>
+            {t("list.responseRate", { defaultValue: "معدل الاستجابة" })}
+          </Text>
         </View>
       </View>
 
@@ -183,8 +202,8 @@ const EventList = ({
         <View style={styles.searchContainer}>
           <Ionicons name="search" size={16} color="#9CA3AF" />
           <TextInput
-            style={styles.searchInput}
-            placeholder="ابحث عن مناسبة..."
+            style={[styles.searchInput, searchDirectionStyle]}
+            placeholder={t("list.searchPlaceholder", { defaultValue: "ابحث عن مناسبة..." })}
             placeholderTextColor="#9CA3AF"
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -200,6 +219,8 @@ const EventList = ({
           onPress={handleExport}
           disabled={exporting}
           activeOpacity={0.85}
+          accessibilityRole="button"
+          accessibilityLabel={t("list.exportTitle", { defaultValue: "تصدير" })}
         >
           {exporting ? (
             <ActivityIndicator size="small" color="#FFF" />
@@ -209,15 +230,14 @@ const EventList = ({
         </TouchableOpacity>
       </View>
 
-      {/* Filter Tabs */}
-      <View style={styles.filterContainer}>
-        {[
-          { key: "all", label: "الكل" },
-          { key: "live", label: "مباشرة" },
-          { key: "scheduled", label: "مجدولة" },
-          { key: "completed", label: "منتهية" },
-          { key: "pending_scheduling", label: "في انتظار الجدولة" },
-        ].map((tab) => (
+      {/* Filter Tabs — horizontal scrollable pills */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.filterScrollContent}
+        style={styles.filterScroll}
+      >
+        {filterTabs.map((tab) => (
           <TouchableOpacity
             key={tab.key}
             style={[
@@ -225,18 +245,21 @@ const EventList = ({
               statusFilter === tab.key && styles.filterTabActive,
             ]}
             onPress={() => setStatusFilter(tab.key)}
+            accessibilityRole="button"
+            accessibilityLabel={tab.label}
           >
             <Text
               style={[
                 styles.filterText,
                 statusFilter === tab.key && styles.filterTextActive,
               ]}
+              numberOfLines={1}
             >
               {tab.label}
             </Text>
           </TouchableOpacity>
         ))}
-      </View>
+      </ScrollView>
     </View>
   );
 
@@ -245,7 +268,9 @@ const EventList = ({
       <View style={styles.container}>
         {renderHeader()}
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>لا توجد مناسبات حالياً</Text>
+          <Text style={styles.emptyText}>
+            {t("list.empty", { defaultValue: "لا توجد مناسبات حالياً" })}
+          </Text>
         </View>
       </View>
     );
@@ -256,7 +281,9 @@ const EventList = ({
       <View style={styles.container}>
         {renderHeader()}
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>لا توجد نتائج للبحث</Text>
+          <Text style={styles.emptyText}>
+            {t("list.noResults", { defaultValue: "لا توجد نتائج للبحث" })}
+          </Text>
         </View>
       </View>
     );
@@ -279,7 +306,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   listContent: {
-    paddingBottom: 24,
+    paddingBottom: 88, // Clearance for floating action button
   },
   headerContainer: {
     paddingTop: 16,
@@ -325,7 +352,6 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_500Medium",
     color: "#656565",
     lineHeight: 16,
-    textAlign: "left",
   },
   searchRow: {
     flexDirection: "row",
@@ -361,27 +387,29 @@ const styles = StyleSheet.create({
     color: "#2c2c2c",
     paddingVertical: 0,
   },
-  filterContainer: {
-    flexDirection: "row",
-    gap: 6,
+  filterScroll: {
     marginBottom: 12,
+  },
+  filterScrollContent: {
     paddingHorizontal: 16,
+    gap: 8,
   },
   filterTab: {
-    flex: 1,
-    paddingVertical: 6,
-    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
     backgroundColor: "#FFF",
     borderWidth: 1,
     borderColor: "#E8E8E8",
     alignItems: "center",
+    justifyContent: "center",
   },
   filterTabActive: {
     backgroundColor: "#C28E5C",
     borderColor: "#C28E5C",
   },
   filterText: {
-    fontSize: 12,
+    fontSize: 13,
     fontFamily: "Cairo_600SemiBold",
     color: "#656565",
   },

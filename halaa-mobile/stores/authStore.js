@@ -102,21 +102,14 @@ export const useAuthStore = create((set, get) => ({
         return;
       }
 
-      const fresh = await refreshTokenAPI(refreshToken);
-      const role = requireRole(fresh.user);
-
-      // Persist the rotated refresh token immediately.
-      await saveRefreshToken(fresh.refreshToken);
-      await saveUserShadow(fresh.user);
-
-      set({
-        user: fresh.user,
-        token: fresh.accessToken,
-        refreshToken: fresh.refreshToken,
-        role,
-        status: "authenticated",
-        error: null,
-      });
+      // Route through refreshTokens() to avoid cold-launch races with early apiFetch() calls
+      const freshToken = await get().refreshTokens();
+      if (!freshToken) {
+        if (get().status !== "authenticated") {
+          set({ status: "unauthenticated" });
+        }
+        return;
+      }
     } catch (error) {
       console.error("[AUTH] restoreSession failed:", error?.message);
       await clearRefreshToken();
@@ -366,7 +359,21 @@ export const useAuthStore = create((set, get) => ({
       return fresh.accessToken;
     } catch (error) {
       console.error("[AUTH] refreshTokens failed:", error?.message);
-      await get().logout();
+      // Only log out if it's a definitive 401 / authentication failure from the server.
+      // Do NOT log out on transient network errors, timeouts, or 5xx server issues.
+      const isDefinitiveAuthError =
+        error?.status === 401 ||
+        error?.statusCode === 401 ||
+        error?.code === "UNAUTHORIZED" ||
+        error?.isAuthError === true ||
+        error?.message?.includes("Invalid refresh token") ||
+        error?.message?.includes("Refresh token reuse detected") ||
+        error?.message?.includes("Refresh token expired") ||
+        error?.message?.includes("User no longer exists");
+
+      if (isDefinitiveAuthError) {
+        await get().logout();
+      }
       return null;
     }
   },

@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../../localization";
+import { formatDate } from "@halaa/shared/utils/locale";
 import {
   colors,
   spacing,
@@ -11,15 +12,6 @@ import {
   backgrounds,
 } from "../../../styles/tokens";
 import { getStatusVisual } from "../../../constants/statusColors";
-
-const formatDate = (d, locale) => {
-  if (!d) return null;
-  return new Date(d).toLocaleDateString(locale === "ar" ? "ar-SA" : "en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-};
 
 const EventCard = ({ event, onPress }) => {
   const { t, currentLanguage } = useTranslation("admin");

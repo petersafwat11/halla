@@ -84,10 +84,13 @@ export const ticketsApi = {
       { method: "PATCH", body: { rating, feedback } },
       "Failed to rate ticket",
     ),
-  assignTicket: async (ticketId, assigneeId) =>
+  assignTicket: async (ticketId, assigneeId, notes) =>
     _request(
       ENDPOINTS.TICKETS.ASSIGN(ticketId),
-      { method: "PATCH", body: { assigneeId } },
+      {
+        method: "PATCH",
+        body: { assigneeId, ...(notes !== undefined && { notes }) },
+      },
       "Failed to assign ticket",
     ),
   updateTicketStatus: async (ticketId, { status, resolution } = {}) =>

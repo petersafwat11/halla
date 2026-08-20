@@ -23,7 +23,7 @@ import { useAuthStore } from "../../../stores/authStore";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
 import { canEditPage, PAGES } from "../../../utils/adminPermissions";
-import { getLocalized } from "@halaa/shared/utils/locale";
+import { getLocalized, formatDate } from "@halaa/shared/utils/locale";
 import TopBar from "../../../components/plans/TopBar";
 import DirectionalIonicon from "../../../components/common/DirectionalIonicon";
 import { SectionCard, InfoRow } from "../../../components/admin-dashboard/hosts/HostSectionCard";
@@ -54,14 +54,7 @@ const ASSIGNMENT_COLORS = {
   refunded: { color: "#9B59B6", bg: "#f5eef8" },
 };
 
-const fmtDate = (d, locale) => {
-  if (!d) return "—";
-  return new Date(d).toLocaleDateString(locale === "ar" ? "ar-SA" : "en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-};
+const fmtDate = (d, locale) => (d ? formatDate(d, locale) : "—");
 
 const capitalize = (s) =>
   typeof s === "string" && s.length ? s[0].toUpperCase() + s.slice(1) : s;

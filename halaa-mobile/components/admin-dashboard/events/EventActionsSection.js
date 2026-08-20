@@ -1,10 +1,13 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { formatDate, formatTime } from "@halaa/shared/utils/locale";
+import { useTranslation } from "../../../localization";
 import { EventActionRow } from "../../admin-dashboard/events";
 import { colors, spacing, borderRadius, typography, textStyles, backgrounds } from "../../../styles/tokens";
 
 const EventActionsSection = ({ event, canEdit, canDelete, updatePending, deletePending, onStatusChange, onDelete, t, SectionCard }) => {
+  const { currentLanguage } = useTranslation();
   const status = event.status;
   const actionRows = [];
 
@@ -99,7 +102,7 @@ const EventHeroCard = ({ event, statusCfg, statusLabel, t }) => {
   const hostName = event.host?.name || event.host?.username || event.hostName || "—";
 
   return (
-    <View style={[styles.heroCard, { borderLeftColor: statusCfg.color }]}>
+    <View style={[styles.heroCard, { borderStartColor: statusCfg.color }]}>
       <View style={styles.heroBody}>
         <View style={styles.heroTopRow}>
           <Text style={styles.heroTitle} numberOfLines={2}>
@@ -117,8 +120,8 @@ const EventHeroCard = ({ event, statusCfg, statusLabel, t }) => {
           <View style={styles.heroMeta}>
             <Ionicons name="calendar-outline" size={13} color={colors.natural[450]} />
             <Text style={styles.heroMetaText}>
-              {new Date(event.date).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
-              {event.time ? `  •  ${event.time}` : ""}
+              {formatDate(event.date, currentLanguage)}
+              {event.time ? `  •  ${formatTime(event.time, currentLanguage)}` : ""}
             </Text>
           </View>
         )}
@@ -133,7 +136,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius[12],
     borderWidth: 1,
     borderColor: colors.natural[200],
-    borderLeftWidth: 4,
+    borderStartWidth: 4,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,

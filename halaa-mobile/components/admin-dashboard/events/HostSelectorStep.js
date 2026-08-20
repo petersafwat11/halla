@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
   selfCard: { marginBottom: 8 },
   hostCard: { marginBottom: 8 },
   hostCardRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  hostInfo: { flex: 1, marginRight: 8 },
+  hostInfo: { flex: 1, marginEnd: 8 },
   hostName: { fontSize: 15, fontFamily: 'Cairo_600SemiBold', color: '#1a1a1a' },
   hostPhone: { fontSize: 13, fontFamily: 'Cairo_400Regular', color: '#666', marginTop: 2 },
   badge: { backgroundColor: '#fef3e7', borderRadius: 4, paddingHorizontal: 8, paddingVertical: 2, alignSelf: 'flex-start', marginTop: 4 },

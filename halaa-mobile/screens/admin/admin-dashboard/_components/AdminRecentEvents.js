@@ -1,6 +1,8 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { formatDate } from "@halaa/shared/utils/locale";
+import { useTranslation } from "../../../../localization";
 import { colors, spacing, borderRadius, typography, textStyles, backgrounds } from "../../../../styles/tokens";
 
 const EVENT_STATUS_COLORS = {
@@ -15,6 +17,7 @@ const EVENT_STATUS_COLORS = {
 };
 
 const AdminRecentEvents = ({ events, t, onViewAll }) => {
+  const { currentLanguage } = useTranslation();
   if (!events.length) return null;
 
   return (
@@ -32,13 +35,7 @@ const AdminRecentEvents = ({ events, t, onViewAll }) => {
       </View>
       {events.map((event, idx) => {
         const statusColor = EVENT_STATUS_COLORS[event.status] ?? colors.natural[400];
-        const dateStr = event.date
-          ? new Date(event.date).toLocaleDateString(undefined, {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            })
-          : "—";
+        const dateStr = event.date ? formatDate(event.date, currentLanguage) : "—";
         return (
           <React.Fragment key={event._id ?? event.id ?? idx}>
             {idx > 0 && <View style={styles.divider} />}

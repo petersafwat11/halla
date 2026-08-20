@@ -1,6 +1,8 @@
 # Mobile RTL / Alignment Report
 
-_Generated this session. Scope: entire `halaa-mobile` app (`components/` + `screens/`, incl. admin dashboard)._
+> **SUPERSEDED**: This historical report is superseded by `docs/implementation/MOBILE_RTL_IOS_CROSS_APP_REMEDIATION_PLAN.md` and the automated regression test suite (`__tests__/localization/`).
+
+_Historical scope: entire `halaa-mobile` app (`components/` + `screens/`, incl. admin dashboard)._
 
 ## Root cause
 

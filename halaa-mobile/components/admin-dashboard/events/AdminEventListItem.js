@@ -5,21 +5,13 @@ import { canEditPage, canDeleteOnPage, PAGES } from "../../../utils/adminPermiss
 import { useUpdateAdminEventStatus, useDeleteAdminEvent } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
+import { formatDate } from "@halaa/shared/utils/locale";
 import { colors } from "../../../styles/tokens";
 import { getStatusVisual } from "../../../constants/statusColors";
 import AdminListItem from "../common/AdminListItem";
 
-const formatDate = (d) => {
-  if (!d) return "—";
-  return new Date(d).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-};
-
 const AdminEventListItem = ({ event, onPress, selected = false, onSelect }) => {
-  const { t } = useTranslation("admin");
+  const { t, currentLanguage } = useTranslation("admin");
   const role = useAuthStore((s) => s.user?.role);
   const canEdit = canEditPage(role, PAGES.EVENTS);
   const canDelete = canDeleteOnPage(role, PAGES.EVENTS);
@@ -38,45 +30,21 @@ const AdminEventListItem = ({ event, onPress, selected = false, onSelect }) => {
   const totalGuests = event.guestCount ?? event.guestListLength ?? event.totalGuests ?? 0;
   const confirmedGuests = event.confirmedCount ?? event.confirmedGuests ?? 0;
 
-  const isCancellable = statusKey === "live" || statusKey === "scheduled";
-  const isActivatable = statusKey === "cancelled" || statusKey === "suspended";
-  const isSuspendable = canEdit && (statusKey === "scheduled" || statusKey === "pending_scheduling");
-  const showStatusBtn = canEdit && (isCancellable || isActivatable);
+  const isCancelled = statusKey === "cancelled";
+  const isActionable = canEdit && (statusKey === "live" || statusKey === "scheduled" || statusKey === "pending_scheduling" || statusKey === "published" || isCancelled);
 
   const avatarColor = getStatusVisual(event.status).fg;
 
-  const handleSuspend = () => {
-    Alert.alert(
-      t("events.details.suspend"),
-      `${t("events.details.suspend")} "${event.title || "—"}"?`,
-      [
-        { text: t("common.cancel"), style: "cancel" },
-        {
-          text: t("events.details.suspend"),
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await updateStatus.mutateAsync({ eventId, status: "suspended" });
-              toast.success(t("common.success"));
-            } catch {
-              toast.error(t("common.error"));
-            }
-          },
-        },
-      ],
-    );
-  };
-
   const handleToggleStatus = () => {
-    const newStatus = isCancellable ? "cancelled" : "scheduled";
-    const actionLabel = isCancellable
-      ? t("events.details.cancel")
-      : t("events.details.activate");
+    const newStatus = isCancelled ? "scheduled" : "cancelled";
+    const actionLabel = isCancelled
+      ? t("events.details.activate", "تفعيل")
+      : t("events.details.suspend", "إيقاف");
     Alert.alert(actionLabel, `${actionLabel} "${event.title || "—"}"?`, [
       { text: t("common.cancel"), style: "cancel" },
       {
         text: actionLabel,
-        style: isCancellable ? "destructive" : "default",
+        style: isCancelled ? "default" : "destructive",
         onPress: async () => {
           try {
             await updateStatus.mutateAsync({ eventId, status: newStatus });
@@ -112,19 +80,13 @@ const AdminEventListItem = ({ event, onPress, selected = false, onSelect }) => {
   };
 
   const actions = [
-    isSuspendable && {
-      key: "suspend",
-      label: t("events.details.suspend"),
-      icon: "pause-circle-outline",
-      color: colors.warning[600],
-      onPress: handleSuspend,
-      isPending: updateStatus.isPending,
-    },
-    showStatusBtn && {
+    isActionable && {
       key: "status",
-      label: isCancellable ? t("events.details.cancel") : t("events.details.activate"),
-      icon: isCancellable ? "ban-outline" : "checkmark-circle-outline",
-      color: isCancellable ? colors.warning[500] : colors.success[500],
+      label: isCancelled
+        ? t("events.details.activate", "تفعيل")
+        : t("events.details.suspend", "إيقاف"),
+      icon: isCancelled ? "checkmark-circle-outline" : "pause-circle-outline",
+      color: isCancelled ? colors.success[500] : colors.warning[600],
       onPress: handleToggleStatus,
       isPending: updateStatus.isPending,
     },
@@ -145,7 +107,7 @@ const AdminEventListItem = ({ event, onPress, selected = false, onSelect }) => {
       avatarColor={avatarColor}
       status={event.status}
       details={[
-        { icon: "calendar-outline", text: formatDate(event.date) },
+        { icon: "calendar-outline", text: formatDate(event.date, currentLanguage) },
         {
           icon: "people-outline",
           text: `${totalGuests} ${t("common.guests")}`,

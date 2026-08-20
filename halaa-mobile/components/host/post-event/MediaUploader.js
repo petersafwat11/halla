@@ -6,15 +6,12 @@ import {
   ActivityIndicator,
   Image,
   StyleSheet,
-  Dimensions,
   FlatList,
   Alert,
 } from "react-native";
+import { useWindowDimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-
-const SCREEN_WIDTH = Dimensions.get("window").width;
-const TILE_SIZE = (SCREEN_WIDTH - 48 - 12) / 3;
 
 /**
  * Unified media uploader. Picks photos OR videos in a single sheet,
@@ -31,6 +28,10 @@ const MediaUploader = ({
   t,
 }) => {
   const [pickerOpen, setPickerOpen] = useState(false);
+  // Responsive tile size from live window dimensions — survives iPad split
+  // views and rotation (plan §3B.5), unlike module-load Dimensions.
+  const { width: windowWidth } = useWindowDimensions();
+  const tileSize = (windowWidth - 48 - 12) / 3;
 
   const handlePickByType = async (mediaTypes) => {
     setPickerOpen(false);
@@ -70,7 +71,7 @@ const MediaUploader = ({
     const isVideo = item.type === "video";
     const uri = item.thumbnailUrl || item.url;
     return (
-      <View style={styles.tileWrapper}>
+      <View style={[styles.tileWrapper, { width: tileSize, height: tileSize }]}>
         {isVideo ? (
           <View style={styles.videoTile}>
             <Ionicons name="videocam" size={28} color="#c28e5c" />
@@ -220,8 +221,6 @@ const styles = StyleSheet.create({
   },
   tileRow: { gap: 6, marginBottom: 6 },
   tileWrapper: {
-    width: TILE_SIZE,
-    height: TILE_SIZE,
     borderRadius: 8,
     overflow: "hidden",
     position: "relative",
@@ -237,7 +236,7 @@ const styles = StyleSheet.create({
   deleteBtn: {
     position: "absolute",
     top: 4,
-    right: 4,
+    end: 4,
     width: 20,
     height: 20,
     borderRadius: 10,

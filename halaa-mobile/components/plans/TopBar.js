@@ -7,6 +7,7 @@ import {
   StatusBar,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { useTranslation } from "../../localization";
 import { colors, spacing, typography } from "../../styles/tokens";
 import DirectionalIonicon from "../common/DirectionalIonicon";
 
@@ -23,10 +24,7 @@ import DirectionalIonicon from "../common/DirectionalIonicon";
  *  - The back chevron is chosen once from the resolved layout direction.
  *  - Minimum touch target is 44x44; the title truncates and exposes a
  *    screen-reader header label.
- *
- * Back-compat: existing callers pass any of `title`, `showBack`, `onBack`,
- * `leftContent`, `rightContent`. When custom `leftContent`/`rightContent` is
- * provided (e.g. a wide greeting block or action icons) the slot grows to fit it.
+ *  - Safe-area insets are owned by the outer screen shell (SafeAreaView).
  */
 const TOUCH = 44;
 
@@ -38,6 +36,7 @@ const TopBar = ({
   leftContent = null,
 }) => {
   const navigation = useNavigation();
+  const { t } = useTranslation("common");
 
   const handleBack = () => {
     if (onBack) {
@@ -57,7 +56,7 @@ const TopBar = ({
           style={styles.control}
           onPress={handleBack}
           accessibilityRole="button"
-          accessibilityLabel="Back"
+          accessibilityLabel={t("back", { defaultValue: "Back" })}
           hitSlop={{ top: spacing[8], bottom: spacing[8], left: spacing[8], right: spacing[8] }}
         >
           <DirectionalIonicon
@@ -114,7 +113,6 @@ const TopBar = ({
 const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.primary[500],
-    paddingTop: StatusBar.currentHeight || 0,
   },
   content: {
     // `row` auto-flips under the inherited RTL direction — logical

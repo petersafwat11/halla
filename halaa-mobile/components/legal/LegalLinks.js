@@ -1,8 +1,7 @@
 /**
- * LegalLinks — reusable inline legal links that open the canonical web legal
+ * LegalLinks — reusable inline legal links that open canonical web legal
  * pages (backed by the SAME `@halaa/shared/legal` content the app renders) in an
- * in-app browser. Works from unauthenticated surfaces (signup) where the in-app
- * legal screens (which live in authenticated stacks) aren't reachable.
+ * in-app browser.
  *
  * `docTypes` selects which documents to show; paths come from the shared legal
  * manifest (`LEGAL_ROUTES`) so links can never drift from the real routes.
@@ -17,7 +16,7 @@ import { useTranslation } from "../../localization";
 import { WEB_BASE_URL } from "../../config/api";
 import { colors, spacing, typography } from "../../styles/tokens";
 
-// documentType -> i18n key (settings namespace `tabs.*`).
+// documentType -> i18n key (settings namespace `tabs.*` or fallback).
 const LABEL_KEYS = {
   terms: "tabs.terms",
   privacy: "tabs.privacy",
@@ -27,15 +26,25 @@ const LABEL_KEYS = {
   support: "tabs.support",
 };
 
+const DEFAULT_LABELS = {
+  terms: "الشروط والأحكام",
+  privacy: "سياسة الخصوصية",
+  "community-rules": "قواعد المجتمع",
+  refund: "سياسة الاسترجاع",
+  deletion: "حذف الحساب",
+  support: "الدعم الفني",
+};
+
 const LegalLinks = ({
   docTypes = ["terms", "privacy", "community-rules"],
   prefix,
   noticeKey,
+  style,
+  lang: langProp,
 }) => {
   const { t, currentLanguage } = useTranslation("settings");
-  const lang = currentLanguage || "ar";
-  // Prefix text: explicit `prefix` wins; else resolve `noticeKey` from the
-  // settings namespace so callers in other namespaces don't need the string.
+  const lang = langProp || currentLanguage || "ar";
+
   const prefixText = prefix != null ? prefix : noticeKey ? t(noticeKey) : null;
 
   const open = (documentType) => {
@@ -43,22 +52,31 @@ const LegalLinks = ({
     WebBrowser.openBrowserAsync(`${WEB_BASE_URL}/${lang}/${slug}`).catch(() => {});
   };
 
+  const getLabel = (documentType) => {
+    const key = LABEL_KEYS[documentType];
+    const fallback = DEFAULT_LABELS[documentType] || documentType;
+    return key ? t(key, { defaultValue: fallback }) : fallback;
+  };
+
   return (
-    <View style={styles.wrap}>
+    <View style={[styles.wrap, style]}>
       {!!prefixText && <Text style={styles.prefix}>{prefixText}</Text>}
-      {docTypes.map((documentType, i) => (
-        <React.Fragment key={documentType}>
-          {i > 0 && <Text style={styles.sep}>·</Text>}
-          <TouchableOpacity
-            onPress={() => open(documentType)}
-            activeOpacity={0.7}
-            accessibilityRole="link"
-            accessibilityLabel={t(LABEL_KEYS[documentType])}
-          >
-            <Text style={styles.link}>{t(LABEL_KEYS[documentType])}</Text>
-          </TouchableOpacity>
-        </React.Fragment>
-      ))}
+      {docTypes.map((documentType, i) => {
+        const label = getLabel(documentType);
+        return (
+          <React.Fragment key={documentType}>
+            {i > 0 && <Text style={styles.sep}>·</Text>}
+            <TouchableOpacity
+              onPress={() => open(documentType)}
+              activeOpacity={0.7}
+              accessibilityRole="link"
+              accessibilityLabel={label}
+            >
+              <Text style={styles.link}>{label}</Text>
+            </TouchableOpacity>
+          </React.Fragment>
+        );
+      })}
     </View>
   );
 };

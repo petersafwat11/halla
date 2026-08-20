@@ -1,67 +1,56 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { formatDate, formatTime, formatGuestCount, formatCount } from "@halaa/shared/utils/locale";
 import { getStatusVisual } from "../../constants/statusColors";
+import { useTranslation } from "../../localization";
 
 const EventListItem = ({ event, onPress }) => {
-  const formatDateTime = () => {
-    if (event.date) {
-      const date = new Date(event.date);
-      const dateStr = date.toLocaleDateString("ar-SA", {
-        weekday: "short",
-        day: "numeric",
-        month: "numeric",
-      });
-      const timeStr = event.time || "";
-      return `${dateStr}${timeStr ? " - " + timeStr : ""}`;
+  const { t, currentLanguage } = useTranslation("events");
+
+  const formatDateTimeStr = () => {
+    if (event?.date) {
+      const dateStr = formatDate(event.date, currentLanguage);
+      const timeStr = event.time ? formatTime(event.time, currentLanguage) : "";
+      return `${dateStr}${timeStr ? "  •  " + timeStr : ""}`;
     }
-    return "غير محدد";
+    return t("list.unspecified", { defaultValue: "غير محدد" });
   };
 
-  const guestCount = event.guestCount || event.totalInvites || 0;
-  const confirmed = event.confirmedCount || event.confirmed || 0;
-  const declined = event.declinedCount || event.declined || 0;
+  const guestCount = event?.guestCount || event?.totalInvites || 0;
+  const confirmed = event?.confirmedCount || event?.confirmed || 0;
+  const declined = event?.declinedCount || event?.declined || 0;
   const noResponse = Math.max(0, guestCount - confirmed - declined);
 
-  const getStatusStyle = (status) => {
-    const v = getStatusVisual(status);
-    switch (status) {
-      case "live":
-        return { bg: v.bg, color: v.fg, label: "مباشرة" };
-      case "scheduled":
-        return { bg: v.bg, color: v.fg, label: "مجدولة" };
-      case "draft":
-        return { bg: v.bg, color: v.fg, label: "مسودة" };
-      case "completed":
-        return { bg: v.bg, color: v.fg, label: "منتهية" };
-      case "cancelled":
-        return { bg: v.bg, color: v.fg, label: "ملغية" };
-      case "pending_scheduling":
-        return { bg: v.bg, color: v.fg, label: "في انتظار الجدولة" };
-      case "suspended":
-        return { bg: v.bg, color: v.fg, label: "موقوفة" };
-      default:
-        return { bg: v.bg, color: v.fg, label: status || "غير محدد" };
-    }
+  const getStatusStyle = (statusKey) => {
+    const v = getStatusVisual(statusKey);
+    const label = t(`list.status.${statusKey}`, {
+      defaultValue: statusKey || t("list.unspecified", { defaultValue: "غير محدد" }),
+    });
+    return { bg: v.bg, color: v.fg, label };
   };
 
-  const status = getStatusStyle(event.status);
-  // Stat dots — route through the same helper so dots match the badge palette.
+  const status = getStatusStyle(event?.status);
   const confirmedDot = getStatusVisual("confirmed").fg;
   const declinedDot = getStatusVisual("declined").fg;
   const noResponseDot = getStatusVisual("invited").fg;
+
+  const titleText = event?.title || t("list.untitled", { defaultValue: "مناسبة بدون عنوان" });
+  const guestCountText = formatGuestCount(guestCount, currentLanguage, t);
 
   return (
     <TouchableOpacity
       style={styles.container}
       onPress={onPress}
       activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={`${titleText} - ${status.label}`}
     >
-      {/* Top row: image + info on the start (right in RTL), status at the end */}
+      {/* Top row: image + info on the start, status at the end */}
       <View style={styles.topRow}>
         <View style={styles.mainGroup}>
           <View style={styles.imageContainer}>
-            {event.image ? (
+            {event?.image ? (
               <Image source={{ uri: event.image }} style={styles.image} />
             ) : (
               <View style={styles.placeholderImage}>
@@ -72,15 +61,15 @@ const EventListItem = ({ event, onPress }) => {
 
           <View style={styles.info}>
             <Text style={styles.title} numberOfLines={1}>
-              {event.title || "مناسبة بدون عنوان"}
+              {titleText}
             </Text>
             <View style={styles.detailRow}>
               <Ionicons name="calendar-outline" size={12} color="#9CA3AF" />
-              <Text style={styles.detailText}>{formatDateTime()}</Text>
+              <Text style={styles.detailText}>{formatDateTimeStr()}</Text>
             </View>
             <View style={styles.detailRow}>
               <Ionicons name="people-outline" size={12} color="#9CA3AF" />
-              <Text style={styles.detailText}>{guestCount} ضيف</Text>
+              <Text style={styles.detailText}>{guestCountText}</Text>
             </View>
           </View>
         </View>
@@ -92,19 +81,25 @@ const EventListItem = ({ event, onPress }) => {
         </View>
       </View>
 
-      {/* Stats row */}
+      {/* Stats row — 3 equal-width flex columns */}
       <View style={styles.statsRow}>
         <View style={styles.statItem}>
           <View style={[styles.statDot, { backgroundColor: confirmedDot }]} />
-          <Text style={styles.statText}>موافق {confirmed}</Text>
+          <Text style={styles.statText} numberOfLines={1}>
+            {t("list.stats.confirmed", { defaultValue: "موافق" })} {formatCount(confirmed, currentLanguage)}
+          </Text>
         </View>
         <View style={styles.statItem}>
           <View style={[styles.statDot, { backgroundColor: declinedDot }]} />
-          <Text style={styles.statText}>معتذر {declined}</Text>
+          <Text style={styles.statText} numberOfLines={1}>
+            {t("list.stats.declined", { defaultValue: "معتذر" })} {formatCount(declined, currentLanguage)}
+          </Text>
         </View>
         <View style={styles.statItem}>
           <View style={[styles.statDot, { backgroundColor: noResponseDot }]} />
-          <Text style={styles.statText}>لم يرد {noResponse}</Text>
+          <Text style={styles.statText} numberOfLines={1}>
+            {t("list.stats.noResponse", { defaultValue: "لم يرد" })} {formatCount(noResponse, currentLanguage)}
+          </Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -167,7 +162,7 @@ const styles = StyleSheet.create({
   },
   statusBadge: {
     paddingHorizontal: 8,
-    paddingVertical: 1,
+    paddingVertical: 2,
     borderRadius: 99,
     marginTop: 2,
   },
@@ -190,17 +185,19 @@ const styles = StyleSheet.create({
   },
   statsRow: {
     flexDirection: "row",
-    flexWrap: "wrap",
+    alignItems: "center",
     justifyContent: "space-between",
-    rowGap: 6,
     paddingVertical: 8,
+    paddingHorizontal: 8,
     backgroundColor: "#FAFAFA",
     borderRadius: 6,
+    gap: 4,
   },
   statItem: {
-    width: "48%",
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     gap: 4,
   },
   statDot: {

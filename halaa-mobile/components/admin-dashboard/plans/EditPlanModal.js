@@ -435,7 +435,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.natural[150],
     alignItems: "center",
     justifyContent: "center",
-    marginLeft: spacing[12],
+    marginStart: spacing[12],
   },
 
   // Form

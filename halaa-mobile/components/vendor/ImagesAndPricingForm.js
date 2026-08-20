@@ -62,8 +62,12 @@ const ImagesAndPricingForm = ({ data, onSave, onRefetch, loading }) => {
   const { t } = useTranslation("vendor");
   const toast = useToast();
 
-  const existingPortfolio = data?.portfolioImages || [];
-  const existingPricing = data?.pricePackages || [];
+  const existingPortfolio = Array.isArray(data?.portfolioImages)
+    ? data.portfolioImages.filter(Boolean)
+    : [];
+  const existingPricing = Array.isArray(data?.pricePackages)
+    ? data.pricePackages.filter(Boolean)
+    : [];
 
   const [newPortfolioFiles, setNewPortfolioFiles] = useState([]);
   const [newPriceFiles, setNewPriceFiles] = useState([]);

@@ -4,7 +4,9 @@
   "templates_categories_error": "Could not load categories",
   "templates_load_error": "Could not load templates",
   "no_templates_available": "No templates available",
-  "common": { "all": "All" },
+  "common": {
+    "all": "All"
+  },
   "buttons": {
     "save": "Save",
     "cancel": "Cancel",
@@ -53,12 +55,24 @@
     "justNow": "Just now"
   },
   "fonts": {
-    "cairo": { "displayName": "Cairo" },
-    "inter": { "displayName": "Inter" },
-    "lato": { "displayName": "Lato" },
-    "amiri": { "displayName": "Amiri" },
-    "ibm_plex_arabic": { "displayName": "IBM Plex Sans Arabic" },
-    "noto_sans_arabic": { "displayName": "Noto Sans Arabic" }
+    "cairo": {
+      "displayName": "Cairo"
+    },
+    "inter": {
+      "displayName": "Inter"
+    },
+    "lato": {
+      "displayName": "Lato"
+    },
+    "amiri": {
+      "displayName": "Amiri"
+    },
+    "ibm_plex_arabic": {
+      "displayName": "IBM Plex Sans Arabic"
+    },
+    "noto_sans_arabic": {
+      "displayName": "Noto Sans Arabic"
+    }
   },
   "validation": {
     "invalidSaudiPhone": "Phone must start with 5 and be 9 digits",
@@ -100,5 +114,8 @@
       "5": "Friday",
       "6": "Saturday"
     }
-  }
+  },
+  "back": "Back",
+  "showPassword": "Show password",
+  "hidePassword": "Hide password"
 }

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View, TextInput, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import PropTypes from "prop-types";
+import { useInputDirection } from "../../../hooks/useInputDirection";
 import {
   colors,
   spacing,
@@ -25,6 +26,8 @@ const SearchBar = ({
   onClear,
 }) => {
   const [localValue, setLocalValue] = useState(value || "");
+  // Explicit localized direction for the iOS search placeholder.
+  const searchDirectionStyle = useInputDirection("localized");
 
   useEffect(() => {
     setLocalValue(value || "");
@@ -60,7 +63,7 @@ const SearchBar = ({
         style={styles.searchIcon}
       />
       <TextInput
-        style={styles.input}
+        style={[styles.input, searchDirectionStyle]}
         value={localValue}
         onChangeText={setLocalValue}
         placeholder={placeholder}
@@ -94,7 +97,7 @@ const styles = StyleSheet.create({
     borderColor: colors.natural[200],
   },
   searchIcon: {
-    marginRight: spacing[8],
+    marginEnd: spacing[8],
   },
   input: {
     flex: 1,
@@ -103,7 +106,7 @@ const styles = StyleSheet.create({
     padding: 0,
   },
   clearButton: {
-    marginLeft: spacing[8],
+    marginStart: spacing[8],
     padding: spacing[4],
   },
 });

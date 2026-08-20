@@ -100,7 +100,10 @@ const AdminPageHeader = ({
                 onPress={() => onFilterChange?.(opt.id)}
                 activeOpacity={0.7}
               >
-                <Text style={[styles.chipText, active && styles.chipTextActive]}>
+                <Text
+                  style={[styles.chipText, active && styles.chipTextActive]}
+                  numberOfLines={1}
+                >
                   {opt.label}
                 </Text>
                 {opt.count !== undefined && (
@@ -177,13 +180,17 @@ const styles = StyleSheet.create({
   chip: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
+    alignSelf: "center",
     gap: spacing[8],
-    paddingHorizontal: spacing[12],
+    paddingHorizontal: spacing[14],
     paddingVertical: spacing[8],
     borderRadius: borderRadius[20],
     backgroundColor: backgrounds.card[1],
     borderWidth: 1,
     borderColor: colors.natural[200],
+    minHeight: 38,
+    flexShrink: 0,
   },
   chipActive: {
     backgroundColor: colors.primary[500],

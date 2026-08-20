@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
-import { formatNumber } from "@halaa/shared/utils/locale";
+import { formatNumber, formatPercent, isolateLtr, isolateRtl } from "@halaa/shared/utils/locale";
 import { COMPENSATION_PERCENTAGE } from "@halaa/shared/constants/plans";
 
 /**
@@ -71,12 +71,17 @@ const PlanDescription = ({
   const tagline = family ? t(`taglines.${family}`, { defaultValue: "" }) : "";
   const includesBasic = family === "premium";
 
+  // Compensation math copy: the percent/base are isolated per direction so
+  // parentheses and digits never BiDi-reorder (plan §5C). Arabic percent is
+  // an RTL token; Latin percent stays LTR.
+  const isolate = (value) =>
+    activeLang === "ar" ? isolateRtl(value) : isolateLtr(value);
   const compensationLine =
     compensationCount > 0
       ? t("compensationRow", {
           count: formatNumber(compensationCount, activeLang),
-          percent: COMPENSATION_PERCENTAGE,
-          base: formatNumber(compensationBase, activeLang),
+          percent: isolate(formatPercent(COMPENSATION_PERCENTAGE, activeLang)),
+          base: isolate(formatNumber(compensationBase, activeLang)),
         })
       : null;
 

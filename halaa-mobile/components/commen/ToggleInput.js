@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
   },
   labelContainer: {
     flex: 1,
-    marginRight: 16,
+    marginEnd: 16,
   },
   label: {
     fontSize: 15,

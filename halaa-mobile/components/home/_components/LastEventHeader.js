@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../../localization";
+import { formatDate, formatTime } from "@halaa/shared/utils/locale";
 import { getStatusVisual } from "../../../constants/statusColors";
 
 const STATUS_STYLE = {
@@ -19,19 +20,14 @@ const DEFAULT_STATUS = {
 
 function formatDateTime(event, locale) {
   if (!event.date) return event.dateTime || "";
-  const d = new Date(event.date);
-  const dateStr = d.toLocaleDateString(locale, {
-    weekday: "long",
-    day: "numeric",
-    month: "numeric",
-    year: "numeric",
-  });
-  const timeStr = event.time || "";
-  return `${dateStr}${timeStr ? " - " + timeStr : ""}`;
+  const dateStr = formatDate(event.date, locale);
+  const timeStr = event.time ? formatTime(event.time, locale) : "";
+  return `${dateStr}${timeStr ? "  •  " + timeStr : ""}`;
 }
 
-export default function LastEventHeader({ event, locale = "ar-SA" }) {
-  const { t } = useTranslation("home");
+export default function LastEventHeader({ event }) {
+  const { t, currentLanguage } = useTranslation("home");
+  const locale = currentLanguage || "ar";
   const title = event.title || t("lastEvent.untitled");
   const guestCount = event.guestCount || 0;
   const location = event.locationName || "";

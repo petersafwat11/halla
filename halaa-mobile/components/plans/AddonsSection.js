@@ -478,7 +478,7 @@ const styles = StyleSheet.create({
     gap: spacing[8],
     paddingVertical: 6,
     paddingHorizontal: 10,
-    paddingLeft: 14,
+    paddingStart: 14,
     borderRadius: 9999,
     borderWidth: 1,
     borderColor: colors.primary[200],

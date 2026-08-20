@@ -280,6 +280,8 @@
       "typeRequired": "Service type is required",
       "descriptionMinLength": "Service description must be more than 10 characters",
       "priceRequired": "Service price is required",
+      "priceInvalid": "Price must be a valid number",
+      "fixErrors": "Please fix the required fields",
       "durationMaxLength": "Service duration must be less than 100 characters"
     }
   },

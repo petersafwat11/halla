@@ -149,13 +149,12 @@ const styles = {
   },
   unreadAccent: {
     position: "absolute",
-    left: 0,
+    start: 0,
     top: 0,
     bottom: 0,
     width: 3,
     backgroundColor: colors.primary[500],
-    borderTopRightRadius: borderRadius[4],
-    borderBottomRightRadius: borderRadius[4],
+    borderRadius: borderRadius[4],
   },
   notifIcon: {
     width: 40,
@@ -163,13 +162,13 @@ const styles = {
     borderRadius: borderRadius[8],
     justifyContent: "center",
     alignItems: "center",
-    marginRight: spacing[12],
+    marginEnd: spacing[12],
     flexShrink: 0,
   },
   notifContent: {
     flex: 1,
     minWidth: 0,
-    marginRight: spacing[8],
+    marginEnd: spacing[8],
   },
   notifTitle: {
     fontSize: 14,

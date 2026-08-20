@@ -134,6 +134,36 @@ class AuthService {
       // revokedAt set, that is a replay and we revoke the user's family.
       const replayed = await RefreshToken.findOne({ tokenHash });
       if (replayed) {
+        const gracePeriodMs = config.jwt.refreshGracePeriodMs || 30000;
+        const isWithinGrace =
+          replayed.revokedAt &&
+          Date.now() - replayed.revokedAt.getTime() <= gracePeriodMs &&
+          replayed.expiresAt.getTime() > Date.now() &&
+          replayed.replacedBy;
+
+        if (isWithinGrace) {
+          const user = await User.findById(replayed.userId);
+          if (user) {
+            this._validateUserStatus(user);
+            const fresh = await this.issueTokenPair(user, context);
+
+            logAudit({
+              action: 'auth.refresh_grace_reuse',
+              actor: { _id: user._id, role: user.role },
+              targetType: 'user',
+              targetId: user._id,
+              metadata: { ip: context.ip, userAgent: context.userAgent, previousTokenId: replayed._id },
+            }).catch(() => {});
+
+            return {
+              user,
+              accessToken: fresh.accessToken,
+              refreshToken: fresh.refreshToken,
+              expiresAt: fresh.expiresAt,
+            };
+          }
+        }
+
         await this.revokeAllForUser(replayed.userId);
         throw new UnauthorizedError('Refresh token reuse detected — all sessions revoked');
       }
@@ -1070,7 +1100,9 @@ class AuthService {
 
     const isCorrect = await user.comparePassword(currentPassword);
     if (!isCorrect) {
-      throw new UnauthorizedError('Current password is incorrect');
+      const err = new UnauthorizedError('Current password is incorrect');
+      err.code = 'CURRENT_PASSWORD_INVALID';
+      throw err;
     }
 
     user.password = newPassword;

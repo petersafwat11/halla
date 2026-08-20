@@ -1,5 +1,6 @@
 import React from "react";
 import { useTranslation } from "../../../localization";
+import { formatDate } from "@halaa/shared/utils/locale";
 import { colors, backgrounds } from "../../../styles/tokens";
 import AdminListItem from "../common/AdminListItem";
 
@@ -18,7 +19,7 @@ const ModeratorListItem = ({
   selected = false,
   onSelect,
 }) => {
-  const { t } = useTranslation("admin");
+  const { t, currentLanguage } = useTranslation("admin");
 
   const {
     name,
@@ -36,7 +37,7 @@ const ModeratorListItem = ({
   const phone = phoneNumber || phoneField || null;
   const joinedDate =
     createdAt || created_at
-      ? new Date(createdAt || created_at).toLocaleDateString()
+      ? formatDate(createdAt || created_at, currentLanguage)
       : null;
 
   const roleLabelKey = ROLE_LABEL_KEYS[role];

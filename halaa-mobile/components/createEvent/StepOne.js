@@ -9,6 +9,7 @@ import {
 import { useFormContext } from "react-hook-form";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useTranslation } from "../../localization";
+import { formatDate as formatLocaleDate } from "@halaa/shared/utils/locale";
 import TextInput from "../commen/TextInput";
 import MapPicker from "../commen/MapPicker";
 import DropdownInput from "../commen/DropdownInput";
@@ -43,14 +44,14 @@ const ClockIcon = () => (
 const LocationIcon = () => (
   <Svg width="20" height="20" viewBox="0 0 20 20" fill="none">
     <Path
-      d="M17.5 8.33329C17.5 14.1666 10 19.1666 10 19.1666C10 19.1666 2.5 14.1666 2.5 8.33329C2.5 6.34417 3.29018 4.43653 4.6967 3.03002C6.10322 1.6235 8.01088 0.833292 10 0.833292C11.9891 0.833292 13.8968 1.6235 15.3033 3.03002C16.7098 4.43653 17.5 6.34417 17.5 8.33329Z"
+      d="M10 11.25C11.3807 11.25 12.5 10.1307 12.5 8.75C12.5 7.36929 11.3807 6.25 10 6.25C8.61929 6.25 7.5 7.36929 7.5 8.75C7.5 10.1307 8.61929 11.25 10 11.25Z"
       stroke="#C28E5C"
       strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
     />
     <Path
-      d="M10 10.8333C11.3807 10.8333 12.5 9.71396 12.5 8.33329C12.5 6.95262 11.3807 5.83329 10 5.83329C8.61929 5.83329 7.5 6.95262 7.5 8.33329C7.5 9.71396 8.61929 10.8333 10 10.8333Z"
+      d="M16.25 8.75C16.25 14.375 10 18.75 10 18.75C10 18.75 3.75 14.375 3.75 8.75C3.75 7.0924 4.40848 5.50269 5.58058 4.33058C6.75269 3.15848 8.3424 2.5 10 2.5C11.6576 2.5 13.2473 3.15848 14.4194 4.33058C15.5915 5.50269 16.25 7.0924 16.25 8.75Z"
       stroke="#C28E5C"
       strokeWidth="1.5"
       strokeLinecap="round"
@@ -61,7 +62,7 @@ const LocationIcon = () => (
 
 const StepOne = () => {
   const { control, setValue, watch } = useFormContext();
-  const { t } = useTranslation("createEvent");
+  const { t, currentLanguage } = useTranslation("createEvent");
   const { data: subData } = useMySubscription();
   const isTrial = subData?.data?.subscription?.[0]?.planCode === "trial";
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -95,12 +96,7 @@ const StepOne = () => {
 
   const formatDate = (date) => {
     if (!date) return "";
-    const d = new Date(date);
-    return d.toLocaleDateString("ar-SA", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
+    return formatLocaleDate(date, currentLanguage || "ar");
   };
 
   const handleDateChange = (event, selectedDate) => {

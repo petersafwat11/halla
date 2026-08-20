@@ -2,6 +2,7 @@ import React from "react";
 import { useAuthStore } from "../../../stores/authStore";
 import { canEditPage, PAGES } from "../../../utils/adminPermissions";
 import { useTranslation } from "../../../localization";
+import { formatDate } from "@halaa/shared/utils/locale";
 import { colors } from "../../../styles/tokens";
 import { getStatusVisual } from "../../../constants/statusColors";
 import AdminListItem from "../common/AdminListItem";
@@ -14,17 +15,8 @@ const PRIORITY_LABEL_KEY = {
   urgent: "tickets.priority.urgent",
 };
 
-const formatDate = (d, t) => {
-  if (!d) return t("common.unknown");
-  return new Date(d).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-};
-
 const TicketListItem = ({ ticket, onPress, onResolve, onAssign, selected = false, onSelect }) => {
-  const { t } = useTranslation("admin");
+  const { t, currentLanguage } = useTranslation("admin");
   const role = useAuthStore((s) => s.user?.role);
   const canEdit = canEditPage(role, PAGES.TICKETS);
 
@@ -70,7 +62,7 @@ const TicketListItem = ({ ticket, onPress, onResolve, onAssign, selected = false
   const details = [
     ticketNum && { icon: "receipt-outline", text: `#${ticketNum}` },
     ticket.category && { icon: "folder-outline", text: ticket.category },
-    { icon: "calendar-outline", text: formatDate(ticket.createdAt, t) },
+    { icon: "calendar-outline", text: formatDate(ticket.createdAt, currentLanguage) },
   ].filter(Boolean);
 
   const actions = canEdit

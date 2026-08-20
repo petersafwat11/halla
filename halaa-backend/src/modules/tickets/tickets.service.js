@@ -124,14 +124,18 @@ class TicketsService {
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .populate("user", "username phoneNumber email")
-        .populate("assignedTo", "username email")
+        .populate("user", "username name phoneNumber email")
+        .populate("assignedTo", "username name email")
         .lean(),
       Ticket.countDocuments(query),
     ]);
 
     return {
-      data: await Promise.all(tickets.map((t) => this._formatTicket(t))),
+      data: await Promise.all(
+        tickets.map((t) =>
+          this._formatTicket(t, { includeAssignmentNote: isAdmin })
+        )
+      ),
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     };
   }
@@ -145,8 +149,8 @@ class TicketsService {
    */
   async getTicketById(ticketId, userId, isAdmin) {
     const ticket = await Ticket.findById(ticketId)
-      .populate("user", "username phoneNumber email")
-      .populate("assignedTo", "username email")
+      .populate("user", "username name phoneNumber email")
+      .populate("assignedTo", "username name email")
       .lean();
 
     if (!ticket) {
@@ -157,7 +161,11 @@ class TicketsService {
       throw new ForbiddenError("You do not have access to this ticket");
     }
 
-    return { ticket: await this._formatTicket(ticket) };
+    return {
+      ticket: await this._formatTicket(ticket, {
+        includeAssignmentNote: isAdmin,
+      }),
+    };
   }
 
   /**
@@ -255,21 +263,32 @@ class TicketsService {
     // Notify user of status change
     this._notifyTicketStatusChange(ticket, status).catch((err) => logger.error('ticket status notification failed', err));
 
-    return { ticket: await this._formatTicket(ticket) };
+    return {
+      ticket: await this._formatTicket(ticket, {
+        includeAssignmentNote: true,
+      }),
+    };
   }
 
   /**
    * Assign ticket to admin
    * @param {string} ticketId
    * @param {string} assigneeId
+   * @param {string} [notes]
    * @returns {Promise<Object>}
    */
-  async assignTicket(ticketId, assigneeId) {
+  async assignTicket(ticketId, assigneeId, notes) {
+    const update = {
+      assignedTo: assigneeId,
+      status: TICKET_STATUS.IN_PROGRESS,
+    };
+    if (notes !== undefined) update.assignmentNote = notes;
+
     const ticket = await Ticket.findByIdAndUpdate(
       ticketId,
-      { assignedTo: assigneeId, status: TICKET_STATUS.IN_PROGRESS },
-      { new: true }
-    ).populate("assignedTo", "username email");
+      update,
+      { new: true, runValidators: true }
+    ).populate("assignedTo", "username name email");
 
     if (!ticket) {
       throw new NotFoundError("Ticket");
@@ -278,7 +297,11 @@ class TicketsService {
     // Notify assigned admin (non-blocking)
     this._notifyTicketAssigned(ticket, assigneeId).catch((err) => logger.error('ticket assignment notification failed', err));
 
-    return { ticket: await this._formatTicket(ticket) };
+    return {
+      ticket: await this._formatTicket(ticket, {
+        includeAssignmentNote: true,
+      }),
+    };
   }
 
   /**
@@ -322,7 +345,11 @@ class TicketsService {
     });
 
     await ticket.save();
-    return { ticket: await this._formatTicket(ticket) };
+    return {
+      ticket: await this._formatTicket(ticket, {
+        includeAssignmentNote: isAdmin,
+      }),
+    };
   }
 
   /**
@@ -429,7 +456,7 @@ class TicketsService {
   // PRIVATE HELPERS
   // ============================================
 
-  async _formatTicket(ticket) {
+  async _formatTicket(ticket, { includeAssignmentNote = false } = {}) {
     const formatted = {
       id: ticket._id,
       ticketNumber: ticket._id.toString().slice(-6),
@@ -451,6 +478,7 @@ class TicketsService {
         ? {
           id: ticket.user._id,
           username: ticket.user.username,
+          name: ticket.user.name,
           email: ticket.user.email,
           phoneNumber: ticket.user.phoneNumber,
         }
@@ -459,9 +487,13 @@ class TicketsService {
         ? {
           id: ticket.assignedTo._id,
           username: ticket.assignedTo.username,
+          name: ticket.assignedTo.name,
           email: ticket.assignedTo.email,
         }
         : null,
+      ...(includeAssignmentNote && {
+        assignmentNote: ticket.assignmentNote || null,
+      }),
       resolution: ticket.resolutionResponse
         ? {
           message: ticket.resolutionResponse.message,

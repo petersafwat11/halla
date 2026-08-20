@@ -132,10 +132,10 @@ class DashboardService {
       User.countDocuments({ role: ROLES.VENDOR }),
       User.countDocuments({ role: ROLES.VENDOR, status: USER_STATUS.PENDING }),
       User.countDocuments({ role: ROLES.VENDOR, createdAt: { $gte: startDate, $lte: endDate } }),
-      Event.countDocuments({}),
+      Event.countDocuments({ status: { $ne: EVENT_STATUS.DELETED } }),
       Event.countDocuments({ status: { $in: [EVENT_STATUS.SCHEDULED, EVENT_STATUS.LIVE] } }),
-      Event.countDocuments({ createdAt: { $gte: startDate, $lte: endDate } }),
-      Event.countDocuments({ createdAt: { $gte: previousStartDate, $lt: startDate } }),
+      Event.countDocuments({ createdAt: { $gte: startDate, $lte: endDate }, status: { $ne: EVENT_STATUS.DELETED } }),
+      Event.countDocuments({ createdAt: { $gte: previousStartDate, $lt: startDate }, status: { $ne: EVENT_STATUS.DELETED } }),
       Subscription.countDocuments({ status: SUBSCRIPTION_STATUS.ACTIVE }),
       Subscription.aggregate([
         { $match: { status: { $in: [SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.TRIAL] } } },
@@ -146,9 +146,10 @@ class DashboardService {
       Ticket.countDocuments({ status: { $in: [TICKET_STATUS.OPEN, TICKET_STATUS.IN_PROGRESS] } }),
       Ticket.countDocuments({ status: TICKET_STATUS.RESOLVED, updatedAt: { $gte: startDate, $lte: endDate } }),
       User.find(personalHostFilter()).select('username name email createdAt status').sort({ createdAt: -1 }).limit(5).lean(),
-      Event.find({}).select('eventDetails.title eventDetails.date status host').populate('host', 'username name').sort({ createdAt: -1 }).limit(5).lean(),
+      Event.find({ status: { $ne: EVENT_STATUS.DELETED } }).select('eventDetails.title eventDetails.date status host').populate('host', 'username name').sort({ createdAt: -1 }).limit(5).lean(),
       Service.aggregate([
-        { $group: { _id: '$vendor', totalViews: { $sum: { $ifNull: ['$views', 0] } } } },
+        { $match: { vendorId: { $ne: null } } },
+        { $group: { _id: '$vendorId', totalViews: { $sum: { $ifNull: ['$viewCount', 0] } } } },
         { $sort: { totalViews: -1 } },
         { $limit: 5 },
         { $lookup: { from: 'users', localField: '_id', foreignField: '_id', as: 'vendorUser' } },
@@ -158,7 +159,12 @@ class DashboardService {
             name: {
               $ifNull: [
                 '$vendorUser.profile.vendorData.brandName',
-                '$vendorUser.name',
+                {
+                  $ifNull: [
+                    '$vendorUser.name',
+                    { $ifNull: ['$vendorUser.username', '$vendorUser.email'] },
+                  ],
+                },
               ],
             },
             numberOfClicks: '$totalViews',
@@ -184,7 +190,6 @@ class DashboardService {
     });
 
     const analytics = null;
-
     const totalSubscriptionsByPlan = Object.values(subscriptionsByPlanFormatted).reduce((a, b) => a + b, 0);
 
     const guestStatsMap = {};

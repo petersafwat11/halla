@@ -13,6 +13,7 @@ import { Ionicons } from "@expo/vector-icons";
 import {
   resolveTaqnyatPlaceholders,
   buildTaqnyatPreviewContext,
+  formatDate,
 } from "@halaa/shared/utils";
 import { useTranslation } from "../../localization";
 import { useAuthStore } from "../../stores/authStore";
@@ -90,14 +91,6 @@ const RowLocationIcon = () => (
   </Svg>
 );
 
-const formatDate = (date) => {
-  if (!date) return "";
-  const dateObj = typeof date === "string" ? new Date(date) : date;
-  const year = dateObj.getFullYear();
-  const month = String(dateObj.getMonth() + 1).padStart(2, "0");
-  const day = String(dateObj.getDate()).padStart(2, "0");
-  return `${year}/${month}/${day}`;
-};
 
 const StatCard = ({ icon, value, label }) => (
   <View style={styles.statCard}>
@@ -152,19 +145,7 @@ const EventSummary = () => {
   const resolvedInvitation = useMemo(() => {
     const bodyText = selectedTemplate?.bodyText;
     if (!bodyText) return "";
-    const locale = (t("preview_date_locale", "ar-SA") || "ar-SA").toString();
-    let dateFormatted = "";
-    if (eventDate) {
-      try {
-        dateFormatted = new Date(eventDate).toLocaleDateString(locale, {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        });
-      } catch {
-        dateFormatted = "";
-      }
-    }
+    const dateFormatted = eventDate ? formatDate(eventDate, currentLanguage || "ar") : "";
     const context = buildTaqnyatPreviewContext({
       guestName: t("preview_guest_placeholder", "ضيفنا الكريم"),
       eventTitle: eventName,

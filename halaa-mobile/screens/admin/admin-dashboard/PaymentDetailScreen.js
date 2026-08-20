@@ -30,6 +30,7 @@ import {
 import { useAuthStore } from "../../../stores/authStore";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
+import { formatDateTime as formatLocaleDateTime } from "@halaa/shared/utils/locale";
 import TopBar from "../../../components/plans/TopBar";
 import DirectionalIonicon from "../../../components/common/DirectionalIonicon";
 import StatusBadge from "../../../components/admin-dashboard/common/StatusBadge";
@@ -60,9 +61,6 @@ const newIdempotencyKey = () => {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 };
 
-const formatDateTime = (iso) =>
-  iso ? new Date(iso).toLocaleString() : "—";
-
 const formatAmount = (amount, currency = "SAR") =>
   amount === undefined || amount === null ? "—" : `${amount} ${currency}`;
 
@@ -79,7 +77,8 @@ const PaymentDetailScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const { paymentId } = route.params || {};
-  const { t } = useTranslation("admin");
+  const { t, currentLanguage } = useTranslation("admin");
+  const formatDateTime = (iso) => (iso ? formatLocaleDateTime(iso, currentLanguage) : "—");
   const toast = useToast();
   const role = useAuthStore((state) => state.user?.role);
   const canWrite = ADMIN_WRITE_ROLES.has(role);
