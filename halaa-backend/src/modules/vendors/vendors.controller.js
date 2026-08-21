@@ -59,3 +59,22 @@ exports.getCategories = catchAsync(async (req, res) => {
   const result = await vendorsService.getCategories();
   sendSuccess(res, result);
 });
+
+/**
+ * Track marketplace analytics event
+ * POST /api/v2/vendors/analytics/track
+ */
+exports.trackAnalytics = catchAsync(async (req, res) => {
+  const marketplaceAnalyticsService = require('../marketplace/marketplace.analytics.service');
+  const result = await marketplaceAnalyticsService.trackEvent({
+    eventType: req.body.eventType,
+    targetType: req.body.targetType,
+    targetId: req.body.targetId,
+    contactMethod: req.body.contactMethod,
+    metadata: req.body.metadata,
+    actorId: req.user?._id,
+    actorIp: req.ip || req.connection?.remoteAddress,
+    userAgent: req.headers['user-agent'],
+  });
+  sendSuccess(res, result);
+});

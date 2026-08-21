@@ -41,9 +41,41 @@ const getPublicVendorsQuerySchema = z
   })
   .partial();
 
+const MARKETPLACE_EVENT_TYPES = Object.freeze([
+  'service_view',
+  'vendor_view',
+  'contact_click',
+]);
+
+const MARKETPLACE_TARGET_TYPES = Object.freeze([
+  'service',
+  'vendor',
+]);
+
+const MARKETPLACE_CONTACT_METHODS = Object.freeze([
+  'whatsapp',
+  'phone',
+  'email',
+  'website',
+  'social',
+  'service_request',
+]);
+
+const marketplaceTrackSchema = z.object({
+  eventType: z.enum(MARKETPLACE_EVENT_TYPES),
+  targetType: z.enum(MARKETPLACE_TARGET_TYPES),
+  targetId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid ObjectId'),
+  contactMethod: z.enum(MARKETPLACE_CONTACT_METHODS).optional(),
+  metadata: z.record(z.any()).optional(),
+});
+
 module.exports = {
   getPublicVendorsQuerySchema,
   parseDistrictIds,
   marketplaceSortOptions,
+  MARKETPLACE_EVENT_TYPES,
+  MARKETPLACE_TARGET_TYPES,
+  MARKETPLACE_CONTACT_METHODS,
+  marketplaceTrackSchema,
 };
 

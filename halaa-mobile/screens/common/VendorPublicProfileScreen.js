@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect, useCallback } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { useMarketplaceVendor } from "../../hooks/marketplace";
+import { useMarketplaceVendor, useTrackMarketplaceAnalytics } from "../../hooks/marketplace";
 import { buildVendorContactMessage, buildWhatsAppUrl, normalizeWhatsAppNumber } from "@halaa/shared/utils/marketplace";
 import { useTranslation } from "../../localization";
 import { WEB_BASE_URL, ENDPOINTS } from "../../config/api";
@@ -42,6 +42,31 @@ export default function VendorPublicProfileScreen({ route, navigation }) {
   const { data, isLoading, isError, refetch } = useMarketplaceVendor(vendorId, i18n.language);
   const vendor = data?.data?.vendor;
   const isAr = i18n.language === "ar";
+  const trackMutation = useTrackMarketplaceAnalytics();
+
+  useEffect(() => {
+    if (vendor?.id) {
+      trackMutation.mutate({
+        eventType: "vendor_view",
+        targetType: "vendor",
+        targetId: String(vendor.id),
+      });
+    }
+  }, [vendor?.id]);
+
+  const trackContact = useCallback(
+    (contactMethod, serviceId = null) => {
+      if (!vendor?.id) return;
+      trackMutation.mutate({
+        eventType: "contact_click",
+        targetType: serviceId ? "service" : "vendor",
+        targetId: String(serviceId || vendor.id),
+        contactMethod,
+        metadata: { vendorId: String(vendor.id), serviceId },
+      });
+    },
+    [vendor?.id, trackMutation]
+  );
 
   const location = useMemo(() => {
     const value = vendor?.location || vendor?.serviceLocation;
@@ -57,9 +82,13 @@ export default function VendorPublicProfileScreen({ route, navigation }) {
 
   const contact = vendor.contact || {};
   const whatsappNumber = normalizeWhatsAppNumber(contact.whatsapp);
-  const call = () => contact.phone && Linking.openURL(`tel:${contact.phone}`);
+  const call = () => {
+    trackContact("phone");
+    return contact.phone && Linking.openURL(`tel:${contact.phone}`);
+  };
   const vendorUrl = `${WEB_BASE_URL}/${isAr ? "ar" : "en"}/market-place/vendors/${vendor.id}`;
-  const openWhatsApp = async (message) => {
+  const openWhatsApp = async (message, serviceId = null) => {
+    trackContact(serviceId ? "service_request" : "whatsapp", serviceId);
     if (!whatsappNumber) {
       if (contact.phone) return call();
       if (contact.email) return Linking.openURL(`mailto:${contact.email}`);
@@ -173,7 +202,7 @@ export default function VendorPublicProfileScreen({ route, navigation }) {
                 <Text style={styles.serviceName}>{name}</Text>
                 {description ? <Text style={styles.serviceDescription} numberOfLines={2}>{description}</Text> : null}
                 {service.tags?.length ? <View style={styles.serviceTags}>{service.tags.slice(0, 3).map((tag) => <View key={tag} style={styles.serviceTag}><Text style={styles.serviceTagText}>{tag}</Text></View>)}</View> : null}
-                <View style={styles.serviceFooter}>{service.price != null ? <View style={styles.priceBlock}><Text style={styles.priceLabel}>{t("vendor.startsFrom")}</Text><Text style={styles.price}>{service.price} {service.currency}</Text></View> : <View />}{(whatsappNumber || contact.phone || contact.email) ? <TouchableOpacity style={styles.serviceContact} onPress={() => openWhatsApp(buildVendorContactMessage({ language: isAr ? "ar" : "en", vendorName: vendor.brandName, serviceName: name, price: service.price, currency: service.currency, vendorUrl }))}><Ionicons name="logo-whatsapp" size={16} color={colors.natural[50]} /><Text style={styles.serviceContactText}>{t("vendor.requestService")}</Text></TouchableOpacity> : null}</View>
+                <View style={styles.serviceFooter}>{service.price != null ? <View style={styles.priceBlock}><Text style={styles.priceLabel}>{t("vendor.startsFrom")}</Text><Text style={styles.price}>{service.price} {service.currency}</Text></View> : <View />}{(whatsappNumber || contact.phone || contact.email) ? <TouchableOpacity style={styles.serviceContact} onPress={() => openWhatsApp(buildVendorContactMessage({ language: isAr ? "ar" : "en", vendorName: vendor.brandName, serviceName: name, price: service.price, currency: service.currency, vendorUrl }), service.id)}><Ionicons name="logo-whatsapp" size={16} color={colors.natural[50]} /><Text style={styles.serviceContactText}>{t("vendor.requestService")}</Text></TouchableOpacity> : null}</View>
               </View>
             </View>;
           }) : <Text style={styles.body}>{t("vendor.noServices")}</Text>}
@@ -185,9 +214,9 @@ export default function VendorPublicProfileScreen({ route, navigation }) {
           <Text style={styles.eyebrow}>{t("vendor.contactInfo")}</Text><Text style={styles.sectionTitle}>{t("vendor.contactHeadline")}</Text><Text style={styles.body}>{t("vendor.contactDescription")}</Text>
           <View style={styles.contactLinks}>
             {contact.phone ? <TouchableOpacity style={styles.contactRow} onPress={call}><Ionicons name="call-outline" size={19} color={colors.primary[700]} /><Text style={styles.contactText}>{contact.phone}</Text></TouchableOpacity> : null}
-            {contact.email ? <TouchableOpacity style={styles.contactRow} onPress={() => Linking.openURL(`mailto:${contact.email}`)}><Ionicons name="mail-outline" size={19} color={colors.primary[700]} /><Text style={styles.contactText}>{contact.email}</Text></TouchableOpacity> : null}
-            {vendor.socialLinks?.website ? <TouchableOpacity style={styles.contactRow} onPress={() => Linking.openURL(vendor.socialLinks.website)}><Ionicons name="globe-outline" size={19} color={colors.primary[700]} /><Text style={styles.contactText}>{displayHost(vendor.socialLinks.website)}</Text></TouchableOpacity> : null}
-            {socialEntries.map(([key, url]) => <TouchableOpacity key={key} style={styles.contactRow} onPress={() => Linking.openURL(url)}><Ionicons name={SOCIAL_ICONS[key] || "link-outline"} size={19} color={colors.primary[700]} /><Text style={styles.contactText}>{displayHandle(url)}</Text></TouchableOpacity>)}
+            {contact.email ? <TouchableOpacity style={styles.contactRow} onPress={() => { trackContact("email"); Linking.openURL(`mailto:${contact.email}`); }}><Ionicons name="mail-outline" size={19} color={colors.primary[700]} /><Text style={styles.contactText}>{contact.email}</Text></TouchableOpacity> : null}
+            {vendor.socialLinks?.website ? <TouchableOpacity style={styles.contactRow} onPress={() => { trackContact("website"); Linking.openURL(vendor.socialLinks.website); }}><Ionicons name="globe-outline" size={19} color={colors.primary[700]} /><Text style={styles.contactText}>{displayHost(vendor.socialLinks.website)}</Text></TouchableOpacity> : null}
+            {socialEntries.map(([key, url]) => <TouchableOpacity key={key} style={styles.contactRow} onPress={() => { trackContact("social"); Linking.openURL(url); }}><Ionicons name={SOCIAL_ICONS[key] || "link-outline"} size={19} color={colors.primary[700]} /><Text style={styles.contactText}>{displayHandle(url)}</Text></TouchableOpacity>)}
             {location ? <View style={styles.contactRow}><Ionicons name="location-outline" size={19} color={colors.primary[700]} /><Text style={styles.contactText}>{location}</Text></View> : null}
           </View>
         </View>

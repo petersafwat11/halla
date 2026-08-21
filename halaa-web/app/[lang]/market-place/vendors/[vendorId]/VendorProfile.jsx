@@ -1,12 +1,13 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useCallback } from "react";
 import Link from "next/link";
 import {
   ArrowLeft, ArrowRight, Facebook, FileText, Globe2, Instagram, Link2, Mail, MapPin,
   MessageCircle, Phone, Star, Twitter,
 } from "lucide-react";
 import { buildVendorContactMessage, buildWhatsAppUrl } from "@halaa/shared/utils/marketplace";
+import { useTrackMarketplaceAnalytics } from "@/hooks/vendors";
 import en from "@/localization/locales/en/marketplace.json";
 import ar from "@/localization/locales/ar/marketplace.json";
 import ShareButton from "./ShareButton";
@@ -62,6 +63,33 @@ export default function VendorProfile({
   const services = vendor.services || [];
   const portfolio = vendor.portfolio || [];
 
+  const targetVendorId = vendor.id || vendor._id;
+  const trackMutation = useTrackMarketplaceAnalytics();
+
+  useEffect(() => {
+    if (targetVendorId) {
+      trackMutation.mutate({
+        eventType: "vendor_view",
+        targetType: "vendor",
+        targetId: String(targetVendorId),
+      });
+    }
+  }, [targetVendorId]);
+
+  const handleContactClick = useCallback(
+    (contactMethod, serviceId = null) => {
+      if (!targetVendorId) return;
+      trackMutation.mutate({
+        eventType: "contact_click",
+        targetType: serviceId ? "service" : "vendor",
+        targetId: String(serviceId || targetVendorId),
+        contactMethod,
+        metadata: { vendorId: String(targetVendorId), serviceId },
+      });
+    },
+    [targetVendorId, trackMutation]
+  );
+
   const vendorMessage = buildVendorContactMessage({ language: lang, vendorName: vendor.brandName, vendorUrl });
   const whatsapp = buildWhatsAppUrl(contact.whatsapp, vendorMessage);
   const telHref = contact.phone ? `tel:${contact.phone}` : null;
@@ -113,18 +141,18 @@ export default function VendorProfile({
             <p className={styles.contactIntro}>{copy.vendor?.contactDescription}</p>
           </div>
           <div className={styles.primaryActions}>
-            {whatsapp && <a className={styles.waButton} href={whatsapp} target="_blank" rel="noreferrer"><MessageCircle size={18} />{copy.vendor?.whatsapp}</a>}
-            {telHref && <a className={styles.callButton} href={telHref}><Phone size={18} />{copy.card?.callNow}</a>}
-            {whatsapp && <a className={styles.quoteButton} href={whatsapp} target="_blank" rel="noreferrer"><FileText size={17} />{copy.vendor?.requestQuote}</a>}
-            {!whatsapp && !telHref && contact.email && <a className={styles.callButton} href={`mailto:${contact.email}`}><Mail size={18} />{contact.email}</a>}
+            {whatsapp && <a className={styles.waButton} href={whatsapp} target="_blank" rel="noreferrer" onClick={() => handleContactClick("whatsapp")}><MessageCircle size={18} />{copy.vendor?.whatsapp}</a>}
+            {telHref && <a className={styles.callButton} href={telHref} onClick={() => handleContactClick("phone")}><Phone size={18} />{copy.card?.callNow}</a>}
+            {whatsapp && <a className={styles.quoteButton} href={whatsapp} target="_blank" rel="noreferrer" onClick={() => handleContactClick("service_request")}><FileText size={17} />{copy.vendor?.requestQuote}</a>}
+            {!whatsapp && !telHref && contact.email && <a className={styles.callButton} href={`mailto:${contact.email}`} onClick={() => handleContactClick("email")}><Mail size={18} />{contact.email}</a>}
           </div>
           <div className={styles.contactLinks}>
-            {displayPhone && <a href={telHref}><Phone size={18} /><span dir="ltr">{displayPhone}</span></a>}
-            {contact.email && <a href={`mailto:${contact.email}`}><Mail size={18} /><span dir="ltr">{contact.email}</span></a>}
-            {websiteUrl && <a href={websiteUrl} target="_blank" rel="noreferrer"><Globe2 size={18} /><span dir="ltr">{displayHost(websiteUrl)}</span></a>}
+            {displayPhone && <a href={telHref} onClick={() => handleContactClick("phone")}><Phone size={18} /><span dir="ltr">{displayPhone}</span></a>}
+            {contact.email && <a href={`mailto:${contact.email}`} onClick={() => handleContactClick("email")}><Mail size={18} /><span dir="ltr">{contact.email}</span></a>}
+            {websiteUrl && <a href={websiteUrl} target="_blank" rel="noreferrer" onClick={() => handleContactClick("website")}><Globe2 size={18} /><span dir="ltr">{displayHost(websiteUrl)}</span></a>}
             {socialEntries.map(([key, value]) => {
               const Icon = SOCIAL_ICONS[key] || Link2;
-              return <a key={key} href={value} target="_blank" rel="noreferrer"><Icon size={18} /><span dir="ltr">{displayHandle(value)}</span></a>;
+              return <a key={key} href={value} target="_blank" rel="noreferrer" onClick={() => handleContactClick("social")}><Icon size={18} /><span dir="ltr">{displayHandle(value)}</span></a>;
             })}
           </div>
           {location && <p className={styles.coverage}><MapPin size={16} />{location}</p>}
@@ -162,7 +190,7 @@ export default function VendorProfile({
                           </>
                         ) : <strong>{copy.card?.priceOnRequest}</strong>}
                       </div>
-                      {contactHref && <a className={styles.serviceCta} href={contactHref} target={contactHref.startsWith("http") ? "_blank" : undefined} rel="noreferrer"><MessageCircle size={16} /><span>{copy.vendor?.requestService}</span></a>}
+                      {contactHref && <a className={styles.serviceCta} href={contactHref} target={contactHref.startsWith("http") ? "_blank" : undefined} rel="noreferrer" onClick={() => handleContactClick("service_request", service.id)}><MessageCircle size={16} /><span>{copy.vendor?.requestService}</span></a>}
                     </div>
                   </div>
                 </article>
@@ -187,8 +215,8 @@ export default function VendorProfile({
 
       {(whatsapp || primaryFallback) && (
         <div className={styles.mobileCta}>
-          {whatsapp ? <a className={styles.waButton} href={whatsapp} target="_blank" rel="noreferrer"><MessageCircle size={18} />{copy.vendor?.whatsapp}</a> : <a className={styles.callButton} href={primaryFallback}><Phone size={18} />{copy.card?.callNow}</a>}
-          {telHref && whatsapp && <a className={styles.callButton} href={telHref}><Phone size={18} />{copy.card?.callNow}</a>}
+          {whatsapp ? <a className={styles.waButton} href={whatsapp} target="_blank" rel="noreferrer" onClick={() => handleContactClick("whatsapp")}><MessageCircle size={18} />{copy.vendor?.whatsapp}</a> : <a className={styles.callButton} href={primaryFallback} onClick={() => handleContactClick("phone")}><Phone size={18} />{copy.card?.callNow}</a>}
+          {telHref && whatsapp && <a className={styles.callButton} href={telHref} onClick={() => handleContactClick("phone")}><Phone size={18} />{copy.card?.callNow}</a>}
         </div>
       )}
     </main>

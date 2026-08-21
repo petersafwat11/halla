@@ -294,6 +294,7 @@ class DashboardService {
       },
       bestVendors: topVendorsByViews.map((v) => ({
         name: v.name || 'Unknown',
+        totalViews: v.numberOfClicks || 0,
         numberOfClicks: v.numberOfClicks || 0,
       })),
       analytics,

@@ -266,7 +266,7 @@ Update one row only after its exit criteria and required tests pass. Use `Blocke
 | 4.1 Vendor service form contract | Complete | 0.2 |
 | 4.2 Marketplace filters/query | Complete | 0.2 |
 
-| 4.3 Marketplace analytics | Not started | Product decision |
+| 4.3 Marketplace analytics | Complete | Product decision |
 | 4.4 Marketplace locale/navigation | Not started | Access decision; preferably 4.2 |
 | 5.1 Identity/email verification | Not started | 0.2 |
 | 5.2 Settings mutation/form stability | Not started | 5.1 |
@@ -1774,6 +1774,52 @@ This program is complete only when:
   - None.
 - **Blockers / deferred work:**
   - Session 4.2 is Complete. Ready for Git commit.
+
+### Execution Record — Session 4.3 (2026-08-21)
+
+- **Session:** Session 4.3 — Marketplace Analytics Decision & Implementation (`MKT-10`)
+- **Status:** Complete
+- **Prerequisites verified:** Sessions 0.2, 4.1, 4.2 are Complete (verified).
+- **Key changes:**
+  - **Shared Contract & Validation (`@halaa/shared/src/schemas/vendor.js`, `shared/src/api/paths.js`):**
+    - Defined frozen canonical constants: `MARKETPLACE_EVENT_TYPES` (`service_view`, `vendor_view`, `contact_click`), `MARKETPLACE_TARGET_TYPES` (`service`, `vendor`), `MARKETPLACE_CONTACT_METHODS` (`whatsapp`, `phone`, `email`, `website`, `social`, `service_request`).
+    - Added `marketplaceTrackSchema` validating event payloads with ObjectId checks.
+    - Added `vendors.trackAnalytics: "/vendors/analytics/track"` and `vendorServices.trackAnalytics: "/services/analytics/track"` to `API_PATHS`.
+  - **Backend Analytics Engine & Route Decoupling (`halaa-backend/src/modules/marketplace/marketplace.analytics.service.js`, `vendors.routes.js`, `vendors.controller.js`, `services.service.js`, `services.controller.js`, `services.routes.js`, `UserModel.js`, `ServiceModel.js`, `rateLimiter.js`):**
+    - Created `MarketplaceAnalyticsService` with 1-hour sliding-window deduplication cache, self-interaction prevention (vendors viewing/clicking their own service/profile are safely ignored), and atomic counter updates (`Service.viewCount`, `Service.contactCount`, `User.profile.vendorData.totalViews`, `User.profile.vendorData.numberOfClicks`).
+    - Added `analyticsLimiter` rate limiter middleware (120 req/min/NAT-safe client key).
+    - Mounted `POST /api/v2/vendors/analytics/track` and `POST /api/v2/services/analytics/track` with `optionalAuth`, rate limiting, and Zod payload validation.
+    - Decoupled and eliminated blind `$inc` counter side effects from `getServiceById` in `services.service.js` and `services.controller.js`, making GET reads completely idempotent.
+    - Added `contactCount` to `ServiceModel` and `totalViews` to `UserModel.profile.vendorData`.
+    - Aligned Admin Dashboard (`dashboard.service.js#getDashboardStats`) and Vendor Dashboard (`services.service.js#getMyStats`) view metrics.
+  - **Web Client Tracking Integration (`halaa-web/hooks/vendors/mutations.js`, `hooks/vendors/index.js`, `VendorProfile.jsx`):**
+    - Created `useTrackMarketplaceAnalytics` mutation hook targeting `/vendors/analytics/track`.
+    - Wired automatic `vendor_view` tracking on component mount in `VendorProfile.jsx`.
+    - Wired `contact_click` tracking on WhatsApp, phone call, email, website, social media, and service request buttons.
+  - **Mobile Client Tracking Integration (`halaa-mobile/config/api.js`, `hooks/marketplace/mutations.js`, `hooks/marketplace/index.js`, `VendorPublicProfileScreen.js`):**
+    - Added `TRACK_ANALYTICS` to `ENDPOINTS.VENDORS` and `ENDPOINTS.SERVICES`.
+    - Created `useTrackMarketplaceAnalytics` mutation hook.
+    - Wired automatic `vendor_view` on mount and `contact_click` on WhatsApp, phone call, email, website, social media, and service request actions in `VendorPublicProfileScreen.js`.
+  - **Automated Tests:**
+    - `shared/test/marketplaceAnalyticsSchema.test.js`: Validated event tracking schema, constants, and rejection of invalid payloads.
+    - `halaa-backend/test/marketplace-analytics.integration.test.js`: Validated service views, vendor views, contact clicks, 1-hour sliding window deduplication, self-interaction prevention, idempotent GET reads, and dashboard metric agreement.
+    - `halaa-web/__tests__/ui/marketplaceAnalyticsTracking.test.mjs`: Validated web API paths, mutation hooks, and `VendorProfile.jsx` event bindings.
+    - `halaa-mobile/__tests__/marketplace/marketplaceAnalyticsTracking.test.js`: Validated mobile endpoints, mutation hooks, and `VendorPublicProfileScreen.js` event bindings.
+- **Verification results:**
+  - `cd shared && npm test` → PASS (80 unit tests passed, 0 failures)
+  - `cd halaa-backend && npm test` → PASS (400 unit/integration tests passed, 0 failures)
+  - `cd halaa-web && npm test` → PASS (79 unit tests passed, 0 failures)
+  - `cd halaa-mobile && npm test` → PASS (141 unit tests passed, 0 failures)
+- **Exit-criteria verification:**
+  - Collection points, metric definitions, and dashboard queries agree across vendor stats and admin stats.
+  - GET reads are completely side-effect-free and idempotent.
+  - Crawler/refresh abuse is prevented by sliding-window deduplication and rate limiting.
+  - Vendor self-views and self-clicks do not inflate metrics.
+- **Remaining risks / decisions:**
+  - None.
+- **Blockers / deferred work:**
+  - Session 4.3 is Complete. Ready for Git commit.
+
 
 
 

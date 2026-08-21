@@ -127,6 +127,10 @@ const serviceSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    contactCount: {
+      type: Number,
+      default: 0,
+    },
     rating: {
       type: Number,
       default: 0,

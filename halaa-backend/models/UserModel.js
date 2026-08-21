@@ -133,6 +133,7 @@ const vendorDataSchema = new mongoose.Schema(
     rating: { type: Number, default: null, min: 0, max: 5 },
     numberOfRatings: { type: Number, default: 0 },
     numberOfClicks: { type: Number, default: 0 },
+    totalViews: { type: Number, default: 0 },
 
     // Vendor-specific status
     vendorStatus: {

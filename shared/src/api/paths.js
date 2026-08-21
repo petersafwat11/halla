@@ -281,6 +281,7 @@ const PATHS = {
     getCategories: "/vendors/categories",
     getPublicVendors: "/vendors/public",
     getPublicVendor: (id) => `/vendors/public/${id}`,
+    trackAnalytics: "/vendors/analytics/track",
   },
 
   // ============================================
@@ -408,6 +409,7 @@ const PATHS = {
     updateService: (id) => `/services/${id}`,
     toggleServiceStatus: (id) => `/services/${id}/toggle-status`,
     deleteService: (id) => `/services/${id}`,
+    trackAnalytics: "/services/analytics/track",
   },
 
   // ============================================

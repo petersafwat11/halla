@@ -182,6 +182,7 @@ export const ENDPOINTS = {
     CATEGORIES: API_PATHS.vendors.getCategories,
     PUBLIC: API_PATHS.vendors.getPublicVendors,
     PUBLIC_BY_ID: API_PATHS.vendors.getPublicVendor,
+    TRACK_ANALYTICS: API_PATHS.vendors.trackAnalytics,
   },
 
   SERVICES: {
@@ -190,6 +191,7 @@ export const ENDPOINTS = {
     STATS: API_PATHS.vendorServices.getMyStats,
     BY_ID: API_PATHS.vendorServices.getService,
     TOGGLE_STATUS: API_PATHS.vendorServices.toggleServiceStatus,
+    TRACK_ANALYTICS: API_PATHS.vendorServices.trackAnalytics,
   },
 
   TICKETS: {

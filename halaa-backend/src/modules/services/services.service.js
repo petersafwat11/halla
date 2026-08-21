@@ -145,7 +145,7 @@ class ServicesService {
    * Vendors are scoped to their own services; non-vendors only see public+active
    * services and trigger a best-effort view counter increment.
    */
-  async getServiceById(serviceId, vendorId = null, trackView = false, viewerId = null) {
+  async getServiceById(serviceId, vendorId = null, _trackView = false, viewerId = null) {
     const query = { _id: serviceId };
     if (vendorId) {
       query.vendorId = vendorId;
@@ -169,16 +169,6 @@ class ServicesService {
       const blocked = await moderationService.getBlockedKeySet('user', viewerId);
       if (blocked.has(`user:${service.vendorId._id}`)) {
         throw new NotFoundError('Service');
-      }
-    }
-
-    if (trackView) {
-      // Best-effort analytics counters — fire-and-forget, no transaction.
-      Service.findByIdAndUpdate(serviceId, { $inc: { viewCount: 1 } }).exec();
-      if (service.vendorId?._id) {
-        User.findByIdAndUpdate(service.vendorId._id, {
-          $inc: { 'profile.vendorData.numberOfClicks': 1 },
-        }).exec();
       }
     }
 

@@ -426,4 +426,36 @@ export const getPublicServicesQuerySchema = z
     return data;
   });
 
+// ============================================================
+// MARKETPLACE ANALYTICS EVENT TRACKING CONTRACT (MKT-10)
+// ============================================================
+
+export const MARKETPLACE_EVENT_TYPES = Object.freeze([
+  "service_view",
+  "vendor_view",
+  "contact_click",
+]);
+
+export const MARKETPLACE_TARGET_TYPES = Object.freeze([
+  "service",
+  "vendor",
+]);
+
+export const MARKETPLACE_CONTACT_METHODS = Object.freeze([
+  "whatsapp",
+  "phone",
+  "email",
+  "website",
+  "social",
+  "service_request",
+]);
+
+export const marketplaceTrackSchema = z.object({
+  eventType: z.enum(MARKETPLACE_EVENT_TYPES),
+  targetType: z.enum(MARKETPLACE_TARGET_TYPES),
+  targetId: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ObjectId"),
+  contactMethod: z.enum(MARKETPLACE_CONTACT_METHODS).optional(),
+  metadata: z.record(z.any()).optional(),
+});
+
 
