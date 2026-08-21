@@ -1,0 +1,237 @@
+/**
+ * Canonical Boundary DTO Adapters
+ *
+ * Normalizes differences across backend representations, mongo IDs, legacy
+ * field names, and shape variances before reaching UI components or service boundaries.
+ */
+
+/**
+ * Normalizes any ID variant (_id, id, guestId, userId, etc.) or primitive to a string ID.
+ * Returns null if no valid ID can be resolved.
+ */
+export const normalizeId = (entity) => {
+  if (entity === null || entity === undefined) return null;
+  if (typeof entity === "string") {
+    const trimmed = entity.trim();
+    return trimmed.length > 0 ? trimmed : null;
+  }
+  if (typeof entity === "number") return String(entity);
+  if (typeof entity === "object") {
+    const candidate =
+      entity._id ||
+      entity.id ||
+      entity.guestId ||
+      entity.userId ||
+      entity.eventId ||
+      entity.ticketId ||
+      entity.planId ||
+      entity.serviceId;
+    if (candidate !== undefined && candidate !== null) {
+      return normalizeId(candidate);
+    }
+    if (typeof entity.toString === "function" && entity.toString !== Object.prototype.toString) {
+      const str = entity.toString().trim();
+      return str.length > 0 ? str : null;
+    }
+  }
+  return null;
+};
+
+/**
+ * Resolves EVT-15: produces a canonical GuestDTO with consistent `id` and canonical `status`.
+ */
+export const toGuestDTO = (rawGuest) => {
+  if (!rawGuest || typeof rawGuest !== "object") return null;
+
+  const id = normalizeId(rawGuest) || "";
+  const name = rawGuest.name || rawGuest.fullName || "";
+  const phone = rawGuest.phone || rawGuest.phoneNumber || "";
+  const email = rawGuest.email || null;
+
+  const status = (rawGuest.status || rawGuest.rsvpStatus || "invited").toLowerCase();
+  const rsvpStatus = status;
+  const invitationType = rawGuest.invitationType || "reply_and_qr";
+  const qrCode = rawGuest.qrCode || rawGuest.qrCodeUrl || null;
+  const checkedIn = Boolean(rawGuest.checkedIn || status === "checked_in");
+  const checkInTime = rawGuest.checkInTime || null;
+  const tableNumber = rawGuest.tableNumber !== undefined ? rawGuest.tableNumber : null;
+  const companionsCount = Number(rawGuest.companionsCount || rawGuest.companions || 0);
+  const notes = rawGuest.notes || null;
+
+  return {
+    id,
+    name,
+    phone,
+    email,
+    status,
+    rsvpStatus,
+    invitationType,
+    qrCode,
+    checkedIn,
+    checkInTime,
+    tableNumber,
+    companionsCount,
+    notes,
+  };
+};
+
+/**
+ * Resolves ADM-06: produces a canonical TicketDTO normalizing `subject` and `title`.
+ */
+export const toTicketDTO = (rawTicket) => {
+  if (!rawTicket || typeof rawTicket !== "object") return null;
+
+  const id = normalizeId(rawTicket) || "";
+  const subject = rawTicket.subject || rawTicket.title || "";
+  const title = subject;
+  const description = rawTicket.description || rawTicket.message || "";
+  const message = description;
+  const status = (rawTicket.status || "open").toLowerCase();
+  const priority = (rawTicket.priority || "medium").toLowerCase();
+  const type = rawTicket.type || rawTicket.category || "other";
+  const createdAt = rawTicket.createdAt || null;
+  const updatedAt = rawTicket.updatedAt || null;
+  const attachments = Array.isArray(rawTicket.attachments) ? rawTicket.attachments : [];
+  const creator = rawTicket.creator || rawTicket.user || null;
+  const assignedTo = rawTicket.assignedTo || rawTicket.assignee || null;
+
+  return {
+    id,
+    subject,
+    title,
+    description,
+    message,
+    status,
+    priority,
+    type,
+    createdAt,
+    updatedAt,
+    attachments,
+    creator,
+    assignedTo,
+  };
+};
+
+/**
+ * Resolves EVT-17: normalizes subscription payload into standard shape:
+ * `{ subscription: Object|null, subscriptions: Array, hasSubscription: Boolean }`
+ */
+export const normalizeSubscriptionResponse = (data) => {
+  if (!data || typeof data !== "object") {
+    return {
+      subscription: null,
+      subscriptions: [],
+      hasSubscription: false,
+    };
+  }
+
+  // If top-level data has nested .data (standard API envelope)
+  const source = data.data && typeof data.data === "object" ? data.data : data;
+
+  let subscription = null;
+  let subscriptions = [];
+
+  if (Array.isArray(source)) {
+    subscriptions = source;
+    subscription = subscriptions[0] || null;
+  } else {
+    if (Array.isArray(source.subscriptions)) {
+      subscriptions = source.subscriptions;
+    } else if (Array.isArray(source.subscription)) {
+      // Handles rare legacy array in singular field
+      subscriptions = source.subscription;
+    }
+
+    if (source.subscription && !Array.isArray(source.subscription)) {
+      subscription = source.subscription;
+    } else if (subscriptions.length > 0) {
+      subscription = subscriptions[0];
+    }
+  }
+
+  const hasSubscription =
+    typeof source.hasSubscription === "boolean"
+      ? source.hasSubscription
+      : Boolean(subscription);
+
+  return {
+    subscription,
+    subscriptions,
+    hasSubscription,
+  };
+};
+
+/**
+ * Produces a canonical SubscriptionDTO
+ */
+export const toSubscriptionDTO = (rawSub) => {
+  if (!rawSub || typeof rawSub !== "object") return null;
+
+  const id = normalizeId(rawSub) || "";
+  const planCode = rawSub.planCode || rawSub.plan?.code || "";
+  const planType = rawSub.planType || rawSub.plan?.planType || "";
+  const status = (rawSub.status || "inactive").toLowerCase();
+  const billingInterval =
+    rawSub.billingInterval || rawSub.plan?.billingInterval || "one_time";
+  const invitePool =
+    rawSub.invitePool !== undefined ? rawSub.invitePool : rawSub.plan?.invitePool ?? null;
+  const usedInvites = Number(rawSub.usedInvites || 0);
+  const remainingInvites =
+    invitePool !== null ? Math.max(0, Number(invitePool) - usedInvites) : null;
+  const startDate = rawSub.startDate || rawSub.createdAt || null;
+  const endDate = rawSub.endDate || rawSub.expiresAt || null;
+
+  return {
+    id,
+    planCode,
+    planType,
+    status,
+    billingInterval,
+    invitePool,
+    usedInvites,
+    remainingInvites,
+    startDate,
+    endDate,
+  };
+};
+
+/**
+ * Resolves ADM-04: converts disparate bulk request keys (hostIds, vendorIds, moderatorIds, eventIds, ticketIds, array)
+ * into a single canonical `{ ids: string[] }` payload with empty/duplicate items removed.
+ */
+export const toBulkIdsPayload = (input) => {
+  if (!input) return { ids: [] };
+
+  let rawList = [];
+
+  if (Array.isArray(input)) {
+    rawList = input;
+  } else if (typeof input === "object") {
+    rawList =
+      input.ids ||
+      input.hostIds ||
+      input.vendorIds ||
+      input.moderatorIds ||
+      input.eventIds ||
+      input.ticketIds ||
+      input.userIds ||
+      [];
+  }
+
+  if (!Array.isArray(rawList)) {
+    rawList = [rawList];
+  }
+
+  const seen = new Set();
+  const ids = [];
+
+  for (const item of rawList) {
+    const id = normalizeId(item);
+    if (id && !seen.has(id)) {
+      seen.add(id);
+      ids.push(id);
+    }
+  }
+
+  return { ids };
+};

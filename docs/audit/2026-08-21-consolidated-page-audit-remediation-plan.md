@@ -245,7 +245,7 @@ Update one row only after its exit criteria and required tests pass. Use `Blocke
 | Session | Status | Depends on |
 |---|---|---|
 | 0.1 Baseline and safety lint | Complete | — |
-| 0.2 Contract foundations | Not started | 0.1 |
+| 0.2 Contract foundations | Complete | 0.1 |
 | 1.1 Event validation/location | Not started | 0.2 |
 | 1.2 Invitation/Taqnyat contract | Not started | 0.2 |
 | 1.3 Live-event guest invariants | Not started | 0.2 |
@@ -821,4 +821,41 @@ This program is complete only when:
   - `no-unused-vars` remains silenced on mobile due to pre-existing unused React imports / destructured variables in legacy components.
 - **Blockers / deferred work:**
   - None for Phase 0. Session 0.2 (Canonical DTO/status/query-key foundations) is unblocked.
+
+### Session 0.2 — Canonical DTO/status/query-key foundations
+
+- **Date:** 2026-08-21
+- **Status:** Complete
+- **Issues addressed:** EVT-15 (Guest ID / status normalization), EVT-16 (RSVP buckets definition), EVT-17 (Subscription response shape normalization), ADM-04 (Bulk ID Request envelope normalization), ADM-06 (Ticket title vs subject normalization), ADM-09 (Canonical query key factories).
+- **Implementation summary:**
+  - Consolidated canonical status constants in `@halaa/shared/constants` with full parity to backend: `USER_STATUS`, `VENDOR_STATUS`, `EVENT_STATUS` (all 10 lifecycle statuses), `SUBSCRIPTION_STATUS`, `TICKET_STATUS`, `TICKET_PRIORITY`, `RSVP_STATUS`, `GUEST_STATUS`, `CHECKIN_STATUS`, `INVITATION_TYPE`.
+  - Implemented `RSVP_BUCKETS` and `classifyRsvpBucket(status)` in `@halaa/shared/constants/eventStatus.js`.
+  - Implemented boundary DTO adapters in `@halaa/shared/utils/adapters.js`: `normalizeId`, `toGuestDTO`, `toTicketDTO`, `normalizeSubscriptionResponse`, `toSubscriptionDTO`, `toBulkIdsPayload`.
+  - Implemented `bulkIdsRequestSchema` and `bulkActionResponseSchema` in `@halaa/shared/schemas/bulk.js`.
+  - Implemented canonical query key factories in `@halaa/shared/utils/queryKeys.js`: `eventKeys`, `guestKeys`, `ticketKeys`, `planKeys`, `vendorServiceKeys`, `subscriptionKeys`.
+  - Added test suite `shared/test/contracts.test.js` covering all adapters, schemas, RSVP buckets, and query keys.
+  - Added backend parity test `halaa-backend/test/shared-parity.test.js` asserting zero drift between backend and shared status constants.
+- **Files changed:**
+  - `shared/src/constants/eventStatus.js`
+  - `shared/src/constants/status.js` (new)
+  - `shared/src/constants/index.js`
+  - `shared/src/schemas/bulk.js` (new)
+  - `shared/src/schemas/index.js`
+  - `shared/src/utils/adapters.js` (new)
+  - `shared/src/utils/queryKeys.js` (new)
+  - `shared/src/utils/index.js`
+  - `shared/package.json`
+  - `shared/test/contracts.test.js` (new)
+  - `halaa-backend/test/shared-parity.test.js` (new)
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md`
+- **Exact test commands & results:**
+  - `cd shared && npm run lint && npm run test && npm run legal:verify && npm run aso:verify` → PASS (10 unit tests passed, 0 lint errors, legal/aso verified)
+  - `cd halaa-backend && node --test test/shared-parity.test.js && npm run catalog:verify && npm run test` → PASS (Parity: 2 passed; Catalog: 26 passed; Backend: 310 passed)
+  - `cd halaa-mobile && npm run lint && npm run test` → PASS (0 errors, 97 tests passed)
+  - `cd halaa-web && npm run lint && npm run test` → PASS (0 errors, 28 tests passed)
+- **Remaining risks / decisions:**
+  - None. Stable foundation primitives are ready for consumption in Phase 1 (Events), Phase 2 (Admin tables), Phase 3 (Plans), Phase 4 (Vendor), and Phase 5 (Settings).
+- **Blockers / deferred work:**
+  - Phase 0 is complete. Phase 1 (Session 1.1 — Event validation and location contract) is ready to begin.
+
 

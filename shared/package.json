@@ -6,6 +6,7 @@
   "main": "src/index.js",
   "scripts": {
     "lint": "eslint . --max-warnings 0",
+    "test": "node --test \"test/**/*.test.js\"",
     "legal:verify": "node scripts/verify-legal.mjs",
     "aso:verify": "node scripts/validate-aso-metadata.mjs"
   },
