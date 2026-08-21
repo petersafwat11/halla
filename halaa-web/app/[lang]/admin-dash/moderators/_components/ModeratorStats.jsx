@@ -24,11 +24,11 @@ export default function ModeratorStats() {
   const { data, isLoading } = useAdminModerators(filters);
 
   const statsCards = useMemo(() => {
-    const moderators = data?.data?.moderators || [];
-    const total = data?.data?.pagination?.total || moderators.length;
-    const active = moderators.filter((m) => m.status === "active").length;
-    const pending = moderators.filter((m) => m.status === "pending").length;
-    const inactive = moderators.filter((m) => m.status === "inactive").length;
+    const total = data?.data?.pagination?.total || data?.pagination?.total || 0;
+    const sc = data?.data?.statusCounts || data?.statusCounts || {};
+    const active = sc.active || 0;
+    const pending = sc.pending || 0;
+    const inactive = sc.inactive || sc.suspended || 0;
 
     return [
       {

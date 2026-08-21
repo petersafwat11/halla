@@ -26,15 +26,12 @@ export default function TicketStats() {
   const { data, isLoading, error } = useMyTickets(filters);
 
   const statsCards = useMemo(() => {
-    const tickets = data?.data || [];
-    const total = data?.pagination?.total || tickets.length;
-    const open = tickets.filter((ticket) => ticket.status === "open").length;
-    const resolved = tickets.filter(
-      (ticket) => ticket.status === "resolved" || ticket.status === "closed"
-    ).length;
-    const highPriority = tickets.filter(
-      (ticket) => ticket.priority === "high" || ticket.priority === "urgent"
-    ).length;
+    const total = data?.pagination?.total || 0;
+    const sc = data?.statusCounts || {};
+    const pc = data?.priorityCounts || {};
+    const open = sc.open || 0;
+    const resolved = (sc.resolved || 0) + (sc.closed || 0);
+    const highPriority = (pc.high || 0) + (pc.urgent || 0);
 
     return [
       {

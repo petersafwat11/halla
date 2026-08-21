@@ -44,7 +44,24 @@ async function getVendors({ page = 1, limit = 10, search, status, category, from
     query.createdAt = dateRange;
   }
 
-  const [vendors, total] = await Promise.all([
+  const baseQuery = { role: ROLES.VENDOR };
+  if (search) {
+    const searchQuery = buildSearchQuery(search, [
+      'name',
+      'email',
+      'phoneNumber',
+      'profile.vendorData.brandName',
+    ]);
+    Object.assign(baseQuery, searchQuery);
+  }
+  if (category) {
+    baseQuery['profile.vendorData.serviceCategories'] = category;
+  }
+  if (Object.keys(dateRange).length > 0) {
+    baseQuery.createdAt = dateRange;
+  }
+
+  const [vendors, total, statusAgg] = await Promise.all([
     User.find(query)
       .select('-password -passwordResetToken')
       .sort({ createdAt: -1 })
@@ -52,10 +69,26 @@ async function getVendors({ page = 1, limit = 10, search, status, category, from
       .limit(limit)
       .lean(),
     User.countDocuments(query),
+    User.aggregate([
+      { $match: baseQuery },
+      { $group: { _id: '$profile.vendorData.vendorStatus', count: { $sum: 1 } } },
+    ]),
   ]);
+
+  const counts = {};
+  statusAgg.forEach((s) => {
+    if (s._id) counts[s._id] = s.count;
+  });
 
   return {
     vendors: vendors.map(v => formatUserResponse(v)),
+    statusCounts: {
+      approved: counts.approved || 0,
+      pending: counts.pending || 0,
+      rejected: counts.rejected || 0,
+      suspended: counts.suspended || 0,
+      ...counts,
+    },
     pagination: {
       page,
       limit,

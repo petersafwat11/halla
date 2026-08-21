@@ -339,7 +339,24 @@ module.exports = {
       if (to) query["eventDetails.date"].$lte = new Date(to);
     }
 
-    const [events, total] = await Promise.all([
+    let statusQuery = { status: { $ne: 'deleted' } };
+    if (search) {
+      const searchQuery = this.buildSearchQuery(search, [
+        "eventDetails.title",
+        "eventDetails.type",
+      ]);
+      statusQuery = { ...statusQuery, ...searchQuery };
+    }
+    if (hostId) {
+      statusQuery.host = hostId;
+    }
+    if (from || to) {
+      statusQuery["eventDetails.date"] = {};
+      if (from) statusQuery["eventDetails.date"].$gte = new Date(from);
+      if (to) statusQuery["eventDetails.date"].$lte = new Date(to);
+    }
+
+    const [events, total, statusAgg] = await Promise.all([
       Event.find(query)
         .populate("host", "username email phoneNumber name")
         .select('-guestList')
@@ -348,7 +365,20 @@ module.exports = {
         .limit(limit)
         .lean(),
       Event.countDocuments(query),
+      Event.aggregate([
+        { $match: statusQuery },
+        { $group: { _id: '$status', count: { $sum: 1 } } },
+      ]),
     ]);
+
+    const rawStatusCounts = {};
+    statusAgg.forEach((s) => { rawStatusCounts[s._id] = s.count; });
+    const live = rawStatusCounts.live || 0;
+    const scheduled = rawStatusCounts.scheduled || 0;
+    const active = live + scheduled;
+    const completed = rawStatusCounts.completed || 0;
+    const cancelled = rawStatusCounts.cancelled || 0;
+    const pending_scheduling = rawStatusCounts.pending_scheduling || 0;
 
     // Get guest counts via aggregation (total + confirmed)
     const eventIds = events.map(e => e._id);
@@ -373,6 +403,16 @@ module.exports = {
         guestCount: countMap[e._id.toString()] || 0,
         confirmedCount: confirmedMap[e._id.toString()] || 0,
       })),
+      statusCounts: {
+        total,
+        active,
+        scheduled,
+        live,
+        completed,
+        cancelled,
+        pending_scheduling,
+        ...rawStatusCounts,
+      },
       pagination: {
         page,
         limit,

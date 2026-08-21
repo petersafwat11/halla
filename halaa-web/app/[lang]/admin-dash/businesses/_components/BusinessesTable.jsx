@@ -24,14 +24,14 @@ export default function BusinessesTable({ showAddPopup, setShowAddPopup }) {
   const searchParams = useSearchParams();
   const { canUpdate, canDelete } = usePageAccess("businesses");
 
-  const filters = {
+  const filters = useMemo(() => ({
     page: searchParams.get("page") || 1,
     limit: searchParams.get("limit") || 10,
-    search: searchParams.get("search"),
-    status: searchParams.get("status"),
+    search: searchParams.get("search") || "",
+    status: searchParams.get("status") || "",
     from: searchParams.get("from"),
     to: searchParams.get("to"),
-  };
+  }), [searchParams]);
 
   const { data, isLoading } = useAdminBusinesses(filters);
   const suspend = useAdminBusinessMutation("suspend");
@@ -167,6 +167,34 @@ export default function BusinessesTable({ showAddPopup, setShowAddPopup }) {
     return value;
   };
 
+  const handlePageChange = (page) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", String(page));
+    router.push(`?${params.toString()}`);
+  };
+
+  const handleSearchChange = (query) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (query) {
+      params.set("search", query);
+    } else {
+      params.delete("search");
+    }
+    params.set("page", "1");
+    router.push(`?${params.toString()}`);
+  };
+
+  const handleFilterChange = (statusValue) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (statusValue) {
+      params.set("status", statusValue);
+    } else {
+      params.delete("status");
+    }
+    params.set("page", "1");
+    router.push(`?${params.toString()}`);
+  };
+
   const tableData = (data?.data?.businesses || []).map((business) => ({
     id: business.id || business._id,
     name: business.name || "-",
@@ -183,6 +211,7 @@ export default function BusinessesTable({ showAddPopup, setShowAddPopup }) {
     <>
       <div className={styles.container}>
         <Table
+          mode="server"
           title={t("table.title")}
           headers={[
             t("table.columns.name"),
@@ -193,6 +222,10 @@ export default function BusinessesTable({ showAddPopup, setShowAddPopup }) {
             t("table.columns.createdAt"),
           ]}
           data={tableData}
+          searchValue={filters.search}
+          onSearchChange={handleSearchChange}
+          activeFilter={filters.status}
+          onFilterChange={handleFilterChange}
           renderCell={renderCell}
           getRowActions={getRowActions}
           showCheckboxes={false}
@@ -203,14 +236,10 @@ export default function BusinessesTable({ showAddPopup, setShowAddPopup }) {
             { label: t("table.filter.inactive"), value: "inactive" },
           ]}
           pagination={{
-            currentPage: parseInt(filters.page),
+            currentPage: parseInt(filters.page, 10) || 1,
             totalPages: data?.data?.pagination?.pages || 1,
             totalItems: data?.data?.pagination?.total || 0,
-            onPageChange: (page) => {
-              const params = new URLSearchParams(searchParams);
-              params.set("page", page);
-              router.push(`?${params.toString()}`);
-            },
+            onPageChange: handlePageChange,
           }}
         />
       </div>

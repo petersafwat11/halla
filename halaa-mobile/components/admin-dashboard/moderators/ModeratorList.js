@@ -57,7 +57,10 @@ const ModeratorList = ({
     [t]
   );
 
+  const isServerControlled = Boolean(onSearchQueryChange || onActiveFilterChange || searchQueryProp !== undefined || activeFilterProp !== undefined);
+
   const filteredModerators = useMemo(() => {
+    if (isServerControlled) return moderators;
     let list = moderators;
     if (activeFilter !== "all") {
       list = list.filter((m) => m.status === activeFilter);
@@ -71,7 +74,7 @@ const ModeratorList = ({
       );
     }
     return list;
-  }, [moderators, activeFilter, searchQuery]);
+  }, [moderators, activeFilter, searchQuery, isServerControlled]);
 
   const toggleSelect = (id) =>
     setSelectedIds((prev) =>

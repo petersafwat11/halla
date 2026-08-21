@@ -57,7 +57,10 @@ const AdminEventList = ({
     [t]
   );
 
+  const isServerControlled = Boolean(onSearchQueryChange || onActiveFilterChange || searchQueryProp !== undefined || activeFilterProp !== undefined);
+
   const filtered = useMemo(() => {
+    if (isServerControlled) return events;
     let result = events;
     if (activeFilter !== "all") {
       result = result.filter((e) => e.status === activeFilter);
@@ -71,7 +74,7 @@ const AdminEventList = ({
       );
     }
     return result;
-  }, [events, activeFilter, searchQuery]);
+  }, [events, activeFilter, searchQuery, isServerControlled]);
 
   const toggleSelect = (id) =>
     setSelectedIds((prev) =>

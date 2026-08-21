@@ -34,7 +34,16 @@ async function getModerators({ page = 1, limit = 10, search, status, from, to })
     query.createdAt = dateRange;
   }
 
-  const [moderators, total] = await Promise.all([
+  const baseQuery = { role: { $in: [ROLES.MODERATOR, ROLES.ADMIN] } };
+  if (search) {
+    const searchQuery = buildSearchQuery(search, ['username', 'name', 'email', 'phoneNumber']);
+    Object.assign(baseQuery, searchQuery);
+  }
+  if (Object.keys(dateRange).length > 0) {
+    baseQuery.createdAt = dateRange;
+  }
+
+  const [moderators, total, statusAgg] = await Promise.all([
     User.find(query)
       .select('-password -passwordResetToken')
       .sort({ createdAt: -1 })
@@ -42,10 +51,26 @@ async function getModerators({ page = 1, limit = 10, search, status, from, to })
       .limit(limit)
       .lean(),
     User.countDocuments(query),
+    User.aggregate([
+      { $match: baseQuery },
+      { $group: { _id: '$status', count: { $sum: 1 } } },
+    ]),
   ]);
+
+  const counts = {};
+  statusAgg.forEach((s) => {
+    if (s._id) counts[s._id] = s.count;
+  });
 
   return {
     moderators: moderators.map(m => formatUserResponse(m)),
+    statusCounts: {
+      active: counts.active || 0,
+      pending: counts.pending || 0,
+      inactive: counts.inactive || 0,
+      suspended: counts.suspended || 0,
+      ...counts,
+    },
     pagination: {
       page,
       limit,

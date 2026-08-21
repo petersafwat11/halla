@@ -24,11 +24,11 @@ export default function VendorStats() {
   const { data, isLoading } = useAdminVendors(filters);
 
   const statsCards = useMemo(() => {
-    const vendors = data?.data?.vendors || data?.data || [];
-    const total = data?.data?.pagination?.total || vendors.length;
-    const approved = vendors.filter((v) => v.vendorStatus === "approved").length;
-    const pending = vendors.filter((v) => v.vendorStatus === "pending").length;
-    const rejected = vendors.filter((v) => v.vendorStatus === "rejected").length;
+    const total = data?.data?.pagination?.total || data?.pagination?.total || 0;
+    const sc = data?.data?.statusCounts || data?.statusCounts || {};
+    const approved = sc.approved || 0;
+    const pending = sc.pending || 0;
+    const rejected = sc.rejected || sc.suspended || 0;
 
     return [
       {

@@ -119,7 +119,20 @@ class TicketsService {
       ];
     }
 
-    const [tickets, total] = await Promise.all([
+    let baseAggQuery = {};
+    if (!isAdmin) {
+      baseAggQuery.user = userId;
+    }
+    if (source) baseAggQuery.source = source;
+    if (search) {
+      const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      baseAggQuery.$or = [
+        { subject: { $regex: escaped, $options: "i" } },
+        { message: { $regex: escaped, $options: "i" } },
+      ];
+    }
+
+    const [tickets, total, statusAgg, priorityAgg] = await Promise.all([
       Ticket.find(query)
         .sort({ createdAt: -1 })
         .skip(skip)
@@ -128,7 +141,20 @@ class TicketsService {
         .populate("assignedTo", "username name email")
         .lean(),
       Ticket.countDocuments(query),
+      Ticket.aggregate([
+        { $match: baseAggQuery },
+        { $group: { _id: '$status', count: { $sum: 1 } } },
+      ]),
+      Ticket.aggregate([
+        { $match: baseAggQuery },
+        { $group: { _id: '$priority', count: { $sum: 1 } } },
+      ]),
     ]);
+
+    const statusCounts = {};
+    statusAgg.forEach((s) => { statusCounts[s._id] = s.count; });
+    const priorityCounts = {};
+    priorityAgg.forEach((p) => { priorityCounts[p._id] = p.count; });
 
     return {
       data: await Promise.all(
@@ -136,6 +162,21 @@ class TicketsService {
           this._formatTicket(t, { includeAssignmentNote: isAdmin })
         )
       ),
+      statusCounts: {
+        open: statusCounts.open || 0,
+        in_progress: statusCounts.in_progress || 0,
+        waiting_response: statusCounts.waiting_response || 0,
+        resolved: statusCounts.resolved || 0,
+        closed: statusCounts.closed || 0,
+        ...statusCounts,
+      },
+      priorityCounts: {
+        low: priorityCounts.low || 0,
+        medium: priorityCounts.medium || 0,
+        high: priorityCounts.high || 0,
+        urgent: priorityCounts.urgent || 0,
+        ...priorityCounts,
+      },
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     };
   }

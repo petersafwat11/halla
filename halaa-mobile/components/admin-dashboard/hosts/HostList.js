@@ -52,7 +52,10 @@ const HostList = ({
     { id: "pending",   label: t("hosts.filters.pending") },
   ], [t]);
 
+  const isServerControlled = Boolean(onSearchQueryChange || onActiveFilterChange || searchQueryProp !== undefined || activeFilterProp !== undefined);
+
   const filteredHosts = useMemo(() => {
+    if (isServerControlled) return hosts;
     let result = hosts;
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -66,7 +69,7 @@ const HostList = ({
       result = result.filter((h) => h.status === activeFilter);
     }
     return result;
-  }, [hosts, searchQuery, activeFilter]);
+  }, [hosts, searchQuery, activeFilter, isServerControlled]);
 
   const toggleSelect = (id) =>
     setSelectedIds((prev) =>

@@ -30,14 +30,14 @@ export default function ModeratorsTable({ showAddPopup: externalShowAdd, setShow
   const [showEditPopup, setShowEditPopup] = useState(false);
   const [selectedModerator, setSelectedModerator] = useState(null);
 
-  const filters = {
+  const filters = useMemo(() => ({
     page: searchParams.get("page") || 1,
     limit: searchParams.get("limit") || 10,
-    search: searchParams.get("search"),
-    status: searchParams.get("status"),
+    search: searchParams.get("search") || "",
+    status: searchParams.get("status") || "",
     from: searchParams.get("from"),
     to: searchParams.get("to"),
-  };
+  }), [searchParams]);
 
   const { data, isLoading } = useAdminModerators(filters);
   const deleteModerator = useAdminModeratorMutation("delete");
@@ -173,6 +173,34 @@ export default function ModeratorsTable({ showAddPopup: externalShowAdd, setShow
     return value;
   };
 
+  const handlePageChange = (page) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", String(page));
+    router.push(`?${params.toString()}`);
+  };
+
+  const handleSearchChange = (query) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (query) {
+      params.set("search", query);
+    } else {
+      params.delete("search");
+    }
+    params.set("page", "1");
+    router.push(`?${params.toString()}`);
+  };
+
+  const handleFilterChange = (statusValue) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (statusValue) {
+      params.set("status", statusValue);
+    } else {
+      params.delete("status");
+    }
+    params.set("page", "1");
+    router.push(`?${params.toString()}`);
+  };
+
   const tableData = (data?.data?.moderators || []).map((moderator) => ({
     id: moderator.id || moderator._id,
     name: moderator.name || moderator.username || "-",
@@ -189,6 +217,7 @@ export default function ModeratorsTable({ showAddPopup: externalShowAdd, setShow
     <>
       <div className={styles.container}>
         <Table
+          mode="server"
           title={t("moderators.title", "إدارة المشرفين")}
           headers={[
             t("moderators.columns.name", "الاسم"),
@@ -199,6 +228,10 @@ export default function ModeratorsTable({ showAddPopup: externalShowAdd, setShow
             t("moderators.columns.createdAt", "تاريخ الإضافة"),
           ]}
           data={tableData}
+          searchValue={filters.search}
+          onSearchChange={handleSearchChange}
+          activeFilter={filters.status}
+          onFilterChange={handleFilterChange}
           renderCell={renderCell}
           getRowActions={getRowActions}
           showCheckboxes={canDelete}
@@ -211,14 +244,10 @@ export default function ModeratorsTable({ showAddPopup: externalShowAdd, setShow
             { label: t("moderators.filter.inactive", "غير نشط"), value: "inactive" },
           ]}
           pagination={{
-            currentPage: parseInt(filters.page),
+            currentPage: parseInt(filters.page, 10) || 1,
             totalPages: data?.data?.pagination?.pages || 1,
             totalItems: data?.data?.pagination?.total || 0,
-            onPageChange: (page) => {
-              const params = new URLSearchParams(searchParams);
-              params.set("page", page);
-              router.push(`?${params.toString()}`);
-            },
+            onPageChange: handlePageChange,
           }}
         />
       </div>

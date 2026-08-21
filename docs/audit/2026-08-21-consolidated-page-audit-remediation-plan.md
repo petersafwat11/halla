@@ -253,7 +253,7 @@ Update one row only after its exit criteria and required tests pass. Use `Blocke
 | 1.5 Event entitlement/routes/messaging/stats | Complete | 0.2, 1.2 |
 | 1.6 Scheduling | Complete | 1.1, product decision |
 | 2.1 Shared table server mode | Complete | 0.2 |
-| 2.2 Admin list migrations/stats | Not started | 2.1 |
+| 2.2 Admin list migrations/stats | Complete | 2.1 |
 | 2.3 Bulk API envelope | Not started | 0.2 |
 | 2.4 Ticket transitions/bulk | Not started | 0.2, 2.3 |
 | 2.5 Ticket attachment matrix | Not started | 0.1 |
@@ -1238,3 +1238,64 @@ This program is complete only when:
 - **Blockers / deferred work:**
   - Session 2.1 is Complete. Proceeding to Session 2.2 (Migrate all admin lists and aggregate stats).
 
+### Session 2.2 — Migrate all admin lists and aggregate stats
+
+- **Date:** 2026-08-21
+- **Status:** Complete
+- **Issues addressed:** ADM-03 (Event, ticket, vendor, and moderator status cards derive counts from current page while showing global total), systemic remainder of ADM-01/ADM-02 (Migrate hosts, businesses, vendors, moderators, payments, discounts tables to controlled server mode with URL page reset; eliminate client double-filtering in mobile).
+- **Scope summary:**
+  - **Backend Status Aggregations (`halaa-backend`):**
+    - Added aggregate `statusCounts` computation in `events.crud.service.js` (`getAllEvents`) matching base event search/host/date filters.
+    - Added aggregate `statusCounts` and `priorityCounts` computations in `tickets.service.js` (`getTickets`) matching base ticket search/source/user filters.
+    - Added aggregate `statusCounts` computation in `admin.vendors.service.js` (`getVendors`) matching base vendor search/category/date filters.
+    - Added aggregate `statusCounts` computation in `admin.moderators.service.js` (`getModerators`) matching base moderator search/date filters.
+  - **Web Status Cards (`halaa-web`):**
+    - Updated `EventStats.jsx` to consume `data.statusCounts` (`total`, `active`, `scheduled`, `completed`) instead of filtering `data.data` (current page).
+    - Updated `TicketStats.jsx` to consume `data.statusCounts` (`open`, `resolved`) and `data.priorityCounts` (`highPriority`) instead of filtering current page items.
+    - Updated `VendorStats.jsx` to consume `data.data.statusCounts` (`approved`, `pending`, `rejected`) instead of filtering visible vendors.
+    - Updated `ModeratorStats.jsx` to consume `data.data.statusCounts` (`active`, `pending`, `inactive`) instead of filtering visible moderators.
+  - **Web Admin List Tables (`halaa-web`):**
+    - Migrated `HostsTable.jsx`, `BusinessesTable.jsx`, `VendorsTable.jsx`, `ModeratorsTable.jsx`, `PaymentsTable.js`, and `DiscountsTable.jsx` to declare `mode="server"`, bound controlled `searchValue`/`onSearchChange` and `activeFilter`/`onFilterChange`, and reset page to `1` on filter or search changes.
+  - **Mobile Double-Filtering Removal (`halaa-mobile`):**
+    - In `AdminEventList.js`, `HostList.js`, `ModeratorList.js`, and `VendorList.js`, added `isServerControlled` checks to immediately return server-provided array and avoid client-side double-filtering when search/filter props or callbacks are present.
+  - **Automated Regression Suites:**
+    - Created `halaa-backend/test/admin-list-aggregations.test.js` (4 tests).
+    - Created `halaa-web/__tests__/ui/adminListMigrations.test.mjs` (2 test suites).
+    - Created `halaa-mobile/__tests__/regressions/adminListDoubleFiltering.test.js` (1 test suite).
+- **Files changed:**
+  - `halaa-backend/src/modules/events/events.crud.service.js`
+  - `halaa-backend/src/modules/tickets/tickets.service.js`
+  - `halaa-backend/src/modules/admin/admin.vendors.service.js`
+  - `halaa-backend/src/modules/admin/admin.moderators.service.js`
+  - `halaa-backend/test/admin-list-aggregations.test.js` (new)
+  - `halaa-web/app/[lang]/admin-dash/events/_components/EventStats.jsx`
+  - `halaa-web/app/[lang]/admin-dash/tickets/_components/TicketStats.jsx`
+  - `halaa-web/app/[lang]/admin-dash/vendors/_components/VendorStats.jsx`
+  - `halaa-web/app/[lang]/admin-dash/moderators/_components/ModeratorStats.jsx`
+  - `halaa-web/app/[lang]/admin-dash/hosts/_components/HostsTable.jsx`
+  - `halaa-web/app/[lang]/admin-dash/businesses/_components/BusinessesTable.jsx`
+  - `halaa-web/app/[lang]/admin-dash/vendors/_components/VendorsTable.jsx`
+  - `halaa-web/app/[lang]/admin-dash/moderators/_components/ModeratorsTable.jsx`
+  - `halaa-web/app/[lang]/admin-dash/payments/_components/PaymentsTable.js`
+  - `halaa-web/app/[lang]/admin-dash/discounts/_components/DiscountsTable.jsx`
+  - `halaa-web/__tests__/ui/adminListMigrations.test.mjs` (new)
+  - `halaa-mobile/components/admin-dashboard/events/AdminEventList.js`
+  - `halaa-mobile/components/admin-dashboard/hosts/HostList.js`
+  - `halaa-mobile/components/admin-dashboard/moderators/ModeratorList.js`
+  - `halaa-mobile/components/admin-dashboard/vendors/VendorList.js`
+  - `halaa-mobile/__tests__/regressions/adminListDoubleFiltering.test.js` (new)
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md`
+- **Exact test commands & results:**
+  - `cd halaa-backend && node --test test/admin-list-aggregations.test.js; npm test` → PASS (350 backend tests passed, 0 failures)
+  - `cd halaa-web && npm run lint; npm test` → PASS (43 unit tests passed, 0 errors, 31 warnings)
+  - `cd shared && npm run lint; npm test` → PASS (14 unit tests passed, 0 lint warnings)
+  - `cd halaa-mobile && npm run lint; npm test` → PASS (117 unit tests passed, 0 errors)
+- **Exit-criteria verification:**
+  - All admin table screens declare `mode="server"` and bind search and filter handlers with URL page resets.
+  - All admin status cards display true database aggregates (`statusCounts`/`stats`) across pagination.
+  - Mobile admin list components bypass local re-filtering when server-controlled.
+  - All automated test suites across web, backend, mobile, and shared pass cleanly.
+- **Remaining risks / decisions:**
+  - None.
+- **Blockers / deferred work:**
+  - Batch consisting of Session 2.1 and Session 2.2 is Complete.

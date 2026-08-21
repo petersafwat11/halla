@@ -35,12 +35,13 @@ export default function EventStats() {
   });
 
   const statsCards = useMemo(() => {
-    if (!data?.data || !data?.pagination) return [];
-    const events = data.data;
-    const total = data.pagination.total;
-    const active = events.filter((e) => e.status === "live" || e.status === "scheduled").length;
-    const scheduled = events.filter((e) => e.status === "scheduled").length;
-    const completed = events.filter((e) => e.status === "completed").length;
+    if (!data) return [];
+    const total = data.statusCounts?.total ?? data.pagination?.total ?? 0;
+    const sc = data.statusCounts || {};
+    const live = sc.live || 0;
+    const scheduled = sc.scheduled || 0;
+    const active = sc.active !== undefined ? sc.active : (live + scheduled);
+    const completed = sc.completed || 0;
 
     return [
       {

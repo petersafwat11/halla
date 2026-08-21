@@ -32,14 +32,14 @@ export default function HostsTable({ showAddPopup: externalShowAdd, setShowAddPo
   const [showSubscriptionPopup, setShowSubscriptionPopup] = useState(false);
   const [selectedHost, setSelectedHost] = useState(null);
 
-  const filters = {
+  const filters = useMemo(() => ({
     page: searchParams.get("page") || 1,
     limit: searchParams.get("limit") || 10,
-    search: searchParams.get("search"),
-    status: searchParams.get("status"),
+    search: searchParams.get("search") || "",
+    status: searchParams.get("status") || "",
     from: searchParams.get("from"),
     to: searchParams.get("to"),
-  };
+  }), [searchParams]);
 
   const { data, isLoading } = useAdminHosts(filters);
   const deleteHost = useAdminHostMutation("delete");
@@ -191,6 +191,34 @@ export default function HostsTable({ showAddPopup: externalShowAdd, setShowAddPo
     return value;
   };
 
+  const handlePageChange = (page) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", String(page));
+    router.push(`?${params.toString()}`);
+  };
+
+  const handleSearchChange = (query) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (query) {
+      params.set("search", query);
+    } else {
+      params.delete("search");
+    }
+    params.set("page", "1");
+    router.push(`?${params.toString()}`);
+  };
+
+  const handleFilterChange = (statusValue) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (statusValue) {
+      params.set("status", statusValue);
+    } else {
+      params.delete("status");
+    }
+    params.set("page", "1");
+    router.push(`?${params.toString()}`);
+  };
+
   const tableData = (data?.data?.hosts || []).map((host) => ({
     id: host.id || host._id,
     name: host.name || host.username || "-",
@@ -207,6 +235,7 @@ export default function HostsTable({ showAddPopup: externalShowAdd, setShowAddPo
     <>
       <div className={styles.container}>
         <Table
+          mode="server"
           title={t("hosts.title", "إدارة العملاء")}
           headers={[
             t("hosts.columns.name", "الاسم"),
@@ -217,6 +246,10 @@ export default function HostsTable({ showAddPopup: externalShowAdd, setShowAddPo
             t("hosts.columns.createdAt", "تاريخ التسجيل"),
           ]}
           data={tableData}
+          searchValue={filters.search}
+          onSearchChange={handleSearchChange}
+          activeFilter={filters.status}
+          onFilterChange={handleFilterChange}
           renderCell={renderCell}
           getRowActions={getRowActions}
           showCheckboxes={canDelete}
@@ -229,14 +262,10 @@ export default function HostsTable({ showAddPopup: externalShowAdd, setShowAddPo
             { label: t("hosts.filter.suspended", "موقوف"), value: "suspended" },
           ]}
           pagination={{
-            currentPage: parseInt(filters.page),
+            currentPage: parseInt(filters.page, 10) || 1,
             totalPages: data?.data?.pagination?.pages || 1,
             totalItems: data?.data?.pagination?.total || 0,
-            onPageChange: (page) => {
-              const params = new URLSearchParams(searchParams);
-              params.set("page", page);
-              router.push(`?${params.toString()}`);
-            },
+            onPageChange: handlePageChange,
           }}
         />
       </div>

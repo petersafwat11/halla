@@ -68,7 +68,10 @@ const VendorList = ({
     [t]
   );
 
+  const isServerControlled = Boolean(onSearchQueryChange || onActiveFilterChange || searchQueryProp !== undefined || activeFilterProp !== undefined);
+
   const filteredVendors = useMemo(() => {
+    if (isServerControlled) return vendors;
     let result = vendors;
     if (searchQuery.trim()) {
       const q = searchQuery.trim().toLowerCase();
@@ -85,7 +88,7 @@ const VendorList = ({
       result = result.filter((v) => (v.vendorStatus || v.status) === activeFilter);
     }
     return result;
-  }, [vendors, searchQuery, activeFilter]);
+  }, [vendors, searchQuery, activeFilter, isServerControlled]);
 
   const toggleSelect = (id) =>
     setSelectedIds((prev) =>
