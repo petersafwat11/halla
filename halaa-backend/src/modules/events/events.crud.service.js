@@ -4,7 +4,7 @@
  * @module modules/events/events.crud.service
  */
 
-const { EVENT_STATUS, INVITATION_TYPE } = require("../../shared/constants");
+const { EVENT_STATUS, INVITATION_TYPE, isPerEventPlan } = require("../../shared/constants");
 const { ROLES } = require("../../shared/constants/roles");
 const {
   NotFoundError,

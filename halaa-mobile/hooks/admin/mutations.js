@@ -615,14 +615,14 @@ export function useBulkDeleteEvents() {
   });
 }
 
-export function useBulkSuspendEvents() {
+export function useBulkCancelEvents() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (eventIds) => {
       const response = await adminRequest(
         ENDPOINTS.ADMIN.EVENTS.BULK_STATUS,
         "POST",
-        { ids: eventIds, status: "suspended" },
+        { ids: eventIds, status: "cancelled" },
       );
       return assertOk(response);
     },
@@ -631,6 +631,8 @@ export function useBulkSuspendEvents() {
     },
   });
 }
+
+export const useBulkSuspendEvents = useBulkCancelEvents;
 
 export function useUpdateAdminEvent() {
   const queryClient = useQueryClient();

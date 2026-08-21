@@ -123,9 +123,11 @@ const bulkModeratorStatusSchema = z.object({
   status: z.enum(['active', 'suspended', 'inactive']),
 });
 
+const { EVENT_STATUS_VALUES } = require('../../shared/constants');
+
 // ── Events ─────────────────────────────────────────────────────────────────
 const updateEventStatusSchema = z.object({
-  status: z.string().min(1),
+  status: z.enum(EVENT_STATUS_VALUES),
 });
 
 const bulkDeleteEventsSchema = z.object({
@@ -134,7 +136,7 @@ const bulkDeleteEventsSchema = z.object({
 
 const bulkEventStatusSchema = z.object({
   ids: z.array(objectId).min(1).max(200),
-  status: z.string().min(1),
+  status: z.enum(EVENT_STATUS_VALUES),
 });
 
 module.exports = {

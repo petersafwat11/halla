@@ -9,6 +9,7 @@ import PopupWrapper from "@/ui/host/popups/popupWrapper/PopupWrapper";
 import StaffPopup from "@/app/[lang]/host/create-event/_components/staffPopup/StaffPopup";
 import EventActionsHeader from "@/ui/host/events/EventActionsHeader";
 import { useAdminEventMutation } from "@/hooks/admin";
+import { useEventMutation } from "@/hooks/events";
 import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
 // Admin-specific classes (`outlineButton`, `dangerButton`) live in the
@@ -28,6 +29,10 @@ export default function AdminEventHeader({ data }) {
   const deleteEvent = useAdminEventMutation("delete");
   const updateEvent = useAdminEventMutation("update");
   const updateStatus = useAdminEventMutation("updateStatus");
+
+  const addStaffMutation = useEventMutation("addStaff");
+  const updateStaffMutation = useEventMutation("updateStaff");
+  const deleteStaffMutation = useEventMutation("deleteStaff");
 
   const isArabic = i18n.language === "ar";
   const eventTitle =
@@ -94,37 +99,36 @@ export default function AdminEventHeader({ data }) {
 
   // Staff handlers
   const handleAddStaff = async (staffMember) => {
-    const phone = staffMember.phone ?? staffMember.mobile;
-    const staffData = { name: staffMember.name, phone };
-    await updateEvent.mutateAsync({
+    const staffData = {
+      name: staffMember.name,
+      phone: staffMember.phone ?? staffMember.mobile,
+    };
+    await addStaffMutation.mutateAsync({
       eventId,
-      data: {
-        staffList: [
-          ...staffList.map((m) => ({ name: m.name, phone: m.phone })),
-          staffData,
-        ],
-      },
+      data: staffData,
     });
     setShowStaffPopup(false);
     router.refresh();
   };
 
   const handleEditStaff = async (staffMember) => {
-    const phone = staffMember.phone ?? staffMember.mobile;
-    const updatedList = staffList.map((m) =>
-      m.id === staffMember.id
-        ? { name: staffMember.name, phone }
-        : { name: m.name, phone: m.phone }
-    );
-    await updateEvent.mutateAsync({ eventId, data: { staffList: updatedList } });
+    const staffData = {
+      name: staffMember.name,
+      phone: staffMember.phone ?? staffMember.mobile,
+    };
+    await updateStaffMutation.mutateAsync({
+      eventId,
+      staffId: staffMember.id,
+      data: staffData,
+    });
     router.refresh();
   };
 
   const handleDeleteStaff = async (id) => {
-    const updatedList = staffList
-      .filter((m) => m.id !== id)
-      .map((m) => ({ name: m.name, phone: m.phone }));
-    await updateEvent.mutateAsync({ eventId, data: { staffList: updatedList } });
+    await deleteStaffMutation.mutateAsync({
+      eventId,
+      staffId: id,
+    });
     router.refresh();
   };
 

@@ -466,3 +466,21 @@ test("toInvitationSettingsDTO and invitationSettingsSchema (EVT-02): normalizes 
   });
 });
 
+test("EVENT_TRANSITIONS and isValidEventStatusTransition (EVT-06): state machine validation", async () => {
+  const { EVENT_STATUS, EVENT_TRANSITIONS, isValidEventStatusTransition } = await import("../src/constants/eventStatus.js");
+
+  assert.ok(EVENT_TRANSITIONS);
+  assert.equal(isValidEventStatusTransition(EVENT_STATUS.PENDING_SCHEDULING, EVENT_STATUS.SCHEDULED), true);
+  assert.equal(isValidEventStatusTransition(EVENT_STATUS.SCHEDULED, EVENT_STATUS.LIVE), true);
+  assert.equal(isValidEventStatusTransition(EVENT_STATUS.LIVE, EVENT_STATUS.COMPLETED), true);
+  assert.equal(isValidEventStatusTransition(EVENT_STATUS.COMPLETED, EVENT_STATUS.SCHEDULED), true);
+  assert.equal(isValidEventStatusTransition(EVENT_STATUS.SCHEDULED, EVENT_STATUS.CANCELLED), true);
+  assert.equal(isValidEventStatusTransition(EVENT_STATUS.CANCELLED, EVENT_STATUS.SCHEDULED), true);
+
+  // Invalid transitions
+  assert.equal(isValidEventStatusTransition(EVENT_STATUS.COMPLETED, EVENT_STATUS.LIVE), false);
+  assert.equal(isValidEventStatusTransition(EVENT_STATUS.DELETED, EVENT_STATUS.SCHEDULED), false);
+  assert.equal(isValidEventStatusTransition(EVENT_STATUS.SCHEDULED, "suspended"), false);
+  assert.equal(isValidEventStatusTransition(null, EVENT_STATUS.SCHEDULED), false);
+});
+

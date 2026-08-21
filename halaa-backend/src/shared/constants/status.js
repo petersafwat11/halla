@@ -210,10 +210,72 @@ const RATE_LIMIT = {
   PASSWORD_RESET: { WINDOW_MS: 60 * 60 * 1000, MAX_REQUESTS: 3 },
 };
 
+const EVENT_TRANSITIONS = Object.freeze({
+  [EVENT_STATUS.PENDING_SCHEDULING]: Object.freeze([
+    EVENT_STATUS.SCHEDULED,
+    EVENT_STATUS.CANCELLED,
+    EVENT_STATUS.DELETED,
+  ]),
+  [EVENT_STATUS.PENDING_REVIEW]: Object.freeze([
+    EVENT_STATUS.PENDING_SCHEDULING,
+    EVENT_STATUS.SCHEDULED,
+    EVENT_STATUS.CANCELLED,
+    EVENT_STATUS.DELETED,
+  ]),
+  [EVENT_STATUS.SCHEDULED]: Object.freeze([
+    EVENT_STATUS.LIVE,
+    EVENT_STATUS.PUBLISHED,
+    EVENT_STATUS.COMPLETED,
+    EVENT_STATUS.CANCELLED,
+    EVENT_STATUS.DELETED,
+  ]),
+  [EVENT_STATUS.LIVE]: Object.freeze([
+    EVENT_STATUS.COMPLETED,
+    EVENT_STATUS.CANCELLED,
+    EVENT_STATUS.DELETED,
+  ]),
+  [EVENT_STATUS.PUBLISHED]: Object.freeze([
+    EVENT_STATUS.LIVE,
+    EVENT_STATUS.COMPLETED,
+    EVENT_STATUS.CANCELLED,
+    EVENT_STATUS.DELETED,
+  ]),
+  [EVENT_STATUS.COMPLETED]: Object.freeze([
+    EVENT_STATUS.SCHEDULED,
+    EVENT_STATUS.ARCHIVED,
+    EVENT_STATUS.DELETED,
+  ]),
+  [EVENT_STATUS.CANCELLED]: Object.freeze([
+    EVENT_STATUS.SCHEDULED,
+    EVENT_STATUS.PENDING_SCHEDULING,
+    EVENT_STATUS.ARCHIVED,
+    EVENT_STATUS.DELETED,
+  ]),
+  [EVENT_STATUS.FAILED]: Object.freeze([
+    EVENT_STATUS.SCHEDULED,
+    EVENT_STATUS.CANCELLED,
+    EVENT_STATUS.DELETED,
+  ]),
+  [EVENT_STATUS.ARCHIVED]: Object.freeze([
+    EVENT_STATUS.DELETED,
+  ]),
+  [EVENT_STATUS.DELETED]: Object.freeze([]),
+});
+
+const isValidEventStatusTransition = (fromStatus, toStatus) => {
+  if (!fromStatus || !toStatus) return false;
+  if (fromStatus === toStatus) return true; // idempotent
+  const allowed = EVENT_TRANSITIONS[fromStatus];
+  return Array.isArray(allowed) && allowed.includes(toStatus);
+};
+
 module.exports = {
   USER_STATUS,
   VENDOR_STATUS,
   EVENT_STATUS,
+  EVENT_STATUS_VALUES: Object.values(EVENT_STATUS),
+  EVENT_TRANSITIONS,
+  isValidEventStatusTransition,
   SUBSCRIPTION_STATUS,
   TICKET_STATUS,
   TICKET_PRIORITY,

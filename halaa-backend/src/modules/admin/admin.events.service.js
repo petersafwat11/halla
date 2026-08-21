@@ -5,10 +5,11 @@
 
 const Event = require('../../../models/EventModel');
 const Guest = require('../../../models/GuestModel');
+const StaffAccessToken = require('../../../models/StaffAccessTokenModel');
 const Subscription = require('../../../models/SubscriptionModel');
 const User = require('../../../models/UserModel');
-const { NotFoundError } = require('../../shared/errors');
-const { ROLES, USER_STATUS, EVENT_STATUS, INVITATION_TYPE } = require('../../shared/constants');
+const { NotFoundError, ValidationError } = require('../../shared/errors');
+const { ROLES, USER_STATUS, EVENT_STATUS, INVITATION_TYPE, isValidEventStatusTransition } = require('../../shared/constants');
 const mongoose = require('mongoose');
 const notificationService = require('../notifications/notifications.service');
 const logger = require('../../shared/utils/logger');
@@ -52,10 +53,14 @@ async function updateEventFull(eventId, updateData, context = {}) {
   if (!event) {
     throw new NotFoundError('Event');
   }
+  if (updateData.guestList !== undefined || updateData.staffList !== undefined) {
+    throw new ValidationError(
+      'Direct updates to guestList or staffList via full-event update are deprecated. Use dedicated guest and staff endpoints.'
+    );
+  }
 
   const allowedFields = [
     'eventDetails',
-    'staffList',
     'visualTemplate',
     'taqnyatTemplate',
     'guestReplies',
@@ -126,32 +131,6 @@ async function updateEventFull(eventId, updateData, context = {}) {
       invitationMode: event.invitationType || INVITATION_TYPE.REPLY_AND_QR,
     }
   );
-
-  // Handle guest list update inside a transaction so deleteMany + insertMany are atomic
-  if (updateData.guestList) {
-    const session = await mongoose.startSession();
-    try {
-      await session.withTransaction(async () => {
-        await Guest.deleteMany({ event: eventId }, { session });
-        if (updateData.guestList.length > 0) {
-          const docs = updateData.guestList.map(g => ({
-            name: g.name,
-            phone: g.phone,
-            email: g.email,
-            event: eventId,
-            status: 'invited',
-            addedBy: context.adminId,
-          }));
-          const saved = await Guest.insertMany(docs, { session });
-          event.guestList = saved.map(g => g._id);
-        } else {
-          event.guestList = [];
-        }
-      });
-    } finally {
-      session.endSession();
-    }
-  }
 
   if (context.file) {
     const templateImagePath = `/uploads/templates/${context.file.filename}`;
@@ -226,30 +205,38 @@ async function createEventForHost(eventData, guestList, context) {
 /**
  * Update event status (admin action)
  */
-async function updateEventStatus(eventId, status) {
+async function updateEventStatus(eventId, status, context = {}) {
   const query = { _id: eventId };
 
-  const current = await Event.findOne(query).select('status previousStatus');
-  if (!current) {
+  const event = await Event.findOne(query);
+  if (!event) {
     throw new NotFoundError('Event');
   }
 
-  const update = { status };
-
-  if (status === 'cancelled') {
-    // Save current status so we can restore it on reactivation
-    update.previousStatus = current.status;
-  } else if (current.status === 'cancelled') {
-    // Reactivating: restore previous status if available, ignore passed status
-    update.status = current.previousStatus || status;
-    update.previousStatus = null;
+  if (!isValidEventStatusTransition(event.status, status)) {
+    throw new ValidationError(`Cannot transition event from '${event.status}' to '${status}'`);
   }
 
-  const event = await Event.findOneAndUpdate(
-    query,
-    update,
-    { new: true, runValidators: true }
-  );
+  if (event.status === status) {
+    return event;
+  }
+
+  const prevStatus = event.status;
+  event.status = status;
+
+  if (status === EVENT_STATUS.CANCELLED) {
+    event.previousStatus = prevStatus;
+    event.cancelledAt = new Date();
+    // Free the event slot when cancelling a still-active event
+    if (![EVENT_STATUS.DELETED, EVENT_STATUS.CANCELLED].includes(prevStatus)) {
+      await require('../events/events.service')._freeEventSlot(event.subscriptionId);
+    }
+  } else if (prevStatus === EVENT_STATUS.CANCELLED) {
+    event.cancelledAt = null;
+    event.previousStatus = null;
+  }
+
+  await event.save();
 
   // Notify host of event status change by admin (non-blocking)
   if (event?.host) {
@@ -268,9 +255,41 @@ async function updateEventStatus(eventId, status) {
 }
 
 /**
+ * Bulk update event status
+ */
+async function bulkUpdateEventStatus(eventIds, status, context = {}) {
+  if (!Object.values(EVENT_STATUS).includes(status)) {
+    throw new ValidationError('Invalid status value');
+  }
+
+  const succeeded = [];
+  const failed = [];
+
+  for (const id of eventIds) {
+    try {
+      await updateEventStatus(id, status, context);
+      succeeded.push(id.toString());
+    } catch (err) {
+      failed.push({
+        id: id.toString(),
+        error: err.message || 'Failed to update status',
+      });
+    }
+  }
+
+  return {
+    success: true,
+    updatedCount: succeeded.length,
+    succeeded,
+    failed,
+    message: `${succeeded.length} event(s) updated to ${status}`,
+  };
+}
+
+/**
  * Delete event (admin action)
  */
-async function deleteEvent(eventId) {
+async function deleteEvent(eventId, context = {}) {
   const query = { _id: eventId };
 
   const event = await Event.findOne(query);
@@ -278,9 +297,14 @@ async function deleteEvent(eventId) {
     throw new NotFoundError('Event');
   }
 
+  if (event.status === EVENT_STATUS.DELETED) {
+    return { success: true, message: 'Event deleted successfully' };
+  }
+
   const prevStatus = event.status;
   event.status = EVENT_STATUS.DELETED;
   event.deletedAt = new Date();
+  event.perEventGuardKey = null;
   await event.save();
 
   // Free the event slot (mirror the host delete path) when it was still active,
@@ -289,28 +313,40 @@ async function deleteEvent(eventId) {
     await require('../events/events.service')._freeEventSlot(event.subscriptionId);
   }
 
+  // Revoke active staff access tokens
+  await StaffAccessToken.updateMany(
+    { event: eventId, isRevoked: false },
+    { isRevoked: true, revokedAt: new Date() }
+  );
+
   return { success: true, message: 'Event deleted successfully' };
 }
 
 /**
  * Bulk delete events
  */
-async function bulkDeleteEvents(eventIds) {
-  const query = { _id: { $in: eventIds } };
+async function bulkDeleteEvents(eventIds, context = {}) {
+  const succeeded = [];
+  const failed = [];
 
-  const result = await Event.updateMany(
-    query,
-    {
-      status: EVENT_STATUS.DELETED,
-      deletedAt: new Date(),
-      perEventGuardKey: null,
+  for (const id of eventIds) {
+    try {
+      await deleteEvent(id, context);
+      succeeded.push(id.toString());
+    } catch (err) {
+      failed.push({
+        id: id.toString(),
+        error: err.message || 'Failed to delete event',
+      });
     }
-  );
+  }
 
   return {
     success: true,
-    deleted: result.modifiedCount,
-    message: `${result.modifiedCount} event(s) deleted successfully`,
+    deletedCount: succeeded.length,
+    succeeded,
+    failed,
+    message: `${succeeded.length} event(s) deleted successfully`,
   };
 }
 
@@ -353,6 +389,7 @@ module.exports = {
   getEventTargets,
   createEventForHost,
   updateEventStatus,
+  bulkUpdateEventStatus,
   deleteEvent,
   bulkDeleteEvents,
   exportEvents,

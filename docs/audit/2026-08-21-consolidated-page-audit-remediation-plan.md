@@ -249,7 +249,7 @@ Update one row only after its exit criteria and required tests pass. Use `Blocke
 | 1.1 Event validation/location | Complete | 0.2 |
 | 1.2 Invitation/Taqnyat contract | Complete | 0.2 |
 | 1.3 Live-event guest invariants | Complete | 0.2 |
-| 1.4 Admin event/staff mutation safety | Not started | 0.2, preferably 1.3 |
+| 1.4 Admin event/staff mutation safety | Complete | 0.2, preferably 1.3 |
 | 1.5 Event entitlement/routes/messaging/stats | Not started | 0.2, 1.2 |
 | 1.6 Scheduling | Not started | 1.1, product decision |
 | 2.1 Shared table server mode | Not started | 0.2 |
@@ -1007,12 +1007,70 @@ This program is complete only when:
   - Allowed additions on live events preserve every existing guest field (RSVP status, QR code, checkIn, invitation, addedBy), verified in backend integration test suite.
   - Forbidden controls are hidden/disabled in mobile and web when `allowAddOnly` is true.
   - `GuestDTO` normalizes all guest IDs and status across mobile components.
+
+### Session 1.4 — Admin event mutation safety and staff lifecycle
+
+- **Date:** 2026-08-21
+- **Status:** Complete
+- **Issues addressed:** EVT-04 (Admin generic update endpoint bypasses guest/staff domain validations and mutates guestList/staffList), EVT-05 (Admin bulk event delete bypasses single delete domain invariants and fails to release active subscription slots), EVT-06 (Event status state machine and bulk mutation state transitions), EVT-13 (Admin single-event staff CRUD bypasses staff endpoints and mutates raw array in event update), EVT-14 (TanStack Query v5 `isLoading` vs `isPending` state handling on staff/event mutations).
+- **Root cause:**
+  - **EVT-06 State Machine:** `admin.validation.js` accepted arbitrary string `status: z.string().min(1)` for `updateEventStatusSchema` and `bulkEventStatusSchema`. The backend lacked transition validation matrices, allowing invalid status leaps (such as `completed -> live` or `deleted -> scheduled`) and invalid statuses like `"suspended"`. Mobile filter lists and bulk actions sent `"suspended"`.
+  - **EVT-04 Generic Update Bypass:** `admin.events.service.js`'s `updateEventFull` allowed `guestList` (performing raw deleteMany/insertMany wiping RSVP and QR data) and `staffList` assignment (bypassing token revocation and audit logging).
+  - **EVT-05 Delete Invariant Gaps:** `admin.events.service.js`'s `bulkDeleteEvents` called `Event.updateMany` directly without freeing subscription slots (`_freeEventSlot`), without revoking active staff tokens (`StaffAccessToken`), and without returning per-item `{ succeeded, failed }` structures. Single delete also failed to revoke active staff access tokens upon deletion.
+  - **EVT-13 Web Staff CRUD Bypass:** `halaa-web/components/event-detail/AdminEventHeader.jsx` invoked generic `updateEvent.mutateAsync({ eventId, data: { staffList } })` instead of dedicated staff mutation hooks (`useEventMutation("addStaff" | "updateStaff" | "deleteStaff")`).
+  - **EVT-14 TanStack Query Mutation Pending State:** `StaffTokensList.jsx` and `LoginView.js` checked `.isLoading` instead of `.isPending` / `.isPending || .isLoading`.
+- **Implementation summary:**
+  - **Shared & Backend State Machine Contract (EVT-06):**
+    - Added `EVENT_TRANSITIONS` mapping valid lifecycle status transitions and `isValidEventStatusTransition(fromStatus, toStatus)` helper in `@halaa/shared/constants/eventStatus.js` and `halaa-backend/src/shared/constants/status.js`.
+    - Exported `EVENT_STATUS_VALUES` and state machine functions across shared and backend constants.
+    - Updated `admin.validation.js` to strictly validate `status: z.enum(EVENT_STATUS_VALUES)` in `updateEventStatusSchema` and `bulkEventStatusSchema`.
+  - **Admin Service Hardening (EVT-04, EVT-05, EVT-06):**
+    - `updateEventFull`: Disallowed `guestList` and `staffList`, throwing `ValidationError` immediately when attempted and removing `staffList` from `allowedFields`.
+    - `updateEventStatus`: Validates state transition via `isValidEventStatusTransition`. Sets `cancelledAt` / `previousStatus` and frees subscription slots via `_freeEventSlot` upon cancellation; resets `cancelledAt` and `previousStatus` on reactivation.
+    - `deleteEvent`: Implemented soft-delete, freeing active event subscription slots and revoking all active `StaffAccessToken` documents (`isRevoked: true, revokedAt: new Date()`).
+    - `bulkDeleteEvents` & `bulkUpdateEventStatus`: Process items iteratively with single-item domain invariant parity, returning `{ success: true, count, succeeded, failed }`.
+    - Fixed missing `isPerEventPlan` import in `events.crud.service.js` preventing reference errors during `_freeEventSlot`.
+  - **Web Component Parity (EVT-13, EVT-14):**
+    - `AdminEventHeader.jsx`: Replaced generic `updateEvent` calls with `useEventMutation("addStaff")`, `useEventMutation("updateStaff")`, and `useEventMutation("deleteStaff")`.
+    - `StaffTokensList.jsx`: Updated revoke button disable state to `revokeMutation.isPending || revokeMutation.isLoading`.
+  - **Mobile Component Parity (EVT-06, EVT-14):**
+    - `AdminEventList.js`: Removed `"suspended"` from `EVENT_FILTER_IDS` and updated bulk action to `useBulkCancelEvents` with cancel semantics.
+    - `hooks/admin/mutations.js`: Added `useBulkCancelEvents` sending `{ ids, status: "cancelled" }` and aliased `useBulkSuspendEvents`.
+    - `LoginView.js`: Updated loading state to `verifyMutation.isPending || verifyMutation.isLoading`.
+  - **Test Coverage:**
+    - `halaa-backend/test/admin-event-mutation-safety.test.js`: 7 integration tests verifying state transitions, invalid status rejection, subscription slot release/restore on cancel, token revocation on single/bulk delete, and generic update collection rejection.
+    - `halaa-mobile/__tests__/events/adminEventMutationSafety.test.js`: Verified absence of "suspended" in filter IDs, cancel mutation semantics, and mutation pending support.
+    - `halaa-web/__tests__/events/adminStaffMutationSafety.test.mjs`: Verified dedicated staff mutation usage and `isPending` state handling.
+    - `shared/test/contracts.test.js`: Added state machine validation contract tests.
+- **Files changed:**
+  - `shared/src/constants/eventStatus.js`
+  - `shared/test/contracts.test.js`
+  - `halaa-backend/src/shared/constants/status.js`
+  - `halaa-backend/src/modules/events/events.crud.service.js`
+  - `halaa-backend/src/modules/admin/admin.validation.js`
+  - `halaa-backend/src/modules/admin/admin.events.service.js`
+  - `halaa-backend/src/modules/admin/admin.events.controller.js`
+  - `halaa-backend/test/admin-event-mutation-safety.test.js` (new)
+  - `halaa-web/components/event-detail/AdminEventHeader.jsx`
+  - `halaa-web/components/event-detail/StaffTokensList.jsx`
+  - `halaa-web/__tests__/events/adminStaffMutationSafety.test.mjs` (new)
+  - `halaa-mobile/components/admin-dashboard/events/AdminEventList.js`
+  - `halaa-mobile/hooks/admin/mutations.js`
+  - `halaa-mobile/components/common/staff-portal/LoginView.js`
+  - `halaa-mobile/__tests__/events/adminEventMutationSafety.test.js` (new)
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md`
+- **Exact test commands & results:**
+  - `cd shared && npm run lint && npm run test` → PASS (13 unit tests passed, 0 lint errors)
+  - `cd halaa-backend && node --test test/admin-event-mutation-safety.test.js && npm run catalog:verify; npm run test` → PASS (340 tests passed, 0 failures)
+  - `cd halaa-mobile && npm run lint && npm run test` → PASS (112 tests passed, 0 errors)
+  - `cd halaa-web && npm run lint && npm run test` → PASS (35 tests passed, 0 errors)
+- **Exit-criteria verification:**
+  - Event state machine transition matrix rejects invalid transitions both in single and bulk admin updates.
+  - Subscription slot is freed and active staff access tokens are revoked on single and bulk delete.
+  - Direct updates to `guestList` and `staffList` via `updateEventFull` are rejected with `ValidationError`.
+  - Admin single-event web view routes staff modifications through dedicated staff mutation hooks.
+  - Staff mutation loading states correctly support TanStack Query v5 `isPending`.
 - **Remaining risks / decisions:**
   - None.
 - **Blockers / deferred work:**
-  - Session 1.3 is Complete. Session 1.4 (Admin event/staff mutation safety) is unblocked.
-
-
-
-
-
+  - Session 1.4 is Complete. Session 1.5 (Event entitlement/routes/messaging/stats) is unblocked.

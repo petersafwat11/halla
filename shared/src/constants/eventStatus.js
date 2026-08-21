@@ -16,6 +16,7 @@ export const EVENT_STATUS = Object.freeze({
 });
 
 export const EVENT_STATUSES = Object.freeze(Object.values(EVENT_STATUS));
+export const EVENT_STATUS_VALUES = EVENT_STATUSES;
 
 export const EVENT_STATUS_GROUPS = Object.freeze({
   PRE_LAUNCH: Object.freeze([
@@ -94,5 +95,63 @@ export const classifyRsvpBucket = (status) => {
   return "pending";
 };
 
-export default EVENT_STATUS;
+export const EVENT_TRANSITIONS = Object.freeze({
+  [EVENT_STATUS.PENDING_SCHEDULING]: Object.freeze([
+    EVENT_STATUS.SCHEDULED,
+    EVENT_STATUS.CANCELLED,
+    EVENT_STATUS.DELETED,
+  ]),
+  [EVENT_STATUS.PENDING_REVIEW]: Object.freeze([
+    EVENT_STATUS.PENDING_SCHEDULING,
+    EVENT_STATUS.SCHEDULED,
+    EVENT_STATUS.CANCELLED,
+    EVENT_STATUS.DELETED,
+  ]),
+  [EVENT_STATUS.SCHEDULED]: Object.freeze([
+    EVENT_STATUS.LIVE,
+    EVENT_STATUS.PUBLISHED,
+    EVENT_STATUS.COMPLETED,
+    EVENT_STATUS.CANCELLED,
+    EVENT_STATUS.DELETED,
+  ]),
+  [EVENT_STATUS.LIVE]: Object.freeze([
+    EVENT_STATUS.COMPLETED,
+    EVENT_STATUS.CANCELLED,
+    EVENT_STATUS.DELETED,
+  ]),
+  [EVENT_STATUS.PUBLISHED]: Object.freeze([
+    EVENT_STATUS.LIVE,
+    EVENT_STATUS.COMPLETED,
+    EVENT_STATUS.CANCELLED,
+    EVENT_STATUS.DELETED,
+  ]),
+  [EVENT_STATUS.COMPLETED]: Object.freeze([
+    EVENT_STATUS.SCHEDULED,
+    EVENT_STATUS.ARCHIVED,
+    EVENT_STATUS.DELETED,
+  ]),
+  [EVENT_STATUS.CANCELLED]: Object.freeze([
+    EVENT_STATUS.SCHEDULED,
+    EVENT_STATUS.PENDING_SCHEDULING,
+    EVENT_STATUS.ARCHIVED,
+    EVENT_STATUS.DELETED,
+  ]),
+  [EVENT_STATUS.FAILED]: Object.freeze([
+    EVENT_STATUS.SCHEDULED,
+    EVENT_STATUS.CANCELLED,
+    EVENT_STATUS.DELETED,
+  ]),
+  [EVENT_STATUS.ARCHIVED]: Object.freeze([
+    EVENT_STATUS.DELETED,
+  ]),
+  [EVENT_STATUS.DELETED]: Object.freeze([]),
+});
 
+export const isValidEventStatusTransition = (fromStatus, toStatus) => {
+  if (!fromStatus || !toStatus) return false;
+  if (fromStatus === toStatus) return true; // idempotent
+  const allowed = EVENT_TRANSITIONS[fromStatus];
+  return Array.isArray(allowed) && allowed.includes(toStatus);
+};
+
+export default EVENT_STATUS;

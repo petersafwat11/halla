@@ -4,7 +4,7 @@ import { useTranslation } from "../../../localization";
 import { backgrounds, colors } from "../../../styles/tokens";
 import { useAuthStore } from "../../../stores/authStore";
 import { canEditPage, canDeleteOnPage, PAGES } from "../../../utils/adminPermissions";
-import { useBulkDeleteEvents, useBulkSuspendEvents, useExportAdminEvents } from "../../../hooks";
+import { useBulkDeleteEvents, useBulkCancelEvents, useExportAdminEvents } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 import AdminPageHeader from "../common/AdminPageHeader";
 import AdminFlatList from "../common/AdminFlatList";
@@ -12,7 +12,7 @@ import ExportButton from "../common/ExportButton";
 import BulkActionsBar from "../common/BulkActionsBar";
 import AdminEventListItem from "./AdminEventListItem";
 
-const EVENT_FILTER_IDS = ["all", "scheduled", "live", "pending_scheduling", "completed", "cancelled", "suspended"];
+const EVENT_FILTER_IDS = ["all", "scheduled", "live", "pending_scheduling", "completed", "cancelled"];
 
 const AdminEventList = ({
   events,
@@ -44,7 +44,7 @@ const AdminEventList = ({
   const canEdit   = canEditPage(role, PAGES.EVENTS);
   const canDelete = canDeleteOnPage(role, PAGES.EVENTS);
   const bulkDelete  = useBulkDeleteEvents();
-  const bulkSuspend = useBulkSuspendEvents();
+  const bulkCancel  = useBulkCancelEvents();
   const exportEvents = useExportAdminEvents();
   const toast = useToast();
 
@@ -94,18 +94,18 @@ const AdminEventList = ({
     }
   };
 
-  const handleBulkSuspend = (ids) => {
+  const handleBulkCancel = (ids) => {
     Alert.alert(
-      t("events.details.suspend"),
-      `${t("events.details.suspend")} ${ids.length} event(s)?`,
+      t("events.details.cancel", "Cancel Events"),
+      `${t("events.details.cancelConfirm", "Cancel")} ${ids.length} event(s)?`,
       [
         { text: t("common.cancel"), style: "cancel" },
         {
-          text: t("events.details.suspend"),
+          text: t("events.details.cancel", "Cancel Events"),
           style: "destructive",
           onPress: async () => {
             try {
-              await bulkSuspend.mutateAsync(ids);
+              await bulkCancel.mutateAsync(ids);
               clearSelection();
               toast.success(t("common.success"));
             } catch {
@@ -142,12 +142,12 @@ const AdminEventList = ({
 
   const bulkActions = [
     canEdit && {
-      icon: "pause-circle-outline",
-      label: t("events.details.suspend"),
+      icon: "close-circle-outline",
+      label: t("events.details.cancel", "Cancel"),
       color: colors.warning[600],
       bg: "#fff4e0",
-      loading: bulkSuspend.isPending,
-      onPress: handleBulkSuspend,
+      loading: bulkCancel.isPending,
+      onPress: handleBulkCancel,
     },
     canDelete && {
       icon: "trash-outline",
