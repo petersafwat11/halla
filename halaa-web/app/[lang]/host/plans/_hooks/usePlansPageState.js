@@ -125,7 +125,7 @@ export const usePlansPageState = () => {
     [addonItems]
   );
 
-  const handleProceedToPayment = useCallback(async () => {
+  const handleProceedToPayment = useCallback(async (quote) => {
     if (!selectedPlan) return;
     try {
       const result = await checkoutMutation.mutateAsync({
@@ -133,6 +133,9 @@ export const usePlansPageState = () => {
         addons: buildCheckoutAddons(),
         ...(appliedDiscountCode ? { discountCode: appliedDiscountCode } : {}),
         source: buildSource(),
+        ...(quote?.total != null ? { expectedAmount: quote.total, expectedTotal: quote.total } : {}),
+        ...(quote?.quoteId ? { quoteId: quote.quoteId } : {}),
+        ...(quote?.quoteExpiresAt ? { quoteExpiresAt: quote.quoteExpiresAt } : {}),
       });
       if (result?.requiresAction) {
         // useCheckout already redirected via window.location; skip the toast.

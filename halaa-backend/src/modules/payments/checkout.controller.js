@@ -3,6 +3,18 @@ const catchAsync = require('../../shared/utils/catchAsync');
 const { sendSuccess, sendCreated } = require('../../shared/utils/responseHelper');
 
 /**
+ * POST /payments/quote
+ *
+ * Authoritative checkout quote calculation (PLN-02).
+ * Returns complete line-item breakdown, discount allocation, setup fee,
+ * tax, currency, total in SAR major and Halalas integer minor units, and quote signature.
+ */
+exports.getQuote = catchAsync(async (req, res) => {
+  const quote = await checkoutService.getQuote(req.user?._id, req.body);
+  sendSuccess(res, quote, 'Checkout quote');
+});
+
+/**
  * POST /payments/checkout
  *
  * Bundled plan + addons + discount checkout. Charges the combined total as

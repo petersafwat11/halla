@@ -58,7 +58,7 @@ const DiscountCodeCard = ({
           <p className={styles.discountSuccess}>
             {t("summary.discount.success", {
               code: appliedCode,
-              amount: amount.toFixed(0),
+              amount: typeof amount === "number" ? amount.toFixed(2).replace(/\.00$/, "") : amount,
             })}
           </p>
         )}

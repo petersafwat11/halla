@@ -60,6 +60,14 @@ const checkoutAddonItem = z
     }
   });
 
+const quoteSchema = z
+  .object({
+    planCode: z.string().min(1),
+    addons: z.array(checkoutAddonItem).max(20).default([]),
+    discountCode: z.string().min(1).optional(),
+  })
+  .strict();
+
 const checkoutSchema = z
   .object({
     planCode: z.string().min(1),
@@ -68,7 +76,11 @@ const checkoutSchema = z
     source: sourceSchema.optional(),
     callbackUrl: z.string().url().optional(),
     subscriptionId: objectId.optional(),
+    expectedAmount: z.number().min(0).optional(),
+    expectedTotal: z.number().min(0).optional(),
+    quoteId: z.string().optional(),
+    quoteExpiresAt: z.union([z.string(), z.date()]).optional(),
   })
   .strict();
 
-module.exports = { checkoutSchema };
+module.exports = { quoteSchema, checkoutSchema, checkoutAddonItem, sourceSchema };

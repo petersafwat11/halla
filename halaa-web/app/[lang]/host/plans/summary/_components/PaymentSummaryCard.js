@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import { formatSar } from "@halaa/shared/utils";
 import AddonsSummaryCard from "./AddonsSummaryCard";
 import styles from "../summary.module.css";
 
@@ -22,7 +23,7 @@ const PaymentSummaryCard = ({
               {t("summary.payment.planPrice")}
             </span>
             <span className={styles.summaryValue}>
-              {planPrice} {t("common.currency.sar")}
+              {formatSar(planPrice)} {t("common.currency.sar")}
             </span>
           </div>
 
@@ -34,7 +35,7 @@ const PaymentSummaryCard = ({
                 {t("summary.payment.discount")}
               </span>
               <span className={styles.summaryValueDiscount}>
-                -{discountAmount.toFixed(0)} {t("common.currency.sar")}
+                -{formatSar(discountAmount)} {t("common.currency.sar")}
               </span>
             </div>
           )}
@@ -46,7 +47,7 @@ const PaymentSummaryCard = ({
               {t("summary.payment.total")}
             </span>
             <span className={styles.totalValue}>
-              {finalTotal.toFixed(0)} {t("common.currency.sar")}
+              {formatSar(finalTotal)} {t("common.currency.sar")}
             </span>
           </div>
         </div>

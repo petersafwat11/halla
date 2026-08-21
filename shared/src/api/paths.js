@@ -177,6 +177,7 @@ const PATHS = {
   hostPayments: {
     getById: (id) => `/payments/${id}`,
     poll3ds: (id) => `/payments/${id}/poll`,
+    quote: "/payments/quote",
     checkout: "/payments/checkout",
     export: "/subscriptions/payments/export",
   },

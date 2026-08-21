@@ -144,7 +144,7 @@ The older finding about staff deletion leaving tokens active is fixed in the ded
 | ID | Priority | Status | Problem | Root solution |
 |---|---:|---|---|---|
 | PLN-01 | P0 | Confirmed | Web and relevant mobile-web card inputs parse/display expiry as `YY/MM`, contrary to the expected `MM/YY`. | Use one strict expiry parser/formatter, normalize before gateway submission, and test boundary dates. |
-| PLN-02 | P0 | Confirmed/risk | Clients locally recompute totals and some displays round with `.toFixed(0)`, while the backend/gateway can use fractional SAR/minor units. | Represent money in integer minor units, expose an authoritative checkout quote, and render the returned total with a shared formatter. |
+| PLN-02 | P0 | Complete | Clients locally recompute totals and some displays round with `.toFixed(0)`, while the backend/gateway can use fractional SAR/minor units. | Represent money in integer minor units, expose an authoritative checkout quote, and render the returned total with a shared formatter. |
 | PLN-03 | P1 | Confirmed | Mobile classifies only `monthly` as recurring; quarterly/annual plans can be labeled as single-event. Similar collapsing exists in web business summaries/cards. | Centralize plan/billing classification and preserve the actual billing period everywhere. |
 | PLN-04 | P1 | Confirmed | Admin mobile edit rejects `invitePool: null`, which is valid for unlimited plans; empty duration can become zero. | Make validation conditional on plan type; omit/null optional duration and require positive values only when applicable. |
 | PLN-05 | P1 | Confirmed | Shared `isPerEventPlan` and backend semantics disagree about `trial`; comments/defaults still carry legacy invite-limit concepts. | Declare a canonical plan semantics module and parity-test backend and both clients. |
@@ -260,7 +260,7 @@ Update one row only after its exit criteria and required tests pass. Use `Blocke
 | 2.6 Admin creation/cache keys | Complete | 0.2 |
 | 3.1 Plan semantics/invite pool | Complete | 0.2 |
 | 3.2 Plan editing/presentation | Complete | 3.1 |
-| 3.3 Money/checkout quote | Not started | 3.1 |
+| 3.3 Money/checkout quote | Complete | 3.1 |
 | 3.4 Expiry/payment UX | Not started | 3.3 |
 | 4.1 Vendor service form contract | Not started | 0.2 |
 | 4.2 Marketplace filters/query | Not started | 0.2 |
@@ -1607,6 +1607,49 @@ This program is complete only when:
   - None.
 - **Blockers / deferred work:**
   - Session 3.2 is Complete. Ready for Git commit.
+
+### Execution Record — Session 3.3 (2026-08-21)
+
+- **Session:** Session 3.3 — Money and authoritative checkout quote (`PLN-02`)
+- **Status:** Complete
+- **Prerequisites verified:** Session 3.1 is Complete and committed (verified).
+- **Key changes:**
+  - **Shared Money Utilities & Pure Quote Builder (`@halaa/shared/src/utils/money.js`, `shared/src/utils/index.js`, `shared/src/api/paths.js`):**
+    - Implemented and exported canonical money arithmetic: `round2` (half-up, EPSILON-guarded), `toHalalas` (minor units integer), `halalasToSar`, `formatSar` (decimal-safe SAR formatting), `allocateDiscount` (proportional allocation with rounding remainder assigned to largest item).
+    - Implemented pure `buildCheckoutQuote`: calculates line items (`plan`, `addon`, `setup_fee`), discount allocations, setup fee, tax (0), totals in SAR major units and Halalas minor units, formatted values, and quote expiration.
+    - Added `hostPayments.quote: "/payments/quote"` to `API_PATHS`.
+  - **Backend Authoritative Quote & Price Change Protection (`halaa-backend/src/modules/payments/checkout.service.js`, `checkout.controller.js`, `checkout.validation.js`, `payments.routes.js`, `models/DiscountModel.js`):**
+    - Aligned `halaa-backend/src/shared/utils/money.js` with shared money utilities.
+    - Implemented `checkoutService.getQuote(userId, body)` and mounted `POST /payments/quote` with `purchaseLimiter` and `quoteSchema` validation.
+    - Added cryptographic signature `quoteId` (HMAC-SHA256) and TTL expiration timestamp.
+    - Added price-change verification (`expectedAmount` / `expectedTotal` matching `quote.totalHalalas`) and stale quote rejection (`quoteExpiresAt < Date.now()`).
+    - Stamped `quoteId`, `totalHalalas`, `lineItems`, `planPrice`, `addonsTotal`, and `discountAmount` onto `Payment.metadata`.
+    - Updated `DiscountModel.calculateDiscount` to preserve halala precision via `round2`.
+  - **Web Client Parity (`halaa-web/hooks/checkout`, `Summary.js`, `PaymentSummaryCard.js`, `ProceedButton.js`, `DiscountCodeCard.js`, `usePlansPageState.js`):**
+    - Added `checkoutKeys.quote` query key factory and `useCheckoutQuote` React Query hook.
+    - Eliminated `.toFixed(0)` truncation in all summary subcomponents, formatting exact decimal amounts via `formatSar`.
+    - Passed server quote `expectedAmount`, `quoteId`, and `quoteExpiresAt` through `usePlansPageState.js` and `useCheckout` mutation.
+  - **Mobile Client Parity (`halaa-mobile/components/plans/PaymentSummaryCard.js`, `DiscountCodeCard.js`, `PlansSummaryScreen.js`, `hooks/checkout/mutations.js`):**
+    - Eliminated `.toFixed(0)` decimal loss across `PaymentSummaryCard`, `DiscountCodeCard`, and `PlansSummaryScreen` footer.
+    - Updated mobile `useCheckout` mutation and `PlansSummaryScreen.js` to send `expectedAmount` and `quoteId`.
+  - **Automated Tests:**
+    - `shared/test/money.test.js`: Comprehensive tests for `round2`, `toHalalas`, `halalasToSar`, `formatSar`, `allocateDiscount`, and `buildCheckoutQuote`.
+    - `halaa-backend/test/checkout-quote-money.test.js`: Integration tests for authoritative quote calculation, discount allocations, price-change rejection, stale quote rejection, halala minor unit precision, and Payment metadata stamping.
+    - `halaa-web/__tests__/ui/checkoutQuoteMoney.test.mjs`: Tests for quote query keys, elimination of `.toFixed(0)`, `formatSar` usage, and `usePlansPageState` quote metadata forwarding.
+    - `halaa-mobile/__tests__/plans/checkoutQuoteParity.test.js`: Tests for mobile `.toFixed(0)` removal, `formatSar` accuracy, and mobile mutation `expectedAmount` propagation.
+- **Verification results:**
+  - `cd shared && npm test` → PASS (55 unit tests passed, 0 failures)
+  - `cd halaa-backend && npm test` → PASS (381 unit/integration tests passed, 0 failures)
+  - `cd halaa-web && npm test` → PASS (65 unit tests passed, 0 failures)
+  - `cd halaa-mobile && npm test` → PASS (129 unit tests passed, 0 failures)
+- **Exit-criteria verification:**
+  - The displayed amount, the persisted transaction amount, and the gateway charge match exactly.
+  - Rounding uses minor units / `round2` and does not drop halalas (no `.toFixed(0)`).
+  - Backend authoritative quote endpoint `/payments/quote` is operational and protects checkout against price changes.
+- **Remaining risks / decisions:**
+  - None.
+- **Blockers / deferred work:**
+  - Session 3.3 is Complete. Ready for Git commit.
 
 
 

@@ -1,38 +1,89 @@
 /**
- * Money rules — single source of truth (business-account plan, B0 #14/#21).
+ * Money utilities and Authoritative Quote builder.
+ * Single source of truth across @halaa/shared, halaa-backend, halaa-web, and halaa-mobile (PLN-02).
  *
- * CONTRACT:
- *   - All amounts are SAR major-unit `Number` (consistent with the whole
- *     payment system; Moyasar conversion to halalas happens at the provider).
- *   - Rounding: 2 decimal places (halalas), half-up, EPSILON-guarded.
- *   - Discount base = discountable line items only (plan + addons). The setup
- *     fee is NEVER discounted and is added AFTER the discount.
- *   - Discount is allocated across discountable line items proportionally by
- *     subtotal; the rounding remainder lands on the largest line so the
- *     allocations always sum back to the discount.
- *   - Tax: prices are VAT-inclusive in this system; no separate tax line is
- *     computed (taxAmount = 0). The `tax` line-item type exists for forward
- *     compatibility but is not populated by the quote builder.
+ * All money arithmetic operates on:
+ *   - SAR major units (Number with max 2 decimal places, half-up EPSILON guarded)
+ *   - Halalas integer minor units (1 SAR = 100 Halalas, Math.round((sar + EPSILON) * 100))
  *
  * @module shared/utils/money
  */
 
-/** Round to 2 dp (SAR halalas), half-up, EPSILON-guarded. */
-function round2(value) {
-  if (value == null || !Number.isFinite(value)) return 0;
-  return Math.round((value + Number.EPSILON) * 100) / 100;
+/**
+ * Round to 2 decimal places (SAR halalas), half-up, EPSILON-guarded.
+ * @param {number|string} value
+ * @returns {number}
+ */
+export function round2(value) {
+  if (value == null) return 0;
+  const num = typeof value === "string" ? parseFloat(value) : Number(value);
+  if (!Number.isFinite(num)) return 0;
+  return Math.round((num + Number.EPSILON) * 100) / 100;
+}
+
+/**
+ * Convert SAR major units to integer Halalas (minor units).
+ * @param {number|string} sarAmount
+ * @returns {number} integer halalas
+ */
+export function toHalalas(sarAmount) {
+  if (sarAmount == null) return 0;
+  const num = typeof sarAmount === "string" ? parseFloat(sarAmount) : Number(sarAmount);
+  if (!Number.isFinite(num)) return 0;
+  return Math.round((num + Number.EPSILON) * 100);
+}
+
+/**
+ * Convert Halalas (minor units) to SAR major units (2 decimal places).
+ * @param {number|string} halalas
+ * @returns {number} SAR
+ */
+export function halalasToSar(halalas) {
+  if (halalas == null) return 0;
+  const num = typeof halalas === "string" ? parseInt(halalas, 10) : Number(halalas);
+  if (!Number.isFinite(num)) return 0;
+  return round2(num / 100);
+}
+
+/**
+ * Formats a monetary amount in SAR with exact decimal precision (never truncated to 0 dp).
+ *
+ * @param {number|string} amount
+ * @param {Object} [options]
+ * @param {number} [options.decimals=2] - fixed decimal places (default 2)
+ * @param {boolean} [options.trimTrailingZeros=false] - trim .00 if whole number
+ * @param {boolean} [options.includeCurrency=false]
+ * @param {string} [options.currency='SAR']
+ * @returns {string}
+ */
+export function formatSar(amount, options = {}) {
+  const num = typeof amount === "string" ? parseFloat(amount) : Number(amount);
+  const currency = options.currency || "SAR";
+  if (amount == null || !Number.isFinite(num)) {
+    return options.includeCurrency ? `0.00 ${currency}` : "0.00";
+  }
+  const rounded = round2(num);
+  const decimals = typeof options.decimals === "number" ? options.decimals : 2;
+  let formatted = rounded.toFixed(decimals);
+  if (options.trimTrailingZeros) {
+    formatted = rounded % 1 === 0 ? String(rounded) : rounded.toFixed(decimals);
+  }
+  if (options.includeCurrency) {
+    return `${formatted} ${currency}`;
+  }
+  return formatted;
 }
 
 /**
  * Allocate a discount across discountable line items proportionally by their
- * subtotal. Returns a Map of lineItemId → allocated amount (negative space is
- * caller's concern; here allocation is a positive number to subtract).
+ * subtotal. Returns a Map of lineItemId → allocated amount.
+ * The remainder from rounding lands on the largest line so the sum is exact.
  *
  * @param {Array<{id:string, subtotal:number}>} items
  * @param {number} discount - total discount (SAR), >= 0
  * @returns {Map<string, number>}
  */
-function allocateDiscount(items, discount) {
+export function allocateDiscount(items, discount) {
   const allocations = new Map();
   const base = items.reduce((s, it) => s + (it.subtotal || 0), 0);
   if (discount <= 0 || base <= 0) {
@@ -50,60 +101,11 @@ function allocateDiscount(items, discount) {
     if (!largest || it.subtotal > largest.subtotal) largest = it;
   });
 
-  // Push the rounding remainder onto the largest line so the parts sum exactly.
   const remainder = round2(cappedDiscount - allocated);
   if (remainder !== 0 && largest) {
     allocations.set(largest.id, round2(allocations.get(largest.id) + remainder));
   }
   return allocations;
-}
-
-/**
- * Convert SAR major units to integer Halalas (minor units).
- * @param {number|string} sarAmount
- * @returns {number} integer halalas
- */
-function toHalalas(sarAmount) {
-  if (sarAmount == null) return 0;
-  const num = typeof sarAmount === 'string' ? parseFloat(sarAmount) : Number(sarAmount);
-  if (!Number.isFinite(num)) return 0;
-  return Math.round((num + Number.EPSILON) * 100);
-}
-
-/**
- * Convert Halalas (minor units) to SAR major units (2 decimal places).
- * @param {number|string} halalas
- * @returns {number} SAR
- */
-function halalasToSar(halalas) {
-  if (halalas == null) return 0;
-  const num = typeof halalas === 'string' ? parseInt(halalas, 10) : Number(halalas);
-  if (!Number.isFinite(num)) return 0;
-  return round2(num / 100);
-}
-
-/**
- * Formats a monetary amount in SAR with exact decimal representation.
- * @param {number|string} amount
- * @param {Object} [options]
- * @returns {string}
- */
-function formatSar(amount, options = {}) {
-  const num = typeof amount === 'string' ? parseFloat(amount) : Number(amount);
-  const currency = options.currency || 'SAR';
-  if (amount == null || !Number.isFinite(num)) {
-    return options.includeCurrency ? `0.00 ${currency}` : '0.00';
-  }
-  const rounded = round2(num);
-  const decimals = typeof options.decimals === 'number' ? options.decimals : 2;
-  let formatted = rounded.toFixed(decimals);
-  if (options.trimTrailingZeros) {
-    formatted = rounded % 1 === 0 ? String(rounded) : rounded.toFixed(decimals);
-  }
-  if (options.includeCurrency) {
-    return `${formatted} ${currency}`;
-  }
-  return formatted;
 }
 
 /**
@@ -119,24 +121,24 @@ function formatSar(amount, options = {}) {
  * @param {number} [params.ttlMs]
  * @returns {Object} Canonical checkout quote
  */
-function buildCheckoutQuote({
+export function buildCheckoutQuote({
   plan,
   addons = [],
   discountAmount = 0,
   discountCode = null,
   setupFee = 0,
-  currency = 'SAR',
+  currency = "SAR",
   ttlMs = 15 * 60 * 1000,
 }) {
   const planPrice = round2(plan?.pricing?.oneTime ?? plan?.price ?? 0);
 
   const discountableItems = [
     {
-      id: 'plan',
-      type: 'plan',
+      id: "plan",
+      type: "plan",
       referenceId: plan?._id || plan?.id || null,
       code: plan?.code || null,
-      label: plan?.nameEn || plan?.nameAr || plan?.name || plan?.code || 'Plan',
+      label: plan?.nameEn || plan?.nameAr || plan?.name || plan?.code || "Plan",
       quantity: 1,
       unitAmount: planPrice,
       subtotal: planPrice,
@@ -157,11 +159,11 @@ function buildCheckoutQuote({
       );
       return {
         id: `addon_${i}`,
-        type: 'addon',
+        type: "addon",
         addonType: a.addonType || a.type,
         templateType: a.templateType || null,
         referenceId: a.referenceId || null,
-        label: a.label || a.addonType || 'Add-on',
+        label: a.label || a.addonType || "Add-on",
         quantity: qty,
         unitAmount: unit,
         subtotal: sub,
@@ -199,9 +201,9 @@ function buildCheckoutQuote({
   const rawSetupFee = round2(setupFee || 0);
   if (rawSetupFee > 0) {
     lineItems.push({
-      type: 'setup_fee',
+      type: "setup_fee",
       referenceId: null,
-      label: 'One-time setup fee',
+      label: "One-time setup fee",
       quantity: 1,
       unitAmount: rawSetupFee,
       subtotal: rawSetupFee,
@@ -238,7 +240,7 @@ function buildCheckoutQuote({
     taxAmountHalalas: 0,
     total,
     totalHalalas: toHalalas(total),
-    currency: plan?.currency || currency || 'SAR',
+    currency: plan?.currency || currency || "SAR",
     lineItems,
     formatted: {
       planPrice: formatSar(planPrice),
@@ -251,12 +253,3 @@ function buildCheckoutQuote({
     quoteExpiresAt,
   };
 }
-
-module.exports = {
-  round2,
-  toHalalas,
-  halalasToSar,
-  formatSar,
-  allocateDiscount,
-  buildCheckoutQuote,
-};

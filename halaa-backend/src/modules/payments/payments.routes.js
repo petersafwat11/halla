@@ -16,8 +16,7 @@ const { requirePageAccess } = require('../../shared/middleware/rbac');
 const { idempotency } = require('../../shared/middleware/idempotency');
 const { validateZod, validateObjectId } = require('../../shared/middleware/validation');
 const { purchaseLimiter } = require('../../shared/middleware/rateLimiter');
-const { ADMIN_PAGES } = require('../../shared/constants');
-const { checkoutSchema } = require('./checkout.validation');
+const { checkoutSchema, quoteSchema } = require('./checkout.validation');
 const { refundSchema, captureSchema } = require('./payments.validation');
 
 /**
@@ -151,6 +150,32 @@ router.post("/revenuecat/dead-letters/:id/resolve", validateObjectId("id"), requ
  *       400: { $ref: '#/components/responses/BadRequest' }
  *       401: { $ref: '#/components/responses/Unauthorized' }
  */
+/**
+ * @swagger
+ * /payments/quote:
+ *   post:
+ *     summary: Authoritative checkout quote calculation
+ *     description: |
+ *       Returns complete line items, discount allocations, setup fee,
+ *       currency, total in SAR major and Halalas integer minor units, and quote signature.
+ *     tags: [Payments]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { $ref: '#/components/schemas/CheckoutQuoteRequest' }
+ *     responses:
+ *       200: { description: Authoritative quote }
+ *       400: { $ref: '#/components/responses/BadRequest' }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
+ */
+router.post(
+  '/quote',
+  purchaseLimiter,
+  validateZod(quoteSchema),
+  checkoutController.getQuote
+);
+
 router.post(
   '/checkout',
   purchaseLimiter,

@@ -1,9 +1,11 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { FaLock } from "react-icons/fa";
 import { IoIosArrowForward } from "react-icons/io";
 import { useValidateDiscount } from "@/hooks/discounts";
+import { useCheckoutQuote } from "@/hooks/checkout";
+import { round2, formatSar } from "@halaa/shared/utils";
 import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
 import LegalSurfaceLinks from "@/ui/common/LegalSurfaceLinks";
 import PaymentMethodSelector from "../_components/PaymentMethodSelector";
@@ -43,9 +45,32 @@ const Summary = ({
   const validateDiscount = useValidateDiscount();
   const discountLoading = validateDiscount.isPending;
 
-  const planPrice = parseFloat(selectedPlan?.price) || 0;
-  const subtotal = planPrice + addonTotal;
-  const finalTotal = Math.max(0, subtotal - discountAmount);
+  const formattedAddons = useMemo(() => {
+    return addonItems.map((item) => {
+      const type = item.addonType || item.type;
+      const base = { addonType: type, scope: "org" };
+      if (type === "extra_invites") {
+        return { ...base, scope: "pool", quantity: item.quantity };
+      }
+      if (type === "design_template") {
+        return { ...base, templateType: item.templateType };
+      }
+      return base;
+    });
+  }, [addonItems]);
+
+  const { data: quoteResponse } = useCheckoutQuote({
+    planCode: selectedPlan?.code,
+    addons: formattedAddons,
+    discountCode: discountApplied ? appliedCode : null,
+    enabled: Boolean(selectedPlan?.code),
+  });
+
+  const quote = quoteResponse?.data || quoteResponse || null;
+  const planPrice = quote?.planPrice ?? (parseFloat(selectedPlan?.price) || 0);
+  const effectiveDiscountAmount = quote?.discountAmount ?? discountAmount;
+  const subtotal = round2(planPrice + (quote?.addonsTotal ?? addonTotal));
+  const finalTotal = quote?.total ?? Math.max(0, round2(subtotal - effectiveDiscountAmount));
 
   const handleApplyDiscount = async () => {
     if (!discountCode.trim()) return;
@@ -161,7 +186,12 @@ const Summary = ({
     }
     setIsProcessing(true);
     try {
-      await onProceedToPayment();
+      await onProceedToPayment(quote || {
+        total: finalTotal,
+        planPrice,
+        addonsTotal: quote?.addonsTotal ?? addonTotal,
+        discountAmount: effectiveDiscountAmount,
+      });
     } finally {
       setIsProcessing(false);
     }
@@ -203,7 +233,7 @@ const Summary = ({
                 onRemove={handleRemoveDiscount}
                 applied={discountApplied}
                 loading={discountLoading}
-                amount={discountAmount}
+                amount={effectiveDiscountAmount}
                 appliedCode={appliedCode}
                 errorMessage={discountError}
                 t={t}
@@ -235,7 +265,7 @@ const Summary = ({
               <PaymentSummaryCard
                 planPrice={planPrice}
                 addonItems={addonItems}
-                discountAmount={discountAmount}
+                discountAmount={effectiveDiscountAmount}
                 finalTotal={finalTotal}
                 t={t}
               />

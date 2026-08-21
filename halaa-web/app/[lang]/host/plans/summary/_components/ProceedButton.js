@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import { formatSar } from "@halaa/shared/utils";
 import styles from "../summary.module.css";
 
 const ProceedButton = ({ onClick, processing, finalTotal, t }) => {
@@ -18,7 +19,7 @@ const ProceedButton = ({ onClick, processing, finalTotal, t }) => {
         <>
           <span>{t("summary.proceed.cta")}</span>
           <span className={styles.totalBadge}>
-            {finalTotal.toFixed(0)} {t("common.currency.sar")}
+            {formatSar(finalTotal)} {t("common.currency.sar")}
           </span>
         </>
       )}

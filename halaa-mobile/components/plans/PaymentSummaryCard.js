@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { formatSar } from "@halaa/shared/utils";
 import { colors, spacing, borderRadius, typography } from "../../styles/tokens";
 
 const PaymentSummaryCard = ({
@@ -17,13 +18,13 @@ const PaymentSummaryCard = ({
     <View style={styles.cardContent}>
       <Row
         label={t("summary.paymentSummary.planPrice")}
-        value={`${planPrice} ${t("summary.currency")}`}
+        value={`${formatSar(planPrice, { trimTrailingZeros: true })} ${t("summary.currency")}`}
       />
 
       {addonTotal > 0 && (
         <Row
           label={t("summary.paymentSummary.addons")}
-          value={`${addonTotal} ${t("summary.currency")}`}
+          value={`${formatSar(addonTotal, { trimTrailingZeros: true })} ${t("summary.currency")}`}
         />
       )}
 
@@ -33,7 +34,7 @@ const PaymentSummaryCard = ({
             {t("summary.paymentSummary.discount")}
           </Text>
           <Text style={styles.summaryValueDiscount}>
-            -{discountAmount.toFixed(0)} {t("summary.currency")}
+            -{formatSar(discountAmount, { trimTrailingZeros: true })} {t("summary.currency")}
           </Text>
         </View>
       )}
@@ -45,7 +46,9 @@ const PaymentSummaryCard = ({
           {t("summary.paymentSummary.total")}
         </Text>
         <View style={styles.totalValueWrap}>
-          <Text style={styles.totalValue}>{finalTotal.toFixed(0)}</Text>
+          <Text style={styles.totalValue}>
+            {formatSar(finalTotal, { trimTrailingZeros: true })}
+          </Text>
           <Text style={styles.totalCurrency}>{t("summary.currency")}</Text>
         </View>
       </View>

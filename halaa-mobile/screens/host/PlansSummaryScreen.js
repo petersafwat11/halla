@@ -39,6 +39,7 @@ import PurchaseStatusModal from "../../components/plans/PurchaseStatusModal";
 import DisclosureList from "../../components/plans/DisclosureList";
 import PurchaseLegalLinks from "../../components/plans/PurchaseLegalLinks";
 import DirectionalIonicon from "../../components/common/DirectionalIonicon";
+import { formatSar, round2 } from "@halaa/shared/utils";
 import { colors, spacing, borderRadius, typography } from "../../styles/tokens";
 
 const buildCheckoutAddons = (items = []) =>
@@ -368,6 +369,8 @@ const PlansSummaryScreen = () => {
           ? { discountCode: discountCode.trim() }
           : {}),
         source: buildSource(),
+        expectedAmount: finalTotal,
+        expectedTotal: finalTotal,
       });
       if (result?.requiresAction) {
         // useCheckout ran the 3DS step in an in-app browser that has now
@@ -659,7 +662,7 @@ const PlansSummaryScreen = () => {
                 ) : (
                   <>
                     <Text style={styles.footerTotalAmount}>
-                      {finalTotal.toFixed(0)}
+                      {formatSar(finalTotal, { trimTrailingZeros: true })}
                     </Text>
                     <Text style={styles.footerTotalCurrency}>
                       {t("summary.currency")}

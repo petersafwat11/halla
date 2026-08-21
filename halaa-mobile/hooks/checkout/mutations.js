@@ -55,7 +55,17 @@ export const clearPendingCheckoutCart = async () => {
 export const useCheckout = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ planCode, addons = [], discountCode, source, callbackUrl }) => {
+    mutationFn: async ({
+      planCode,
+      addons = [],
+      discountCode,
+      source,
+      callbackUrl,
+      expectedAmount,
+      expectedTotal,
+      quoteId,
+      quoteExpiresAt,
+    }) => {
       if (!planCode) throw new Error("planCode is required");
       const idempotencyKey = newIdempotencyKey();
       // Hand Moyasar our public bounce endpoint (http[s], as Moyasar
@@ -68,6 +78,10 @@ export const useCheckout = () => {
         addons,
         ...(discountCode ? { discountCode } : {}),
         ...(source ? { source } : {}),
+        ...(expectedAmount != null ? { expectedAmount } : {}),
+        ...(expectedTotal != null ? { expectedTotal } : {}),
+        ...(quoteId ? { quoteId } : {}),
+        ...(quoteExpiresAt ? { quoteExpiresAt } : {}),
         callbackUrl: moyasarCallback,
       };
       const response = await apiFetch(ENDPOINTS.PAYMENTS.CHECKOUT, {
