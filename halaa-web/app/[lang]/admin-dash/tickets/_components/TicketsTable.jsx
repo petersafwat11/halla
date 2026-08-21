@@ -27,9 +27,9 @@ export default function TicketsTable() {
   const filters = useMemo(() => ({
     page: searchParams.get("page") || 1,
     limit: searchParams.get("limit") || 10,
-    search: searchParams.get("search"),
-    status: searchParams.get("status"),
-    priority: searchParams.get("priority"),
+    search: searchParams.get("search") || "",
+    status: searchParams.get("status") || "",
+    priority: searchParams.get("priority") || "",
     from: searchParams.get("from"),
     to: searchParams.get("to"),
   }), [searchParams]);
@@ -87,8 +87,30 @@ export default function TicketsTable() {
   }, [exportMutation, filters, t]);
 
   const handlePageChange = useCallback((page) => {
-    const params = new URLSearchParams(searchParams);
-    params.set("page", page);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", String(page));
+    router.push(`?${params.toString()}`, { scroll: false });
+  }, [router, searchParams]);
+
+  const handleSearchChange = useCallback((query) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (query) {
+      params.set("search", query);
+    } else {
+      params.delete("search");
+    }
+    params.set("page", "1");
+    router.push(`?${params.toString()}`, { scroll: false });
+  }, [router, searchParams]);
+
+  const handleFilterChange = useCallback((statusValue) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (statusValue) {
+      params.set("status", statusValue);
+    } else {
+      params.delete("status");
+    }
+    params.set("page", "1");
     router.push(`?${params.toString()}`, { scroll: false });
   }, [router, searchParams]);
 
@@ -125,6 +147,8 @@ export default function TicketsTable() {
           filters={filters}
           data={data}
           handlePageChange={handlePageChange}
+          handleSearchChange={handleSearchChange}
+          handleFilterChange={handleFilterChange}
           handleExport={handleExport}
           handleDelete={handleDelete}
           handleStatusChange={handleStatusChange}

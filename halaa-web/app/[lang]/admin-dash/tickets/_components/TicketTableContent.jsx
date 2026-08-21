@@ -11,7 +11,7 @@ import styles from "./TicketsTable.module.css";
 
 export default function TicketTableContent({
   t, tableData, canUpdate, canDelete, filters, data,
-  handlePageChange, handleExport, handleDelete, handleStatusChange,
+  handlePageChange, handleSearchChange, handleFilterChange, handleExport, handleDelete, handleStatusChange,
   handleAssignClick, handleResponseClick, handleViewResolutionClick,
 }) {
   const { t: tHook } = useTranslation("adminTickets");
@@ -94,6 +94,7 @@ export default function TicketTableContent({
 
   return (
     <Table
+      mode="server"
       title={i18nT("table.title")}
       headers={[
         i18nT("table.columns.ticketType"),
@@ -105,6 +106,10 @@ export default function TicketTableContent({
       ]}
       data={tableData}
       headerKeys={["subject", "user", "priority", "status", "assignedTo", "createdAt"]}
+      searchValue={filters.search || ""}
+      onSearchChange={handleSearchChange}
+      activeFilter={filters.status || ""}
+      onFilterChange={handleFilterChange}
       renderCell={renderCell}
       getRowActions={getRowActions}
       showCheckboxes={canUpdate || canDelete}
@@ -120,7 +125,7 @@ export default function TicketTableContent({
         { label: i18nT("status.closed"), value: "closed" },
       ]}
       pagination={{
-        currentPage: parseInt(filters.page),
+        currentPage: parseInt(filters.page, 10) || 1,
         totalPages: data?.pagination?.pages || data?.pagination?.totalPages || 1,
         totalItems: data?.pagination?.total || 0,
         onPageChange: handlePageChange,

@@ -27,8 +27,8 @@ export default function EventsTable() {
   const filters = useMemo(() => ({
     page: searchParams.get("page") || 1,
     limit: searchParams.get("limit") || 10,
-    search: searchParams.get("search"),
-    status: searchParams.get("status"),
+    search: searchParams.get("search") || "",
+    status: searchParams.get("status") || "",
     from: searchParams.get("from"),
     to: searchParams.get("to"),
   }), [searchParams]);
@@ -189,8 +189,30 @@ export default function EventsTable() {
   }));
 
   const handlePageChange = useCallback((page) => {
-    const params = new URLSearchParams(searchParams);
-    params.set("page", page);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", String(page));
+    router.push(`?${params.toString()}`);
+  }, [searchParams, router]);
+
+  const handleSearchChange = useCallback((query) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (query) {
+      params.set("search", query);
+    } else {
+      params.delete("search");
+    }
+    params.set("page", "1");
+    router.push(`?${params.toString()}`);
+  }, [searchParams, router]);
+
+  const handleFilterChange = useCallback((statusValue) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (statusValue) {
+      params.set("status", statusValue);
+    } else {
+      params.delete("status");
+    }
+    params.set("page", "1");
     router.push(`?${params.toString()}`);
   }, [searchParams, router]);
 
@@ -204,6 +226,7 @@ export default function EventsTable() {
   return (
     <div className={styles.container}>
       <Table
+        mode="server"
         title={t("events.title", "إدارة المناسبات")}
         headers={[
           t("events.columns.title", "العنوان"),
@@ -213,6 +236,10 @@ export default function EventsTable() {
           t("events.columns.status", "الحالة"),
         ]}
         data={tableData}
+        searchValue={filters.search}
+        onSearchChange={handleSearchChange}
+        activeFilter={filters.status}
+        onFilterChange={handleFilterChange}
         renderCell={renderCell}
         getRowActions={getRowActions}
         showCheckboxes={canDelete}
@@ -228,7 +255,7 @@ export default function EventsTable() {
           { label: t("events.filter.cancelled", "ملغي"), value: "cancelled" },
         ]}
         pagination={{
-          currentPage: parseInt(filters.page),
+          currentPage: parseInt(filters.page, 10) || 1,
           totalPages: data?.pagination?.pages || 1,
           totalItems: data?.pagination?.total || 0,
           onPageChange: handlePageChange,

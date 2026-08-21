@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
+import React, { useState, useRef, useEffect, useLayoutEffect, useMemo } from "react";
 import styles from "./table.module.css";
 import Image from "next/image";
 import { useTranslation } from "react-i18next";
@@ -11,10 +11,12 @@ const Table = ({
   headerKeys = null,
   data = [],
   onRowClick = null,
+  onRowHover = null,
   actions = [],
   getRowActions = null,
   filterOptions = [],
   activeFilter = null,
+  onFilterChange = null,
   title = "",
   showSearch = true,
   showFilter = true,
@@ -37,6 +39,12 @@ const Table = ({
   // the inline bulk-action buttons. Fires with the array of selected row ids.
   onSelectionChange = null,
   pagination = null,
+  // Mode configuration: "client" (default) or "server"
+  mode = "client",
+  searchValue = undefined,
+  onSearchChange = null,
+  debounceMs = 300,
+  emptyMessage = null,
 }) => {
   const { t } = useTranslation("table");
 
@@ -46,77 +54,43 @@ const Table = ({
     actions: actionsLabel || t("actions", "الإجراءات"),
     filter: filterLabel || t("filter", "التصفية"),
     export: exportLabel || t("export", "تصدير البيانات"),
+    clearSelection: t("clearSelection", "إلغاء التحديد"),
+    clearSearch: t("clearSearch", "مسح البحث"),
+    noData: emptyMessage || t("noData", "لا توجد بيانات"),
   };
   const [selectedRows, setSelectedRows] = useState([]);
 
-  // Lift selection to a parent when requested. Deps are [selectedRows] only —
-  // the callback identity is intentionally excluded so a parent passing a fresh
-  // function each render can't trigger an update loop.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Lift selection to parent using a ref to avoid unnecessary re-triggers
+  const onSelectionChangeRef = useRef(onSelectionChange);
+  onSelectionChangeRef.current = onSelectionChange;
+
   useEffect(() => {
-    onSelectionChange?.(selectedRows);
+    onSelectionChangeRef.current?.(selectedRows);
   }, [selectedRows]);
 
   const [actionsDropdownOpen, setActionsDropdownOpen] = useState(null);
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
   const [bulkActionsDropdownOpen, setBulkActionsDropdownOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [dropdownPosition, setDropdownPosition] = useState({});
-  const actionsRef = useRef(null);
-  const filterRef = useRef(null);
-  const bulkActionsRef = useRef(null);
-  const dropdownRefs = useRef({});
-  // Trigger element refs — captured synchronously on click so positioning
-  // doesn't depend on the (possibly stale) synthetic event later.
-  const actionsTriggerRef = useRef(null);
-  const filterTriggerRef = useRef(null);
-  const bulkTriggerRef = useRef(null);
 
-  // Close dropdowns when clicking outside
+  // Controlled vs uncontrolled search handling
+  const isSearchControlled = searchValue !== undefined;
+  const [internalSearchQuery, setInternalSearchQuery] = useState(searchValue ?? "");
+  const debounceTimerRef = useRef(null);
+  const onSearchChangeRef = useRef(onSearchChange);
+  onSearchChangeRef.current = onSearchChange;
+
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      // For row actions dropdown - check if click is inside any action dropdown
-      // This is needed because fixed-positioned dropdowns might not be contained in actionsRef
-      const isInsideActionDropdown = Object.keys(dropdownRefs.current).some(
-        (key) => {
-          if (key.startsWith("actions-")) {
-            const dropdown = dropdownRefs.current[key];
-            return dropdown && dropdown.contains(event.target);
-          }
-          return false;
-        }
-      );
+    if (isSearchControlled) {
+      setInternalSearchQuery(searchValue ?? "");
+    }
+  }, [isSearchControlled, searchValue]);
 
-      // Also check if click is on the more button itself
-      const isOnMoreButton = event.target.closest(`.${styles.moreButton}`);
-
-      if (!isInsideActionDropdown && !isOnMoreButton) {
-        setActionsDropdownOpen(null);
-      }
-
-      // Filter dropdown
-      const filterDropdown = dropdownRefs.current["filter"];
-      if (
-        filterRef.current &&
-        !filterRef.current.contains(event.target) &&
-        (!filterDropdown || !filterDropdown.contains(event.target))
-      ) {
-        setFilterDropdownOpen(false);
-      }
-
-      // Bulk actions dropdown
-      const bulkDropdown = dropdownRefs.current["bulkActions"];
-      if (
-        bulkActionsRef.current &&
-        !bulkActionsRef.current.contains(event.target) &&
-        (!bulkDropdown || !bulkDropdown.contains(event.target))
-      ) {
-        setBulkActionsDropdownOpen(false);
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
       }
     };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   // Position the row-actions dropdown synchronously after open, before paint.
@@ -179,9 +153,22 @@ const Table = ({
     };
   }, [actionsDropdownOpen, filterDropdownOpen, bulkActionsDropdownOpen]);
 
+  // Close dropdowns on Escape key press
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setActionsDropdownOpen(null);
+        setFilterDropdownOpen(false);
+        setBulkActionsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   const handleSelectAll = (e) => {
     if (e.target.checked) {
-      setSelectedRows(data.map((item) => item.id));
+      setSelectedRows(data.map((item) => item.id || item._id).filter(Boolean));
     } else {
       setSelectedRows([]);
     }
@@ -294,27 +281,60 @@ const Table = ({
   };
 
   const handleFilterOptionClick = (option) => {
+    const filterVal = option.value !== undefined ? option.value : option.id;
+    if (onFilterChange) {
+      onFilterChange(filterVal, option);
+    }
     if (option.onClick) {
-      option.onClick();
+      option.onClick(option);
     }
     setFilterDropdownOpen(false);
   };
 
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
+  const handleSearchInputChange = (e) => {
+    const nextVal = e.target.value;
+    setInternalSearchQuery(nextVal);
+
+    if (mode === "server" || onSearchChange) {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+      debounceTimerRef.current = setTimeout(() => {
+        onSearchChangeRef.current?.(nextVal.trim());
+      }, debounceMs);
+    }
   };
 
-  // Filter data based on search query
-  const filteredData = data.filter((row) => {
-    if (!searchQuery) return true;
+  const handleClearSearch = (e) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    setInternalSearchQuery("");
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    if (mode === "server" || onSearchChange) {
+      onSearchChangeRef.current?.("");
+    }
+  };
 
-    const searchLower = searchQuery.toLowerCase();
-    return Object.keys(row).some((key) => {
-      if (key === "id") return false;
-      const value = row[key];
-      return String(value).toLowerCase().includes(searchLower);
+  // In server mode, data is authoritative from server (never locally re-filtered).
+  // In client mode, data is filtered locally against the search query.
+  const filteredData = useMemo(() => {
+    if (mode === "server") {
+      return data;
+    }
+
+    if (!internalSearchQuery) return data;
+
+    const searchLower = internalSearchQuery.toLowerCase();
+    return data.filter((row) => {
+      return Object.keys(row).some((key) => {
+        if (key === "id" || key === "_id") return false;
+        const value = row[key];
+        return String(value ?? "").toLowerCase().includes(searchLower);
+      });
     });
-  });
+  }, [data, internalSearchQuery, mode]);
 
   const handleBulkActionsClick = (e) => {
     e.preventDefault();
@@ -344,6 +364,16 @@ const Table = ({
     setSelectedRows([]);
   };
 
+  const isFilterActive = useMemo(() => {
+    if (activeFilter === null || activeFilter === undefined) return false;
+    const str = String(activeFilter).trim();
+    return str !== "" && str !== "all";
+  }, [activeFilter]);
+
+  const totalColumnCount = (showCheckboxes ? 1 : 0) +
+    headers.length +
+    ((getRowActions || (actions && actions.length > 0)) ? 1 : 0);
+
   const renderActions = (row) => {
     // Support dynamic row-based actions via getRowActions prop
     const rowActions = getRowActions ? getRowActions(row) : actions;
@@ -363,6 +393,8 @@ const Table = ({
             type="button"
             className={styles.moreButton}
             onClick={(e) => toggleActionsDropdown(row.id, e)}
+            aria-haspopup="menu"
+            aria-expanded={actionsDropdownOpen === row.id}
           >
             <Image
               src="/svg/events/more.svg"
@@ -376,6 +408,7 @@ const Table = ({
               ref={(el) => (dropdownRefs.current[`actions-${row.id}`] = el)}
               className={styles.dropdown}
               style={dropdownPosition[`actions-${row.id}`] || {}}
+              role="menu"
             >
               {dropdownActions.map((action, index) => {
                 // Support dynamic props based on row
@@ -399,6 +432,7 @@ const Table = ({
                     key={`${row.id}-action-${index}-${action.type || 'icon'}`}
                     className={styles.dropdownItem}
                     onClick={(e) => handleActionClick(action, row, e)}
+                    role="menuitem"
                   >
                     {actionIcon &&
                       (typeof actionIcon === "string" ? (
@@ -486,9 +520,21 @@ const Table = ({
                     type="text"
                     className={styles.searchInput}
                     placeholder={labels.search}
-                    value={searchQuery}
-                    onChange={handleSearchChange}
+                    value={internalSearchQuery}
+                    onChange={handleSearchInputChange}
+                    aria-label={labels.search}
                   />
+                  {internalSearchQuery ? (
+                    <button
+                      type="button"
+                      className={styles.clearSearchButton}
+                      onClick={handleClearSearch}
+                      aria-label={labels.clearSearch}
+                      title={labels.clearSearch}
+                    >
+                      <FiX size={14} />
+                    </button>
+                  ) : null}
                 </div>
               )}
 
@@ -496,8 +542,10 @@ const Table = ({
                 <div className={styles.filterWrapper} ref={filterRef}>
                   <button
                     type="button"
-                    className={styles.actionButton}
+                    className={`${styles.actionButton} ${isFilterActive ? styles.filterButtonActive : ""}`}
                     onClick={handleFilterClick}
+                    aria-haspopup="listbox"
+                    aria-expanded={filterDropdownOpen}
                   >
                     <Image
                       src="/svg/events/filter.svg"
@@ -512,16 +560,22 @@ const Table = ({
                       ref={(el) => (dropdownRefs.current["filter"] = el)}
                       className={styles.dropdown}
                       style={dropdownPosition["filter"] || {}}
+                      role="listbox"
                     >
                       {filterOptions.map((option, index) => {
                         const optionLabel = option.label ?? option.text;
-                        const isActive = activeFilter === option.value;
+                        const optionVal = option.value !== undefined ? option.value : option.id;
+                        const isActive = activeFilter !== null && activeFilter !== undefined
+                          ? String(activeFilter) === String(optionVal ?? "")
+                          : false;
                         return (
                           <button
                             type="button"
                             key={`filter-${optionLabel || index}`}
                             className={`${styles.dropdownItem} ${isActive ? styles.dropdownItemActive : ""}`}
                             onClick={() => handleFilterOptionClick(option)}
+                            role="option"
+                            aria-selected={isActive}
                           >
                             {option.icon &&
                               (typeof option.icon === "string" ? (
@@ -563,8 +617,7 @@ const Table = ({
                 (inlineBulkActions ? (
                   // Inline mode — show each bulk action as a clear labeled
                   // button right beside the export button, plus a
-                  // clear-selection control. The selected count is shown
-                  // beside the table title instead of here.
+                  // clear-selection control.
                   <div className={styles.selectionToolbar}>
                     {bulkActions.map((action, index) => (
                       <button
@@ -595,8 +648,8 @@ const Table = ({
                       type="button"
                       className={styles.clearSelectionButton}
                       onClick={handleClearSelection}
-                      aria-label={t("clearSelection", "Clear selection")}
-                      title={t("clearSelection", "Clear selection")}
+                      aria-label={labels.clearSelection}
+                      title={labels.clearSelection}
                     >
                       <FiX size={16} />
                     </button>
@@ -611,6 +664,8 @@ const Table = ({
                       className={styles.moreButton}
                       onClick={handleBulkActionsClick}
                       title="إجراءات جماعية"
+                      aria-haspopup="menu"
+                      aria-expanded={bulkActionsDropdownOpen}
                     >
                       <Image
                         src="/svg/events/more.svg"
@@ -624,6 +679,7 @@ const Table = ({
                         ref={(el) => (dropdownRefs.current["bulkActions"] = el)}
                         className={styles.dropdown}
                         style={dropdownPosition["bulkActions"] || {}}
+                        role="menu"
                       >
                         {bulkActions.map((action, index) => (
                           <button
@@ -631,6 +687,7 @@ const Table = ({
                             key={`bulk-${action.text || index}`}
                             className={styles.dropdownItem}
                             onClick={(e) => handleBulkActionClick(action, e)}
+                            role="menuitem"
                           >
                             {action.icon &&
                               (typeof action.icon === "string" ? (
@@ -668,8 +725,9 @@ const Table = ({
                       className={styles.checkbox}
                       onChange={handleSelectAll}
                       checked={
-                        selectedRows.length === data.length && data.length > 0
+                        selectedRows.length === filteredData.length && filteredData.length > 0
                       }
+                      aria-label={t("selectAll", "تحديد الكل")}
                     />
                   </th>
                 )}
@@ -682,32 +740,42 @@ const Table = ({
               </tr>
             </thead>
             <tbody>
-              {filteredData.map((row) => (
-                <tr
-                  key={row.id || row._id}
-                  onClick={(e) => handleRowClick(row, e)}
-                  className={onRowClick ? styles.clickableRow : ""}
-                >
-                  {showCheckboxes && (
-                    <td>
-                      <input
-                        type="checkbox"
-                        className={styles.checkbox}
-                        checked={selectedRows.includes(row.id)}
-                        onChange={() => handleSelectRow(row.id)}
-                      />
-                    </td>
-                  )}
-                  {(headerKeys || Object.keys(row).filter((key) => key !== "id")).map((key, index) => (
-                    <td key={`${row.id}-cell-${key}`}>
-                      {renderCell ? renderCell(key, row[key], row) : (row[key] ?? "-")}
-                    </td>
-                  ))}
-                  {(getRowActions || (actions && actions.length > 0)) && (
-                    <td className={styles.actionsCell}>{renderActions(row)}</td>
-                  )}
+              {filteredData.length === 0 ? (
+                <tr>
+                  <td colSpan={totalColumnCount || 1} className={styles.emptyCell}>
+                    {labels.noData}
+                  </td>
                 </tr>
-              ))}
+              ) : (
+                filteredData.map((row) => (
+                  <tr
+                    key={row.id || row._id}
+                    onClick={(e) => handleRowClick(row, e)}
+                    onMouseEnter={() => onRowHover?.(row)}
+                    className={onRowClick ? styles.clickableRow : ""}
+                  >
+                    {showCheckboxes && (
+                      <td>
+                        <input
+                          type="checkbox"
+                          className={styles.checkbox}
+                          checked={selectedRows.includes(row.id || row._id)}
+                          onChange={() => handleSelectRow(row.id || row._id)}
+                          aria-label={`تحديد ${row.title || row.subject || row.id || ""}`}
+                        />
+                      </td>
+                    )}
+                    {(headerKeys || Object.keys(row).filter((key) => key !== "id" && key !== "_id")).map((key) => (
+                      <td key={`${row.id || row._id}-cell-${key}`}>
+                        {renderCell ? renderCell(key, row[key], row) : (row[key] ?? "-")}
+                      </td>
+                    ))}
+                    {(getRowActions || (actions && actions.length > 0)) && (
+                      <td className={styles.actionsCell}>{renderActions(row)}</td>
+                    )}
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

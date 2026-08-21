@@ -252,7 +252,7 @@ Update one row only after its exit criteria and required tests pass. Use `Blocke
 | 1.4 Admin event/staff mutation safety | Complete | 0.2, preferably 1.3 |
 | 1.5 Event entitlement/routes/messaging/stats | Complete | 0.2, 1.2 |
 | 1.6 Scheduling | Complete | 1.1, product decision |
-| 2.1 Shared table server mode | Not started | 0.2 |
+| 2.1 Shared table server mode | Complete | 0.2 |
 | 2.2 Admin list migrations/stats | Not started | 2.1 |
 | 2.3 Bulk API envelope | Not started | 0.2 |
 | 2.4 Ticket transitions/bulk | Not started | 0.2, 2.3 |
@@ -1198,3 +1198,43 @@ This program is complete only when:
   - None.
 - **Blockers / deferred work:**
   - Phase 1 (Events, Guests, Entitlements, Scheduling) is now 100% Complete across Sessions 1.1, 1.2, 1.3, 1.4, 1.5, and 1.6. Ready for Phase 2 (Session 2.1).
+
+### Session 2.1 — Shared table server-mode contract
+
+- **Date:** 2026-08-21
+- **Status:** Complete
+- **Issues addressed:** ADM-01 (Shared admin table filters only invoke option.onClick; most screens provide {label,value}, so filters are inert), ADM-02 (Shared table search filters only current server page without updating API/URL search).
+- **Scope summary:**
+  - Upgraded shared web `Table` component (`halaa-web/ui/commen/new-table/Table.js` and `table.module.css`) to explicitly support `mode="server"` vs default `mode="client"`.
+  - Added controlled search props (`searchValue`, `onSearchChange`, `debounceMs`), debounced typing updates, and an instant search clear button (`handleClearSearch`).
+  - Added controlled filter props (`activeFilter`, `onFilterChange`), properly invoking `onFilterChange(option.value, option)` while preserving legacy `option.onClick` compatibility, and highlighted active filter state with `isFilterActive`.
+  - In `mode="server"`, `filteredData` directly renders `data` (authoritative server results), eliminating client-side double/page-only filtering.
+  - Added empty state row fallback (`<tr><td colSpan={...}>`) and keyboard accessibility (`Escape` key closes all open dropdowns; ARIA roles and expanded attributes).
+  - Migrated `EventsTable.jsx` and `TicketsTable.jsx` / `TicketTableContent.jsx` as reference implementations with server-mode integration and automatic page reset (`params.set("page", "1")`) on search/filter changes.
+  - Added test suite `halaa-web/__tests__/ui/tableServerMode.test.mjs` validating the server-mode contract, controlled search/filter, and reference migrations.
+- **Root cause analysis:**
+  - **ADM-01:** `Table.js` previously only invoked `option.onClick()` inside `handleFilterOptionClick`. Screen implementations provided `filterOptions` as arrays of `{ label, value }` without `onClick` handlers, and without an `onFilterChange` prop on `Table`, rendering filter dropdown clicks inert.
+  - **ADM-02:** `Table.js` executed `data.filter(...)` locally using internal state `searchQuery` without calling any `onSearchChange` or modifying URL query parameters. When used with paginated server endpoints, search was confined only to the 10 rows loaded on the active page instead of dispatching query requests to the backend.
+- **Files changed:**
+  - `halaa-web/ui/commen/new-table/Table.js`
+  - `halaa-web/ui/commen/new-table/table.module.css`
+  - `halaa-web/app/[lang]/admin-dash/events/_components/EventsTable.jsx`
+  - `halaa-web/app/[lang]/admin-dash/tickets/_components/TicketsTable.jsx`
+  - `halaa-web/app/[lang]/admin-dash/tickets/_components/TicketTableContent.jsx`
+  - `halaa-web/__tests__/ui/tableServerMode.test.mjs` (new)
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md`
+- **Exact test commands & results:**
+  - `cd halaa-web && npm run lint; npm test` → PASS (41 unit tests passed, 0 errors, 31 warnings)
+  - `cd shared && npm run lint; npm test` → PASS (14 unit tests passed, 0 lint warnings)
+  - `cd halaa-backend && npm run catalog:verify; npm test` → PASS (346 tests passed, 0 failures)
+  - `cd halaa-mobile && npm run lint; npm test` → PASS (116 tests passed, 0 errors)
+- **Exit-criteria verification:**
+  - `Table.js` supports explicit `mode="server"` and never filters only the current server page.
+  - Event and ticket search and filters update URL parameters, reset page to 1, and dispatch parameterized backend requests.
+  - Filter option clicks invoke `onFilterChange` with option values and objects.
+  - Automated tests in `halaa-web/__tests__/ui/tableServerMode.test.mjs` pass.
+- **Remaining risks / decisions:**
+  - None.
+- **Blockers / deferred work:**
+  - Session 2.1 is Complete. Proceeding to Session 2.2 (Migrate all admin lists and aggregate stats).
+
