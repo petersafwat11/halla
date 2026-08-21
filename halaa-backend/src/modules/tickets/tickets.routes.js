@@ -28,6 +28,8 @@ const {
   assignTicketSchema,
   rateTicketSchema,
   listTicketsQuerySchema,
+  bulkDeleteTicketsSchema,
+  bulkTicketStatusSchema,
 } = require("./tickets.validation");
 
 router.use(protect);
@@ -121,16 +123,138 @@ router
   .route("/")
   .get(validateZod(listTicketsQuerySchema, 'query'), ticketsController.getTickets)
   .post(
-    // uploadLimiter (20/10min) guards the file-upload path against abuse; it is
-    // generous enough not to impede normal ticket creation. Note: unlike the
-    // marketplace/post-event UGC routes we deliberately do NOT gate ticket
-    // attachments behind requireUserUgcTerms — a support ticket is private
-    // admin-facing content (like an avatar), not published community UGC.
     uploadLimiter,
     uploadMedia.single("ticketAttachment"),
     validateZod(createTicketSchema),
     ticketsController.createTicket
   );
+
+/**
+ * @swagger
+ * /tickets/export:
+ *   get:
+ *     summary: Export tickets to Excel
+ *     description: Export filtered tickets as an Excel file. Admin with export permission only.
+ *     tags: [Tickets]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: priority
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: from
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: query
+ *         name: to
+ *         schema:
+ *           type: string
+ *           format: date
+ *     responses:
+ *       200:
+ *         description: Excel file download
+ *         content:
+ *           application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         $ref: '#/components/responses/Forbidden'
+ */
+router.get(
+  "/export",
+  requirePageAccess(ADMIN_PAGES.TICKETS, "export"),
+  ticketsController.exportTickets
+);
+
+/**
+ * @swagger
+ * /tickets/bulk-delete:
+ *   post:
+ *     summary: Bulk delete tickets
+ *     description: Delete multiple tickets by IDs. Admin only
+ *     tags: [Tickets]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [ids]
+ *             properties:
+ *               ids:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *     responses:
+ *       200:
+ *         description: Bulk delete result
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         $ref: '#/components/responses/Forbidden'
+ */
+router.post(
+  "/bulk-delete",
+  validateZod(bulkDeleteTicketsSchema),
+  requirePageAccess(ADMIN_PAGES.TICKETS, "delete"),
+  ticketsController.bulkDeleteTickets
+);
+
+/**
+ * @swagger
+ * /tickets/bulk-status:
+ *   post:
+ *     summary: Bulk update ticket status
+ *     description: Update status of multiple tickets by IDs. Admin only
+ *     tags: [Tickets]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [ids, status]
+ *             properties:
+ *               ids:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               status:
+ *                 type: string
+ *               resolution:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Bulk status update result
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         $ref: '#/components/responses/Forbidden'
+ */
+router.post(
+  "/bulk-status",
+  validateZod(bulkTicketStatusSchema),
+  requirePageAccess(ADMIN_PAGES.TICKETS, "update"),
+  ticketsController.bulkUpdateTicketStatus
+);
 
 /**
  * @swagger
@@ -203,57 +327,6 @@ router
  *       404:
  *         $ref: '#/components/responses/NotFound'
  */
-/**
- * @swagger
- * /tickets/export:
- *   get:
- *     summary: Export tickets to Excel
- *     description: Export filtered tickets as an Excel file. Admin with export permission only.
- *     tags: [Tickets]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: status
- *         schema:
- *           type: string
- *       - in: query
- *         name: priority
- *         schema:
- *           type: string
- *       - in: query
- *         name: search
- *         schema:
- *           type: string
- *       - in: query
- *         name: from
- *         schema:
- *           type: string
- *           format: date
- *       - in: query
- *         name: to
- *         schema:
- *           type: string
- *           format: date
- *     responses:
- *       200:
- *         description: Excel file download
- *         content:
- *           application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
- *             schema:
- *               type: string
- *               format: binary
- *       401:
- *         $ref: '#/components/responses/Unauthorized'
- *       403:
- *         $ref: '#/components/responses/Forbidden'
- */
-router.get(
-  "/export",
-  requirePageAccess(ADMIN_PAGES.TICKETS, "export"),
-  ticketsController.exportTickets
-);
-
 router
   .route("/:id")
   .get(validateObjectId("id"), ticketsController.getTicketById)
@@ -376,7 +449,6 @@ router.patch(
  *       404:
  *         $ref: '#/components/responses/NotFound'
  */
-// Ticket rating (user submits rating)
 router.patch("/:id/rate", validateObjectId("id"), validateZod(rateTicketSchema), ticketsController.rateTicket);
 
 /**
@@ -438,4 +510,3 @@ router.get(
 );
 
 module.exports = router;
-

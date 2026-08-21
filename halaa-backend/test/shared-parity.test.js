@@ -109,6 +109,20 @@ test("Status Constants Parity: Backend and @halaa/shared definitions match", asy
     Object.values(shared.INVITATION_TYPE).sort(),
     "INVITATION_TYPE values must match"
   );
+
+  // 9. TICKET_TRANSITIONS parity
+  assert.deepEqual(
+    Object.keys(backendStatus.TICKET_TRANSITIONS).sort(),
+    Object.keys(shared.TICKET_TRANSITIONS).sort(),
+    "TICKET_TRANSITIONS keys must match"
+  );
+  for (const status of Object.keys(backendStatus.TICKET_TRANSITIONS)) {
+    assert.deepEqual(
+      [...(backendStatus.TICKET_TRANSITIONS[status] || [])].sort(),
+      [...(shared.TICKET_TRANSITIONS[status] || [])].sort(),
+      `TICKET_TRANSITIONS for ${status} must match`
+    );
+  }
 });
 
 test("RSVP Buckets cover all backend guest lifecycle statuses", async () => {

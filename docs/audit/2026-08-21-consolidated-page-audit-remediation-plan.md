@@ -255,7 +255,7 @@ Update one row only after its exit criteria and required tests pass. Use `Blocke
 | 2.1 Shared table server mode | Complete | 0.2 |
 | 2.2 Admin list migrations/stats | Complete | 2.1 |
 | 2.3 Bulk API envelope | Complete | 0.2 |
-| 2.4 Ticket transitions/bulk | Not started | 0.2, 2.3 |
+| 2.4 Ticket transitions/bulk | Complete | 0.2, 2.3 |
 | 2.5 Ticket attachment matrix | Not started | 0.1 |
 | 2.6 Admin creation/cache keys | Not started | 0.2 |
 | 3.1 Plan semantics/invite pool | Not started | 0.2 |
@@ -1351,5 +1351,67 @@ This program is complete only when:
 - **Remaining risks / decisions:**
   - None.
 - **Blockers / deferred work:**
-  - Ready for Git commit for Session 2.3.
+  - Session 2.3 is Complete and committed.
+
+### Session 2.4 — Ticket Transition and Bulk Behavior (`ADM-05`, `ADM-06`, `ADM-07`)
+- **Status:** Complete
+- **Date / environment:** 2026-08-21 / Windows (Node v20.18.0)
+- **What was done:**
+  - **Ticket State Machine & Transitions (`ADM-05`):**
+    - Defined canonical `TICKET_TRANSITIONS` state machine and `isValidTicketStatusTransition` helper in `@halaa/shared/constants/ticketConstants.js`, `@halaa/shared/constants/status.js`, and `halaa-backend/src/shared/constants/status.js`.
+    - Defined reopen semantics in `TICKET_TRANSITIONS[TICKET_STATUS.RESOLVED]`: supports both `in_progress` and `open` transitions.
+    - Added `allowedTransitions: TICKET_TRANSITIONS[ticket.status] || []` to formatted ticket objects returned by `tickets.service.js`.
+  - **Ticket Subject Normalization (`ADM-06`):**
+    - Updated `toTicketDTO` in `@halaa/shared/utils/adapters.js` to normalize `subject`, `title`, `ticketNumber`, and `resolution`.
+    - Updated `TicketDetailView.jsx` to render `#{ticket.ticketNumber} - {ticket.subject || ticket.title}`.
+  - **Bulk Resolve & Delete with Single-Confirmation & Per-Item Results (`ADM-07`):**
+    - Implemented `bulkUpdateTicketStatus` and `bulkDeleteTickets` in `tickets.service.js` and `tickets.controller.js`.
+    - Added `bulkDeleteTicketsSchema` and `bulkTicketStatusSchema` in `tickets.validation.js` with deduplication and bounds `[1, 200]`.
+    - Mounted `POST /tickets/bulk-delete` and `POST /tickets/bulk-status` endpoints in `tickets.routes.js`.
+    - Added `bulkDelete` and `bulkStatus` to `API_PATHS.tickets` in `@halaa/shared/api/paths.js`.
+    - Added `bulkDelete` and `bulkStatus` mutations to `useTicketMutation` in `halaa-web/hooks/tickets/mutations.js`.
+    - Updated `TicketsTable.jsx` and `TicketTableContent.jsx` to provide one-confirmation bulk operations (`handleBulkDelete` and `handleBulkResolve`) without per-item prompt loops.
+    - Updated `halaa-mobile/config/api.js` (`ENDPOINTS.TICKETS` & `ENDPOINTS.ADMIN.TICKETS`) and `halaa-mobile/hooks/admin/mutations.js` (`useBulkDeleteTickets`, `useBulkResolveTickets`) to call backend bulk endpoints with `toBulkIdsPayload`.
+  - **Automated Regression Suites:**
+    - Created `halaa-backend/test/ticket-transitions-bulk.test.js` (4 tests).
+    - Updated `halaa-backend/test/shared-parity.test.js` to assert `TICKET_TRANSITIONS` parity between backend and shared.
+    - Updated `shared/test/contracts.test.js` with ticket state machine transition tests and DTO normalization checks.
+    - Created `halaa-web/__tests__/ui/ticketTransitionsBulk.test.mjs` (3 tests).
+    - Created `halaa-mobile/__tests__/admin/ticketBulkMutations.test.js` (1 test).
+- **Files changed:**
+  - `shared/src/constants/ticketConstants.js`
+  - `shared/src/utils/adapters.js`
+  - `shared/src/api/paths.js`
+  - `shared/test/contracts.test.js`
+  - `halaa-backend/src/shared/constants/status.js`
+  - `halaa-backend/src/modules/tickets/tickets.service.js`
+  - `halaa-backend/src/modules/tickets/tickets.validation.js`
+  - `halaa-backend/src/modules/tickets/tickets.controller.js`
+  - `halaa-backend/src/modules/tickets/tickets.routes.js`
+  - `halaa-backend/test/shared-parity.test.js`
+  - `halaa-backend/test/ticket-transitions-bulk.test.js` (new)
+  - `halaa-web/hooks/tickets/mutations.js`
+  - `halaa-web/app/[lang]/admin-dash/tickets/[id]/_components/TicketDetailView.jsx`
+  - `halaa-web/app/[lang]/admin-dash/tickets/_components/TicketsTable.jsx`
+  - `halaa-web/app/[lang]/admin-dash/tickets/_components/TicketTableContent.jsx`
+  - `halaa-web/__tests__/ui/ticketTransitionsBulk.test.mjs` (new)
+  - `halaa-mobile/config/api.js`
+  - `halaa-mobile/hooks/admin/mutations.js`
+  - `halaa-mobile/__tests__/admin/ticketBulkMutations.test.js` (new)
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md`
+- **Exact test commands & results:**
+  - `cd shared && npm run lint && npm test` → PASS (15 unit tests passed, 0 lint warnings)
+  - `cd halaa-backend && npm test` → PASS (359 backend tests passed, 0 failures)
+  - `cd halaa-web && npm run lint && npm test` → PASS (48 unit tests passed, 0 errors, 31 warnings)
+  - `cd halaa-mobile && npm run lint && npm test` → PASS (119 unit tests passed, 0 errors)
+- **Exit-criteria verification:**
+  - Ticket transitions strictly follow `TICKET_TRANSITIONS` with valid reopen semantics.
+  - Ticket subject is normalized across DTO and UI views.
+  - Bulk resolve and bulk delete operate in one confirmation without individual prompt loops, reporting `{ succeeded, failed }` per-item results.
+  - All automated test suites across backend, shared, web, and mobile pass cleanly.
+- **Remaining risks / decisions:**
+  - None.
+- **Blockers / deferred work:**
+  - Batch consisting of Session 2.3 and Session 2.4 is Complete.
+
 

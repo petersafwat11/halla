@@ -37,6 +37,8 @@ export default function TicketsTable() {
   const { data, isLoading, error } = useMyTickets(filters);
   const deleteMutation = useTicketMutation("deleteTicket");
   const statusMutation = useTicketMutation("updateStatus");
+  const bulkDeleteMutation = useTicketMutation("bulkDelete");
+  const bulkStatusMutation = useTicketMutation("bulkStatus");
   const exportMutation = useExportTickets();
 
   const handleDelete = useCallback(async (ticketId) => {
@@ -48,6 +50,49 @@ export default function TicketsTable() {
       handleError(err, t, { fallbackMessage: "messages.deleteError" });
     }
   }, [deleteMutation, t]);
+
+  const handleBulkDelete = useCallback(async (ids) => {
+    if (!ids?.length) {
+      toastUtils.warning(t("messages.selectRows", "Please select rows"));
+      return;
+    }
+    if (!confirm(t("messages.confirmBulkDelete"))) return;
+    try {
+      const result = await bulkDeleteMutation.mutateAsync(ids);
+      if (result?.failed?.length > 0 && result?.succeeded?.length > 0) {
+        toastUtils.info(
+          t("messages.bulkPartialSuccess", `${result.succeeded.length} succeeded, ${result.failed.length} failed`)
+        );
+      } else if (result?.failed?.length > 0) {
+        toastUtils.error(result.failed[0]?.error || t("messages.bulkDeleteError"));
+      } else {
+        toastUtils.success(t("messages.bulkDeleteSuccess"));
+      }
+    } catch (err) {
+      handleError(err, t, { fallbackMessage: "messages.bulkDeleteError" });
+    }
+  }, [bulkDeleteMutation, t]);
+
+  const handleBulkResolve = useCallback(async (ids) => {
+    if (!ids?.length) {
+      toastUtils.warning(t("messages.selectRows", "Please select rows"));
+      return;
+    }
+    try {
+      const result = await bulkStatusMutation.mutateAsync({ ids, status: "resolved" });
+      if (result?.failed?.length > 0 && result?.succeeded?.length > 0) {
+        toastUtils.info(
+          t("messages.bulkPartialSuccess", `${result.succeeded.length} succeeded, ${result.failed.length} failed`)
+        );
+      } else if (result?.failed?.length > 0) {
+        toastUtils.error(result.failed[0]?.error || t("messages.updateError"));
+      } else {
+        toastUtils.success(t("messages.statusUpdateSuccess", "Status updated successfully"));
+      }
+    } catch (err) {
+      handleError(err, t, { fallbackMessage: "messages.updateError" });
+    }
+  }, [bulkStatusMutation, t]);
 
   const handleStatusChange = useCallback(async (ticketId, newStatus) => {
     try {
@@ -151,6 +196,8 @@ export default function TicketsTable() {
           handleFilterChange={handleFilterChange}
           handleExport={handleExport}
           handleDelete={handleDelete}
+          handleBulkDelete={handleBulkDelete}
+          handleBulkResolve={handleBulkResolve}
           handleStatusChange={handleStatusChange}
           handleAssignClick={handleAssignClick}
           handleResponseClick={handleResponseClick}

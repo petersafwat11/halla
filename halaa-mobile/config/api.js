@@ -199,6 +199,8 @@ export const ENDPOINTS = {
     RATING_INFO: API_PATHS.tickets.getTicketForRating,
     ASSIGN: API_PATHS.tickets.assignTicket,
     STATUS: API_PATHS.tickets.updateTicketStatus,
+    BULK_DELETE: API_PATHS.tickets.bulkDelete,
+    BULK_STATUS: API_PATHS.tickets.bulkStatus,
     EXPORT: API_PATHS.tickets.exportTickets,
   },
 
@@ -323,6 +325,8 @@ export const ENDPOINTS = {
     TICKETS: {
       BASE: API_PATHS.tickets.getMyTickets,
       BY_ID: API_PATHS.tickets.getTicketById,
+      BULK_DELETE: API_PATHS.tickets.bulkDelete,
+      BULK_STATUS: API_PATHS.tickets.bulkStatus,
       EXPORT: API_PATHS.tickets.exportTickets,
     },
     SUBSCRIPTIONS: {

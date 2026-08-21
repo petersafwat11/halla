@@ -11,7 +11,8 @@ import styles from "./TicketsTable.module.css";
 
 export default function TicketTableContent({
   t, tableData, canUpdate, canDelete, filters, data,
-  handlePageChange, handleSearchChange, handleFilterChange, handleExport, handleDelete, handleStatusChange,
+  handlePageChange, handleSearchChange, handleFilterChange, handleExport, handleDelete,
+  handleBulkDelete, handleBulkResolve, handleStatusChange,
   handleAssignClick, handleResponseClick, handleViewResolutionClick,
 }) {
   const { t: tHook } = useTranslation("adminTickets");
@@ -34,34 +35,22 @@ export default function TicketTableContent({
 
   const bulkActions = useMemo(() => {
     const actions = [];
-    if (canUpdate) {
+    if (canUpdate && handleBulkResolve) {
       actions.push({
         icon: <FiCheckSquare size={16} />,
         text: i18nT("bulkActions.resolve"),
-        onClick: async (ids) => {
-          if (!ids?.length) { toastUtils.warning(i18nT("messages.selectRows", "Please select rows")); return; }
-          for (const id of ids) { await handleStatusChange(id, "resolved"); }
-        },
+        onClick: (ids) => handleBulkResolve(ids),
       });
     }
-    if (canDelete) {
+    if (canDelete && handleBulkDelete) {
       actions.push({
         icon: <FiTrash2 size={16} />,
         text: i18nT("bulkActions.delete"),
-        onClick: async (ids) => {
-          if (!ids?.length) { toastUtils.warning(i18nT("messages.selectRows", "Please select rows")); return; }
-          if (!confirm(i18nT("messages.confirmBulkDelete"))) return;
-          try {
-            for (const id of ids) { await handleDelete(id); }
-            toastUtils.success(i18nT("messages.bulkDeleteSuccess"));
-          } catch (err) {
-            handleError(err, i18nT, { fallbackMessage: "messages.bulkDeleteError" });
-          }
-        },
+        onClick: (ids) => handleBulkDelete(ids),
       });
     }
     return actions;
-  }, [canUpdate, canDelete, i18nT, handleStatusChange, handleDelete]);
+  }, [canUpdate, canDelete, i18nT, handleBulkResolve, handleBulkDelete]);
 
   const renderCell = useCallback((key, value, row) => {
     if (key === "status") {

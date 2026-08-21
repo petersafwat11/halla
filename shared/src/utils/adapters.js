@@ -115,9 +115,12 @@ export const toTicketDTO = (rawTicket) => {
   const attachments = Array.isArray(rawTicket.attachments) ? rawTicket.attachments : [];
   const creator = rawTicket.creator || rawTicket.user || null;
   const assignedTo = rawTicket.assignedTo || rawTicket.assignee || null;
+  const resolution = rawTicket.resolution || rawTicket.resolutionResponse || null;
+  const ticketNumber = rawTicket.ticketNumber || (id ? id.toString().slice(-6) : "");
 
   return {
     id,
+    ticketNumber,
     subject,
     title,
     description,
@@ -130,6 +133,7 @@ export const toTicketDTO = (rawTicket) => {
     attachments,
     creator,
     assignedTo,
+    resolution,
   };
 };
 

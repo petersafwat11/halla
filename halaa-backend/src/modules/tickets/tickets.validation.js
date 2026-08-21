@@ -45,5 +45,50 @@ const listTicketsQuerySchema = z.object({
   to:       z.coerce.date().optional(),
 }).strict();
 
-module.exports = { createTicketSchema, updateTicketSchema, updateStatusSchema,
-  assignTicketSchema, rateTicketSchema, listTicketsQuerySchema };
+const bulkDeleteTicketsSchema = z
+  .object({
+    ids: z.array(objectId).optional(),
+    ticketIds: z.array(objectId).optional(),
+  })
+  .transform((data) => {
+    const rawList = data.ids || data.ticketIds || [];
+    const uniqueIds = Array.from(new Set(rawList.map(String)));
+    return { ids: uniqueIds, ticketIds: uniqueIds };
+  })
+  .refine((data) => data.ids.length >= 1 && data.ids.length <= 200, {
+    message: 'ids must contain between 1 and 200 items',
+    path: ['ids'],
+  });
+
+const bulkTicketStatusSchema = z
+  .object({
+    ids: z.array(objectId).optional(),
+    ticketIds: z.array(objectId).optional(),
+    status: z.enum(Object.values(TICKET_STATUS)),
+    resolution: z.string().trim().max(5000).optional(),
+  })
+  .transform((data) => {
+    const rawList = data.ids || data.ticketIds || [];
+    const uniqueIds = Array.from(new Set(rawList.map(String)));
+    return {
+      ids: uniqueIds,
+      ticketIds: uniqueIds,
+      status: data.status,
+      resolution: data.resolution,
+    };
+  })
+  .refine((data) => data.ids.length >= 1 && data.ids.length <= 200, {
+    message: 'ids must contain between 1 and 200 items',
+    path: ['ids'],
+  });
+
+module.exports = {
+  createTicketSchema,
+  updateTicketSchema,
+  updateStatusSchema,
+  assignTicketSchema,
+  rateTicketSchema,
+  listTicketsQuerySchema,
+  bulkDeleteTicketsSchema,
+  bulkTicketStatusSchema,
+};

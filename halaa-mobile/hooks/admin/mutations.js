@@ -787,13 +787,18 @@ export function useBulkDeleteTickets() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (ticketIds) => {
-      const results = await Promise.all(
-        ticketIds.map((id) => _envelopeOf(ticketsApi.deleteTicket(id))),
+      const response = await adminRequest(
+        ENDPOINTS.ADMIN.TICKETS.BULK_DELETE || "/tickets/bulk-delete",
+        "POST",
+        toBulkIdsPayload(ticketIds),
       );
-      results.forEach(assertOk);
+      return assertOk(response);
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: adminKeys.ticketsAll() });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: adminKeys.ticketsAll() }),
+        queryClient.invalidateQueries({ queryKey: ticketsKeys.all }),
+      ]);
     },
   });
 }
@@ -802,15 +807,21 @@ export function useBulkResolveTickets() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (ticketIds) => {
-      const results = await Promise.all(
-        ticketIds.map((id) =>
-          _envelopeOf(ticketsApi.updateTicketStatus(id, { status: "resolved" })),
-        ),
+      const response = await adminRequest(
+        ENDPOINTS.ADMIN.TICKETS.BULK_STATUS || "/tickets/bulk-status",
+        "POST",
+        {
+          ...toBulkIdsPayload(ticketIds),
+          status: "resolved",
+        },
       );
-      results.forEach(assertOk);
+      return assertOk(response);
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: adminKeys.ticketsAll() });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: adminKeys.ticketsAll() }),
+        queryClient.invalidateQueries({ queryKey: ticketsKeys.all }),
+      ]);
     },
   });
 }

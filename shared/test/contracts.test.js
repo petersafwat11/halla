@@ -129,6 +129,7 @@ test("toTicketDTO (ADM-06): normalizes subject, title, description, message", ()
 
   const dto1 = toTicketDTO(rawWithSubject);
   assert.equal(dto1.id, "ticket_1");
+  assert.equal(dto1.ticketNumber, "cket_1");
   assert.equal(dto1.subject, "Login issue on Android");
   assert.equal(dto1.title, "Login issue on Android");
   assert.equal(dto1.description, "Cannot sign in with phone");
@@ -139,17 +140,41 @@ test("toTicketDTO (ADM-06): normalizes subject, title, description, message", ()
 
   // Legacy format with title and message
   const rawWithTitle = {
-    id: "ticket_2",
+    id: "507f1f77bcf86cd799439015",
     title: "Billing dispute",
     message: "Charged twice for subscription",
+    resolution: { message: "Refunded" },
   };
 
   const dto2 = toTicketDTO(rawWithTitle);
-  assert.equal(dto2.id, "ticket_2");
+  assert.equal(dto2.id, "507f1f77bcf86cd799439015");
+  assert.equal(dto2.ticketNumber, "439015");
   assert.equal(dto2.subject, "Billing dispute");
   assert.equal(dto2.title, "Billing dispute");
   assert.equal(dto2.description, "Charged twice for subscription");
   assert.equal(dto2.message, "Charged twice for subscription");
+  assert.equal(dto2.resolution.message, "Refunded");
+});
+
+test("TICKET_TRANSITIONS and isValidTicketStatusTransition (ADM-05): state machine validation", async () => {
+  const {
+    TICKET_STATUS,
+    TICKET_TRANSITIONS,
+    isValidTicketStatusTransition,
+  } = await import("../src/constants/ticketConstants.js");
+
+  assert.ok(TICKET_TRANSITIONS);
+  assert.equal(isValidTicketStatusTransition(TICKET_STATUS.OPEN, TICKET_STATUS.IN_PROGRESS), true);
+  assert.equal(isValidTicketStatusTransition(TICKET_STATUS.OPEN, TICKET_STATUS.RESOLVED), true);
+  assert.equal(isValidTicketStatusTransition(TICKET_STATUS.OPEN, TICKET_STATUS.CLOSED), true);
+  assert.equal(isValidTicketStatusTransition(TICKET_STATUS.OPEN, TICKET_STATUS.WAITING_RESPONSE), false);
+
+  assert.equal(isValidTicketStatusTransition(TICKET_STATUS.RESOLVED, TICKET_STATUS.IN_PROGRESS), true);
+  assert.equal(isValidTicketStatusTransition(TICKET_STATUS.RESOLVED, TICKET_STATUS.OPEN), true);
+  assert.equal(isValidTicketStatusTransition(TICKET_STATUS.RESOLVED, TICKET_STATUS.CLOSED), true);
+
+  assert.equal(isValidTicketStatusTransition(TICKET_STATUS.CLOSED, TICKET_STATUS.OPEN), false);
+  assert.equal(isValidTicketStatusTransition(TICKET_STATUS.CLOSED, TICKET_STATUS.IN_PROGRESS), false);
 });
 
 test("normalizeSubscriptionResponse (EVT-17): handles object, array, and API envelope", () => {

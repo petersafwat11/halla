@@ -9,6 +9,8 @@ const {
   ROLES,
   TICKET_STATUS,
   TICKET_PRIORITY,
+  TICKET_TRANSITIONS,
+  isValidTicketStatusTransition,
   PERMISSIONS,
   USER_STATUS,
 } = require("../../shared/constants");
@@ -37,14 +39,8 @@ const TICKET_SOURCE = {
   OTHER: "other",
 };
 
-// Valid status transitions matrix
-const VALID_TRANSITIONS = {
-  [TICKET_STATUS.OPEN]: [TICKET_STATUS.IN_PROGRESS, TICKET_STATUS.RESOLVED, TICKET_STATUS.CLOSED],
-  [TICKET_STATUS.IN_PROGRESS]: [TICKET_STATUS.WAITING_RESPONSE, TICKET_STATUS.RESOLVED, TICKET_STATUS.CLOSED],
-  [TICKET_STATUS.WAITING_RESPONSE]: [TICKET_STATUS.IN_PROGRESS, TICKET_STATUS.RESOLVED, TICKET_STATUS.CLOSED],
-  [TICKET_STATUS.RESOLVED]: [TICKET_STATUS.CLOSED, TICKET_STATUS.IN_PROGRESS],
-  [TICKET_STATUS.CLOSED]: [],
-};
+// Valid status transitions matrix (mirrors TICKET_TRANSITIONS)
+const VALID_TRANSITIONS = TICKET_TRANSITIONS;
 
 class TicketsService {
   /**
@@ -362,6 +358,140 @@ class TicketsService {
   }
 
   /**
+   * Bulk delete tickets
+   * @param {Array<string>} ticketIds
+   * @param {string} userId
+   * @param {boolean} isAdmin
+   * @returns {Promise<{success: boolean, count: number, deleted: number, deletedCount: number, succeeded: Array<string>, failed: Array<{id: string, error: string}>, message: string}>}
+   */
+  async bulkDeleteTickets(ticketIds, userId, isAdmin) {
+    const rawIds = Array.isArray(ticketIds) ? ticketIds : [];
+    const uniqueIds = Array.from(new Set(rawIds.map((id) => id?.toString?.() || String(id)))).filter(Boolean);
+
+    const succeeded = [];
+    const failed = [];
+
+    for (const id of uniqueIds) {
+      try {
+        const ticket = await Ticket.findById(id);
+        if (!ticket) {
+          failed.push({ id, error: "Ticket not found" });
+          continue;
+        }
+
+        if (!isAdmin && ticket.user?.toString() !== userId?.toString()) {
+          failed.push({ id, error: "You can only delete your own tickets" });
+          continue;
+        }
+
+        await ticket.deleteOne();
+        succeeded.push(id);
+      } catch (err) {
+        failed.push({ id, error: err.message || "Failed to delete ticket" });
+      }
+    }
+
+    return {
+      success: true,
+      count: succeeded.length,
+      deleted: succeeded.length,
+      deletedCount: succeeded.length,
+      succeeded,
+      failed,
+      message: `${succeeded.length} ticket(s) deleted successfully`,
+    };
+  }
+
+  /**
+   * Bulk update ticket status
+   * @param {Array<string>} ticketIds
+   * @param {string} status
+   * @param {string} [resolution]
+   * @param {string} [actorId]
+   * @param {boolean} [isAdmin=true]
+   * @returns {Promise<{success: boolean, count: number, updated: number, updatedCount: number, succeeded: Array<string>, failed: Array<{id: string, error: string}>, message: string}>}
+   */
+  async bulkUpdateTicketStatus(ticketIds, status, resolution = null, actorId = null, isAdmin = true) {
+    if (!Object.values(TICKET_STATUS).includes(status)) {
+      throw new ValidationError("Invalid status");
+    }
+
+    const rawIds = Array.isArray(ticketIds) ? ticketIds : [];
+    const uniqueIds = Array.from(new Set(rawIds.map((id) => id?.toString?.() || String(id)))).filter(Boolean);
+
+    const succeeded = [];
+    const failed = [];
+
+    for (const id of uniqueIds) {
+      try {
+        const existing = await Ticket.findById(id);
+        if (!existing) {
+          failed.push({ id, error: "Ticket not found" });
+          continue;
+        }
+
+        if (!isAdmin && existing.user?.toString() !== actorId?.toString()) {
+          failed.push({ id, error: "Forbidden: Not ticket owner" });
+          continue;
+        }
+
+        const allowed = TICKET_TRANSITIONS[existing.status] || [];
+        if (!allowed.includes(status)) {
+          failed.push({
+            id,
+            error: `Cannot transition ticket from '${existing.status}' to '${status}'`,
+          });
+          continue;
+        }
+
+        const updateData = { status };
+        if (status === TICKET_STATUS.RESOLVED) {
+          updateData.resolvedAt = new Date();
+          if (actorId) updateData.resolvedBy = actorId;
+          if (resolution) {
+            updateData.resolutionResponse = {
+              message: resolution,
+              resolvedBy: actorId || null,
+              resolvedAt: new Date(),
+            };
+          }
+        }
+        if (status === TICKET_STATUS.CLOSED) {
+          updateData.closedAt = new Date();
+        }
+
+        const updated = await Ticket.findByIdAndUpdate(id, updateData, { new: true });
+        if (updated) {
+          succeeded.push(id);
+          // Non-blocking notification & audit
+          this._notifyTicketStatusChange(updated, status).catch((err) =>
+            logger.error("ticket status notification failed", err)
+          );
+          logAudit({
+            action: "ticket.status_updated",
+            actor: { _id: actorId },
+            targetType: "ticket",
+            targetId: updated._id,
+            metadata: { previousStatus: existing.status, newStatus: status, resolution, bulk: true },
+          }).catch((err) => logger.error("ticket status audit log failed", err));
+        }
+      } catch (err) {
+        failed.push({ id, error: err.message || "Failed to update ticket status" });
+      }
+    }
+
+    return {
+      success: true,
+      count: succeeded.length,
+      updated: succeeded.length,
+      updatedCount: succeeded.length,
+      succeeded,
+      failed,
+      message: `${succeeded.length} ticket(s) updated to ${status}`,
+    };
+  }
+
+  /**
    * Update ticket
    * @param {string} ticketId
    * @param {Object} updateData
@@ -552,6 +682,7 @@ class TicketsService {
       createdAt: ticket.createdAt,
       resolvedAt: ticket.resolvedAt,
       closedAt: ticket.closedAt,
+      allowedTransitions: TICKET_TRANSITIONS[ticket.status] || [],
     };
 
     return formatted;

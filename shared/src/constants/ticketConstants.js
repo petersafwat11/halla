@@ -29,3 +29,33 @@ export const TICKET_PRIORITY = Object.freeze({
   HIGH: "high",
   URGENT: "urgent",
 });
+
+export const TICKET_TRANSITIONS = Object.freeze({
+  [TICKET_STATUS.OPEN]: Object.freeze([
+    TICKET_STATUS.IN_PROGRESS,
+    TICKET_STATUS.RESOLVED,
+    TICKET_STATUS.CLOSED,
+  ]),
+  [TICKET_STATUS.IN_PROGRESS]: Object.freeze([
+    TICKET_STATUS.WAITING_RESPONSE,
+    TICKET_STATUS.RESOLVED,
+    TICKET_STATUS.CLOSED,
+  ]),
+  [TICKET_STATUS.WAITING_RESPONSE]: Object.freeze([
+    TICKET_STATUS.IN_PROGRESS,
+    TICKET_STATUS.RESOLVED,
+    TICKET_STATUS.CLOSED,
+  ]),
+  [TICKET_STATUS.RESOLVED]: Object.freeze([
+    TICKET_STATUS.IN_PROGRESS,
+    TICKET_STATUS.OPEN,
+    TICKET_STATUS.CLOSED,
+  ]),
+  [TICKET_STATUS.CLOSED]: Object.freeze([]),
+});
+
+export const isValidTicketStatusTransition = (fromStatus, toStatus) => {
+  if (!fromStatus || !toStatus) return false;
+  const allowed = TICKET_TRANSITIONS[fromStatus] || [];
+  return allowed.includes(toStatus);
+};

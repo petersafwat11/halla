@@ -296,6 +296,40 @@ const isValidEventStatusTransition = (fromStatus, toStatus) => {
   return Array.isArray(allowed) && allowed.includes(toStatus);
 };
 
+/**
+ * Valid ticket status transitions (state machine)
+ */
+const TICKET_TRANSITIONS = Object.freeze({
+  [TICKET_STATUS.OPEN]: Object.freeze([
+    TICKET_STATUS.IN_PROGRESS,
+    TICKET_STATUS.RESOLVED,
+    TICKET_STATUS.CLOSED,
+  ]),
+  [TICKET_STATUS.IN_PROGRESS]: Object.freeze([
+    TICKET_STATUS.WAITING_RESPONSE,
+    TICKET_STATUS.RESOLVED,
+    TICKET_STATUS.CLOSED,
+  ]),
+  [TICKET_STATUS.WAITING_RESPONSE]: Object.freeze([
+    TICKET_STATUS.IN_PROGRESS,
+    TICKET_STATUS.RESOLVED,
+    TICKET_STATUS.CLOSED,
+  ]),
+  [TICKET_STATUS.RESOLVED]: Object.freeze([
+    TICKET_STATUS.IN_PROGRESS,
+    TICKET_STATUS.OPEN,
+    TICKET_STATUS.CLOSED,
+  ]),
+  [TICKET_STATUS.CLOSED]: Object.freeze([]),
+});
+
+const isValidTicketStatusTransition = (fromStatus, toStatus) => {
+  if (!fromStatus || !toStatus) return false;
+  if (fromStatus === toStatus) return true; // idempotent
+  const allowed = TICKET_TRANSITIONS[fromStatus];
+  return Array.isArray(allowed) && allowed.includes(toStatus);
+};
+
 module.exports = {
   USER_STATUS,
   VENDOR_STATUS,
@@ -303,6 +337,8 @@ module.exports = {
   EVENT_STATUS_VALUES: Object.values(EVENT_STATUS),
   EVENT_TRANSITIONS,
   isValidEventStatusTransition,
+  TICKET_TRANSITIONS,
+  isValidTicketStatusTransition,
   SUBSCRIPTION_STATUS,
   TICKET_STATUS,
   TICKET_PRIORITY,

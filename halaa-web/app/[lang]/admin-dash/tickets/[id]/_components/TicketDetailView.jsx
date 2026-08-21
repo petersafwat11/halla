@@ -44,7 +44,7 @@ const TicketDetailView = ({ ticket }) => {
     try {
       await reopenMutation.mutateAsync({
         ticketId: ticket.id,
-        status: "open",
+        status: "in_progress",
       });
       toastUtils.success(t("messages.reopenSuccess", "Ticket reopened successfully"));
       router.refresh();
@@ -111,7 +111,7 @@ const TicketDetailView = ({ ticket }) => {
         <div className={styles.mainCard}>
           <div className={styles.ticketHeader}>
             <h1 className={styles.ticketTitle}>
-              #{ticket.ticketNumber} - {ticket.title || t("table.title")}
+              #{ticket.ticketNumber} - {ticket.subject || ticket.title || t("table.title")}
             </h1>
             <div className={styles.badges}>
               <span className={`${styles.badge} ${statusClass}`}>
