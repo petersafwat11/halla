@@ -152,7 +152,7 @@ async function createBusiness({ name, email, phoneNumber, password, description,
     throw new ConflictError('Phone number already exists', 'phoneNumber');
   }
 
-  if (!password) throw new ValidationError('An initial password is required for a business account');
+  const effectivePassword = password || crypto.randomBytes(16).toString('hex');
 
   let business;
   try {
@@ -162,7 +162,7 @@ async function createBusiness({ name, email, phoneNumber, password, description,
       mobile: normalizedPhone,
       name,
       username: `business_${Date.now()}`,
-      password,
+      password: effectivePassword,
       avatar: logoKey || undefined,
       role: ROLES.HOST,
       accountType: ACCOUNT_TYPES.BUSINESS,

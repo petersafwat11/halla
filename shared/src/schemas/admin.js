@@ -11,8 +11,23 @@
  * `POST /admin/users` with `role` derived per popup.
  */
 import { z } from "zod";
+import { isValidPhone, normalizePhoneNumber } from "../utils/phone.js";
 
-const phoneRegex = /^[0-9]{7,15}$/;
+const phoneSchema = z
+  .string()
+  .min(1, "رقم الهاتف مطلوب")
+  .refine((val) => isValidPhone(val), {
+    message: "رقم الهاتف غير صحيح (المدعوم: السعودية +966 أو مصر +20)",
+  })
+  .transform((val) => normalizePhoneNumber(val));
+
+const optionalPasswordSchema = z
+  .string()
+  .min(8, "كلمة المرور يجب أن تكون 8 أحرف على الأقل")
+  .max(128)
+  .optional()
+  .or(z.literal(""))
+  .transform((v) => (v === "" ? undefined : v));
 
 // ============================================
 // HOST
@@ -21,11 +36,8 @@ const phoneRegex = /^[0-9]{7,15}$/;
 export const addHostSchema = z.object({
   name: z.string().min(1, "الاسم مطلوب").max(100),
   email: z.string().email("يرجى إدخال بريد إلكتروني صحيح"),
-  phoneNumber: z
-    .string()
-    .min(1, "رقم الهاتف مطلوب")
-    .regex(phoneRegex, "رقم الهاتف يجب أن يكون بين 7 و 15 رقم"),
-  password: z.string().optional().or(z.literal("")),
+  phoneNumber: phoneSchema,
+  password: optionalPasswordSchema,
 });
 
 export const hostSubscriptionSchema = z.object({
@@ -41,21 +53,15 @@ export const subscriptionAssignmentSchema = hostSubscriptionSchema;
 export const addModeratorSchema = z.object({
   name: z.string().min(1, "الاسم مطلوب").max(100),
   email: z.string().email("يرجى إدخال بريد إلكتروني صحيح"),
-  phoneNumber: z
-    .string()
-    .min(1, "رقم الهاتف مطلوب")
-    .regex(phoneRegex, "رقم الهاتف يجب أن يكون بين 7 و 15 رقم"),
-  password: z.string().optional().or(z.literal("")),
+  phoneNumber: phoneSchema,
+  password: optionalPasswordSchema,
   role: z.string().min(1, "الرجاء اختيار الدور"),
 });
 
 export const editModeratorSchema = z.object({
   name: z.string().min(1, "الاسم مطلوب").max(100),
   email: z.string().email("يرجى إدخال بريد إلكتروني صحيح"),
-  phoneNumber: z
-    .string()
-    .min(1, "رقم الهاتف مطلوب")
-    .regex(phoneRegex, "رقم الهاتف يجب أن يكون بين 7 و 15 رقم"),
+  phoneNumber: phoneSchema,
   role: z.string().min(1, "الرجاء اختيار الدور"),
 });
 

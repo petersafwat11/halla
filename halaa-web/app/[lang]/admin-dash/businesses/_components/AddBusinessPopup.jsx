@@ -12,6 +12,8 @@ import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import Button from "@/ui/commen/button/Button";
 import styles from "./AddBusinessPopup.module.css";
 
+import { toE164 } from "@halaa/shared/utils/phone";
+
 export default function AddBusinessPopup({ onClose }) {
   const { t } = useTranslation("adminBusinesses");
   const createBusiness = useAdminBusinessMutation("create");
@@ -25,11 +27,17 @@ export default function AddBusinessPopup({ onClose }) {
   const onSubmit = async (values) => {
     try {
       const formData = new FormData();
-      formData.append("name", values.name || "");
-      formData.append("phoneNumber", values.phoneNumber || "");
-      formData.append("email", values.email || "");
-      formData.append("password", values.password || "");
-      formData.append("description", description || "");
+      formData.append("name", (values.name || "").trim());
+      formData.append("phoneNumber", toE164(values.phoneNumber));
+      if (values.email && values.email.trim()) {
+        formData.append("email", values.email.trim().toLowerCase());
+      }
+      if (values.password && values.password.trim()) {
+        formData.append("password", values.password.trim());
+      }
+      if (description && description.trim()) {
+        formData.append("description", description.trim());
+      }
       if (logoFile) formData.append("logo", logoFile);
 
       await createBusiness.mutateAsync(formData);
@@ -72,10 +80,9 @@ export default function AddBusinessPopup({ onClose }) {
             />
             <InputGroup
               label={t("form.password")}
-              placeholder={t("form.passwordPlaceholder")}
+              placeholder={t("form.passwordPlaceholder", "اتركه فارغاً للإنشاء التلقائي")}
               type="password"
               name="password"
-              required
             />
 
             <div className={styles.formGroup}>

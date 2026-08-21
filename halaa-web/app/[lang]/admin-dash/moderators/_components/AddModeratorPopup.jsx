@@ -13,6 +13,8 @@ import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import Button from "@/ui/commen/button/Button";
 import styles from "./AddModeratorPopup.module.css";
 
+import { toE164 } from "@halaa/shared/utils/phone";
+
 export default function AddModeratorPopup({ onClose }) {
   const { t } = useTranslation("adminModerators");
   const createModerator = useAdminModeratorMutation("create");
@@ -36,11 +38,17 @@ export default function AddModeratorPopup({ onClose }) {
   });
 
   const onSubmit = async (data) => {
-    const phone = data.phoneNumber.startsWith("+966")
-      ? data.phoneNumber
-      : `+966${data.phoneNumber}`;
     try {
-      await createModerator.mutateAsync({ ...data, phoneNumber: phone });
+      const payload = {
+        name: data.name.trim(),
+        email: data.email.trim().toLowerCase(),
+        phoneNumber: toE164(data.phoneNumber),
+        role: data.role,
+      };
+      if (data.password && data.password.trim()) {
+        payload.password = data.password.trim();
+      }
+      await createModerator.mutateAsync(payload);
       toastUtils.success(t("addModerator.success", "Moderator added successfully"));
       onClose();
     } catch (error) {

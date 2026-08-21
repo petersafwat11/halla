@@ -169,27 +169,27 @@ async function createHost({ email, phoneNumber, name, username, password }) {
   const normalizedPhone = phoneNumber ? normalizePhoneNumber(phoneNumber) : undefined;
   const existingUser = await User.findOne({
     $or: [
-      { email: email?.toLowerCase() },
-      { phoneNumber: normalizedPhone },
+      ...(email ? [{ email: email.toLowerCase() }] : []),
+      ...(normalizedPhone ? [{ phoneNumber: normalizedPhone }, { mobile: normalizedPhone }] : []),
     ],
   });
 
   if (existingUser) {
-    if (existingUser.email === email?.toLowerCase()) {
+    if (email && existingUser.email === email.toLowerCase()) {
       throw new ConflictError('Email already exists', 'email');
     }
-    if (existingUser.phoneNumber === normalizedPhone) {
-      throw new ConflictError('Phone number already exists', 'phoneNumber');
-    }
+    throw new ConflictError('Phone number already exists', 'phoneNumber');
   }
 
   // Create host
+  const effectivePassword = password || require('crypto').randomBytes(16).toString('hex');
   const host = await User.create({
     email: email?.toLowerCase(),
     phoneNumber: normalizedPhone,
+    mobile: normalizedPhone,
     name,
     username: username || `host_${Date.now()}`,
-    password,
+    password: effectivePassword,
     role: ROLES.HOST,
     accountType: ACCOUNT_TYPES.PERSONAL,
     status: USER_STATUS.ACTIVE,

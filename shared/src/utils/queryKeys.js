@@ -68,3 +68,38 @@ export const subscriptionKeys = {
   mySubscription: () => [...subscriptionKeys.all, "my-subscription"],
   info: () => [...subscriptionKeys.all, "info"],
 };
+
+export const hostKeys = {
+  all: Object.freeze(["admin", "hosts"]),
+  list: (filters) => ["admin", "hosts", filters || {}],
+  detail: (hostId) => ["admin", "hosts", hostId],
+  verifyPhone: (phoneNumber) => ["admin", "hosts", "verify-phone", phoneNumber],
+};
+
+export const businessKeys = {
+  all: Object.freeze(["admin", "businesses"]),
+  list: (filters) => ["admin", "businesses", filters || {}],
+  detail: (businessId) => ["admin", "businesses", businessId],
+};
+
+export const vendorKeys = {
+  all: Object.freeze(["admin", "vendors"]),
+  list: (filters) => ["admin", "vendors", filters || {}],
+  detail: (vendorId) => ["admin", "vendors", vendorId],
+};
+
+export const moderatorKeys = {
+  all: Object.freeze(["admin", "moderators"]),
+  list: (filters) => ["admin", "moderators", filters || {}],
+};
+
+export const adminQueryKeys = {
+  all: Object.freeze(["admin"]),
+  dashboard: (filters) => ["admin", "dashboard", filters || {}],
+  hosts: hostKeys,
+  businesses: businessKeys,
+  vendors: vendorKeys,
+  moderators: moderatorKeys,
+  plans: planKeys,
+};
+

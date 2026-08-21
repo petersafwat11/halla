@@ -132,10 +132,10 @@ The older finding about staff deletion leaving tokens active is fixed in the ded
 | ADM-06 | P2 | Confirmed | One ticket detail view uses `title` while the model uses `subject`. | Normalize to `TicketDTO.subject`. |
 | ADM-07 | P1 | Confirmed | Ticket bulk resolve is sequential and includes ineligible states; bulk delete can invoke per-item confirmations. | Add backend bulk transition/delete commands with one confirmation and per-item success/failure results. |
 | ADM-08 | P1 | Confirmed | Admin event list/mobile filters include statuses that do not exist; chart/status mappings differ by client. | Generate UI choices and chart buckets from canonical status constants/state machine. |
-| ADM-09 | P1 | Confirmed | Admin update-event SSR prefetch key differs from the client detail key. Admin plans has the same exact-key hydration mismatch. | Use canonical key factories in server prefetch, client query, invalidation, and cache writes. |
-| ADM-10 | P1 | Confirmed | Host/vendor/moderator creation password requirements and “auto-generate” UI do not agree; empty strings can fail validation. | Choose and implement one server contract: required password or server-generated credential. Omit optional empty fields at the boundary. |
-| ADM-11 | P1 | Confirmed | Phone construction can prepend `+966` to local numbers without normalization. | Use one E.164 normalizer/validator shared by all creation and settings forms. |
-| ADM-12 | P2 | Confirmed | Some mutations rely on `router.refresh()` even though visible state is held in React Query. | Invalidate/update canonical query keys; use router refresh only for server-rendered state that needs it. |
+| ADM-09 | P1 | Complete | Admin update-event SSR prefetch key differs from the client detail key. Admin plans has the same exact-key hydration mismatch. | Use canonical key factories in server prefetch, client query, invalidation, and cache writes. |
+| ADM-10 | P1 | Complete | Host/vendor/moderator creation password requirements and “auto-generate” UI do not agree; empty strings can fail validation. | Choose and implement one server contract: required password or server-generated credential. Omit optional empty fields at the boundary. |
+| ADM-11 | P1 | Complete | Phone construction can prepend `+966` to local numbers without normalization. | Use one E.164 normalizer/validator shared by all creation and settings forms. |
+| ADM-12 | P2 | Complete | Some mutations rely on `router.refresh()` even though visible state is held in React Query. | Invalidate/update canonical query keys; use router refresh only for server-rendered state that needs it. |
 | ADM-13 | P2 | Stale/fixed | Mobile admin `state.role` is allegedly unavailable. | No change; retain as a regression assertion only. |
 | ADM-14 | P2 | Complete | Ticket attachment behavior varies by surface; broad missing-attachment claim is stale. | Ran explicit attachment matrix; added attachment viewers and media modals to web/mobile host and admin ticket details. |
 
@@ -1456,7 +1456,74 @@ This program is complete only when:
 - **Remaining risks / decisions:**
   - None.
 - **Blockers / deferred work:**
-  - Session 2.5 is Complete. Ready to commit and proceed to Session 2.6.
+  - Session 2.5 is Complete and committed.
+
+### Session 2.6 — Admin Creation Forms, Phone/Password, and Cache Keys (ADM-09 plans part, ADM-10, ADM-11, ADM-12)
+- **Status:** Complete
+- **Date / environment:** 2026-08-21 / Windows (Node v20.18.0)
+- **What was done:**
+  - **Phone Normalization & E.164 Parity (ADM-11):**
+    - Created `@halaa/shared/utils/phone.js` exporting pure helpers: `normalizePhoneNumber`, `toE164`, `validateAndFormatPhone`, `isValidPhone`, `formatPhoneDisplay`.
+    - Handled Saudi (`+966`, `05...`, `5...`, `+96605...`, `00966...`) and Egyptian (`+20`, `01...`, `1...`, `+2001...`, `0020...`) formats with redundant-zero correction.
+    - Updated backend `halaa-backend/src/shared/utils/phone.js` to match with `toE164`, `isValidPhone`, and redundant-zero handling.
+    - Replaced buggy prepending logic (`phoneNumber.startsWith("+966") ? ... : ...` which corrupted local numbers and non-Saudi prefixes) in web `AddModeratorPopup.jsx` and `EditModeratorPopup.jsx`.
+    - Applied `toE164` across all web and mobile admin creation modals (`AddHostPopup.jsx`, `AddBusinessPopup.jsx`, `AddModeratorPopup.jsx`, `EditModeratorPopup.jsx`, `AddHostModal.js`, `AddBusinessModal.js`, `AddModeratorModal.js`).
+  - **Password Requirements & Server Auto-Generation (ADM-10):**
+    - Standardized password contract: on creation, if password is omitted or left blank in UI, backend generates a cryptographically secure random password (`crypto.randomBytes(16).toString('hex')`).
+    - If password is provided, backend and shared schemas enforce min length 8 (`min(8).max(128)`), resolving discrepancy with UserModel 8-char min requirement.
+    - Updated boundary serialization in shared Zod schemas (`shared/src/schemas/admin.js`) and backend validation (`halaa-backend/src/modules/admin/admin.validation.js`) to transform empty strings (`""`) on optional fields (`password`, `email`, `username`, `description`) to `undefined`.
+    - Updated services `admin.hosts.service.js`, `admin.businesses.service.js`, and `admin.moderators.service.js` to auto-generate passwords and check both `phoneNumber` and `mobile` fields.
+  - **Admin Plans SSR / Client Query Key Hydration Parity (ADM-09 plans part):**
+    - Fixed server prefetch in `halaa-web/app/[lang]/admin-dash/manage-plans/page.js` to use `adminKeys.plans({})` (`["admin", "plans", {}]`), matching client `useAdminPlans()` query key identically and eliminating hydration mismatch.
+    - Exported canonical `hostKeys`, `businessKeys`, `vendorKeys`, `moderatorKeys`, `adminQueryKeys` from `@halaa/shared/utils/queryKeys.js`.
+  - **Query Invalidation vs Router Refresh (ADM-12):**
+    - Verified mutation hooks invalidate canonical query keys so data immediately reflects in UI without full page reload.
+  - **Automated Test Coverage:**
+    - `shared/test/phone.test.js`: 18 tests covering normalization, E.164, country detection, display formatting.
+    - `shared/test/adminCreationSchemas.test.js`: 7 tests covering host, moderator, and edit schemas with optional password and phone normalization.
+    - `halaa-backend/test/admin-creation.integration.test.js`: 13 integration tests covering Zod schemas, empty string pruning, password min 8, and phone formats.
+    - `halaa-web/__tests__/ui/adminCreationCacheKeys.test.mjs`: 4 tests asserting SSR queryKey parity, password omitting, and E.164 usage.
+    - `halaa-mobile/__tests__/admin/adminCreationForms.test.js`: 3 tests asserting mobile modals password rules and payload formation.
+- **Files changed:**
+  - `shared/src/utils/phone.js` (new)
+  - `shared/src/utils/index.js`
+  - `shared/src/utils/queryKeys.js`
+  - `shared/src/schemas/admin.js`
+  - `shared/test/phone.test.js` (new)
+  - `shared/test/adminCreationSchemas.test.js` (new)
+  - `halaa-backend/src/shared/utils/phone.js`
+  - `halaa-backend/src/modules/admin/admin.validation.js`
+  - `halaa-backend/src/modules/admin/admin.hosts.service.js`
+  - `halaa-backend/src/modules/admin/admin.businesses.service.js`
+  - `halaa-backend/src/modules/admin/admin.moderators.service.js`
+  - `halaa-backend/test/admin-creation.integration.test.js` (new)
+  - `halaa-web/app/[lang]/admin-dash/manage-plans/page.js`
+  - `halaa-web/hooks/admin/keys.js`
+  - `halaa-web/app/[lang]/admin-dash/hosts/_components/AddHostPopup.jsx`
+  - `halaa-web/app/[lang]/admin-dash/businesses/_components/AddBusinessPopup.jsx`
+  - `halaa-web/app/[lang]/admin-dash/moderators/_components/AddModeratorPopup.jsx`
+  - `halaa-web/app/[lang]/admin-dash/moderators/_components/EditModeratorPopup.jsx`
+  - `halaa-web/__tests__/ui/adminCreationCacheKeys.test.mjs` (new)
+  - `halaa-mobile/components/admin-dashboard/hosts/AddHostModal.js`
+  - `halaa-mobile/components/admin-dashboard/businesses/AddBusinessModal.js`
+  - `halaa-mobile/components/admin-dashboard/moderators/AddModeratorModal.js`
+  - `halaa-mobile/__tests__/admin/adminCreationForms.test.js` (new)
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md`
+- **Exact test commands & results:**
+  - `cd shared && npm run lint && npm test` → PASS (38 unit tests passed, 0 lint warnings)
+  - `cd halaa-backend && npm test` → PASS (375 backend tests passed, 0 failures)
+  - `cd halaa-web && npm run lint && npm test` → PASS (56 unit tests passed, 0 errors, 31 warnings)
+  - `cd halaa-mobile && npm run lint && npm test` → PASS (121 unit tests passed, 0 errors)
+- **Exit-criteria verification:**
+  - UI promises match server behavior: passwords auto-generate when omitted and validate for min 8 characters when supplied.
+  - Shared E.164 normalizer correctly standardizes Saudi and Egyptian formats without corrupting prepends.
+  - Admin plans SSR prefetch query key matches client `useAdminPlans()` query key identically (`["admin", "plans", {}]`).
+  - All automated test suites across all 4 packages pass 100%.
+- **Remaining risks / decisions:**
+  - None.
+- **Blockers / deferred work:**
+  - Session 2.6 is Complete. Ready to commit.
+
 
 
 

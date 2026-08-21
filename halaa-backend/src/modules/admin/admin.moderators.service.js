@@ -91,30 +91,30 @@ async function createModerator({ email, phoneNumber, name, username, password, p
   const normalizedPhone = phoneNumber ? normalizePhoneNumber(phoneNumber) : undefined;
   const existingUser = await User.findOne({
     $or: [
-      { email: email?.toLowerCase() },
-      { phoneNumber: normalizedPhone },
+      ...(email ? [{ email: email.toLowerCase() }] : []),
+      ...(normalizedPhone ? [{ phoneNumber: normalizedPhone }, { mobile: normalizedPhone }] : []),
     ],
   });
 
   if (existingUser) {
-    if (existingUser.email === email?.toLowerCase()) {
+    if (email && existingUser.email === email.toLowerCase()) {
       throw new ConflictError('Email already exists', 'email');
     }
-    if (existingUser.phoneNumber === normalizedPhone) {
-      throw new ConflictError('Phone number already exists', 'phoneNumber');
-    }
+    throw new ConflictError('Phone number already exists', 'phoneNumber');
   }
 
   // Pin the role to a platform role so a tampered request body can't escalate.
   const PLATFORM_ALLOWED = [ROLES.MODERATOR, ROLES.ADMIN];
   const moderatorRole = PLATFORM_ALLOWED.includes(requestedRole) ? requestedRole : ROLES.MODERATOR;
+  const effectivePassword = password || require('crypto').randomBytes(16).toString('hex');
 
   const moderator = await User.create({
     email: email?.toLowerCase(),
     phoneNumber: normalizedPhone,
+    mobile: normalizedPhone,
     name,
     username: username || `moderator_${Date.now()}`,
-    password,
+    password: effectivePassword,
     role: moderatorRole,
     status: USER_STATUS.ACTIVE,
     ...(Array.isArray(permissions) && permissions.length > 0 ? { permissions } : {}),

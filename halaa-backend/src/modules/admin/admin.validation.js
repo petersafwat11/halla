@@ -3,25 +3,52 @@
  * Used via validateZod() middleware in admin.routes.js
  */
 const { z } = require('zod');
+const { isValidPhone, normalizePhoneNumber } = require('../../shared/utils/phone');
 
 const objectId = z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid ObjectId format');
-const phonePattern = z.string().min(7).max(20);
+const phonePattern = z
+  .string()
+  .min(7)
+  .max(25)
+  .refine((v) => isValidPhone(v), { message: 'Invalid phone number format' })
+  .transform((v) => normalizePhoneNumber(v));
+
+const optionalString = z
+  .string()
+  .optional()
+  .or(z.literal(''))
+  .transform((v) => (v === '' ? undefined : v));
+
+const optionalEmail = z
+  .string()
+  .email()
+  .optional()
+  .or(z.literal(''))
+  .transform((v) => (v === '' ? undefined : v));
+
+const optionalPassword = z
+  .string()
+  .min(8)
+  .max(128)
+  .optional()
+  .or(z.literal(''))
+  .transform((v) => (v === '' ? undefined : v));
 
 // ── Hosts ──────────────────────────────────────────────────────────────────
 const createHostSchema = z.object({
   phoneNumber: phonePattern,
   name: z.string().min(2).max(100),
-  email: z.string().email().optional(),
-  username: z.string().optional(),
-  password: z.string().optional(),
-  planCode: z.string().optional(),
-  subscriptionStatus: z.string().optional(),
+  email: optionalEmail,
+  username: optionalString,
+  password: optionalPassword,
+  planCode: optionalString,
+  subscriptionStatus: optionalString,
 });
 
 const findOrCreateHostSchema = z.object({
   phoneNumber: phonePattern,
   name: z.string().min(1).max(100).optional(),
-  email: z.string().email().optional(),
+  email: optionalEmail,
 });
 
 const updateHostStatusSchema = z.object({
@@ -30,7 +57,7 @@ const updateHostStatusSchema = z.object({
 
 const updateHostSubscriptionSchema = z.object({
   planCode: z.string().min(1),
-  status: z.string().optional(),
+  status: optionalString,
   reason: z.string().max(500).optional(),
 });
 
@@ -71,20 +98,20 @@ const bulkDeleteHostsSchema = bulkIdsSchema;
 const createBusinessSchema = z.object({
   name: z.string().min(2).max(100),
   phoneNumber: phonePattern,
-  email: z.string().email().optional(),
-  password: z.string().min(8).max(128).optional(),
-  description: z.string().max(2000).optional(),
+  email: optionalEmail,
+  password: optionalPassword,
+  description: z.string().max(2000).optional().or(z.literal('')).transform((v) => (v === '' ? undefined : v)),
 });
 
 const updateBusinessSchema = z.object({
   name: z.string().min(2).max(100).optional(),
-  description: z.string().max(2000).optional(),
+  description: z.string().max(2000).optional().or(z.literal('')).transform((v) => (v === '' ? undefined : v)),
 });
 
 const assignBusinessPlanSchema = z.object({
   mode: z.enum(['grant', 'checkout']),
   planCode: z.string().min(1),
-  discountCode: z.string().optional(),
+  discountCode: optionalString,
   grantReason: z.string().max(500).optional(),
 });
 
@@ -95,12 +122,12 @@ const updateBusinessStatusSchema = z.object({
 // ── Vendors ────────────────────────────────────────────────────────────────
 const updateVendorStatusSchema = z.object({
   status: z.enum(['approved', 'rejected', 'pending', 'suspended']),
-  reason: z.string().optional(),
+  reason: optionalString,
 });
 
 const updateVendorRatingSchema = z.object({
   rating: z.number().min(0).max(5),
-  comment: z.string().optional(),
+  comment: optionalString,
 });
 
 const bulkDeleteVendorsSchema = bulkIdsSchema;
@@ -126,20 +153,20 @@ const createModeratorSchema = z.object({
   name: z.string().min(2).max(100),
   email: z.string().email(),
   phoneNumber: phonePattern,
-  password: z.string().min(6),
-  username: z.string().optional(),
+  password: optionalPassword,
+  username: optionalString,
   permissions: z.array(z.string()).optional(),
   pageAccess: z.record(z.any()).optional(),
-  role: z.string().optional(),
+  role: optionalString,
 });
 
 const updateModeratorSchema = z.object({
   name: z.string().min(2).max(100).optional(),
-  email: z.string().email().optional(),
-  phoneNumber: phonePattern.optional(),
+  email: optionalEmail,
+  phoneNumber: phonePattern.optional().or(z.literal('')).transform((v) => (v ? normalizePhoneNumber(v) : undefined)),
   permissions: z.array(z.string()).optional(),
   pageAccess: z.record(z.any()).optional(),
-  username: z.string().optional(),
+  username: optionalString,
   role: z.enum(['moderator', 'admin']).optional(),
 });
 

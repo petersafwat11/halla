@@ -63,11 +63,17 @@ const AddBusinessModal = ({ visible, onClose, onSaved }) => {
   const onSubmit = async (values) => {
     try {
       const formData = new FormData();
-      formData.append("name", values.name || "");
-      formData.append("phoneNumber", values.phoneNumber || "");
-      formData.append("email", values.email || "");
-      formData.append("password", values.password || "");
-      formData.append("description", values.description || "");
+      formData.append("name", (values.name || "").trim());
+      formData.append("phoneNumber", (values.phoneNumber || "").trim());
+      if (values.email && values.email.trim()) {
+        formData.append("email", values.email.trim().toLowerCase());
+      }
+      if (values.password && values.password.trim()) {
+        formData.append("password", values.password.trim());
+      }
+      if (values.description && values.description.trim()) {
+        formData.append("description", values.description.trim());
+      }
       if (values.logo?.uri) {
         formData.append("logo", {
           uri: values.logo.uri,
@@ -134,8 +140,11 @@ const AddBusinessModal = ({ visible, onClose, onSaved }) => {
               <PasswordInput
                 name="password"
                 label={cb("password", "Password")}
-                placeholder={cb("passwordPlaceholder", "At least 8 characters")}
-                rules={{ required: cb("passwordRequired", "Password is required") }}
+                placeholder={cb("passwordPlaceholder", "Leave blank to auto-generate")}
+                rules={{
+                  validate: (v) =>
+                    !v || v.length >= 8 || cb("passwordMin", "Password must be at least 8 characters"),
+                }}
               />
               <TextAreaInput
                 name="description"
