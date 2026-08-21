@@ -99,6 +99,7 @@ const EventActionsSection = ({ event, canEdit, canDelete, updatePending, deleteP
 };
 
 const EventHeroCard = ({ event, statusCfg, statusLabel, t }) => {
+  const { currentLanguage } = useTranslation();
   const hostName = event.host?.name || event.host?.username || event.hostName || "—";
 
   return (

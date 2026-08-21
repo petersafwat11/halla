@@ -109,7 +109,7 @@ const DetailRow = ({ icon, children }) => (
 
 const EventSummary = () => {
   const { watch, setValue } = useFormContext();
-  const { t } = useTranslation("createEvent");
+  const { t, currentLanguage } = useTranslation("createEvent");
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -168,6 +168,7 @@ const EventSummary = () => {
     address?.address,
     hostName,
     t,
+    currentLanguage,
   ]);
   const mapLink =
     address?.latitude && address?.longitude
