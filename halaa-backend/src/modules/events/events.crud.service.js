@@ -857,32 +857,19 @@ module.exports = {
    * @returns {Promise<Object>}
    */
   async bulkDeleteEvents(eventIds, userId) {
-    const events = await Event.find({ _id: { $in: eventIds }, host: userId })
-      .select('_id eventDetails.title subscriptionId status')
-      .lean();
-    const validIds = events.map((e) => e._id);
-    if (validIds.length === 0) return { deletedCount: 0 };
+    const uniqueIds = Array.from(new Set((eventIds || []).map(String)));
+    const succeeded = [];
+    const failed = [];
 
-    const session = await require('mongoose').startSession();
-    let deletedCount = 0;
-    try {
-      await session.withTransaction(async () => {
-        // Soft delete: mark events `deleted`; leave guest docs in place.
-        const result = await Event.updateMany(
-          { _id: { $in: validIds } },
-          { $set: { status: EVENT_STATUS.DELETED, deletedAt: new Date(), perEventGuardKey: null } },
-          { session }
-        );
-        deletedCount = result.modifiedCount;
-      });
-    } finally {
-      await session.endSession();
-    }
-
-    // Free a slot for each event that was still active before this delete.
-    for (const e of events) {
-      if (![EVENT_STATUS.DELETED, EVENT_STATUS.CANCELLED].includes(e.status)) {
-        await this._freeEventSlot(e.subscriptionId);
+    for (const id of uniqueIds) {
+      try {
+        await this.deleteEvent(id, userId, false);
+        succeeded.push(id.toString());
+      } catch (err) {
+        failed.push({
+          id: id.toString(),
+          error: err.message || 'Failed to delete event',
+        });
       }
     }
 
@@ -891,12 +878,20 @@ module.exports = {
       actor: { _id: userId },
       targetType: 'event',
       metadata: {
-        deletedCount,
-        eventIds: validIds.map((id) => id.toString()),
+        deletedCount: succeeded.length,
+        eventIds: succeeded,
+        failedCount: failed.length,
       },
     }).catch(() => {});
 
-    return { deletedCount };
+    return {
+      success: true,
+      count: succeeded.length,
+      deletedCount: succeeded.length,
+      succeeded,
+      failed,
+      message: `${succeeded.length} event(s) deleted successfully`,
+    };
   },
 
   /**

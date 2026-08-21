@@ -39,9 +39,33 @@ const grantExtraInvitesSchema = z.object({
   reason: z.string().max(500).optional(),
 });
 
-const bulkDeleteHostsSchema = z.object({
-  ids: z.array(objectId).min(1).max(200),
-});
+const bulkIdsSchema = z
+  .object({
+    ids: z.array(objectId).optional(),
+    hostIds: z.array(objectId).optional(),
+    vendorIds: z.array(objectId).optional(),
+    moderatorIds: z.array(objectId).optional(),
+    eventIds: z.array(objectId).optional(),
+    ticketIds: z.array(objectId).optional(),
+  })
+  .transform((data) => {
+    const rawList =
+      data.ids ||
+      data.hostIds ||
+      data.vendorIds ||
+      data.moderatorIds ||
+      data.eventIds ||
+      data.ticketIds ||
+      [];
+    const uniqueIds = Array.from(new Set(rawList.map(String)));
+    return { ids: uniqueIds };
+  })
+  .refine((data) => data.ids.length >= 1 && data.ids.length <= 200, {
+    message: 'ids must contain between 1 and 200 items',
+    path: ['ids'],
+  });
+
+const bulkDeleteHostsSchema = bulkIdsSchema;
 
 // ── Businesses ───────────────────────────────────────────────────────────────
 const createBusinessSchema = z.object({
@@ -79,14 +103,23 @@ const updateVendorRatingSchema = z.object({
   comment: z.string().optional(),
 });
 
-const bulkDeleteVendorsSchema = z.object({
-  ids: z.array(objectId).min(1).max(200),
-});
+const bulkDeleteVendorsSchema = bulkIdsSchema;
 
-const bulkVendorStatusSchema = z.object({
-  ids: z.array(objectId).min(1).max(200),
-  status: z.enum(['approved', 'rejected', 'suspended']),
-});
+const bulkVendorStatusSchema = z
+  .object({
+    ids: z.array(objectId).optional(),
+    vendorIds: z.array(objectId).optional(),
+    status: z.enum(['approved', 'rejected', 'suspended']),
+  })
+  .transform((data) => {
+    const rawList = data.ids || data.vendorIds || [];
+    const uniqueIds = Array.from(new Set(rawList.map(String)));
+    return { ids: uniqueIds, status: data.status };
+  })
+  .refine((data) => data.ids.length >= 1 && data.ids.length <= 200, {
+    message: 'ids must contain between 1 and 200 items',
+    path: ['ids'],
+  });
 
 // ── Moderators ─────────────────────────────────────────────────────────────
 const createModeratorSchema = z.object({
@@ -114,14 +147,23 @@ const updateModeratorStatusSchema = z.object({
   status: z.enum(['active', 'suspended', 'inactive']),
 });
 
-const bulkDeleteModeratorsSchema = z.object({
-  ids: z.array(objectId).min(1).max(200),
-});
+const bulkDeleteModeratorsSchema = bulkIdsSchema;
 
-const bulkModeratorStatusSchema = z.object({
-  ids: z.array(objectId).min(1).max(200),
-  status: z.enum(['active', 'suspended', 'inactive']),
-});
+const bulkModeratorStatusSchema = z
+  .object({
+    ids: z.array(objectId).optional(),
+    moderatorIds: z.array(objectId).optional(),
+    status: z.enum(['active', 'suspended', 'inactive']),
+  })
+  .transform((data) => {
+    const rawList = data.ids || data.moderatorIds || [];
+    const uniqueIds = Array.from(new Set(rawList.map(String)));
+    return { ids: uniqueIds, status: data.status };
+  })
+  .refine((data) => data.ids.length >= 1 && data.ids.length <= 200, {
+    message: 'ids must contain between 1 and 200 items',
+    path: ['ids'],
+  });
 
 const { EVENT_STATUS_VALUES } = require('../../shared/constants');
 
@@ -130,14 +172,23 @@ const updateEventStatusSchema = z.object({
   status: z.enum(EVENT_STATUS_VALUES),
 });
 
-const bulkDeleteEventsSchema = z.object({
-  ids: z.array(objectId).min(1).max(200),
-});
+const bulkDeleteEventsSchema = bulkIdsSchema;
 
-const bulkEventStatusSchema = z.object({
-  ids: z.array(objectId).min(1).max(200),
-  status: z.enum(EVENT_STATUS_VALUES),
-});
+const bulkEventStatusSchema = z
+  .object({
+    ids: z.array(objectId).optional(),
+    eventIds: z.array(objectId).optional(),
+    status: z.enum(EVENT_STATUS_VALUES),
+  })
+  .transform((data) => {
+    const rawList = data.ids || data.eventIds || [];
+    const uniqueIds = Array.from(new Set(rawList.map(String)));
+    return { ids: uniqueIds, status: data.status };
+  })
+  .refine((data) => data.ids.length >= 1 && data.ids.length <= 200, {
+    message: 'ids must contain between 1 and 200 items',
+    path: ['ids'],
+  });
 
 module.exports = {
   createHostSchema,
@@ -145,6 +196,7 @@ module.exports = {
   updateHostStatusSchema,
   updateHostSubscriptionSchema,
   grantExtraInvitesSchema,
+  bulkIdsSchema,
   bulkDeleteHostsSchema,
   createBusinessSchema,
   updateBusinessSchema,

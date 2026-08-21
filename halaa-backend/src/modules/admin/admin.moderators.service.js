@@ -222,23 +222,36 @@ async function deleteModerator(moderatorId) {
  * Bulk delete moderators
  */
 async function bulkDeleteModerators(moderatorIds) {
-  const query = {
-    _id: { $in: moderatorIds },
-    role: { $in: [ROLES.MODERATOR, ROLES.ADMIN] },
-  };
+  const uniqueIds = Array.from(new Set((moderatorIds || []).map(String)));
+  const succeeded = [];
+  const failed = [];
 
-  const result = await User.updateMany(
-    query,
-    {
-      status: USER_STATUS.DELETED,
-      deletedAt: new Date(),
+  for (const id of uniqueIds) {
+    try {
+      const moderator = await User.findOne({ _id: id, role: { $in: [ROLES.MODERATOR, ROLES.ADMIN] } });
+      if (!moderator) {
+        throw new NotFoundError('Moderator');
+      }
+      moderator.status = USER_STATUS.DELETED;
+      moderator.deletedAt = new Date();
+      await moderator.save();
+      succeeded.push(id.toString());
+    } catch (err) {
+      failed.push({
+        id: id.toString(),
+        error: err.message || 'Failed to delete moderator',
+      });
     }
-  );
+  }
 
   return {
     success: true,
-    deleted: result.modifiedCount,
-    message: `${result.modifiedCount} moderator(s) deleted successfully`,
+    count: succeeded.length,
+    deleted: succeeded.length,
+    deletedCount: succeeded.length,
+    succeeded,
+    failed,
+    message: `${succeeded.length} moderator(s) deleted successfully`,
   };
 }
 
@@ -246,17 +259,30 @@ async function bulkDeleteModerators(moderatorIds) {
  * Bulk update moderator status
  */
 async function bulkUpdateModeratorStatus(moderatorIds, status) {
-  const query = {
-    _id: { $in: moderatorIds },
-    role: { $in: [ROLES.MODERATOR, ROLES.ADMIN] },
-  };
+  const uniqueIds = Array.from(new Set((moderatorIds || []).map(String)));
+  const succeeded = [];
+  const failed = [];
 
-  const result = await User.updateMany(query, { status });
+  for (const id of uniqueIds) {
+    try {
+      await updateModeratorStatus(id, status);
+      succeeded.push(id.toString());
+    } catch (err) {
+      failed.push({
+        id: id.toString(),
+        error: err.message || 'Failed to update moderator status',
+      });
+    }
+  }
 
   return {
     success: true,
-    updated: result.modifiedCount,
-    message: `${result.modifiedCount} moderator(s) updated to ${status}`,
+    count: succeeded.length,
+    updated: succeeded.length,
+    updatedCount: succeeded.length,
+    succeeded,
+    failed,
+    message: `${succeeded.length} moderator(s) updated to ${status}`,
   };
 }
 

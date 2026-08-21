@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toBulkIdsPayload } from "@halaa/shared/utils/adapters";
 import { ENDPOINTS } from "../../config/api";
 import { useAuthStore } from "../../stores/authStore";
 import { ticketsKeys } from "../tickets/keys";
@@ -107,7 +108,7 @@ export function useBulkDeleteHosts() {
       const response = await adminRequest(
         ENDPOINTS.ADMIN.HOSTS.BULK_DELETE,
         "POST",
-        { ids: hostIds },
+        toBulkIdsPayload(hostIds),
       );
       return assertOk(response);
     },
@@ -369,7 +370,7 @@ export function useBulkDeleteVendors() {
       const response = await adminRequest(
         ENDPOINTS.ADMIN.VENDORS.BULK_DELETE,
         "POST",
-        { ids: vendorIds },
+        toBulkIdsPayload(vendorIds),
       );
       return assertOk(response);
     },
@@ -403,7 +404,7 @@ export function useBulkApproveVendors() {
       const response = await adminRequest(
         ENDPOINTS.ADMIN.VENDORS.BULK_STATUS,
         "POST",
-        { ids: vendorIds, status: "approved" },
+        { ...toBulkIdsPayload(vendorIds), status: "approved" },
       );
       return assertOk(response);
     },
@@ -420,7 +421,7 @@ export function useBulkSuspendVendors() {
       const response = await adminRequest(
         ENDPOINTS.ADMIN.VENDORS.BULK_STATUS,
         "POST",
-        { ids: vendorIds, status: "suspended" },
+        { ...toBulkIdsPayload(vendorIds), status: "suspended" },
       );
       return assertOk(response);
     },
@@ -523,7 +524,7 @@ export function useBulkDeleteModerators() {
       const response = await adminRequest(
         ENDPOINTS.ADMIN.MODERATORS.BULK_DELETE,
         "POST",
-        { ids: moderatorIds },
+        toBulkIdsPayload(moderatorIds),
       );
       return assertOk(response);
     },
@@ -542,7 +543,7 @@ export function useBulkSuspendModerators() {
       const response = await adminRequest(
         ENDPOINTS.ADMIN.MODERATORS.BULK_STATUS,
         "POST",
-        { ids: moderatorIds, status: "inactive" },
+        { ...toBulkIdsPayload(moderatorIds), status: "inactive" },
       );
       return assertOk(response);
     },
@@ -605,7 +606,7 @@ export function useBulkDeleteEvents() {
       const response = await adminRequest(
         ENDPOINTS.ADMIN.EVENTS.BULK_DELETE,
         "POST",
-        { ids: eventIds },
+        toBulkIdsPayload(eventIds),
       );
       return assertOk(response);
     },
@@ -622,7 +623,7 @@ export function useBulkCancelEvents() {
       const response = await adminRequest(
         ENDPOINTS.ADMIN.EVENTS.BULK_STATUS,
         "POST",
-        { ids: eventIds, status: "cancelled" },
+        { ...toBulkIdsPayload(eventIds), status: "cancelled" },
       );
       return assertOk(response);
     },

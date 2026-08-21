@@ -196,9 +196,9 @@ exports.deleteEvent = catchAsync(async (req, res) => {
  * POST /api/v2/events/bulk-delete
  */
 exports.bulkDeleteEvents = catchAsync(async (req, res) => {
-  const { eventIds } = req.body;
-  const result = await eventsService.bulkDeleteEvents(eventIds, req.user._id);
-  sendSuccess(res, result, `${result.deletedCount} events deleted`);
+  const ids = req.body.ids || req.body.eventIds || [];
+  const result = await eventsService.bulkDeleteEvents(ids, req.user._id);
+  sendSuccess(res, result, result.message || `${result.count || result.deletedCount} events deleted`);
 });
 
 // ============================================

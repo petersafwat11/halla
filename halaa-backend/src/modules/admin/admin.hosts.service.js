@@ -375,30 +375,46 @@ async function deleteHost(hostId) {
  * Bulk delete hosts
  */
 async function bulkDeleteHosts(hostIds) {
-  const query = personalHostFilter({ _id: { $in: hostIds } });
+  const uniqueIds = Array.from(new Set((hostIds || []).map(String)));
+  const succeeded = [];
+  const failed = [];
 
-  // Check for active events
-  const hostsWithActiveEvents = await Event.distinct('host', {
-    host: { $in: hostIds },
-    status: EVENT_STATUS.PUBLISHED,
-  });
+  for (const id of uniqueIds) {
+    try {
+      const query = personalHostFilter({ _id: id });
+      const host = await User.findOne(query);
+      if (!host) {
+        throw new NotFoundError('Host');
+      }
 
-  if (hostsWithActiveEvents.length > 0) {
-    throw new ValidationError(`Cannot delete ${hostsWithActiveEvents.length} host(s) with active events`);
-  }
+      const activeEvents = await Event.countDocuments({
+        host: id,
+        status: { $in: [EVENT_STATUS.PUBLISHED, EVENT_STATUS.LIVE, EVENT_STATUS.SCHEDULED, 'live', 'scheduled', 'published'] },
+      });
+      if (activeEvents > 0) {
+        throw new ValidationError('Cannot delete host with active events');
+      }
 
-  const result = await User.updateMany(
-    query,
-    {
-      status: USER_STATUS.DELETED,
-      deletedAt: new Date(),
+      host.status = USER_STATUS.DELETED;
+      host.deletedAt = new Date();
+      await host.save();
+      succeeded.push(id.toString());
+    } catch (err) {
+      failed.push({
+        id: id.toString(),
+        error: err.message || 'Failed to delete host',
+      });
     }
-  );
+  }
 
   return {
     success: true,
-    deleted: result.modifiedCount,
-    message: `${result.modifiedCount} host(s) deleted successfully`,
+    count: succeeded.length,
+    deleted: succeeded.length,
+    deletedCount: succeeded.length,
+    succeeded,
+    failed,
+    message: `${succeeded.length} host(s) deleted successfully`,
   };
 }
 

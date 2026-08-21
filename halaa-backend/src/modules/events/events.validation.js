@@ -227,9 +227,20 @@ const updateStaffStatusSchema = z.object({
   status: z.enum(Object.values(SUPERVISOR_STATUS)),
 }).strict();
 
-const bulkDeleteSchema = z.object({
-  eventIds: z.array(objectId).min(1).max(100),
-}).strict();
+const bulkDeleteSchema = z
+  .object({
+    ids: z.array(objectId).optional(),
+    eventIds: z.array(objectId).optional(),
+  })
+  .transform((data) => {
+    const rawList = data.ids || data.eventIds || [];
+    const uniqueIds = Array.from(new Set(rawList.map(String)));
+    return { ids: uniqueIds, eventIds: uniqueIds };
+  })
+  .refine((data) => data.ids.length >= 1 && data.ids.length <= 100, {
+    message: 'ids must contain between 1 and 100 items',
+    path: ['ids'],
+  });
 
 const adminUpdateStatusSchema = z.object({
   status: z.enum(Object.values(EVENT_STATUS)),

@@ -254,7 +254,7 @@ Update one row only after its exit criteria and required tests pass. Use `Blocke
 | 1.6 Scheduling | Complete | 1.1, product decision |
 | 2.1 Shared table server mode | Complete | 0.2 |
 | 2.2 Admin list migrations/stats | Complete | 2.1 |
-| 2.3 Bulk API envelope | Not started | 0.2 |
+| 2.3 Bulk API envelope | Complete | 0.2 |
 | 2.4 Ticket transitions/bulk | Not started | 0.2, 2.3 |
 | 2.5 Ticket attachment matrix | Not started | 0.1 |
 | 2.6 Admin creation/cache keys | Not started | 0.2 |
@@ -1299,3 +1299,57 @@ This program is complete only when:
   - None.
 - **Blockers / deferred work:**
   - Batch consisting of Session 2.1 and Session 2.2 is Complete.
+
+### Session 2.3 — Bulk API Contract Across Admin Resources (`ADM-04`)
+- **Status:** Complete
+- **Date / environment:** 2026-08-21 / Windows (Node v20.18.0)
+- **What was done:**
+  - **Standardized Backend Bulk Request Schemas (`halaa-backend/src/modules/admin/admin.validation.js` & `events.validation.js`):**
+    - Standardized `bulkIdsSchema` to accept `{ ids: string[] }` (and alias keys `hostIds`, `vendorIds`, `moderatorIds`, `eventIds`, `ticketIds`) with automatic deduplication, min 1 item, max 200 items, and ObjectId validation.
+    - Updated `bulkDeleteHostsSchema`, `bulkDeleteVendorsSchema`, `bulkDeleteModeratorsSchema`, and `bulkDeleteEventsSchema` to standardize on `bulkIdsSchema`.
+    - Standardized `bulkVendorStatusSchema`, `bulkModeratorStatusSchema`, and `bulkEventStatusSchema` to accept `{ ids, status }` (and alias keys) with deduplication and bounds.
+    - Updated `bulkDeleteSchema` in `events.validation.js` to accept `{ ids }` or `{ eventIds }` with deduplication and bounds [1, 100].
+  - **Standardized Domain Invariant Isolation & Per-Item Results (`halaa-backend`):**
+    - Updated `bulkDeleteHosts` (`admin.hosts.service.js`) to process host deletions individually, enforce single-delete invariants (checking active events and existence per host), and return the standard `{ success: true, count, deletedCount, succeeded, failed, message }` envelope.
+    - Updated `bulkDeleteVendors` and `bulkUpdateVendorStatus` (`admin.vendors.service.js`) to process vendor operations individually, enforce single-item invariants, and return `{ success: true, count, deletedCount/updatedCount, succeeded, failed, message }`.
+    - Updated `bulkDeleteModerators` and `bulkUpdateModeratorStatus` (`admin.moderators.service.js`) to process moderator operations individually and return `{ success: true, count, deletedCount/updatedCount, succeeded, failed, message }`.
+    - Updated `bulkDeleteEvents` (`events.crud.service.js` and `events.controller.js`) to process event deletions individually and return the standard `{ success: true, count, deletedCount, succeeded, failed, message }` envelope.
+  - **Standardized Web Client Mutations (`halaa-web`):**
+    - Updated `halaa-web/hooks/admin/mutations.js` to wrap payloads in `useAdminHostMutation("bulkDelete")`, `useAdminVendorMutation("bulkDelete")`, `useAdminVendorMutation("bulkStatus")`, `useAdminModeratorMutation("bulkDelete")`, and `useAdminEventMutation("bulkDelete")` with canonical `toBulkIdsPayload`.
+    - Updated `halaa-web/hooks/events/mutations/useEventCrudMutation.js` to wrap `bulkDeleteEvents` payload with `toBulkIdsPayload`.
+  - **Standardized Mobile Client Mutations (`halaa-mobile`):**
+    - Updated `halaa-mobile/hooks/admin/mutations.js` to use `toBulkIdsPayload` across `useBulkDeleteHosts`, `useBulkDeleteVendors`, `useBulkApproveVendors`, `useBulkSuspendVendors`, `useBulkDeleteModerators`, `useBulkSuspendModerators`, `useBulkDeleteEvents`, and `useBulkCancelEvents`.
+  - **Automated Regression Suites:**
+    - Created `halaa-backend/test/admin-bulk-contract.test.js` (5 test suites).
+    - Created `halaa-web/__tests__/ui/bulkMutationsContract.test.mjs` (2 test cases).
+    - Created `halaa-mobile/__tests__/admin/bulkMutationsContract.test.js` (1 test case).
+- **Files changed:**
+  - `halaa-backend/src/modules/admin/admin.validation.js`
+  - `halaa-backend/src/modules/admin/admin.hosts.service.js`
+  - `halaa-backend/src/modules/admin/admin.vendors.service.js`
+  - `halaa-backend/src/modules/admin/admin.vendors.controller.js`
+  - `halaa-backend/src/modules/admin/admin.moderators.service.js`
+  - `halaa-backend/src/modules/events/events.validation.js`
+  - `halaa-backend/src/modules/events/events.crud.service.js`
+  - `halaa-backend/src/modules/events/events.controller.js`
+  - `halaa-backend/test/admin-bulk-contract.test.js` (new)
+  - `halaa-web/hooks/admin/mutations.js`
+  - `halaa-web/hooks/events/mutations/useEventCrudMutation.js`
+  - `halaa-web/__tests__/ui/bulkMutationsContract.test.mjs` (new)
+  - `halaa-mobile/hooks/admin/mutations.js`
+  - `halaa-mobile/__tests__/admin/bulkMutationsContract.test.js` (new)
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md`
+- **Exact test commands & results:**
+  - `cd halaa-backend && npm test` → PASS (355 backend tests passed, 0 failures)
+  - `cd shared && npm run lint && npm test` → PASS (14 unit tests passed, 0 lint warnings)
+  - `cd halaa-web && npm run lint && npm test` → PASS (45 unit tests passed, 0 errors, 31 warnings)
+  - `cd halaa-mobile && npm run lint && npm test` → PASS (118 unit tests passed, 0 errors)
+- **Exit-criteria verification:**
+  - All bulk endpoints and clients use the standardized `{ ids: string[] }` envelope with bounds and duplicate removal.
+  - Failed items are recorded with descriptive errors in `failed: [{ id, error }]`, and successful items are processed and reported in `succeeded: string[]`.
+  - All automated test suites across backend, shared, web, and mobile pass cleanly.
+- **Remaining risks / decisions:**
+  - None.
+- **Blockers / deferred work:**
+  - Ready for Git commit for Session 2.3.
+

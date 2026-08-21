@@ -280,54 +280,67 @@ async function deleteVendor(vendorId) {
  * Bulk delete vendors
  */
 async function bulkDeleteVendors(vendorIds) {
-  const query = {
-    _id: { $in: vendorIds },
-    role: ROLES.VENDOR,
-  };
+  const uniqueIds = Array.from(new Set((vendorIds || []).map(String)));
+  const succeeded = [];
+  const failed = [];
 
-  const result = await User.updateMany(
-    query,
-    {
-      status: USER_STATUS.DELETED,
-      deletedAt: new Date(),
+  for (const id of uniqueIds) {
+    try {
+      const vendor = await User.findOne({ _id: id, role: ROLES.VENDOR });
+      if (!vendor) {
+        throw new NotFoundError('Vendor');
+      }
+      vendor.status = USER_STATUS.DELETED;
+      vendor.deletedAt = new Date();
+      await vendor.save();
+      succeeded.push(id.toString());
+    } catch (err) {
+      failed.push({
+        id: id.toString(),
+        error: err.message || 'Failed to delete vendor',
+      });
     }
-  );
+  }
 
   return {
     success: true,
-    deleted: result.modifiedCount,
-    message: `${result.modifiedCount} vendor(s) deleted successfully`,
+    count: succeeded.length,
+    deleted: succeeded.length,
+    deletedCount: succeeded.length,
+    succeeded,
+    failed,
+    message: `${succeeded.length} vendor(s) deleted successfully`,
   };
 }
 
 /**
  * Bulk update vendor status
  */
-async function bulkUpdateVendorStatus(vendorIds, vendorStatus) {
-  const query = {
-    _id: { $in: vendorIds },
-    role: ROLES.VENDOR,
-  };
+async function bulkUpdateVendorStatus(vendorIds, vendorStatus, actorId = null) {
+  const uniqueIds = Array.from(new Set((vendorIds || []).map(String)));
+  const succeeded = [];
+  const failed = [];
 
-  const updateData = {
-    'profile.vendorData.vendorStatus': vendorStatus,
-  };
-
-  if (vendorStatus === VENDOR_STATUS.APPROVED) {
-    updateData.status = USER_STATUS.ACTIVE;
-    updateData['profile.vendorData.approvedAt'] = new Date();
-  } else if (vendorStatus === VENDOR_STATUS.REJECTED) {
-    updateData.status = USER_STATUS.INACTIVE;
-  } else if (vendorStatus === VENDOR_STATUS.SUSPENDED) {
-    updateData.status = USER_STATUS.SUSPENDED;
+  for (const id of uniqueIds) {
+    try {
+      await updateVendorStatus(id, vendorStatus, actorId);
+      succeeded.push(id.toString());
+    } catch (err) {
+      failed.push({
+        id: id.toString(),
+        error: err.message || 'Failed to update vendor status',
+      });
+    }
   }
-
-  const result = await User.updateMany(query, updateData);
 
   return {
     success: true,
-    updated: result.modifiedCount,
-    message: `${result.modifiedCount} vendor(s) updated successfully`,
+    count: succeeded.length,
+    updated: succeeded.length,
+    updatedCount: succeeded.length,
+    succeeded,
+    failed,
+    message: `${succeeded.length} vendor(s) updated to ${vendorStatus}`,
   };
 }
 
