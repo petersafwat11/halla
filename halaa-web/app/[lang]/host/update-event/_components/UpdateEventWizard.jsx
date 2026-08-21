@@ -17,9 +17,11 @@ import Button from "@/ui/commen/button/Button";
 import {
   useEventById,
   useEventSubscriptionInfo,
+  useEventCapabilities,
   useEventForm,
   mapEventToFormValues,
 } from "@/hooks/events";
+import { parseUpdateEventStep } from "@halaa/shared/utils";
 import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import { useTranslation } from "react-i18next";
@@ -43,7 +45,7 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
   const router = useRouter();
 
   const eventId = searchParams.get("id");
-  const currentStep = parseInt(searchParams.get("step"), 10) || 1;
+  const currentStep = parseUpdateEventStep(searchParams);
 
   const [isSaving, setIsSaving] = useState(false);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
@@ -73,10 +75,15 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
     isLoading: eventLoading,
     error: eventError,
   } = useEventById(eventId);
+  const { data: capabilitiesData } = useEventCapabilities(eventId);
   const { data: subscriptionData } = useEventSubscriptionInfo();
-  const subscriptionInfo = subscriptionData?.data;
 
   const eventRaw = eventData?.data?.event || eventData?.event || null;
+  // Resolve owner's entitlement so admin-on-behalf updates respect the event owner's plan (EVT-10)
+  const ownerEntitlement =
+    capabilitiesData?.data || eventRaw?.capabilities || eventRaw?.subscription;
+  const subscriptionInfo = ownerEntitlement || subscriptionData?.data;
+
   // When an event is `live`, every section except step 2's
   // allow-add-only branch is locked.
   const isEventLive = eventRaw?.status === "live";

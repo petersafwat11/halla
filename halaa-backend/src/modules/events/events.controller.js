@@ -95,6 +95,20 @@ exports.getSingleEventStats = catchAsync(async (req, res) => {
   sendSuccess(res, stats);
 });
 
+/**
+ * Get event capabilities / entitlement
+ * GET /api/v2/events/:id/capabilities
+ * GET /api/v2/events/:id/entitlement
+ */
+exports.getEventCapabilities = catchAsync(async (req, res) => {
+  const capabilities = await eventsService.getEventCapabilities(
+    req.params.id,
+    req.user
+  );
+  sendSuccess(res, capabilities);
+});
+
+
 // ============================================
 // EXPORT
 // ============================================

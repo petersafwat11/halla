@@ -96,6 +96,33 @@ const RSVP_STATUS = {
 };
 
 /**
+ * Canonical RSVP Buckets (EVT-16 root cause resolution)
+ * Maps all variations of guest states to authoritative reporting buckets.
+ */
+const RSVP_BUCKETS = Object.freeze({
+  PENDING: Object.freeze(['invited', 'pending']),
+  CONFIRMED: Object.freeze(['confirmed', 'checked_in']),
+  DECLINED: Object.freeze(['declined']),
+  ATTENDED: Object.freeze(['checked_in']),
+  NO_SHOW: Object.freeze(['no_show']),
+});
+
+/**
+ * Classifies any guest status string into a canonical RSVP bucket:
+ * 'pending' | 'confirmed' | 'declined' | 'attended' | 'no_show'
+ */
+const classifyRsvpBucket = (status) => {
+  if (!status) return 'pending';
+  const s = String(status).toLowerCase().trim();
+  if (RSVP_BUCKETS.ATTENDED.includes(s)) return 'attended';
+  if (RSVP_BUCKETS.CONFIRMED.includes(s)) return 'confirmed';
+  if (RSVP_BUCKETS.DECLINED.includes(s)) return 'declined';
+  if (RSVP_BUCKETS.NO_SHOW.includes(s)) return 'no_show';
+  if (RSVP_BUCKETS.PENDING.includes(s)) return 'pending';
+  return 'pending';
+};
+
+/**
  * Invitation type — chosen by the host in create-event Step 4. Encodes two
  * independent dimensions in one enum: whether the guest can reply
  * (confirm/decline) and whether confirmation sends a QR entry code.
@@ -280,6 +307,8 @@ module.exports = {
   TICKET_STATUS,
   TICKET_PRIORITY,
   RSVP_STATUS,
+  RSVP_BUCKETS,
+  classifyRsvpBucket,
   INVITATION_TYPE,
   INVITATION_TYPE_VALUES: Object.values(INVITATION_TYPE),
   invitationAllowsReply,

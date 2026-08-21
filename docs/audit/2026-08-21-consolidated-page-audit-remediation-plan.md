@@ -250,7 +250,7 @@ Update one row only after its exit criteria and required tests pass. Use `Blocke
 | 1.2 Invitation/Taqnyat contract | Complete | 0.2 |
 | 1.3 Live-event guest invariants | Complete | 0.2 |
 | 1.4 Admin event/staff mutation safety | Complete | 0.2, preferably 1.3 |
-| 1.5 Event entitlement/routes/messaging/stats | Not started | 0.2, 1.2 |
+| 1.5 Event entitlement/routes/messaging/stats | Complete | 0.2, 1.2 |
 | 1.6 Scheduling | Not started | 1.1, product decision |
 | 2.1 Shared table server mode | Not started | 0.2 |
 | 2.2 Admin list migrations/stats | Not started | 2.1 |
@@ -1074,3 +1074,79 @@ This program is complete only when:
   - None.
 - **Blockers / deferred work:**
   - Session 1.4 is Complete. Session 1.5 (Event entitlement/routes/messaging/stats) is unblocked.
+
+### Session 1.5 — Event entitlement/routes/messaging/stats
+
+- **Date:** 2026-08-21
+- **Status:** Complete
+- **Scope summary:**
+  - Resolved EVT-10, EVT-11, EVT-12, EVT-16, and ADM-09 (event part).
+  - Added authorized event-capabilities/entitlement endpoint and enrichments based on event owner and stamped subscription data (`GET /api/v2/events/:id/capabilities` and `GET /api/v2/events/:id/entitlement`).
+  - Updated web `UpdateEventWizard.jsx` and mobile `UpdateEventScreen.js` to derive step capabilities and limits from the event owner's plan rather than the viewing admin's personal plan.
+  - Unified update route parameter builder and parser in `@halaa/shared/utils/routes.js` with `parseUpdateEventStep` and `buildUpdateEventUrl`, eliminating route alias and step mismatches between `EventCard.js` and `UpdateEventWizard.jsx`.
+  - Connected `handleConfirmSendInvitation` in web `useGuestTableActions.js` to `useSendBulkInvitations` with loading state, quota enforcement, and partial/full error feedback.
+  - Fixed single-event RSVP status classification in `events.stats-export.service.js` to count all RSVP buckets (`pending`, `confirmed`, `declined`, `checkedIn`) consistently.
+  - Aligned SSR prefetch query key in `admin-dash/update-event/page.js` to canonical `eventsKeys.detail(eventId)` (`["events", eventId]`) preventing hydration cache misses.
+- **Root cause analysis:**
+  - **EVT-10:** Admins updating events on behalf of hosts were invoking user-scoped subscription hooks (`useEventSubscriptionInfo` / `useMySubscription`) which returned the admin's unlimited quota instead of the host's stamped event plan limits.
+  - **EVT-11:** `EventCard.js` constructed update URLs with `&section=guest-list`, while `UpdateEventWizard.jsx` was parsing `parseInt(searchParams.get("step"))`, causing default fallback to step 1.
+  - **EVT-12:** Web guest-table send invitations confirmation handler was stubbed with a toast message without triggering `useSendBulkInvitations`.
+  - **EVT-16:** `getSingleEventStats` counted pending guests as `guests.filter(g => g.status === 'invited').length`, omitting guests in `'pending'` or other pending bucket states.
+  - **ADM-09 (event part):** SSR prefetch used `["events", "by-id", eventId]`, whereas client `useEventById` used `["events", eventId]`.
+- **Key implementation details:**
+  - **Shared Contract Layer (`@halaa/shared`):**
+    - `shared/src/utils/routes.js`: Created `EVENT_UPDATE_SECTION_TO_STEP`, `parseUpdateEventStep`, `buildUpdateEventUrl`.
+    - `shared/src/utils/queryKeys.js` & `shared/src/api/paths.js`: Added `capabilities` and `entitlement` endpoints and query keys.
+    - `shared/test/contracts.test.js`: Added test suite for route builders, parsers, and query keys.
+  - **Backend Layer (`halaa-backend`):**
+    - `status.js`: Added canonical `RSVP_BUCKETS` and `classifyRsvpBucket`.
+    - `events.stats-export.service.js`: Added `getEventCapabilities(eventId, userContext)` and updated `getSingleEventStats` with bucket classifications.
+    - `events.crud.service.js`: Enriched `event.subscription` and `event.capabilities` in `getEventById`.
+    - `events.controller.js` & `events.routes.js`: Exposed `GET /api/v2/events/:id/capabilities` and `GET /api/v2/events/:id/entitlement`.
+  - **Web Client Layer (`halaa-web`):**
+    - `hooks/events/queries/useEventCapabilities.js`: Created hook and exported from `hooks/events/index.js`.
+    - `UpdateEventWizard.jsx`: Uses `parseUpdateEventStep(searchParams)` and resolves `effectiveSubscription` from `useEventCapabilities` / `eventRaw.capabilities`.
+    - `EventCard.js`: Uses `buildUpdateEventUrl` for step-targeted navigation.
+    - `useGuestTableActions.js`: Connected `handleConfirmSendInvitation` to `useSendBulkInvitations` with loading state and toast feedback.
+    - `admin-dash/update-event/page.js`: Fixed SSR prefetch key to `eventsKeys.detail(eventId)`.
+  - **Mobile Client Layer (`halaa-mobile`):**
+    - `config/api.js`: Added `CAPABILITIES` and `ENTITLEMENT` to `ENDPOINTS.EVENTS`.
+    - `UpdateEventScreen.js`: Passed `effectiveSubscription = eventData?.subscription || subscription` to `UpdateEventStepRenderer`.
+- **Files changed:**
+  - `shared/src/api/paths.js`
+  - `shared/src/utils/routes.js` (new)
+  - `shared/src/utils/index.js`
+  - `shared/src/utils/queryKeys.js`
+  - `shared/test/contracts.test.js`
+  - `halaa-backend/src/shared/constants/status.js`
+  - `halaa-backend/src/modules/events/events.stats-export.service.js`
+  - `halaa-backend/src/modules/events/events.crud.service.js`
+  - `halaa-backend/src/modules/events/events.controller.js`
+  - `halaa-backend/src/modules/events/events.routes.js`
+  - `halaa-backend/test/event-entitlement-and-stats.test.js` (new)
+  - `halaa-web/hooks/events/keys.js`
+  - `halaa-web/hooks/events/queries/useEventCapabilities.js` (new)
+  - `halaa-web/hooks/events/index.js`
+  - `halaa-web/app/[lang]/host/update-event/_components/UpdateEventWizard.jsx`
+  - `halaa-web/ui/host/events/EventCard.js`
+  - `halaa-web/components/event-detail/GuestTable/useGuestTableActions.js`
+  - `halaa-web/app/[lang]/admin-dash/update-event/page.js`
+  - `halaa-web/__tests__/events/eventRoutesAndMessaging.test.mjs` (new)
+  - `halaa-mobile/config/api.js`
+  - `halaa-mobile/screens/common/update-event/UpdateEventScreen.js`
+  - `halaa-mobile/__tests__/events/adminOnBehalfUpdate.test.js` (new)
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md`
+- **Exact test commands & results:**
+  - `cd shared && npm run lint; npm test` → PASS (14 unit tests passed, 0 lint warnings)
+  - `cd halaa-backend && node --test test/event-entitlement-and-stats.test.js; npm test` → PASS (343 tests passed, 0 failures)
+  - `cd halaa-web && npm run lint; npm test` → PASS (37 tests passed, 0 errors)
+  - `cd halaa-mobile && npm run lint; npm test` → PASS (114 tests passed, 0 errors)
+- **Exit-criteria verification:**
+  - Admin updates no longer depend on the admin's personal plan (verified by owner capability resolution on backend, web, and mobile).
+  - Web guest-table send invitations is connected to real bulk messaging mutation with quota/error/success handling (not toast-only).
+  - Single event stats correctly classify and aggregate all RSVP statuses into accurate buckets.
+  - Route navigation builders/parsers and SSR prefetch query keys are canonicalized across web and mobile.
+- **Remaining risks / decisions:**
+  - None.
+- **Blockers / deferred work:**
+  - Session 1.5 is Complete. Proceeding to Session 1.6 (Scheduling decision and implementation).

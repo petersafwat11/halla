@@ -4,7 +4,7 @@
  * @module modules/events/events.crud.service
  */
 
-const { EVENT_STATUS, INVITATION_TYPE, isPerEventPlan } = require("../../shared/constants");
+const { EVENT_STATUS, INVITATION_TYPE, isPerEventPlan, isPoolPlan } = require("../../shared/constants");
 const { ROLES } = require("../../shared/constants/roles");
 const {
   NotFoundError,
@@ -217,25 +217,76 @@ module.exports = {
           .select(
             "invitePool compensationPool invitesConsumed status expiresAt planId"
           )
-          .populate("planId", "planType code")
+          .populate("planId", "planType code limits name")
           .lean();
         if (sub) {
+          const invitePool = sub.invitePool ?? null;
+          const compensationPool = sub.compensationPool || 0;
+          const invitesConsumed = sub.invitesConsumed || 0;
           const invitesRemaining =
-            sub.invitePool === null
+            invitePool === null
               ? null
-              : (sub.invitePool || 0) +
-                (sub.compensationPool || 0) -
-                (sub.invitesConsumed || 0);
+              : Math.max(0, invitePool + compensationPool - invitesConsumed);
+          const planType = sub.planId?.planType || null;
+          const isPerEvent = isPerEventPlan(planType);
+          const isPool = isPoolPlan(planType);
+          const isTrial = isTrialFromPlan(sub.planId);
+
           event.subscription = {
             _id: sub._id,
             status: sub.status,
             expiresAt: sub.expiresAt,
+            invitePool,
             invitesRemaining,
-            // Event-scoped trial flag so the reminder-customize UI knows the
-            // trial reminder is auto (send+10min) for THIS event's plan,
-            // instead of failing open on account-level data.
-            planType: sub.planId?.planType || null,
-            isTrial: isTrialFromPlan(sub.planId),
+            isPoolPlan: isPool,
+            isSingleEvent: isPerEvent,
+            isGuestUnlimited: invitePool === null && !isPerEvent,
+            guestLimit:
+              invitePool !== null
+                ? invitePool + compensationPool
+                : (event.guestLimit || -1),
+            planType,
+            planCode: sub.planId?.code || null,
+            isTrial,
+          };
+
+          event.capabilities = {
+            eventId: event._id,
+            hostId: event.host?._id || event.host,
+            subscriptionId: sub._id,
+            hasSubscription: true,
+            status: sub.status,
+            planType,
+            planCode: sub.planId?.code || null,
+            isSingleEvent: isPerEvent,
+            isPoolPlan: isPool,
+            isTrial,
+            invitePool,
+            invitesRemaining,
+            isGuestUnlimited: invitePool === null && !isPerEvent,
+            guestLimit:
+              invitePool !== null
+                ? invitePool + compensationPool
+                : (event.guestLimit || -1),
+            eventStatus: event.status,
+            isLive: event.status === EVENT_STATUS.LIVE,
+            isCompleted: event.status === EVENT_STATUS.COMPLETED,
+            isCancelled: event.status === EVENT_STATUS.CANCELLED,
+            isTerminal: [
+              EVENT_STATUS.COMPLETED,
+              EVENT_STATUS.CANCELLED,
+              EVENT_STATUS.DELETED,
+              EVENT_STATUS.FAILED,
+              EVENT_STATUS.ARCHIVED,
+            ].includes(event.status),
+            canEditEvent: ![
+              EVENT_STATUS.COMPLETED,
+              EVENT_STATUS.CANCELLED,
+              EVENT_STATUS.DELETED,
+              EVENT_STATUS.FAILED,
+              EVENT_STATUS.ARCHIVED,
+            ].includes(event.status),
+            allowAddOnly: event.status === EVENT_STATUS.LIVE,
           };
         }
       } catch (err) {

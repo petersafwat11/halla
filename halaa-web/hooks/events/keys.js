@@ -11,4 +11,6 @@ export const eventsKeys = {
   detail: (eventId) => [...eventsKeys.all, eventId],
   singleStats: (eventId) => [...eventsKeys.all, eventId, "stats"],
   staffTokens: (eventId) => [...eventsKeys.all, eventId, "staff-tokens"],
+  capabilities: (eventId) => [...eventsKeys.all, eventId, "capabilities"],
+  entitlement: (eventId) => [...eventsKeys.all, eventId, "entitlement"],
 };

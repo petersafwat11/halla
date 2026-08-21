@@ -248,7 +248,7 @@ const UpdateEventScreen = () => {
               currentStep={currentStep}
               formData={formData}
               eventData={eventData}
-              subscription={subscription}
+              subscription={eventData?.subscription || subscription}
               lockoutActive={lockoutActive}
               allowAddOnlyOnStep2={allowAddOnlyOnStep2}
             />

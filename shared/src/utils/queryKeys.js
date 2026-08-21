@@ -15,6 +15,8 @@ export const eventKeys = {
   singleStats: (eventId) => [...eventKeys.all, eventId, "stats"],
   staffTokens: (eventId) => [...eventKeys.all, eventId, "staff-tokens"],
   subscriptionInfo: () => [...eventKeys.all, "subscription-info"],
+  capabilities: (eventId) => [...eventKeys.all, eventId, "capabilities"],
+  entitlement: (eventId) => [...eventKeys.all, eventId, "entitlement"],
 };
 
 export const guestKeys = {

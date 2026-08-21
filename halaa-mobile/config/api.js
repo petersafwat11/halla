@@ -133,6 +133,8 @@ export const ENDPOINTS = {
     UPDATE_REMINDER_SETTINGS: API_PATHS.events.updateReminderSettings,
     LIST_STAFF_TOKENS: API_PATHS.events.listStaffTokens,
     REVOKE_STAFF: API_PATHS.events.revokeStaffAccess,
+    CAPABILITIES: API_PATHS.events.capabilities,
+    ENTITLEMENT: API_PATHS.events.entitlement,
   },
 
   GUESTS: {

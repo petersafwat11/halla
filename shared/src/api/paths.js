@@ -59,6 +59,7 @@ const PATHS = {
 
     // Mobile-only
     updatePushToken: "/auth/update-push-token",
+    removePushToken: "/auth/remove-push-token",
   },
 
   // ============================================
@@ -118,6 +119,10 @@ const PATHS = {
     // Send to new guests — initial pool-charged send to guests added after
     // launch (invitation.sent != true). Optional guestIds narrows the set.
     sendNewGuests: (id) => `/events/${id}/send-new-guests`,
+
+    // Capabilities & Entitlements (EVT-10)
+    capabilities: (id) => `/events/${id}/capabilities`,
+    entitlement: (id) => `/events/${id}/entitlement`,
   },
 
   // ============================================

@@ -484,3 +484,53 @@ test("EVENT_TRANSITIONS and isValidEventStatusTransition (EVT-06): state machine
   assert.equal(isValidEventStatusTransition(null, EVENT_STATUS.SCHEDULED), false);
 });
 
+test("Route builders & parsers (EVT-11): parseUpdateEventStep and buildUpdateEventUrl", async () => {
+  const {
+    parseUpdateEventStep,
+    buildUpdateEventUrl,
+    EVENT_UPDATE_SECTION_TO_STEP,
+  } = await import("../src/utils/routes.js");
+
+  assert.ok(EVENT_UPDATE_SECTION_TO_STEP);
+  assert.equal(EVENT_UPDATE_SECTION_TO_STEP["guest-list"], 2);
+
+  // Step parsing
+  assert.equal(parseUpdateEventStep({ step: 1 }), 1);
+  assert.equal(parseUpdateEventStep({ step: "2" }), 2);
+  assert.equal(parseUpdateEventStep({ step: 4 }), 4);
+  assert.equal(parseUpdateEventStep({ step: "99" }), 1); // out of range falls back to 1
+
+  // Section aliases
+  assert.equal(parseUpdateEventStep({ section: "event-details" }), 1);
+  assert.equal(parseUpdateEventStep({ section: "details" }), 1);
+  assert.equal(parseUpdateEventStep({ section: "guest-list" }), 2);
+  assert.equal(parseUpdateEventStep({ section: "guests" }), 2);
+  assert.equal(parseUpdateEventStep({ section: "invitation-design" }), 3);
+  assert.equal(parseUpdateEventStep({ section: "template" }), 3);
+  assert.equal(parseUpdateEventStep({ section: "invitation-settings" }), 4);
+  assert.equal(parseUpdateEventStep({ section: "invitation-customization" }), 4);
+  assert.equal(parseUpdateEventStep({ section: "customization" }), 4);
+
+  // URLSearchParams mock
+  const searchParams = new Map([["section", "guest-list"]]);
+  assert.equal(parseUpdateEventStep(searchParams), 2);
+
+  // Null/empty
+  assert.equal(parseUpdateEventStep(null), 1);
+  assert.equal(parseUpdateEventStep({}), 1);
+
+  // URL building
+  assert.equal(
+    buildUpdateEventUrl({ locale: "ar", basePath: "host", eventId: "evt123", step: 2 }),
+    "/ar/host/update-event?id=evt123&step=2"
+  );
+  assert.equal(
+    buildUpdateEventUrl({ locale: "en", basePath: "admin-dash", eventId: "evt123", section: "guest-list" }),
+    "/en/admin-dash/update-event?id=evt123&step=2"
+  );
+  assert.equal(
+    buildUpdateEventUrl({ locale: "ar", basePath: "admin-dash/events", eventId: "evt123", step: 4 }),
+    "/ar/admin-dash/update-event?id=evt123&step=4"
+  );
+});
+
