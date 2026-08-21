@@ -113,6 +113,7 @@ export const toTicketDTO = (rawTicket) => {
   const createdAt = rawTicket.createdAt || null;
   const updatedAt = rawTicket.updatedAt || null;
   const attachments = Array.isArray(rawTicket.attachments) ? rawTicket.attachments : [];
+  const attachment = rawTicket.attachment || (attachments.length > 0 ? attachments[0] : null);
   const creator = rawTicket.creator || rawTicket.user || null;
   const assignedTo = rawTicket.assignedTo || rawTicket.assignee || null;
   const resolution = rawTicket.resolution || rawTicket.resolutionResponse || null;
@@ -131,6 +132,7 @@ export const toTicketDTO = (rawTicket) => {
     createdAt,
     updatedAt,
     attachments,
+    attachment,
     creator,
     assignedTo,
     resolution,

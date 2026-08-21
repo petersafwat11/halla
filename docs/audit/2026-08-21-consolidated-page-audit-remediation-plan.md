@@ -137,7 +137,7 @@ The older finding about staff deletion leaving tokens active is fixed in the ded
 | ADM-11 | P1 | Confirmed | Phone construction can prepend `+966` to local numbers without normalization. | Use one E.164 normalizer/validator shared by all creation and settings forms. |
 | ADM-12 | P2 | Confirmed | Some mutations rely on `router.refresh()` even though visible state is held in React Query. | Invalidate/update canonical query keys; use router refresh only for server-rendered state that needs it. |
 | ADM-13 | P2 | Stale/fixed | Mobile admin `state.role` is allegedly unavailable. | No change; retain as a regression assertion only. |
-| ADM-14 | P2 | Needs focused reproduction | Ticket attachment behavior varies by surface; broad missing-attachment claim is stale. | Run the explicit attachment matrix in Session 2.5 before changing code. |
+| ADM-14 | P2 | Complete | Ticket attachment behavior varies by surface; broad missing-attachment claim is stale. | Ran explicit attachment matrix; added attachment viewers and media modals to web/mobile host and admin ticket details. |
 
 ### 4.3 Plans, checkout, and money
 
@@ -256,7 +256,7 @@ Update one row only after its exit criteria and required tests pass. Use `Blocke
 | 2.2 Admin list migrations/stats | Complete | 2.1 |
 | 2.3 Bulk API envelope | Complete | 0.2 |
 | 2.4 Ticket transitions/bulk | Complete | 0.2, 2.3 |
-| 2.5 Ticket attachment matrix | Not started | 0.1 |
+| 2.5 Ticket attachment matrix | Complete | 0.1 |
 | 2.6 Admin creation/cache keys | Not started | 0.2 |
 | 3.1 Plan semantics/invite pool | Not started | 0.2 |
 | 3.2 Plan editing/presentation | Not started | 3.1 |
@@ -1412,6 +1412,51 @@ This program is complete only when:
 - **Remaining risks / decisions:**
   - None.
 - **Blockers / deferred work:**
-  - Batch consisting of Session 2.3 and Session 2.4 is Complete.
+  - Session 2.4 is Complete and committed.
+
+### Session 2.5 — Ticket Attachment Focused Matrix (`ADM-14`)
+- **Status:** Complete
+- **Date / environment:** 2026-08-21 / Windows (Node v20.18.0)
+- **What was done:**
+  - **Executed Complete 5-Item Attachment Matrix & Reproduced Gaps:**
+    1. *Creation paths:* Web (`SendTicketPopup.jsx`, `MakeTicketPopup.js` using `MediaAttachmentInput`) and Mobile (`TicketModal.js` using `ImagePicker`) upload image/video attachments up to 50MB via multipart `ticketAttachment`. Backend `uploadMedia` validates MIME/extension (`mediaFilter`) and saves S3/local reference.
+    2. *User views:* Mobile `TicketCard.js` renders thumbnail for image and video icon for video. Fixed web host `TicketCard.jsx` which was missing attachment preview and trigger for `MediaViewerModal`.
+    3. *Admin views:* Web `TicketDetailView.jsx` renders attachment button with `MediaViewerModal`. Fixed mobile admin `TicketDetailsScreen.js` which dropped `raw.attachment` and had no attachment UI section; added `TicketSectionCard` with image thumbnail / modal viewer and video playback trigger.
+    4. *Expiry/refresh, missing file, MIME, 50MB limit:* Backend `_formatTicket` signs stored S3 keys dynamically on read via `signStoredImage` into public URLs. 50MB limit and image/video filter verified by integration tests.
+    5. *Access control:* `getTicketById` enforces non-owner non-admin rejection (`403 Forbidden`).
+  - **Shared `toTicketDTO` Updates:**
+    - Updated `toTicketDTO` in `@halaa/shared/utils/adapters.js` to include canonical `attachment: rawTicket.attachment || (attachments[0] || null)`.
+  - **Automated Regression Suites:**
+    - Expanded `halaa-backend/test/tickets-attachment.integration.test.js` with access control, admin access, and `mediaFilter` tests (8 tests pass).
+    - Created `halaa-web/__tests__/ui/ticketAttachmentViewer.test.mjs` (4 tests pass).
+    - Created `halaa-mobile/__tests__/tickets/ticketAttachmentMatrix.test.js` (3 assertions pass).
+    - Updated `shared/test/contracts.test.js` with DTO attachment tests (15 tests pass).
+- **Files changed:**
+  - `shared/src/utils/adapters.js`
+  - `shared/test/contracts.test.js`
+  - `halaa-backend/test/tickets-attachment.integration.test.js`
+  - `halaa-web/app/[lang]/host/tickets/_components/TicketCard.jsx`
+  - `halaa-web/app/[lang]/host/tickets/_components/TicketCard.module.css`
+  - `halaa-web/__tests__/ui/ticketAttachmentViewer.test.mjs` (new)
+  - `halaa-mobile/screens/admin/admin-dashboard/TicketDetailsScreen.js`
+  - `halaa-mobile/localization/locales/en/admin.json`
+  - `halaa-mobile/localization/locales/ar/admin.json`
+  - `halaa-mobile/__tests__/tickets/ticketAttachmentMatrix.test.js` (new)
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md`
+- **Exact test commands & results:**
+  - `cd shared && npm run lint && npm test` → PASS (15 tests passed, 0 errors)
+  - `cd halaa-backend && node --test test/tickets-attachment.integration.test.js` → PASS (8 tests passed, 0 failures)
+  - `cd halaa-backend && npm test` → PASS (362 tests passed, 0 failures)
+  - `cd halaa-web && npm run lint && npm test` → PASS (52 tests passed, 0 errors, 31 warnings)
+  - `cd halaa-mobile && npm run lint && npm test` → PASS (120 tests passed, 0 errors)
+- **Exit-criteria verification:**
+  - Matrix evidence is recorded for all 5 areas.
+  - All confirmed gaps (web host card attachment display and mobile admin details screen attachment preview) have focused fixes and regression tests.
+  - Private attachments are protected by access control.
+- **Remaining risks / decisions:**
+  - None.
+- **Blockers / deferred work:**
+  - Session 2.5 is Complete. Ready to commit and proceed to Session 2.6.
+
 
 

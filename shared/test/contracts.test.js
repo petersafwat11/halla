@@ -137,6 +137,7 @@ test("toTicketDTO (ADM-06): normalizes subject, title, description, message", ()
   assert.equal(dto1.status, "open");
   assert.equal(dto1.priority, "high");
   assert.equal(dto1.attachments.length, 1);
+  assert.equal(dto1.attachment.url, "https://example.com/screenshot.jpg");
 
   // Legacy format with title and message
   const rawWithTitle = {
