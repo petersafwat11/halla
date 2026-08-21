@@ -73,7 +73,8 @@ const ListOfGuestsORModerators = ({
   onRemove,
   // Guests only: enable multi-select + bulk "link to category".
   onAssignCategory,
-  categories = []
+  categories = [],
+  allowAddOnly = false,
 }) => {
   const { t } = useTranslation("createEvent");
   const [editingItem, setEditingItem] = useState(null);
@@ -81,7 +82,7 @@ const ListOfGuestsORModerators = ({
   const [selected, setSelected] = useState({}); // id -> true
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
 
-  const selectable = type === "guest" && typeof onAssignCategory === "function";
+  const selectable = type === "guest" && typeof onAssignCategory === "function" && !allowAddOnly;
   const selectedIds = Object.keys(selected).filter((id) => selected[id]);
   const selectedCount = selectedIds.length;
 
@@ -154,22 +155,24 @@ const ListOfGuestsORModerators = ({
         </View>
       </View>
 
-      <View style={styles.listItemActions}>
-        <TouchableOpacity
-          style={styles.actionButton}
-          onPress={() => handleEdit(item)}
-          activeOpacity={0.7}
-        >
-          <EditIcon />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.actionButton}
-          onPress={() => onRemove(item.id)}
-          activeOpacity={0.7}
-        >
-          <TrashIcon />
-        </TouchableOpacity>
-      </View>
+      {!allowAddOnly && (
+        <View style={styles.listItemActions}>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => handleEdit(item)}
+            activeOpacity={0.7}
+          >
+            <EditIcon />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => onRemove(item.id)}
+            activeOpacity={0.7}
+          >
+            <TrashIcon />
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 

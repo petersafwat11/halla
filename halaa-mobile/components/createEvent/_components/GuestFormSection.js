@@ -27,6 +27,7 @@ const GuestFormSection = ({
   isLimitReached,
   isUnlimited,
   guestLimit,
+  allowAddOnly = false,
 }) => {
   const { t } = useTranslation("createEvent");
   const { setValue, watch } = useFormContext();
@@ -269,6 +270,7 @@ const GuestFormSection = ({
         onRemove={handleRemoveGuest}
         onAssignCategory={handleAssignGuestCategory}
         categories={guestCategoryOptions}
+        allowAddOnly={allowAddOnly}
       />
 
       <ListOfGuestsORModerators

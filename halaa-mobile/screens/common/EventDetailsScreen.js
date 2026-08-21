@@ -567,6 +567,13 @@ const EventDetailsScreen = () => {
   // the remaining-invites badge and the bulk-action cost gate.
   const invitesRemaining = event?.subscription?.invitesRemaining ?? null;
 
+  // Live and terminal event guest invariants (EVT-03):
+  // Live events: existing guests immutable (onEdit/onDelete disabled), new guests allowed.
+  // Terminal events: all guest additions and mutations disabled.
+  const isLive = event?.status === "live" || event?.status === EVENT_STATUS.LIVE;
+  const isTerminal = isTerminalEvent(event);
+  const allowGuestMutations = !isLive && !isTerminal;
+
   // The normal reminder is now FREE and confirmed-only — show the inline
   // shortcut whenever there are confirmed guests (no quota gate).
   const hasConfirmedGuests = stats.confirmed > 0;
@@ -870,24 +877,26 @@ const EventDetailsScreen = () => {
                 style={[styles.searchInput, searchDirectionStyle]}
               />
             </View>
-            <TouchableOpacity
-              style={styles.addBtn}
-              onPress={() =>
-                setPopup({
-                  open: true,
-                  type: activeTab === "guests" ? "guest" : "moderator",
-                  initialData: null,
-                })
-              }
-              activeOpacity={0.85}
-            >
-              <Ionicons name="add" size={16} color="#FFF" />
-              <Text style={styles.addBtnText}>
-                {activeTab === "guests"
-                  ? t("guestList.addGuest", "إضافة ضيف")
-                  : t("eventDetails.addModerator", "إضافة مشرف")}
-              </Text>
-            </TouchableOpacity>
+            {!isTerminal && (
+              <TouchableOpacity
+                style={styles.addBtn}
+                onPress={() =>
+                  setPopup({
+                    open: true,
+                    type: activeTab === "guests" ? "guest" : "moderator",
+                    initialData: null,
+                  })
+                }
+                activeOpacity={0.85}
+              >
+                <Ionicons name="add" size={16} color="#FFF" />
+                <Text style={styles.addBtnText}>
+                  {activeTab === "guests"
+                    ? t("guestList.addGuest", "إضافة ضيف")
+                    : t("eventDetails.addModerator", "إضافة مشرف")}
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
 
           {activeTab === "guests" && (
@@ -959,10 +968,10 @@ const EventDetailsScreen = () => {
                         ? formatDateTime(g.invitation.autoReminderSentAt, currentLanguage)
                         : null,
                     }}
-                    onEdit={handleEditGuest}
-                    onDelete={handleDeleteGuest}
-                    onRotateQr={handleRotateQr}
-                    onRevokeAccess={handleRevokeAccess}
+                    onEdit={allowGuestMutations ? handleEditGuest : null}
+                    onDelete={allowGuestMutations ? handleDeleteGuest : null}
+                    onRotateQr={isTerminal ? null : handleRotateQr}
+                    onRevokeAccess={isTerminal ? null : handleRevokeAccess}
                   />
                 ))
               )
@@ -1024,8 +1033,16 @@ const EventDetailsScreen = () => {
         // same list-in-modal UX the web `StaffPopup` provides. Edit/delete
         // re-use the same handlers wired into the tabs view below.
         itemsList={popup.type === "guest" ? guests : staffFromStats}
-        onEditItem={popup.type === "guest" ? handleEditGuest : handleEditModerator}
-        onDeleteItem={popup.type === "guest" ? handleDeleteGuest : handleDeleteModerator}
+        onEditItem={
+          popup.type === "guest"
+            ? (allowGuestMutations ? handleEditGuest : null)
+            : handleEditModerator
+        }
+        onDeleteItem={
+          popup.type === "guest"
+            ? (allowGuestMutations ? handleDeleteGuest : null)
+            : handleDeleteModerator
+        }
         onClose={() => setPopup({ open: false, type: popup.type, initialData: null })}
         onSave={handleSavePopup}
       />

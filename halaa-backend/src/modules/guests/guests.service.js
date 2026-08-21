@@ -259,6 +259,10 @@ class GuestsService {
       throw new NotFoundError('Event');
     }
 
+    if (['cancelled', 'completed'].includes(event.status)) {
+      throw new ValidationError(`Cannot add guests to a ${event.status} event`);
+    }
+
     // Check guest limit from event's guestLimit field
     if (event.guestLimit) {
       const currentGuestCount = await Guest.countDocuments({
@@ -303,6 +307,14 @@ class GuestsService {
     const event = await Event.findOne(this._eventScope(eventId, actor));
     if (!event) {
       throw new NotFoundError('Event');
+    }
+
+    if (['cancelled', 'completed'].includes(event.status)) {
+      throw new ValidationError(`Cannot modify guests of a ${event.status} event`);
+    }
+
+    if (event.status === 'live') {
+      throw new ValidationError('Cannot modify existing guests on a live event');
     }
 
     const guest = await Guest.findOne({ _id: guestId, event: eventId });
@@ -353,6 +365,14 @@ class GuestsService {
     const event = await Event.findOne(this._eventScope(eventId, actor));
     if (!event) {
       throw new NotFoundError('Event');
+    }
+
+    if (['cancelled', 'completed'].includes(event.status)) {
+      throw new ValidationError(`Cannot delete guests from a ${event.status} event`);
+    }
+
+    if (event.status === 'live') {
+      throw new ValidationError('Cannot delete guests from a live event');
     }
 
     const guest = await Guest.findOne({ _id: guestId, event: eventId });

@@ -1,3 +1,5 @@
+import { classifyRsvpBucket } from "../constants/eventStatus.js";
+
 /**
  * Canonical Boundary DTO Adapters
  *
@@ -45,23 +47,37 @@ export const toGuestDTO = (rawGuest) => {
 
   const id = normalizeId(rawGuest) || "";
   const name = rawGuest.name || rawGuest.fullName || "";
-  const phone = rawGuest.phone || rawGuest.phoneNumber || "";
+  const phone = rawGuest.phone || rawGuest.phoneNumber || rawGuest.mobile || "";
+  const category = rawGuest.category || null;
   const email = rawGuest.email || null;
 
-  const status = (rawGuest.status || rawGuest.rsvpStatus || "invited").toLowerCase();
-  const rsvpStatus = status;
+  const rawStatus = (rawGuest.status || rawGuest.rsvpStatus || "invited").toLowerCase();
+  const status = rawStatus;
+  const rsvpStatus = classifyRsvpBucket(rawStatus);
   const invitationType = rawGuest.invitationType || "reply_and_qr";
-  const qrCode = rawGuest.qrCode || rawGuest.qrCodeUrl || null;
-  const checkedIn = Boolean(rawGuest.checkedIn || status === "checked_in");
-  const checkInTime = rawGuest.checkInTime || null;
+  const qrCode = rawGuest.qrCode || rawGuest.qrCodeUrl || rawGuest.qrcode || null;
+  const checkedIn = Boolean(
+    rawGuest.checkedIn ||
+      (rawGuest.checkIn && rawGuest.checkIn.checkedInAt) ||
+      rawStatus === "checked_in"
+  );
+  const checkInTime = rawGuest.checkInTime || rawGuest.checkIn?.checkedInAt || null;
+  const checkIn = rawGuest.checkIn || null;
+  const rsvp = rawGuest.rsvp || null;
+  const invitation = rawGuest.invitation || null;
+  const addedBy = rawGuest.addedBy || null;
+  const createdAt = rawGuest.createdAt || null;
   const tableNumber = rawGuest.tableNumber !== undefined ? rawGuest.tableNumber : null;
   const companionsCount = Number(rawGuest.companionsCount || rawGuest.companions || 0);
   const notes = rawGuest.notes || null;
 
   return {
     id,
+    _id: id,
     name,
     phone,
+    mobile: phone,
+    category,
     email,
     status,
     rsvpStatus,
@@ -69,6 +85,11 @@ export const toGuestDTO = (rawGuest) => {
     qrCode,
     checkedIn,
     checkInTime,
+    checkIn,
+    rsvp,
+    invitation,
+    addedBy,
+    createdAt,
     tableNumber,
     companionsCount,
     notes,

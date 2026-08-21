@@ -67,36 +67,52 @@ test("toGuestDTO (EVT-15): produces canonical GuestDTO from various shapes", () 
     _id: "mongo_guest_1",
     name: "Ahmed Ali",
     phone: "0501234567",
+    category: "VIP",
     rsvpStatus: "confirmed",
     invitationType: "reply_and_qr",
     qrCode: "data:image/png;base64,...",
     checkedIn: false,
     tableNumber: 5,
     companionsCount: 2,
+    checkIn: { checkedInAt: new Date("2026-08-21T18:00:00Z") },
+    rsvp: { response: "confirmed", respondedAt: new Date() },
+    invitation: { sent: true, autoReminderSent: true },
+    addedBy: { _id: "user_1", username: "host1" },
+    createdAt: new Date("2026-08-20T10:00:00Z"),
   };
 
   const dto = toGuestDTO(rawFromMongo);
   assert.equal(dto.id, "mongo_guest_1");
+  assert.equal(dto._id, "mongo_guest_1");
   assert.equal(dto.name, "Ahmed Ali");
   assert.equal(dto.phone, "0501234567");
+  assert.equal(dto.mobile, "0501234567");
+  assert.equal(dto.category, "VIP");
   assert.equal(dto.status, "confirmed");
   assert.equal(dto.rsvpStatus, "confirmed");
   assert.equal(dto.tableNumber, 5);
   assert.equal(dto.companionsCount, 2);
+  assert.ok(dto.checkIn);
+  assert.ok(dto.rsvp);
+  assert.ok(dto.invitation);
+  assert.ok(dto.addedBy);
 
-  // Raw with alternative field names
+  // Raw with alternative field names (guestId, mobile, rsvpStatus)
   const rawAlt = {
     guestId: "alt_guest_2",
     fullName: "Sara Omar",
-    phoneNumber: "0559876543",
+    mobile: "0559876543",
     status: "INVITED",
   };
 
   const dtoAlt = toGuestDTO(rawAlt);
   assert.equal(dtoAlt.id, "alt_guest_2");
+  assert.equal(dtoAlt._id, "alt_guest_2");
   assert.equal(dtoAlt.name, "Sara Omar");
   assert.equal(dtoAlt.phone, "0559876543");
+  assert.equal(dtoAlt.mobile, "0559876543");
   assert.equal(dtoAlt.status, "invited");
+  assert.equal(dtoAlt.rsvpStatus, "pending"); // classifyRsvpBucket maps invited -> pending
 
   assert.equal(toGuestDTO(null), null);
 });

@@ -248,7 +248,7 @@ Update one row only after its exit criteria and required tests pass. Use `Blocke
 | 0.2 Contract foundations | Complete | 0.1 |
 | 1.1 Event validation/location | Complete | 0.2 |
 | 1.2 Invitation/Taqnyat contract | Complete | 0.2 |
-| 1.3 Live-event guest invariants | Not started | 0.2 |
+| 1.3 Live-event guest invariants | Complete | 0.2 |
 | 1.4 Admin event/staff mutation safety | Not started | 0.2, preferably 1.3 |
 | 1.5 Event entitlement/routes/messaging/stats | Not started | 0.2, 1.2 |
 | 1.6 Scheduling | Not started | 1.1, product decision |
@@ -953,6 +953,65 @@ This program is complete only when:
   - None.
 - **Blockers / deferred work:**
   - Session 1.2 is Complete. Session 1.3 (Live-event guest invariants) is unblocked.
+
+### Session 1.3 — Live-event guest invariants
+
+- **Date:** 2026-08-21
+- **Status:** Complete
+- **Issues addressed:** EVT-03 (Live-event “add guests only” dropped in mobile component chain and not enforced by backend step-two service; direct API calls can edit/delete live guests), EVT-15 (Guest ID / status normalization, boundary adapter `GuestDTO`, `rsvpStatus` vs `status`).
+- **Root cause:**
+  - **EVT-03 Backend:** In `events.step2.service.js` (`updateEventStep2`), while completed and cancelled events were rejected, live events (`event.status === 'live'`) did not check `toDeleteIds.length > 0` or `toUpdate.length > 0`. Similarly, `events.guests.service.js` (`updateGuestList`) and `guests.service.js` (`updateGuest`, `deleteGuest`, `addGuest`) lacked status checks rejecting deletions or modifications on live, completed, or cancelled events.
+  - **EVT-03 Mobile:** In the create/update event wizard, `screens/common/update-event/StepTwo.js` received `allowAddOnly` and passed it to `<CreateStepTwo />`, but `components/createEvent/StepTwo.js` did not accept `allowAddOnly` in props or pass it down to `GuestFormSection.js`, which in turn did not pass it to `ListOfGuestsORModerators.js`. As a result, edit and delete buttons remained visible and interactive.
+  - **EVT-15 Normalization:** Mobile components assumed `g.rsvpStatus?.toLowerCase()`, whereas backend records return canonical `status` (`'invited'`, `'confirmed'`, `'declined'`, etc.). Furthermore, ID fields varied across `_id`, `id`, and `guestId`.
+- **Implementation summary:**
+  - **Backend Invariants & Guards:**
+    - Updated `events.step2.service.js` (`updateEventStep2`): when `event.status === 'live'`, rejects removing existing guests (`toDeleteIds.length > 0`) or modifying existing guests (`toUpdate.length > 0`) with `ValidationError`, while allowing net-new guest additions (`toCreate.length > 0`) and preserving existing guests' RSVP, QR code, checkIn, and invitation data.
+    - Updated `events.guests.service.js` (`updateGuestList` & `updateGuestStatus`): enforces live-event immutability for existing guests and rejects modifications on completed/cancelled events.
+    - Updated `guests.service.js`: `addGuest` rejects on completed/cancelled events; `updateGuest` and `deleteGuest` reject on live, completed, and cancelled events with `ValidationError`.
+  - **Mobile Component Chain & UI Gating:**
+    - `components/createEvent/StepTwo.js`: Accepts `allowAddOnly = false` and passes it to `GuestFormSection`.
+    - `components/createEvent/_components/GuestFormSection.js`: Accepts `allowAddOnly = false` and passes it to `ListOfGuestsORModerators`.
+    - `components/createEvent/ListOfGuestsORModerators.js`: Accepts `allowAddOnly = false`. When `allowAddOnly` is active, disables category checkbox selection and hides row edit and delete action buttons.
+    - `components/events/GuestListItem.js`: Safely renders edit/delete action buttons only when `onEdit` or `onDelete` function props are provided.
+    - `screens/common/EventDetailsScreen.js`: Sets `allowGuestMutations = !isLive && !isTerminal`, passing `null` to `onEdit`/`onDelete` for live and terminal events, and hides `addBtn` on terminal events.
+  - **Guest Normalization (EVT-15):**
+    - Enhanced `toGuestDTO` in `shared/src/utils/adapters.js` to normalize `_id`, `id`, `name`, `phone`, `mobile`, `category`, `status`, `rsvpStatus` (via `classifyRsvpBucket`), `checkIn`, `rsvp`, `invitation`, and audit metadata.
+    - Updated `components/admin-dashboard/events/GuestList.js` and `GuestListSection.js` to use canonical `toGuestDTO` and `classifyRsvpBucket`.
+  - **Test Coverage:**
+    - Created `halaa-backend/test/live-event-guest-invariants.test.js`: 10 integration tests testing the complete state matrix (draft, scheduled, live, completed, cancelled) across `step2`, `updateGuestList`, `addGuest`, `updateGuest`, and `deleteGuest`.
+    - Created `halaa-mobile/__tests__/events/liveEventGuestGating.test.js`: 5 tests verifying prop propagation in the component chain, action gating, and `toGuestDTO` normalization.
+    - Expanded contract tests in `shared/test/contracts.test.js` for `toGuestDTO`.
+- **Files changed:**
+  - `shared/src/utils/adapters.js`
+  - `shared/test/contracts.test.js`
+  - `halaa-backend/src/modules/events/events.step2.service.js`
+  - `halaa-backend/src/modules/events/events.guests.service.js`
+  - `halaa-backend/src/modules/guests/guests.service.js`
+  - `halaa-backend/test/live-event-guest-invariants.test.js` (new)
+  - `halaa-mobile/components/createEvent/StepTwo.js`
+  - `halaa-mobile/components/createEvent/_components/GuestFormSection.js`
+  - `halaa-mobile/components/createEvent/ListOfGuestsORModerators.js`
+  - `halaa-mobile/components/events/GuestListItem.js`
+  - `halaa-mobile/screens/common/EventDetailsScreen.js`
+  - `halaa-mobile/components/admin-dashboard/events/GuestList.js`
+  - `halaa-mobile/components/admin-dashboard/events/GuestListSection.js`
+  - `halaa-mobile/__tests__/events/liveEventGuestGating.test.js` (new)
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md`
+- **Exact test commands & results:**
+  - `cd shared && npm run lint && npm run test` → PASS (12 unit tests passed, 0 lint errors)
+  - `cd halaa-backend && node --test test/live-event-guest-invariants.test.js && npm run catalog:verify; npm run test` → PASS (333 tests passed, 0 failures)
+  - `cd halaa-mobile && npm run lint && npm run test` → PASS (109 tests passed, 0 errors)
+  - `cd halaa-web && npm run lint && npm run test` → PASS (33 tests passed, 0 errors)
+- **Exit-criteria verification:**
+  - Prohibited edits and deletions on live, completed, and cancelled events fail server-side (`ValidationError`), verified by `test/live-event-guest-invariants.test.js`.
+  - Allowed additions on live events preserve every existing guest field (RSVP status, QR code, checkIn, invitation, addedBy), verified in backend integration test suite.
+  - Forbidden controls are hidden/disabled in mobile and web when `allowAddOnly` is true.
+  - `GuestDTO` normalizes all guest IDs and status across mobile components.
+- **Remaining risks / decisions:**
+  - None.
+- **Blockers / deferred work:**
+  - Session 1.3 is Complete. Session 1.4 (Admin event/staff mutation safety) is unblocked.
+
 
 
 

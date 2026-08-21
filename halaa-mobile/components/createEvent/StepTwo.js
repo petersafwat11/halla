@@ -6,6 +6,7 @@ const StepTwo = ({
   guestList = [],
   staffList = [],
   subscription = null,
+  allowAddOnly = false,
 }) => {
   const { watch } = useFormContext();
   const formData = watch();
@@ -33,6 +34,7 @@ const StepTwo = ({
       isLimitReached={isLimitReached}
       isUnlimited={isUnlimited}
       guestLimit={guestLimit}
+      allowAddOnly={allowAddOnly}
     />
   );
 };

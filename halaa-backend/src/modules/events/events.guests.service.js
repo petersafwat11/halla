@@ -139,6 +139,10 @@ module.exports = {
       throw new NotFoundError("Event");
     }
 
+    if (['cancelled', 'completed'].includes(event.status)) {
+      throw new ValidationError("Cannot modify guest status on a " + event.status + " event");
+    }
+
     const guest = await Guest.findOneAndUpdate(
       { _id: guestId, event: eventId },
       { status },
@@ -171,6 +175,10 @@ module.exports = {
     const event = await Event.findOne(this._buildScopedEventQuery(eventId, userContext))
       .populate('guestList', 'name phone status category');
     if (!event) throw new NotFoundError("Event");
+
+    if (['completed', 'cancelled'].includes(event.status)) {
+      throw new ValidationError('Cannot modify a completed or cancelled event');
+    }
 
     // Enforce the list cap against the subscription's total invite capacity
     // (invitePool + compensation). Replacing the list is a re-list of names,
@@ -225,6 +233,7 @@ module.exports = {
 
     const keptGuestIds = [];
     const toCreate = [];
+    const toUpdate = [];
     const incomingPhones = new Set();
 
     for (const incoming of (guestList || [])) {
@@ -235,7 +244,8 @@ module.exports = {
         // Keep existing guest — preserves RSVP status, QR code, check-in history
         // Update name/category if the host changed them
         if (existing.name !== incoming.name || (incoming.category !== undefined && existing.category !== incoming.category)) {
-          await Guest.findByIdAndUpdate(existing._id, {
+          toUpdate.push({
+            _id: existing._id,
             name: incoming.name,
             ...(incoming.category !== undefined && { category: incoming.category }),
           });
@@ -257,6 +267,24 @@ module.exports = {
     const toDeleteIds = existingGuests
       .filter(g => !incomingPhones.has(normalizePhoneNumber(g.phone)))
       .map(g => g._id);
+
+    // EVT-03: Live event invariants — existing guests are immutable, new guests allowed.
+    if (event.status === 'live') {
+      if (toDeleteIds.length > 0) {
+        throw new ValidationError('Cannot remove existing guests from a live event');
+      }
+      if (toUpdate.length > 0) {
+        throw new ValidationError('Cannot modify existing guests on a live event');
+      }
+    }
+
+    for (const u of toUpdate) {
+      await Guest.findByIdAndUpdate(u._id, {
+        name: u.name,
+        ...(u.category !== undefined && { category: u.category }),
+      });
+    }
+
     if (toDeleteIds.length > 0) {
       await Guest.updateMany(
         { _id: { $in: toDeleteIds } },
