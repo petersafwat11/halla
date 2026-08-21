@@ -235,3 +235,70 @@ export const toBulkIdsPayload = (input) => {
 
   return { ids };
 };
+
+/**
+ * Resolves EVT-02: normalizes invitation settings into canonical shape:
+ * {
+ *   visualTemplate: { templateRef, fieldValues, bakedImagePath, isCustomUpload } | null,
+ *   taqnyatTemplate: { templateRef } | null,
+ *   guestReplies: { onAttend, onAbsent } | null,
+ *   invitationType: string,
+ *   templateImage: string | null
+ * }
+ */
+export const toInvitationSettingsDTO = (rawSettings) => {
+  if (!rawSettings || typeof rawSettings !== "object") return null;
+
+  let visualTemplate = null;
+  if (rawSettings.visualTemplate && typeof rawSettings.visualTemplate === "object") {
+    const vt = rawSettings.visualTemplate;
+    visualTemplate = {
+      templateRef: normalizeId(vt.templateRef) || normalizeId(vt._id) || normalizeId(vt.id) || null,
+      fieldValues: vt.fieldValues && typeof vt.fieldValues === "object" ? vt.fieldValues : {},
+      bakedImagePath: vt.bakedImagePath || null,
+      isCustomUpload: Boolean(vt.isCustomUpload),
+    };
+  }
+
+  let taqnyatTemplate = null;
+  const rawTaqnyat =
+    rawSettings.taqnyatTemplate ||
+    (rawSettings.taqnyatTemplateRef ? { templateRef: rawSettings.taqnyatTemplateRef } : null) ||
+    (rawSettings.selectedTemplate ? { templateRef: rawSettings.selectedTemplate } : null);
+
+  if (rawTaqnyat && typeof rawTaqnyat === "object") {
+    const ref =
+      normalizeId(rawTaqnyat.templateRef) ||
+      normalizeId(rawTaqnyat._id) ||
+      normalizeId(rawTaqnyat.id) ||
+      null;
+    if (ref) {
+      taqnyatTemplate = { templateRef: ref };
+    }
+  }
+
+  let guestReplies = null;
+  if (rawSettings.guestReplies && typeof rawSettings.guestReplies === "object") {
+    guestReplies = {
+      onAttend: rawSettings.guestReplies.onAttend || rawSettings.attendanceAutoReply || "",
+      onAbsent: rawSettings.guestReplies.onAbsent || rawSettings.absenceAutoReply || "",
+    };
+  } else if (rawSettings.attendanceAutoReply || rawSettings.absenceAutoReply) {
+    guestReplies = {
+      onAttend: rawSettings.attendanceAutoReply || "",
+      onAbsent: rawSettings.absenceAutoReply || "",
+    };
+  }
+
+  const invitationType = rawSettings.invitationType || "reply_and_qr";
+  const templateImage = rawSettings.templateImage || visualTemplate?.bakedImagePath || null;
+
+  return {
+    visualTemplate,
+    taqnyatTemplate,
+    guestReplies,
+    invitationType,
+    templateImage,
+  };
+};
+

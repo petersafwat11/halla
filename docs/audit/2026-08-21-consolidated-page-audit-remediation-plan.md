@@ -247,7 +247,7 @@ Update one row only after its exit criteria and required tests pass. Use `Blocke
 | 0.1 Baseline and safety lint | Complete | — |
 | 0.2 Contract foundations | Complete | 0.1 |
 | 1.1 Event validation/location | Complete | 0.2 |
-| 1.2 Invitation/Taqnyat contract | Not started | 0.2 |
+| 1.2 Invitation/Taqnyat contract | Complete | 0.2 |
 | 1.3 Live-event guest invariants | Not started | 0.2 |
 | 1.4 Admin event/staff mutation safety | Not started | 0.2, preferably 1.3 |
 | 1.5 Event entitlement/routes/messaging/stats | Not started | 0.2, 1.2 |
@@ -896,6 +896,64 @@ This program is complete only when:
   - None.
 - **Blockers / deferred work:**
   - Session 1.1 is Complete. Session 1.2 (Invitation settings and Taqnyat contract) is unblocked.
+
+### Session 1.2 — Invitation settings and Taqnyat contract
+
+- **Date:** 2026-08-21
+- **Status:** Complete
+- **Issues addressed:** EVT-02 (Update-event settings mutation corrupts Taqnyat template settings / allows invalid payloads), EVT-17 (Frontend reminder & schedule components use array index on singular subscription object).
+- **Root cause:**
+  - **EVT-02:** `halaa-backend/src/modules/events/events.routes.js` omitted `"taqnyatTemplate"` from `parseFormDataJsonFields` on `PATCH /:id/invitation-settings`. Multipart string JSON wasn't parsed into an object, and `events.settings.service.js` spread the raw string creating character-indexed numeric keys. Additionally, `events.validation.js`'s `updateInvitationSettingsSchema` did not validate object types for `taqnyatTemplate`, `visualTemplate`, and `guestReplies`, nor normalize the `taqnyatTemplateRef` migration alias. On mobile, `useEventMutation.js` sent `settings.taqnyatTemplateRef = ref` rather than the canonical `settings.taqnyatTemplate = { templateRef: ref }`.
+  - **EVT-17:** In `halaa-mobile/components/admin-dashboard/events/AutoReminderInfoText.js` and `halaa-mobile/components/home/ScheduleSendingModal.js`, code accessed `subData?.data?.subscription?.[0]?.planCode === "trial"`. The backend returns `subscription` as a singular object (`subData.data.subscription`), not an array, causing `[0]` to evaluate to `undefined` and `isTrial` to evaluate to `false`.
+- **Implementation summary:**
+  - **Shared Schemas & Adapters:**
+    - Defined `visualTemplateSchema`, `taqnyatTemplateSchema`, `guestRepliesSchema`, and `invitationSettingsSchema` in `@halaa/shared/schemas/events.js` to strictly validate object payloads and normalize boundary aliases (`taqnyatTemplateRef`, `selectedTemplate`, legacy auto-reply fields).
+    - Exported `INVITATION_TYPE_VALUES` in `shared/src/constants/status.js` and `halaa-backend/src/shared/constants/status.js`.
+    - Added `toInvitationSettingsDTO` in `@halaa/shared/utils/adapters.js` and exported from `@halaa/shared/utils/index.js`.
+  - **Backend Validation & Routes:**
+    - Updated `halaa-backend/src/shared/middleware/validation.js`'s `parseFormDataJsonFields` to trim and safely skip empty strings.
+    - Updated `halaa-backend/src/modules/events/events.routes.js` to include `"taqnyatTemplate"` in `parseFormDataJsonFields` on `PATCH /:id/invitation-settings`.
+    - Updated `halaa-backend/src/modules/events/events.validation.js`'s `createEventSchema` and `updateInvitationSettingsSchema` with strict sub-schemas rejecting non-object strings/arrays and transforming aliases into `{ templateRef }`.
+    - Updated `halaa-backend/src/modules/events/events.settings.service.js`'s `updateInvitationSettings` to safely merge `taqnyatTemplate` and `guestReplies` only when valid objects, supporting fallback aliases and preventing string spreading.
+  - **Mobile & Consumer Fixes:**
+    - Updated `halaa-mobile/hooks/events/mutations/useEventMutation.js`'s `updateTaqnyatTemplate` to serialize `settings.taqnyatTemplate = { templateRef: ref }`.
+    - Updated `halaa-mobile/components/admin-dashboard/events/AutoReminderInfoText.js`, `halaa-mobile/components/home/ScheduleSendingModal.js`, and `halaa-mobile/components/createEvent/StepOne.js` to use `normalizeSubscriptionResponse(subData).subscription?.planCode === "trial"`.
+  - **Test Coverage:**
+    - Added unit test suite `halaa-backend/test/invitation-settings-contract.test.js` validating schema normalization, type rejection, and multipart form-data parsing.
+    - Added contract tests in `shared/test/contracts.test.js` for `toInvitationSettingsDTO` and `invitationSettingsSchema`.
+    - Added regression test `halaa-mobile/__tests__/regressions/subscriptionConsumer.test.js` testing `normalizeSubscriptionResponse` vs the old `subscription[0]` bug.
+- **Files changed:**
+  - `shared/src/constants/status.js`
+  - `shared/src/schemas/events.js`
+  - `shared/src/utils/adapters.js`
+  - `shared/src/utils/index.js`
+  - `shared/test/contracts.test.js`
+  - `halaa-backend/src/shared/constants/status.js`
+  - `halaa-backend/src/shared/middleware/validation.js`
+  - `halaa-backend/src/modules/events/events.routes.js`
+  - `halaa-backend/src/modules/events/events.settings.service.js`
+  - `halaa-backend/src/modules/events/events.validation.js`
+  - `halaa-backend/test/invitation-settings-contract.test.js` (new)
+  - `halaa-mobile/hooks/events/mutations/useEventMutation.js`
+  - `halaa-mobile/components/admin-dashboard/events/AutoReminderInfoText.js`
+  - `halaa-mobile/components/home/ScheduleSendingModal.js`
+  - `halaa-mobile/components/createEvent/StepOne.js`
+  - `halaa-mobile/__tests__/regressions/subscriptionConsumer.test.js` (new)
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md`
+- **Exact test commands & results:**
+  - `cd shared && npm run lint && npm run test && npm run legal:verify && npm run aso:verify` → PASS (12 unit tests passed, 0 lint errors)
+  - `cd halaa-backend && node --test test/invitation-settings-contract.test.js && node --test test/shared-parity.test.js && npm run catalog:verify && npm run test` → PASS (All 323 tests passed, 0 failures)
+  - `cd halaa-mobile && npm run lint && npm run test` → PASS (0 errors, 104 tests passed)
+  - `cd halaa-web && npm run lint && npm run test` → PASS (0 errors, 33 tests passed)
+- **Exit-criteria verification:**
+  - Updating invitation settings in JSON or multipart preserves `taqnyatTemplate.templateRef` as a canonical object without corrupting template properties (`test/invitation-settings-contract.test.js` passed).
+  - Rejection occurs if non-object values are provided for `taqnyatTemplate`, `visualTemplate`, or `guestReplies`.
+  - All mobile and web subscription checks use normalized access and correctly identify trial plans (`__tests__/regressions/subscriptionConsumer.test.js` passed).
+- **Remaining risks / decisions:**
+  - None.
+- **Blockers / deferred work:**
+  - Session 1.2 is Complete. Session 1.3 (Live-event guest invariants) is unblocked.
+
 
 
 

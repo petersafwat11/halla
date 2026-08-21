@@ -405,3 +405,48 @@ test("Event Wizard Steps: constants are frozen and define expected step order", 
   assert.equal(EVENT_UPDATE_STEPS.length, 4);
   assert.equal(EVENT_UPDATE_STEP_NUMBERS.MESSAGES, 4);
 });
+
+test("toInvitationSettingsDTO and invitationSettingsSchema (EVT-02): normalizes and validates invitation settings", async () => {
+  const { toInvitationSettingsDTO } = await import("../src/utils/index.js");
+  const { invitationSettingsSchema } = await import("../src/schemas/events.js");
+
+  // 1. Raw settings with aliases and legacy keys
+  const raw = {
+    selectedTemplate: {
+      _id: "507f1f77bcf86cd799439011",
+      templateName: "wedding_standard",
+    },
+    visualTemplate: {
+      templateRef: "507f1f77bcf86cd799439012",
+      fieldValues: { groomName: "Fahad" },
+      bakedImagePath: "https://s3.example.com/invites/baked.jpg",
+      isCustomUpload: false,
+    },
+    attendanceAutoReply: "See you there!",
+    absenceAutoReply: "We will miss you!",
+    invitationType: "reply_and_qr",
+  };
+
+  const dto = toInvitationSettingsDTO(raw);
+  assert.equal(dto.invitationType, "reply_and_qr");
+  assert.equal(dto.taqnyatTemplate.templateRef, "507f1f77bcf86cd799439011");
+  assert.equal(dto.visualTemplate.templateRef, "507f1f77bcf86cd799439012");
+  assert.equal(dto.visualTemplate.fieldValues.groomName, "Fahad");
+  assert.equal(dto.guestReplies.onAttend, "See you there!");
+  assert.equal(dto.guestReplies.onAbsent, "We will miss you!");
+  assert.equal(dto.templateImage, "https://s3.example.com/invites/baked.jpg");
+
+  // 2. Schema validation
+  const schema = invitationSettingsSchema();
+  const parsed = schema.parse(raw);
+  assert.equal(parsed.taqnyatTemplate.templateRef, "507f1f77bcf86cd799439011");
+  assert.equal(parsed.guestReplies.onAttend, "See you there!");
+
+  // 3. Schema rejects invalid non-object strings where objects are expected
+  assert.throws(() => {
+    schema.parse({
+      taqnyatTemplate: "not-an-object",
+    });
+  });
+});
+

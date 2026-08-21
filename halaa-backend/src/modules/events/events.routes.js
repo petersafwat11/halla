@@ -498,6 +498,7 @@ router.patch(
   parseFormDataJsonFields([
     "selectedTemplate",
     "visualTemplate",
+    "taqnyatTemplate",
     "fieldValues",
     "guestReplies",
   ]),

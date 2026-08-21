@@ -14,6 +14,7 @@ import TextInput from "../commen/TextInput";
 import MapPicker from "../commen/MapPicker";
 import DropdownInput from "../commen/DropdownInput";
 import Svg, { Path } from "react-native-svg";
+import { normalizeSubscriptionResponse } from "@halaa/shared/utils";
 import { useMySubscription } from "../../hooks/users";
 import { EVENT_CATEGORIES } from "@halaa/shared/constants/eventCategories";
 
@@ -64,7 +65,8 @@ const StepOne = () => {
   const { control, setValue, watch } = useFormContext();
   const { t, currentLanguage } = useTranslation("createEvent");
   const { data: subData } = useMySubscription();
-  const isTrial = subData?.data?.subscription?.planCode === "trial";
+  const normalizedSub = normalizeSubscriptionResponse(subData);
+  const isTrial = normalizedSub.subscription?.planCode === "trial";
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   // Earliest selectable event date enforces the backend event-date floor:

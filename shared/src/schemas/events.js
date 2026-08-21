@@ -10,6 +10,7 @@
 import { z } from "zod";
 import { saudiPhone, requiredString } from "./_shared.js";
 import { EVENT_CATEGORY_VALUES } from "../constants/eventCategories.js";
+import { INVITATION_TYPE_VALUES } from "../constants/status.js";
 
 const idT = (k) => k;
 
@@ -47,6 +48,70 @@ export const locationSchema = (t = idT) =>
     country: z.string().optional(),
   });
 
+export const visualTemplateSchema = (_t = idT) =>
+  z
+    .object({
+      templateRef: z.union([z.string(), z.number()]).optional().nullable(),
+      fieldValues: z.record(z.any()).optional().default({}),
+      bakedImagePath: z.string().optional().nullable(),
+      isCustomUpload: z.boolean().optional().default(false),
+    })
+    .passthrough();
+
+export const taqnyatTemplateSchema = (_t = idT) =>
+  z
+    .object({
+      templateRef: z.union([z.string(), z.number()]).optional().nullable(),
+    })
+    .passthrough();
+
+export const guestRepliesSchema = (_t = idT) =>
+  z
+    .object({
+      onAttend: z.string().optional().nullable(),
+      onAbsent: z.string().optional().nullable(),
+    })
+    .passthrough();
+
+export const invitationSettingsSchema = (_t = idT) =>
+  z
+    .object({
+      visualTemplate: visualTemplateSchema(_t).optional().nullable(),
+      taqnyatTemplate: taqnyatTemplateSchema(_t).optional().nullable(),
+      guestReplies: guestRepliesSchema(_t).optional().nullable(),
+      invitationType: z.enum(INVITATION_TYPE_VALUES).optional(),
+      templateImage: z.any().optional().nullable(),
+      // Boundary migration aliases
+      taqnyatTemplateRef: z.union([z.string(), z.number()]).optional().nullable(),
+      selectedTemplate: z.any().optional(),
+      attendanceAutoReply: z.string().optional().nullable(),
+      absenceAutoReply: z.string().optional().nullable(),
+    })
+    .transform((data) => {
+      const result = { ...data };
+      if (result.taqnyatTemplateRef && !result.taqnyatTemplate) {
+        result.taqnyatTemplate = { templateRef: String(result.taqnyatTemplateRef) };
+      } else if (result.selectedTemplate && !result.taqnyatTemplate) {
+        const ref =
+          result.selectedTemplate?.templateRef ||
+          result.selectedTemplate?._id ||
+          result.selectedTemplate?.id;
+        if (ref) {
+          result.taqnyatTemplate = { templateRef: String(ref) };
+        }
+      }
+      if (
+        (result.attendanceAutoReply || result.absenceAutoReply) &&
+        !result.guestReplies
+      ) {
+        result.guestReplies = {
+          onAttend: result.attendanceAutoReply || "",
+          onAbsent: result.absenceAutoReply || "",
+        };
+      }
+      return result;
+    });
+
 const dateLike = z
   .union([z.date(), z.string(), z.null()])
   .transform((val) => {
@@ -82,21 +147,7 @@ export const createEventSchema = (t = idT) =>
     staffList: z.array(staffSchema(t)).optional(),
     supervisorsList: z.array(staffSchema(t)).optional(),
 
-    invitationSettings: z.object({
-      selectedTemplate: z.any().optional(),
-      visualTemplate: z.any().optional(),
-      taqnyatTemplate: z.any().optional(),
-      attendanceAutoReply: z.string().optional(),
-      absenceAutoReply: z.string().optional(),
-      templateImage: z.any().optional(),
-      guestReplies: z
-        .object({
-          onAttend: z.string().optional(),
-          onAbsent: z.string().optional(),
-        })
-        .partial()
-        .optional(),
-    }),
+    invitationSettings: invitationSettingsSchema(t).optional(),
 
     launchSettings: z.object({
       sendSchedule: z.enum(["now", "later"]).default("now"),
@@ -129,24 +180,7 @@ export const updateEventSchema = (t = idT) =>
     supervisorsList: z.array(staffSchema(t)).optional(),
     staffList: z.array(staffSchema(t)).optional(),
 
-    invitationSettings: z
-      .object({
-        visualTemplate: z.any().optional(),
-        taqnyatTemplate: z.any().optional(),
-        guestReplies: z
-          .object({
-            onAttend: z.string().optional(),
-            onAbsent: z.string().optional(),
-          })
-          .partial()
-          .optional(),
-        selectedTemplate: z.any().optional(),
-        attendanceAutoReply: z.string().optional(),
-        absenceAutoReply: z.string().optional(),
-        templateImage: z.any().optional(),
-      })
-      .partial()
-      .optional(),
+    invitationSettings: invitationSettingsSchema(t).optional(),
 
     launchSettings: z
       .object({

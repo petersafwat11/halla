@@ -66,16 +66,57 @@ const createEventDetailsSchema = z.object({
   description: z.string().trim().max(2000).optional().nullable(),
 }).passthrough();
 
-const createEventSchema = z.object({
-  eventDetails: createEventDetailsSchema,
-  guestList: z.array(guestEntry).optional().default([]),
-  staffList: z.array(staffEntry).optional().default([]),
-  visualTemplate: z.object({}).passthrough().optional(),
-  taqnyatTemplate: z.object({}).passthrough().optional(),
-  guestReplies: z.object({}).passthrough().optional(),
-  invitationType: invitationTypeSchema.optional(),
-  launchSettings: z.object({}).passthrough().optional(),
-}).passthrough();
+const visualTemplateInputSchema = z
+  .object({
+    templateRef: objectId.optional().nullable(),
+    fieldValues: z.record(z.any()).optional().default({}),
+    bakedImagePath: z.string().optional().nullable(),
+    isCustomUpload: z.boolean().optional(),
+  })
+  .passthrough();
+
+const taqnyatTemplateInputSchema = z
+  .object({
+    templateRef: objectId.optional().nullable(),
+  })
+  .passthrough();
+
+const guestRepliesInputSchema = z
+  .object({
+    onAttend: z.string().optional().nullable(),
+    onAbsent: z.string().optional().nullable(),
+  })
+  .passthrough();
+
+const createEventSchema = z
+  .object({
+    eventDetails: createEventDetailsSchema,
+    guestList: z.array(guestEntry).optional().default([]),
+    staffList: z.array(staffEntry).optional().default([]),
+    visualTemplate: visualTemplateInputSchema.optional().nullable(),
+    taqnyatTemplate: taqnyatTemplateInputSchema.optional().nullable(),
+    guestReplies: guestRepliesInputSchema.optional().nullable(),
+    invitationType: invitationTypeSchema.optional(),
+    launchSettings: z.object({}).passthrough().optional(),
+    // Boundary aliases
+    taqnyatTemplateRef: objectId.optional().nullable(),
+    selectedTemplate: z.any().optional(),
+  })
+  .transform((data) => {
+    const result = { ...data };
+    if (result.taqnyatTemplateRef && !result.taqnyatTemplate) {
+      result.taqnyatTemplate = { templateRef: String(result.taqnyatTemplateRef) };
+    } else if (result.selectedTemplate && !result.taqnyatTemplate) {
+      const ref =
+        result.selectedTemplate?.templateRef ||
+        result.selectedTemplate?._id ||
+        result.selectedTemplate?.id;
+      if (ref) {
+        result.taqnyatTemplate = { templateRef: String(ref) };
+      }
+    }
+    return result;
+  });
 
 const updateEventDetailsSchema = z.object({
   title: z.string().trim().min(1).max(200).optional(),
@@ -115,9 +156,43 @@ const updateStep2Schema = z.object({
   { path: ['staffList'], message: 'staffList (or supervisorsList) is required' }
 );
 
-const updateInvitationSettingsSchema = z.object({
-  invitationType: invitationTypeSchema.optional(),
-}).passthrough();
+const updateInvitationSettingsSchema = z
+  .object({
+    visualTemplate: visualTemplateInputSchema.optional().nullable(),
+    taqnyatTemplate: taqnyatTemplateInputSchema.optional().nullable(),
+    guestReplies: guestRepliesInputSchema.optional().nullable(),
+    invitationType: invitationTypeSchema.optional(),
+    templateImage: z.string().optional().nullable(),
+    // Boundary migration aliases
+    taqnyatTemplateRef: objectId.optional().nullable(),
+    selectedTemplate: z.any().optional(),
+    attendanceAutoReply: z.string().optional().nullable(),
+    absenceAutoReply: z.string().optional().nullable(),
+  })
+  .transform((data) => {
+    const result = { ...data };
+    if (result.taqnyatTemplateRef && !result.taqnyatTemplate) {
+      result.taqnyatTemplate = { templateRef: String(result.taqnyatTemplateRef) };
+    } else if (result.selectedTemplate && !result.taqnyatTemplate) {
+      const ref =
+        result.selectedTemplate?.templateRef ||
+        result.selectedTemplate?._id ||
+        result.selectedTemplate?.id;
+      if (ref) {
+        result.taqnyatTemplate = { templateRef: String(ref) };
+      }
+    }
+    if (
+      (result.attendanceAutoReply || result.absenceAutoReply) &&
+      !result.guestReplies
+    ) {
+      result.guestReplies = {
+        onAttend: result.attendanceAutoReply || "",
+        onAbsent: result.absenceAutoReply || "",
+      };
+    }
+    return result;
+  });
 
 const updateLaunchSettingsSchema = z.object({
   scheduledDate: z.union([z.string(), z.date()]).optional(),

@@ -219,6 +219,7 @@ module.exports = {
   TICKET_PRIORITY,
   RSVP_STATUS,
   INVITATION_TYPE,
+  INVITATION_TYPE_VALUES: Object.values(INVITATION_TYPE),
   invitationAllowsReply,
   invitationIncludesQr,
   CHECKIN_STATUS,

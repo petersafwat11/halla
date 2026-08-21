@@ -39,6 +39,8 @@ export const INVITATION_TYPE = Object.freeze({
   NONE: "none",
 });
 
+export const INVITATION_TYPE_VALUES = Object.freeze(Object.values(INVITATION_TYPE));
+
 export const invitationAllowsReply = (type) =>
   type === INVITATION_TYPE.REPLY_AND_QR || type === INVITATION_TYPE.REPLY_ONLY;
 

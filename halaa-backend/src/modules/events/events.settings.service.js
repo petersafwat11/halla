@@ -295,17 +295,30 @@ module.exports = {
       }
       event.visualTemplate = next;
     }
+    // Normalize migration alias if taqnyatTemplateRef is passed directly
+    if (settings.taqnyatTemplateRef && !settings.taqnyatTemplate) {
+      settings.taqnyatTemplate = { templateRef: settings.taqnyatTemplateRef };
+    }
+
     if (settings.taqnyatTemplate !== undefined) {
-      event.taqnyatTemplate = {
-        ...(event.taqnyatTemplate?.toObject?.() || event.taqnyatTemplate || {}),
-        ...settings.taqnyatTemplate,
-      };
+      if (settings.taqnyatTemplate === null) {
+        event.taqnyatTemplate = { templateRef: null };
+      } else if (typeof settings.taqnyatTemplate === 'object') {
+        event.taqnyatTemplate = {
+          ...(event.taqnyatTemplate?.toObject?.() || event.taqnyatTemplate || {}),
+          ...settings.taqnyatTemplate,
+        };
+      }
     }
     if (settings.guestReplies !== undefined) {
-      event.guestReplies = {
-        ...(event.guestReplies?.toObject?.() || event.guestReplies || {}),
-        ...settings.guestReplies,
-      };
+      if (settings.guestReplies === null) {
+        event.guestReplies = { onAttend: '', onAbsent: '' };
+      } else if (typeof settings.guestReplies === 'object') {
+        event.guestReplies = {
+          ...(event.guestReplies?.toObject?.() || event.guestReplies || {}),
+          ...settings.guestReplies,
+        };
+      }
     }
     if (settings.invitationType !== undefined) {
       event.invitationType = settings.invitationType;
