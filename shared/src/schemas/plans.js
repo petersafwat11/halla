@@ -95,7 +95,7 @@ const limitsSchema = z
     maxEvents: limitOrUnlimited,
     maxInvitesPerEvent: optionalLimit.optional(),
     invitePool: optionalLimit.optional(),
-    durationDays: z.number().int().positive().optional(),
+    durationDays: z.number().int().positive().nullable().optional(),
     maxHosts: optionalLimit.optional(),
   })
   .strict();

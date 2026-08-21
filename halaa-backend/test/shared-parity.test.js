@@ -145,3 +145,95 @@ test("RSVP Buckets cover all backend guest lifecycle statuses", async () => {
     );
   }
 });
+
+test("Plan Constants and Semantics Parity: Backend and @halaa/shared match (PLN-03, PLN-05)", async () => {
+  const backendPlans = require("../src/shared/constants/plans");
+  const shared = await import("@halaa/shared/constants");
+
+  // 1. PLAN_TYPES parity
+  assert.deepEqual(
+    Object.keys(backendPlans.PLAN_TYPES).sort(),
+    Object.keys(shared.PLAN_TYPES).sort(),
+    "PLAN_TYPES keys must match"
+  );
+  assert.deepEqual(
+    Object.values(backendPlans.PLAN_TYPES).sort(),
+    Object.values(shared.PLAN_TYPES).sort(),
+    "PLAN_TYPES values must match"
+  );
+
+  // 2. PLAN_FAMILIES parity
+  assert.deepEqual(
+    Object.keys(backendPlans.PLAN_FAMILIES).sort(),
+    Object.keys(shared.PLAN_FAMILIES).sort(),
+    "PLAN_FAMILIES keys must match"
+  );
+  assert.deepEqual(
+    Object.values(backendPlans.PLAN_FAMILIES).sort(),
+    Object.values(shared.PLAN_FAMILIES).sort(),
+    "PLAN_FAMILIES values must match"
+  );
+
+  // 3. BILLING_TYPES parity
+  assert.deepEqual(
+    Object.keys(backendPlans.BILLING_TYPES).sort(),
+    Object.keys(shared.BILLING_TYPES).sort(),
+    "BILLING_TYPES keys must match"
+  );
+  assert.deepEqual(
+    Object.values(backendPlans.BILLING_TYPES).sort(),
+    Object.values(shared.BILLING_TYPES).sort(),
+    "BILLING_TYPES values must match"
+  );
+
+  // 4. COMPENSATION_PERCENTAGE parity
+  assert.equal(
+    backendPlans.COMPENSATION_PERCENTAGE,
+    shared.COMPENSATION_PERCENTAGE,
+    "COMPENSATION_PERCENTAGE must be 15 across backend and shared"
+  );
+
+  // 5. Matrix helper results parity across all plan types
+  for (const planType of Object.values(backendPlans.PLAN_TYPES)) {
+    assert.equal(
+      backendPlans.isPerEventPlan(planType),
+      shared.isPerEventPlan(planType),
+      `isPerEventPlan('${planType}') must match between backend and shared`
+    );
+    assert.equal(
+      backendPlans.isPoolPlan(planType),
+      shared.isPoolPlan(planType),
+      `isPoolPlan('${planType}') must match between backend and shared`
+    );
+    assert.equal(
+      backendPlans.isTrialPlan(planType),
+      shared.isTrialPlan(planType),
+      `isTrialPlan('${planType}') must match between backend and shared`
+    );
+    assert.equal(
+      backendPlans.isManagedPlan(planType),
+      shared.isManagedPlan(planType),
+      `isManagedPlan('${planType}') must match between backend and shared`
+    );
+    assert.equal(
+      backendPlans.getPlanFamily(planType),
+      shared.getPlanFamily(planType),
+      `getPlanFamily('${planType}') must match between backend and shared`
+    );
+    assert.equal(
+      backendPlans.getBillingType(planType),
+      shared.getBillingType(planType),
+      `getBillingType('${planType}') must match between backend and shared`
+    );
+    assert.equal(
+      backendPlans.isRecurringPlan(planType),
+      shared.isRecurringPlan(planType),
+      `isRecurringPlan('${planType}') must match between backend and shared`
+    );
+    assert.equal(
+      backendPlans.getBillingPeriodKey(planType),
+      shared.getBillingPeriodKey(planType),
+      `getBillingPeriodKey('${planType}') must match between backend and shared`
+    );
+  }
+});

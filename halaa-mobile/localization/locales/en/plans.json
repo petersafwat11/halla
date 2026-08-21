@@ -180,6 +180,7 @@
     },
     "periods": {
       "yearly": "1 year (365 days)",
+      "annual": "1 year (365 days)",
       "quarterly": "90 days",
       "monthly": "30 days",
       "event": "90 days (1 event)",

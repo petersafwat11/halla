@@ -1,4 +1,5 @@
 import { classifyRsvpBucket } from "../constants/eventStatus.js";
+import { COMPENSATION_PERCENTAGE, getBillingType } from "../constants/plans.js";
 
 /**
  * Canonical Boundary DTO Adapters
@@ -195,16 +196,48 @@ export const toSubscriptionDTO = (rawSub) => {
   if (!rawSub || typeof rawSub !== "object") return null;
 
   const id = normalizeId(rawSub) || "";
-  const planCode = rawSub.planCode || rawSub.plan?.code || "";
-  const planType = rawSub.planType || rawSub.plan?.planType || "";
+  const planCode =
+    rawSub.planCode ||
+    rawSub.code ||
+    rawSub.plan?.code ||
+    rawSub.planId?.code ||
+    "";
+  const planType =
+    rawSub.planType ||
+    rawSub.plan?.planType ||
+    rawSub.planId?.planType ||
+    "";
   const status = (rawSub.status || "inactive").toLowerCase();
+  const billingType =
+    rawSub.billingType ||
+    rawSub.plan?.billingType ||
+    rawSub.planId?.billingType ||
+    getBillingType(planType) ||
+    null;
   const billingInterval =
-    rawSub.billingInterval || rawSub.plan?.billingInterval || "one_time";
+    rawSub.billingInterval || billingType || "event";
   const invitePool =
-    rawSub.invitePool !== undefined ? rawSub.invitePool : rawSub.plan?.invitePool ?? null;
-  const usedInvites = Number(rawSub.usedInvites || 0);
+    rawSub.invitePool !== undefined && rawSub.invitePool !== null
+      ? rawSub.invitePool
+      : (rawSub.limits?.invitePool ??
+        rawSub.plan?.limits?.invitePool ??
+        rawSub.planId?.limits?.invitePool ??
+        rawSub.limits?.maxInvitesPerEvent ??
+        null);
+  const compensationPool =
+    rawSub.compensationPool !== undefined && rawSub.compensationPool !== null
+      ? rawSub.compensationPool
+      : null;
+  const invitesConsumed = Number(
+    rawSub.invitesConsumed ?? rawSub.usedInvites ?? rawSub.usage?.guestsUsed ?? 0
+  );
   const remainingInvites =
-    invitePool !== null ? Math.max(0, Number(invitePool) - usedInvites) : null;
+    invitePool !== null
+      ? Math.max(
+          0,
+          Number(invitePool) + (compensationPool || 0) - invitesConsumed
+        )
+      : null;
   const startDate = rawSub.startDate || rawSub.createdAt || null;
   const endDate = rawSub.endDate || rawSub.expiresAt || null;
 
@@ -213,9 +246,12 @@ export const toSubscriptionDTO = (rawSub) => {
     planCode,
     planType,
     status,
+    billingType,
     billingInterval,
     invitePool,
-    usedInvites,
+    compensationPool,
+    usedInvites: invitesConsumed,
+    invitesConsumed,
     remainingInvites,
     startDate,
     endDate,

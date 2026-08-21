@@ -257,8 +257,8 @@ Update one row only after its exit criteria and required tests pass. Use `Blocke
 | 2.3 Bulk API envelope | Complete | 0.2 |
 | 2.4 Ticket transitions/bulk | Complete | 0.2, 2.3 |
 | 2.5 Ticket attachment matrix | Complete | 0.1 |
-| 2.6 Admin creation/cache keys | Not started | 0.2 |
-| 3.1 Plan semantics/invite pool | Not started | 0.2 |
+| 2.6 Admin creation/cache keys | Complete | 0.2 |
+| 3.1 Plan semantics/invite pool | Complete | 0.2 |
 | 3.2 Plan editing/presentation | Not started | 3.1 |
 | 3.3 Money/checkout quote | Not started | 3.1 |
 | 3.4 Expiry/payment UX | Not started | 3.3 |
@@ -1523,6 +1523,50 @@ This program is complete only when:
   - None.
 - **Blockers / deferred work:**
   - Session 2.6 is Complete. Ready to commit.
+
+### Execution Record — Session 3.1 (2026-08-21)
+
+- **Session:** Session 3.1 — Canonical plan semantics and invite-pool completion (`PLN-03`, `PLN-04`, `PLN-05`, `PLN-09`)
+- **Status:** Complete
+- **Prerequisites verified:** Session 0.2 is Complete (verified).
+- **Key changes:**
+  - **Shared Constants & Helpers (`shared/src/constants/plans.js`, `halaa-backend/src/shared/constants/plans.js`):**
+    - Established canonical plan classification across 9 types: `trial`, `basic_event`, `basic_monthly`, `premium_event`, `premium_monthly`, `business_event`, `business_quarterly`, `business_annual`, `unlimited`.
+    - Aligned helper contracts between shared and backend: `isUnlimited`, `isTrialPlan`, `isPerEventPlan`, `isPoolPlan`, `isManagedPlan`, `isRecurringBilling`, `isRecurringPlan`, `getPlanFamily`, `getBillingType`, `getBillingPeriodKey`, `planHasBillingCycle`, and `COMPENSATION_PERCENTAGE = 15`.
+  - **Zod Limits Schemas (`shared/src/schemas/plans.js`, `halaa-backend/src/modules/plans/plans.schemas.js`):**
+    - Relaxed `durationDays` to nullable positive integer (`z.number().int().positive().nullable().optional()`) and allowed nullable `invitePool` for unlimited plans.
+  - **Boundary DTO Adapter (`shared/src/utils/adapters.js`):**
+    - Updated `toSubscriptionDTO` to authoritatively compute `invitePool`, `compensationPool`, `invitesConsumed`, and `remainingInvites = invitePool + (compensationPool || 0) - invitesConsumed`.
+  - **Mobile Plan Editing & Validation (`halaa-mobile/components/admin-dashboard/plans/EditPlanModal.js`):**
+    - Implemented type-conditional validation: `invitePool` is required and must be > 0 only for non-unlimited plans, allowing `null` / `-1` for `unlimited`.
+    - Preserved `null` for `durationDays` when empty rather than coercing `""` to `0`.
+  - **Mobile Plan Item & Summary (`halaa-mobile/components/admin-dashboard/plans/PlanListItem.js`, `halaa-mobile/components/plans/PlanSummaryCard.js`):**
+    - Added period chips for monthly (`/mo`), quarterly (`/3mo`), and annual (`/yr`).
+    - Fixed plan summary classification using `isPoolPlan` and `getBillingType`, preventing quarterly and annual plans from collapsing to single-event.
+  - **Web Plan Summary Card (`halaa-web/app/[lang]/host/plans/summary/_components/PlanSummaryCard.js`):**
+    - Integrated `isPoolPlan` and `isRecurringBilling` to distinguish pool vs per-event behavior and render correct localized billing period labels (`quarterly`, `annual`, `monthly`, `event`).
+  - **Localization (`halaa-web/localization/locales/{ar,en}/plans.json`, `halaa-mobile/localization/locales/{ar,en}/plans.json`):**
+    - Added `annual`, `quarterly`, and `yearly` period strings in Arabic and English.
+  - **Backend Subscriptions & Dashboard (`halaa-backend/src/modules/dashboard/dashboard.service.js`, `halaa-backend/src/modules/subscriptions/subscriptions.service.js`):**
+    - Made `invitePool` authoritative for dashboard `guestsLimit` and ensured per-event plans return `invitePool`, `compensationPool`, `invitesConsumed`, and `invitesRemaining`.
+  - **Automated Tests:**
+    - `shared/test/plansContract.test.js`: Table-driven test suite validating canonical semantics, schemas, and DTO math across all 9 plan types.
+    - `halaa-backend/test/shared-parity.test.js`: Added full parity test asserting exact match between backend and shared plan constants and helper functions.
+    - `halaa-web/__tests__/ui/planSemanticsPresentation.test.mjs`: Added test suite for web plan classification, summary period rendering, and localization keys.
+    - `halaa-mobile/__tests__/plans/planSemanticsValidation.test.js`: Added test suite for mobile plan classification, modal validation, and source contract verification.
+- **Verification results:**
+  - `cd shared && npm test` → PASS (41 unit tests passed, 0 failures)
+  - `cd halaa-backend && npm test` → PASS (376 unit/integration tests passed, 0 failures)
+  - `cd halaa-web && npm test` → PASS (59 unit tests passed, 0 failures)
+  - `cd halaa-mobile && npm test` → PASS (124 unit tests passed, 0 failures)
+- **Exit-criteria verification:**
+  - The same raw plan is classified and validated identically across `@halaa/shared`, backend, web, and mobile.
+  - Capped plans require a positive invite pool; unlimited plans cleanly support `invitePool: null` and `durationDays: null`.
+  - Quarterly and annual plans preserve their respective periods and pool semantics without collapsing to monthly or single-event.
+- **Remaining risks / decisions:**
+  - None.
+- **Blockers / deferred work:**
+  - Session 3.1 is Complete. Ready for Git commit.
 
 
 

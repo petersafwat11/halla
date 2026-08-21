@@ -184,8 +184,12 @@
     "perEventModelHint": "Per-event plan: 1 event with these total invites.",
     "billingPeriodLabel": "Billing Period:",
     "periods": {
+      "yearly": "1 year (365 days)",
+      "annual": "1 year (365 days)",
+      "quarterly": "90 days",
       "monthly": "30 days",
-      "event": "90 days (1 event)"
+      "event": "90 days (1 event)",
+      "custom": "{{days}} days"
     },
     "discount": {
       "title": "Discount Code",

@@ -2,12 +2,13 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { getLocalized } from "@halaa/shared/utils/locale";
-import { COMPENSATION_PERCENTAGE } from "@halaa/shared/constants/plans";
+import {
+  COMPENSATION_PERCENTAGE,
+  isPoolPlan,
+  isRecurringBilling,
+  getBillingType,
+} from "@halaa/shared/constants/plans";
 import { colors, spacing, borderRadius, typography } from "../../styles/tokens";
-
-const isMonthly = (billingType) =>
-  billingType === "monthly" ||
-  (typeof billingType === "string" && billingType.endsWith("_monthly"));
 
 const PlanSummaryCard = ({
   selectedPlan,
@@ -20,30 +21,39 @@ const PlanSummaryCard = ({
   addonItems = [],
   t,
 }) => {
-  const monthly = isMonthly(billingType);
+  const planType = selectedPlan?.planType;
+  const effectiveBillingType =
+    selectedPlan?.billingType ||
+    getBillingType(planType) ||
+    billingType ||
+    "event";
+  const isPool =
+    isPoolPlan(planType) ||
+    isRecurringBilling(effectiveBillingType) ||
+    selectedPlan?.isPoolSubscription === true;
 
   const planName =
     getLocalized(selectedPlan, "name", locale) || t("summary.planDetails");
 
-  const planSubtitle = monthly
+  const planSubtitle = isPool
     ? t("summary.unlimitedEvents")
     : t("summary.singleEvent");
 
   // Base invites: per-event plans now also expose `invitePool`, so prefer
   // it everywhere (falling back to legacy fields) — keeps the "base" used by
   // the invites row, compensation and total perfectly consistent.
-  const baseInvites = monthly
+  const baseInvites = isPool
     ? selectedPlan?.invitePool || 0
     : selectedPlan?.invitePool ??
       selectedPlan?.invites ??
       selectedPlan?.limits?.maxInvitesPerEvent ??
       0;
 
-  const inviteLabel = monthly
+  const inviteLabel = isPool
     ? `${baseInvites} ${t("summary.invitePool") || t("inviteSelector.poolLabel")}`
     : `${baseInvites} ${t("summary.invitesLabel")}`;
 
-  const eventLabel = monthly
+  const eventLabel = isPool
     ? t("summary.unlimitedEvents")
     : t("summary.oneEvent");
 
@@ -134,7 +144,7 @@ const PlanSummaryCard = ({
           {t("summary.compensationHint")}
         </Text>
         <Text style={styles.totalHint}>
-          {monthly
+          {isPool
             ? t("summary.poolPlanHint")
             : t("summary.perEventPlanHint")}
         </Text>
