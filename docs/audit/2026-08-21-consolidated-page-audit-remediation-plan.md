@@ -259,7 +259,7 @@ Update one row only after its exit criteria and required tests pass. Use `Blocke
 | 2.5 Ticket attachment matrix | Complete | 0.1 |
 | 2.6 Admin creation/cache keys | Complete | 0.2 |
 | 3.1 Plan semantics/invite pool | Complete | 0.2 |
-| 3.2 Plan editing/presentation | Not started | 3.1 |
+| 3.2 Plan editing/presentation | Complete | 3.1 |
 | 3.3 Money/checkout quote | Not started | 3.1 |
 | 3.4 Expiry/payment UX | Not started | 3.3 |
 | 4.1 Vendor service form contract | Not started | 0.2 |
@@ -1567,6 +1567,46 @@ This program is complete only when:
   - None.
 - **Blockers / deferred work:**
   - Session 3.1 is Complete. Ready for Git commit.
+
+### Execution Record — Session 3.2 (2026-08-21)
+
+- **Session:** Session 3.2 — Plan editing and presentation parity (`PLN-06`, `PLN-07`, `PLN-08`)
+- **Status:** Complete
+- **Prerequisites verified:** Session 3.1 is Complete and committed (verified).
+- **Key changes:**
+  - **Canonical Plan Presentation DTO (`@halaa/shared/src/utils/adapters.js`, `shared/src/utils/index.js`):**
+    - Implemented and exported `toPlanPresentationDTO(plan)`:
+      - Normalizes every plan into standard shape with canonical flags (`isPool`, `isPerEvent`, `isTrial`, `isManaged`, `isUnlimited`).
+      - Derives `pricing.oneTime`, `pricing.setupFee`, and compiles all priced extras (`setup_fee`, `whatsapp_templates`) into structured `extras` line items.
+      - Accurately resolves `limits.durationDays` per billing interval (30d monthly, 90d quarterly, 365d annual, or custom) and preserves `null` for unlimited plans.
+      - Derives 15% `limits.compensationPool` from base pool / tier invites.
+  - **Web Admin Plan Feature Bullets Editor (`halaa-web/app/[lang]/admin-dash/manage-plans/_components/edit-plan/PlanFeatureBulletsSection.js`):**
+    - Resolved `PLN-07`: Encapsulated bullets editing into controlled `BulletField` with local raw text state so trailing newlines and cursor state are preserved during editing without getting stripped before submit.
+  - **Web Admin Edit Popup Defaults (`halaa-web/app/[lang]/admin-dash/manage-plans/_components/EditPlanPopup.js`):**
+    - Preserved `null` for `limits.durationDays` when editing unlimited plans instead of defaulting to `90`.
+  - **Web & Mobile Plan Description Components (`halaa-web/ui/plans/PlanDescription/PlanDescription.jsx`, `halaa-mobile/components/plans/PlanDescription.js`):**
+    - Replaced hardcoded billing string checks with canonical `isPoolPlan` and `isRecurringBilling` helpers.
+    - Accurately derive duration labels for monthly, quarterly, annual, and custom event durations.
+    - Render setup fee, WhatsApp templates, and 15% compensation rows accurately.
+  - **Mobile Host Plan Card & Title Parity (`halaa-mobile/components/plans/HostPlanCard.js`, `halaa-mobile/components/plans/_components/PlanPriceBlock.js`):**
+    - Resolved `PLN-06`: Enabled `PlanPriceBlock` to receive and display explicit localized `planName`, preventing misleading fallback titles when specific plan names are assigned.
+  - **Automated Tests:**
+    - `shared/test/planPresentationDTO.test.js`: Validated presentation DTO normalization, limits math, priced extras, and unlimited semantics across all plan types.
+    - `halaa-web/__tests__/ui/planEditingAndBullets.test.mjs`: Validated presentation DTO integration, `BulletField` raw text preservation, and popup duration defaults.
+    - `halaa-mobile/__tests__/plans/planPresentationParity.test.js`: Validated mobile plan description helpers, price block title propagation, and presentation parity.
+- **Verification results:**
+  - `cd shared && npm test` → PASS (44 unit tests passed, 0 failures)
+  - `cd halaa-backend && npm test` → PASS (376 unit/integration tests passed, 0 failures)
+  - `cd halaa-web && npm test` → PASS (62 unit tests passed, 0 failures)
+  - `cd halaa-mobile && npm test` → PASS (126 unit tests passed, 0 failures)
+- **Exit-criteria verification:**
+  - No plan presentation or editor hardcodes per-event or monthly behavior.
+  - No priced line item (setup fees, WhatsApp templates, compensation) disappears from summary or presentation.
+  - Web admin bullet editor maintains raw multi-line editing seamlessly.
+- **Remaining risks / decisions:**
+  - None.
+- **Blockers / deferred work:**
+  - Session 3.2 is Complete. Ready for Git commit.
 
 
 

@@ -5,9 +5,11 @@ import { formatNumber } from "@halaa/shared/utils/locale";
 import { colors, spacing, typography } from "../../../styles/tokens";
 import SarIcon from "../../commen/SarIcon";
 
-const PlanPriceBlock = ({ planFamily, price }) => {
+const PlanPriceBlock = ({ planFamily, price, planName }) => {
   const { t, currentLanguage } = useTranslation("plans");
-  const name = planFamily ? t(`planFamilies.${planFamily}`) : "";
+  const name =
+    planName ||
+    (planFamily ? t(`planFamilies.${planFamily}`, { defaultValue: planFamily }) : "");
   const tagline = planFamily
     ? t(`taglines.${planFamily}`, { defaultValue: "" })
     : "";

@@ -4,7 +4,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
 import { formatNumber, formatPercent } from "@halaa/shared/utils/locale";
 import { isolateLtr, isolateRtl } from "@halaa/shared/utils/bidi";
-import { COMPENSATION_PERCENTAGE } from "@halaa/shared/constants/plans";
+import {
+  COMPENSATION_PERCENTAGE,
+  isPoolPlan,
+  isRecurringBilling,
+  getPlanFamily,
+  getBillingType,
+} from "@halaa/shared/constants/plans";
 
 /**
  * <PlanDescription> — mobile mirror of the web component.
@@ -33,19 +39,12 @@ const PlanDescription = ({
   const localizedBullets =
     plan.featureBullets && plan.featureBullets[activeLang];
   const bullets = Array.isArray(localizedBullets) ? localizedBullets : [];
-  const family = plan.planFamily;
-  const billingType = plan.billingType;
+  const family = plan.planFamily || getPlanFamily(plan.planType);
+  const billingType = plan.billingType || getBillingType(plan.planType);
   const setupFee = Number(plan.setupFeeAmount) || 0;
   const whatsappCount = Number(plan.features?.whatsAppTemplates) || 0;
-  const isPool =
-    billingType === "monthly" ||
-    billingType === "quarterly" ||
-    billingType === "annual";
+  const isPool = isPoolPlan(plan.planType) || isRecurringBilling(billingType);
   const invitePool = plan.invitePool ?? plan.limits?.invitePool ?? null;
-  // Per-event plans now carry an `invitePool` too — prefer it as the base,
-  // keeping legacy fields as a fallback. For a per-event plan this equals the
-  // old `maxInvitesPerEvent`, so display is unchanged; pool plans use the
-  // `invitePool` branch above and are unaffected.
   const perEventInvites =
     plan.invitePool ??
     plan.limits?.invitePool ??
@@ -60,7 +59,6 @@ const PlanDescription = ({
     compensationBase > 0
       ? Math.floor((compensationBase * COMPENSATION_PERCENTAGE) / 100)
       : 0;
-
   const durationDays = plan.limits?.durationDays;
   const durationLine = (() => {
     if (billingType === "monthly") return t("duration.monthly");

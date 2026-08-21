@@ -1,5 +1,15 @@
 import { classifyRsvpBucket } from "../constants/eventStatus.js";
-import { COMPENSATION_PERCENTAGE, getBillingType } from "../constants/plans.js";
+import {
+  COMPENSATION_PERCENTAGE,
+  isPoolPlan,
+  isPerEventPlan,
+  isTrialPlan,
+  isManagedPlan,
+  isRecurringBilling,
+  getPlanFamily,
+  getBillingType,
+  getBillingPeriodKey,
+} from "../constants/plans.js";
 
 /**
  * Canonical Boundary DTO Adapters
@@ -364,4 +374,141 @@ export const toInvitationSettingsDTO = (rawSettings) => {
     templateImage,
   };
 };
+
+/**
+ * Resolves PLN-08: Produces a canonical PlanPresentationDTO ensuring every priced
+ * extra, limit, billing period, and feature is represented consistently across
+ * admin editors, host cards, business cards, summaries, and quotes.
+ */
+export const toPlanPresentationDTO = (plan) => {
+  if (!plan || typeof plan !== "object") return null;
+
+  const id = normalizeId(plan) || "";
+  const code = plan.code || "";
+  const planType = plan.planType || "";
+  const planFamily = plan.planFamily || getPlanFamily(planType);
+  const billingType = plan.billingType || getBillingType(planType);
+  const billingPeriodKey = getBillingPeriodKey(billingType || planType);
+
+  const isPool = isPoolPlan(planType) || isRecurringBilling(billingType);
+  const isPerEvent = isPerEventPlan(planType);
+  const isTrial = isTrialPlan(planType) || isTrialPlan(code);
+  const isManaged = isManagedPlan(planType);
+  const isUnlimitedPlan =
+    planType === "unlimited" ||
+    (plan.limits?.maxEvents === -1 &&
+      (plan.limits?.invitePool === null || plan.limits?.invitePool === -1));
+
+  const oneTimePrice = Number(plan.pricing?.oneTime ?? plan.price ?? 0);
+  const setupFee = Number(plan.setupFeeAmount || 0);
+
+  const maxEvents =
+    plan.limits?.maxEvents !== undefined
+      ? plan.limits.maxEvents
+      : isPool
+      ? -1
+      : 1;
+  const invitePool =
+    plan.limits?.invitePool !== undefined
+      ? plan.limits.invitePool
+      : plan.invitePool !== undefined
+      ? plan.invitePool
+      : plan.invites ?? null;
+  const compensationPool =
+    plan.compensationPool !== undefined && plan.compensationPool !== null
+      ? plan.compensationPool
+      : invitePool !== null && invitePool > 0
+      ? Math.floor(invitePool * (COMPENSATION_PERCENTAGE / 100))
+      : 0;
+  const durationDays =
+    plan.limits?.durationDays !== undefined
+      ? plan.limits.durationDays
+      : isUnlimitedPlan
+      ? null
+      : billingType === "monthly"
+      ? 30
+      : billingType === "quarterly"
+      ? 90
+      : billingType === "annual"
+      ? 365
+      : 90;
+  const maxHosts = plan.limits?.maxHosts ?? null;
+
+  const whatsAppTemplates = Number(plan.features?.whatsAppTemplates || 0);
+
+  const featureBullets = {
+    ar: Array.isArray(plan.featureBullets?.ar)
+      ? [...plan.featureBullets.ar]
+      : [],
+    en: Array.isArray(plan.featureBullets?.en)
+      ? [...plan.featureBullets.en]
+      : [],
+  };
+
+  const nameAr = plan.nameAr || plan.name || "";
+  const nameEn = plan.nameEn || plan.name || "";
+  const descriptionAr = plan.descriptionAr || plan.description || "";
+  const descriptionEn = plan.descriptionEn || plan.description || "";
+
+  const isActive = plan.isActive !== false;
+  const isPublic = plan.isPublic !== false;
+  const isPopular = Boolean(plan.isPopular);
+  const sortOrder = Number(plan.sortOrder || 0);
+
+  // Collect priced extras line items
+  const extras = [];
+  if (setupFee > 0) {
+    extras.push({
+      type: "setup_fee",
+      amount: setupFee,
+      isOneTime: true,
+    });
+  }
+  if (whatsAppTemplates > 0) {
+    extras.push({
+      type: "whatsapp_templates",
+      count: whatsAppTemplates,
+      isIncluded: true,
+    });
+  }
+
+  return {
+    id,
+    code,
+    planType,
+    planFamily,
+    billingType,
+    billingPeriodKey,
+    isPool,
+    isPerEvent,
+    isTrial,
+    isManaged,
+    isUnlimited: isUnlimitedPlan,
+    pricing: {
+      oneTime: oneTimePrice,
+      setupFee,
+    },
+    limits: {
+      maxEvents,
+      invitePool,
+      compensationPool,
+      durationDays,
+      maxHosts,
+    },
+    features: {
+      whatsAppTemplates,
+    },
+    featureBullets,
+    nameAr,
+    nameEn,
+    descriptionAr,
+    descriptionEn,
+    isActive,
+    isPublic,
+    isPopular,
+    sortOrder,
+    extras,
+  };
+};
+
 

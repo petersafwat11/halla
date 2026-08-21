@@ -48,6 +48,7 @@ export {
   toSubscriptionDTO,
   toBulkIdsPayload,
   toInvitationSettingsDTO,
+  toPlanPresentationDTO,
 } from "./adapters.js";
 export {
   eventKeys,
