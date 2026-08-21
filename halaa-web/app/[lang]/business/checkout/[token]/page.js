@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { FaLock } from "react-icons/fa";
 import { getLocalized } from "@halaa/shared/utils/locale";
+import { validateCardExpiry, checkLuhn, buildCreditCardSource } from "@halaa/shared/utils";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import PaymentMethodSelector from "@/app/[lang]/host/plans/_components/PaymentMethodSelector";
 import {
@@ -16,20 +17,6 @@ import LegalSurfaceLinks from "@/ui/common/LegalSurfaceLinks";
 import styles from "./checkout.module.css";
 
 const PENDING_STATUS = "pending_payment";
-
-const checkLuhn = (number) => {
-  let sum = 0;
-  let shouldDouble = false;
-  for (let i = number.length - 1; i >= 0; i--) {
-    let digit = parseInt(number.charAt(i), 10);
-    if (shouldDouble) {
-      if ((digit *= 2) > 9) digit -= 9;
-    }
-    sum += digit;
-    shouldDouble = !shouldDouble;
-  }
-  return sum % 10 === 0;
-};
 
 const BusinessCheckoutPage = () => {
   const { t, i18n } = useTranslation("plans");
@@ -57,14 +44,7 @@ const BusinessCheckoutPage = () => {
 
   const buildSource = () => {
     if (paymentMethod === "creditcard") {
-      return {
-        type: "creditcard",
-        name: cardData?.name,
-        number: cardData?.number,
-        month: Number(cardData?.month),
-        year: Number(cardData?.year),
-        cvc: cardData?.cvc,
-      };
+      return buildCreditCardSource(cardData || {});
     }
     if (paymentMethod === "stcpay") {
       return { type: "stcpay", mobile: stcMobile };
@@ -93,20 +73,9 @@ const BusinessCheckoutPage = () => {
       else if (!checkLuhn(number))
         newErrors.number = t("checkout.errors.numberInvalid");
 
-      if (!month || !year) {
-        newErrors.expiry = t("checkout.errors.expiryRequired");
-      } else {
-        const m = parseInt(month, 10);
-        const y = parseInt(year, 10);
-        const now = new Date();
-        if (isNaN(m) || m < 1 || m > 12)
-          newErrors.expiry = t("checkout.errors.expiryMonthInvalid");
-        else if (
-          isNaN(y) ||
-          y < now.getFullYear() ||
-          (y === now.getFullYear() && m < now.getMonth() + 1)
-        )
-          newErrors.expiry = t("checkout.errors.expiryExpired");
+      const expiryCheck = validateCardExpiry(month, year);
+      if (!expiryCheck.valid) {
+        newErrors.expiry = t(expiryCheck.errorKey, "Invalid expiry date");
       }
 
       if (!cvc) newErrors.cvc = t("checkout.errors.cvcRequired");
@@ -123,8 +92,10 @@ const BusinessCheckoutPage = () => {
   };
 
   const handlePay = async () => {
+    if (isProcessing || submitMutation.isPending) return;
     if (!validateForm()) return;
     setIsProcessing(true);
+
     try {
       const callbackUrl =
         typeof window !== "undefined"

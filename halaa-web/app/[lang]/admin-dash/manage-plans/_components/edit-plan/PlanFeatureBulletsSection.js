@@ -13,6 +13,51 @@ const bulletsTextToArray = (text) =>
     .map((line) => line.trim())
     .filter((line) => line.length > 0);
 
+const BulletInput = ({
+  field,
+  labelKey,
+  placeholderKey,
+  helpKey,
+  dir,
+  error,
+}) => {
+  const { t } = useTranslation("admin");
+  const [rawText, setRawText] = React.useState(() =>
+    bulletsArrayToText(field.value)
+  );
+
+  // Keep local state in sync if external form value resets
+  React.useEffect(() => {
+    const externalText = bulletsArrayToText(field.value);
+    if (bulletsArrayToText(bulletsTextToArray(rawText)) !== externalText) {
+      setRawText(externalText);
+    }
+  }, [field.value]);
+
+  const handleChange = (e) => {
+    const newText = e.target.value;
+    setRawText(newText);
+    field.onChange(bulletsTextToArray(newText));
+  };
+
+  return (
+    <div className={styles.bulletField}>
+      <label className={styles.bulletLabel}>{t(labelKey)}</label>
+      <textarea
+        className={styles.bulletTextarea}
+        dir={dir}
+        rows={8}
+        placeholder={t(placeholderKey)}
+        value={rawText}
+        onChange={handleChange}
+      />
+      <span className={styles.bulletHint}>
+        {error?.message || (helpKey ? t(helpKey) : "")}
+      </span>
+    </div>
+  );
+};
+
 const BulletField = ({
   name,
   labelKey,
@@ -21,54 +66,26 @@ const BulletField = ({
   dir,
   error,
 }) => {
-  const { t } = useTranslation("admin");
   const { control } = useFormContext();
 
   return (
     <Controller
       name={name}
       control={control}
-      render={({ field }) => {
-        const [rawText, setRawText] = React.useState(() =>
-          bulletsArrayToText(field.value)
-        );
-
-        // Keep local state in sync if external form value resets
-        React.useEffect(() => {
-          const externalText = bulletsArrayToText(field.value);
-          if (
-            bulletsArrayToText(bulletsTextToArray(rawText)) !== externalText
-          ) {
-            setRawText(externalText);
-          }
-        }, [field.value]);
-
-        const handleChange = (e) => {
-          const newText = e.target.value;
-          setRawText(newText);
-          field.onChange(bulletsTextToArray(newText));
-        };
-
-        return (
-          <div className={styles.bulletField}>
-            <label className={styles.bulletLabel}>{t(labelKey)}</label>
-            <textarea
-              className={styles.bulletTextarea}
-              dir={dir}
-              rows={8}
-              placeholder={t(placeholderKey)}
-              value={rawText}
-              onChange={handleChange}
-            />
-            <span className={styles.bulletHint}>
-              {error?.message || (helpKey ? t(helpKey) : "")}
-            </span>
-          </div>
-        );
-      }}
+      render={({ field }) => (
+        <BulletInput
+          field={field}
+          labelKey={labelKey}
+          placeholderKey={placeholderKey}
+          helpKey={helpKey}
+          dir={dir}
+          error={error}
+        />
+      )}
     />
   );
 };
+
 
 const PlanFeatureBulletsSection = () => {
   const { t } = useTranslation("admin");

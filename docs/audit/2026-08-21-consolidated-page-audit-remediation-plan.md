@@ -261,7 +261,7 @@ Update one row only after its exit criteria and required tests pass. Use `Blocke
 | 3.1 Plan semantics/invite pool | Complete | 0.2 |
 | 3.2 Plan editing/presentation | Complete | 3.1 |
 | 3.3 Money/checkout quote | Complete | 3.1 |
-| 3.4 Expiry/payment UX | Not started | 3.3 |
+| 3.4 Expiry/payment UX | Complete | 3.3 |
 | 4.1 Vendor service form contract | Not started | 0.2 |
 | 4.2 Marketplace filters/query | Not started | 0.2 |
 | 4.3 Marketplace analytics | Not started | Product decision |
@@ -1646,10 +1646,49 @@ This program is complete only when:
   - The displayed amount, the persisted transaction amount, and the gateway charge match exactly.
   - Rounding uses minor units / `round2` and does not drop halalas (no `.toFixed(0)`).
   - Backend authoritative quote endpoint `/payments/quote` is operational and protects checkout against price changes.
+### Execution Record — Session 3.4 (2026-08-21)
+
+- **Session:** Session 3.4 — Card expiry and payment UX (`PLN-01`)
+- **Status:** Complete
+- **Prerequisites verified:** Session 3.3 is Complete and committed (verified).
+- **Key changes:**
+  - **Shared Card Utilities (`@halaa/shared/src/utils/card.js`, `shared/src/utils/index.js`, `halaa-backend/src/shared/utils/card.js`):**
+    - Implemented and exported canonical card utilities: `formatExpiryInput`, `parseCardExpiry`, `validateCardExpiry`, `checkLuhn`, `detectCardBrand`, `buildCreditCardSource`.
+    - `formatExpiryInput`: strictly formats input as `MM/YY` (month 2 digits, year 2 digits), auto-appends `/` when typing forward past the 2-digit month boundary, and avoids trapping caret when deleting.
+    - `parseCardExpiry`: parses standard `MM/YY`, `MMYYYY`, object `{ month, year }`, or separated strings (`12/26`, `12-26`, `12.26`), normalizing into 2-digit `MM` and 4-digit `20YY`.
+    - `validateCardExpiry`: enforces month boundaries (01–12, rejecting `00` and `13+`), checks non-expired dates against reference date (valid through the end of the stated month, rejecting past months/years and excessive future dates > 25 years).
+    - `buildCreditCardSource`: builds the canonical wire format source for Moyasar (`month` as integer 1–12, `year` as 4-digit integer 2026).
+  - **Web Payment Method Selector & Checkout (`halaa-web/app/[lang]/host/plans/_components/PaymentMethodSelector.jsx`, `Summary.js`, `business/checkout/[token]/page.js`):**
+    - Resolved `PLN-01`: Swapped obsolete `YY/MM` display and parsing to canonical `MM/YY` (month first).
+    - Updated `PaymentMethodSelector.jsx` placeholder to `"MM/YY"` and wired `formatExpiryInput`.
+    - Updated `Summary.js` and `business/checkout/[token]/page.js` to use `validateCardExpiry`, `checkLuhn`, and `buildCreditCardSource`.
+    - Added `if (isProcessing) return;` double-submit guards to prevent in-flight duplicate charge submissions.
+    - Fixed `PlanFeatureBulletsSection.js` hook usage by extracting `BulletInput` component.
+  - **Mobile Payment Method Selector & Checkout (`halaa-mobile/components/plans/PaymentMethodSelector.js`, `PlansSummaryScreen.js`):**
+    - Updated mobile `PaymentMethodSelector.js` placeholder to `"MM/YY"` and wired `formatExpiryInput`.
+    - Updated `PlansSummaryScreen.js` to use `buildCreditCardSource` and `validateCardExpiry`.
+    - Added double-submit guard (`if (isProcessing) return;`) while preserving native IAP flow (`Platform.OS === 'web' ? ... : ...`).
+  - **Localization Parity (`halaa-mobile/localization/locales/{ar,en}/plans.json`):**
+    - Added full Arabic and English translations for detailed card validation errors (`nameRequired`, `nameTooShort`, `numberRequired`, `numberLength`, `numberInvalid`, `expiryRequired`, `expiryMonthInvalid`, `expiryExpired`, `cvcRequired`, `cvcLength`, `mobileRequired`, `mobileFormat`).
+  - **Automated Tests:**
+    - `shared/test/card.test.js`: Validated `formatExpiryInput`, `parseCardExpiry`, `validateCardExpiry` (`00/YY`, `13/YY`, current month, past/future dates, separators), `checkLuhn`, `detectCardBrand`, and `buildCreditCardSource`.
+    - `halaa-web/__tests__/ui/cardExpiryPaymentUx.test.mjs`: Validated web placeholder `MM/YY`, `Summary.js` validation, error keys, and double-submit protection.
+    - `halaa-mobile/__tests__/plans/cardExpiryPaymentUx.test.js`: Validated mobile placeholder `MM/YY`, `PlansSummaryScreen.js` validation, source builder, and web vs native IAP platform gating.
+    - `halaa-backend/test/card-expiry-wire.test.js`: Validated backend card expiry validation, `sourceSchema`, and `buildCreditCardSource` wire format for Moyasar.
+- **Verification results:**
+  - `cd shared && npm test` → PASS (60 unit tests passed, 0 failures)
+  - `cd halaa-backend && npm test` → PASS (384 unit/integration tests passed, 0 failures)
+  - `cd halaa-web && npm test` → PASS (68 unit tests passed, 0 failures)
+  - `cd halaa-mobile && npm test` → PASS (131 unit tests passed, 0 failures)
+- **Exit-criteria verification:**
+  - Input, display, and validation strictly use `MM/YY` with month 01–12 and non-expired check.
+  - Wire format for Moyasar provides integer `month` and 4-digit `year` independently from display formatting.
+  - Native iOS/Android retains IAP-only flows; web checkout handles card/STC Pay entry with double-submit guards.
+  - Errors are localized in Arabic and English across both web and mobile.
 - **Remaining risks / decisions:**
   - None.
 - **Blockers / deferred work:**
-  - Session 3.3 is Complete. Ready for Git commit.
+  - Session 3.4 is Complete. Ready for Git commit.
 
 
 

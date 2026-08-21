@@ -83,3 +83,12 @@ export {
   allocateDiscount,
   buildCheckoutQuote,
 } from "./money.js";
+export {
+  formatExpiryInput,
+  parseCardExpiry,
+  validateCardExpiry,
+  checkLuhn,
+  detectCardBrand,
+  buildCreditCardSource,
+} from "./card.js";
+

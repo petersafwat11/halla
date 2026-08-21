@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { FaLock, FaApple } from "react-icons/fa";
+import { formatExpiryInput, detectCardBrand as sharedDetectCardBrand } from "@halaa/shared/utils";
 import styles from "./PaymentMethodSelector.module.css";
 
 // --- Card brand logos (official SVGs served from /public/svg/payment) ---
@@ -95,9 +96,10 @@ export default function PaymentMethodSelector({
     if (cardData) {
       setCard(cardData);
       if (cardData.month && cardData.year) {
+        const mm = cardData.month.toString().padStart(2, "0");
         const yy = cardData.year.toString().slice(-2);
-        // Display order is YY/MM (year first), matching the input mask.
-        setExpiryText(`${yy}/${cardData.month}`);
+        // Display order is MM/YY (month first), matching standard card expiry format.
+        setExpiryText(`${mm}/${yy}`);
       }
     }
   }, [cardData]);
@@ -122,31 +124,14 @@ export default function PaymentMethodSelector({
 
   const handleExpiryChange = (e) => {
     const input = e.target.value;
-    // True when the edit shrank the field (backspace / delete / cut). Drives
-    // whether we auto-insert the "/" at the 2-digit boundary — re-adding it
-    // while deleting is what traps the caret and makes the old field "buggy".
-    const deleting = input.length < expiryText.length;
-
-    const digits = input.replace(/\D/g, "").slice(0, 4);
-
-    let formatted = digits;
-    if (digits.length >= 3) {
-      formatted = `${digits.slice(0, 2)}/${digits.slice(2)}`;
-    } else if (digits.length === 2 && !deleting) {
-      formatted = `${digits}/`;
-    }
-
+    const { formatted, month, year } = formatExpiryInput(input, expiryText);
     setExpiryText(formatted);
 
-    // Display mask is YY/MM: first pair is the 2-digit year, second the month.
-    // The stored contract stays month="MM" + year="20YY" so checkout/Moyasar
-    // receive the real month and full year unchanged.
-    const yy = digits.slice(0, 2);
-    const mm = digits.slice(2, 4);
+    // Stored contract: month="MM", year="20YY"
     const next = {
       ...card,
-      month: mm,
-      year: yy.length === 2 ? `20${yy}` : "",
+      month,
+      year,
     };
     setCard(next);
     onCardChange?.(next);
@@ -158,7 +143,7 @@ export default function PaymentMethodSelector({
     onMobileChange?.(val);
   };
 
-  const activeCardBrand = detectCardBrand(card.number || "");
+  const activeCardBrand = (sharedDetectCardBrand || detectCardBrand)(card.number || "");
 
   const renderCardInputBrandIcon = () => {
     const meta = CARD_BRANDS[activeCardBrand];
@@ -240,7 +225,7 @@ export default function PaymentMethodSelector({
               </label>
               <input
                 className={`${styles.input} ${errors.expiry ? styles.inputError : ""}`}
-                placeholder="YY/MM"
+                placeholder="MM/YY"
                 maxLength={5}
                 inputMode="numeric"
                 value={expiryText}
@@ -251,6 +236,7 @@ export default function PaymentMethodSelector({
               />
               {errors.expiry && <span className={styles.errorText}>{errors.expiry}</span>}
             </div>
+
 
             <div className={`${styles.field} ${styles.fieldCvc}`}>
               <label className={styles.label}>
