@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import { useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import styles from "./summary.module.css";
@@ -10,7 +10,6 @@ import ScheduleSection from "./ScheduleSection";
 const Summary = () => {
   const { watch, setValue } = useFormContext();
   const { t } = useTranslation("createEvent");
-  const [isScheduled, setIsScheduled] = useState(false);
 
   // Watch confirmReviewed from form state
   const confirmChecked = watch("confirmReviewed") || false;
@@ -24,13 +23,15 @@ const Summary = () => {
   const guestList = watch("guestList") || [];
   const staffList = watch("staffList") || [];
   const selectedTemplate = watch("selectedTemplate") || null;
-  const scheduleDate = watch("scheduleDate") || "";
-  const scheduleTime = watch("scheduleTime") || "";
+  const launchSettings = watch("launchSettings") || {};
+  const scheduleDate = watch("scheduleDate") || launchSettings.scheduledDate || "";
+  const scheduleTime = watch("scheduleTime") || launchSettings.scheduledTime || "";
 
   // Format date helper
   const formatDate = (date) => {
     if (!date) return "";
     const dateObj = typeof date === "string" ? new Date(date) : date;
+    if (Number.isNaN(dateObj.getTime())) return "";
     const year = dateObj.getFullYear();
     const month = String(dateObj.getMonth() + 1).padStart(2, "0");
     const day = String(dateObj.getDate()).padStart(2, "0");
@@ -69,22 +70,6 @@ const Summary = () => {
     scheduleTime: scheduleTime,
   };
 
-  const handleCancelSchedule = () => {
-    setIsScheduled(false);
-  };
-
-  const handleReschedule = () => {
-    // Handle reschedule logic
-  };
-
-  const handleCopyLink = () => {
-    // Handle copy link logic
-  };
-
-  const handleShareLink = () => {
-    // Handle share link logic
-  };
-
   return (
     <div className={styles.summary}>
       <div className={styles.content}>
@@ -92,21 +77,14 @@ const Summary = () => {
 
         <EventDataDisplay eventData={eventData} />
 
-        {isScheduled && (
-          <ScheduleSection
-            eventData={eventData}
-            handleCancelSchedule={handleCancelSchedule}
-            handleReschedule={handleReschedule}
-            handleCopyLink={handleCopyLink}
-            handleShareLink={handleShareLink}
-          />
-        )}
+        <ScheduleSection eventData={eventData} />
 
         <div className={styles.checkboxSection}>
           <div className={styles.checkboxRow}>
             <div
-              className={`${styles.checkbox} ${confirmChecked ? styles.checkboxChecked : ""
-                }`}
+              className={`${styles.checkbox} ${
+                confirmChecked ? styles.checkboxChecked : ""
+              }`}
               onClick={() => setValue("confirmReviewed", !confirmChecked)}
             />
             <span className={styles.checkboxLabel}>

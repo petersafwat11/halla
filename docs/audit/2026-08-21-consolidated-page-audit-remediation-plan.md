@@ -251,7 +251,7 @@ Update one row only after its exit criteria and required tests pass. Use `Blocke
 | 1.3 Live-event guest invariants | Complete | 0.2 |
 | 1.4 Admin event/staff mutation safety | Complete | 0.2, preferably 1.3 |
 | 1.5 Event entitlement/routes/messaging/stats | Complete | 0.2, 1.2 |
-| 1.6 Scheduling | Not started | 1.1, product decision |
+| 1.6 Scheduling | Complete | 1.1, product decision |
 | 2.1 Shared table server mode | Not started | 0.2 |
 | 2.2 Admin list migrations/stats | Not started | 2.1 |
 | 2.3 Bulk API envelope | Not started | 0.2 |
@@ -1150,3 +1150,51 @@ This program is complete only when:
   - None.
 - **Blockers / deferred work:**
   - Session 1.5 is Complete. Proceeding to Session 1.6 (Scheduling decision and implementation).
+
+### Session 1.6 — Scheduling decision and implementation
+
+- **Date:** 2026-08-21
+- **Status:** Complete
+- **Scope summary:**
+  - Resolved EVT-09.
+  - Aligned scheduling implementation across backend, web, and mobile under the production-supported scheduling architecture (Option A).
+  - Eliminated hardcoded `const [isScheduled, setIsScheduled] = useState(false);` in web `Summary.js` and removed non-functional stub actions (`handleCancelSchedule`, `handleReschedule`, `handleCopyLink`, `handleShareLink`) from create-event review summary.
+  - Unified scheduled launch presentation in web `ScheduleSection.js` to derive launch behavior from `scheduleDate`/`scheduleTime`/`launchSettings`, matching mobile `ScheduleLaunchCard.js`.
+  - Extracted pure calculation `computeEventActionGate` in `@halaa/shared/hooks` to provide robust, cross-platform unit testability for event action gate scheduling flags (`canSchedule`, `isScheduled`).
+  - Verified backend scheduling window rules (15m lead for trial, 24h lead for paid, 3 days minimum gap before event date, Asia/Riyadh timezone calculation) and verified cron-driven launch dispatch.
+- **Root cause analysis:**
+  - **EVT-09:** Create-event Step 5 review screen (`Summary.js`) hardcoded `isScheduled = false` and rendered a dormant `ScheduleSection` with empty callback stubs. Meanwhile, the post-creation scheduling surface (`ScheduleSendingPopup` on web and `ScheduleSendingModal` on mobile) already implemented full scheduling mutations against `POST /api/v2/messaging/schedule`. The create summary needed clean alignment with the real scheduling state.
+- **Key implementation details:**
+  - **Web Client Layer (`halaa-web`):**
+    - `Summary.js`: Removed hardcoded `isScheduled` state and dead action stubs; cleanly passes structured `eventData` with `scheduleDate` and `scheduleTime`.
+    - `ScheduleSection.js`: Refactored to cleanly render scheduled launch information when scheduled or immediate launch confirmation when unscheduled.
+    - `__tests__/events/eventScheduling.test.mjs`: Added test suite for action gate scheduling eligibility flags.
+  - **Shared Hooks Layer (`@halaa/shared`):**
+    - `shared/src/hooks/useEventActionGate.js`: Extracted and exported pure calculation `computeEventActionGate`.
+    - `shared/src/hooks/index.js`: Re-exported `computeEventActionGate`.
+  - **Mobile Client Layer (`halaa-mobile`):**
+    - `__tests__/events/mobileEventScheduling.test.js`: Added test suite verifying endpoint registration (`/messaging/schedule`) and 12h/24h picker conversions.
+  - **Backend Layer (`halaa-backend`):**
+    - `test/scheduling-invariants.test.js`: Added integration test suite verifying lead time bounds (trial 15m vs paid 24h), upper bounds (event - 3 days), and Asia/Riyadh timezone conversions.
+- **Files changed:**
+  - `halaa-web/app/[lang]/host/create-event/_components/summary/Summary.js`
+  - `halaa-web/app/[lang]/host/create-event/_components/summary/ScheduleSection.js`
+  - `halaa-web/__tests__/events/eventScheduling.test.mjs` (new)
+  - `shared/src/hooks/useEventActionGate.js`
+  - `shared/src/hooks/index.js`
+  - `halaa-mobile/__tests__/events/mobileEventScheduling.test.js` (new)
+  - `halaa-backend/test/scheduling-invariants.test.js` (new)
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md`
+- **Exact test commands & results:**
+  - `cd shared && npm run lint; npm test` → PASS (14 unit tests passed, 0 lint warnings)
+  - `cd halaa-backend && node --test test/scheduling-invariants.test.js; npm test` → PASS (346 tests passed, 0 failures)
+  - `cd halaa-web && npm run lint; npm test` → PASS (38 tests passed, 0 errors)
+  - `cd halaa-mobile && npm run lint; npm test` → PASS (116 tests passed, 0 errors)
+- **Exit-criteria verification:**
+  - Hardcoded false state and orphaned stub action buttons in create-event summary have been completely removed.
+  - Single coherent scheduling contract operates across backend, web, and mobile.
+  - Scheduling window bounds, timezone conversions, action gates, and endpoints are verified with automated tests across all 4 repositories.
+- **Remaining risks / decisions:**
+  - None.
+- **Blockers / deferred work:**
+  - Phase 1 (Events, Guests, Entitlements, Scheduling) is now 100% Complete across Sessions 1.1, 1.2, 1.3, 1.4, 1.5, and 1.6. Ready for Phase 2 (Session 2.1).
