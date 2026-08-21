@@ -45,23 +45,29 @@ const staffEntry = z.object({
   status: z.enum(Object.values(SUPERVISOR_STATUS)).optional(),
 }).passthrough();
 
-const eventDetailsSchema = z.object({
-  title: z.string().trim().min(1).max(200),
-  type: z.enum(EVENT_CATEGORY_VALUES).optional(),
-  date: z.union([z.string(), z.date()]).optional(),
-  time: z.string().optional(),
-  location: z.object({
-    address: z.string().optional(),
-    latitude: z.number().optional(),
-    longitude: z.number().optional(),
-    city: z.string().optional(),
-    country: z.string().optional(),
-  }).partial().passthrough().optional(),
-  description: z.string().optional(),
+const eventLocationSchema = z.object({
+  address: z.string().trim().min(1, 'location address is required').max(500),
+  latitude: z.number().min(-90).max(90).optional().nullable(),
+  longitude: z.number().min(-180).max(180).optional().nullable(),
+  city: z.string().trim().max(100).optional().nullable(),
+  country: z.string().trim().max(100).optional().nullable(),
+}).passthrough();
+
+const createEventDetailsSchema = z.object({
+  title: z.string().trim().min(1, 'event title is required').max(200),
+  type: z.enum(EVENT_CATEGORY_VALUES, {
+    errorMap: () => ({ message: 'valid event type is required' }),
+  }),
+  date: z.union([z.string().trim().min(1, 'event date is required'), z.date()], {
+    errorMap: () => ({ message: 'event date is required' }),
+  }),
+  time: z.string().trim().min(1, 'event time is required'),
+  location: eventLocationSchema,
+  description: z.string().trim().max(2000).optional().nullable(),
 }).passthrough();
 
 const createEventSchema = z.object({
-  eventDetails: eventDetailsSchema,
+  eventDetails: createEventDetailsSchema,
   guestList: z.array(guestEntry).optional().default([]),
   staffList: z.array(staffEntry).optional().default([]),
   visualTemplate: z.object({}).passthrough().optional(),
@@ -71,7 +77,20 @@ const createEventSchema = z.object({
   launchSettings: z.object({}).passthrough().optional(),
 }).passthrough();
 
-const updateEventDetailsSchema = eventDetailsSchema.partial().refine(
+const updateEventDetailsSchema = z.object({
+  title: z.string().trim().min(1).max(200).optional(),
+  type: z.enum(EVENT_CATEGORY_VALUES).optional(),
+  date: z.union([z.string().trim().min(1), z.date()]).optional(),
+  time: z.string().trim().min(1).optional(),
+  location: z.object({
+    address: z.string().trim().min(1, 'location address cannot be empty').max(500).optional(),
+    latitude: z.number().min(-90).max(90).optional().nullable(),
+    longitude: z.number().min(-180).max(180).optional().nullable(),
+    city: z.string().trim().max(100).optional().nullable(),
+    country: z.string().trim().max(100).optional().nullable(),
+  }).partial().passthrough().optional(),
+  description: z.string().trim().max(2000).optional().nullable(),
+}).partial().passthrough().refine(
   (val) => Object.keys(val).length > 0,
   { message: 'At least one field is required' }
 );

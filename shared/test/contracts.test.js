@@ -367,3 +367,41 @@ test("Status Enums: are frozen and contain all required lifecycle states", () =>
   assert.equal(invitationIncludesQr(INVITATION_TYPE.REPLY_ONLY), false);
   assert.equal(invitationIncludesQr(INVITATION_TYPE.NONE), false);
 });
+
+// ============================================================
+// 6. Event Wizard Steps (Session 1.1)
+// ============================================================
+
+test("Event Wizard Steps: constants are frozen and define expected step order", async () => {
+  const {
+    EVENT_CREATE_STEPS,
+    EVENT_CREATE_STEP_NUMBERS,
+    ADMIN_EVENT_CREATE_STEPS,
+    ADMIN_EVENT_CREATE_STEP_NUMBERS,
+    EVENT_UPDATE_STEPS,
+    EVENT_UPDATE_STEP_NUMBERS,
+  } = await import("../src/constants/index.js");
+
+  assert.ok(Object.isFrozen(EVENT_CREATE_STEPS));
+  assert.ok(Object.isFrozen(EVENT_CREATE_STEP_NUMBERS));
+  assert.ok(Object.isFrozen(ADMIN_EVENT_CREATE_STEPS));
+  assert.ok(Object.isFrozen(ADMIN_EVENT_CREATE_STEP_NUMBERS));
+  assert.ok(Object.isFrozen(EVENT_UPDATE_STEPS));
+  assert.ok(Object.isFrozen(EVENT_UPDATE_STEP_NUMBERS));
+
+  // Host create has 5 steps ending with review
+  assert.equal(EVENT_CREATE_STEPS.length, 5);
+  assert.equal(EVENT_CREATE_STEPS[4], "review");
+  assert.equal(EVENT_CREATE_STEP_NUMBERS.REVIEW, 5);
+
+  // Admin create has 6 steps starting with host_selector and ending with review
+  assert.equal(ADMIN_EVENT_CREATE_STEPS.length, 6);
+  assert.equal(ADMIN_EVENT_CREATE_STEPS[0], "host_selector");
+  assert.equal(ADMIN_EVENT_CREATE_STEPS[5], "review");
+  assert.equal(ADMIN_EVENT_CREATE_STEP_NUMBERS.HOST_SELECTOR, 1);
+  assert.equal(ADMIN_EVENT_CREATE_STEP_NUMBERS.REVIEW, 6);
+
+  // Update has 4 steps
+  assert.equal(EVENT_UPDATE_STEPS.length, 4);
+  assert.equal(EVENT_UPDATE_STEP_NUMBERS.MESSAGES, 4);
+});

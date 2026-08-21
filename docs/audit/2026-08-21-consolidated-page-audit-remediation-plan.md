@@ -246,7 +246,7 @@ Update one row only after its exit criteria and required tests pass. Use `Blocke
 |---|---|---|
 | 0.1 Baseline and safety lint | Complete | — |
 | 0.2 Contract foundations | Complete | 0.1 |
-| 1.1 Event validation/location | Not started | 0.2 |
+| 1.1 Event validation/location | Complete | 0.2 |
 | 1.2 Invitation/Taqnyat contract | Not started | 0.2 |
 | 1.3 Live-event guest invariants | Not started | 0.2 |
 | 1.4 Admin event/staff mutation safety | Not started | 0.2, preferably 1.3 |
@@ -857,5 +857,45 @@ This program is complete only when:
   - None. Stable foundation primitives are ready for consumption in Phase 1 (Events), Phase 2 (Admin tables), Phase 3 (Plans), Phase 4 (Vendor), and Phase 5 (Settings).
 - **Blockers / deferred work:**
   - Phase 0 is complete. Phase 1 (Session 1.1 — Event validation and location contract) is ready to begin.
+
+### Session 1.1 — Event step validation and location contract
+
+- **Date:** 2026-08-21
+- **Status:** Complete
+- **Issues addressed:** EVT-07 (Mobile final confirmation is effectively dead), EVT-08 (Web step-one and backend validation allow incomplete address/location data).
+- **Root cause:**
+  - **EVT-07:** In `halaa-mobile/hooks/events/useEventForm.js`, `validateStepData` returned `true` unconditionally for `case 5` (the review step in the 5-step host wizard), leaving `confirmReviewed` unchecked. Full validation was placed under `case 6` which was unreachable in host mode.
+  - **EVT-08:** `halaa-backend/src/modules/events/events.validation.js` made `location`, `date`, `time`, and `type` optional in `createEventSchema`, and `halaa-web/hooks/events/useEventForm.js` omitted `address.address` from `validateStep(1)`.
+- **Implementation summary:**
+  - Created canonical step sequences and step numbers in `@halaa/shared/constants/eventSteps.js` (`EVENT_CREATE_STEPS`, `EVENT_CREATE_STEP_NUMBERS`, `ADMIN_EVENT_CREATE_STEPS`, `ADMIN_EVENT_CREATE_STEP_NUMBERS`, `EVENT_UPDATE_STEPS`, `EVENT_UPDATE_STEP_NUMBERS`).
+  - Updated `halaa-backend/src/modules/events/events.validation.js`: `createEventSchema` enforces required non-empty `title`, valid `type` (from `EVENT_CATEGORY_VALUES`), non-empty `date`, non-empty `time`, and `location.address` (min 1 char). `updateEventDetailsSchema` enforces non-empty address when `location` is provided.
+  - Updated `halaa-mobile/hooks/events/useEventForm.js`: `validateStepData` checks `formData.confirmReviewed === true` in both `case 5` and `case 6`.
+  - Updated `halaa-web/hooks/events/useEventForm.js` and created `halaa-web/hooks/events/eventFormValidation.js`: `validateEventStep` enforces non-empty `address.address` on step 1 and `confirmReviewed === true` on step 5.
+  - Added unit test suites across `halaa-backend` (`test/event-validation.test.js`), `halaa-mobile` (`__tests__/events/stepValidation.test.js`), and `halaa-web` (`__tests__/events/eventStepValidation.test.mjs`).
+- **Files changed:**
+  - `shared/src/constants/eventSteps.js` (new)
+  - `shared/src/constants/index.js`
+  - `shared/test/contracts.test.js`
+  - `halaa-backend/src/modules/events/events.validation.js`
+  - `halaa-backend/test/event-validation.test.js` (new)
+  - `halaa-mobile/hooks/events/useEventForm.js`
+  - `halaa-mobile/__tests__/events/stepValidation.test.js` (new)
+  - `halaa-web/hooks/events/eventFormValidation.js` (new)
+  - `halaa-web/hooks/events/useEventForm.js`
+  - `halaa-web/__tests__/events/eventStepValidation.test.mjs` (new)
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md`
+- **Exact test commands & results:**
+  - `cd shared && npm run lint && npm run test && npm run legal:verify && npm run aso:verify` → PASS (11 unit tests passed, 0 lint errors)
+  - `cd halaa-backend && node --test test/event-validation.test.js && node --test test/shared-parity.test.js && npm run catalog:verify && npm run test` → PASS (All 318 tests passed, 0 failures)
+  - `cd halaa-mobile && npm run lint && npm run test` → PASS (0 errors, 103 tests passed)
+  - `cd halaa-web && npm run lint && npm run test` → PASS (0 errors, 33 tests passed)
+- **Exit-criteria verification:**
+  - No client can skip final confirmation (`validateStepData(5)` / `validateEventStep(5)` returns false without `confirmReviewed: true`).
+  - The API rejects an invalid event missing address, title, type, date, or time even if the client is bypassed (`createEventSchema` unit test assertions pass).
+- **Remaining risks / decisions:**
+  - None.
+- **Blockers / deferred work:**
+  - Session 1.1 is Complete. Session 1.2 (Invitation settings and Taqnyat contract) is unblocked.
+
 
 
