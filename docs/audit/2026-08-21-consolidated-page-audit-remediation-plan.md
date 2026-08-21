@@ -264,7 +264,7 @@ Update one row only after its exit criteria and required tests pass. Use `Blocke
 | 3.3 Money/checkout quote | Complete | 3.1 |
 | 3.4 Expiry/payment UX | Complete | 3.3 |
 | 4.1 Vendor service form contract | Complete | 0.2 |
-| 4.2 Marketplace filters/query | Not started | 0.2 |
+| 4.2 Marketplace filters/query | Complete | 0.2 |
 
 | 4.3 Marketplace analytics | Not started | Product decision |
 | 4.4 Marketplace locale/navigation | Not started | Access decision; preferably 4.2 |
@@ -1732,7 +1732,49 @@ This program is complete only when:
 - **Remaining risks / decisions:**
   - None.
 - **Blockers / deferred work:**
-  - Session 4.1 is Complete. Ready for Git commit.
+### Execution Record — Session 4.2 (2026-08-21)
+
+- **Session:** Session 4.2 — Marketplace filter contract and database query (`MKT-01`, `MKT-02`)
+- **Status:** Complete
+- **Prerequisites verified:** Session 0.2 is Complete (verified).
+- **Key changes:**
+  - **Shared Contract & Query Schemas (`@halaa/shared/src/schemas/vendor.js`, `shared/src/utils/queryKeys.js`, `shared/src/utils/index.js`):**
+    - Implemented `parseDistrictIds` parsing CSV strings (`"101,102"`), arrays of numbers (`[101, 102]`), and singular numbers (`103`) into integer arrays.
+    - Added `getPublicVendorsQuerySchema` and `getPublicServicesQuerySchema` with multi-district `$in` support, aliases for singular `districtId` and `rating` -> `minRating`, and `marketplaceSortOptions` (`rating`, `price_asc`, `price_desc`, `recent`, `default`).
+    - Added canonical query key factories `publicVendorKeys` and `marketplaceKeys`.
+  - **Backend Compound Indexes & Aggregation Pipeline (`halaa-backend/models/UserModel.js`, `ServiceModel.js`, `vendors.service.js`, `vendors.validation.js`, `vendors.controller.js`, `services.service.js`, `services.validation.js`):**
+    - Added compound indexes to `UserModel.js` on `{ role: 1, status: 1, "profile.vendorData.vendorStatus": 1, "profile.vendorData.rating": -1, _id: 1 }`, `{ role: 1, status: 1, "profile.vendorData.vendorStatus": 1, "profile.vendorData.serviceLocation.districtIds": 1 }`, and `{ role: 1, status: 1, "profile.vendorData.vendorStatus": 1, "profile.vendorData.serviceLocation.regionId": 1, "profile.vendorData.serviceLocation.cityId": 1 }`.
+    - Added compound indexes to `ServiceModel.js` on `{ status: 1, isPublic: 1, price: 1, vendorId: 1 }`, `{ status: 1, isPublic: 1, "serviceLocation.districtIds": 1 }`, `{ status: 1, isPublic: 1, "serviceLocation.regionId": 1, "serviceLocation.cityId": 1 }`, and `{ status: 1, isPublic: 1, category: 1, createdAt: -1, _id: 1 }`.
+    - Replaced in-memory vendor sorting and slicing in `vendorsService.getPublicVendors` with an indexed MongoDB aggregation pipeline using `$match`, `$lookup` (services summary), `$addFields`, `$sort` with deterministic `_id: 1` tie-breaker, and `$facet` returning `{ rows: [{ $skip }, { $limit }, { $project }], totalCount: [{ $count: "count" }] }`.
+    - Implemented multi-district OR filtering (`"profile.vendorData.serviceLocation.districtIds": { $in: districtIds }`).
+    - Preserved moderation block filtering, active public service price range querying via indexed `Service.distinct("vendorId")`, rating filters, and soft-delete exclusions.
+    - Updated `servicesService.getPublicServices` to support array and CSV `districtIds`, singular `districtId` alias, `status: USER_STATUS.ACTIVE` / `deletedAt: { $exists: false }` approved vendor checks, and deterministic `{ createdAt: -1, _id: 1 }` sorting.
+  - **Web Client Fixes (`halaa-web/hooks/vendors/queries.js`, `MarketplaceView.jsx`):**
+    - Updated `MarketplaceView.jsx` to pass `districtIds: state.districtIds?.length ? state.districtIds : undefined` (removing the buggy `districtId: state.districtIds?.[0]` that dropped multi-district selections).
+    - Updated `usePublicVendors` to serialize `districtIds` arrays to CSV strings without truncation.
+  - **Mobile Client Fixes (`halaa-mobile/hooks/marketplace/queries.js`, `Marketplace.js`):**
+    - Updated `Marketplace.js` to pass `districtIds: filters.districtIds` in `queryFilters` (removing the `districtId: filters.districtIds?.[0] || ""` truncation).
+    - Updated `_buildVendorsPath` in `hooks/marketplace/queries.js` to serialize `districtIds` arrays to CSV strings.
+  - **Automated Tests:**
+    - `shared/test/marketplaceContract.test.js`: Validated district parser, schemas, aliases, and query key factories.
+    - `halaa-backend/test/vendors.marketplace.integration.test.js`: Validated multi-district OR filtering, `$facet` pagination stability, moderation blocks, status invariants, price bounds, and compound index existence.
+    - `halaa-web/__tests__/ui/marketplaceFilterContract.test.mjs`: Validated full `districtIds` preservation and query keys in `MarketplaceView.jsx` and `usePublicVendors`.
+    - `halaa-mobile/__tests__/marketplace/marketplaceFilterContract.test.js`: Validated full `districtIds` preservation and query keys in `Marketplace.js` and `_buildVendorsPath`.
+- **Verification results:**
+  - `cd shared && npm test` → PASS (75 unit tests passed, 0 failures)
+  - `cd halaa-backend && npm test` → PASS (393 unit/integration tests passed, 0 failures)
+  - `cd halaa-web && npm test` → PASS (75 unit tests passed, 0 failures)
+  - `cd halaa-mobile && npm test` → PASS (138 unit tests passed, 0 failures)
+- **Exit-criteria verification:**
+  - Multi-district filtering preserves all selected districts with OR semantics on both web and mobile.
+  - Response memory and compute work are strictly bounded by page size via indexed MongoDB aggregation and `$facet`.
+  - Inactive, unapproved, soft-deleted, and blocked vendors are strictly excluded from listings and total counts.
+  - Pagination is deterministic across pages with stable tie-breaking.
+- **Remaining risks / decisions:**
+  - None.
+- **Blockers / deferred work:**
+  - Session 4.2 is Complete. Ready for Git commit.
+
 
 
 

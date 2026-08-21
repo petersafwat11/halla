@@ -345,3 +345,85 @@ export const addServiceDefaultValues = {
   included: [],
 };
 
+// ============================================================
+// MARKETPLACE QUERY CONTRACT SCHEMAS (MKT-01, MKT-02)
+// ============================================================
+
+export const parseDistrictIds = (val) => {
+  if (!val) return undefined;
+  if (Array.isArray(val)) {
+    const numbers = val.map(Number).filter((n) => Number.isInteger(n) && n > 0);
+    return numbers.length > 0 ? numbers : undefined;
+  }
+  if (typeof val === "string") {
+    const numbers = val
+      .split(",")
+      .map((s) => Number(s.trim()))
+      .filter((n) => Number.isInteger(n) && n > 0);
+    return numbers.length > 0 ? numbers : undefined;
+  }
+  if (typeof val === "number" && Number.isInteger(val) && val > 0) {
+    return [val];
+  }
+  return undefined;
+};
+
+export const marketplaceSortOptions = [
+  "rating",
+  "price_asc",
+  "price_desc",
+  "recent",
+  "default",
+];
+
+export const getPublicVendorsQuerySchema = z
+  .object({
+    page: z.coerce.number().int().min(1).default(1),
+    limit: z.coerce.number().int().min(1).max(100).default(12),
+    search: z.string().trim().optional(),
+    category: z.string().trim().optional(),
+    regionId: z.coerce.number().int().positive().optional(),
+    cityId: z.coerce.number().int().positive().optional(),
+    districtIds: z.any().transform(parseDistrictIds).optional(),
+    districtId: z.coerce.number().int().positive().optional(),
+    minPrice: z.coerce.number().min(0).optional(),
+    maxPrice: z.coerce.number().min(0).optional(),
+    rating: z.coerce.number().min(0).max(5).optional(),
+    minRating: z.coerce.number().min(0).max(5).optional(),
+    sort: z.enum(marketplaceSortOptions).optional().default("default"),
+    lang: z.enum(["ar", "en"]).optional().default("ar"),
+  })
+  .transform((data) => {
+    if (!data.districtIds && data.districtId) {
+      data.districtIds = [data.districtId];
+    }
+    if (data.rating !== undefined && data.minRating === undefined) {
+      data.minRating = data.rating;
+    }
+    return data;
+  });
+
+export const getPublicServicesQuerySchema = z
+  .object({
+    page: z.coerce.number().int().min(1).default(1),
+    limit: z.coerce.number().int().min(1).max(100).default(20),
+    search: z.string().trim().optional(),
+    category: z.string().trim().optional(),
+    vendorId: z.string().regex(/^[0-9a-fA-F]{24}$/).optional(),
+    regionId: z.coerce.number().int().positive().optional(),
+    cityId: z.coerce.number().int().positive().optional(),
+    districtIds: z.any().transform(parseDistrictIds).optional(),
+    districtId: z.coerce.number().int().positive().optional(),
+    minPrice: z.coerce.number().min(0).optional(),
+    maxPrice: z.coerce.number().min(0).optional(),
+    minRating: z.coerce.number().min(0).max(5).optional(),
+    sort: z.string().optional(),
+  })
+  .transform((data) => {
+    if (!data.districtIds && data.districtId) {
+      data.districtIds = [data.districtId];
+    }
+    return data;
+  });
+
+

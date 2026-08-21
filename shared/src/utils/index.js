@@ -62,6 +62,8 @@ export {
   vendorKeys,
   moderatorKeys,
   adminQueryKeys,
+  publicVendorKeys,
+  marketplaceKeys,
 } from "./queryKeys.js";
 export {
   EVENT_UPDATE_SECTION_TO_STEP,

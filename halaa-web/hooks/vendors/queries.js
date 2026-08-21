@@ -11,10 +11,12 @@ export const usePublicVendors = (params = {}, options = {}) => {
     category,
     regionId,
     cityId,
+    districtIds,
     districtId,
     minPrice,
     maxPrice,
     rating,
+    minRating,
     lang,
     sort,
     page = 1,
@@ -26,10 +28,14 @@ export const usePublicVendors = (params = {}, options = {}) => {
   if (category) queryParams.category = category;
   if (regionId) queryParams.regionId = regionId;
   if (cityId) queryParams.cityId = cityId;
-  if (districtId) queryParams.districtId = districtId;
+  if (districtIds !== undefined && districtIds !== null && districtIds !== "") {
+    queryParams.districtIds = Array.isArray(districtIds) ? districtIds.join(",") : districtIds;
+  } else if (districtId !== undefined && districtId !== null && districtId !== "") {
+    queryParams.districtIds = districtId;
+  }
   if (minPrice) queryParams.minPrice = minPrice;
   if (maxPrice) queryParams.maxPrice = maxPrice;
-  if (rating) queryParams.rating = rating;
+  if (minRating || rating) queryParams.rating = minRating || rating;
   if (lang) queryParams.lang = lang;
   if (sort) queryParams.sort = sort;
   queryParams.page = page;

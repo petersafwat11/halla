@@ -59,10 +59,24 @@ const updateServiceSchema = z
   .partial();
 
 
-const districtIdsCsv = z
-  .string()
-  .optional()
-  .transform((v) => (v && v.trim() !== '' ? v : undefined));
+const parseDistrictIds = (val) => {
+  if (!val) return undefined;
+  if (Array.isArray(val)) {
+    const numbers = val.map(Number).filter((n) => Number.isInteger(n) && n > 0);
+    return numbers.length > 0 ? numbers : undefined;
+  }
+  if (typeof val === 'string') {
+    const numbers = val
+      .split(',')
+      .map((s) => Number(s.trim()))
+      .filter((n) => Number.isInteger(n) && n > 0);
+    return numbers.length > 0 ? numbers : undefined;
+  }
+  if (typeof val === 'number' && Number.isInteger(val) && val > 0) {
+    return [val];
+  }
+  return undefined;
+};
 
 const getPublicServicesQuerySchema = z
   .object({
@@ -73,7 +87,8 @@ const getPublicServicesQuerySchema = z
     vendorId: z.string().regex(/^[0-9a-fA-F]{24}$/).optional(),
     regionId: z.coerce.number().int().optional(),
     cityId: z.coerce.number().int().optional(),
-    districtIds: districtIdsCsv,
+    districtIds: z.any().transform(parseDistrictIds).optional(),
+    districtId: z.coerce.number().int().optional(),
     minPrice: z.coerce.number().min(0).optional(),
     maxPrice: z.coerce.number().min(0).optional(),
     minRating: z.coerce.number().min(0).max(5).optional(),
@@ -85,4 +100,6 @@ module.exports = {
   createServiceSchema,
   updateServiceSchema,
   getPublicServicesQuerySchema,
+  parseDistrictIds,
 };
+

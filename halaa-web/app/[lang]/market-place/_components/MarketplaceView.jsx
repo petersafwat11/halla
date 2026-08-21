@@ -31,7 +31,7 @@ export default function MarketplaceView({ vendorRoutePrefix = "market-place" }) 
     category: state.category === "all" ? undefined : state.category,
     regionId: state.regionId,
     cityId: state.cityId,
-    districtId: state.districtIds?.[0],
+    districtIds: state.districtIds?.length ? state.districtIds : undefined,
     minPrice: state.minPrice,
     maxPrice: state.maxPrice,
     rating: state.minRating,

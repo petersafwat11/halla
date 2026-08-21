@@ -41,7 +41,7 @@ export default function Marketplace({ navigation }) {
     return () => clearTimeout(timer);
   }, [searchInput]);
 
-  const queryFilters = useMemo(() => ({ ...filters, search, districtId: filters.districtIds?.[0] || "", rating: filters.minRating, lang: i18n.language }), [filters, search, i18n.language]);
+  const queryFilters = useMemo(() => ({ ...filters, search, districtIds: filters.districtIds, rating: filters.minRating, lang: i18n.language }), [filters, search, i18n.language]);
   const { data, isLoading, error, refetch, isRefetching, fetchNextPage, hasNextPage, isFetchingNextPage } = useMarketplaceVendors(queryFilters);
   useEffect(() => { if (error) toast.error(t("errors.loadFailed")); }, [error, toast, t]);
 

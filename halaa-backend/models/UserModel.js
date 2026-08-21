@@ -396,6 +396,26 @@ userSchema.index({ role: 1, createdAt: -1 });
 userSchema.index({ role: 1, accountType: 1, status: 1 });
 userSchema.index({ "profile.vendorData.serviceCategories": 1 });
 userSchema.index({ "profile.vendorData.vendorStatus": 1 });
+userSchema.index({
+  role: 1,
+  status: 1,
+  "profile.vendorData.vendorStatus": 1,
+  "profile.vendorData.rating": -1,
+  _id: 1,
+});
+userSchema.index({
+  role: 1,
+  status: 1,
+  "profile.vendorData.vendorStatus": 1,
+  "profile.vendorData.serviceLocation.regionId": 1,
+  "profile.vendorData.serviceLocation.cityId": 1,
+});
+userSchema.index({
+  role: 1,
+  status: 1,
+  "profile.vendorData.vendorStatus": 1,
+  "profile.vendorData.serviceLocation.districtIds": 1,
+});
 userSchema.index({ email: 1, role: 1 });
 userSchema.index({ mobile: 1, role: 1 });
 userSchema.index({ phoneNumber: 1, role: 1 }); // Legacy support

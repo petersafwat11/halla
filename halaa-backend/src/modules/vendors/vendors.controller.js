@@ -20,10 +20,13 @@ exports.getPublicVendors = catchAsync(async (req, res) => {
   if (req.query.category) filters.category = req.query.category;
   if (req.query.regionId) filters.regionId = req.query.regionId;
   if (req.query.cityId) filters.cityId = req.query.cityId;
-  if (req.query.districtId) filters.districtId = req.query.districtId;
+  if (req.query.districtIds !== undefined) filters.districtIds = req.query.districtIds;
+  if (req.query.districtId !== undefined) filters.districtId = req.query.districtId;
   if (req.query.minPrice !== undefined) filters.minPrice = req.query.minPrice;
   if (req.query.maxPrice !== undefined) filters.maxPrice = req.query.maxPrice;
   if (req.query.rating !== undefined) filters.rating = req.query.rating;
+  if (req.query.minRating !== undefined) filters.minRating = req.query.minRating;
+  if (req.query.sort !== undefined) filters.sort = req.query.sort;
 
   const language = req.query.lang || req.headers['accept-language'];
   const result = await vendorsService.getPublicVendors(filters, {

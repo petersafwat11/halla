@@ -103,3 +103,18 @@ export const adminQueryKeys = {
   plans: planKeys,
 };
 
+export const publicVendorKeys = {
+  all: Object.freeze(["vendors"]),
+  categories: () => [...publicVendorKeys.all, "categories"],
+  publicList: (filters) => [...publicVendorKeys.all, "public", filters || {}],
+  publicDetail: (vendorId) => [...publicVendorKeys.all, "public", "detail", vendorId],
+};
+
+export const marketplaceKeys = {
+  all: Object.freeze(["marketplace"]),
+  vendors: (filters) => [...marketplaceKeys.all, "vendors", filters || {}],
+  categories: () => [...marketplaceKeys.all, "categories"],
+  vendor: (vendorId) => [...marketplaceKeys.all, "vendor", vendorId],
+};
+
+
