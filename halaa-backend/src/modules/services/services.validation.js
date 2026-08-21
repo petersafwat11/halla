@@ -30,13 +30,13 @@ const serviceLocationSchema = z
 
 const createServiceSchema = z.object({
   name: z.string().trim().min(1, 'Name is required').max(200),
-  nameAr: z.string().trim().max(200).optional(),
+  nameAr: z.string().trim().max(200).optional().or(z.literal('')),
   description: z.string().trim().max(2000).optional(),
-  descriptionAr: z.string().trim().max(2000).optional(),
+  descriptionAr: z.string().trim().max(2000).optional().or(z.literal('')),
   category: z.enum(SERVICE_CATEGORIES, { errorMap: () => ({ message: 'Invalid category' }) }),
   price: z.coerce.number().min(0, 'Price cannot be negative'),
   currency: z.string().trim().optional(),
-  duration: z.string().trim().max(100).optional(),
+  duration: z.string().trim().max(100).optional().or(z.literal('')),
   included: includedSchema.optional(),
   tags: tagsSchema.optional(),
   serviceLocation: serviceLocationSchema,
@@ -45,18 +45,19 @@ const createServiceSchema = z.object({
 const updateServiceSchema = z
   .object({
     name: z.string().trim().min(1).max(200).optional(),
-    nameAr: z.string().trim().max(200).optional(),
+    nameAr: z.string().trim().max(200).optional().or(z.literal('')),
     description: z.string().trim().max(2000).optional(),
-    descriptionAr: z.string().trim().max(2000).optional(),
+    descriptionAr: z.string().trim().max(2000).optional().or(z.literal('')),
     category: z.enum(SERVICE_CATEGORIES).optional(),
     price: z.coerce.number().min(0).optional(),
     currency: z.string().trim().optional(),
-    duration: z.string().trim().max(100).optional(),
+    duration: z.string().trim().max(100).optional().or(z.literal('')),
     included: includedSchema.optional(),
     tags: tagsSchema.optional(),
     serviceLocation: serviceLocationSchema,
   })
   .partial();
+
 
 const districtIdsCsv = z
   .string()

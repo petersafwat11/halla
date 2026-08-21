@@ -18,7 +18,7 @@ import { useToast } from "../../contexts/ToastContext";
 import TextInput from "../commen/TextInput";
 import TextAreaInput from "../commen/TextAreaInput";
 import Button from "../commen/Button";
-import MapPicker from "../commen/MapPicker";
+import LocationSelector from "../commen/LocationSelector";
 import { mobileServiceDetailsSchema as serviceDetailsSchema } from "@halaa/shared/schemas/vendor";
 import { usersApi } from "../../hooks/users/_api";
 import {
@@ -91,13 +91,21 @@ const ServiceDetailsForm = ({ data, onSave, onRefetch, loading }) => {
       aboutAr: data?.aboutAr || "",
       aboutEn: data?.aboutEn || "",
       nationalId: data?.nationalId || "",
+      serviceLocation: data?.serviceLocation || {
+        regionId: undefined,
+        regionNameAr: "",
+        regionNameEn: "",
+        cityId: undefined,
+        cityNameAr: "",
+        cityNameEn: "",
+        districtIds: [],
+        districtNames: [],
+        coverageType: "region",
+      },
     },
   });
   const [serviceCategories, setServiceCategories] = useState(() =>
     extractCategoriesArray(data?.serviceCategories)
-  );
-  const [serviceLocation, setServiceLocation] = useState(
-    data?.serviceLocation || { address: "", coordinates: null }
   );
   const [nationalIdFile, setNationalIdFile] = useState(null);
   const [commercialRecordFile, setCommercialRecordFile] = useState(null);
@@ -114,11 +122,19 @@ const ServiceDetailsForm = ({ data, onSave, onRefetch, loading }) => {
       aboutAr: data?.aboutAr || "",
       aboutEn: data?.aboutEn || "",
       nationalId: data?.nationalId || "",
+      serviceLocation: data?.serviceLocation || {
+        regionId: undefined,
+        regionNameAr: "",
+        regionNameEn: "",
+        cityId: undefined,
+        cityNameAr: "",
+        cityNameEn: "",
+        districtIds: [],
+        districtNames: [],
+        coverageType: "region",
+      },
     });
     setServiceCategories(extractCategoriesArray(data?.serviceCategories));
-    setServiceLocation(
-      data?.serviceLocation || { address: "", coordinates: null }
-    );
     setNationalIdFile(null);
     setCommercialRecordFile(null);
   }, [
@@ -132,6 +148,7 @@ const ServiceDetailsForm = ({ data, onSave, onRefetch, loading }) => {
     data?.serviceLocation,
     data?.nationalIdImage,
     data?.commercialRecordImage,
+    methods,
   ]);
 
   const categoryOptions = VENDOR_CATEGORY_KEYS.map((key) => ({
@@ -216,42 +233,38 @@ const ServiceDetailsForm = ({ data, onSave, onRefetch, loading }) => {
         buildServiceCategoriesPayload(serviceCategories);
     }
 
-    // The backend's `serviceLocation` schema is `.strict()` and only accepts
-    // a fixed set of admin-area IDs/names. The mobile MapPicker currently
-    // emits lat/lng/address (different shape), so passing the raw output
-    // through would 400 the whole PATCH — silently swallowing the document
-    // image uploads sitting in the same payload. We forward only the
-    // backend-recognized keys; if none are present (the common case for the
-    // current MapPicker), `serviceLocation` is omitted.
-    const sanitizedLocation = (() => {
-      if (!serviceLocation) return null;
-      const out = {};
-      const regionId = Number(serviceLocation.regionId);
-      const cityId = Number(serviceLocation.cityId);
-      if (Number.isFinite(regionId)) out.regionId = regionId;
-      if (Number.isFinite(cityId)) out.cityId = cityId;
-      if (typeof serviceLocation.regionNameAr === "string")
-        out.regionNameAr = serviceLocation.regionNameAr;
-      if (typeof serviceLocation.regionNameEn === "string")
-        out.regionNameEn = serviceLocation.regionNameEn;
-      if (typeof serviceLocation.cityNameAr === "string")
-        out.cityNameAr = serviceLocation.cityNameAr;
-      if (typeof serviceLocation.cityNameEn === "string")
-        out.cityNameEn = serviceLocation.cityNameEn;
-      if (Array.isArray(serviceLocation.districtIds)) {
-        const ids = serviceLocation.districtIds
+    // Pass administrative location cleanly
+    const loc = formValues.serviceLocation || methods.getValues("serviceLocation");
+    if (loc) {
+      const sanitizedLocation = {};
+      const regionId = Number(loc.regionId);
+      const cityId = Number(loc.cityId);
+      if (Number.isFinite(regionId)) sanitizedLocation.regionId = regionId;
+      if (Number.isFinite(cityId)) sanitizedLocation.cityId = cityId;
+      if (typeof loc.regionNameAr === "string" && loc.regionNameAr)
+        sanitizedLocation.regionNameAr = loc.regionNameAr;
+      if (typeof loc.regionNameEn === "string" && loc.regionNameEn)
+        sanitizedLocation.regionNameEn = loc.regionNameEn;
+      if (typeof loc.cityNameAr === "string" && loc.cityNameAr)
+        sanitizedLocation.cityNameAr = loc.cityNameAr;
+      if (typeof loc.cityNameEn === "string" && loc.cityNameEn)
+        sanitizedLocation.cityNameEn = loc.cityNameEn;
+      if (Array.isArray(loc.districtIds)) {
+        const ids = loc.districtIds
           .map((id) => Number(id))
           .filter((n) => Number.isFinite(n));
-        if (ids.length) out.districtIds = ids;
+        if (ids.length) sanitizedLocation.districtIds = ids;
       }
-      if (
-        ["region", "city", "districts"].includes(serviceLocation.coverageType)
-      ) {
-        out.coverageType = serviceLocation.coverageType;
+      if (Array.isArray(loc.districtNames) && loc.districtNames.length) {
+        sanitizedLocation.districtNames = loc.districtNames;
       }
-      return Object.keys(out).length ? out : null;
-    })();
-    if (sanitizedLocation) submitData.serviceLocation = sanitizedLocation;
+      if (["region", "city", "districts"].includes(loc.coverageType)) {
+        sanitizedLocation.coverageType = loc.coverageType;
+      }
+      if (Object.keys(sanitizedLocation).length) {
+        submitData.serviceLocation = sanitizedLocation;
+      }
+    }
 
     if (nationalIdFile) submitData.nationalIdImage = nationalIdFile;
     if (commercialRecordFile)
@@ -329,10 +342,7 @@ const ServiceDetailsForm = ({ data, onSave, onRefetch, loading }) => {
             <Text style={styles.label}>
               {t("settings.serviceDetails.location")}
             </Text>
-            <MapPicker
-              value={serviceLocation}
-              onChange={setServiceLocation}
-            />
+            <LocationSelector basePath="serviceLocation" />
           </View>
 
           <View style={styles.inputGroup}>
@@ -343,6 +353,7 @@ const ServiceDetailsForm = ({ data, onSave, onRefetch, loading }) => {
               keyboardType="numeric"
             />
           </View>
+
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>

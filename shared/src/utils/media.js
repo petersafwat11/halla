@@ -46,3 +46,39 @@ export function getMediaUrl(pathOrUrl, opts = {}) {
   }
   return pathOrUrl;
 }
+
+export function keyFromSignedUrl(url) {
+  if (!url || typeof url !== "string") return null;
+  try {
+    const u = new URL(url);
+    const path = u.pathname.startsWith("/") ? u.pathname.slice(1) : u.pathname;
+    return path ? decodeURIComponent(path) : null;
+  } catch {
+    // If it's not a full URL, strip leading slash and query
+    const clean = url.split("?")[0].replace(/^\//, "");
+    return clean || null;
+  }
+}
+
+/**
+ * Resolve an image value to a renderable URL with an optional fallback.
+ *
+ * @param {string|null|undefined} imagePath
+ * @param {{ fallback?: string, backendUrl?: string }} [opts]
+ * @returns {string|null}
+ */
+export function resolveImageUrl(imagePath, opts = {}) {
+  const { fallback = null, backendUrl = "" } = opts;
+  if (!imagePath || typeof imagePath !== "string") return fallback;
+  if (/^https?:\/\//i.test(imagePath)) return imagePath;
+  if (imagePath.startsWith("/uploads/")) {
+    const origin = (backendUrl || "").replace(/\/$/, "");
+    return origin ? `${origin}${imagePath}` : imagePath;
+  }
+  if (imagePath.startsWith("uploads/")) {
+    const origin = (backendUrl || "").replace(/\/$/, "");
+    return origin ? `${origin}/${imagePath}` : `/${imagePath}`;
+  }
+  return fallback;
+}
+

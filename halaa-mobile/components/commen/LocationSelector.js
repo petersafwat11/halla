@@ -6,13 +6,13 @@ import CheckboxGroup from './CheckboxGroup';
 import { useRegions, useCitiesByRegion, useDistrictsByCity } from '../../hooks/locations';
 import { useTranslation } from '../../localization';
 
-const LocationSelector = () => {
+const LocationSelector = ({ basePath = 'serviceData.serviceLocation' } = {}) => {
   const { t, i18n } = useTranslation('auth');
   const { watch, setValue } = useFormContext();
   const pickLabel = (ar, en) => (i18n.language === 'ar' ? ar || en : en || ar);
 
-  const regionId = watch('serviceData.serviceLocation.regionId');
-  const cityId = watch('serviceData.serviceLocation.cityId');
+  const regionId = watch(`${basePath}.regionId`);
+  const cityId = watch(`${basePath}.cityId`);
 
   const { data: regionsData, isLoading: regionsLoading } = useRegions();
   const { data: citiesData, isLoading: citiesLoading } = useCitiesByRegion(regionId);
@@ -41,43 +41,43 @@ const LocationSelector = () => {
 
   const handleRegionChange = (regionValue) => {
     const region = regions.find((r) => r.value === regionValue);
-    setValue('serviceData.serviceLocation.regionId', regionValue);
-    setValue('serviceData.serviceLocation.regionNameAr', region?.nameAr || '');
-    setValue('serviceData.serviceLocation.regionNameEn', region?.nameEn || '');
+    setValue(`${basePath}.regionId`, regionValue);
+    setValue(`${basePath}.regionNameAr`, region?.nameAr || '');
+    setValue(`${basePath}.regionNameEn`, region?.nameEn || '');
     // Reset downstream
-    setValue('serviceData.serviceLocation.cityId', undefined);
-    setValue('serviceData.serviceLocation.cityNameAr', '');
-    setValue('serviceData.serviceLocation.cityNameEn', '');
-    setValue('serviceData.serviceLocation.districtIds', []);
-    setValue('serviceData.serviceLocation.districtNames', []);
-    setValue('serviceData.serviceLocation.coverageType', 'region');
+    setValue(`${basePath}.cityId`, undefined);
+    setValue(`${basePath}.cityNameAr`, '');
+    setValue(`${basePath}.cityNameEn`, '');
+    setValue(`${basePath}.districtIds`, []);
+    setValue(`${basePath}.districtNames`, []);
+    setValue(`${basePath}.coverageType`, 'region');
   };
 
   const handleCityChange = (cityValue) => {
     const city = cities.find((c) => c.value === cityValue);
-    setValue('serviceData.serviceLocation.cityId', cityValue);
-    setValue('serviceData.serviceLocation.cityNameAr', city?.nameAr || '');
-    setValue('serviceData.serviceLocation.cityNameEn', city?.nameEn || '');
-    setValue('serviceData.serviceLocation.districtIds', []);
-    setValue('serviceData.serviceLocation.districtNames', []);
-    setValue('serviceData.serviceLocation.coverageType', 'city');
+    setValue(`${basePath}.cityId`, cityValue);
+    setValue(`${basePath}.cityNameAr`, city?.nameAr || '');
+    setValue(`${basePath}.cityNameEn`, city?.nameEn || '');
+    setValue(`${basePath}.districtIds`, []);
+    setValue(`${basePath}.districtNames`, []);
+    setValue(`${basePath}.coverageType`, 'city');
   };
 
   // Watch district changes to update coverageType
   const handleDistrictsChange = (newIds) => {
-    setValue('serviceData.serviceLocation.districtIds', newIds);
+    setValue(`${basePath}.districtIds`, newIds);
     if (newIds.length > 0) {
-      setValue('serviceData.serviceLocation.coverageType', 'districts');
+      setValue(`${basePath}.coverageType`, 'districts');
       const names = newIds
         .map((id) => {
           const d = districts.find((d) => d.value === id);
           return d ? { nameAr: d.nameAr, nameEn: d.nameEn } : null;
         })
         .filter(Boolean);
-      setValue('serviceData.serviceLocation.districtNames', names);
+      setValue(`${basePath}.districtNames`, names);
     } else if (cityId) {
-      setValue('serviceData.serviceLocation.coverageType', 'city');
-      setValue('serviceData.serviceLocation.districtNames', []);
+      setValue(`${basePath}.coverageType`, 'city');
+      setValue(`${basePath}.districtNames`, []);
     }
   };
 
@@ -85,7 +85,7 @@ const LocationSelector = () => {
     <View style={styles.container}>
       <View style={styles.pickerWrap}>
         <DropdownInput
-          name="serviceData.serviceLocation.regionId"
+          name={`${basePath}.regionId`}
           label={t('signupForm.vendor.serviceData.locationRegion')}
           placeholder={t('signupForm.vendor.serviceData.locationRegionPlaceholder')}
           options={regionsLoading ? [] : regions}
@@ -94,10 +94,10 @@ const LocationSelector = () => {
         />
       </View>
 
-      {regionId && (
+      {regionId ? (
         <View style={styles.pickerWrap}>
           <DropdownInput
-            name="serviceData.serviceLocation.cityId"
+            name={`${basePath}.cityId`}
             label={t('signupForm.vendor.serviceData.locationCity')}
             placeholder={t('signupForm.vendor.serviceData.locationCityPlaceholder')}
             options={citiesLoading ? [] : cities}
@@ -105,14 +105,14 @@ const LocationSelector = () => {
             rules={{ onChange: (e) => handleCityChange(e.target?.value ?? e) }}
           />
         </View>
-      )}
+      ) : null}
 
-      {cityId && districts.length > 0 && (
+      {cityId && districts.length > 0 ? (
         <View>
           <Text style={styles.districtLabel}>{t('signupForm.vendor.serviceData.locationDistricts')}</Text>
           <Text style={styles.districtHint}>{t('signupForm.vendor.serviceData.locationDistrictsHint')}</Text>
           <CheckboxGroup
-            name="serviceData.serviceLocation.districtIds"
+            name={`${basePath}.districtIds`}
             items={districts}
             columns={2}
             rules={{ onChange: (e) => {
@@ -121,10 +121,11 @@ const LocationSelector = () => {
             }}}
           />
         </View>
-      )}
+      ) : null}
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: { width: '100%' },

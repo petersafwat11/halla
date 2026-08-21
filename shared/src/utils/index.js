@@ -6,7 +6,7 @@ export {
   buildVendorContactMessage,
   buildWhatsAppUrl,
 } from "./marketplace.js";
-export { getMediaUrl, getStaticAssetBaseUrl } from "./media.js";
+export { getMediaUrl, getStaticAssetBaseUrl, keyFromSignedUrl, resolveImageUrl } from "./media.js";
 export { useDebounce } from "./useDebounce.js";
 export {
   formatTimeAgo,

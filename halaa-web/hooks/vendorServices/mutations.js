@@ -18,6 +18,8 @@ export const useServiceMutation = (action) => {
         }),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: vendorServicesKeys.all });
+        queryClient.invalidateQueries({ queryKey: vendorServicesKeys.myList() });
+        queryClient.invalidateQueries({ queryKey: vendorServicesKeys.stats() });
       },
     },
 
@@ -31,6 +33,8 @@ export const useServiceMutation = (action) => {
       onSuccess: (_, { serviceId }) => {
         queryClient.invalidateQueries({ queryKey: vendorServicesKeys.detail(serviceId) });
         queryClient.invalidateQueries({ queryKey: vendorServicesKeys.myList() });
+        queryClient.invalidateQueries({ queryKey: vendorServicesKeys.stats() });
+        queryClient.invalidateQueries({ queryKey: vendorServicesKeys.all });
       },
     },
 
@@ -42,6 +46,8 @@ export const useServiceMutation = (action) => {
         }),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: vendorServicesKeys.all });
+        queryClient.invalidateQueries({ queryKey: vendorServicesKeys.myList() });
+        queryClient.invalidateQueries({ queryKey: vendorServicesKeys.stats() });
       },
     },
 
@@ -54,8 +60,11 @@ export const useServiceMutation = (action) => {
       onSuccess: (_, serviceId) => {
         queryClient.invalidateQueries({ queryKey: vendorServicesKeys.detail(serviceId) });
         queryClient.invalidateQueries({ queryKey: vendorServicesKeys.myList() });
+        queryClient.invalidateQueries({ queryKey: vendorServicesKeys.stats() });
+        queryClient.invalidateQueries({ queryKey: vendorServicesKeys.all });
       },
     },
+
   };
 
   const mutationConfig = mutations[action];

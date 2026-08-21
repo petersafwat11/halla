@@ -159,13 +159,14 @@ The older finding about staff deletion leaving tokens active is fixed in the ded
 |---|---:|---|---|---|
 | MKT-01 | P1 | Confirmed in affected path | Multi-district selection is truncated to one value in some marketplace client/API paths. A newer services path supports `districtIds`, so the codebase has two contracts. | Standardize all marketplace requests on `districtIds[]`/CSV serialization and `$in` semantics; remove singular adapters. |
 | MKT-02 | P1 | Confirmed in vendor-directory path | One marketplace vendor listing loads a broad candidate set, then sorts/slices in JavaScript. | Replace with an indexed Mongo aggregation using deterministic sort and `$facet` for rows/counts. |
-| MKT-03 | P1 | Confirmed | Service-location input on mobile can produce coordinates while the sanitizer accepts administrative IDs, causing location data to be dropped. | Reuse the canonical region/city/district selector. Store coordinates separately only if the API explicitly supports them. |
-| MKT-04 | P1 | Confirmed | Web/mobile service form limits disagree with backend limits; clearing Arabic fields can be omitted from multipart updates. | Publish one service schema and make serializers send explicit empty values for clearable fields. |
-| MKT-05 | P2 | Confirmed | Web placeholder image path has no matching asset. | Add an approved asset or use a guaranteed existing fallback component. |
-| MKT-06 | P1 | Confirmed | Service status toggle invalidates detail/list but can leave statistics stale. | Include stats in the canonical mutation invalidation set or update cache atomically. |
+| MKT-03 | P1 | Complete | Service-location input on mobile can produce coordinates while the sanitizer accepts administrative IDs, causing location data to be dropped. | Reuse the canonical region/city/district selector. Store coordinates separately only if the API explicitly supports them. |
+| MKT-04 | P1 | Complete | Web/mobile service form limits disagree with backend limits; clearing Arabic fields can be omitted from multipart updates. | Publish one service schema and make serializers send explicit empty values for clearable fields. |
+| MKT-05 | P2 | Complete | Web placeholder image path has no matching asset. | Add an approved asset or use a guaranteed existing fallback component. |
+| MKT-06 | P1 | Complete | Service status toggle invalidates detail/list but can leave statistics stale. | Include stats in the canonical mutation invalidation set or update cache atomically. |
 | MKT-07 | P2 | Confirmed | Locale-aware region/city/district names and separators are inconsistent; some public/error states and mobile moderation reasons are untranslated. | Map localized fields at the DTO/presentation boundary and complete namespace parity. |
-| MKT-08 | P2 | Confirmed | Hardcoded production image base URLs make environments brittle. | Use signed/absolute URLs returned by the API or one environment-aware media helper. |
+| MKT-08 | P2 | Complete | Hardcoded production image base URLs make environments brittle. | Use signed/absolute URLs returned by the API or one environment-aware media helper. |
 | MKT-09 | P2 | Latent/dead | Mobile vendor stats component has an undefined icon path but is not the active home screen. | Remove/consolidate after import graph audit; do not patch as a production P0. |
+
 | MKT-10 | P1 | Decision required | “Clicks/views” is measured by both service views and a legacy vendor counter, with GET-triggered increments. | Choose a canonical metric and collection mechanism; prefer an explicit deduplicated analytics event. |
 | MKT-11 | P2 | Decision required | Public/guest marketplace navigation differs between web and mobile. | Product must define guest access and authentication gates before route changes. |
 
@@ -262,8 +263,9 @@ Update one row only after its exit criteria and required tests pass. Use `Blocke
 | 3.2 Plan editing/presentation | Complete | 3.1 |
 | 3.3 Money/checkout quote | Complete | 3.1 |
 | 3.4 Expiry/payment UX | Complete | 3.3 |
-| 4.1 Vendor service form contract | Not started | 0.2 |
+| 4.1 Vendor service form contract | Complete | 0.2 |
 | 4.2 Marketplace filters/query | Not started | 0.2 |
+
 | 4.3 Marketplace analytics | Not started | Product decision |
 | 4.4 Marketplace locale/navigation | Not started | Access decision; preferably 4.2 |
 | 5.1 Identity/email verification | Not started | 0.2 |
@@ -1689,6 +1691,49 @@ This program is complete only when:
   - None.
 - **Blockers / deferred work:**
   - Session 3.4 is Complete. Ready for Git commit.
+
+### Execution Record — Session 4.1 (2026-08-21)
+
+- **Session:** Session 4.1 — Vendor service form contract (`MKT-03`, `MKT-04`, `MKT-05`, `MKT-06`, `MKT-08`)
+- **Status:** Complete
+- **Prerequisites verified:** Session 0.2 is Complete (verified).
+- **Key changes:**
+  - **Shared Service Limits & Schemas (`@halaa/shared/src/schemas/vendor.js`, `shared/src/schemas/index.js`, `shared/src/utils/media.js`):**
+    - Published canonical `SERVICE_LIMITS`: `NAME_MIN: 2`, `NAME_MAX: 200`, `NAME_AR_MAX: 200`, `DESCRIPTION_MIN: 10`, `DESCRIPTION_MAX: 2000`, `DESCRIPTION_AR_MAX: 2000`, `DURATION_MAX: 100`, `PRICE_MIN: 0`.
+    - Published `vendorServiceFormSchema`, `serviceLocationSchema`, `normalizeArabicDigits`, `SERVICE_TYPES`, `PREDEFINED_TAGS`, and `addServiceDefaultValues`.
+    - Extended media helpers with `keyFromSignedUrl` and `resolveImageUrl` with configurable backend/origin fallbacks.
+  - **Web Vendor Service Form & Cache Invalidation (`halaa-web/utils/schemas/addServiceSchema.js`, `AddServicePopup.js`, `hooks/vendorServices/mutations.js`, `ServiceCard.js`):**
+    - Aligned web `addServiceSchema` with canonical limits (raised name limit to 200, desc to 2000).
+    - Fixed `AddServicePopup.js` multipart serializer to explicitly append empty strings (`""`) for `nameAr` and `descriptionAr` when cleared, preventing stale values in database updates.
+    - Updated `useServiceMutation` (`createService`, `updateService`, `deleteService`, `toggleStatus`) to invalidate `vendorServicesKeys.stats()` alongside `myList()` and `detail(serviceId)`.
+    - Created guaranteed SVG placeholder asset at `halaa-web/public/images/placeholder-service.svg` and updated `ServiceCard.js` fallback references (resolving `MKT-05`).
+  - **Mobile Location Selector & Parity (`halaa-mobile/components/vendor/ServiceDetailsForm.js`, `LocationSelector.js`, `utils/schemas/vendorServiceSchema.js`):**
+    - Updated `LocationSelector.js` with configurable `basePath` prop (`serviceData.serviceLocation` vs `serviceLocation`).
+    - Replaced disconnected `MapPicker` in `ServiceDetailsForm.js` with `LocationSelector`, ensuring mobile vendor services save administrative region, city, and district selections matching backend contracts (`MKT-03`).
+    - Aligned `vendorServiceSchema.js` with canonical `SERVICE_LIMITS` and Arabic digit normalization.
+  - **Backend Validation & Clearing Contract (`halaa-backend/src/modules/services/services.validation.js`):**
+    - Updated `createServiceSchema` and `updateServiceSchema` to accept empty strings (`.or(z.literal(''))`) for clearable optional fields (`nameAr`, `descriptionAr`, `duration`).
+  - **Automated Tests:**
+    - `shared/test/vendor-service.test.js`: Validated limits, bounds, digit normalization, zero-price support, clearable Arabic fields, and media utilities.
+    - `halaa-web/__tests__/ui/vendorServiceFormContract.test.mjs`: Validated schema limits, AddServicePopup multipart serializer, stats invalidation, and placeholder asset existence.
+    - `halaa-mobile/__tests__/vendor/vendorServiceContract.test.js`: Validated schema limits, buildServiceFormData source, LocationSelector integration, and stats invalidation.
+    - `halaa-backend/test/services-form-contract.test.js`: Validated create and update schemas, administrative location schema, and field-clearing support.
+- **Verification results:**
+  - `cd shared && npm test` → PASS (63 unit tests passed, 0 failures)
+  - `cd halaa-backend && npm test` → PASS (387 unit/integration tests passed, 0 failures)
+  - `cd halaa-web && npm test` → PASS (72 unit tests passed, 0 failures)
+  - `cd halaa-mobile && npm test` → PASS (135 unit tests passed, 0 failures)
+- **Exit-criteria verification:**
+  - Service forms on web and mobile share canonical name/description limits matching backend validation.
+  - Optional Arabic fields can be cleared on update without being dropped by multipart serializers.
+  - Mobile vendor settings and services use administrative region/city/district selectors without losing data.
+  - Guaranteed placeholder fallback exists and prevents broken image paths.
+  - Mutations across web and mobile consistently invalidate service statistics and listings.
+- **Remaining risks / decisions:**
+  - None.
+- **Blockers / deferred work:**
+  - Session 4.1 is Complete. Ready for Git commit.
+
 
 
 
