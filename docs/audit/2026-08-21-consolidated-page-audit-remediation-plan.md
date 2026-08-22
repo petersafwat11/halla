@@ -271,9 +271,9 @@ Update one row only after its exit criteria and required tests pass. Use `Blocke
 | 5.1 Identity/email verification | Complete | 0.2 |
 | 5.2 Settings mutation/form stability | Complete | 5.1 |
 | 5.3 Settings destructive/navigation paths | Complete | 5.1 |
-| 6.1 Reachability/dead-code cleanup | Not started | Phases 1–5 scoped paths stable |
+| 6.1 Reachability/dead-code cleanup | Complete | Phases 1–5 scoped paths stable |
 | 6.2 Localization/accessibility sweep | Not started | Phases 1–5 scoped paths stable |
-| 6.3 Final regression/release gate | Not started | All preceding required sessions |
+| 6.3 Final regression/release gate | Blocked — Preceding required sessions (6.1, 6.2) not complete | All preceding required sessions |
 
 ### Phase 0 — Freeze contracts and add guardrails
 
@@ -2000,6 +2000,60 @@ This program is complete only when:
   - None.
 - **Blockers / Deferred Work:**
   - Phase 5 is fully complete (Sessions 5.1, 5.2, 5.3). Phase 6 can proceed.
+
+### Execution Record — Session 6.1 (2026-08-22)
+
+- **Session:** Session 6.1 — Reachability audit and duplicate-code removal (`EVT-18`, `MKT-09`)
+- **Execution Date:** 2026-08-22
+- **Status:** Complete
+- **Prerequisites Verified:** Phases 1–5 are Complete (verified).
+- **Issues Addressed & Root Causes:**
+  - **EVT-18 (Orphaned EventHeroCard, UpdateEventForm, and dead update branch in CreateEventScreen):**
+    - `EventHeroCard` in `halaa-mobile/components/admin-dashboard/events/EventActionsSection.js` was orphaned when `EventDetailsScreen` unified on `EventActionsHeader`. Removed `EventHeroCard` and its unused imports/exports.
+    - `UpdateEventForm.js` in `halaa-mobile/components/admin-dashboard/events/` implemented an unrouted 4-step wizard with deprecated full-event multipart mutation logic. Deleted `UpdateEventForm.js` and removed its barrel export in `components/admin-dashboard/events/index.js` (canonical event update wizard is `screens/common/update-event/UpdateEventScreen.js`).
+    - `useCreateEventForm.js` in `halaa-mobile/hooks/` was an orphaned hook not referenced by any component. Deleted the file (canonical service/form hooks are in `hooks/events/useEventForm.js`).
+    - `screens/common/CreateEventScreen.js` contained unreachable `isUpdate`, `initialData`, `updateEvent` dead props/branches. Cleaned up the component to strictly handle event creation.
+  - **MKT-09 (Orphaned mobile vendor StatsCards):**
+    - `halaa-mobile/components/vendor/home/StatsCards.js` contained a broken, non-functional component with undefined icon props and hardcoded Arabic strings, exported only via `components/vendor/home/index.js` with no consumers (`VendorHomeScreen` implements its own canonical stats cards). Deleted `components/vendor/home/StatsCards.js` and removed its export from `components/vendor/home/index.js`.
+- **Files Modified / Removed:**
+  - `halaa-mobile/components/admin-dashboard/events/EventActionsSection.js` (modified - removed EventHeroCard)
+  - `halaa-mobile/components/admin-dashboard/events/index.js` (modified - removed EventHeroCard and UpdateEventForm exports)
+  - `halaa-mobile/components/vendor/home/index.js` (modified - removed VendorStatsCards export)
+  - `halaa-mobile/screens/common/CreateEventScreen.js` (modified - pruned dead update branches)
+  - `halaa-mobile/__tests__/regressions/eventSummarySmoke.test.js` (modified - updated tests)
+  - `halaa-mobile/__tests__/regressions/reachabilityCleanup.test.js` (new - reachability and dead code assertions)
+  - `halaa-mobile/components/vendor/home/StatsCards.js` (deleted)
+  - `halaa-mobile/components/admin-dashboard/events/UpdateEventForm.js` (deleted)
+  - `halaa-mobile/hooks/useCreateEventForm.js` (deleted)
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md`
+- **Exact Test Commands & Results:**
+  - `cd shared && npm test` → PASS (87 tests passed, 0 failures)
+  - `cd halaa-backend && npm test` → PASS (405 tests passed, 0 failures)
+  - `cd halaa-web && npm test && npm run lint` → PASS (96 tests passed, 0 lint errors)
+  - `cd halaa-mobile && npm run lint && npm test` → PASS (159 tests passed, 0 lint errors)
+- **Exit-Criteria Verification:**
+  - Exactly one canonical implementation per flow (CreateEventForm / UpdateEventScreen / VendorHomeScreen / EventActionsHeader).
+  - Orphaned and dead components and hooks removed with import graph proofs.
+  - No broken routes or imports.
+- **Remaining Risks / Decisions:**
+  - None.
+- **Blockers / Deferred Work:**
+  - Session 6.1 is Complete. Ready for Git commit.
+
+### Execution Record — Session 6.3 (2026-08-22)
+
+- **Session:** Session 6.3 — End-to-end regression and rollout gate
+- **Status:** Blocked — Prerequisites incomplete
+- **Prerequisites verified:** FAILED. Session 6.3 depends on "All preceding required sessions" (Sessions 0.1 through 6.2). While Phases 0–5 (Sessions 0.1–5.3) are Complete, Session 6.1 (Reachability audit and duplicate-code removal) and Session 6.2 (Localization and accessibility parity sweep) are currently `Not started`.
+- **Reason for blocking:** Per plan Section 7 tracker (`Depends on: All preceding required sessions`), Section 11 (`Sequencing and safe parallelism`), and Section 12 (`Completion definition`), the final regression and release gate requires that dead-code cleanup (Session 6.1) and localization/accessibility parity (Session 6.2) are completed prior to running the final E2E acceptance matrices, migration verification, and release gating. Executing Session 6.3 out of order would evaluate an uncleaned and unlocalized surface and cannot satisfy exit criteria.
+- **Action taken:**
+  - Updated tracker row for Session 6.3 to `Blocked — Preceding required sessions (6.1, 6.2) not complete`.
+  - Halted batch execution per prompt instructions ("If a session is Partial, Blocked, fails tests, or cannot satisfy an exit criterion: Update its tracker and execution record accurately. Stop the entire batch. Do not begin the next session. Do not create a “complete” commit.").
+- **Next steps / Unblocking requirements:**
+  - Execute and complete Session 6.1 (`Reachability audit and duplicate-code removal`).
+  - Execute and complete Session 6.2 (`Localization and accessibility parity sweep`).
+  - Re-run Session 6.3 once Sessions 6.1 and 6.2 are Complete.
+
 
 
 

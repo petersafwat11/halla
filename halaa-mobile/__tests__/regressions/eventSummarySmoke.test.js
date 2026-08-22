@@ -32,21 +32,6 @@ test("EVT-01: EventSummary destructures currentLanguage and includes it in useMe
   );
 });
 
-test("EventHeroCard in EventActionsSection defines currentLanguage", () => {
-  const source = read(
-    "components",
-    "admin-dashboard",
-    "events",
-    "EventActionsSection.js"
-  );
-
-  // EventHeroCard must obtain currentLanguage from useTranslation()
-  assert.match(
-    source,
-    /const\s+EventHeroCard\s*=\s*\([^)]*\)\s*=>\s*\{[\s\S]*?const\s*\{\s*currentLanguage\s*\}\s*=\s*useTranslation\(\);/,
-    "EventHeroCard must call useTranslation() to define currentLanguage"
-  );
-});
 
 test("eslint.config.mjs enforces safety lint rules as errors", () => {
   const source = read("eslint.config.mjs");

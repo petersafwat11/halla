@@ -1,13 +1,7 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { formatDate, formatTime } from "@halaa/shared/utils/locale";
-import { useTranslation } from "../../../localization";
-import { EventActionRow } from "../../admin-dashboard/events";
-import { colors, spacing, borderRadius, typography, textStyles, backgrounds } from "../../../styles/tokens";
+import { EventActionRow } from "./EventActionRow";
 
 const EventActionsSection = ({ event, canEdit, canDelete, updatePending, deletePending, onStatusChange, onDelete, t, SectionCard }) => {
-  const { currentLanguage } = useTranslation();
   const status = event.status;
   const actionRows = [];
 
@@ -98,59 +92,5 @@ const EventActionsSection = ({ event, canEdit, canDelete, updatePending, deleteP
   );
 };
 
-const EventHeroCard = ({ event, statusCfg, statusLabel, t }) => {
-  const { currentLanguage } = useTranslation();
-  const hostName = event.host?.name || event.host?.username || event.hostName || "—";
-
-  return (
-    <View style={[styles.heroCard, { borderStartColor: statusCfg.color }]}>
-      <View style={styles.heroBody}>
-        <View style={styles.heroTopRow}>
-          <Text style={styles.heroTitle} numberOfLines={2}>
-            {event.title || t("eventDetails.untitledEvent")}
-          </Text>
-          <View style={[styles.statusChip, { backgroundColor: statusCfg.bg }]}>
-            <Text style={[styles.statusChipText, { color: statusCfg.color }]}>{statusLabel}</Text>
-          </View>
-        </View>
-        <View style={styles.heroMeta}>
-          <Ionicons name="person-outline" size={13} color={colors.natural[450]} />
-          <Text style={styles.heroMetaText}>{hostName}</Text>
-        </View>
-        {event.date && (
-          <View style={styles.heroMeta}>
-            <Ionicons name="calendar-outline" size={13} color={colors.natural[450]} />
-            <Text style={styles.heroMetaText}>
-              {formatDate(event.date, currentLanguage)}
-              {event.time ? `  •  ${formatTime(event.time, currentLanguage)}` : ""}
-            </Text>
-          </View>
-        )}
-      </View>
-    </View>
-  );
-};
-
-const styles = StyleSheet.create({
-  heroCard: {
-    backgroundColor: backgrounds.card[1],
-    borderRadius: borderRadius[12],
-    borderWidth: 1,
-    borderColor: colors.natural[200],
-    borderStartWidth: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  heroBody: { padding: spacing[16], gap: spacing[8] },
-  heroTopRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", gap: spacing[8] },
-  heroTitle: { ...textStyles.titleMedium, color: colors.natural[900], fontWeight: typography.fontWeight.semibold, flex: 1 },
-  statusChip: { paddingHorizontal: spacing[8], paddingVertical: spacing[4], borderRadius: borderRadius[20], flexShrink: 0 },
-  statusChipText: { fontSize: 12, fontWeight: "600" },
-  heroMeta: { flexDirection: "row", alignItems: "center", gap: spacing[4] },
-  heroMetaText: { ...textStyles.bodySmall, color: colors.natural[500] },
-});
-
-export { EventActionsSection, EventHeroCard };
+export { EventActionsSection };
+export default EventActionsSection;
