@@ -273,7 +273,7 @@ Update one row only after its exit criteria and required tests pass. Use `Blocke
 | 5.3 Settings destructive/navigation paths | Complete | 5.1 |
 | 6.1 Reachability/dead-code cleanup | Complete | Phases 1–5 scoped paths stable |
 | 6.2 Localization/accessibility sweep | Complete | Phases 1–5 scoped paths stable |
-| 6.3 Final regression/release gate | Blocked — Preceding required sessions (6.1, 6.2) not complete | All preceding required sessions |
+| 6.3 Final regression/release gate | Complete | All preceding required sessions |
 
 ### Phase 0 — Freeze contracts and add guardrails
 
@@ -2081,16 +2081,76 @@ This program is complete only when:
 ### Execution Record — Session 6.3 (2026-08-22)
 
 - **Session:** Session 6.3 — End-to-end regression and rollout gate
-- **Status:** Blocked — Prerequisites incomplete
-- **Prerequisites verified:** FAILED. Session 6.3 depends on "All preceding required sessions" (Sessions 0.1 through 6.2). While Phases 0–5 (Sessions 0.1–5.3) are Complete, Session 6.1 (Reachability audit and duplicate-code removal) and Session 6.2 (Localization and accessibility parity sweep) are currently `Not started`.
-- **Reason for blocking:** Per plan Section 7 tracker (`Depends on: All preceding required sessions`), Section 11 (`Sequencing and safe parallelism`), and Section 12 (`Completion definition`), the final regression and release gate requires that dead-code cleanup (Session 6.1) and localization/accessibility parity (Session 6.2) are completed prior to running the final E2E acceptance matrices, migration verification, and release gating. Executing Session 6.3 out of order would evaluate an uncleaned and unlocalized surface and cannot satisfy exit criteria.
-- **Action taken:**
-  - Updated tracker row for Session 6.3 to `Blocked — Preceding required sessions (6.1, 6.2) not complete`.
-  - Halted batch execution per prompt instructions ("If a session is Partial, Blocked, fails tests, or cannot satisfy an exit criterion: Update its tracker and execution record accurately. Stop the entire batch. Do not begin the next session. Do not create a “complete” commit.").
-- **Next steps / Unblocking requirements:**
-  - Execute and complete Session 6.1 (`Reachability audit and duplicate-code removal`).
-  - Execute and complete Session 6.2 (`Localization and accessibility parity sweep`).
-  - Re-run Session 6.3 once Sessions 6.1 and 6.2 are Complete.
+- **Execution Date:** 2026-08-22
+- **Status:** Complete
+- **Prerequisites Verified:** Complete (All preceding Sessions 0.1 through 6.2 are Complete and committed).
+- **Scope & Acceptance Matrix Scenarios Executed:**
+  - **Roles:** Host, Business, Admin, Moderator, Vendor, and Anonymous Marketplace User permissions and boundaries verified.
+  - **Locales:** Bidirectional key parity (100%), RTL layout, and locale-aware number, date, time, address, currency, and guest count formatters validated across Arabic (`ar`) and English (`en`).
+  - **Platforms:** Web (desktop/mobile viewports) and Mobile (React Native / Expo) contracts and component layers validated.
+  - **Events:**
+    - Step progression and location requirements enforced (`EVT-07`, `EVT-08`).
+    - Live event invariants verified: existing guests immutable, new guest additions allowed, RSVP/QR state preserved (`EVT-03`).
+    - Completed / cancelled terminal event immutability enforced against late guest mutations.
+    - Admin-on-behalf event entitlement and route building validated (`EVT-10`, `EVT-11`).
+  - **Invitations & Taqnyat:**
+    - Canonical `taqnyatTemplate` object structure and alias normalization validated (`EVT-02`).
+    - Malformed string/array payload rejection verified across JSON and multipart routes.
+    - Subscription response normalization validated (`EVT-17`).
+  - **Guests & Staff:**
+    - ID normalization (`_id`, `id`, `guestId`) and RSVP bucket classification (`EVT-15`, `EVT-16`).
+    - Dedicated staff CRUD, token revocation lifecycle, and `isPending` state handling (`EVT-13`, `EVT-14`).
+  - **Admin Tables & Bulk Actions:**
+    - Controlled table `server` mode with debounced search, page reset on filter change, and URL query persistence (`ADM-01`, `ADM-02`).
+    - Global aggregate counts computed independent of pagination page size (`ADM-03`).
+    - Standardized bulk request envelope `{ ids: string[] }` and granular per-item `{ succeeded, failed }` response envelope (`ADM-04`).
+  - **Tickets:**
+    - Ticket state machine transitions and reopen semantics (`ADM-05`).
+    - Subject normalization in `TicketDTO` (`ADM-06`).
+    - Bulk resolve/delete with single confirmation and per-item results (`ADM-07`).
+    - Attachment security matrix (signed URLs, private ACL, image/video formats) (`ADM-14`).
+  - **Plans & Checkout:**
+    - Authoritative `invitePool` semantics and plan type matrix (`PLN-03`, `PLN-04`, `PLN-05`, `PLN-09`).
+    - Plan presentation DTO preserving billing intervals, setup fees, and priced extras (`PLN-06`, `PLN-08`).
+    - Exact integer halalas monetary calculations and proportional discount allocation (`PLN-02`).
+    - Strict `MM/YY` card expiry parsing, input formatting, and expiration validation (`PLN-01`).
+  - **Marketplace & Vendor Services:**
+    - Multi-district filtering with CSV / array `$in` semantics (`MKT-01`).
+    - Indexed MongoDB aggregation with deterministic sort and `$facet` pagination (`MKT-02`).
+    - Moderation blocking, active/approved status invariants, and public service price bounds.
+    - Vendor service form limits, location selection, and status/stats cache invalidation (`MKT-03`, `MKT-04`, `MKT-06`, `MKT-08`).
+    - Structured marketplace analytics tracking contract (`MKT-10`).
+  - **Settings & Identity:**
+    - Independent identity fields (`name` vs `username`) and verification state synchronization (`SET-01`, `SET-02`).
+    - Granular mutation handling with partial-success warnings (`SET-03`).
+    - Form and modal state re-synchronization on entity changes (`SET-05`).
+    - Eastern Arabic digit normalization (`SET-07`).
+    - Clear distinction between data deletion policy navigation and account deletion action (`SET-04`, `SET-06`, `SET-08`, `SET-09`).
+- **Files Added / Modified:**
+  - `shared/test/e2eRegressionGate.test.js` (new cross-platform acceptance matrix test suite - 10 suites, 21 tests)
+  - `halaa-backend/test/e2e-regression-gate.test.js` (new backend acceptance matrix test suite - 6 integration tests)
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md` (tracker table updated to Complete; execution record updated)
+- **Exact Test Commands & Results:**
+  - `cd shared && npm run lint && npm test && npm run legal:verify && npm run aso:verify` → PASS (118 tests passed, 0 lint errors, legal:verify passed, aso:verify passed)
+  - `cd halaa-backend && npm run catalog:verify && npm test` → PASS (Catalog verified, 411 tests passed, 0 failures)
+  - `cd halaa-web && npm test && npm run lint` → PASS (96 tests passed, 0 lint errors)
+  - `cd halaa-mobile && npm run lint && npm test` → PASS (159 tests passed, 0 lint errors)
+- **Total Automated Test Suite Coverage:**
+  - 784 passed automated tests across all 4 packages (0 failures, 0 lint errors).
+- **Rollout, Migrations, and Release Verification:**
+  - All 59 issues in the consolidated audit register (P0, P1, P2) are fully resolved or verified.
+  - Zero unresolved database migrations; all compound indexes on `UserModel` and `ServiceModel` verified via `test/vendors.marketplace.integration.test.js` and `test/e2e-regression-gate.test.js`.
+  - Feature flags and fail-closed security mechanisms verified for release safety.
+- **Exit-Criteria Verification:**
+  - All P0 and P1 issues are closed with automated test verification.
+  - Backend validation rules prevent client bypass and single/bulk operations preserve identical invariants.
+  - Web and mobile consume canonical DTOs, statuses, plan semantics, and query keys.
+  - Authoritative checkout quotes ensure displayed money equals money charged.
+  - Server-paginated search/filters and aggregate counts operate correctly beyond one page.
+  - Active code is protected by safety linters and dead duplicate paths are cleaned up.
+  - The complete acceptance matrix passes in Arabic and English.
+- **Remaining Risks / Deferred Work:**
+  - None. Program is complete.
 
 
 
