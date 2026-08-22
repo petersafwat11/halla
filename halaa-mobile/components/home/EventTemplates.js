@@ -225,7 +225,7 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
 
   const onScroll = Animated.event(
     [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-    { useNativeDriver: false }
+    { useNativeDriver: true }
   );
 
   const goPrev = () => scrollToIdx(activeIdx - 1);
@@ -281,6 +281,7 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
               onScroll={onScroll}
               onMomentumScrollEnd={handleMomentumEnd}
               scrollEventThrottle={16}
+              removeClippedSubviews={Platform.OS === "android"}
             >
               {templates.map((template, index) => {
                 const templateId = template._id;

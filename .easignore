@@ -1,0 +1,32 @@
+# EAS Build Ignore File
+# Excludes non-mobile monorepo packages, web builds, docs, and heavy design source files
+
+# Web Frontend
+halaa-web/
+.next/
+out/
+
+# Backend
+halaa-backend/
+
+# Documentation & Evidence
+docs/
+
+# Design raw assets & templates
+template-cards/
+*.psd
+*.ai
+*.sketch
+
+# Test files & coverage
+**/__tests__/**
+**/test/**
+**/tests/**
+**/coverage/**
+
+# Git & CI/CD
+.git/
+.github/
+.claude/
+.playwright-mcp/
+deploy/

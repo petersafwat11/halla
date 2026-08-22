@@ -12,7 +12,7 @@ import { useAuthStore } from "../../../stores/authStore";
 
 const CARD_WIDTH = 123;
 
-export default function TemplateCard({
+function TemplateCard({
   template,
   index,
   scrollX,
@@ -160,3 +160,6 @@ const styles = StyleSheet.create({
     color: "#FFF",
   },
 });
+
+export default React.memo(TemplateCard);
+
