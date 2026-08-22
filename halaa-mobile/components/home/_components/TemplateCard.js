@@ -65,7 +65,7 @@ function TemplateCard({
   useEffect(() => setRemoteFailed(false), [templateId]);
 
   return (
-    <TouchableOpacity onPress={() => onPress(template)} activeOpacity={0.8}>
+    <TouchableOpacity onPress={() => onPress(template, fallbackSource || template.src)} activeOpacity={0.8}>
       <Animated.View
         style={[
           styles.card,

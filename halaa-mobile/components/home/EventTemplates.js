@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
-import { resolveApiUrl } from "../../config/api";
+import { ENDPOINTS, resolveApiUrl } from "../../config/api";
 import { useAuthStore } from "../../stores/authStore";
 import DirectionalIonicon from "../common/DirectionalIonicon";
 import TemplateCategoryChips from "./_components/TemplateCategoryChips";
@@ -157,6 +157,7 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
   const [scrollX] = useState(new Animated.Value(0));
   const [activeIdx, setActiveIdx] = useState(0);
   const [previewTemplate, setPreviewTemplate] = useState(null);
+  const [previewImageError, setPreviewImageError] = useState(false);
   const scrollRef = useRef(null);
 
   const {
@@ -186,14 +187,23 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
   const previewImageSource = React.useMemo(() => {
     if (!previewTemplate) return null;
     if (previewTemplate.src) return previewTemplate.src;
-    const raw = previewTemplate.imageUrl || previewTemplate.thumbnailUrl;
-    if (!raw) return null;
+    if (previewImageError && previewTemplate.fallbackSource) return previewTemplate.fallbackSource;
+
+    const templateId = String(previewTemplate._id || previewTemplate.id || "");
+    const isDatabaseTemplate = /^[a-f\d]{24}$/i.test(templateId);
+
+    const raw =
+      previewTemplate.imageUrl ||
+      previewTemplate.thumbnailUrl ||
+      (isDatabaseTemplate ? ENDPOINTS.TEMPLATES.ASSET(templateId) : null);
+
+    if (!raw) return previewTemplate.fallbackSource || null;
     const uri = resolveApiUrl(raw);
     return {
       uri,
       ...(token ? { headers: { Authorization: `Bearer ${token}`, "X-Client": "mobile" } } : {}),
     };
-  }, [previewTemplate, token]);
+  }, [previewTemplate, previewImageError, token]);
 
   // RTL indexing strategy (plan §3.1.6 / Phase 6 audit): on iOS an RTL
   // horizontal ScrollView reports contentOffset.x as 0 at the leading
@@ -203,11 +213,15 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
   // and preserve the selected index, pagination, and scroll direction.
   const OFFSET_SIGN = isRTL && Platform.OS === "ios" ? -1 : 1;
 
-  const handleTemplatePress = (template) => {
+  const handleTemplatePress = (template, fallbackSource) => {
     if (onSelectTemplate) {
       onSelectTemplate(template);
     } else {
-      setPreviewTemplate(template);
+      setPreviewImageError(false);
+      setPreviewTemplate({
+        ...template,
+        fallbackSource,
+      });
     }
   };
 
@@ -364,25 +378,24 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
             <TouchableWithoutFeedback>
               <View style={styles.modalContent}>
                 <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>
-                    {locale === "ar"
-                      ? previewTemplate?.nameAr || previewTemplate?.nameEn
-                      : previewTemplate?.nameEn || previewTemplate?.nameAr}
-                  </Text>
                   <TouchableOpacity
                     onPress={() => setPreviewTemplate(null)}
                     style={styles.modalCloseButton}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                   >
-                    <Ionicons name="close" size={24} color="#656565" />
+                    <Ionicons name="close" size={20} color="#656565" />
                   </TouchableOpacity>
                 </View>
                 <View style={styles.modalBody}>
-                  {previewImageSource && (
+                  {previewImageSource ? (
                     <Image
                       source={previewImageSource}
                       style={styles.modalImage}
                       resizeMode="contain"
+                      onError={() => setPreviewImageError(true)}
                     />
+                  ) : (
+                    <ActivityIndicator size="large" color="#C28E5C" />
                   )}
                 </View>
               </View>
@@ -511,18 +524,11 @@ const styles = StyleSheet.create({
   modalHeader: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    justifyContent: "flex-end",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: "#F0F0F0",
-    gap: 12,
-  },
-  modalTitle: {
-    fontSize: 16,
-    fontFamily: "Cairo_700Bold",
-    color: "#2C2C2C",
-    flex: 1,
   },
   modalCloseButton: {
     width: 32,
