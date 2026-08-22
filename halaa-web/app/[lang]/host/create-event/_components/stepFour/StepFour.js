@@ -28,33 +28,61 @@ import {
   invitationAllowsReply,
 } from "@/utils/invitationTypes";
 
-// Icons for the invitation-type cards. Reply (accept/decline) is shown as a
-// green check + red cross pair; QR entry is a QR glyph. Cards toggle each
-// icon's "on/off" (greyed) look via CSS to mirror the client's 4-card image.
-const TypeCheckIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-    <circle cx="12" cy="12" r="11" fill="#e7f6ee" />
-    <path d="M7 12.5L10.5 16L17 8.5" stroke="#2a8c5b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+// Dedicated Hero Icons for the 3 invitation types
+const QrPassHeroIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.8" />
+    <rect x="5.5" y="5.5" width="2" height="2" fill="currentColor" />
+    <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.8" />
+    <rect x="16.5" y="5.5" width="2" height="2" fill="currentColor" />
+    <rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.8" />
+    <rect x="5.5" y="16.5" width="2" height="2" fill="currentColor" />
+    <path d="M14 14H16V16H14V14Z" fill="currentColor" />
+    <path d="M18 14H20V16H18V14Z" fill="currentColor" />
+    <path d="M14 18H16V20H14V18Z" fill="currentColor" />
+    <path d="M18 18H20V20H18V18Z" fill="currentColor" />
   </svg>
 );
-const TypeXIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-    <circle cx="12" cy="12" r="11" fill="#fdeaea" />
-    <path d="M8 8L16 16M16 8L8 16" stroke="#e04f4f" strokeWidth="2" strokeLinecap="round" />
+
+const ChatRsvpHeroIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path
+      d="M8 12H8.01M12 12H12.01M16 12H16.01M21 12C21 16.4183 16.9706 20 12 20C10.4578 20 9.00698 19.6534 7.74716 19.0435L3 20L4.36486 16.812C3.51139 15.4241 3 13.7844 3 12C3 7.58172 7.02944 4 12 4C16.9706 4 21 7.58172 21 12Z"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
-const TypeQrIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-    <rect x="3" y="3" width="7" height="7" rx="1.4" stroke="#6b4fbb" strokeWidth="1.8" />
-    <rect x="14" y="3" width="7" height="7" rx="1.4" stroke="#6b4fbb" strokeWidth="1.8" />
-    <rect x="3" y="14" width="7" height="7" rx="1.4" stroke="#6b4fbb" strokeWidth="1.8" />
-    <rect x="14.5" y="14.5" width="6" height="6" rx="1" fill="#6b4fbb" />
+
+const DirectMailHeroIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path
+      d="M3 7.5L10.7 12.6C11.5 13.1 12.5 13.1 13.3 12.6L21 7.5M5 19H19C20.1 19 21 18.1 21 17V7C21 5.9 20.1 5 19 5H5C3.9 5 3 5.9 3 7V17C3 18.1 3.9 19 5 19Z"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
 
 const CheckIcon = () => (
-  <svg width="11" height="9" viewBox="0 0 11 9" fill="none">
-    <path d="M1 4.5L3.8 7.5L10 1" stroke="white" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+  <svg width="11" height="9" viewBox="0 0 11 9" fill="none" aria-hidden="true">
+    <path d="M1 4.5L3.8 7.5L10 1" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const MiniCheckIcon = () => (
+  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+    <path d="M2.5 6.2L4.8 8.5L9.5 3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const MiniCrossIcon = () => (
+  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+    <path d="M3.5 3.5L8.5 8.5M8.5 3.5L3.5 8.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
   </svg>
 );
 
@@ -218,13 +246,13 @@ const StepFour = () => {
             <p className={styles.repliesHint}>
               {t(
                 "invitation_type_hint",
-                "حدّد ما إذا كان بإمكان المدعو الرد (قبول/اعتذار) وما إذا كان سيصله رمز دخول (باركود)"
+                "حدّد الرسالة التي تصل بعد تأكيد الضيف، أو أرسل دعوة نصية فقط بدون أزرار."
               )}
             </p>
           </div>
 
           <div className={styles.inviteTypeGrid}>
-            {INVITATION_TYPE_OPTIONS.map((opt, idx) => {
+            {INVITATION_TYPE_OPTIONS.map((opt) => {
               const isSelected = invitationType === opt.value;
               return (
                 <button
@@ -236,26 +264,48 @@ const StepFour = () => {
                   }
                   aria-pressed={isSelected}
                 >
-                  <span className={styles.inviteTypeNum}>
-                    {String(idx + 1).padStart(2, "0")}
-                  </span>
-                  <div className={styles.inviteTypeIcons}>
-                    <span className={`${styles.inviteIcon} ${opt.reply ? "" : styles.inviteIconOff}`}>
-                      <TypeCheckIcon />
-                    </span>
-                    <span className={`${styles.inviteIcon} ${opt.reply ? "" : styles.inviteIconOff}`}>
-                      <TypeXIcon />
-                    </span>
-                    <span className={`${styles.inviteIcon} ${opt.qr ? "" : styles.inviteIconOff}`}>
-                      <TypeQrIcon />
+                  <div className={styles.cardHeader}>
+                    <div className={styles.iconBox}>
+                      {opt.value === "reply_and_qr" && <QrPassHeroIcon />}
+                      {opt.value === "reply_only" && <ChatRsvpHeroIcon />}
+                      {opt.value === "none" && <DirectMailHeroIcon />}
+                    </div>
+                    <div className={styles.cardHeaderMeta}>
+                      <span className={styles.inviteTypeNum}>{opt.id}</span>
+                      {opt.badgeKey && (
+                        <span className={styles.featureBadge}>
+                          {t(opt.badgeKey, "شامل رمز الدخول")}
+                        </span>
+                      )}
+                    </div>
+                    <span
+                      className={`${styles.radioIndicator} ${isSelected ? styles.radioIndicatorActive : ""}`}
+                    >
+                      {isSelected && <CheckIcon />}
                     </span>
                   </div>
-                  <p className={styles.inviteTypeTitle}>{t(opt.labelKey)}</p>
-                  <p className={styles.inviteTypeDesc}>{t(opt.descKey)}</p>
-                  {isSelected && (
-                    <span className={styles.checkBadge}>
-                      <CheckIcon />
-                    </span>
+
+                  <div className={styles.cardContent}>
+                    <p className={styles.inviteTypeTitle}>{t(opt.labelKey)}</p>
+                    <p className={styles.inviteTypeDesc}>{t(opt.descKey)}</p>
+                  </div>
+
+                  {opt.features && opt.features.length > 0 && (
+                    <div className={styles.featureChipsList}>
+                      {opt.features.map((feat) => (
+                        <span
+                          key={feat.key}
+                          className={`${styles.featureChip} ${
+                            feat.included
+                              ? styles.featureChipIncluded
+                              : styles.featureChipExcluded
+                          }`}
+                        >
+                          {feat.included ? <MiniCheckIcon /> : <MiniCrossIcon />}
+                          {t(feat.labelKey, feat.fallback)}
+                        </span>
+                      ))}
+                    </div>
                   )}
                 </button>
               );

@@ -31,24 +31,45 @@ export const invitationIncludesQr = (type) =>
  */
 export const INVITATION_TYPE_OPTIONS = [
   {
+    id: "01",
     value: INVITATION_TYPES.REPLY_AND_QR,
     reply: true,
     qr: true,
+    iconName: "qr-code-outline",
+    badgeKey: "invitation_type_badge_qr",
     labelKey: "invitation_type_reply_and_qr_label",
     descKey: "invitation_type_reply_and_qr_desc",
+    features: [
+      { key: "rsvp", labelKey: "invitation_feat_rsvp", fallback: "أزرار الرد", included: true },
+      { key: "qr", labelKey: "invitation_feat_qr", fallback: "رمز دخول QR", included: true },
+      { key: "auto_reply", labelKey: "invitation_feat_auto_reply", fallback: "رسائل متابعة", included: true },
+    ],
   },
   {
+    id: "02",
     value: INVITATION_TYPES.REPLY_ONLY,
     reply: true,
     qr: false,
+    iconName: "chatbubbles-outline",
     labelKey: "invitation_type_reply_only_label",
     descKey: "invitation_type_reply_only_desc",
+    features: [
+      { key: "rsvp", labelKey: "invitation_feat_rsvp", fallback: "أزرار الرد", included: true },
+      { key: "auto_reply", labelKey: "invitation_feat_auto_reply", fallback: "رسائل متابعة", included: true },
+      { key: "no_qr", labelKey: "invitation_feat_no_qr", fallback: "بدون رمز دخول", included: false },
+    ],
   },
   {
+    id: "03",
     value: INVITATION_TYPES.NONE,
     reply: false,
     qr: false,
+    iconName: "mail-outline",
     labelKey: "invitation_type_none_label",
     descKey: "invitation_type_none_desc",
+    features: [
+      { key: "direct", labelKey: "invitation_feat_direct", fallback: "إرسال مباشر", included: true },
+      { key: "no_buttons", labelKey: "invitation_feat_no_buttons", fallback: "بدون أزرار", included: false },
+    ],
   },
 ];

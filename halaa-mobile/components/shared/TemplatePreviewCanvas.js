@@ -23,12 +23,14 @@
  * `translate(-50%, -50%)` centering offset.
  */
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { View, Image, Text, StyleSheet } from "react-native";
 import * as LucideIcons from "lucide-react-native";
 import { useTranslation } from "../../localization";
 import { formatTemplateDate } from "@halaa/shared/utils/formatTemplateDate";
 import { resolveTemplateFont } from "../../utils/cairoFont";
+import { ENDPOINTS } from "../../config/api";
+import { resolveMediaUri } from "../../utils/resolveMediaUri";
 
 const cmpZ = (a, b) => (a.zIndex || 0) - (b.zIndex || 0);
 
@@ -66,6 +68,40 @@ function resolveFontFamily(name, fontWeight) {
   return resolveTemplateFont(name, fontWeight);
 }
 
+function getBackgroundSource(template) {
+  if (!template) return null;
+  if (template.src) {
+    if (typeof template.src === "number") return template.src;
+    if (template.src.uri) return { uri: resolveMediaUri(template.src.uri) };
+  }
+  const templateId = String(template._id || template.id || "");
+  const isDatabaseTemplate = /^[a-f\d]{24}$/i.test(templateId);
+
+  const raw =
+    template.previewImageUrl ||
+    template.imageUrl ||
+    template.thumbnailUrl ||
+    (isDatabaseTemplate ? ENDPOINTS.TEMPLATES.ASSET(templateId) : null);
+
+  if (!raw) {
+    if (template.fallbackSource) return template.fallbackSource;
+    return null;
+  }
+
+  const uri = resolveMediaUri(raw);
+  return uri ? { uri } : (template.fallbackSource || null);
+}
+
+function getFallbackSource(template) {
+  if (!template) return null;
+  if (template.fallbackSource) return template.fallbackSource;
+  if (template.thumbnailUrl) {
+    const uri = resolveMediaUri(template.thumbnailUrl);
+    if (uri) return { uri };
+  }
+  return null;
+}
+
 function DecorationItem({ decoration, containerWidth, containerHeight, primaryColor }) {
   const left = (decoration.leftPct / 100) * containerWidth;
   const top = (decoration.topPct / 100) * containerHeight;
@@ -86,9 +122,12 @@ function DecorationItem({ decoration, containerWidth, containerHeight, primaryCo
     const imgSize = decoration.widthPct
       ? (decoration.widthPct / 100) * containerWidth
       : iconSize;
+    const uri = resolveMediaUri(decoration.source);
+    const source = typeof decoration.source === "number" ? decoration.source : uri ? { uri } : null;
+    if (!source) return null;
     return (
       <View pointerEvents="none" style={[wrapperStyle, { transform: [{ translateX: -imgSize / 2 }, { translateY: -imgSize / 2 }] }]}>
-        <Image source={{ uri: decoration.source }} style={{ width: imgSize, height: imgSize }} resizeMode="contain" />
+        <Image source={source} style={{ width: imgSize, height: imgSize }} resizeMode="contain" />
       </View>
     );
   }
@@ -155,15 +194,21 @@ export default function TemplatePreviewCanvas({
 }) {
   const { t } = useTranslation("common");
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
-  const preferredImageUrl = template?.imageUrl || template?.thumbnailUrl || null;
-  const [imageUrl, setImageUrl] = useState(preferredImageUrl);
+
+  const primarySource = useMemo(() => getBackgroundSource(template), [template]);
+  const fallbackSource = useMemo(() => getFallbackSource(template), [template]);
+  const [currentSource, setCurrentSource] = useState(primarySource);
 
   useEffect(() => {
-    setImageUrl(preferredImageUrl);
-    onBackgroundReady?.(false);
-  }, [preferredImageUrl, onBackgroundReady]);
+    setCurrentSource(primarySource);
+    if (typeof primarySource === "number" || !primarySource) {
+      onBackgroundReady?.(true);
+    } else {
+      onBackgroundReady?.(false);
+    }
+  }, [primarySource, onBackgroundReady]);
 
-  if (!preferredImageUrl) return null;
+  if (!template) return null;
 
   const decorations = [...(template.decorations || [])].sort(cmpZ);
   const overlays = [...(template.overlays || [])].sort(cmpZ);
@@ -189,17 +234,21 @@ export default function TemplatePreviewCanvas({
       }}
       style={[styles.container, { width: widthProp || "100%", aspectRatio }]}
     >
-      <Image
-        source={{ uri: imageUrl }}
-        style={styles.bgImage}
-        resizeMode="cover"
-        onLoad={() => onBackgroundReady?.(true)}
-        onError={() => {
-          if (template?.thumbnailUrl && imageUrl !== template.thumbnailUrl) {
-            setImageUrl(template.thumbnailUrl);
-          }
-        }}
-      />
+      {currentSource ? (
+        <Image
+          source={currentSource}
+          style={styles.bgImage}
+          resizeMode="cover"
+          onLoad={() => onBackgroundReady?.(true)}
+          onError={() => {
+            if (fallbackSource && currentSource !== fallbackSource) {
+              setCurrentSource(fallbackSource);
+            } else {
+              onBackgroundReady?.(true);
+            }
+          }}
+        />
+      ) : null}
       {decorations.map((d, i) => (
         <DecorationItem
           key={`dec-${i}`}

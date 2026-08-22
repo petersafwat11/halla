@@ -8,13 +8,7 @@ import {
   ScrollView,
   Image,
   Pressable,
-  Dimensions,
 } from "react-native";
-
-// Cap the invitation image so a tall template never makes the preview "very
-// long" — the image stays fully visible (contain) and the chat scrolls for the
-// rest. Kept modest so the whole popup card stays compact on all screen sizes.
-const PREVIEW_IMG_MAX_H = Math.round(Dimensions.get("window").height * 0.34);
 import { Ionicons } from "@expo/vector-icons";
 import {
   resolveTaqnyatPlaceholders,
@@ -93,6 +87,9 @@ const PreviewInvitation = ({
   ]);
 
   const bakedImageSource = useMemo(() => {
+    if (!templateImage) return null;
+    if (typeof templateImage === "number") return templateImage;
+    if (templateImage.src && typeof templateImage.src === "number") return templateImage.src;
     const uri = resolveMediaUri(templateImage);
     return uri ? { uri } : null;
   }, [templateImage]);
@@ -156,12 +153,12 @@ const PreviewInvitation = ({
         >
           {/* Received message card */}
           <View style={styles.msgCard}>
-            <View style={[styles.msgImageWrap, { aspectRatio, maxHeight: PREVIEW_IMG_MAX_H }]}>
+            <View style={styles.msgImageWrap}>
               {bakedImageSource ? (
                 <Image
                   source={bakedImageSource}
                   style={styles.templateImage}
-                  resizeMode="contain"
+                  resizeMode="cover"
                   onError={() => {}}
                 />
               ) : template ? (
@@ -174,7 +171,7 @@ const PreviewInvitation = ({
                 <Image
                   source={require("../../assets/invetation.png")}
                   style={styles.templateImage}
-                  resizeMode="contain"
+                  resizeMode="cover"
                 />
               )}
             </View>
@@ -316,22 +313,24 @@ const styles = StyleSheet.create({
   msgCard: {
     width: "100%",
     backgroundColor: "#FFF",
-    borderRadius: 9,
+    borderRadius: 12,
     borderTopLeftRadius: 4,
     overflow: "hidden",
     shadowColor: "#0B141A",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.08,
-    shadowRadius: 1,
-    elevation: 1,
+    shadowRadius: 2,
+    elevation: 2,
+    padding: 4,
   },
   msgImageWrap: {
     width: "100%",
+    height: 300,
     backgroundColor: "#F1E8D6",
     overflow: "hidden",
-    margin: 4,
-    marginBottom: 0,
-    borderRadius: 6,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
     alignSelf: "stretch",
   },
   templateImage: { width: "100%", height: "100%" },

@@ -235,8 +235,17 @@ const StepThree = () => {
               : t("confirmed_design_label", "Selected Design")}
           </Text>
           <View style={styles.confirmedCardImageWrapper}>
-            {mode === "template" &&
-            (selectedTemplate?.imageUrl || selectedTemplate?.thumbnailUrl) ? (
+            {confirmedPreviewUri ? (
+              <RNImage
+                source={{ uri: confirmedPreviewUri }}
+                style={styles.confirmedCardImg}
+                resizeMode="contain"
+              />
+            ) : mode === "template" &&
+              (selectedTemplate?.imageUrl ||
+                selectedTemplate?.thumbnailUrl ||
+                selectedTemplate?.src ||
+                selectedTemplate?._id) ? (
               <TemplatePreviewCanvas
                 template={selectedTemplate}
                 data={
@@ -248,12 +257,6 @@ const StepThree = () => {
                   selectedTemplate?.fieldValues?.primaryColor ||
                   selectedTemplate?.data?.primaryColor
                 }
-              />
-            ) : confirmedPreviewUri ? (
-              <RNImage
-                source={{ uri: confirmedPreviewUri }}
-                style={styles.confirmedCardImg}
-                resizeMode="contain"
               />
             ) : null}
           </View>

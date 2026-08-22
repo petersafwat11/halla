@@ -9,7 +9,6 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
-import DirectionalIonicon from "../common/DirectionalIonicon";
 
 const MAX_VISIBLE_TAGS = 3;
 
@@ -145,7 +144,6 @@ const VendorCard = ({ vendor, onPress, index = 0 }) => {
             onPress={handlePress}
             activeOpacity={0.85}
           >
-            <DirectionalIonicon name="arrow-up-forward-outline" size={14} color="#FFF" />
             <Text style={styles.callButtonText}>{t("vendor.viewProfile")}</Text>
           </TouchableOpacity>
         </View>
@@ -345,9 +343,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 16,
     paddingVertical: 9,
-    flexDirection: "row",
     alignItems: "center",
-    gap: 7,
+    justifyContent: "center",
     shadowColor: "#C28E5C",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,

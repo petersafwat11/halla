@@ -49,6 +49,7 @@ export async function bakeCanvas(viewRef, options = {}) {
     file: {
       uri,
       name: filename,
+      fileName: filename,
       type: "image/png",
     },
   };

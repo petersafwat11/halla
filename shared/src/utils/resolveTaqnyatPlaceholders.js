@@ -48,11 +48,13 @@ export function resolveTaqnyatPlaceholders(bodyText, varMapping, context = {}) {
       );
     }
   } else {
-    // Legacy 5-param order.
+    // Legacy fallback order (supports up to 7 placeholders).
     const legacyOrder = [
       "guest.name",
       "eventDetails.title",
       "eventDetails.dateFormatted",
+      "eventDetails.time",
+      "eventDetails.location.address",
       "eventDetails.time",
       "eventDetails.location.address",
     ];

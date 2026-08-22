@@ -458,110 +458,207 @@
   flex-direction: column;
   gap: 1.2rem;
   align-self: stretch;
+  margin-bottom: 2rem;
 }
 
 .inviteTypeGrid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.2rem;
 }
 
 .inviteTypeCard {
   position: relative;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 0.8rem;
-  padding: 1.8rem 1.2rem 1.4rem;
-  border: 1.5px solid #e8e2da;
-  border-radius: 1.2rem;
+  text-align: right;
+  padding: 1.8rem 1.6rem 1.4rem;
+  border: 1.5px solid #eae4dc;
+  border-radius: 1.4rem;
   background: #ffffff;
   cursor: pointer;
   transition:
     border-color 0.22s ease,
     background 0.22s ease,
     box-shadow 0.22s ease,
-    transform 0.14s ease;
+    transform 0.16s ease;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
   animation: cardIn 0.3s ease both;
 }
 
 .inviteTypeCard:hover {
   border-color: #d4a878;
   background: #fefcf9;
-  box-shadow: 0 2px 12px rgba(194, 142, 92, 0.12);
-  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(194, 142, 92, 0.12);
+  transform: translateY(-2px);
 }
 
 .inviteTypeCardSelected {
   border-color: #c28e5c;
-  background: linear-gradient(135deg, #fdf9f4 0%, #fef6ee 100%);
+  background: linear-gradient(160deg, #ffffff 0%, #fdf8f2 100%);
   box-shadow:
-    0 0 0 1px rgba(194, 142, 92, 0.3),
-    0 4px 16px rgba(194, 142, 92, 0.14);
+    0 0 0 1px rgba(194, 142, 92, 0.25),
+    0 6px 20px rgba(194, 142, 92, 0.14);
 }
 
 .inviteTypeCardSelected:hover {
-  transform: translateY(0);
+  transform: translateY(-2px);
+  border-color: #c28e5c;
 }
 
-/* Sequence number chip (01–04), top-right in RTL */
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  margin-bottom: 1.2rem;
+  width: 100%;
+}
+
+.iconBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.2rem;
+  height: 4.2rem;
+  border-radius: 1.1rem;
+  background: #f5efe6;
+  color: #7a6e63;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+  flex-shrink: 0;
+}
+
+.inviteTypeCardSelected .iconBox {
+  background: #c28e5c;
+  color: #ffffff;
+  box-shadow: 0 3px 8px rgba(194, 142, 92, 0.3);
+}
+
+.cardHeaderMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-inline-start: auto;
+}
+
+/* Sequence number chip (01–03) */
 .inviteTypeNum {
-  position: absolute;
-  top: 1rem;
-  right: 1.2rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-width: 2.4rem;
-  height: 2.4rem;
-  padding: 0 0.6rem;
+  height: 2.2rem;
+  padding: 0 0.5rem;
   border-radius: 999px;
   background: #f4efe7;
   color: #a87040;
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   font-weight: 700;
   letter-spacing: 0.02rem;
 }
 
-.inviteTypeIcons {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  margin-top: 0.8rem;
-}
-
-.inviteIcon {
+.featureBadge {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 3.2rem;
-  height: 3.2rem;
-  border-radius: 0.8rem;
-  background: #f7f4ef;
-  transition: opacity 0.18s ease, filter 0.18s ease;
+  padding: 0.25rem 0.7rem;
+  border-radius: 0.5rem;
+  background: #fff3e3;
+  border: 1px solid #f0dcb8;
+  color: #a87040;
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1;
 }
 
-/* "off" icons are greyed to mirror the client's 4-card image */
-.inviteIconOff {
-  filter: grayscale(1);
-  opacity: 0.32;
+.radioIndicator {
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
+  border: 1.5px solid #dcd5cc;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  flex-shrink: 0;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.radioIndicatorActive {
+  border-color: #c28e5c;
+  background: #c28e5c;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(194, 142, 92, 0.3);
+}
+
+.cardContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.2rem;
+  flex: 1;
 }
 
 .inviteTypeTitle {
   color: #2c2c2c;
-  font-size: 1.3rem;
+  font-size: 1.35rem;
   font-weight: 700;
-  line-height: 1.7rem;
-  margin: 0.2rem 0 0;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.inviteTypeCardSelected .inviteTypeTitle {
+  color: #221b15;
 }
 
 .inviteTypeDesc {
-  color: #8a7e74;
-  font-size: 1.15rem;
+  color: #73685e;
+  font-size: 1.2rem;
   font-weight: 400;
-  line-height: 1.6rem;
+  line-height: 1.55;
   margin: 0;
+}
+
+.featureChipsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f2ece4;
+  margin-top: auto;
+}
+
+.featureChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 0.5rem;
+  font-size: 1.1rem;
+  line-height: 1;
+  font-weight: 500;
+}
+
+.featureChipIncluded {
+  background: #f0f7f2;
+  color: #2a8c5b;
+}
+
+.inviteTypeCardSelected .featureChipIncluded {
+  background: #e6f4ec;
+  color: #1e7549;
+  font-weight: 600;
+}
+
+.featureChipExcluded {
+  background: #f5f2ed;
+  color: #8a7e74;
 }
 
 /* Note shown in place of the auto-reply editor for no-reply types */
@@ -578,34 +675,20 @@
 }
 
 /* ─── Responsive ─────────────────────────────── */
-@media (max-width: 1400px) {
+@media (max-width: 900px) {
   .inviteTypeGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .inviteTypeCard {
+    padding: 1.6rem 1.4rem 1.2rem;
   }
 }
 
 @media (max-width: 600px) {
   .formSection {
     padding: 0 1.2rem;
-  }
-
-  .inviteTypeGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.8rem;
-  }
-
-  .inviteTypeCard {
-    gap: 0.6rem;
-    padding: 1.5rem 0.8rem 1.2rem;
-  }
-
-  .inviteTypeIcons {
-    gap: 0.35rem;
-  }
-
-  .inviteIcon {
-    width: 2.8rem;
-    height: 2.8rem;
   }
 
   .tabBtn {
@@ -625,11 +708,5 @@
   .bubbleText {
     font-size: 1.15rem;
     line-height: 1.85rem;
-  }
-}
-
-@media (max-width: 360px) {
-  .inviteTypeGrid {
-    grid-template-columns: 1fr;
   }
 }

@@ -1,7 +1,15 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { View, Text, Image, StyleSheet } from "react-native";
+import { resolveMediaUri } from "../../../utils/resolveMediaUri";
 
 const WhatsAppInvitationPreview = ({ eventName, templateImage, selectedTemplate, invitationText, t }) => {
+  const imageSource = useMemo(() => {
+    if (!templateImage) return null;
+    if (typeof templateImage === "number") return templateImage;
+    if (templateImage.src && typeof templateImage.src === "number") return templateImage.src;
+    const uri = resolveMediaUri(templateImage);
+    return uri ? { uri } : null;
+  }, [templateImage]);
 
   return (
     <View style={styles.invitationSection}>
@@ -9,8 +17,8 @@ const WhatsAppInvitationPreview = ({ eventName, templateImage, selectedTemplate,
 
       <View style={styles.waBubbleWrapper}>
         <View style={styles.waBubble}>
-          {templateImage ? (
-            <Image source={{ uri: templateImage }} style={styles.waImage} resizeMode="cover" />
+          {imageSource ? (
+            <Image source={imageSource} style={styles.waImage} resizeMode="cover" />
           ) : (
             <View style={styles.waImagePlaceholder}>
               <Text style={styles.waPlaceholderEmoji}>🎉</Text>

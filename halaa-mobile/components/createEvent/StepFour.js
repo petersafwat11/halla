@@ -18,7 +18,6 @@ import {
   ActivityIndicator,
   ScrollView,
   TextInput,
-  useWindowDimensions,
 } from "react-native";
 import { useFormContext } from "react-hook-form";
 import { Ionicons } from "@expo/vector-icons";
@@ -72,8 +71,6 @@ const StepFour = () => {
   const previousCategoryRef = useRef("");
   const previousInvitationTypeRef = useRef("");
   const { t, currentLanguage } = useTranslation("createEvent");
-  const { width: viewportWidth } = useWindowDimensions();
-  const useSingleColumnTypes = viewportWidth < 360;
 
   const categoryLabel = (cat) =>
     cat ? t(`event_types.${cat}`, CATEGORY_LABELS_AR[cat] || cat) : "";
@@ -186,18 +183,17 @@ const StepFour = () => {
           <Text style={styles.hint}>
             {t(
               "invitation_type_hint",
-              "حدّد ما إذا كان بإمكان المدعو الرد (قبول/اعتذار) وما إذا كان سيصله رمز دخول (باركود)"
+              "حدّد الرسالة التي تصل بعد تأكيد الضيف، أو أرسل دعوة نصية فقط بدون أزرار."
             )}
           </Text>
-          <View style={styles.inviteTypeGrid}>
-            {INVITATION_TYPE_OPTIONS.map((opt, idx) => {
+          <View style={styles.inviteTypeList}>
+            {INVITATION_TYPE_OPTIONS.map((opt) => {
               const isSelected = invitationType === opt.value;
               return (
                 <TouchableOpacity
                   key={opt.value}
                   style={[
                     styles.inviteTypeCard,
-                    useSingleColumnTypes && styles.inviteTypeCardSingleColumn,
                     isSelected && styles.inviteTypeCardSelected,
                   ]}
                   onPress={() =>
@@ -205,33 +201,96 @@ const StepFour = () => {
                   }
                   activeOpacity={0.85}
                 >
-                  <View style={styles.inviteTypeNumWrap}>
-                    <Text style={styles.inviteTypeNum}>
-                      {String(idx + 1).padStart(2, "0")}
-                    </Text>
+                  <View style={styles.cardHeaderRow}>
+                    <View
+                      style={[
+                        styles.iconContainer,
+                        isSelected && styles.iconContainerSelected,
+                      ]}
+                    >
+                      <Ionicons
+                        name={opt.iconName || "mail-outline"}
+                        size={22}
+                        color={isSelected ? "#FFF" : "#8A7E74"}
+                      />
+                    </View>
+
+                    <View style={styles.titleColumn}>
+                      <View style={styles.titleRow}>
+                        <Text
+                          style={[
+                            styles.inviteTypeTitle,
+                            isSelected && styles.inviteTypeTitleSelected,
+                          ]}
+                        >
+                          {t(opt.labelKey)}
+                        </Text>
+                        {opt.badgeKey && (
+                          <View style={styles.featureBadge}>
+                            <Text style={styles.featureBadgeText}>
+                              {t(opt.badgeKey, "شامل رمز الدخول")}
+                            </Text>
+                          </View>
+                        )}
+                      </View>
+                      <Text style={styles.inviteTypeDesc}>
+                        {t(opt.descKey)}
+                      </Text>
+                    </View>
+
+                    <View
+                      style={[
+                        styles.radioCircle,
+                        isSelected && styles.radioCircleSelected,
+                      ]}
+                    >
+                      {isSelected && (
+                        <Ionicons name="checkmark" size={13} color="#FFF" />
+                      )}
+                    </View>
                   </View>
-                  <View style={styles.inviteTypeIcons}>
-                    <Ionicons
-                      name="checkmark-circle"
-                      size={20}
-                      color={opt.reply ? "#2A8C5B" : "#D2CEC8"}
-                    />
-                    <Ionicons
-                      name="close-circle"
-                      size={20}
-                      color={opt.reply ? "#E04F4F" : "#D2CEC8"}
-                    />
-                    <Ionicons
-                      name="qr-code"
-                      size={18}
-                      color={opt.qr ? "#6B4FBB" : "#D2CEC8"}
-                    />
-                  </View>
-                  <Text style={styles.inviteTypeTitle}>{t(opt.labelKey)}</Text>
-                  <Text style={styles.inviteTypeDesc}>{t(opt.descKey)}</Text>
-                  {isSelected && (
-                    <View style={styles.checkBadge}>
-                      <Ionicons name="checkmark" size={12} color="#FFF" />
+
+                  {/* Feature chips */}
+                  {opt.features && opt.features.length > 0 && (
+                    <View style={styles.featureChipsRow}>
+                      {opt.features.map((feat) => (
+                        <View
+                          key={feat.key}
+                          style={[
+                            styles.featureChip,
+                            feat.included
+                              ? styles.featureChipIncluded
+                              : styles.featureChipExcluded,
+                            isSelected &&
+                              feat.included &&
+                              styles.featureChipIncludedActive,
+                          ]}
+                        >
+                          <Ionicons
+                            name={
+                              feat.included
+                                ? "checkmark-circle"
+                                : "close-circle-outline"
+                            }
+                            size={12}
+                            color={
+                              feat.included
+                                ? isSelected
+                                  ? "#2A8C5B"
+                                  : "#43805B"
+                                : "#A89E94"
+                            }
+                          />
+                          <Text
+                            style={[
+                              styles.featureChipText,
+                              !feat.included && styles.featureChipTextExcluded,
+                            ]}
+                          >
+                            {t(feat.labelKey, feat.fallback)}
+                          </Text>
+                        </View>
+                      ))}
                     </View>
                   )}
                 </TouchableOpacity>
@@ -391,6 +450,7 @@ const StepFour = () => {
         visible={showPreview}
         onClose={() => setShowPreview(false)}
         templateImage={watch("templateImage")}
+        template={visualTemplate}
         eventTitle={eventName || ""}
         previewBody={selectedTemplate?.bodyText || ""}
         selectedTemplate={selectedTemplate}
@@ -594,74 +654,148 @@ const styles = StyleSheet.create({
   tabBtnTextActive: { color: "#5A4A42", fontFamily: "Cairo_700Bold" },
 
   // ── Invitation-type selector ──
-  inviteTypeSection: { marginBottom: 20 },
-  inviteTypeGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    columnGap: 10,
-    rowGap: 10,
-    marginTop: 12,
+  inviteTypeSection: { marginBottom: 24 },
+  inviteTypeList: {
+    gap: 12,
+    marginTop: 8,
   },
   inviteTypeCard: {
-    width: "48%",
     position: "relative",
-    alignItems: "center",
-    paddingVertical: 16,
-    paddingHorizontal: 10,
-    borderRadius: 14,
+    padding: 16,
+    borderRadius: 16,
     borderWidth: 1.5,
-    borderColor: "#E8E2DA",
-    backgroundColor: "#FFF",
-  },
-  inviteTypeCardSingleColumn: {
-    width: "100%",
+    borderColor: "#EAE4DC",
+    backgroundColor: "#FFFFFF",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    elevation: 1,
   },
   inviteTypeCardSelected: {
     borderColor: "#C28E5C",
-    backgroundColor: "#FDF9F4",
+    backgroundColor: "#FFFDF9",
     shadowColor: "#C28E5C",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.18,
-    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.14,
+    shadowRadius: 8,
     elevation: 3,
   },
-  inviteTypeNumWrap: {
-    position: "absolute",
-    top: 8,
-    right: 10,
-    minWidth: 24,
-    height: 22,
-    paddingHorizontal: 6,
-    borderRadius: 999,
+  cardHeaderRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 12,
+  },
+  iconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
     backgroundColor: "#F4EFE7",
     alignItems: "center",
     justifyContent: "center",
   },
-  inviteTypeNum: {
-    fontSize: 11,
+  iconContainerSelected: {
+    backgroundColor: "#C28E5C",
+    shadowColor: "#C28E5C",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  titleColumn: {
+    flex: 1,
+  },
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: 8,
+    marginBottom: 4,
+  },
+  inviteTypeTitle: {
+    fontSize: 14.5,
+    fontFamily: "Cairo_700Bold",
+    color: "#2C2C2C",
+    textAlign: "right",
+  },
+  inviteTypeTitleSelected: {
+    color: "#241D17",
+  },
+  featureBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+    backgroundColor: "#FFF3E3",
+    borderWidth: 1,
+    borderColor: "#F0DCB8",
+  },
+  featureBadgeText: {
+    fontSize: 10.5,
     fontFamily: "Cairo_700Bold",
     color: "#A87040",
   },
-  inviteTypeIcons: {
+  inviteTypeDesc: {
+    fontSize: 12,
+    fontFamily: "Cairo_400Regular",
+    color: "#7D7267",
+    textAlign: "right",
+    lineHeight: 18,
+  },
+  radioCircle: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 1.5,
+    borderColor: "#DCD5CC",
+    backgroundColor: "#FFF",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 2,
+  },
+  radioCircleSelected: {
+    borderColor: "#C28E5C",
+    backgroundColor: "#C28E5C",
+    shadowColor: "#C28E5C",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  featureChipsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+    marginTop: 12,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: "#F4EFE9",
+  },
+  featureChip: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    marginTop: 8,
-    marginBottom: 8,
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    backgroundColor: "#F7F5F0",
   },
-  inviteTypeTitle: {
-    fontSize: 13,
-    fontFamily: "Cairo_700Bold",
-    color: "#2C2C2C",
-    textAlign: "center",
+  featureChipIncluded: {
+    backgroundColor: "#F0F7F2",
   },
-  inviteTypeDesc: {
+  featureChipIncludedActive: {
+    backgroundColor: "#E8F4EC",
+  },
+  featureChipExcluded: {
+    backgroundColor: "#F5F2EC",
+  },
+  featureChipText: {
     fontSize: 11,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: "Cairo_600SemiBold",
+    color: "#2A8C5B",
+  },
+  featureChipTextExcluded: {
     color: "#8A7E74",
-    textAlign: "center",
-    marginTop: 3,
-    lineHeight: 16,
+    fontFamily: "Cairo_400Regular",
   },
   repliesDisabledNote: {
     marginTop: 4,
