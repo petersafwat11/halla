@@ -48,48 +48,75 @@ const AccountSettings = ({
     watch,
   } = methods;
 
+  React.useEffect(() => {
+    reset({
+      name: user?.name || "",
+      username: user?.username || "",
+      email: user?.email || "",
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    });
+  }, [user?.name, user?.username, user?.email, reset]);
+
   const emailValue = watch("email");
 
   const onSubmit = async (data) => {
     setLoading(true);
-    try {
-      let hasChanges = false;
-      if (
-        data.name !== (user?.name || "") ||
-        data.username !== user?.username ||
-        data.email !== user?.email
-      ) {
+    let profileSuccess = false;
+    let passwordSuccess = false;
+    let profileError = null;
+    let passwordError = null;
+
+    const profileChanged =
+      data.name !== (user?.name || "") ||
+      data.username !== user?.username ||
+      data.email !== user?.email;
+    const passwordProvided = !!(data.currentPassword && data.newPassword);
+
+    if (profileChanged) {
+      try {
         const profileData = {
           name: data.name,
           username: data.username,
           email: data.email,
         };
         await onProfileUpdate(profileData);
-        hasChanges = true;
+        profileSuccess = true;
+      } catch (err) {
+        profileError = err;
       }
+    }
 
-      if (data.currentPassword && data.newPassword) {
+    if (passwordProvided) {
+      try {
         await onPasswordChange({
           currentPassword: data.currentPassword,
           newPassword: data.newPassword,
           confirmPassword: data.confirmPassword,
         });
-        hasChanges = true;
+        passwordSuccess = true;
+      } catch (err) {
+        passwordError = err;
       }
+    }
 
-      if (hasChanges) {
-        toast.success(t("account.updateSuccess"));
-      }
-
-      reset({
-        name: data.name,
-        username: data.username,
-        email: data.email,
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      });
-    } catch (error) {
+    if (profileSuccess && passwordSuccess) {
+      toast.success(t("account.updateSuccess"));
+    } else if (profileSuccess && !passwordError) {
+      toast.success(t("account.updateSuccess"));
+    } else if (passwordSuccess && !profileError) {
+      toast.success(t("account.passwordUpdateSuccess", t("account.updateSuccess")));
+    } else if (profileSuccess && passwordError) {
+      toast.error(
+        t("account.profileSavedPasswordFailed", "تم حفظ البيانات، ولكن فشل تحديث كلمة المرور")
+      );
+    } else if (passwordSuccess && profileError) {
+      toast.error(
+        t("account.passwordSavedProfileFailed", "تم تحديث كلمة المرور، ولكن فشل حفظ البيانات")
+      );
+    } else if (passwordError || profileError) {
+      const error = passwordError || profileError;
       if (
         error?.code === "CURRENT_PASSWORD_INVALID" ||
         error?.errorDetail?.code === "CURRENT_PASSWORD_INVALID" ||
@@ -102,9 +129,17 @@ const AccountSettings = ({
       } else {
         toast.error(error.message || t("account.updateError"));
       }
-    } finally {
-      setLoading(false);
     }
+
+    reset({
+      name: profileSuccess ? data.name : (user?.name || ""),
+      username: profileSuccess ? data.username : (user?.username || ""),
+      email: profileSuccess ? data.email : (user?.email || ""),
+      currentPassword: passwordSuccess ? "" : data.currentPassword,
+      newPassword: passwordSuccess ? "" : data.newPassword,
+      confirmPassword: passwordSuccess ? "" : data.confirmPassword,
+    });
+    setLoading(false);
   };
 
   const handleCancel = () => {

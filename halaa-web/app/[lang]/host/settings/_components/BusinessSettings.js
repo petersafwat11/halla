@@ -32,6 +32,12 @@ const BusinessSettings = ({ user = {} }) => {
   const [logoFile, setLogoFile] = useState(null);
   const [logoPreview, setLogoPreview] = useState(user?.avatar || null);
 
+  React.useEffect(() => {
+    setDescription(initialDescription);
+    setLogoPreview(user?.avatar || null);
+    setLogoFile(null);
+  }, [initialDescription, user?.avatar]);
+
   const updateProfileMutation = useUserMutation("updateProfile");
   const isSaving = updateProfileMutation.isPending;
 

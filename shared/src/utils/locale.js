@@ -115,6 +115,36 @@ export const localizeDigits = (input, locale = "ar") => {
 };
 
 /**
+ * Normalizes input digits by converting Eastern Arabic / Arabic-Indic digits (٠-٩, ۰-۹)
+ * to standard Latin ASCII digits (0-9), with optional stripping of non-digit characters.
+ *
+ * @param {string|number} input - Raw input string or number
+ * @param {Object} [options]
+ * @param {boolean} [options.stripNonDigits=false]
+ * @returns {string}
+ */
+export const normalizeDigits = (input, { stripNonDigits = false } = {}) => {
+  if (input === null || input === undefined) return "";
+  let str = String(input);
+  str = str.replace(/[\u0660-\u0669]/g, (d) => String(d.charCodeAt(0) - 0x0660));
+  str = str.replace(/[\u06F0-\u06F9]/g, (d) => String(d.charCodeAt(0) - 0x06F0));
+  if (stripNonDigits) {
+    return str.replace(/\D/g, "");
+  }
+  return str;
+};
+
+/**
+ * Normalizes input digits to ASCII digits and strips all non-digit characters (e.g. separators, spaces).
+ * Useful for card numbers, national IDs, IBAN numeric parts, OTPs, and phone inputs.
+ *
+ * @param {string|number} input
+ * @returns {string} Pure ASCII digits
+ */
+export const normalizeDigitsOnly = (input) => normalizeDigits(input, { stripNonDigits: true });
+
+
+/**
  * Format a Date, timestamp, or ISO string as a localized date.
  *
  * @param {Date|string|number} input

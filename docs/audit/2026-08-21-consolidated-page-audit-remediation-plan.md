@@ -269,7 +269,7 @@ Update one row only after its exit criteria and required tests pass. Use `Blocke
 | 4.3 Marketplace analytics | Complete | Product decision |
 | 4.4 Marketplace locale/navigation | Complete | Access decision; preferably 4.2 |
 | 5.1 Identity/email verification | Complete | 0.2 |
-| 5.2 Settings mutation/form stability | Not started | 5.1 |
+| 5.2 Settings mutation/form stability | Complete | 5.1 |
 | 5.3 Settings destructive/navigation paths | Complete | 5.1 |
 | 6.1 Reachability/dead-code cleanup | Not started | Phases 1–5 scoped paths stable |
 | 6.2 Localization/accessibility sweep | Not started | Phases 1–5 scoped paths stable |
@@ -1961,7 +1961,46 @@ This program is complete only when:
 - **Remaining Risks / Decisions:**
   - None.
 - **Blockers / Deferred Work:**
-  - None. Session 5.2 can proceed.
+  - None. Session 5.2 completed.
+
+### Session 5.2 Execution Record — Settings Mutation Stability and Form State Reset (`SET-03`, `SET-05`, `SET-07`)
+
+- **Session:** Session 5.2 — Split settings mutations and stabilize forms (`SET-03`, `SET-05`, `SET-07`)
+- **Execution Date:** 2026-08-22
+- **Status:** Complete
+- **Prerequisites Verified:** Session 5.1 and Session 5.3 are Complete.
+- **Issues Addressed & Root Causes:**
+  - **SET-03:** Settings save paths (Web `AccountSettings.js`, Web `VendorSettings` `page.js`, Mobile `AccountSettings.js`) combined profile, email, password, and business/vendor updates into unified sequential blocks where a failure in a subsequent mutation masked earlier successes with a generic failure toast. Refactored submit handlers to perform mutations with granular tracking, acknowledging distinct successes (`profile_updated_successfully`, `password_updated_successfully`) and surfacing partial-success warnings when one concern fails without discarding succeeded state.
+  - **SET-05:** Reopened modals and forms retained stale state because component state was initialized via `useState` without re-synchronizing when `user`, `initialData`, or `data` props changed. Added `useEffect` hooks in Web `AccountSettings.js`, Web `BusinessSettings.js`, Web `ServiceDetailsEditForm.jsx`, Web `DynamicForm.js`, Mobile `AccountSettings.js`, and Mobile `BusinessSettings.js`. Verified cascading location state machines reset downstream city/districts when parent region/city changes.
+  - **SET-07:** Card, national ID, and phone inputs could retain pasted separators or Eastern Arabic digits. Implemented and exported `normalizeDigits` and `normalizeDigitsOnly` in `@halaa/shared/src/utils/locale.js` (and re-exported from `@halaa/shared/src/utils/index.js`), converting Eastern Arabic-Indic / Persian digits to Latin digits and stripping non-digits where appropriate across Web `ServiceDetailsEditForm.jsx` and contracts.
+- **Files Modified / Added:**
+  - `shared/src/utils/locale.js`
+  - `shared/src/utils/index.js`
+  - `shared/test/contracts.test.js`
+  - `halaa-web/app/[lang]/host/settings/_components/AccountSettings.js`
+  - `halaa-web/app/[lang]/host/settings/_components/BusinessSettings.js`
+  - `halaa-web/app/[lang]/vendor-dashboard/settings/page.js`
+  - `halaa-web/app/[lang]/vendor-dashboard/settings/_components/ServiceDetailsSection/ServiceDetailsEditForm.jsx`
+  - `halaa-web/ui/vendor/dynamicForm/DynamicForm.js`
+  - `halaa-web/__tests__/settings/mutationStability.test.mjs` (new)
+  - `halaa-mobile/components/settings/AccountSettings.js`
+  - `halaa-mobile/components/settings/BusinessSettings.js`
+  - `halaa-mobile/__tests__/settings/mutationStability.test.js` (new)
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md`
+- **Exact Test Commands & Results:**
+  - `cd shared && npm test` → PASS (87 tests passed, 0 failures)
+  - `cd halaa-web && npm test` → PASS (96 tests passed, 0 failures)
+  - `cd halaa-mobile && npm test` → PASS (157 tests passed, 0 failures)
+  - `cd halaa-backend && npm test` → PASS (405 tests passed, 0 failures)
+- **Exit-Criteria Verification:**
+  - Users can tell exactly which section or concern saved (profile, email, password, business data), and failed later actions do not misrepresent earlier success.
+  - Form state resets on entity, user, and initial data changes.
+  - Digit inputs convert Eastern Arabic digits to standard ASCII and strip separators cleanly.
+- **Remaining Risks / Decisions:**
+  - None.
+- **Blockers / Deferred Work:**
+  - Phase 5 is fully complete (Sessions 5.1, 5.2, 5.3). Phase 6 can proceed.
+
 
 
 

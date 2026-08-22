@@ -602,4 +602,25 @@ test("Role-aware route builders (SET-09): buildSettingsUrl, buildDashboardUrl, b
   );
 });
 
+test("Digit Normalizers (SET-07): normalizeDigits and normalizeDigitsOnly", async () => {
+  const { normalizeDigits, normalizeDigitsOnly } = await import(
+    "../src/utils/locale.js"
+  );
+
+  // Arabic-Indic digits conversion
+  assert.equal(normalizeDigits("١٢٣٤٥٦٧٨٩٠"), "1234567890");
+  assert.equal(normalizeDigits("۰۱۲۳۴۵۶۷۸۹"), "0123456789"); // Persian digits
+  assert.equal(normalizeDigits("ID: ١٠٥٨-٤٩٢"), "ID: 1058-492");
+
+  // With stripNonDigits / normalizeDigitsOnly
+  assert.equal(normalizeDigitsOnly("١٢٣ ٤٥٦ ٧٨٩"), "123456789");
+  assert.equal(normalizeDigitsOnly("SA-4000 1234 5678 9010"), "4000123456789010");
+  assert.equal(normalizeDigitsOnly("١٠٥-٨٤٩-٢٠٣"), "105849203");
+  assert.equal(normalizeDigitsOnly(""), "");
+  assert.equal(normalizeDigitsOnly(null), "");
+  assert.equal(normalizeDigitsOnly(undefined), "");
+  assert.equal(normalizeDigitsOnly(12345), "12345");
+});
+
+
 

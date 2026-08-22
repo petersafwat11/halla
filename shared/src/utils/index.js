@@ -32,6 +32,8 @@ export {
   formatPercent,
   formatCurrency,
   localizeDigits,
+  normalizeDigits,
+  normalizeDigitsOnly,
   formatDate,
   formatTime,
   formatDateTime,

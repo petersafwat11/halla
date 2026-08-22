@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -41,52 +41,87 @@ const AccountSettings = ({ user = {} }) => {
     reset,
   } = methods;
 
+  useEffect(() => {
+    reset({
+      name: user.name || "",
+      username: user.username || "",
+      email: user.email || "",
+      currentPassword: "",
+      password: "",
+      confirmPassword: "",
+    });
+  }, [user.name, user.username, user.email, reset]);
+
   const isSaving = updateProfileMutation.isPending || updatePasswordMutation.isPending;
   const isVerifying = sendCodeMutation.isPending || verifyEmailMutation.isPending;
 
   const onSubmit = async (formData) => {
-    try {
-      const profileChanged =
-        formData.name !== (user.name || "") ||
-        formData.username !== (user.username || "") ||
-        formData.email !== (user.email || "");
+    const profileChanged =
+      formData.name !== (user.name || "") ||
+      formData.username !== (user.username || "") ||
+      formData.email !== (user.email || "");
+    const passwordProvided = !!formData.password;
 
-      if (formData.password) {
-        const res = await updatePasswordMutation.mutateAsync({
+    let passwordSuccess = false;
+    let profileSuccess = false;
+    let passwordError = null;
+    let profileError = null;
+
+    if (passwordProvided) {
+      try {
+        await updatePasswordMutation.mutateAsync({
           currentPassword: formData.currentPassword,
           newPassword: formData.password,
           passwordConfirm: formData.confirmPassword,
         });
-        if (res.status === "success") {
-          toastUtils.success(res.message || t("account_updated_successfully"));
-        }
+        passwordSuccess = true;
+      } catch (err) {
+        passwordError = err;
       }
+    }
 
-      let response = null;
-      if (profileChanged) {
+    let response = null;
+    if (profileChanged) {
+      try {
         const profileData = {
           name: formData.name,
           username: formData.username,
           email: formData.email,
         };
         response = await updateProfileMutation.mutateAsync(profileData);
-
-        if (response.status === "success") {
-          toastUtils.success(response.message || t("account_updated_successfully"));
-        }
+        profileSuccess = true;
+      } catch (err) {
+        profileError = err;
       }
-
-      reset({
-        name: response?.data?.user?.name || formData.name,
-        username: response?.data?.user?.username || formData.username,
-        email: response?.data?.user?.email || formData.email,
-        currentPassword: "",
-        password: "",
-        confirmPassword: "",
-      });
-    } catch (error) {
-      toastUtils.error(error.message || t("account_update_failed"));
     }
+
+    if (passwordSuccess && profileSuccess) {
+      toastUtils.success(t("account_updated_successfully"));
+    } else if (passwordSuccess && !profileError) {
+      toastUtils.success(t("password_updated_successfully", "تم تحديث كلمة المرور بنجاح"));
+    } else if (profileSuccess && !passwordError) {
+      toastUtils.success(t("profile_updated_successfully", "تم تحديث البيانات بنجاح"));
+    } else if (passwordSuccess && profileError) {
+      toastUtils.warning(
+        `${t("password_updated_successfully", "تم تحديث كلمة المرور بنجاح")}، ${t("profile_update_failed", "ولكن فشل تحديث البيانات")}: ${profileError.message || ""}`
+      );
+    } else if (profileSuccess && passwordError) {
+      toastUtils.warning(
+        `${t("profile_updated_successfully", "تم تحديث البيانات بنجاح")}، ${t("password_update_failed", "ولكن فشل تحديث كلمة المرور")}: ${passwordError.message || ""}`
+      );
+    } else if (passwordError || profileError) {
+      const err = passwordError || profileError;
+      toastUtils.error(err.message || t("account_update_failed"));
+    }
+
+    reset({
+      name: profileSuccess ? (response?.data?.user?.name || formData.name) : formData.name,
+      username: profileSuccess ? (response?.data?.user?.username || formData.username) : formData.username,
+      email: profileSuccess ? (response?.data?.user?.email || formData.email) : formData.email,
+      currentPassword: passwordSuccess ? "" : formData.currentPassword,
+      password: passwordSuccess ? "" : formData.password,
+      confirmPassword: passwordSuccess ? "" : formData.confirmPassword,
+    });
   };
 
   const handleSendVerificationCode = async () => {
@@ -121,7 +156,7 @@ const AccountSettings = ({ user = {} }) => {
   return (
     <FormProvider {...methods}>
       <form className={styles.container} onSubmit={handleSubmit(onSubmit)}>
-          <div className={styles.inputsContainer}>
+        <div className={styles.inputsContainer}>
           <div className={styles.nameAndEmailRow}>
             <div className={styles.inputRow}>
               <InputGroup
