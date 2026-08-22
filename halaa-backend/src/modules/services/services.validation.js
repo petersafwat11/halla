@@ -30,13 +30,13 @@ const serviceLocationSchema = z
 
 const createServiceSchema = z.object({
   name: z.string().trim().min(1, 'Name is required').max(200),
-  nameAr: z.string().trim().max(200).optional(),
+  nameAr: z.string().trim().max(200).optional().or(z.literal('')),
   description: z.string().trim().max(2000).optional(),
-  descriptionAr: z.string().trim().max(2000).optional(),
+  descriptionAr: z.string().trim().max(2000).optional().or(z.literal('')),
   category: z.enum(SERVICE_CATEGORIES, { errorMap: () => ({ message: 'Invalid category' }) }),
   price: z.coerce.number().min(0, 'Price cannot be negative'),
   currency: z.string().trim().optional(),
-  duration: z.string().trim().max(100).optional(),
+  duration: z.string().trim().max(100).optional().or(z.literal('')),
   included: includedSchema.optional(),
   tags: tagsSchema.optional(),
   serviceLocation: serviceLocationSchema,
@@ -45,23 +45,38 @@ const createServiceSchema = z.object({
 const updateServiceSchema = z
   .object({
     name: z.string().trim().min(1).max(200).optional(),
-    nameAr: z.string().trim().max(200).optional(),
+    nameAr: z.string().trim().max(200).optional().or(z.literal('')),
     description: z.string().trim().max(2000).optional(),
-    descriptionAr: z.string().trim().max(2000).optional(),
+    descriptionAr: z.string().trim().max(2000).optional().or(z.literal('')),
     category: z.enum(SERVICE_CATEGORIES).optional(),
     price: z.coerce.number().min(0).optional(),
     currency: z.string().trim().optional(),
-    duration: z.string().trim().max(100).optional(),
+    duration: z.string().trim().max(100).optional().or(z.literal('')),
     included: includedSchema.optional(),
     tags: tagsSchema.optional(),
     serviceLocation: serviceLocationSchema,
   })
   .partial();
 
-const districtIdsCsv = z
-  .string()
-  .optional()
-  .transform((v) => (v && v.trim() !== '' ? v : undefined));
+
+const parseDistrictIds = (val) => {
+  if (!val) return undefined;
+  if (Array.isArray(val)) {
+    const numbers = val.map(Number).filter((n) => Number.isInteger(n) && n > 0);
+    return numbers.length > 0 ? numbers : undefined;
+  }
+  if (typeof val === 'string') {
+    const numbers = val
+      .split(',')
+      .map((s) => Number(s.trim()))
+      .filter((n) => Number.isInteger(n) && n > 0);
+    return numbers.length > 0 ? numbers : undefined;
+  }
+  if (typeof val === 'number' && Number.isInteger(val) && val > 0) {
+    return [val];
+  }
+  return undefined;
+};
 
 const getPublicServicesQuerySchema = z
   .object({
@@ -72,7 +87,8 @@ const getPublicServicesQuerySchema = z
     vendorId: z.string().regex(/^[0-9a-fA-F]{24}$/).optional(),
     regionId: z.coerce.number().int().optional(),
     cityId: z.coerce.number().int().optional(),
-    districtIds: districtIdsCsv,
+    districtIds: z.any().transform(parseDistrictIds).optional(),
+    districtId: z.coerce.number().int().optional(),
     minPrice: z.coerce.number().min(0).optional(),
     maxPrice: z.coerce.number().min(0).optional(),
     minRating: z.coerce.number().min(0).max(5).optional(),
@@ -84,4 +100,6 @@ module.exports = {
   createServiceSchema,
   updateServiceSchema,
   getPublicServicesQuerySchema,
+  parseDistrictIds,
 };
+

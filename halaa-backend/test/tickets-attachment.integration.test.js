@@ -43,8 +43,8 @@ const seedHost = async () => {
   await mongoose.connection.collection("users").insertOne({
     _id: user._id,
     role: user.role,
-    username: user.username,
-    email: "test-host@example.com",
+    username: `test-host-${user._id}`,
+    email: `test-host-${user._id}@example.com`,
     phoneNumber: user.phoneNumber,
   });
   return user;
@@ -157,3 +157,72 @@ test("list path (async _formatTicket via Promise.all) signs each attachment", as
   }
   assert.ok(["image", "video"].includes(withAttachment[0].attachment.type));
 });
+
+test("access control: another non-admin user cannot access ticket attachment", async () => {
+  const owner = await seedHost();
+  const anotherUser = await seedHost();
+  const file = imageFile(owner._id.toString());
+  const { ticket: created } = await ticketsService.createTicket({ ...baseTicket }, owner, file);
+
+  await assert.rejects(
+    async () => {
+      await ticketsService.getTicketById(created.id, anotherUser._id, false);
+    },
+    (err) => {
+      assert.equal(err.statusCode, 403);
+      assert.equal(err.code, "FORBIDDEN");
+      return true;
+    }
+  );
+});
+
+test("admin access: admin can access any user's ticket with signed attachment", async () => {
+  const owner = await seedHost();
+  const adminId = new mongoose.Types.ObjectId();
+  const file = videoFile(owner._id.toString());
+  const { ticket: created } = await ticketsService.createTicket({ ...baseTicket }, owner, file);
+
+  const { ticket } = await ticketsService.getTicketById(created.id, adminId, true);
+
+  assert.ok(ticket.attachment);
+  assert.equal(ticket.attachment.type, "video");
+  assert.ok(ticket.attachment.url.startsWith(BASE_URL));
+});
+
+test("media filter: allows supported image and video formats, rejects unsupported MIME/extension", () => {
+  const { mediaFilter } = require("../src/shared/utils/s3Upload");
+
+  const validFiles = [
+    { mimetype: "image/jpeg", originalname: "photo.jpg" },
+    { mimetype: "image/png", originalname: "screenshot.png" },
+    { mimetype: "video/mp4", originalname: "recording.mp4" },
+    { mimetype: "video/quicktime", originalname: "clip.mov" },
+    { mimetype: "video/webm", originalname: "clip.webm" },
+  ];
+
+  for (const file of validFiles) {
+    let accepted = false;
+    mediaFilter({}, file, (err, pass) => {
+      assert.equal(err, null);
+      accepted = pass;
+    });
+    assert.equal(accepted, true, `Expected ${file.originalname} to be accepted`);
+  }
+
+  const invalidFiles = [
+    { mimetype: "application/pdf", originalname: "document.pdf" },
+    { mimetype: "application/zip", originalname: "archive.zip" },
+    { mimetype: "text/plain", originalname: "notes.txt" },
+    { mimetype: "application/x-msdownload", originalname: "script.exe" },
+    { mimetype: "image/jpeg", originalname: "fake.exe" }, // Mismatched extension
+  ];
+
+  for (const file of invalidFiles) {
+    let caughtErr = null;
+    mediaFilter({}, file, (err, pass) => {
+      caughtErr = err;
+    });
+    assert.ok(caughtErr, `Expected ${file.originalname} to be rejected`);
+  }
+});
+

@@ -294,6 +294,7 @@ class DashboardService {
       },
       bestVendors: topVendorsByViews.map((v) => ({
         name: v.name || 'Unknown',
+        totalViews: v.numberOfClicks || 0,
         numberOfClicks: v.numberOfClicks || 0,
       })),
       analytics,
@@ -430,11 +431,18 @@ class DashboardService {
         ? {
           planName: subscription.planId?.name || 'Unknown',
           status: subscription.status,
-          expiresAt: subscription.endDate,
+          expiresAt: subscription.endDate || subscription.expiresAt,
           eventsUsed: subscription.usage?.eventsCreated ?? 0,
           eventsLimit: subscription.planId?.limits?.maxEvents ?? 1,
-          guestsUsed: subscription.usage?.guestsUsed ?? 0,
-          guestsLimit: subscription.planId?.limits?.maxInvitesPerEvent ?? null,
+          guestsUsed: subscription.invitesConsumed ?? subscription.usage?.guestsUsed ?? 0,
+          guestsLimit:
+            subscription.invitePool ??
+            subscription.planId?.limits?.invitePool ??
+            subscription.planId?.limits?.maxInvitesPerEvent ??
+            null,
+          invitePool: subscription.invitePool ?? subscription.planId?.limits?.invitePool ?? null,
+          compensationPool: subscription.compensationPool ?? null,
+          invitesConsumed: subscription.invitesConsumed ?? 0,
         }
         : null,
       hasEvents: totalEvents > 0,

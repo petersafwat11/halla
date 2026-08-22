@@ -52,7 +52,7 @@ const LoginView = ({ onVerified, t }) => {
     }
   };
 
-  const loading = verifyMutation.isLoading;
+  const loading = verifyMutation.isPending || verifyMutation.isLoading;
 
   return (
     <KeyboardAvoidingView

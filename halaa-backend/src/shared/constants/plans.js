@@ -66,31 +66,69 @@ const PLAN_AVAILABILITY = {
 
 const COMPENSATION_PERCENTAGE = 15;
 
-const isUnlimited    = (value) => value === -1;
+const isUnlimited = (value) => value === -1;
 // Trial detection — accepts EITHER the plan `planType` OR the plan `code`,
 // since both are `'trial'` for the trial plan. Single source of truth so
 // scheduling-window code stops doing ad-hoc `code === 'trial' ||
 // planType === 'trial'` checks that drift apart.
-const isTrialPlan    = (planTypeOrCode) => planTypeOrCode === 'trial';
-const isPerEventPlan = (planType) => ['basic_event', 'premium_event', 'business_event', 'trial'].includes(planType);
-const isPoolPlan     = (planType) => ['basic_monthly', 'premium_monthly', 'business_quarterly', 'business_annual'].includes(planType);
-const isManagedPlan  = (planType) => ['premium_event', 'premium_monthly', 'business_event', 'business_quarterly', 'business_annual'].includes(planType);
-const getPlanFamily  = (planType) => {
-  if (['basic_event', 'basic_monthly'].includes(planType)) return 'basic';
-  if (['premium_event', 'premium_monthly'].includes(planType)) return 'premium';
-  if (['business_event', 'business_quarterly', 'business_annual'].includes(planType)) return 'business';
+const isTrialPlan = (planTypeOrCode) => planTypeOrCode === 'trial';
+const isPerEventPlan = (planType) =>
+  typeof planType === 'string' &&
+  (planType.endsWith('_event') || planType === 'trial');
+const isPoolPlan = (planType) =>
+  typeof planType === 'string' &&
+  (['basic_monthly', 'premium_monthly', 'business_quarterly', 'business_annual', 'unlimited'].includes(planType) ||
+    planType.endsWith('_monthly') ||
+    planType.endsWith('_quarterly') ||
+    planType.endsWith('_annual'));
+const isManagedPlan = (planType) =>
+  typeof planType === 'string' &&
+  (planType.startsWith('premium_') || planType.startsWith('business_'));
+
+const BILLING_CYCLE_SUFFIXES = ['_monthly', '_quarterly', '_annual'];
+
+const planHasBillingCycle = (planType) =>
+  typeof planType === 'string' &&
+  BILLING_CYCLE_SUFFIXES.some((suffix) => planType.endsWith(suffix));
+
+const isRecurringBilling = (billingType) =>
+  ['monthly', 'quarterly', 'annual'].includes(billingType);
+
+const isRecurringPlan = (planType) =>
+  typeof planType === 'string' &&
+  (planType.endsWith('_monthly') ||
+    planType.endsWith('_quarterly') ||
+    planType.endsWith('_annual'));
+
+const getPlanFamily = (planType) => {
+  if (!planType || typeof planType !== 'string') return null;
+  if (planType.startsWith('basic_')) return 'basic';
+  if (planType.startsWith('premium_')) return 'premium';
+  if (planType.startsWith('business_')) return 'business';
   return null;
 };
 const getBillingType = (planType) => {
-  if (['basic_event', 'premium_event', 'business_event', 'trial'].includes(planType)) return 'event';
-  if (['basic_monthly', 'premium_monthly'].includes(planType)) return 'monthly';
-  if (planType === 'business_quarterly') return 'quarterly';
-  if (planType === 'business_annual') return 'annual';
+  if (!planType || typeof planType !== 'string') return null;
+  if (planType.endsWith('_event') || planType === 'trial') return 'event';
+  if (planType.endsWith('_monthly')) return 'monthly';
+  if (planType.endsWith('_quarterly') || planType === 'business_quarterly') return 'quarterly';
+  if (planType.endsWith('_annual') || planType === 'business_annual') return 'annual';
   return null;
+};
+
+const getBillingPeriodKey = (billingTypeOrPlanType) => {
+  if (!billingTypeOrPlanType || typeof billingTypeOrPlanType !== 'string') {
+    return 'event';
+  }
+  if (['event', 'monthly', 'quarterly', 'annual'].includes(billingTypeOrPlanType)) {
+    return billingTypeOrPlanType;
+  }
+  return getBillingType(billingTypeOrPlanType) || 'event';
 };
 
 module.exports = {
   PLAN_TYPES, PLAN_FAMILIES, BILLING_TYPES, PLAN_CODES, PLAN_AVAILABILITY,
   COMPENSATION_PERCENTAGE,
   isUnlimited, isTrialPlan, isPerEventPlan, isPoolPlan, isManagedPlan, getPlanFamily, getBillingType,
+  isRecurringBilling, isRecurringPlan, getBillingPeriodKey, planHasBillingCycle,
 };

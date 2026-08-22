@@ -4,7 +4,7 @@
  * @module modules/events/events.crud.service
  */
 
-const { EVENT_STATUS, INVITATION_TYPE } = require("../../shared/constants");
+const { EVENT_STATUS, INVITATION_TYPE, isPerEventPlan, isPoolPlan } = require("../../shared/constants");
 const { ROLES } = require("../../shared/constants/roles");
 const {
   NotFoundError,
@@ -217,25 +217,76 @@ module.exports = {
           .select(
             "invitePool compensationPool invitesConsumed status expiresAt planId"
           )
-          .populate("planId", "planType code")
+          .populate("planId", "planType code limits name")
           .lean();
         if (sub) {
+          const invitePool = sub.invitePool ?? null;
+          const compensationPool = sub.compensationPool || 0;
+          const invitesConsumed = sub.invitesConsumed || 0;
           const invitesRemaining =
-            sub.invitePool === null
+            invitePool === null
               ? null
-              : (sub.invitePool || 0) +
-                (sub.compensationPool || 0) -
-                (sub.invitesConsumed || 0);
+              : Math.max(0, invitePool + compensationPool - invitesConsumed);
+          const planType = sub.planId?.planType || null;
+          const isPerEvent = isPerEventPlan(planType);
+          const isPool = isPoolPlan(planType);
+          const isTrial = isTrialFromPlan(sub.planId);
+
           event.subscription = {
             _id: sub._id,
             status: sub.status,
             expiresAt: sub.expiresAt,
+            invitePool,
             invitesRemaining,
-            // Event-scoped trial flag so the reminder-customize UI knows the
-            // trial reminder is auto (send+10min) for THIS event's plan,
-            // instead of failing open on account-level data.
-            planType: sub.planId?.planType || null,
-            isTrial: isTrialFromPlan(sub.planId),
+            isPoolPlan: isPool,
+            isSingleEvent: isPerEvent,
+            isGuestUnlimited: invitePool === null && !isPerEvent,
+            guestLimit:
+              invitePool !== null
+                ? invitePool + compensationPool
+                : (event.guestLimit || -1),
+            planType,
+            planCode: sub.planId?.code || null,
+            isTrial,
+          };
+
+          event.capabilities = {
+            eventId: event._id,
+            hostId: event.host?._id || event.host,
+            subscriptionId: sub._id,
+            hasSubscription: true,
+            status: sub.status,
+            planType,
+            planCode: sub.planId?.code || null,
+            isSingleEvent: isPerEvent,
+            isPoolPlan: isPool,
+            isTrial,
+            invitePool,
+            invitesRemaining,
+            isGuestUnlimited: invitePool === null && !isPerEvent,
+            guestLimit:
+              invitePool !== null
+                ? invitePool + compensationPool
+                : (event.guestLimit || -1),
+            eventStatus: event.status,
+            isLive: event.status === EVENT_STATUS.LIVE,
+            isCompleted: event.status === EVENT_STATUS.COMPLETED,
+            isCancelled: event.status === EVENT_STATUS.CANCELLED,
+            isTerminal: [
+              EVENT_STATUS.COMPLETED,
+              EVENT_STATUS.CANCELLED,
+              EVENT_STATUS.DELETED,
+              EVENT_STATUS.FAILED,
+              EVENT_STATUS.ARCHIVED,
+            ].includes(event.status),
+            canEditEvent: ![
+              EVENT_STATUS.COMPLETED,
+              EVENT_STATUS.CANCELLED,
+              EVENT_STATUS.DELETED,
+              EVENT_STATUS.FAILED,
+              EVENT_STATUS.ARCHIVED,
+            ].includes(event.status),
+            allowAddOnly: event.status === EVENT_STATUS.LIVE,
           };
         }
       } catch (err) {
@@ -288,7 +339,24 @@ module.exports = {
       if (to) query["eventDetails.date"].$lte = new Date(to);
     }
 
-    const [events, total] = await Promise.all([
+    let statusQuery = { status: { $ne: 'deleted' } };
+    if (search) {
+      const searchQuery = this.buildSearchQuery(search, [
+        "eventDetails.title",
+        "eventDetails.type",
+      ]);
+      statusQuery = { ...statusQuery, ...searchQuery };
+    }
+    if (hostId) {
+      statusQuery.host = hostId;
+    }
+    if (from || to) {
+      statusQuery["eventDetails.date"] = {};
+      if (from) statusQuery["eventDetails.date"].$gte = new Date(from);
+      if (to) statusQuery["eventDetails.date"].$lte = new Date(to);
+    }
+
+    const [events, total, statusAgg] = await Promise.all([
       Event.find(query)
         .populate("host", "username email phoneNumber name")
         .select('-guestList')
@@ -297,7 +365,20 @@ module.exports = {
         .limit(limit)
         .lean(),
       Event.countDocuments(query),
+      Event.aggregate([
+        { $match: statusQuery },
+        { $group: { _id: '$status', count: { $sum: 1 } } },
+      ]),
     ]);
+
+    const rawStatusCounts = {};
+    statusAgg.forEach((s) => { rawStatusCounts[s._id] = s.count; });
+    const live = rawStatusCounts.live || 0;
+    const scheduled = rawStatusCounts.scheduled || 0;
+    const active = live + scheduled;
+    const completed = rawStatusCounts.completed || 0;
+    const cancelled = rawStatusCounts.cancelled || 0;
+    const pending_scheduling = rawStatusCounts.pending_scheduling || 0;
 
     // Get guest counts via aggregation (total + confirmed)
     const eventIds = events.map(e => e._id);
@@ -322,6 +403,16 @@ module.exports = {
         guestCount: countMap[e._id.toString()] || 0,
         confirmedCount: confirmedMap[e._id.toString()] || 0,
       })),
+      statusCounts: {
+        total,
+        active,
+        scheduled,
+        live,
+        completed,
+        cancelled,
+        pending_scheduling,
+        ...rawStatusCounts,
+      },
       pagination: {
         page,
         limit,
@@ -766,32 +857,19 @@ module.exports = {
    * @returns {Promise<Object>}
    */
   async bulkDeleteEvents(eventIds, userId) {
-    const events = await Event.find({ _id: { $in: eventIds }, host: userId })
-      .select('_id eventDetails.title subscriptionId status')
-      .lean();
-    const validIds = events.map((e) => e._id);
-    if (validIds.length === 0) return { deletedCount: 0 };
+    const uniqueIds = Array.from(new Set((eventIds || []).map(String)));
+    const succeeded = [];
+    const failed = [];
 
-    const session = await require('mongoose').startSession();
-    let deletedCount = 0;
-    try {
-      await session.withTransaction(async () => {
-        // Soft delete: mark events `deleted`; leave guest docs in place.
-        const result = await Event.updateMany(
-          { _id: { $in: validIds } },
-          { $set: { status: EVENT_STATUS.DELETED, deletedAt: new Date(), perEventGuardKey: null } },
-          { session }
-        );
-        deletedCount = result.modifiedCount;
-      });
-    } finally {
-      await session.endSession();
-    }
-
-    // Free a slot for each event that was still active before this delete.
-    for (const e of events) {
-      if (![EVENT_STATUS.DELETED, EVENT_STATUS.CANCELLED].includes(e.status)) {
-        await this._freeEventSlot(e.subscriptionId);
+    for (const id of uniqueIds) {
+      try {
+        await this.deleteEvent(id, userId, false);
+        succeeded.push(id.toString());
+      } catch (err) {
+        failed.push({
+          id: id.toString(),
+          error: err.message || 'Failed to delete event',
+        });
       }
     }
 
@@ -800,12 +878,20 @@ module.exports = {
       actor: { _id: userId },
       targetType: 'event',
       metadata: {
-        deletedCount,
-        eventIds: validIds.map((id) => id.toString()),
+        deletedCount: succeeded.length,
+        eventIds: succeeded,
+        failedCount: failed.length,
       },
     }).catch(() => {});
 
-    return { deletedCount };
+    return {
+      success: true,
+      count: succeeded.length,
+      deletedCount: succeeded.length,
+      succeeded,
+      failed,
+      message: `${succeeded.length} event(s) deleted successfully`,
+    };
   },
 
   /**

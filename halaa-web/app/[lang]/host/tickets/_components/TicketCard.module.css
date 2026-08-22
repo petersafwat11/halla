@@ -165,6 +165,31 @@
   line-height: 1.6rem;
 }
 
+.attachmentRow {
+  display: flex;
+  align-items: center;
+  margin-top: 0.4rem;
+}
+
+.attachmentButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 1rem;
+  border-radius: 0.6rem;
+  border: 1px solid #c28e5c;
+  background: #faf5f0;
+  color: #c28e5c;
+  font-size: 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+}
+
+.attachmentButton:hover {
+  background: #f5ece4;
+}
+
 @media screen and (max-width: 768px) {
   .cardContent {
     gap: 1.2rem;

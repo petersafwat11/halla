@@ -3,6 +3,12 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { FaCalendarAlt, FaUsers, FaGift, FaLayerGroup } from "react-icons/fa";
 import { getLocalized } from "@halaa/shared/utils/locale";
+import {
+  COMPENSATION_PERCENTAGE,
+  isPoolPlan,
+  isRecurringBilling,
+  getBillingType,
+} from "@halaa/shared/constants/plans";
 import styles from "../summary.module.css";
 
 const PlanSummaryCard = ({
@@ -15,23 +21,26 @@ const PlanSummaryCard = ({
 }) => {
   const { t: tHook, i18n } = useTranslation("plans");
   const t = tProp || tHook;
-  const COMPENSATION_PERCENTAGE = 15;
 
-  // Detect pool plans from the plan's own billingType (mirrors <PlanDescription>),
-  // falling back to the `billingType` prop. The business-plans flow renders this
-  // card without passing `billingType`, so relying on the prop alone would mark
-  // quarterly/annual pool plans as per-event and read a null `invites`.
-  const planBillingType = selectedPlan?.billingType || billingType;
-  const isMonthly = ["monthly", "quarterly", "annual"].includes(planBillingType);
+  const planType = selectedPlan?.planType;
+  const effectiveBillingType =
+    selectedPlan?.billingType ||
+    getBillingType(planType) ||
+    billingType ||
+    "event";
+  const isPool =
+    isPoolPlan(planType) ||
+    isRecurringBilling(effectiveBillingType) ||
+    selectedPlan?.isPoolSubscription === true;
 
   // Base invites: pool plans use invitePool; per-event plans use the selected
   // tier (`invites`, set by the host flow) and fall back to the plan's invitePool
   // — which per-event plans now also carry — so the row never shows 0.
   const invitePool = selectedPlan?.invitePool ?? selectedPlan?.limits?.invitePool ?? 0;
-  const inviteCount = isMonthly
+  const inviteCount = isPool
     ? invitePool
     : selectedPlan?.invites ?? invitePool;
-  const compensationCount = isMonthly
+  const compensationCount = isPool
     ? selectedPlan?.compensationPool ?? Math.floor(invitePool * (COMPENSATION_PERCENTAGE / 100))
     : Math.floor((selectedPlan?.invites ?? invitePool) * (COMPENSATION_PERCENTAGE / 100));
 
@@ -73,7 +82,7 @@ const PlanSummaryCard = ({
               {getLocalized(selectedPlan, "name", i18n.language) || planDisplayName}
             </h3>
             <p className={styles.planType}>
-              {isMonthly
+              {isPool
                 ? t("summary.unlimitedEvents")
                 : t("summary.singleEvent")}
             </p>
@@ -90,7 +99,7 @@ const PlanSummaryCard = ({
           <div className={styles.featureItem}>
             <FaUsers className={styles.featureIcon} />
             <span>
-              {isMonthly
+              {isPool
                 ? t("summary.invitePoolLabel", { count: inviteCount })
                 : t("summary.invitesLabel", { count: inviteCount })}
             </span>
@@ -98,7 +107,7 @@ const PlanSummaryCard = ({
           <div className={styles.featureItem}>
             <FaCalendarAlt className={styles.featureIcon} />
             <span>
-              {isMonthly
+              {isPool
                 ? t("summary.unlimitedEvents")
                 : t("summary.singleEvent90Days")}
             </span>
@@ -156,7 +165,7 @@ const PlanSummaryCard = ({
                 })}
           </p>
           <p className={styles.totalInvitesHint}>
-            {isMonthly
+            {isPool
               ? t("summary.poolModelHint", {
                   defaultValue:
                     "Pool plan: many events share these invites.",
@@ -173,7 +182,13 @@ const PlanSummaryCard = ({
             {t("summary.billingPeriodLabel")}
           </span>
           <span className={styles.billingValue}>
-            {isMonthly ? t("summary.periods.monthly") : t("summary.periods.event")}
+            {effectiveBillingType === "annual" || effectiveBillingType === "yearly"
+              ? t("summary.periods.annual", { defaultValue: t("summary.periods.yearly", { defaultValue: "1 year (365 days)" }) })
+              : effectiveBillingType === "quarterly"
+              ? t("summary.periods.quarterly", { defaultValue: "90 days" })
+              : effectiveBillingType === "monthly"
+              ? t("summary.periods.monthly", { defaultValue: "30 days" })
+              : t("summary.periods.event", { defaultValue: "90 days (1 event)" })}
           </span>
         </div>
       </div>

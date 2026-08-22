@@ -93,16 +93,20 @@ const VendorSettings = () => {
       passwordConfirm,
     } = data;
 
-    try {
-      // 1) Identity + logo go to the vendorData section. ownerFullName is the
-      //    field that drives display (see the `roleData.ownerFullName ||
-      //    user.name` fallback below), so it MUST be written via the section
-      //    endpoint, not as top-level user.name.
-      const vendorPayload = {};
-      if (ownerFullName !== undefined) vendorPayload.ownerFullName = ownerFullName;
-      if (brandName !== undefined) vendorPayload.brandName = brandName;
-      if (businessLogo instanceof File) vendorPayload.businessLogo = businessLogo;
-      if (Object.keys(vendorPayload).length > 0) {
+    let vendorDataSuccess = false;
+    let emailSuccess = false;
+    let passwordSuccess = false;
+    let vendorDataError = null;
+    let emailError = null;
+    let passwordError = null;
+
+    // 1) Identity + logo go to the vendorData section.
+    const vendorPayload = {};
+    if (ownerFullName !== undefined) vendorPayload.ownerFullName = ownerFullName;
+    if (brandName !== undefined) vendorPayload.brandName = brandName;
+    if (businessLogo instanceof File) vendorPayload.businessLogo = businessLogo;
+    if (Object.keys(vendorPayload).length > 0) {
+      try {
         const payload = hasAnyFile(vendorPayload)
           ? buildFormData(vendorPayload)
           : vendorPayload;
@@ -110,31 +114,53 @@ const VendorSettings = () => {
           section: "vendorData",
           data: payload,
         });
+        vendorDataSuccess = true;
+      } catch (err) {
+        vendorDataError = err;
       }
+    }
 
-      // 2) Email is a top-level user field. Only PATCH if it actually changed
-      //    so we don't reset `emailVerified` on every save.
-      if (
-        email &&
-        email.toLowerCase() !== (vendorData?.email || "").toLowerCase()
-      ) {
+    // 2) Email is a top-level user field. Only PATCH if it actually changed.
+    if (
+      email &&
+      email.toLowerCase() !== (vendorData?.email || "").toLowerCase()
+    ) {
+      try {
         await updateProfileMutation.mutateAsync({ email });
+        emailSuccess = true;
+      } catch (err) {
+        emailError = err;
       }
+    }
 
-      // 3) Optional password change — dedicated endpoint.
-      if (newPassword && currentPassword) {
+    // 3) Optional password change — dedicated endpoint.
+    if (newPassword && currentPassword) {
+      try {
         await updatePasswordMutation.mutateAsync({
           currentPassword,
           newPassword,
           passwordConfirm: passwordConfirm || newPassword,
         });
+        passwordSuccess = true;
+      } catch (err) {
+        passwordError = err;
       }
+    }
 
+    const anySuccess = vendorDataSuccess || emailSuccess || passwordSuccess;
+    const errors = [vendorDataError, emailError, passwordError].filter(Boolean);
+
+    if (errors.length === 0 && anySuccess) {
       toast.success(t("messages.saveSuccess", "Changes saved successfully"));
       refetchProfile();
-    } catch (error) {
+    } else if (errors.length > 0 && anySuccess) {
+      toast.warning(
+        `${t("messages.partialSuccess", "Some changes were saved, but an error occurred")}: ${errors[0]?.response?.data?.message || errors[0]?.message || ""}`
+      );
+      refetchProfile();
+    } else if (errors.length > 0) {
       toast.error(
-        error?.response?.data?.message ||
+        errors[0]?.response?.data?.message ||
           t("messages.saveError", "Failed to save changes")
       );
     }

@@ -42,6 +42,7 @@ export {
 // Re-export useEventById for convenience
 export { useEventById } from "./queries/useEvent";
 export { useEventSubscriptionInfo } from "./queries/useSubscriptionInfo";
+export { useEventCapabilities, useEventEntitlement } from "./queries/useEventCapabilities";
 
 // For backward compatibility - also export from reactQueryHooks location
 // Use: import { useMyEvents } from "@/hooks/events";

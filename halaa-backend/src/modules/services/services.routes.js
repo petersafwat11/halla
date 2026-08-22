@@ -17,6 +17,7 @@ const router = express.Router();
 const servicesController = require('./services.controller');
 const { protect, optionalAuth } = require('../../shared/middleware/auth');
 const { restrictTo } = require('../../shared/middleware/rbac');
+const { analyticsLimiter } = require('../../shared/middleware/rateLimiter');
 const {
   validateObjectId,
   validateZod,
@@ -28,6 +29,7 @@ const {
   updateServiceSchema,
   getPublicServicesQuerySchema,
 } = require('./services.validation');
+const { marketplaceTrackSchema } = require('../vendors/vendors.validation');
 
 const { uploadServiceImage } = require('../../shared/utils/s3Upload');
 // UGC gate (§6 · UGC-02): vendor service name/description are PUBLIC marketplace
@@ -166,6 +168,26 @@ router.get(
  *         $ref: '#/components/responses/NotFound'
  */
 router.get('/:id', protect, validateObjectId('id'), servicesController.getService);
+
+/**
+ * @swagger
+ * /services/analytics/track:
+ *   post:
+ *     summary: Track marketplace analytics event (services alias)
+ *     description: Tracks a deduplicated interaction event
+ *     tags: [Services]
+ *     security: []
+ *     responses:
+ *       200:
+ *         description: Event recorded successfully
+ */
+router.post(
+  '/analytics/track',
+  analyticsLimiter,
+  optionalAuth,
+  validateZod(marketplaceTrackSchema),
+  servicesController.trackAnalytics
+);
 
 // Protected routes (vendor only)
 router.use(protect);

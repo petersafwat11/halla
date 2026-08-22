@@ -3,6 +3,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/services/http";
 import { API_PATHS } from "@halaa/shared/api/paths";
+import { toBulkIdsPayload } from "@halaa/shared/utils/adapters";
 import { buildMutationOptions } from "./_shared";
 import { eventsKeys } from "../keys";
 import { dashboardKeys } from "@/hooks/dashboard/keys";
@@ -64,7 +65,7 @@ const buildMutations = (queryClient) => ({
       apiRequest({
         method: "POST",
         path: API_PATHS.events.bulkDeleteEvents,
-        data: { eventIds },
+        data: toBulkIdsPayload(eventIds),
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events"] });

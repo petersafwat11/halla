@@ -58,7 +58,10 @@ const CurrentPlanCard = ({ subscription, usage }) => {
     ? (subscription.invitePool ?? 0)
     : (subscription.limits?.maxInvitesPerEvent ?? 0);
 
-  const daysRemaining = subscription.daysRemaining || 0;
+  const daysRemaining =
+    subscription.daysRemaining === -1 || subscription.daysRemaining == null
+      ? t("currentPlan.noExpiry")
+      : Math.max(0, subscription.daysRemaining);
 
   const eventsPercentRaw = eventsUnlimited
     ? 0

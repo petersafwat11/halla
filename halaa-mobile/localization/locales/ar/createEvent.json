@@ -423,5 +423,34 @@
         "invalidColor": "يجب أن يكون لوناً صالحاً (مثال: #FF5733)"
       }
     }
-  }
+  },
+  "preview_guest_placeholder": "اسم الضيف",
+  "preview_body_placeholder": "يسرنا دعوتكم لحضور...",
+  "preview_input_placeholder": "نص الرسالة",
+  "saved_design": "التصميم المحفوظ",
+  "summary": {
+    "metrics": {
+      "guests": "المدعوون",
+      "moderators": "المشرفون",
+      "dateTime": "التاريخ والوقت",
+      "location": "الموقع"
+    },
+    "schedule": {
+      "title": "جدولة الإرسال",
+      "launchesImmediately": "إرسال فوري"
+    },
+    "invitationPreview": {
+      "title": "معاينة رسالة الواتساب",
+      "whatsappTemplate": "قالب الواتساب",
+      "noImageSelected": "لم يتم اختيار صورة",
+      "noTemplateSelected": "لم يتم اختيار قالب",
+      "attending": "سأحضر",
+      "declining": "أعتذر"
+    }
+  },
+  "total_label": "إجمالي",
+  "guest_singular": "ضيف",
+  "moderator_singular": "مشرف",
+  "no_guests_yet": "لا يوجد ضيوف حتى الآن",
+  "no_moderators_yet": "لا يوجد مشرفون حتى الآن"
 }

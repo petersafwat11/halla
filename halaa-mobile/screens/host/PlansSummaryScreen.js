@@ -39,6 +39,7 @@ import PurchaseStatusModal from "../../components/plans/PurchaseStatusModal";
 import DisclosureList from "../../components/plans/DisclosureList";
 import PurchaseLegalLinks from "../../components/plans/PurchaseLegalLinks";
 import DirectionalIonicon from "../../components/common/DirectionalIonicon";
+import { formatSar, round2, validateCardExpiry, checkLuhn, buildCreditCardSource } from "@halaa/shared/utils";
 import { colors, spacing, borderRadius, typography } from "../../styles/tokens";
 
 const buildCheckoutAddons = (items = []) =>
@@ -201,17 +202,9 @@ const PlansSummaryScreen = () => {
   // Mirror web's buildSource: { type, ...fields } per payment method.
   // Card fields stay strings (number/cvc) except month/year which Moyasar
   // expects as integers. The validation just below catches client-side
-  // misses so we never POST an obviously-invalid source.
   const buildSource = () => {
     if (paymentMethod === "creditcard") {
-      return {
-        type: "creditcard",
-        name: cardData?.name,
-        number: cardData?.number,
-        month: Number(cardData?.month),
-        year: Number(cardData?.year),
-        cvc: cardData?.cvc,
-      };
+      return buildCreditCardSource(cardData || {});
     }
     if (paymentMethod === "stcpay") {
       return { type: "stcpay", mobile: stcMobile };
@@ -223,20 +216,6 @@ const PlansSummaryScreen = () => {
   };
 
   const [errors, setErrors] = useState({});
-
-  const checkLuhn = (num) => {
-    let sum = 0;
-    let shouldDouble = false;
-    for (let i = num.length - 1; i >= 0; i--) {
-      let digit = parseInt(num.charAt(i), 10);
-      if (shouldDouble) {
-        if ((digit *= 2) > 9) digit -= 9;
-      }
-      sum += digit;
-      shouldDouble = !shouldDouble;
-    }
-    return sum % 10 === 0;
-  };
 
   const validateSource = () => {
     const newErrors = {};
@@ -261,20 +240,9 @@ const PlansSummaryScreen = () => {
         newErrors.number = t("checkout.errors.numberInvalid", "Invalid card number");
       }
 
-      if (!month || !year) {
-        newErrors.expiry = t("checkout.errors.expiryRequired", "Expiry date is required");
-      } else {
-        const m = parseInt(month, 10);
-        const y = parseInt(year, 10);
-        const currentDate = new Date();
-        const currentYear = currentDate.getFullYear();
-        const currentMonth = currentDate.getMonth() + 1;
-
-        if (isNaN(m) || m < 1 || m > 12) {
-          newErrors.expiry = t("checkout.errors.expiryMonthInvalid", "Invalid month (01-12)");
-        } else if (isNaN(y) || y < currentYear || (y === currentYear && m < currentMonth)) {
-          newErrors.expiry = t("checkout.errors.expiryExpired", "Card has expired");
-        }
+      const expiryCheck = validateCardExpiry(month, year);
+      if (!expiryCheck.valid) {
+        newErrors.expiry = t(expiryCheck.errorKey, "Invalid expiry date");
       }
 
       if (!cvc) {
@@ -354,11 +322,13 @@ const PlansSummaryScreen = () => {
   };
 
   const handlePayment = async () => {
+    if (isProcessing) return;
     if (!selectedPlan) return;
 
     if (!validateSource()) {
       return;
     }
+
 
     try {
       const result = await checkoutMutation.mutateAsync({
@@ -368,6 +338,8 @@ const PlansSummaryScreen = () => {
           ? { discountCode: discountCode.trim() }
           : {}),
         source: buildSource(),
+        expectedAmount: finalTotal,
+        expectedTotal: finalTotal,
       });
       if (result?.requiresAction) {
         // useCheckout ran the 3DS step in an in-app browser that has now
@@ -659,7 +631,7 @@ const PlansSummaryScreen = () => {
                 ) : (
                   <>
                     <Text style={styles.footerTotalAmount}>
-                      {finalTotal.toFixed(0)}
+                      {formatSar(finalTotal, { trimTrailingZeros: true })}
                     </Text>
                     <Text style={styles.footerTotalCurrency}>
                       {t("summary.currency")}

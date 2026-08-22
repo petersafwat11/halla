@@ -735,6 +735,42 @@
         }
       }
     },
+    "errors": {
+      "arabicNameRequired": "اسم المنشأة باللغة العربية مطلوب",
+      "arabicNameMinLength": "يجب أن يتكون الاسم بالعربية من حرفين على الأقل",
+      "arabicNameMaxLength": "يجب أن يكون الاسم بالعربية أقل من 50 حرفاً",
+      "arabicNameFormat": "يجب أن يحتوي الاسم بالعربية على حروف عربية ومسافات فقط",
+      "englishNameRequired": "اسم المنشأة باللغة الإنجليزية مطلوب",
+      "englishNameMinLength": "يجب أن يتكون الاسم بالإنجليزية من حرفين على الأقل",
+      "englishNameMaxLength": "يجب أن يكون الاسم بالإنجليزية أقل من 50 حرفاً",
+      "englishNameFormat": "يجب أن يحتوي الاسم بالإنجليزية على حروف إنجليزية ومسافات فقط",
+      "logoRequired": "الشعار مطلوب",
+      "primaryColorRequired": "اللون الأساسي مطلوب",
+      "invalidColorFormat": "صيغة اللون غير صحيحة",
+      "secondaryColorRequired": "اللون الثانوي مطلوب",
+      "invalidFontFamily": "صيغة نوع الخط غير صحيحة"
+    },
+    "brandingOptions": {
+      "favicon": {
+        "label": "أيقونة المفضلة (اختياري)",
+        "placeholder": "رفع أيقونة المفضلة"
+      },
+      "themeStyle": {
+        "label": "نمط المظهر",
+        "options": [
+          "فاتح",
+          "داكن",
+          "تلقائي"
+        ]
+      }
+    },
+    "language": {
+      "label": "لغة المنصة",
+      "options": [
+        "العربية",
+        "الإنجليزية"
+      ]
+    },
     "hostSignup": {
       "greeting": {
         "title": "مرحبًا بك في هلا",

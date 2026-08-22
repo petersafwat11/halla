@@ -8,7 +8,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "eslint . --max-warnings 0",
-    "test": "node --test \"__tests__/**/*.test.js\""
+    "test": "node --test \"__tests__/**/*.test.js\" \"__tests__/**/*.test.mjs\""
   },
   "dependencies": {
     "@expo-google-fonts/cairo": "^0.4.1",

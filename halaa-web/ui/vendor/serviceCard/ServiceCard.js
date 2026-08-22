@@ -5,13 +5,14 @@ import styles from "./serviceCard.module.css";
 import { useTranslation } from "react-i18next";
 import { getImageUrl as resolveImageUrl } from "@/utils/vendorHelpers";
 
-const PLACEHOLDER_IMAGE = "/images/placeholder-service.jpg";
+const PLACEHOLDER_IMAGE = "/images/placeholder-service.svg";
 
 const getImageUrl = (image) => {
   if (!image) return PLACEHOLDER_IMAGE;
   const resolved = resolveImageUrl(image);
   return resolved || PLACEHOLDER_IMAGE;
 };
+
 
 const ServiceCard = ({ service, onToggleStatus, onDelete, onEdit }) => {
   const { t } = useTranslation("vendorServices");

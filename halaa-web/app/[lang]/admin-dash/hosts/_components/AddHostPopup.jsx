@@ -23,7 +23,9 @@ export default function AddHostPopup({ onClose }) {
 
   const onSubmit = async (data) => {
     try {
-      await createHost.mutateAsync(data);
+      const payload = { ...data };
+      if (!payload.password) delete payload.password;
+      await createHost.mutateAsync(payload);
       toastUtils.success(t("addHost.success", "Host added successfully"));
       onClose();
     } catch (error) {

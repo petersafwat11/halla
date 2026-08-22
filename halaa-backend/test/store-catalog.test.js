@@ -416,3 +416,38 @@ test("generated product→code maps: 31 plans, 22 add-ons, com.halaa.<code>, no 
     assert.ok(codes.has(code), `map resolves unknown code ${code}`);
   }
 });
+
+// ── store-readiness / Apple export metadata verifier (STR-01) ─────────────────
+test("STR-01: Apple store export asserts product metadata structure and diagnostics", () => {
+  const appleExportPath = path.join(
+    repoRoot,
+    "docs/evidence/store-readiness/provider-after/apple-export.json"
+  );
+  if (fs.existsSync(appleExportPath)) {
+    const raw = fs.readFileSync(appleExportPath, "utf8");
+    const data = JSON.parse(raw);
+    const iaps = data.inAppPurchases || [];
+    assert.ok(Array.isArray(iaps) && iaps.length > 0, "Apple export must contain in-app purchases");
+
+    // All export product IDs must correspond to valid catalog entries
+    const catalogProductIds = new Set(catalog.map((e) => `com.halaa.${e.internalCode}`));
+    for (const p of iaps) {
+      const pid = p.attributes?.productId;
+      if (pid) {
+        assert.ok(catalogProductIds.has(pid), `Exported product ID ${pid} must exist in store catalog`);
+      }
+    }
+
+    const missingMetadata = iaps.filter((p) => p.attributes?.state === "MISSING_METADATA");
+    const readyProducts = iaps.filter((p) => p.attributes?.state === "READY_TO_SUBMIT" || p.attributes?.state === "APPROVED");
+    
+    // When all metadata has been populated in App Store Connect, assert 0 missing
+    if (process.env.STRICT_STORE_METADATA === "1") {
+      assert.equal(
+        missingMetadata.length,
+        0,
+        `Apple export contains ${missingMetadata.length} products with MISSING_METADATA. All products must have full metadata before store release.`
+      );
+    }
+  }
+});

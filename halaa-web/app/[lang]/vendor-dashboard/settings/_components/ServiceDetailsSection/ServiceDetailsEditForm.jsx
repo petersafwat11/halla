@@ -11,6 +11,7 @@ import { useRegions, useCitiesByRegion, useDistrictsByCity } from "@/hooks/locat
 import { validateForm, serviceDetailsSchema } from "@/utils/schemas/vendorSettings";
 import { apiRequest } from "@/services/http";
 import { API_PATHS } from "@halaa/shared/api/paths";
+import { normalizeDigitsOnly } from "@halaa/shared/utils/locale";
 
 const ServiceDetailsEditForm = ({
   data,
@@ -28,7 +29,7 @@ const ServiceDetailsEditForm = ({
     taglineEn: data?.taglineEn || "",
     aboutAr: data?.aboutAr || "",
     aboutEn: data?.aboutEn || "",
-    nationalId: data?.nationalId || "",
+    nationalId: normalizeDigitsOnly(data?.nationalId || ""),
   });
   const [errors, setErrors] = useState({});
   const [nationalIdImages, setNationalIdImages] = useState([]);
@@ -38,6 +39,23 @@ const ServiceDetailsEditForm = ({
   const [selectedRegion, setSelectedRegion] = useState(data?.serviceLocation?.regionId || "");
   const [selectedCity, setSelectedCity] = useState(data?.serviceLocation?.cityId || "");
   const [selectedDistricts, setSelectedDistricts] = useState(data?.serviceLocation?.districtIds || []);
+
+  React.useEffect(() => {
+    setFormData({
+      description: data?.serviceDescription || "",
+      taglineAr: data?.taglineAr || "",
+      taglineEn: data?.taglineEn || "",
+      aboutAr: data?.aboutAr || "",
+      aboutEn: data?.aboutEn || "",
+      nationalId: normalizeDigitsOnly(data?.nationalId || ""),
+    });
+    setSelectedRegion(data?.serviceLocation?.regionId || "");
+    setSelectedCity(data?.serviceLocation?.cityId || "");
+    setSelectedDistricts(data?.serviceLocation?.districtIds || []);
+    setNationalIdImages([]);
+    setCommercialRecordImages([]);
+    setErrors({});
+  }, [data]);
 
   const existingNationalIdImages = data?.nationalIdImage ? [data.nationalIdImage] : [];
   const existingCommercialImages = data?.commercialRecordImage ? [data.commercialRecordImage] : [];
@@ -211,7 +229,7 @@ const ServiceDetailsEditForm = ({
             type="text"
             className={styles.editFormInput}
             value={formData.nationalId}
-            onChange={(e) => setFormData({ ...formData, nationalId: e.target.value })}
+            onChange={(e) => setFormData({ ...formData, nationalId: normalizeDigitsOnly(e.target.value) })}
             placeholder={t("serviceDetails.nationalIdPlaceholder", "Enter national ID")}
             inputMode="numeric"
             maxLength={10}

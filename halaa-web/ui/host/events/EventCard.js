@@ -9,6 +9,7 @@ import TestPopup from "@/ui/host/popups/testPopup/TestPopup";
 import ScheduleSendingPopup from "@/ui/host/popups/scheduleSendingPopup/ScheduleSendingPopup";
 import { useRouter } from "next/navigation";
 import UseLanguageChange from "@/hooks/UseLanguageChange";
+import { buildUpdateEventUrl } from "@halaa/shared/utils";
 
 function EventCard({ event }) {
   const isMobile = useMediaQuery("(max-width: 1024px)");
@@ -63,10 +64,17 @@ function EventCard({ event }) {
     setIsDropdownOpen(!isDropdownOpen);
   };
 
-  const handleUpdateNavigation = (section) => {
-    if (event._id) {
+  const handleUpdateNavigation = (stepOrSection) => {
+    const eventId = event._id || event.id;
+    if (eventId) {
       router.push(
-        `/${currentLocale}/host/update-event?id=${event._id}&section=${section}`
+        buildUpdateEventUrl({
+          locale: currentLocale,
+          basePath: "host",
+          eventId,
+          section: typeof stepOrSection === "string" ? stepOrSection : undefined,
+          step: typeof stepOrSection === "number" ? stepOrSection : 1,
+        })
       );
     }
     setIsDropdownOpen(false);

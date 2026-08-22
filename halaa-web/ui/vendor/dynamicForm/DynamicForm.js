@@ -58,6 +58,8 @@ const DynamicForm = ({
         initial[field.name] = initialData[field.name] ?? "";
       });
       setFormData(initial);
+      setErrors({});
+      setFileData({});
     }
   }, [schema, initialData]);
 

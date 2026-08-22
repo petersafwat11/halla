@@ -3,6 +3,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/services/http";
 import { API_PATHS } from "@halaa/shared/api/paths";
+import { toBulkIdsPayload } from "@halaa/shared/utils/adapters";
 import { ticketsKeys } from "./keys";
 
 /**
@@ -68,6 +69,34 @@ export const useTicketMutation = (action) => {
         apiRequest({
           method: "DELETE",
           path: API_PATHS.tickets.deleteTicket(ticketId),
+        }),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ticketsKeys.all });
+      },
+    },
+
+    bulkDelete: {
+      mutationFn: (ticketIds) =>
+        apiRequest({
+          method: "POST",
+          path: API_PATHS.tickets.bulkDelete,
+          data: toBulkIdsPayload(ticketIds),
+        }),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ticketsKeys.all });
+      },
+    },
+
+    bulkStatus: {
+      mutationFn: ({ ticketIds, ids, status, resolution }) =>
+        apiRequest({
+          method: "POST",
+          path: API_PATHS.tickets.bulkStatus,
+          data: {
+            ...toBulkIdsPayload(ticketIds || ids),
+            status,
+            ...(resolution !== undefined && { resolution }),
+          },
         }),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ticketsKeys.all });

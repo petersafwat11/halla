@@ -1,11 +1,11 @@
 /**
  * Phone Number Utilities
- * Pure helper functions for phone number normalization
+ * Pure helper functions for phone number normalization and E.164 formatting
  * @module shared/utils/phone
  */
 
 /**
- * Normalize phone number to international format
+ * Normalize phone number to international digit string (without leading +)
  * Supports Saudi Arabia (+966) and Egypt (+20)
  *
  * @param {string} phoneNumber - Raw phone number input
@@ -13,90 +13,128 @@
  */
 const normalizePhoneNumber = (phoneNumber) => {
   if (!phoneNumber) return '';
-  
-  let normalized = phoneNumber.replace(/\s+/g, '').replace(/-/g, '');
 
-  // Remove all non-digit characters except leading +
-  const hasPlus = normalized.startsWith('+');
-  normalized = normalized.replace(/\D/g, '');
+  let cleaned = String(phoneNumber).replace(/\s+/g, '').replace(/[-()]/g, '');
 
-  // Add country code if not present
-  if (!hasPlus) {
-    // Saudi Arabia: 10 digits starting with 05 -> remove 0, add 966
-    if (normalized.startsWith('05') && normalized.length === 10) {
-      normalized = '966' + normalized.slice(1);
-    }
-    // Saudi Arabia: 9 digits starting with 5 -> add 966
-    else if (normalized.startsWith('5') && normalized.length === 9) {
-      normalized = '966' + normalized;
-    }
-    // Egypt: 11 digits starting with 01 -> remove leading 0, add 20
-    else if (normalized.startsWith('01') && normalized.length === 11) {
-      normalized = '20' + normalized.slice(1);
-    }
-    // Already has country code (starts with 966)
-    else if (normalized.startsWith('966')) {
-      // Keep as is
-    }
-    // Already has country code (starts with 20 for Egypt)
-    else if (normalized.startsWith('20') && normalized.length === 12) {
-      // Keep as is
-    }
+  // Remove leading 00 international prefix if present
+  if (cleaned.startsWith('00')) {
+    cleaned = cleaned.slice(2);
   }
 
-  return normalized;
+  const hasPlus = cleaned.startsWith('+');
+  let digits = cleaned.replace(/\D/g, '');
+
+  if (!digits) return '';
+
+  // Handle Saudi prefix with accidental redundant leading zero (e.g. 96605...)
+  if (digits.startsWith('96605') && digits.length === 13) {
+    digits = '966' + digits.slice(4);
+  }
+  // Handle Egypt prefix with accidental redundant leading zero (e.g. 2001...)
+  if (digits.startsWith('2001') && digits.length === 13) {
+    digits = '20' + digits.slice(3);
+  }
+
+  // If leading plus or explicit country code was given:
+  if (hasPlus || digits.startsWith('966') || digits.startsWith('20')) {
+    return digits;
+  }
+
+  // Saudi Arabia: 10 digits starting with 05 -> remove 0, add 966
+  if (digits.startsWith('05') && digits.length === 10) {
+    return '966' + digits.slice(1);
+  }
+  // Saudi Arabia: 9 digits starting with 5 -> add 966
+  if (digits.startsWith('5') && digits.length === 9) {
+    return '966' + digits;
+  }
+  // Egypt: 11 digits starting with 01 -> remove leading 0, add 20
+  if (digits.startsWith('01') && digits.length === 11) {
+    return '20' + digits.slice(1);
+  }
+  // Egypt: 10 digits starting with 1 -> add 20
+  if (digits.startsWith('1') && digits.length === 10) {
+    return '20' + digits;
+  }
+
+  return digits;
+};
+
+/**
+ * Format phone number into canonical E.164 string with leading '+'.
+ * e.g. "+966501234567", "+201012345678"
+ *
+ * @param {string} phoneNumber - Raw or normalized phone number
+ * @returns {string} E.164 formatted string or empty string
+ */
+const toE164 = (phoneNumber) => {
+  if (!phoneNumber) return '';
+  const normalized = normalizePhoneNumber(phoneNumber);
+  if (!normalized) return '';
+  return normalized.startsWith('+') ? normalized : `+${normalized}`;
 };
 
 /**
  * Validate and format phone number
  * @param {string} phoneNumber - Raw phone number input
- * @returns {Object} { isValid, formatted, countryCode, error }
+ * @returns {Object} { isValid, formatted, e164, countryCode, country, error }
  */
 const validateAndFormatPhone = (phoneNumber) => {
   if (!phoneNumber) {
     return { isValid: false, error: 'Phone number is required' };
   }
 
-  const cleaned = phoneNumber.replace(/\s+/g, '').replace(/-/g, '');
-  const digits = cleaned.replace(/\D/g, '');
-  const hasPlus = cleaned.startsWith('+');
+  const normalized = normalizePhoneNumber(phoneNumber);
 
-  // Already international format or starts with country code
-  if (hasPlus || digits.startsWith('966') || (digits.startsWith('20') && digits.length >= 12)) {
-    const raw = digits.startsWith('966') ? digits : (digits.startsWith('20') ? digits : digits);
-    // Saudi
-    if (digits.startsWith('966')) {
-      const nat = digits.substring(3);
-      if (nat.length === 9 && nat.startsWith('5')) {
-        return { isValid: true, formatted: `966${nat}`, countryCode: '+966', country: 'SA' };
-      }
-      return { isValid: false, error: 'Saudi numbers must be +966 followed by 9 digits starting with 5' };
+  // Saudi check: 966 followed by 9 digits starting with 5 (total 12 digits)
+  if (normalized.startsWith('966')) {
+    const nat = normalized.slice(3);
+    if (nat.length === 9 && nat.startsWith('5')) {
+      return {
+        isValid: true,
+        formatted: normalized,
+        e164: `+${normalized}`,
+        countryCode: '+966',
+        country: 'SA',
+      };
     }
-    // Egypt
-    if (digits.startsWith('20')) {
-      const nat = digits.substring(2);
-      if (nat.length === 10 && nat.startsWith('1')) {
-        return { isValid: true, formatted: `20${nat}`, countryCode: '+20', country: 'EG' };
-      }
-      return { isValid: false, error: 'Egyptian numbers must be +20 followed by 10 digits starting with 1' };
+    return {
+      isValid: false,
+      error: 'Saudi numbers must be +966 followed by 9 digits starting with 5',
+    };
+  }
+
+  // Egypt check: 20 followed by 10 digits starting with 1 (total 12 digits)
+  if (normalized.startsWith('20')) {
+    const nat = normalized.slice(2);
+    if (nat.length === 10 && nat.startsWith('1')) {
+      return {
+        isValid: true,
+        formatted: normalized,
+        e164: `+${normalized}`,
+        countryCode: '+20',
+        country: 'EG',
+      };
     }
-    return { isValid: false, error: 'Unsupported country code. Supported: +966 (Saudi), +20 (Egypt)' };
+    return {
+      isValid: false,
+      error: 'Egyptian numbers must be +20 followed by 10 digits starting with 1',
+    };
   }
 
-  // 9 digits starting with 5 -> Saudi
-  if (digits.length === 9 && digits.startsWith('5')) {
-    return { isValid: true, formatted: `966${digits}`, countryCode: '+966', country: 'SA' };
-  }
-  // 10 digits starting with 05 -> Saudi
-  if (digits.length === 10 && digits.startsWith('05')) {
-    return { isValid: true, formatted: `966${digits.substring(1)}`, countryCode: '+966', country: 'SA' };
-  }
-  // 11 digits starting with 01 -> Egypt
-  if (digits.length === 11 && digits.startsWith('01')) {
-    return { isValid: true, formatted: `20${digits.substring(1)}`, countryCode: '+20', country: 'EG' };
-  }
+  return {
+    isValid: false,
+    error: 'Unsupported country code. Supported: +966 (Saudi), +20 (Egypt)',
+  };
+};
 
-  return { isValid: false, error: 'Invalid phone number format' };
+/**
+ * Check if phone number is valid
+ * @param {string} phoneNumber
+ * @returns {boolean}
+ */
+const isValidPhone = (phoneNumber) => {
+  return validateAndFormatPhone(phoneNumber).isValid;
 };
 
 /**
@@ -111,6 +149,9 @@ const mongoosePhoneValidator = (value) => {
 
 module.exports = {
   normalizePhoneNumber,
+  toE164,
   validateAndFormatPhone,
+  isValidPhone,
   mongoosePhoneValidator,
 };
+

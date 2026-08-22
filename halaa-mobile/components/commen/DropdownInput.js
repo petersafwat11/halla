@@ -11,6 +11,7 @@ import {
 import { useFormContext, Controller } from "react-hook-form";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
+import { useLabelDirection } from "../../hooks/useInputDirection";
 
 /**
  * Hoisted field renderer to satisfy Rules-of-Hooks.
@@ -28,6 +29,7 @@ const DropdownInputField = ({
 }) => {
   const { t } = useTranslation("common");
   const [isOpen, setIsOpen] = useState(false);
+  const labelDirectionStyle = useLabelDirection("localized");
 
   const selectedOption = options.find((opt) => opt.value === value) || null;
 
@@ -40,7 +42,7 @@ const DropdownInputField = ({
 
   return (
     <View style={styles.container}>
-      {label && <Text style={styles.label}>{label}</Text>}
+      {label && <Text style={[styles.label, labelDirectionStyle]}>{label}</Text>}
       <TouchableOpacity
         style={[
           styles.inputContainer,

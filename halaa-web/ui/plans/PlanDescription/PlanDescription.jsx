@@ -1,8 +1,12 @@
-"use client";
 import { useTranslation } from "react-i18next";
+import {
+  COMPENSATION_PERCENTAGE,
+  isPoolPlan,
+  isRecurringBilling,
+  getPlanFamily,
+  getBillingType,
+} from "@halaa/shared/constants/plans";
 import styles from "./planDescription.module.css";
-
-const COMPENSATION_PERCENTAGE = 15;
 
 /**
  * <PlanDescription> — single source of truth for the marketing/checkout
@@ -32,13 +36,18 @@ export default function PlanDescription({
   if (!plan) return null;
 
   const bullets = plan.featureBullets?.[lang] || [];
-  const family = plan.planFamily;
-  const billingType = plan.billingType;
+  const family = plan.planFamily || getPlanFamily(plan.planType);
+  const billingType = plan.billingType || getBillingType(plan.planType);
   const setupFee = Number(plan.setupFeeAmount) || 0;
   const whatsappCount = Number(plan.features?.whatsAppTemplates) || 0;
-  const isPool = billingType === "monthly" || billingType === "quarterly" || billingType === "annual";
+  const isPool = isPoolPlan(plan.planType) || isRecurringBilling(billingType);
   const invitePool = plan.invitePool ?? plan.limits?.invitePool ?? null;
-  const perEventInvites = plan.invites ?? plan.limits?.maxInvitesPerEvent ?? 0;
+  const perEventInvites =
+    plan.invitePool ??
+    plan.limits?.invitePool ??
+    plan.invites ??
+    plan.limits?.maxInvitesPerEvent ??
+    0;
 
   // Compensation base: selected tier for event plans, invitePool for pool plans.
   const compensationBase = isPool

@@ -7,9 +7,11 @@
     "terms": "الشروط والأحكام",
     "communityRules": "قواعد المجتمع",
     "refund": "الإلغاء والاسترداد",
-    "deletion": "حذف الحساب والبيانات",
+    "deletion": "سياسة حذف البيانات",
+    "deletionPolicy": "سياسة حذف البيانات",
     "support": "الدعم والتواصل",
     "logout": "تسجيل الخروج",
+    "logoutSuccess": "تم تسجيل الخروج بنجاح",
     "comingSoon": "قريباً"
   },
   "account": {
@@ -17,6 +19,9 @@
     "fullName": "الاسم الكامل",
     "fullNamePlaceholder": "أدخل اسمك الكامل",
     "email": "البريد الإلكتروني",
+    "usernamePlaceholder": "أدخل اسم المستخدم",
+    "username": "اسم المستخدم",
+    "emailVerifiedBadge": "تم توثيق البريد الإلكتروني",
     "emailPlaceholder": "أدخل بريدك الإلكتروني",
     "sendCode": "إرسال الرمز",
     "sending": "جاري الإرسال...",
@@ -40,7 +45,10 @@
     "invalidVerificationCode": "رمز التحقق غير صحيح",
     "emailVerified": "تم التحقق من البريد الإلكتروني بنجاح",
     "verificationError": "فشل التحقق من البريد الإلكتروني",
-    "wrongCurrentPassword": "كلمة المرور الحالية غير صحيحة"
+    "wrongCurrentPassword": "كلمة المرور الحالية غير صحيحة",
+    "passwordUpdateSuccess": "تم تحديث كلمة المرور بنجاح",
+    "profileSavedPasswordFailed": "تم حفظ الملف الشخصي ولكن فشل تغيير كلمة المرور",
+    "passwordSavedProfileFailed": "تم تغيير كلمة المرور ولكن فشل حفظ الملف الشخصي"
   },
   "deleteAccount": {
     "button": "حذف الحساب",

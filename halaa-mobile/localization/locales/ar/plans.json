@@ -5,7 +5,8 @@
     "title": "الباقة الحالية",
     "events": "مناسبات",
     "invites": "دعوات",
-    "daysRemaining": "أيام متبقية"
+    "daysRemaining": "أيام متبقية",
+    "noExpiry": "لا تنتهي"
   },
   "noActiveSubscription": {
     "title": "لا يوجد اشتراك نشط حالياً",
@@ -108,9 +109,14 @@
     "title": "الإضافات",
     "subtitle": "حسّن باقتك بميزات إضافية اختيارية",
     "loadFailed": "تعذّر تحميل الإضافات.",
+    "selectedCount": "{{count}} إضافات",
     "selectedCount_one": "إضافة واحدة",
     "selectedCount_other": "{{count}} إضافات",
     "clearAll": "إزالة الكل",
+    "businessCustomization": {
+      "title": "تخصيص الأعمال",
+      "description": "تخصيص كامل بهوية علامتك التجارية وشعارك"
+    },
     "extraInvites": {
       "title": "دعوات إضافية",
       "description": "أضف دعوات أكثر إلى باقتك",
@@ -154,6 +160,7 @@
   },
   "summary": {
     "title": "ملخص الطلب",
+    "subtitle": "راجع طلبك قبل إتمام الدفع",
     "planDetails": "تفاصيل الباقة",
     "invitePool": "رصيد الدعوات",
     "validDays": "صالحة لـ",
@@ -180,6 +187,7 @@
     },
     "periods": {
       "yearly": "سنة كاملة (٣٦٥ يوماً)",
+      "annual": "سنة كاملة (٣٦٥ يوماً)",
       "quarterly": "٩٠ يوماً",
       "monthly": "٣٠ يوماً",
       "event": "٩٠ يوماً (مناسبة واحدة)",
@@ -257,6 +265,18 @@
       "expiryInvalid": "تاريخ الانتهاء غير صحيح.",
       "cvcInvalid": "رمز CVC غير صحيح.",
       "stcMobileInvalid": "أدخل رقم جوال سعودي صالح (يبدأ بـ 05).",
+      "nameRequired": "اسم حامل البطاقة مطلوب",
+      "nameTooShort": "يرجى إدخال اسم حامل البطاقة كاملاً",
+      "numberRequired": "رقم البطاقة مطلوب",
+      "numberLength": "يجب أن يتكون رقم البطاقة من 15 أو 16 رقماً",
+      "numberInvalid": "رقم بطاقة غير صالح",
+      "expiryRequired": "تاريخ الانتهاء مطلوب",
+      "expiryMonthInvalid": "شهر غير صالح (01-12)",
+      "expiryExpired": "انتهت صلاحية البطاقة",
+      "cvcRequired": "رمز التحقق مطلوب",
+      "cvcLength": "يجب أن يتكون رمز التحقق من 3 أو 4 أرقام",
+      "mobileRequired": "رقم الجوال مطلوب",
+      "mobileFormat": "يجب أن يكون رقم جوال سعودي صحيح (مثال: 05xxxxxxxx)",
       "applepayUnavailable": "آبل باي غير متاح حالياً على الجوال. الرجاء اختيار وسيلة أخرى.",
       "iapUnavailable": "عمليات الشراء داخل التطبيق غير متاحة على هذا الجهاز.",
       "planUnavailable": "هذه الباقة غير متاحة للشراء حالياً.",
@@ -391,5 +411,44 @@
     "privacy": "الخصوصية",
     "refund": "سياسة الاسترداد",
     "support": "الدعم"
+  },
+  "checkout": {
+    "card": {
+      "name": "الاسم على البطاقة",
+      "number": "رقم البطاقة",
+      "expiry": "تاريخ الانتهاء (MM/YY)",
+      "cvc": "رمز الأمان (CVC)",
+      "secureNote": "عملية الدفع مشفرة وآمنة تماماً"
+    },
+    "stcpay": {
+      "mobile": "رقم جوال STC Pay",
+      "note": "سيصلك إشعار للموافقة على الدفع من تطبيق STC Pay"
+    },
+    "applepay": {
+      "note": "ادفع بأمان وسرعة عبر Apple Pay"
+    },
+    "errors": {
+      "nameRequired": "الاسم مطلوب",
+      "nameTooShort": "الاسم قصير جداً",
+      "numberRequired": "رقم البطاقة مطلوب",
+      "numberLength": "رقم البطاقة غير مكتمل",
+      "numberInvalid": "رقم البطاقة غير صالح",
+      "cvcRequired": "رمز الأمان مطلوب",
+      "cvcLength": "رمز الأمان يجب أن يكون 3 أو 4 أرقام",
+      "mobileRequired": "رقم الجوال مطلوب",
+      "mobileFormat": "صيغة رقم الجوال غير صحيحة",
+      "applepayUnavailable": "خدمة Apple Pay غير متوفرة على هذا الجهاز",
+      "planUnavailable": "الباقة غير متاحة للشراء حالياً",
+      "addonUnavailable": "الإضافة غير متاحة للشراء حالياً"
+    },
+    "iap": {
+      "restored": "تمت استعادة المشتريات بنجاح",
+      "restoreFailed": "تعذر استعادة المشتريات",
+      "note": "المشتريات تتم عبر حساب متجر التطبيقات الخاص بك",
+      "restoring": "جاري استعادة المشتريات...",
+      "restore": "استعادة المشتريات",
+      "manage": "إدارة الاشتراك",
+      "unavailable": "خدمة الدفع عبر المتجر غير متوفرة حالياً"
+    }
   }
 }

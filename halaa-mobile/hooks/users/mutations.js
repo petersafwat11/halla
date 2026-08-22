@@ -56,6 +56,34 @@ export function useUpdateNotificationSettings() {
 }
 
 /**
+ * Email verification (SET-02). On success the backend returns the updated
+ * user DTO; we flip `emailVerified` in the persisted auth-store snapshot
+ * immediately AND invalidate the canonical profile query so every surface
+ * reflects the verified state without an app relaunch.
+ */
+export function useVerifyEmail() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (code) => {
+      const response = await settingsApi.verifyEmail(code);
+      return response?.data || response;
+    },
+    onSuccess: async (data) => {
+      const authStore = useAuthStore.getState();
+      const updatedUser = {
+        ...(authStore.user || {}),
+        ...(data?.user || {}),
+        emailVerified: true,
+      };
+      await authStore.setUser(updatedUser);
+      queryClient.invalidateQueries({ queryKey: usersKeys.profile() });
+      return updatedUser;
+    },
+  });
+}
+
+/**
  * Self-service account deletion (Apple 5.1.1(v) / Google Play data-deletion).
  * The authenticated user is deleted server-side (PII anonymized, owned data
  * cascaded, refresh tokens revoked); on success we wipe the React Query cache.

@@ -111,6 +111,15 @@ export const passwordUpdateSchema = (t = idT) =>
 export const accountSettingsSchema = (t = idT) =>
   z
     .object({
+      name: z
+        .string()
+        .trim()
+        .min(2, t("name_min_length") || "Name must be at least 2 characters")
+        .max(
+          100,
+          t("name_max_length") || "Name must be less than 100 characters"
+        ),
+
       username: z
         .string()
         .min(
@@ -182,6 +191,11 @@ export const accountSettingsSchema = (t = idT) =>
 
 export const mobileAccountSettingsSchema = z
   .object({
+    name: z
+      .string()
+      .trim()
+      .min(2, "validation.nameMin")
+      .max(100, "validation.nameMax"),
     username: z
       .string()
       .min(2, "validation.usernameMin")

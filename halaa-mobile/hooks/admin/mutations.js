@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toBulkIdsPayload } from "@halaa/shared/utils/adapters";
 import { ENDPOINTS } from "../../config/api";
 import { useAuthStore } from "../../stores/authStore";
 import { ticketsKeys } from "../tickets/keys";
@@ -107,7 +108,7 @@ export function useBulkDeleteHosts() {
       const response = await adminRequest(
         ENDPOINTS.ADMIN.HOSTS.BULK_DELETE,
         "POST",
-        { ids: hostIds },
+        toBulkIdsPayload(hostIds),
       );
       return assertOk(response);
     },
@@ -369,7 +370,7 @@ export function useBulkDeleteVendors() {
       const response = await adminRequest(
         ENDPOINTS.ADMIN.VENDORS.BULK_DELETE,
         "POST",
-        { ids: vendorIds },
+        toBulkIdsPayload(vendorIds),
       );
       return assertOk(response);
     },
@@ -403,7 +404,7 @@ export function useBulkApproveVendors() {
       const response = await adminRequest(
         ENDPOINTS.ADMIN.VENDORS.BULK_STATUS,
         "POST",
-        { ids: vendorIds, status: "approved" },
+        { ...toBulkIdsPayload(vendorIds), status: "approved" },
       );
       return assertOk(response);
     },
@@ -420,7 +421,7 @@ export function useBulkSuspendVendors() {
       const response = await adminRequest(
         ENDPOINTS.ADMIN.VENDORS.BULK_STATUS,
         "POST",
-        { ids: vendorIds, status: "suspended" },
+        { ...toBulkIdsPayload(vendorIds), status: "suspended" },
       );
       return assertOk(response);
     },
@@ -523,7 +524,7 @@ export function useBulkDeleteModerators() {
       const response = await adminRequest(
         ENDPOINTS.ADMIN.MODERATORS.BULK_DELETE,
         "POST",
-        { ids: moderatorIds },
+        toBulkIdsPayload(moderatorIds),
       );
       return assertOk(response);
     },
@@ -542,7 +543,7 @@ export function useBulkSuspendModerators() {
       const response = await adminRequest(
         ENDPOINTS.ADMIN.MODERATORS.BULK_STATUS,
         "POST",
-        { ids: moderatorIds, status: "inactive" },
+        { ...toBulkIdsPayload(moderatorIds), status: "inactive" },
       );
       return assertOk(response);
     },
@@ -605,7 +606,7 @@ export function useBulkDeleteEvents() {
       const response = await adminRequest(
         ENDPOINTS.ADMIN.EVENTS.BULK_DELETE,
         "POST",
-        { ids: eventIds },
+        toBulkIdsPayload(eventIds),
       );
       return assertOk(response);
     },
@@ -615,14 +616,14 @@ export function useBulkDeleteEvents() {
   });
 }
 
-export function useBulkSuspendEvents() {
+export function useBulkCancelEvents() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (eventIds) => {
       const response = await adminRequest(
         ENDPOINTS.ADMIN.EVENTS.BULK_STATUS,
         "POST",
-        { ids: eventIds, status: "suspended" },
+        { ...toBulkIdsPayload(eventIds), status: "cancelled" },
       );
       return assertOk(response);
     },
@@ -631,6 +632,8 @@ export function useBulkSuspendEvents() {
     },
   });
 }
+
+export const useBulkSuspendEvents = useBulkCancelEvents;
 
 export function useUpdateAdminEvent() {
   const queryClient = useQueryClient();
@@ -784,13 +787,18 @@ export function useBulkDeleteTickets() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (ticketIds) => {
-      const results = await Promise.all(
-        ticketIds.map((id) => _envelopeOf(ticketsApi.deleteTicket(id))),
+      const response = await adminRequest(
+        ENDPOINTS.ADMIN.TICKETS.BULK_DELETE || "/tickets/bulk-delete",
+        "POST",
+        toBulkIdsPayload(ticketIds),
       );
-      results.forEach(assertOk);
+      return assertOk(response);
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: adminKeys.ticketsAll() });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: adminKeys.ticketsAll() }),
+        queryClient.invalidateQueries({ queryKey: ticketsKeys.all }),
+      ]);
     },
   });
 }
@@ -799,15 +807,21 @@ export function useBulkResolveTickets() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (ticketIds) => {
-      const results = await Promise.all(
-        ticketIds.map((id) =>
-          _envelopeOf(ticketsApi.updateTicketStatus(id, { status: "resolved" })),
-        ),
+      const response = await adminRequest(
+        ENDPOINTS.ADMIN.TICKETS.BULK_STATUS || "/tickets/bulk-status",
+        "POST",
+        {
+          ...toBulkIdsPayload(ticketIds),
+          status: "resolved",
+        },
       );
-      results.forEach(assertOk);
+      return assertOk(response);
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: adminKeys.ticketsAll() });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: adminKeys.ticketsAll() }),
+        queryClient.invalidateQueries({ queryKey: ticketsKeys.all }),
+      ]);
     },
   });
 }

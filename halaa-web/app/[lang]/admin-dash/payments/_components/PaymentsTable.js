@@ -56,8 +56,8 @@ export default function PaymentsTable() {
     () => ({
       page: searchParams.get("page") || 1,
       limit: searchParams.get("limit") || 20,
-      search: searchParams.get("search") || undefined,
-      status: searchParams.get("status") || undefined,
+      search: searchParams.get("search") || "",
+      status: searchParams.get("status") || "",
       from: searchParams.get("from") || undefined,
       to: searchParams.get("to") || undefined,
     }),
@@ -77,8 +77,22 @@ export default function PaymentsTable() {
 
   const handlePageChange = useCallback(
     (page) => {
-      const params = new URLSearchParams(searchParams);
-      params.set("page", page);
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("page", String(page));
+      router.push(`?${params.toString()}`, { scroll: false });
+    },
+    [searchParams, router]
+  );
+
+  const handleSearchChange = useCallback(
+    (query) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (query) {
+        params.set("search", query);
+      } else {
+        params.delete("search");
+      }
+      params.set("page", "1");
       router.push(`?${params.toString()}`, { scroll: false });
     },
     [searchParams, router]
@@ -99,7 +113,7 @@ export default function PaymentsTable() {
 
   const handleStatusFilter = useCallback(
     (status) => {
-      const params = new URLSearchParams(searchParams);
+      const params = new URLSearchParams(searchParams.toString());
       if (status) {
         params.set("status", status);
       } else {
@@ -243,6 +257,7 @@ export default function PaymentsTable() {
     <>
       <div className={styles.container}>
         <Table
+          mode="server"
           title={t("table.title", "Transactions List")}
           headers={[
             t("table.columns.name", "Host"),
@@ -263,6 +278,10 @@ export default function PaymentsTable() {
             "createdAt",
           ]}
           data={tableData}
+          searchValue={filters.search}
+          onSearchChange={handleSearchChange}
+          activeFilter={filters.status}
+          onFilterChange={handleStatusFilter}
           renderCell={renderCell}
           getRowActions={getRowActions}
           showCheckboxes={canUpdate || canDelete}
@@ -270,28 +289,38 @@ export default function PaymentsTable() {
           onExportClick={handleExport}
           filterOptions={[
             {
+              label: t("table.status.all", "All"),
+              value: "",
               text: t("table.status.all", "All"),
               onClick: () => handleStatusFilter(""),
             },
             {
+              label: t("table.status.completed", "Completed"),
+              value: "completed",
               text: t("table.status.completed", "Completed"),
               onClick: () => handleStatusFilter("completed"),
             },
             {
+              label: t("table.status.pending", "Pending"),
+              value: "pending",
               text: t("table.status.pending", "Pending"),
               onClick: () => handleStatusFilter("pending"),
             },
             {
+              label: t("table.status.failed", "Failed"),
+              value: "failed",
               text: t("table.status.failed", "Failed"),
               onClick: () => handleStatusFilter("failed"),
             },
             {
+              label: t("table.status.refunded", "Refunded"),
+              value: "refunded",
               text: t("table.status.refunded", "Refunded"),
               onClick: () => handleStatusFilter("refunded"),
             },
           ]}
           pagination={{
-            currentPage: parseInt(filters.page),
+            currentPage: parseInt(filters.page, 10) || 1,
             totalPages: pagination.pages || 1,
             totalItems: pagination.total || 0,
             onPageChange: handlePageChange,

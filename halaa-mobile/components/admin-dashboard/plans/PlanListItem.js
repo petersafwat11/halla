@@ -42,7 +42,17 @@ const PlanListItem = ({ plan, canEdit, onEdit }) => {
   const typeConfig = FAMILY_CONFIG[family];
   const typeLabel = t(typeConfig.labelKey);
 
-  const isMonthly = plan.planType?.endsWith("_monthly");
+  const isMonthly = plan.planType?.endsWith("_monthly") || plan.billingType === "monthly";
+  const isQuarterly = plan.planType?.endsWith("_quarterly") || plan.planType === "business_quarterly" || plan.billingType === "quarterly";
+  const isAnnual = plan.planType?.endsWith("_annual") || plan.planType === "business_annual" || plan.billingType === "annual";
+
+  const periodLabel = isMonthly
+    ? t("plans.labels.perMonth")
+    : isQuarterly
+    ? t("plans.labels.perQuarter", { defaultValue: "3mo" })
+    : isAnnual
+    ? t("plans.labels.perYear")
+    : null;
   const isPool = isPoolPlan(plan.planType);
 
   const oneTimePrice = plan.pricing?.oneTime ?? 0;
@@ -71,9 +81,9 @@ const PlanListItem = ({ plan, canEdit, onEdit }) => {
       bg: colors.natural[150],
       icon: "pricetag-outline",
     },
-    isMonthly
+    periodLabel
       ? {
-          label: `${formatPrice(oneTimePrice)} / ${t("plans.labels.perMonth")}`,
+          label: `${formatPrice(oneTimePrice)} / ${periodLabel}`,
           color: colors.primary[500],
           bg: colors.primary[50],
           icon: "calendar-outline",

@@ -10,6 +10,7 @@ import ErrorFallback from "@/ui/common/error/ErrorFallback";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import { useMyProfile, useNotificationPreferences } from "@/hooks/users";
 import { USER_ROLES } from "@/utils/schemas/notificationPreferencesSchemas";
+import { buildDashboardUrl } from "@halaa/shared/utils/routes";
 import styles from "../page.module.css";
 
 const AdminSettingsClient = () => {
@@ -26,7 +27,7 @@ const AdminSettingsClient = () => {
   const user = {
     emailVerified: apiUser?.emailVerified || false,
     email: apiUser?.email || "",
-    username: apiUser?.username || apiUser?.name || "",
+    username: apiUser?.username || "",
     name: apiUser?.name || "",
     phoneNumber: apiUser?.phoneNumber || "",
     profile: apiUser?.profile || {},
@@ -68,7 +69,7 @@ const AdminSettingsClient = () => {
       <div className={styles.header}>
         <h1 className={styles.title}>
           <IoIosArrowForward
-            onClick={() => router.push(`/${lang}/admin-dash`)}
+            onClick={() => router.push(buildDashboardUrl({ role: userRole, locale: lang }))}
             className={`${styles.backIcon} ${isArabic ? styles.backIconRtl : ""}`}
           />
           {tSettings("title", "Settings")}

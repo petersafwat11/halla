@@ -3,6 +3,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/services/http";
 import { API_PATHS } from "@halaa/shared/api/paths";
+import { toBulkIdsPayload } from "@halaa/shared/utils/adapters";
 import { adminKeys } from "./keys";
 import { eventsKeys } from "@/hooks/events/keys";
 import { plansKeys } from "@/hooks/plans/keys";
@@ -88,7 +89,7 @@ export const useAdminHostMutation = (action) => {
         apiRequest({
           method: "POST",
           path: API_PATHS.admin.hosts.bulkDelete,
-          data: { hostIds },
+          data: toBulkIdsPayload(hostIds),
         }),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: adminKeys.hostsAll() });
@@ -227,7 +228,7 @@ export const useAdminVendorMutation = (action) => {
         apiRequest({
           method: "POST",
           path: API_PATHS.admin.vendors.bulkDelete,
-          data: { vendorIds },
+          data: toBulkIdsPayload(vendorIds),
         }),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: adminKeys.vendorsAll() });
@@ -235,11 +236,11 @@ export const useAdminVendorMutation = (action) => {
       },
     },
     bulkStatus: {
-      mutationFn: ({ vendorIds, status }) =>
+      mutationFn: ({ vendorIds, ids, status }) =>
         apiRequest({
           method: "POST",
           path: API_PATHS.admin.vendors.bulkStatus,
-          data: { vendorIds, status },
+          data: { ...toBulkIdsPayload(vendorIds || ids), status },
         }),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: adminKeys.vendorsAll() });
@@ -304,7 +305,7 @@ export const useAdminModeratorMutation = (action) => {
         apiRequest({
           method: "POST",
           path: API_PATHS.admin.moderators.bulkDelete,
-          data: { moderatorIds },
+          data: toBulkIdsPayload(moderatorIds),
         }),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: adminKeys.moderatorsAll() });
@@ -380,7 +381,7 @@ export const useAdminEventMutation = (action) => {
         apiRequest({
           method: "POST",
           path: API_PATHS.admin.events.bulkDelete,
-          data: { eventIds },
+          data: toBulkIdsPayload(eventIds),
         }),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: eventsKeys.all });

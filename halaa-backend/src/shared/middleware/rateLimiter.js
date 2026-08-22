@@ -347,6 +347,20 @@ const reportLimiter = createLimiter({
   keyGenerator: (req) => req.user?._id?.toString() || req.ip,
 });
 
+/**
+ * Marketplace Analytics Rate Limiter (MKT-10)
+ * 120 events per minute per IP/user. Prevents bot/crawler spam on tracking endpoint.
+ */
+const analyticsLimiter = createLimiter({
+  windowMs: 60 * 1000, // 1 minute
+  max: 120,
+  message: {
+    en: "Too many tracking events. Please try again shortly",
+    ar: "عدد كبير من طلبات التتبع. يرجى المحاولة بعد قليل",
+  },
+  keyGenerator: natSafeClientKey,
+});
+
 module.exports = {
   apiLimiter,
   authLimiter,
@@ -362,6 +376,7 @@ module.exports = {
   deletionLimiter,
   purchaseLimiter,
   reportLimiter,
+  analyticsLimiter,
   // Utility functions
   createLimiter,
   initRedisStore,

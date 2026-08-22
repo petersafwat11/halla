@@ -140,7 +140,7 @@ export const mapEventToFormValues = (event) => ({
   confirmReviewed: false,
 });
 
-export const buildEventPayload = (data) => ({
+export const buildEventPayload = (data = {}) => ({
   eventDetails: {
     title: data.eventName,
     type: data.eventType,
@@ -195,6 +195,9 @@ export const buildEventPayload = (data) => ({
   },
 });
 
+import { validateEventStep } from "./eventFormValidation.js";
+export { validateEventStep };
+
 /**
  * Unified hook for event form management
  * Handles both create and update modes with shared validation and state logic
@@ -231,39 +234,9 @@ export const useEventForm = (options = {}) => {
     }
   }, [initialData, mode, reset]);
 
-  // Step validation — 5-step wizard:
-  //   1 details / 2 guest+staff / 3 visual template / 4 taqnyat+replies / 5 summary
+  // Step validation — 5-step wizard
   const validateStep = useCallback(
-    (step) => {
-      switch (step) {
-        case 1:
-          return (
-            formData.eventType &&
-            formData.eventName &&
-            formData.eventDate &&
-            formData.eventTime
-          );
-        case 2:
-          return formData.guestList && formData.guestList.length > 0;
-        case 3:
-          return (
-            !!formData.templateImage ||
-            !!formData.visualTemplate?.templateRef ||
-            !!formData.visualTemplate?.id ||
-            !!formData.visualTemplate?._id
-          );
-        case 4:
-          return (
-            !!formData.selectedTemplate?.name ||
-            !!formData.taqnyatTemplate?.templateRef ||
-            !!formData.taqnyatTemplateRef
-          );
-        case 5:
-          return formData.confirmReviewed === true;
-        default:
-          return false;
-      }
-    },
+    (step) => validateEventStep(step, formData),
     [formData]
   );
 
@@ -349,56 +322,46 @@ export const useEventForm = (options = {}) => {
               date: formData.eventDate,
               time: formData.eventTime,
               location: formData.address,
-              description: "",
+              description: formData.description,
             },
-            successMessage: t("success.event_details_updated"),
           };
         case 2:
-          // Atomic guest+staff replace via PATCH /events/:id/step2. Server
-          // accepts either `supervisorsList` or `staffList`; we pin to
-          // `supervisorsList` for self-documentation.
           return {
-            type: "step2",
+            type: "guestList",
             data: {
               guestList: (formData.guestList || []).map((guest) => ({
                 name: guest.name,
-                phone: guest.mobile || guest.phone || "",
+                phone: guest.mobile || guest.phone,
                 ...(guest.category ? { category: guest.category } : {}),
               })),
-              supervisorsList: (formData.staffList || []).map((s) => ({
+              staffList: (formData.staffList || []).map((s) => ({
                 name: s.name,
-                phone: s.mobile || s.phone || "",
+                phone: s.mobile || s.phone,
               })),
             },
-            successMessage: t("success.guest_list_updated"),
           };
         case 3:
           return {
-            type: "invitationSettings",
-            data: {
-              visualTemplate: formData.visualTemplate
-                ? formData.visualTemplate.isCustomUpload
-                  ? {
-                      isCustomUpload: true,
-                      fieldValues: {},
-                    }
-                  : {
-                      templateRef:
-                        formData.visualTemplate.templateRef ||
-                        formData.visualTemplate._id ||
-                        formData.visualTemplate.id,
-                      fieldValues:
-                        formData.visualTemplate.fieldValues ||
-                        formData.visualTemplate.data ||
-                        {},
-                      isCustomUpload: false,
-                    }
-                : undefined,
-              ...(formData.templateImage instanceof File && {
-                templateImage: formData.templateImage,
-              }),
-            },
-            successMessage: t("success.invitation_settings_updated"),
+            type: "visualTemplate",
+            data: formData.visualTemplate
+              ? formData.visualTemplate.isCustomUpload
+                ? {
+                    isCustomUpload: true,
+                    fieldValues: {},
+                  }
+                : {
+                    templateRef:
+                      formData.visualTemplate.templateRef ||
+                      formData.visualTemplate._id ||
+                      formData.visualTemplate.id,
+                    fieldValues:
+                      formData.visualTemplate.fieldValues ||
+                      formData.visualTemplate.data ||
+                      {},
+                    isCustomUpload: false,
+                  }
+              : undefined,
+            templateImage: formData.templateImage,
           };
         case 4:
           return {
@@ -416,15 +379,15 @@ export const useEventForm = (options = {}) => {
                 onAttend: formData.guestReplies?.onAttend || "",
                 onAbsent: formData.guestReplies?.onAbsent || "",
               },
-              invitationType: formData.invitationType || DEFAULT_INVITATION_TYPE,
+              invitationType:
+                formData.invitationType || DEFAULT_INVITATION_TYPE,
             },
-            successMessage: t("success.template_selected"),
           };
         default:
           return null;
       }
     },
-    [formData, t]
+    [formData]
   );
 
   // Cancel/back to host page
@@ -433,37 +396,31 @@ export const useEventForm = (options = {}) => {
   }, [router, locale]);
 
   return {
-    // Form methods
     methods,
     formData,
-    reset,
-    setValue,
-    handleSubmit,
-    // Step management
     currentStep,
     totalSteps,
+    isSubmitting,
+    setIsSubmitting,
     goToStep,
     goToNextStep,
     goToPreviousStep,
     isStepValid,
     validateStep,
-    // Submission state
-    isSubmitting,
-    setIsSubmitting,
-    // Staff
     staffList,
     addStaffMember,
     editStaffMember,
     deleteStaffMember,
-    // Utilities
+    buildStepPayload,
     locale,
     cancel,
-    buildStepPayload,
+    t,
+    reset,
+    setValue,
+    handleSubmit,
     buildEventPayload: () => buildEventPayload(formData),
-    // Mode info
     mode,
     eventId,
-    t,
   };
 };
 

@@ -8,6 +8,7 @@ export * as events from "./events.js";
 export * as tickets from "./tickets.js";
 export * as plans from "./plans.js";
 export * as admin from "./admin.js";
+export * as bulk from "./bulk.js";
 export * as settings from "./settings.js";
 export * as vendor from "./vendor.js";
 export * as postEvent from "./post-event.js";

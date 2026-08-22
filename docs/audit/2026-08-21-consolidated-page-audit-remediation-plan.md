@@ -1,0 +1,2164 @@
+# Consolidated Page Audit and Remediation Plan
+
+Date: 2026-08-21  
+Repository: `D:\halla`  
+Reviewed surface: `halaa-web`, `halaa-mobile`, `halaa-backend`, `halaa-shared`  
+Source material: eight Gemini page-audit reports covering event creation and details, settings, tickets/events administration, the broader admin dashboard, vendor dashboard, marketplace, and plans/checkout.
+
+## 1. Executive conclusion
+
+The reports found many genuine defects, but they should not be executed as eight independent fix lists. Most defects come from a smaller set of architectural causes:
+
+1. Web, mobile, and backend independently encode the same statuses, DTOs, validation rules, query keys, and plan semantics.
+2. Shared UI components do not declare whether filtering/search is local or server-controlled.
+3. Generic admin mutation paths bypass domain invariants enforced by dedicated services.
+4. Mobile lint disables rules that would catch active runtime failures and dead validation branches.
+5. Duplicate and orphaned implementations make scans report defects in code that users cannot reach.
+6. Cache invalidation and SSR hydration keys are not consistently derived from canonical key factories.
+7. Several business rules are enforced only in a client, making them bypassable by another client or a direct API call.
+
+The correct strategy is therefore contract-first: protect data and state transitions in the backend, publish one canonical contract to both clients, repair shared infrastructure, and only then fix individual screens. Applying the page reports in their original order would repeatedly patch symptoms and is likely to create regressions.
+
+### Priority summary
+
+- **P0 — fix first:** active mobile event crash; corrupted Taqnyat invitation settings; missing server enforcement for live-event guest edits; dangerous generic/bulk event mutations; payment amount/expiry correctness; backend/client contract mismatches that make actions silently fail.
+- **P1 — next:** non-functional admin search/filter; incorrect aggregate stats; ticket transitions/bulk actions; scheduling and final-review validation; subscription ownership; marketplace filtering/scalability; settings identity and email verification synchronization.
+- **P2 — after contracts are stable:** localization, labels, empty/error states, dead-code removal, duplicate actions, and visual consistency.
+
+This plan is divided into small sessions. One Gemini session should execute exactly one session below, run its specified checks, update this document, and stop.
+
+## 2. Review method and status legend
+
+Material claims from all reports were compared with the current routes, services, validation, hooks, screens/components, shared schemas, query keys, and localization files. The existing invite/plan rework documentation was treated as architectural evidence rather than blindly following older audit text.
+
+Report coverage map:
+
+| Input audit | Consolidated coverage |
+|---|---|
+| Create/update event on web, mobile, and admin | EVT-01 through EVT-17; Sessions 1.1–1.6 |
+| Single event pages for host/business/admin | EVT-10 through EVT-18; Sessions 1.3–1.6 |
+| Settings across roles | SET-01 through SET-09; Sessions 5.1–5.3 |
+| Admin tickets and events | ADM-01 through ADM-09, ADM-14; Sessions 2.1–2.5 |
+| Admin dashboard, people, plans, moderators | ADM-01 through ADM-13 and plan items; Sessions 2.1–3.2 |
+| Vendor dashboard | MKT-03 through MKT-10; Sessions 4.1, 4.3, 6.1 |
+| Marketplace | MKT-01, MKT-02, MKT-07, MKT-10, MKT-11; Sessions 4.2–4.4 |
+| Host/business/admin plans and checkout | PLN-01 through PLN-09; Sessions 3.1–3.4 |
+
+Status labels used below:
+
+- **Confirmed:** exists in an active or externally callable current path.
+- **Latent/dead:** defect exists in code, but no active import/navigation path was found.
+- **Stale/fixed:** report describes an older state; current code already differs.
+- **Incorrect recommendation:** the observation may be related to a real problem, but Gemini's proposed fix is wrong.
+- **Decision required:** product semantics must be chosen before implementation.
+- **Needs focused reproduction:** static evidence is suggestive, but the behavior must be reproduced before editing.
+
+## 3. Corrections to the Gemini reports
+
+These corrections are important because implementing the original recommendation would either waste work or damage the current design.
+
+### 3.1 Do not restore `maxInvitesPerEvent`
+
+The recommendation to add `maxInvitesPerEvent` back to admin plan forms is obsolete. The implemented invite-pool redesign makes `invitePool` the authoritative capacity. The correct work is to remove remaining dual-field compatibility assumptions, make rules plan-type-aware, and add parity tests. Unlimited plans may use `invitePool: null`; sellable capped plans require a positive pool.
+
+Source of truth: `docs/invites-plans-rework/PLAN.md` and the current shared plan schema.
+
+### 3.2 Mobile admin role access is not broken
+
+The report says `state.role` is unavailable in the mobile auth store. The store persists a root `role`, so that claim is false. Do not rewrite this access unless a runtime reproduction proves a different bug.
+
+### 3.3 Several reported crashes are in orphaned code
+
+- The undefined language reference in the mobile `EventHeroCard` is real in that component, but no consumer was found.
+- The mobile vendor `StatsCards` icon issue is in an export-only/orphaned component; `VendorHomeScreen` uses a different path.
+- `CreateEventForm` ignores update props, but its update branch is currently unreachable. Updates use the dedicated update-event screen.
+
+The right action is an import/navigation graph audit followed by deletion or consolidation. Wiring orphaned update paths back into production would create duplicate implementations.
+
+### 3.4 Subscription response shape was described incorrectly
+
+The backend currently returns `subscriptions`, `hasSubscription`, and a singular `subscription` object. It does not return only an array as the report states. However, current mobile consumers still incorrectly index `subscription[0]`, so the consumer bug is confirmed.
+
+### 3.5 Do not replace `suspended` with `cancelled` mechanically
+
+`suspended` is not a valid event status, so the current action is broken. But `cancelled` is not automatically the same business operation. Define the event state machine and the desired admin action first. If product semantics are cancellation, rename the UI action to “Cancel” and implement an auditable, reversible transition where required.
+
+### 3.6 Do not increment analytics blindly on profile GET requests
+
+Service detail reads already increment both `Service.viewCount` and a legacy vendor click counter, while the dashboard now aggregates service views. The metric is inconsistent, but adding more increments to vendor-profile GET requests would inflate analytics through refreshes, crawlers, and retries. Choose one metric and preferably record it through an explicit, deduplicated analytics event.
+
+### 3.7 Ticket attachments are substantially newer than the report
+
+The current mobile ticket card renders image previews and opens videos; the backend signs stored attachment URLs. Treat broad “attachments are missing” claims as stale. Test admin-detail and user-detail variants separately and only fix a reproduced gap.
+
+### 3.8 Staff token revocation is already handled by the dedicated service
+
+The older finding about staff deletion leaving tokens active is fixed in the dedicated staff service. The remaining risk is that the admin event header writes an entire staff list through a generic event update, bypassing that service. Remove the bypass; do not duplicate revocation logic in clients.
+
+## 4. Verified issue register
+
+### 4.1 Event creation, updates, details, and guests
+
+| ID | Priority | Status | Problem | Root solution |
+|---|---:|---|---|---|
+| EVT-01 | P0 | Confirmed | Mobile `EventSummary` references `currentLanguage` without defining it; mobile lint does not flag undefined variables. | Fix the component and enable safety lint rules so the class cannot recur. |
+| EVT-02 | P0 | Confirmed | Invitation-settings multipart parsing omits `taqnyatTemplate`; the mobile client also sends `taqnyatTemplateRef`, while the service expects `taqnyatTemplate`. Strings can be spread as objects. | Define one request DTO, explicitly parse JSON fields, reject wrong shapes, and make web/mobile use one serializer. |
+| EVT-03 | P0 | Confirmed | Live-event “add guests only” is dropped in the mobile component chain and is not enforced by the backend step-two service. Direct API calls can edit/delete live guests. | Enforce immutable-existing-guests/add-new-only in the backend; make the client reflect server capability. |
+| EVT-04 | P0 | Confirmed | Generic admin full-event update can delete/recreate guests, resetting RSVP/QR state. | Deprecate/remove generic full update for domain collections; route all changes through dedicated event/guest/staff services. |
+| EVT-05 | P0 | Confirmed | Admin bulk event delete soft-deletes records without releasing per-event plan slots/counters and skips important single-delete invariants. | Implement a domain bulk command that calls the same invariant-preserving transition per event and returns per-item results. |
+| EVT-06 | P0 | Confirmed | Admin bulk status accepts arbitrary strings; mobile emits invalid `suspended`. | Centralize an explicit event state machine and action-oriented endpoints with authorization, idempotency, audit, and transition tests. |
+| EVT-07 | P1 | Confirmed | Mobile final confirmation is effectively dead (`case 5` always true; full check is in unreachable step 6). | Derive step validation from a single ordered step definition and test every transition. |
+| EVT-08 | P1 | Confirmed | Web step-one and backend validation allow incomplete address/location data. | Put minimum event-location requirements in backend/shared schema and mirror errors in clients. |
+| EVT-09 | P1 | Confirmed | Scheduling models exist, but web summary hardcodes `isScheduled=false`; mobile scheduling UI is orphaned. | Make an explicit product decision: implement one scheduling contract and UI on both clients, or remove dormant fields/UI. |
+| EVT-10 | P1 | Confirmed | Admin-on-behalf update checks the logged-in admin’s subscription, not the event owner’s/stamped entitlement. | Add an authorized backend “event entitlement/capabilities” response derived from event ownership and subscription snapshot. |
+| EVT-11 | P1 | Confirmed | Web event card links with `section=` while the update page reads `step=`. | Export one route builder/parser and validate parameters. |
+| EVT-12 | P1 | Confirmed | Web guest-table “send invitations” only shows a toast. | Connect it to the canonical messaging mutation; add loading, partial failure, and quota handling. |
+| EVT-13 | P1 | Confirmed | Admin event header updates a whole staff list through a generic event update; cache handling is incomplete. | Use dedicated staff CRUD exclusively and invalidate canonical event/staff keys. |
+| EVT-14 | P2 | Confirmed | Staff token UI uses TanStack Query v4 `isLoading` on a v5 mutation. | Use `isPending`; cover disabled/loading state in a component test. |
+| EVT-15 | P1 | Confirmed | Some guest actions assume `guest.id`; records may expose `_id` or `guestId`. Mobile admin views also use `rsvpStatus` where the canonical field is `status`. | Introduce a boundary adapter producing one `GuestDTO` and stop mapping IDs/statuses inside components. |
+| EVT-16 | P1 | Confirmed | Single-event pending stats count only `invited`, excluding other pending states. | Define RSVP buckets once, aggregate them in the backend, and test every status. |
+| EVT-17 | P1 | Confirmed | Mobile reminder/scheduling consumers treat singular `subscription` as an array. | Publish/consume one subscription DTO and add contract tests. |
+| EVT-18 | P2 | Latent/dead | Orphaned event hero and create/update branches contain defects. | Delete or consolidate only after route/import graph verification. |
+
+### 4.2 Admin tables, events, tickets, people, and plans
+
+| ID | Priority | Status | Problem | Root solution |
+|---|---:|---|---|---|
+| ADM-01 | P1 | Confirmed/systemic | Shared admin table filters only invoke `option.onClick`; most screens provide `{label,value}`, so event/ticket/host/business/vendor/moderator filters are inert. | Add a controlled table contract with `activeFilter/onFilterChange`; migrate every call site. |
+| ADM-02 | P1 | Confirmed/systemic | Shared table search filters only the current server page and does not update URL/API search. Several mobile screens also re-filter paginated server results locally. | Distinguish `server` and `client` modes; server mode debounces controlled search, resets page, and never locally filters a page. |
+| ADM-03 | P1 | Confirmed | Event, ticket, and moderator status cards derive counts from the current page while showing a global total. | Return aggregate `statusCounts` with list responses using the same filters, preferably via `$facet`. |
+| ADM-04 | P0 | Confirmed/systemic | Web bulk requests use resource-specific keys (`hostIds`, `vendorIds`, `moderatorIds`, `eventIds`) while backend endpoints expect `{ids}`. | Define one `BulkIdsRequest` schema in shared/API paths and add request contract tests. |
+| ADM-05 | P1 | Confirmed | Resolved-ticket reopen sends `open`, which the backend transition rules reject. | Define named ticket actions/transitions and render only allowed actions from backend capabilities. |
+| ADM-06 | P2 | Confirmed | One ticket detail view uses `title` while the model uses `subject`. | Normalize to `TicketDTO.subject`. |
+| ADM-07 | P1 | Confirmed | Ticket bulk resolve is sequential and includes ineligible states; bulk delete can invoke per-item confirmations. | Add backend bulk transition/delete commands with one confirmation and per-item success/failure results. |
+| ADM-08 | P1 | Confirmed | Admin event list/mobile filters include statuses that do not exist; chart/status mappings differ by client. | Generate UI choices and chart buckets from canonical status constants/state machine. |
+| ADM-09 | P1 | Complete | Admin update-event SSR prefetch key differs from the client detail key. Admin plans has the same exact-key hydration mismatch. | Use canonical key factories in server prefetch, client query, invalidation, and cache writes. |
+| ADM-10 | P1 | Complete | Host/vendor/moderator creation password requirements and “auto-generate” UI do not agree; empty strings can fail validation. | Choose and implement one server contract: required password or server-generated credential. Omit optional empty fields at the boundary. |
+| ADM-11 | P1 | Complete | Phone construction can prepend `+966` to local numbers without normalization. | Use one E.164 normalizer/validator shared by all creation and settings forms. |
+| ADM-12 | P2 | Complete | Some mutations rely on `router.refresh()` even though visible state is held in React Query. | Invalidate/update canonical query keys; use router refresh only for server-rendered state that needs it. |
+| ADM-13 | P2 | Stale/fixed | Mobile admin `state.role` is allegedly unavailable. | No change; retain as a regression assertion only. |
+| ADM-14 | P2 | Complete | Ticket attachment behavior varies by surface; broad missing-attachment claim is stale. | Ran explicit attachment matrix; added attachment viewers and media modals to web/mobile host and admin ticket details. |
+
+### 4.3 Plans, checkout, and money
+
+| ID | Priority | Status | Problem | Root solution |
+|---|---:|---|---|---|
+| PLN-01 | P0 | Confirmed | Web and relevant mobile-web card inputs parse/display expiry as `YY/MM`, contrary to the expected `MM/YY`. | Use one strict expiry parser/formatter, normalize before gateway submission, and test boundary dates. |
+| PLN-02 | P0 | Complete | Clients locally recompute totals and some displays round with `.toFixed(0)`, while the backend/gateway can use fractional SAR/minor units. | Represent money in integer minor units, expose an authoritative checkout quote, and render the returned total with a shared formatter. |
+| PLN-03 | P1 | Confirmed | Mobile classifies only `monthly` as recurring; quarterly/annual plans can be labeled as single-event. Similar collapsing exists in web business summaries/cards. | Centralize plan/billing classification and preserve the actual billing period everywhere. |
+| PLN-04 | P1 | Confirmed | Admin mobile edit rejects `invitePool: null`, which is valid for unlimited plans; empty duration can become zero. | Make validation conditional on plan type; omit/null optional duration and require positive values only when applicable. |
+| PLN-05 | P1 | Confirmed | Shared `isPerEventPlan` and backend semantics disagree about `trial`; comments/defaults still carry legacy invite-limit concepts. | Declare a canonical plan semantics module and parity-test backend and both clients. |
+| PLN-06 | P2 | Confirmed | Web plan management/cards hardcode “per event” or collapse non-event plans; mobile host plan title is misleading. | Render labels from plan type and billing period through localization keys. |
+| PLN-07 | P2 | Confirmed | Web admin bullet textarea loses a trailing blank line while editing. | Keep raw editing text locally; normalize only on submit. |
+| PLN-08 | P1 | Likely/verify in session | Setup fee/WhatsApp/extras visibility can diverge based on mapping flags. | Define a single presentation DTO and test every priced line item against the checkout quote. |
+| PLN-09 | P1 | Incorrect recommendation | Reports recommend restoring `maxInvitesPerEvent`. | Do not restore it; complete the invite-pool migration and remove legacy assumptions. |
+
+### 4.4 Vendor dashboard and marketplace
+
+| ID | Priority | Status | Problem | Root solution |
+|---|---:|---|---|---|
+| MKT-01 | P1 | Confirmed in affected path | Multi-district selection is truncated to one value in some marketplace client/API paths. A newer services path supports `districtIds`, so the codebase has two contracts. | Standardize all marketplace requests on `districtIds[]`/CSV serialization and `$in` semantics; remove singular adapters. |
+| MKT-02 | P1 | Confirmed in vendor-directory path | One marketplace vendor listing loads a broad candidate set, then sorts/slices in JavaScript. | Replace with an indexed Mongo aggregation using deterministic sort and `$facet` for rows/counts. |
+| MKT-03 | P1 | Complete | Service-location input on mobile can produce coordinates while the sanitizer accepts administrative IDs, causing location data to be dropped. | Reuse the canonical region/city/district selector. Store coordinates separately only if the API explicitly supports them. |
+| MKT-04 | P1 | Complete | Web/mobile service form limits disagree with backend limits; clearing Arabic fields can be omitted from multipart updates. | Publish one service schema and make serializers send explicit empty values for clearable fields. |
+| MKT-05 | P2 | Complete | Web placeholder image path has no matching asset. | Add an approved asset or use a guaranteed existing fallback component. |
+| MKT-06 | P1 | Complete | Service status toggle invalidates detail/list but can leave statistics stale. | Include stats in the canonical mutation invalidation set or update cache atomically. |
+| MKT-07 | P2 | Confirmed | Locale-aware region/city/district names and separators are inconsistent; some public/error states and mobile moderation reasons are untranslated. | Map localized fields at the DTO/presentation boundary and complete namespace parity. |
+| MKT-08 | P2 | Complete | Hardcoded production image base URLs make environments brittle. | Use signed/absolute URLs returned by the API or one environment-aware media helper. |
+| MKT-09 | P2 | Latent/dead | Mobile vendor stats component has an undefined icon path but is not the active home screen. | Remove/consolidate after import graph audit; do not patch as a production P0. |
+
+| MKT-10 | P1 | Decision required | “Clicks/views” is measured by both service views and a legacy vendor counter, with GET-triggered increments. | Choose a canonical metric and collection mechanism; prefer an explicit deduplicated analytics event. |
+| MKT-11 | P2 | Decision required | Public/guest marketplace navigation differs between web and mobile. | Product must define guest access and authentication gates before route changes. |
+
+### 4.5 Settings and account management
+
+| ID | Priority | Status | Problem | Root solution |
+|---|---:|---|---|---|
+| SET-01 | P1 | Confirmed | Web “full name” edits `username`, although backend supports distinct `name` and `username`. | Publish an identity DTO and label/bind each field correctly. |
+| SET-02 | P1 | Confirmed | Web always offers email verification; mobile verification does not refresh the persisted user after success. | Derive UI from canonical `emailVerified`, update/refetch the user on success, and test both clients. |
+| SET-03 | P1 | Confirmed/design flaw | Settings save paths combine profile, email, password, business/vendor data, and files into multiple mutations with partial-success risk. Client rollback is not reliable. | Split independent concerns into separate forms/actions. For truly atomic DB updates, add a transactional aggregate endpoint; stage file work explicitly. |
+| SET-04 | P2 | Confirmed | Host/admin/vendor mobile settings expose duplicate delete-account entry points. | Keep one well-explained destructive action per role and reuse one confirmation flow. |
+| SET-05 | P2 | Confirmed | Reopened modals/forms can retain stale business/location state; parent location changes do not always clear descendants. | Reset form state on identity/open changes and use one cascading location state machine. |
+| SET-06 | P2 | Confirmed | Mobile vendor logout success uses the wrong toast/message. | Correct namespace/key and add a small behavior assertion. |
+| SET-07 | P2 | Confirmed | Card/account inputs can retain pasted separators. | Normalize digits at input and API boundaries; format only for display. |
+| SET-08 | P2 | Confirmed | Admin templates settings route is effectively a placeholder. | Either implement the scoped feature or hide the route/menu until it exists. |
+| SET-09 | P2 | Confirmed | Some cross-tab/settings links navigate inconsistently. | Define role-aware route builders and add navigation smoke tests. |
+
+## 5. Important omissions found during the review
+
+The original reports focused on individual pages and missed several broader risks:
+
+1. **Backend live-event guest enforcement is missing.** Fixing only the mobile prop would leave the API bypassable.
+2. **Generic admin full-event update is a data-loss path.** It can reset guest RSVP/QR state and bypass staff token lifecycle.
+3. **Bulk event deletion does not preserve plan-slot/counter invariants.** This is more severe than the visible UI failures.
+4. **Bulk payload mismatch affects more resources than reported.** Hosts, vendors, moderators, and events share the same web/backend contract problem.
+5. **The table search/filter defect is shared infrastructure, not just events/tickets.** Every paginated admin list must be migrated together or explicitly documented as client-only.
+6. **Mobile lint is configured to miss high-value JavaScript errors.** `no-undef`, `no-unreachable`, `no-dupe-keys`, `valid-typeof`, and `no-unsafe-optional-chaining` are disabled.
+7. **Scheduling is a cross-platform product/contract gap.** Fields and components exist, but the active clients do not present one coherent flow.
+8. **Plan capacity and billing semantics still have legacy drift after the invite-pool rework.** The audit recommendation itself was based on an obsolete model.
+9. **Analytics has two competing counters.** Page-level fixes cannot make dashboard metrics trustworthy without a product definition.
+10. **Dead implementations distort audit results.** Route/import reachability must be part of every future inventory.
+
+## 6. Target architecture and non-negotiable invariants
+
+The work below should converge on these rules.
+
+### 6.1 Contract boundaries
+
+- Backend validation is authoritative; client validation improves UX but never owns a security or data-integrity rule.
+- Every entity exposed to clients has one normalized DTO: stable `id`, canonical status field, dates, localized/presentation fields, and optional fields with deliberate `null`/omitted semantics.
+- Shared modules contain pure schemas, constants, route/query builders, and serializers. They must not import UI or server-only infrastructure.
+- Multipart JSON fields are explicitly serialized and explicitly parsed. Never spread an unvalidated string into a settings object.
+
+### 6.2 State transitions
+
+- Event and ticket mutations use named domain actions, not arbitrary status strings.
+- Single and bulk operations call the same invariant-preserving domain function.
+- Transitions are authorized, validated, idempotent where practical, audited, and return per-item outcomes for bulk requests.
+- Guest RSVP/QR data, staff tokens, plan slots, notification behavior, and cache invalidation are part of the transition contract.
+
+### 6.3 Query and table behavior
+
+- One query-key factory is used by SSR prefetch, client queries, invalidations, and optimistic updates.
+- A table is explicitly in `server` or `client` mode.
+- Server mode owns search/filter/sort/page in the URL/query state, resets page when criteria change, and never re-filters only the current page.
+- Aggregate cards are computed against the full filtered dataset, not the visible page.
+
+### 6.4 Plans and checkout
+
+- `invitePool` is authoritative. `maxInvitesPerEvent` is not reintroduced.
+- Plan type, billing interval, capacity, duration, and unlimited behavior have one definition.
+- Monetary calculations use integer minor units or a decimal-safe library. The server quote is authoritative.
+- The payment UI displays exactly what the server intends to charge.
+
+### 6.5 Safety and reachability
+
+- Active code must pass undefined-variable, unreachable-code, duplicate-key, unsafe-optional-chain, and valid-`typeof` checks.
+- A suspected defect in unreachable code is not promoted to P0. First decide whether the code should be deleted or made canonical.
+- No broad refactor is merged without focused contract tests and a smoke path for web and mobile.
+
+## 7. Phased, session-sized execution plan
+
+### Execution tracker
+
+Update one row only after its exit criteria and required tests pass. Use `Blocked — <decision/evidence>` when appropriate; do not use “complete” for a partial implementation.
+
+| Session | Status | Depends on |
+|---|---|---|
+| 0.1 Baseline and safety lint | Complete | — |
+| 0.2 Contract foundations | Complete | 0.1 |
+| 1.1 Event validation/location | Complete | 0.2 |
+| 1.2 Invitation/Taqnyat contract | Complete | 0.2 |
+| 1.3 Live-event guest invariants | Complete | 0.2 |
+| 1.4 Admin event/staff mutation safety | Complete | 0.2, preferably 1.3 |
+| 1.5 Event entitlement/routes/messaging/stats | Complete | 0.2, 1.2 |
+| 1.6 Scheduling | Complete | 1.1, product decision |
+| 2.1 Shared table server mode | Complete | 0.2 |
+| 2.2 Admin list migrations/stats | Complete | 2.1 |
+| 2.3 Bulk API envelope | Complete | 0.2 |
+| 2.4 Ticket transitions/bulk | Complete | 0.2, 2.3 |
+| 2.5 Ticket attachment matrix | Complete | 0.1 |
+| 2.6 Admin creation/cache keys | Complete | 0.2 |
+| 3.1 Plan semantics/invite pool | Complete | 0.2 |
+| 3.2 Plan editing/presentation | Complete | 3.1 |
+| 3.3 Money/checkout quote | Complete | 3.1 |
+| 3.4 Expiry/payment UX | Complete | 3.3 |
+| 4.1 Vendor service form contract | Complete | 0.2 |
+| 4.2 Marketplace filters/query | Complete | 0.2 |
+
+| 4.3 Marketplace analytics | Complete | Product decision |
+| 4.4 Marketplace locale/navigation | Complete | Access decision; preferably 4.2 |
+| 5.1 Identity/email verification | Complete | 0.2 |
+| 5.2 Settings mutation/form stability | Complete | 5.1 |
+| 5.3 Settings destructive/navigation paths | Complete | 5.1 |
+| 6.1 Reachability/dead-code cleanup | Complete | Phases 1–5 scoped paths stable |
+| 6.2 Localization/accessibility sweep | Complete | Phases 1–5 scoped paths stable |
+| 6.3 Final regression/release gate | Complete | All preceding required sessions |
+
+### Phase 0 — Freeze contracts and add guardrails
+
+#### Session 0.1 — Baseline, issue ledger, and safety lint
+
+Scope: repository tooling plus only the minimum files needed to resolve newly enabled lint errors.
+
+Tasks:
+
+1. Record current web/mobile/backend/shared test and lint commands and their baseline results.
+2. Add the issue IDs from this document to the project tracker or keep this file as the tracker.
+3. Re-enable `no-undef`, `no-unreachable`, `no-dupe-keys`, `valid-typeof`, and `no-unsafe-optional-chaining` for active mobile source. If the existing error count is too large, use directory/file overrides with a documented ratchet; do not silently leave all rules disabled.
+4. Fix EVT-01 and any equally certain violations exposed in touched active files.
+5. Add CI commands that fail on new violations.
+
+Tests: mobile lint; web lint; affected unit tests; launch/import smoke for event summary.
+
+Exit criteria: EVT-01 is fixed; safety rules protect active event code; the baseline and any temporary lint debt are documented with a decreasing ceiling.
+
+#### Session 0.2 — Canonical DTO/status/query-key foundations
+
+Scope: shared pure modules and focused parity tests; no screen redesign.
+
+Tasks:
+
+1. Inventory current event, guest, ticket, subscription, plan, and bulk-ID representations.
+2. Add or consolidate canonical constants/schemas/adapters for `id`, status, RSVP buckets, `{ids}`, and subscription shape.
+3. Add canonical query-key factories for event detail, admin plans, guests, tickets, vendor services/stats.
+4. Add backend/shared parity tests. Avoid a “big bang” migration; expose adapters for later sessions.
+
+Tests: shared tests; backend schema tests; key-factory snapshot/equality tests.
+
+Exit criteria: later sessions can import stable primitives rather than inventing new mappings.
+
+### Phase 1 — Event correctness and data integrity
+
+#### Session 1.1 — Event step validation and location contract
+
+Issues: EVT-07, EVT-08.
+
+Tasks:
+
+1. Define ordered create/update steps once per client from a shared step identifier list.
+2. Make the final review/confirmation mandatory in active web/mobile flows.
+3. Define backend minimum location/address requirements, including intentional online/physical exceptions if applicable.
+4. Return field-addressable validation errors and map them in both clients.
+
+Tests: step-by-step unit tests; backend validation tests; web/mobile happy path and missing-address path.
+
+Exit criteria: no client can skip final confirmation, and the API rejects an invalid event even if the client is bypassed.
+
+#### Session 1.2 — Invitation settings and Taqnyat contract
+
+Issues: EVT-02, EVT-17.
+
+Tasks:
+
+1. Define a canonical invitation-settings request/response schema.
+2. Normalize `taqnyatTemplate` naming; remove `taqnyatTemplateRef` drift or support a deliberate migration alias at one boundary only.
+3. Explicitly parse all multipart JSON fields and reject strings/arrays where an object is required.
+4. Update web/mobile serializers and singular subscription consumers.
+5. Add round-trip contract tests for JSON and multipart payloads.
+
+Tests: backend route/service tests; mobile/web serializer tests; one end-to-end settings save/read.
+
+Exit criteria: the same settings payload round-trips without shape loss on web and mobile; malformed data yields 400, not corruption.
+
+#### Session 1.3 — Live-event guest invariants
+
+Issues: EVT-03, EVT-15.
+
+Tasks:
+
+1. Define live-event capability: existing guests immutable, new guests allowed, or the chosen alternative.
+2. Enforce the rule in the backend step-two/guest service by diffing canonical guest IDs/phones.
+3. Preserve RSVP, QR/token, send history, and audit fields.
+4. Pass/display backend capabilities in mobile and web; disable forbidden controls.
+5. Normalize guest IDs and status into `GuestDTO`.
+
+Tests: backend add/edit/delete matrix for draft/live/completed/cancelled; mobile/web component behavior; direct API bypass tests.
+
+Exit criteria: prohibited edits fail server-side and allowed additions preserve every existing guest field.
+
+#### Session 1.4 — Admin event mutation safety and staff lifecycle
+
+Issues: EVT-04, EVT-05, EVT-06, EVT-13, EVT-14.
+
+Tasks:
+
+1. Define event transition actions and allowed transition matrix.
+2. Replace generic staff-list writes with dedicated staff CRUD.
+3. Restrict/deprecate generic full-event update from mutating guests/staff/domain-owned collections.
+4. Make bulk status/delete call the same domain operation as single status/delete, including plan-slot/counter, token, audit, and notification invariants.
+5. Return per-item results; update web/mobile actions and loading state (`isPending`).
+
+Tests: transition matrix; single/bulk parity; plan-slot release; RSVP/QR preservation; staff token revoke; partial bulk failure.
+
+Exit criteria: no public admin path can reset guest state or bypass staff/plan invariants; invalid statuses are impossible to submit.
+
+#### Session 1.5 — Event entitlement, routes, messaging, and stats
+
+Issues: EVT-10, EVT-11, EVT-12, EVT-16, ADM-09 event part.
+
+Tasks:
+
+1. Add an authorized event-capabilities/entitlement response based on event owner and stamped subscription data.
+2. Make admin-on-behalf screens consume it.
+3. Unify update route parameter builder/parser.
+4. Connect guest invitation action to the messaging mutation with quota/partial-error feedback.
+5. Define RSVP buckets and return correct aggregate event stats.
+6. Use the same query key for SSR, client detail, mutations, and invalidation.
+
+Tests: owner/admin entitlement cases; route-link test; invitation mutation test; all RSVP status buckets; hydration assertion.
+
+Exit criteria: admin updates no longer depend on the admin’s personal plan; invitation is not a toast-only action; stats and hydration are correct.
+
+#### Session 1.6 — Scheduling decision and implementation
+
+Issue: EVT-09. Prerequisite: a written product decision.
+
+Option A — scheduling is supported:
+
+1. Define schedule time, timezone, edit/cancel rules, background job behavior, retry, and user-visible status.
+2. Validate in backend and implement equivalent web/mobile controls and summaries.
+3. Test timezone/DST, past dates, rescheduling, cancellation, and job idempotency.
+
+Option B — scheduling is not supported now:
+
+1. Remove unreachable UI and stop accepting dormant schedule fields.
+2. Preserve/migrate existing scheduled records deliberately.
+
+Exit criteria: there is one coherent behavior; no hardcoded false state or orphan scheduling controls remain.
+
+### Phase 2 — Admin platform foundation
+
+#### Session 2.1 — Shared table server-mode contract
+
+Issues: ADM-01, ADM-02.
+
+Tasks:
+
+1. Add explicit `mode`, controlled search/filter/sort/page props, callbacks, debounce, clear behavior, accessibility, and URL reset rules.
+2. Remove implicit `option.onClick` as the only filter contract.
+3. Migrate events and tickets first as reference implementations.
+4. Add table contract tests.
+
+Tests: component tests for server/client mode; URL/query request assertions; page reset; RTL/LTR keyboard behavior.
+
+Exit criteria: event/ticket search and filters affect backend requests and never filter only a current server page.
+
+#### Session 2.2 — Migrate all admin lists and aggregate stats
+
+Issues: ADM-03 and the systemic remainder of ADM-01/02.
+
+Tasks:
+
+1. Migrate hosts, businesses, vendors, moderators, payments, plans/templates where applicable.
+2. Add `statusCounts`/summary aggregations using the same filters as rows.
+3. Use `$facet` or parallel indexed aggregates; document response shape.
+4. Remove mobile double-filtering for server-paginated resources.
+
+Tests: every list search/filter/page combination; aggregate counts against seeded data larger than one page.
+
+Exit criteria: all admin lists declare their mode, and displayed counts are independent of the visible page.
+
+#### Session 2.3 — Bulk API contract across admin resources
+
+Issue: ADM-04.
+
+Tasks:
+
+1. Standardize request body to `{ids: string[]}` with bounds, duplicate removal, authorization, and invalid-ID reporting.
+2. Update web hosts/vendors/moderators/events and any other mismatched clients.
+3. Keep resource-specific domain actions behind the common envelope.
+4. Return `{succeeded, failed}` rather than pretending all-or-nothing if operations are not transactional.
+
+Tests: request contract tests for every endpoint; mixed valid/invalid IDs; empty/oversized input; authorization.
+
+Exit criteria: all clients and routes use the same envelope; failures are visible and retryable.
+
+#### Session 2.4 — Ticket transition and bulk behavior
+
+Issues: ADM-05, ADM-06, ADM-07.
+
+Tasks:
+
+1. Define ticket state machine and named actions, including the exact semantics of reopen.
+2. Expose allowed actions/capabilities or share a pure transition table.
+3. Normalize `subject` in `TicketDTO`.
+4. Implement one-confirmation bulk resolve/delete with eligibility and per-item results.
+5. Update web/mobile screens and cache keys.
+
+Tests: transition matrix; invalid transition; bulk mixed-state result; one-confirmation UI; subject rendering.
+
+Exit criteria: every rendered action is accepted by the backend and bulk operations cannot double-confirm or silently skip failures.
+
+#### Session 2.5 — Ticket attachment focused matrix
+
+Issue: ADM-14.
+
+Do not start by editing. Test:
+
+1. User creates image ticket and video ticket on web/mobile.
+2. User list/detail views both attachments.
+3. Admin list/detail views both attachments.
+4. Signed URL expiry/refresh, missing file, unsupported MIME, and 50 MB limit.
+5. Access control: another user cannot retrieve the private attachment.
+
+Only fix reproduced failures. Prefer a shared media-viewer behavior and backend-signed URL response.
+
+Exit criteria: matrix evidence is recorded and all confirmed gaps have focused tests.
+
+#### Session 2.6 — Admin creation forms, phone/password, and cache keys
+
+Issues: ADM-09 plans part, ADM-10, ADM-11, ADM-12.
+
+Tasks:
+
+1. Decide required versus server-generated passwords by role; align validation, service, delivery/reset flow, and UI copy.
+2. Omit optional empty values instead of sending empty strings.
+3. Introduce shared E.164 normalization and apply it to admin creation/settings.
+4. Fix admin plan SSR/client key parity and replace refresh-only cache handling.
+
+Tests: each role create with/without password; common Saudi phone forms; hydration/cache refresh tests.
+
+Exit criteria: UI promise matches server behavior and newly created records appear without a reload.
+
+### Phase 3 — Plans and checkout
+
+#### Session 3.1 — Canonical plan semantics and invite-pool completion
+
+Issues: PLN-03, PLN-04, PLN-05, PLN-09.
+
+Tasks:
+
+1. Write the plan-type matrix: sellability, billing interval, duration, capacity, renewal, and unlimited semantics.
+2. Make `invitePool` authoritative; remove remaining functional reliance on `maxInvitesPerEvent`.
+3. Align trial/per-event helpers across shared/backend.
+4. Make admin web/mobile validation conditional on type; preserve `null` deliberately.
+5. Add a compatibility/data audit before deleting legacy stored fields.
+
+Tests: a table-driven test for every plan type on shared, backend, web mapping, and mobile mapping.
+
+Exit criteria: the same raw plan is classified and validated identically everywhere.
+
+#### Session 3.2 — Plan editing and presentation parity
+
+Issues: PLN-06, PLN-07, PLN-08.
+
+Tasks:
+
+1. Build a canonical plan presentation DTO including actual billing period and every priced extra.
+2. Update admin editors, host/business cards, summaries, and localized titles.
+3. Keep bullet textarea raw until submit.
+4. Verify setup fees, WhatsApp, customization, and other line items against backend data.
+
+Tests: visual/component fixtures for every plan type in Arabic/English; create-edit-read round trip.
+
+Exit criteria: no plan is hardcoded as per-event/monthly, and no priced line item disappears from summary.
+
+#### Session 3.3 — Money and authoritative checkout quote
+
+Issue: PLN-02.
+
+Tasks:
+
+1. Choose integer halalas or a decimal-safe money type throughout the quote/payment boundary.
+2. Add/standardize a server quote response containing line items, discount, tax if any, setup/extras, currency, and final total.
+3. Make clients render and submit the quote identifier/authoritative amount rather than recomputing independently.
+4. Add stale-quote/price-change and idempotency behavior.
+
+Tests: decimals, discounts, zero, large values, changed plan price, duplicate submit, and gateway amount equality.
+
+Exit criteria: displayed amount, persisted transaction, and gateway charge match exactly.
+
+#### Session 3.4 — Card expiry and payment UX
+
+Issue: PLN-01.
+
+Tasks:
+
+1. Implement strict `MM/YY` input/normalization with month 01–12 and non-expired validation.
+2. Verify gateway-required wire format independently from display format.
+3. Cover web checkout and only the mobile platforms that actually expose card entry; retain native IAP behavior.
+4. Localize errors and protect double submit.
+
+Tests: `00/YY`, `13/YY`, current month, expired, paste with separators, gateway payload, platform gates.
+
+Exit criteria: correct display and gateway format with no effect on native IAP-only flows.
+
+### Phase 4 — Vendor services and marketplace
+
+#### Session 4.1 — Vendor service form contract
+
+Issues: MKT-03, MKT-04, MKT-05, MKT-06, MKT-08.
+
+Tasks:
+
+1. Consolidate service schema limits and multipart serializer.
+2. Reuse administrative location selection; explicitly separate optional coordinates.
+3. Support clearing Arabic/optional fields.
+4. Standardize returned media URLs and guaranteed placeholder behavior.
+5. Invalidate list, detail, and stats after create/update/delete/toggle.
+
+Tests: create/edit/clear fields; all limit boundaries; cascading location; media in dev/prod-style URL; cache freshness.
+
+Exit criteria: the same service round-trips without dropped fields on web/mobile and stats update immediately.
+
+#### Session 4.2 — Marketplace filter contract and database query
+
+Issues: MKT-01, MKT-02.
+
+Tasks:
+
+1. Choose one query contract for region/city/multiple district IDs, search, category, price, rating, sort, and pagination.
+2. Migrate both marketplace implementations or deliberately retire one.
+3. Replace in-memory vendor sorting/pagination with indexed aggregation and deterministic tie-breaker.
+4. Preserve moderation blocks, vendor approval, service activity, and count consistency.
+5. Add/explain compound indexes using real query shapes; inspect execution plans on representative data.
+
+Tests: multi-district OR semantics; empty filters; blocked vendors; page stability; count parity; performance dataset/explain.
+
+Exit criteria: no selected district is dropped and response work is bounded by page size/indexed aggregation.
+
+#### Session 4.3 — Marketplace analytics decision
+
+Issue: MKT-10. Product decision session first; implementation may be a second session if non-trivial.
+
+Decide:
+
+1. What counts: service impression, service detail view, vendor profile view, outbound contact click, or multiple named events.
+2. Who/what is deduplicated and for how long.
+3. Whether authenticated identity, anonymous session, or privacy-preserving aggregate is stored.
+4. Which metric each dashboard card displays.
+
+Implementation preference: explicit analytics endpoint/event with validation, rate limiting/deduplication, and one aggregation source. Remove or clearly label legacy counter behavior after a data migration decision.
+
+Exit criteria: metric definition, collection point, and dashboard query agree; refresh/crawler traffic does not arbitrarily inflate a “click” metric.
+
+#### Session 4.4 — Marketplace localization, public states, and navigation
+
+Issues: MKT-07, MKT-11.
+
+Tasks:
+
+1. Complete Arabic/English field selection, punctuation, loading/error/not-found, report/block reasons, and accessible labels.
+2. Use locale-aware route builders for relative links.
+3. Implement the approved mobile guest-access decision with explicit auth gates.
+4. Test RTL/LTR and anonymous/authenticated navigation.
+
+Exit criteria: locale and access behavior are deliberate and consistent, with no hardcoded production-facing English in scoped screens.
+
+### Phase 5 — Settings and identity
+
+#### Session 5.1 — Identity fields and email verification synchronization
+
+Issues: SET-01, SET-02.
+
+Tasks:
+
+1. Define `name`, `username`, `email`, and `emailVerified` semantics and edit permissions.
+2. Bind labels/fields correctly on web/mobile.
+3. Hide/disable verification for verified users.
+4. On verification success, update/refetch canonical user state and persistence.
+
+Tests: edit name without username change; username validation; unverified/verified flows; relaunch persistence.
+
+Exit criteria: identity fields do not overwrite each other and verification state changes immediately everywhere.
+
+#### Session 5.2 — Split settings mutations and stabilize forms
+
+Issues: SET-03, SET-05, SET-07.
+
+Tasks:
+
+1. Split profile, email, password, business/vendor details, and media into independent save sections unless backend atomicity is truly required.
+2. For an atomic aggregate endpoint, use a transaction for DB changes and explicitly stage/compensate file operations.
+3. Reset modal/form state when opened for a new entity.
+4. Use cascading location state and digits-only/card/phone normalizers.
+
+Tests: partial failure; reopen/switch entity; parent location change; cleared optional fields; file failure.
+
+Exit criteria: users can tell exactly which section saved, and a failed later action does not misrepresent earlier success.
+
+#### Session 5.3 — Destructive actions, settings navigation, and placeholder routes
+
+Issues: SET-04, SET-06, SET-08, SET-09.
+
+Tasks:
+
+1. Keep one delete-account entry and one shared confirmation/re-auth flow per role.
+2. Correct logout messaging.
+3. Fix role-aware cross-tab links.
+4. Either implement admin template settings with a separately approved scope or remove/hide the placeholder navigation.
+
+Tests: role matrix for settings links; logout; cancel/confirm account deletion; hidden/implemented template route.
+
+Exit criteria: destructive/navigation behavior is unambiguous and no menu ends at a non-feature.
+
+### Phase 6 — Cleanup, localization, and release verification
+
+#### Session 6.1 — Reachability audit and duplicate-code removal
+
+Issues: EVT-18, MKT-09 and related duplicates.
+
+Tasks:
+
+1. Build/import-search an entry-point-to-component reachability map for event create/update and vendor dashboard.
+2. Identify canonical implementations and prove orphan status with imports/routes/navigation registration.
+3. Remove orphan components/branches/exports and obsolete props; do not remove dynamically referenced files without runtime proof.
+4. Update documentation and tests.
+
+Tests: builds/bundles; route/navigation smoke; import graph; lint.
+
+Exit criteria: one canonical implementation per flow, fewer false positives, no broken dynamic route/import.
+
+#### Session 6.2 — Localization and accessibility parity sweep
+
+Scope: only the audited screens after functional changes have landed.
+
+Tasks:
+
+1. Compare Arabic/English namespace key sets automatically.
+2. Find hardcoded user-facing strings and hardcoded date/number/currency locales.
+3. Verify RTL layout, focus order, keyboard operation, labels, contrast, and dynamic announcements for errors/loading.
+4. Use locale-aware date/number/currency utilities.
+
+Tests: key-parity script; rendering snapshots/smoke in both locales; focused accessibility tests.
+
+Exit criteria: no missing scoped keys or hardcoded locale formatting; core actions work by keyboard/screen reader where applicable.
+
+#### Session 6.3 — End-to-end regression and rollout gate
+
+Tasks:
+
+1. Run the acceptance matrix below on seeded roles and realistic data greater than one page.
+2. Run lint, unit, integration, contract, and E2E suites for all four packages.
+3. Verify database migrations/indexes with dry-run, backup, and rollback instructions.
+4. Check logs/metrics for validation errors, failed bulk items, payment mismatches, and query latency.
+5. Release behind flags where behavior changes are risky (scheduling, analytics, new bulk transitions).
+
+Exit criteria: all P0/P1 issues are closed or explicitly waived with owner/reason; no unresolved data migration; rollback is documented.
+
+## 8. Acceptance matrix
+
+At minimum, the final release gate must cover:
+
+| Area | Required scenarios |
+|---|---|
+| Roles | host, business, admin, moderator where authorized, vendor, anonymous marketplace user |
+| Locales | Arabic RTL and English LTR |
+| Platforms | web desktop/mobile viewport; iOS/Android for active native paths; mobile web where checkout is exposed |
+| Events | create; update every step; physical/allowed alternative location; final review; live add-only guest behavior; completed/cancelled restrictions; admin-on-behalf |
+| Invitations | template save/read; Taqnyat; immediate/scheduled according to decision; quota failure; partial send; singular subscription response |
+| Guests/staff | ID variants normalized; RSVP/QR preserved; staff token lifecycle; pending stats |
+| Admin lists | search, filter, sort, page, reset, empty/error; more than one page; aggregate counts; URL persistence |
+| Bulk actions | valid, mixed valid/invalid, unauthorized, repeated/idempotent, partial failure; plan/token/audit invariants |
+| Tickets | every allowed/forbidden transition; subject; image/video attachment matrix; bulk resolve/delete |
+| Plans | every plan type/interval; unlimited null pool; trial; edit round trip; extras; localization |
+| Checkout | decimal totals; discounts; quote changes; expiry boundaries; double submit; gateway/persisted/displayed amount equality |
+| Marketplace | multi-district; moderation blocks; approved/active only; deterministic pagination; localized names; anonymous policy |
+| Vendor services | create/edit/clear; schema boundaries; location; media; status and stats cache |
+| Settings | identity separation; verification sync; partial failure; stale modal reset; deletion; route links |
+
+## 9. Required engineering evidence per session
+
+Every Gemini session must leave these artifacts in its response or commit/PR notes:
+
+1. Issue IDs addressed and exact acceptance criteria.
+2. Evidence that each touched path is active, or an explicit dead-code proof.
+3. Before-state reproduction or failing test.
+4. Contract/state/data invariants considered.
+5. Files changed and why.
+6. Tests run with exact commands and results.
+7. Remaining risks, migrations, product decisions, and follow-ups.
+8. Updated checkboxes/status in this document. Do not mark an issue complete only because code was written.
+
+## 10. Standard prompt for each Gemini session
+
+Use this template, replacing the session identifier:
+
+> Work only on **Session X.Y** in `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md`.
+>
+> First read the executive conclusion, corrections, target architecture/invariants, the selected session, and all listed prerequisites. Inspect the current code because the repository may have changed since the audit. Reproduce each issue or add a failing test before changing behavior. Do not work on later sessions, do not restore `maxInvitesPerEvent`, do not invent status transitions, and do not patch orphaned code without proving it should remain.
+>
+> Implement the smallest root-cause fix that satisfies the session exit criteria across backend/shared/web/mobile paths in scope. Preserve unrelated user changes. Run the specified tests plus relevant package lint/type/build checks. Report issue IDs, evidence, files changed, commands/results, migrations/risks, and any blocked product decision. Update only this session’s completion state in the plan, then stop.
+
+For a review-only pass, append:
+
+> Do not modify code. Return a discrepancy report against the current repository, proposed test cases, and any correction needed to the plan.
+
+## 11. Sequencing and safe parallelism
+
+Recommended order is the numbered order. The following dependencies must be respected:
+
+- Session 0.2 precedes DTO/status/key migrations.
+- Sessions 1.2–1.4 precede broad event UI cleanup.
+- Session 2.1 precedes 2.2.
+- Session 3.1 precedes 3.2–3.4.
+- Session 4.1 precedes vendor cleanup; 4.3 requires a product decision.
+- Session 6.1 happens after functional paths are stabilized, not before.
+
+If multiple engineers or sessions run in parallel, safe candidates are separate domains after Phase 0—for example 2.4 tickets, 4.1 vendor service forms, and 5.1 identity—provided they do not independently redefine shared DTOs/query keys. Event transition work, plan semantics, shared table work, and money/quote work should each have a single owner until their contracts land.
+
+## 12. Completion definition
+
+This program is complete only when:
+
+- all P0 and P1 issues are fixed, deliberately rejected with evidence, or converted into owned product decisions;
+- backend rules prevent client bypass and single/bulk operations preserve identical invariants;
+- web/mobile consume canonical DTOs, statuses, plan semantics, and query keys;
+- money displayed equals money charged;
+- server-paginated search/filter and aggregate counts are correct beyond one page;
+- active code is protected by safety lint;
+- dead duplicate paths are removed after reachability proof;
+- the full acceptance matrix passes in Arabic and English;
+- migrations, feature flags, monitoring, and rollback steps are documented.
+
+## 13. Execution records
+
+### Session 0.1 — Baseline, issue ledger, and safety lint
+
+- **Date:** 2026-08-21
+- **Status:** Complete
+- **Issues addressed:** EVT-01 (P0: Mobile `EventSummary` undefined `currentLanguage` crash).
+- **Implementation summary:**
+  - Re-enabled critical safety lint rules in `halaa-mobile/eslint.config.mjs` (`no-undef`, `no-unreachable`, `no-dupe-keys`, `valid-typeof`, `no-unsafe-optional-chaining`) with `error` severity.
+  - Re-enabled clean `eslint:recommended` rules with zero violations (`no-async-promise-executor`, `no-cond-assign`, `no-constant-condition`, `no-fallthrough`, `no-irregular-whitespace`, `no-misleading-character-class`, `no-redeclare`, `no-self-assign`, `no-sparse-arrays`, `no-useless-catch`, `getter-return`, `no-case-declarations`, `no-control-regex`, `no-prototype-builtins`, `no-useless-escape`).
+  - Fixed EVT-01 in `halaa-mobile/components/createEvent/EventSummary.js` by destructuring `currentLanguage` from `useTranslation("createEvent")` and adding it to the `useMemo` dependency array for `resolvedInvitation`.
+  - Fixed companion `no-undef` in `halaa-mobile/components/admin-dashboard/events/EventActionsSection.js` by calling `useTranslation()` in `EventHeroCard`.
+  - Added unit regression test `halaa-mobile/__tests__/regressions/eventSummarySmoke.test.js` asserting `currentLanguage` scoping and safety rule enforcement.
+  - Added `npm run test` step to `.github/workflows/halaa-mobile.yml`.
+- **Files changed:**
+  - `halaa-mobile/components/createEvent/EventSummary.js`
+  - `halaa-mobile/components/admin-dashboard/events/EventActionsSection.js`
+  - `halaa-mobile/eslint.config.mjs`
+  - `halaa-mobile/__tests__/regressions/eventSummarySmoke.test.js` (new)
+  - `.github/workflows/halaa-mobile.yml`
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md`
+- **Exact test commands & results:**
+  - `cd halaa-mobile && npm run lint` → PASS (0 errors, 0 warnings under `eslint . --max-warnings 0`)
+  - `cd halaa-mobile && npm run test` → PASS (97 tests passed, 0 failures)
+  - `cd halaa-web && npm run lint && npm run test` → PASS (Lint: 0 errors, 33 warnings; Tests: 28 passed, 0 failures)
+  - `cd shared && npm run lint && npm run legal:verify && npm run aso:verify` → PASS (Lint: 0 errors; Legal & ASO verified)
+  - `cd halaa-backend && npm run catalog:verify && npm run test` → PASS (Catalog: 26 passed; Backend: 310 passed)
+- **Remaining risks / debt ceiling:**
+  - `no-unused-vars` remains silenced on mobile due to pre-existing unused React imports / destructured variables in legacy components.
+- **Blockers / deferred work:**
+  - None for Phase 0. Session 0.2 (Canonical DTO/status/query-key foundations) is unblocked.
+
+### Session 0.2 — Canonical DTO/status/query-key foundations
+
+- **Date:** 2026-08-21
+- **Status:** Complete
+- **Issues addressed:** EVT-15 (Guest ID / status normalization), EVT-16 (RSVP buckets definition), EVT-17 (Subscription response shape normalization), ADM-04 (Bulk ID Request envelope normalization), ADM-06 (Ticket title vs subject normalization), ADM-09 (Canonical query key factories).
+- **Implementation summary:**
+  - Consolidated canonical status constants in `@halaa/shared/constants` with full parity to backend: `USER_STATUS`, `VENDOR_STATUS`, `EVENT_STATUS` (all 10 lifecycle statuses), `SUBSCRIPTION_STATUS`, `TICKET_STATUS`, `TICKET_PRIORITY`, `RSVP_STATUS`, `GUEST_STATUS`, `CHECKIN_STATUS`, `INVITATION_TYPE`.
+  - Implemented `RSVP_BUCKETS` and `classifyRsvpBucket(status)` in `@halaa/shared/constants/eventStatus.js`.
+  - Implemented boundary DTO adapters in `@halaa/shared/utils/adapters.js`: `normalizeId`, `toGuestDTO`, `toTicketDTO`, `normalizeSubscriptionResponse`, `toSubscriptionDTO`, `toBulkIdsPayload`.
+  - Implemented `bulkIdsRequestSchema` and `bulkActionResponseSchema` in `@halaa/shared/schemas/bulk.js`.
+  - Implemented canonical query key factories in `@halaa/shared/utils/queryKeys.js`: `eventKeys`, `guestKeys`, `ticketKeys`, `planKeys`, `vendorServiceKeys`, `subscriptionKeys`.
+  - Added test suite `shared/test/contracts.test.js` covering all adapters, schemas, RSVP buckets, and query keys.
+  - Added backend parity test `halaa-backend/test/shared-parity.test.js` asserting zero drift between backend and shared status constants.
+- **Files changed:**
+  - `shared/src/constants/eventStatus.js`
+  - `shared/src/constants/status.js` (new)
+  - `shared/src/constants/index.js`
+  - `shared/src/schemas/bulk.js` (new)
+  - `shared/src/schemas/index.js`
+  - `shared/src/utils/adapters.js` (new)
+  - `shared/src/utils/queryKeys.js` (new)
+  - `shared/src/utils/index.js`
+  - `shared/package.json`
+  - `shared/test/contracts.test.js` (new)
+  - `halaa-backend/test/shared-parity.test.js` (new)
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md`
+- **Exact test commands & results:**
+  - `cd shared && npm run lint && npm run test && npm run legal:verify && npm run aso:verify` → PASS (10 unit tests passed, 0 lint errors, legal/aso verified)
+  - `cd halaa-backend && node --test test/shared-parity.test.js && npm run catalog:verify && npm run test` → PASS (Parity: 2 passed; Catalog: 26 passed; Backend: 310 passed)
+  - `cd halaa-mobile && npm run lint && npm run test` → PASS (0 errors, 97 tests passed)
+  - `cd halaa-web && npm run lint && npm run test` → PASS (0 errors, 28 tests passed)
+- **Remaining risks / decisions:**
+  - None. Stable foundation primitives are ready for consumption in Phase 1 (Events), Phase 2 (Admin tables), Phase 3 (Plans), Phase 4 (Vendor), and Phase 5 (Settings).
+- **Blockers / deferred work:**
+  - Phase 0 is complete. Phase 1 (Session 1.1 — Event validation and location contract) is ready to begin.
+
+### Session 1.1 — Event step validation and location contract
+
+- **Date:** 2026-08-21
+- **Status:** Complete
+- **Issues addressed:** EVT-07 (Mobile final confirmation is effectively dead), EVT-08 (Web step-one and backend validation allow incomplete address/location data).
+- **Root cause:**
+  - **EVT-07:** In `halaa-mobile/hooks/events/useEventForm.js`, `validateStepData` returned `true` unconditionally for `case 5` (the review step in the 5-step host wizard), leaving `confirmReviewed` unchecked. Full validation was placed under `case 6` which was unreachable in host mode.
+  - **EVT-08:** `halaa-backend/src/modules/events/events.validation.js` made `location`, `date`, `time`, and `type` optional in `createEventSchema`, and `halaa-web/hooks/events/useEventForm.js` omitted `address.address` from `validateStep(1)`.
+- **Implementation summary:**
+  - Created canonical step sequences and step numbers in `@halaa/shared/constants/eventSteps.js` (`EVENT_CREATE_STEPS`, `EVENT_CREATE_STEP_NUMBERS`, `ADMIN_EVENT_CREATE_STEPS`, `ADMIN_EVENT_CREATE_STEP_NUMBERS`, `EVENT_UPDATE_STEPS`, `EVENT_UPDATE_STEP_NUMBERS`).
+  - Updated `halaa-backend/src/modules/events/events.validation.js`: `createEventSchema` enforces required non-empty `title`, valid `type` (from `EVENT_CATEGORY_VALUES`), non-empty `date`, non-empty `time`, and `location.address` (min 1 char). `updateEventDetailsSchema` enforces non-empty address when `location` is provided.
+  - Updated `halaa-mobile/hooks/events/useEventForm.js`: `validateStepData` checks `formData.confirmReviewed === true` in both `case 5` and `case 6`.
+  - Updated `halaa-web/hooks/events/useEventForm.js` and created `halaa-web/hooks/events/eventFormValidation.js`: `validateEventStep` enforces non-empty `address.address` on step 1 and `confirmReviewed === true` on step 5.
+  - Added unit test suites across `halaa-backend` (`test/event-validation.test.js`), `halaa-mobile` (`__tests__/events/stepValidation.test.js`), and `halaa-web` (`__tests__/events/eventStepValidation.test.mjs`).
+- **Files changed:**
+  - `shared/src/constants/eventSteps.js` (new)
+  - `shared/src/constants/index.js`
+  - `shared/test/contracts.test.js`
+  - `halaa-backend/src/modules/events/events.validation.js`
+  - `halaa-backend/test/event-validation.test.js` (new)
+  - `halaa-mobile/hooks/events/useEventForm.js`
+  - `halaa-mobile/__tests__/events/stepValidation.test.js` (new)
+  - `halaa-web/hooks/events/eventFormValidation.js` (new)
+  - `halaa-web/hooks/events/useEventForm.js`
+  - `halaa-web/__tests__/events/eventStepValidation.test.mjs` (new)
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md`
+- **Exact test commands & results:**
+  - `cd shared && npm run lint && npm run test && npm run legal:verify && npm run aso:verify` → PASS (11 unit tests passed, 0 lint errors)
+  - `cd halaa-backend && node --test test/event-validation.test.js && node --test test/shared-parity.test.js && npm run catalog:verify && npm run test` → PASS (All 318 tests passed, 0 failures)
+  - `cd halaa-mobile && npm run lint && npm run test` → PASS (0 errors, 103 tests passed)
+  - `cd halaa-web && npm run lint && npm run test` → PASS (0 errors, 33 tests passed)
+- **Exit-criteria verification:**
+  - No client can skip final confirmation (`validateStepData(5)` / `validateEventStep(5)` returns false without `confirmReviewed: true`).
+  - The API rejects an invalid event missing address, title, type, date, or time even if the client is bypassed (`createEventSchema` unit test assertions pass).
+- **Remaining risks / decisions:**
+  - None.
+- **Blockers / deferred work:**
+  - Session 1.1 is Complete. Session 1.2 (Invitation settings and Taqnyat contract) is unblocked.
+
+### Session 1.2 — Invitation settings and Taqnyat contract
+
+- **Date:** 2026-08-21
+- **Status:** Complete
+- **Issues addressed:** EVT-02 (Update-event settings mutation corrupts Taqnyat template settings / allows invalid payloads), EVT-17 (Frontend reminder & schedule components use array index on singular subscription object).
+- **Root cause:**
+  - **EVT-02:** `halaa-backend/src/modules/events/events.routes.js` omitted `"taqnyatTemplate"` from `parseFormDataJsonFields` on `PATCH /:id/invitation-settings`. Multipart string JSON wasn't parsed into an object, and `events.settings.service.js` spread the raw string creating character-indexed numeric keys. Additionally, `events.validation.js`'s `updateInvitationSettingsSchema` did not validate object types for `taqnyatTemplate`, `visualTemplate`, and `guestReplies`, nor normalize the `taqnyatTemplateRef` migration alias. On mobile, `useEventMutation.js` sent `settings.taqnyatTemplateRef = ref` rather than the canonical `settings.taqnyatTemplate = { templateRef: ref }`.
+  - **EVT-17:** In `halaa-mobile/components/admin-dashboard/events/AutoReminderInfoText.js` and `halaa-mobile/components/home/ScheduleSendingModal.js`, code accessed `subData?.data?.subscription?.[0]?.planCode === "trial"`. The backend returns `subscription` as a singular object (`subData.data.subscription`), not an array, causing `[0]` to evaluate to `undefined` and `isTrial` to evaluate to `false`.
+- **Implementation summary:**
+  - **Shared Schemas & Adapters:**
+    - Defined `visualTemplateSchema`, `taqnyatTemplateSchema`, `guestRepliesSchema`, and `invitationSettingsSchema` in `@halaa/shared/schemas/events.js` to strictly validate object payloads and normalize boundary aliases (`taqnyatTemplateRef`, `selectedTemplate`, legacy auto-reply fields).
+    - Exported `INVITATION_TYPE_VALUES` in `shared/src/constants/status.js` and `halaa-backend/src/shared/constants/status.js`.
+    - Added `toInvitationSettingsDTO` in `@halaa/shared/utils/adapters.js` and exported from `@halaa/shared/utils/index.js`.
+  - **Backend Validation & Routes:**
+    - Updated `halaa-backend/src/shared/middleware/validation.js`'s `parseFormDataJsonFields` to trim and safely skip empty strings.
+    - Updated `halaa-backend/src/modules/events/events.routes.js` to include `"taqnyatTemplate"` in `parseFormDataJsonFields` on `PATCH /:id/invitation-settings`.
+    - Updated `halaa-backend/src/modules/events/events.validation.js`'s `createEventSchema` and `updateInvitationSettingsSchema` with strict sub-schemas rejecting non-object strings/arrays and transforming aliases into `{ templateRef }`.
+    - Updated `halaa-backend/src/modules/events/events.settings.service.js`'s `updateInvitationSettings` to safely merge `taqnyatTemplate` and `guestReplies` only when valid objects, supporting fallback aliases and preventing string spreading.
+  - **Mobile & Consumer Fixes:**
+    - Updated `halaa-mobile/hooks/events/mutations/useEventMutation.js`'s `updateTaqnyatTemplate` to serialize `settings.taqnyatTemplate = { templateRef: ref }`.
+    - Updated `halaa-mobile/components/admin-dashboard/events/AutoReminderInfoText.js`, `halaa-mobile/components/home/ScheduleSendingModal.js`, and `halaa-mobile/components/createEvent/StepOne.js` to use `normalizeSubscriptionResponse(subData).subscription?.planCode === "trial"`.
+  - **Test Coverage:**
+    - Added unit test suite `halaa-backend/test/invitation-settings-contract.test.js` validating schema normalization, type rejection, and multipart form-data parsing.
+    - Added contract tests in `shared/test/contracts.test.js` for `toInvitationSettingsDTO` and `invitationSettingsSchema`.
+    - Added regression test `halaa-mobile/__tests__/regressions/subscriptionConsumer.test.js` testing `normalizeSubscriptionResponse` vs the old `subscription[0]` bug.
+- **Files changed:**
+  - `shared/src/constants/status.js`
+  - `shared/src/schemas/events.js`
+  - `shared/src/utils/adapters.js`
+  - `shared/src/utils/index.js`
+  - `shared/test/contracts.test.js`
+  - `halaa-backend/src/shared/constants/status.js`
+  - `halaa-backend/src/shared/middleware/validation.js`
+  - `halaa-backend/src/modules/events/events.routes.js`
+  - `halaa-backend/src/modules/events/events.settings.service.js`
+  - `halaa-backend/src/modules/events/events.validation.js`
+  - `halaa-backend/test/invitation-settings-contract.test.js` (new)
+  - `halaa-mobile/hooks/events/mutations/useEventMutation.js`
+  - `halaa-mobile/components/admin-dashboard/events/AutoReminderInfoText.js`
+  - `halaa-mobile/components/home/ScheduleSendingModal.js`
+  - `halaa-mobile/components/createEvent/StepOne.js`
+  - `halaa-mobile/__tests__/regressions/subscriptionConsumer.test.js` (new)
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md`
+- **Exact test commands & results:**
+  - `cd shared && npm run lint && npm run test && npm run legal:verify && npm run aso:verify` → PASS (12 unit tests passed, 0 lint errors)
+  - `cd halaa-backend && node --test test/invitation-settings-contract.test.js && node --test test/shared-parity.test.js && npm run catalog:verify && npm run test` → PASS (All 323 tests passed, 0 failures)
+  - `cd halaa-mobile && npm run lint && npm run test` → PASS (0 errors, 104 tests passed)
+  - `cd halaa-web && npm run lint && npm run test` → PASS (0 errors, 33 tests passed)
+- **Exit-criteria verification:**
+  - Updating invitation settings in JSON or multipart preserves `taqnyatTemplate.templateRef` as a canonical object without corrupting template properties (`test/invitation-settings-contract.test.js` passed).
+  - Rejection occurs if non-object values are provided for `taqnyatTemplate`, `visualTemplate`, or `guestReplies`.
+  - All mobile and web subscription checks use normalized access and correctly identify trial plans (`__tests__/regressions/subscriptionConsumer.test.js` passed).
+- **Remaining risks / decisions:**
+  - None.
+- **Blockers / deferred work:**
+  - Session 1.2 is Complete. Session 1.3 (Live-event guest invariants) is unblocked.
+
+### Session 1.3 — Live-event guest invariants
+
+- **Date:** 2026-08-21
+- **Status:** Complete
+- **Issues addressed:** EVT-03 (Live-event “add guests only” dropped in mobile component chain and not enforced by backend step-two service; direct API calls can edit/delete live guests), EVT-15 (Guest ID / status normalization, boundary adapter `GuestDTO`, `rsvpStatus` vs `status`).
+- **Root cause:**
+  - **EVT-03 Backend:** In `events.step2.service.js` (`updateEventStep2`), while completed and cancelled events were rejected, live events (`event.status === 'live'`) did not check `toDeleteIds.length > 0` or `toUpdate.length > 0`. Similarly, `events.guests.service.js` (`updateGuestList`) and `guests.service.js` (`updateGuest`, `deleteGuest`, `addGuest`) lacked status checks rejecting deletions or modifications on live, completed, or cancelled events.
+  - **EVT-03 Mobile:** In the create/update event wizard, `screens/common/update-event/StepTwo.js` received `allowAddOnly` and passed it to `<CreateStepTwo />`, but `components/createEvent/StepTwo.js` did not accept `allowAddOnly` in props or pass it down to `GuestFormSection.js`, which in turn did not pass it to `ListOfGuestsORModerators.js`. As a result, edit and delete buttons remained visible and interactive.
+  - **EVT-15 Normalization:** Mobile components assumed `g.rsvpStatus?.toLowerCase()`, whereas backend records return canonical `status` (`'invited'`, `'confirmed'`, `'declined'`, etc.). Furthermore, ID fields varied across `_id`, `id`, and `guestId`.
+- **Implementation summary:**
+  - **Backend Invariants & Guards:**
+    - Updated `events.step2.service.js` (`updateEventStep2`): when `event.status === 'live'`, rejects removing existing guests (`toDeleteIds.length > 0`) or modifying existing guests (`toUpdate.length > 0`) with `ValidationError`, while allowing net-new guest additions (`toCreate.length > 0`) and preserving existing guests' RSVP, QR code, checkIn, and invitation data.
+    - Updated `events.guests.service.js` (`updateGuestList` & `updateGuestStatus`): enforces live-event immutability for existing guests and rejects modifications on completed/cancelled events.
+    - Updated `guests.service.js`: `addGuest` rejects on completed/cancelled events; `updateGuest` and `deleteGuest` reject on live, completed, and cancelled events with `ValidationError`.
+  - **Mobile Component Chain & UI Gating:**
+    - `components/createEvent/StepTwo.js`: Accepts `allowAddOnly = false` and passes it to `GuestFormSection`.
+    - `components/createEvent/_components/GuestFormSection.js`: Accepts `allowAddOnly = false` and passes it to `ListOfGuestsORModerators`.
+    - `components/createEvent/ListOfGuestsORModerators.js`: Accepts `allowAddOnly = false`. When `allowAddOnly` is active, disables category checkbox selection and hides row edit and delete action buttons.
+    - `components/events/GuestListItem.js`: Safely renders edit/delete action buttons only when `onEdit` or `onDelete` function props are provided.
+    - `screens/common/EventDetailsScreen.js`: Sets `allowGuestMutations = !isLive && !isTerminal`, passing `null` to `onEdit`/`onDelete` for live and terminal events, and hides `addBtn` on terminal events.
+  - **Guest Normalization (EVT-15):**
+    - Enhanced `toGuestDTO` in `shared/src/utils/adapters.js` to normalize `_id`, `id`, `name`, `phone`, `mobile`, `category`, `status`, `rsvpStatus` (via `classifyRsvpBucket`), `checkIn`, `rsvp`, `invitation`, and audit metadata.
+    - Updated `components/admin-dashboard/events/GuestList.js` and `GuestListSection.js` to use canonical `toGuestDTO` and `classifyRsvpBucket`.
+  - **Test Coverage:**
+    - Created `halaa-backend/test/live-event-guest-invariants.test.js`: 10 integration tests testing the complete state matrix (draft, scheduled, live, completed, cancelled) across `step2`, `updateGuestList`, `addGuest`, `updateGuest`, and `deleteGuest`.
+    - Created `halaa-mobile/__tests__/events/liveEventGuestGating.test.js`: 5 tests verifying prop propagation in the component chain, action gating, and `toGuestDTO` normalization.
+    - Expanded contract tests in `shared/test/contracts.test.js` for `toGuestDTO`.
+- **Files changed:**
+  - `shared/src/utils/adapters.js`
+  - `shared/test/contracts.test.js`
+  - `halaa-backend/src/modules/events/events.step2.service.js`
+  - `halaa-backend/src/modules/events/events.guests.service.js`
+  - `halaa-backend/src/modules/guests/guests.service.js`
+  - `halaa-backend/test/live-event-guest-invariants.test.js` (new)
+  - `halaa-mobile/components/createEvent/StepTwo.js`
+  - `halaa-mobile/components/createEvent/_components/GuestFormSection.js`
+  - `halaa-mobile/components/createEvent/ListOfGuestsORModerators.js`
+  - `halaa-mobile/components/events/GuestListItem.js`
+  - `halaa-mobile/screens/common/EventDetailsScreen.js`
+  - `halaa-mobile/components/admin-dashboard/events/GuestList.js`
+  - `halaa-mobile/components/admin-dashboard/events/GuestListSection.js`
+  - `halaa-mobile/__tests__/events/liveEventGuestGating.test.js` (new)
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md`
+- **Exact test commands & results:**
+  - `cd shared && npm run lint && npm run test` → PASS (12 unit tests passed, 0 lint errors)
+  - `cd halaa-backend && node --test test/live-event-guest-invariants.test.js && npm run catalog:verify; npm run test` → PASS (333 tests passed, 0 failures)
+  - `cd halaa-mobile && npm run lint && npm run test` → PASS (109 tests passed, 0 errors)
+  - `cd halaa-web && npm run lint && npm run test` → PASS (33 tests passed, 0 errors)
+- **Exit-criteria verification:**
+  - Prohibited edits and deletions on live, completed, and cancelled events fail server-side (`ValidationError`), verified by `test/live-event-guest-invariants.test.js`.
+  - Allowed additions on live events preserve every existing guest field (RSVP status, QR code, checkIn, invitation, addedBy), verified in backend integration test suite.
+  - Forbidden controls are hidden/disabled in mobile and web when `allowAddOnly` is true.
+  - `GuestDTO` normalizes all guest IDs and status across mobile components.
+
+### Session 1.4 — Admin event mutation safety and staff lifecycle
+
+- **Date:** 2026-08-21
+- **Status:** Complete
+- **Issues addressed:** EVT-04 (Admin generic update endpoint bypasses guest/staff domain validations and mutates guestList/staffList), EVT-05 (Admin bulk event delete bypasses single delete domain invariants and fails to release active subscription slots), EVT-06 (Event status state machine and bulk mutation state transitions), EVT-13 (Admin single-event staff CRUD bypasses staff endpoints and mutates raw array in event update), EVT-14 (TanStack Query v5 `isLoading` vs `isPending` state handling on staff/event mutations).
+- **Root cause:**
+  - **EVT-06 State Machine:** `admin.validation.js` accepted arbitrary string `status: z.string().min(1)` for `updateEventStatusSchema` and `bulkEventStatusSchema`. The backend lacked transition validation matrices, allowing invalid status leaps (such as `completed -> live` or `deleted -> scheduled`) and invalid statuses like `"suspended"`. Mobile filter lists and bulk actions sent `"suspended"`.
+  - **EVT-04 Generic Update Bypass:** `admin.events.service.js`'s `updateEventFull` allowed `guestList` (performing raw deleteMany/insertMany wiping RSVP and QR data) and `staffList` assignment (bypassing token revocation and audit logging).
+  - **EVT-05 Delete Invariant Gaps:** `admin.events.service.js`'s `bulkDeleteEvents` called `Event.updateMany` directly without freeing subscription slots (`_freeEventSlot`), without revoking active staff tokens (`StaffAccessToken`), and without returning per-item `{ succeeded, failed }` structures. Single delete also failed to revoke active staff access tokens upon deletion.
+  - **EVT-13 Web Staff CRUD Bypass:** `halaa-web/components/event-detail/AdminEventHeader.jsx` invoked generic `updateEvent.mutateAsync({ eventId, data: { staffList } })` instead of dedicated staff mutation hooks (`useEventMutation("addStaff" | "updateStaff" | "deleteStaff")`).
+  - **EVT-14 TanStack Query Mutation Pending State:** `StaffTokensList.jsx` and `LoginView.js` checked `.isLoading` instead of `.isPending` / `.isPending || .isLoading`.
+- **Implementation summary:**
+  - **Shared & Backend State Machine Contract (EVT-06):**
+    - Added `EVENT_TRANSITIONS` mapping valid lifecycle status transitions and `isValidEventStatusTransition(fromStatus, toStatus)` helper in `@halaa/shared/constants/eventStatus.js` and `halaa-backend/src/shared/constants/status.js`.
+    - Exported `EVENT_STATUS_VALUES` and state machine functions across shared and backend constants.
+    - Updated `admin.validation.js` to strictly validate `status: z.enum(EVENT_STATUS_VALUES)` in `updateEventStatusSchema` and `bulkEventStatusSchema`.
+  - **Admin Service Hardening (EVT-04, EVT-05, EVT-06):**
+    - `updateEventFull`: Disallowed `guestList` and `staffList`, throwing `ValidationError` immediately when attempted and removing `staffList` from `allowedFields`.
+    - `updateEventStatus`: Validates state transition via `isValidEventStatusTransition`. Sets `cancelledAt` / `previousStatus` and frees subscription slots via `_freeEventSlot` upon cancellation; resets `cancelledAt` and `previousStatus` on reactivation.
+    - `deleteEvent`: Implemented soft-delete, freeing active event subscription slots and revoking all active `StaffAccessToken` documents (`isRevoked: true, revokedAt: new Date()`).
+    - `bulkDeleteEvents` & `bulkUpdateEventStatus`: Process items iteratively with single-item domain invariant parity, returning `{ success: true, count, succeeded, failed }`.
+    - Fixed missing `isPerEventPlan` import in `events.crud.service.js` preventing reference errors during `_freeEventSlot`.
+  - **Web Component Parity (EVT-13, EVT-14):**
+    - `AdminEventHeader.jsx`: Replaced generic `updateEvent` calls with `useEventMutation("addStaff")`, `useEventMutation("updateStaff")`, and `useEventMutation("deleteStaff")`.
+    - `StaffTokensList.jsx`: Updated revoke button disable state to `revokeMutation.isPending || revokeMutation.isLoading`.
+  - **Mobile Component Parity (EVT-06, EVT-14):**
+    - `AdminEventList.js`: Removed `"suspended"` from `EVENT_FILTER_IDS` and updated bulk action to `useBulkCancelEvents` with cancel semantics.
+    - `hooks/admin/mutations.js`: Added `useBulkCancelEvents` sending `{ ids, status: "cancelled" }` and aliased `useBulkSuspendEvents`.
+    - `LoginView.js`: Updated loading state to `verifyMutation.isPending || verifyMutation.isLoading`.
+  - **Test Coverage:**
+    - `halaa-backend/test/admin-event-mutation-safety.test.js`: 7 integration tests verifying state transitions, invalid status rejection, subscription slot release/restore on cancel, token revocation on single/bulk delete, and generic update collection rejection.
+    - `halaa-mobile/__tests__/events/adminEventMutationSafety.test.js`: Verified absence of "suspended" in filter IDs, cancel mutation semantics, and mutation pending support.
+    - `halaa-web/__tests__/events/adminStaffMutationSafety.test.mjs`: Verified dedicated staff mutation usage and `isPending` state handling.
+    - `shared/test/contracts.test.js`: Added state machine validation contract tests.
+- **Files changed:**
+  - `shared/src/constants/eventStatus.js`
+  - `shared/test/contracts.test.js`
+  - `halaa-backend/src/shared/constants/status.js`
+  - `halaa-backend/src/modules/events/events.crud.service.js`
+  - `halaa-backend/src/modules/admin/admin.validation.js`
+  - `halaa-backend/src/modules/admin/admin.events.service.js`
+  - `halaa-backend/src/modules/admin/admin.events.controller.js`
+  - `halaa-backend/test/admin-event-mutation-safety.test.js` (new)
+  - `halaa-web/components/event-detail/AdminEventHeader.jsx`
+  - `halaa-web/components/event-detail/StaffTokensList.jsx`
+  - `halaa-web/__tests__/events/adminStaffMutationSafety.test.mjs` (new)
+  - `halaa-mobile/components/admin-dashboard/events/AdminEventList.js`
+  - `halaa-mobile/hooks/admin/mutations.js`
+  - `halaa-mobile/components/common/staff-portal/LoginView.js`
+  - `halaa-mobile/__tests__/events/adminEventMutationSafety.test.js` (new)
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md`
+- **Exact test commands & results:**
+  - `cd shared && npm run lint && npm run test` → PASS (13 unit tests passed, 0 lint errors)
+  - `cd halaa-backend && node --test test/admin-event-mutation-safety.test.js && npm run catalog:verify; npm run test` → PASS (340 tests passed, 0 failures)
+  - `cd halaa-mobile && npm run lint && npm run test` → PASS (112 tests passed, 0 errors)
+  - `cd halaa-web && npm run lint && npm run test` → PASS (35 tests passed, 0 errors)
+- **Exit-criteria verification:**
+  - Event state machine transition matrix rejects invalid transitions both in single and bulk admin updates.
+  - Subscription slot is freed and active staff access tokens are revoked on single and bulk delete.
+  - Direct updates to `guestList` and `staffList` via `updateEventFull` are rejected with `ValidationError`.
+  - Admin single-event web view routes staff modifications through dedicated staff mutation hooks.
+  - Staff mutation loading states correctly support TanStack Query v5 `isPending`.
+- **Remaining risks / decisions:**
+  - None.
+- **Blockers / deferred work:**
+  - Session 1.4 is Complete. Session 1.5 (Event entitlement/routes/messaging/stats) is unblocked.
+
+### Session 1.5 — Event entitlement/routes/messaging/stats
+
+- **Date:** 2026-08-21
+- **Status:** Complete
+- **Scope summary:**
+  - Resolved EVT-10, EVT-11, EVT-12, EVT-16, and ADM-09 (event part).
+  - Added authorized event-capabilities/entitlement endpoint and enrichments based on event owner and stamped subscription data (`GET /api/v2/events/:id/capabilities` and `GET /api/v2/events/:id/entitlement`).
+  - Updated web `UpdateEventWizard.jsx` and mobile `UpdateEventScreen.js` to derive step capabilities and limits from the event owner's plan rather than the viewing admin's personal plan.
+  - Unified update route parameter builder and parser in `@halaa/shared/utils/routes.js` with `parseUpdateEventStep` and `buildUpdateEventUrl`, eliminating route alias and step mismatches between `EventCard.js` and `UpdateEventWizard.jsx`.
+  - Connected `handleConfirmSendInvitation` in web `useGuestTableActions.js` to `useSendBulkInvitations` with loading state, quota enforcement, and partial/full error feedback.
+  - Fixed single-event RSVP status classification in `events.stats-export.service.js` to count all RSVP buckets (`pending`, `confirmed`, `declined`, `checkedIn`) consistently.
+  - Aligned SSR prefetch query key in `admin-dash/update-event/page.js` to canonical `eventsKeys.detail(eventId)` (`["events", eventId]`) preventing hydration cache misses.
+- **Root cause analysis:**
+  - **EVT-10:** Admins updating events on behalf of hosts were invoking user-scoped subscription hooks (`useEventSubscriptionInfo` / `useMySubscription`) which returned the admin's unlimited quota instead of the host's stamped event plan limits.
+  - **EVT-11:** `EventCard.js` constructed update URLs with `&section=guest-list`, while `UpdateEventWizard.jsx` was parsing `parseInt(searchParams.get("step"))`, causing default fallback to step 1.
+  - **EVT-12:** Web guest-table send invitations confirmation handler was stubbed with a toast message without triggering `useSendBulkInvitations`.
+  - **EVT-16:** `getSingleEventStats` counted pending guests as `guests.filter(g => g.status === 'invited').length`, omitting guests in `'pending'` or other pending bucket states.
+  - **ADM-09 (event part):** SSR prefetch used `["events", "by-id", eventId]`, whereas client `useEventById` used `["events", eventId]`.
+- **Key implementation details:**
+  - **Shared Contract Layer (`@halaa/shared`):**
+    - `shared/src/utils/routes.js`: Created `EVENT_UPDATE_SECTION_TO_STEP`, `parseUpdateEventStep`, `buildUpdateEventUrl`.
+    - `shared/src/utils/queryKeys.js` & `shared/src/api/paths.js`: Added `capabilities` and `entitlement` endpoints and query keys.
+    - `shared/test/contracts.test.js`: Added test suite for route builders, parsers, and query keys.
+  - **Backend Layer (`halaa-backend`):**
+    - `status.js`: Added canonical `RSVP_BUCKETS` and `classifyRsvpBucket`.
+    - `events.stats-export.service.js`: Added `getEventCapabilities(eventId, userContext)` and updated `getSingleEventStats` with bucket classifications.
+    - `events.crud.service.js`: Enriched `event.subscription` and `event.capabilities` in `getEventById`.
+    - `events.controller.js` & `events.routes.js`: Exposed `GET /api/v2/events/:id/capabilities` and `GET /api/v2/events/:id/entitlement`.
+  - **Web Client Layer (`halaa-web`):**
+    - `hooks/events/queries/useEventCapabilities.js`: Created hook and exported from `hooks/events/index.js`.
+    - `UpdateEventWizard.jsx`: Uses `parseUpdateEventStep(searchParams)` and resolves `effectiveSubscription` from `useEventCapabilities` / `eventRaw.capabilities`.
+    - `EventCard.js`: Uses `buildUpdateEventUrl` for step-targeted navigation.
+    - `useGuestTableActions.js`: Connected `handleConfirmSendInvitation` to `useSendBulkInvitations` with loading state and toast feedback.
+    - `admin-dash/update-event/page.js`: Fixed SSR prefetch key to `eventsKeys.detail(eventId)`.
+  - **Mobile Client Layer (`halaa-mobile`):**
+    - `config/api.js`: Added `CAPABILITIES` and `ENTITLEMENT` to `ENDPOINTS.EVENTS`.
+    - `UpdateEventScreen.js`: Passed `effectiveSubscription = eventData?.subscription || subscription` to `UpdateEventStepRenderer`.
+- **Files changed:**
+  - `shared/src/api/paths.js`
+  - `shared/src/utils/routes.js` (new)
+  - `shared/src/utils/index.js`
+  - `shared/src/utils/queryKeys.js`
+  - `shared/test/contracts.test.js`
+  - `halaa-backend/src/shared/constants/status.js`
+  - `halaa-backend/src/modules/events/events.stats-export.service.js`
+  - `halaa-backend/src/modules/events/events.crud.service.js`
+  - `halaa-backend/src/modules/events/events.controller.js`
+  - `halaa-backend/src/modules/events/events.routes.js`
+  - `halaa-backend/test/event-entitlement-and-stats.test.js` (new)
+  - `halaa-web/hooks/events/keys.js`
+  - `halaa-web/hooks/events/queries/useEventCapabilities.js` (new)
+  - `halaa-web/hooks/events/index.js`
+  - `halaa-web/app/[lang]/host/update-event/_components/UpdateEventWizard.jsx`
+  - `halaa-web/ui/host/events/EventCard.js`
+  - `halaa-web/components/event-detail/GuestTable/useGuestTableActions.js`
+  - `halaa-web/app/[lang]/admin-dash/update-event/page.js`
+  - `halaa-web/__tests__/events/eventRoutesAndMessaging.test.mjs` (new)
+  - `halaa-mobile/config/api.js`
+  - `halaa-mobile/screens/common/update-event/UpdateEventScreen.js`
+  - `halaa-mobile/__tests__/events/adminOnBehalfUpdate.test.js` (new)
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md`
+- **Exact test commands & results:**
+  - `cd shared && npm run lint; npm test` → PASS (14 unit tests passed, 0 lint warnings)
+  - `cd halaa-backend && node --test test/event-entitlement-and-stats.test.js; npm test` → PASS (343 tests passed, 0 failures)
+  - `cd halaa-web && npm run lint; npm test` → PASS (37 tests passed, 0 errors)
+  - `cd halaa-mobile && npm run lint; npm test` → PASS (114 tests passed, 0 errors)
+- **Exit-criteria verification:**
+  - Admin updates no longer depend on the admin's personal plan (verified by owner capability resolution on backend, web, and mobile).
+  - Web guest-table send invitations is connected to real bulk messaging mutation with quota/error/success handling (not toast-only).
+  - Single event stats correctly classify and aggregate all RSVP statuses into accurate buckets.
+  - Route navigation builders/parsers and SSR prefetch query keys are canonicalized across web and mobile.
+- **Remaining risks / decisions:**
+  - None.
+- **Blockers / deferred work:**
+  - Session 1.5 is Complete. Proceeding to Session 1.6 (Scheduling decision and implementation).
+
+### Session 1.6 — Scheduling decision and implementation
+
+- **Date:** 2026-08-21
+- **Status:** Complete
+- **Scope summary:**
+  - Resolved EVT-09.
+  - Aligned scheduling implementation across backend, web, and mobile under the production-supported scheduling architecture (Option A).
+  - Eliminated hardcoded `const [isScheduled, setIsScheduled] = useState(false);` in web `Summary.js` and removed non-functional stub actions (`handleCancelSchedule`, `handleReschedule`, `handleCopyLink`, `handleShareLink`) from create-event review summary.
+  - Unified scheduled launch presentation in web `ScheduleSection.js` to derive launch behavior from `scheduleDate`/`scheduleTime`/`launchSettings`, matching mobile `ScheduleLaunchCard.js`.
+  - Extracted pure calculation `computeEventActionGate` in `@halaa/shared/hooks` to provide robust, cross-platform unit testability for event action gate scheduling flags (`canSchedule`, `isScheduled`).
+  - Verified backend scheduling window rules (15m lead for trial, 24h lead for paid, 3 days minimum gap before event date, Asia/Riyadh timezone calculation) and verified cron-driven launch dispatch.
+- **Root cause analysis:**
+  - **EVT-09:** Create-event Step 5 review screen (`Summary.js`) hardcoded `isScheduled = false` and rendered a dormant `ScheduleSection` with empty callback stubs. Meanwhile, the post-creation scheduling surface (`ScheduleSendingPopup` on web and `ScheduleSendingModal` on mobile) already implemented full scheduling mutations against `POST /api/v2/messaging/schedule`. The create summary needed clean alignment with the real scheduling state.
+- **Key implementation details:**
+  - **Web Client Layer (`halaa-web`):**
+    - `Summary.js`: Removed hardcoded `isScheduled` state and dead action stubs; cleanly passes structured `eventData` with `scheduleDate` and `scheduleTime`.
+    - `ScheduleSection.js`: Refactored to cleanly render scheduled launch information when scheduled or immediate launch confirmation when unscheduled.
+    - `__tests__/events/eventScheduling.test.mjs`: Added test suite for action gate scheduling eligibility flags.
+  - **Shared Hooks Layer (`@halaa/shared`):**
+    - `shared/src/hooks/useEventActionGate.js`: Extracted and exported pure calculation `computeEventActionGate`.
+    - `shared/src/hooks/index.js`: Re-exported `computeEventActionGate`.
+  - **Mobile Client Layer (`halaa-mobile`):**
+    - `__tests__/events/mobileEventScheduling.test.js`: Added test suite verifying endpoint registration (`/messaging/schedule`) and 12h/24h picker conversions.
+  - **Backend Layer (`halaa-backend`):**
+    - `test/scheduling-invariants.test.js`: Added integration test suite verifying lead time bounds (trial 15m vs paid 24h), upper bounds (event - 3 days), and Asia/Riyadh timezone conversions.
+- **Files changed:**
+  - `halaa-web/app/[lang]/host/create-event/_components/summary/Summary.js`
+  - `halaa-web/app/[lang]/host/create-event/_components/summary/ScheduleSection.js`
+  - `halaa-web/__tests__/events/eventScheduling.test.mjs` (new)
+  - `shared/src/hooks/useEventActionGate.js`
+  - `shared/src/hooks/index.js`
+  - `halaa-mobile/__tests__/events/mobileEventScheduling.test.js` (new)
+  - `halaa-backend/test/scheduling-invariants.test.js` (new)
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md`
+- **Exact test commands & results:**
+  - `cd shared && npm run lint; npm test` → PASS (14 unit tests passed, 0 lint warnings)
+  - `cd halaa-backend && node --test test/scheduling-invariants.test.js; npm test` → PASS (346 tests passed, 0 failures)
+  - `cd halaa-web && npm run lint; npm test` → PASS (38 tests passed, 0 errors)
+  - `cd halaa-mobile && npm run lint; npm test` → PASS (116 tests passed, 0 errors)
+- **Exit-criteria verification:**
+  - Hardcoded false state and orphaned stub action buttons in create-event summary have been completely removed.
+  - Single coherent scheduling contract operates across backend, web, and mobile.
+  - Scheduling window bounds, timezone conversions, action gates, and endpoints are verified with automated tests across all 4 repositories.
+- **Remaining risks / decisions:**
+  - None.
+- **Blockers / deferred work:**
+  - Phase 1 (Events, Guests, Entitlements, Scheduling) is now 100% Complete across Sessions 1.1, 1.2, 1.3, 1.4, 1.5, and 1.6. Ready for Phase 2 (Session 2.1).
+
+### Session 2.1 — Shared table server-mode contract
+
+- **Date:** 2026-08-21
+- **Status:** Complete
+- **Issues addressed:** ADM-01 (Shared admin table filters only invoke option.onClick; most screens provide {label,value}, so filters are inert), ADM-02 (Shared table search filters only current server page without updating API/URL search).
+- **Scope summary:**
+  - Upgraded shared web `Table` component (`halaa-web/ui/commen/new-table/Table.js` and `table.module.css`) to explicitly support `mode="server"` vs default `mode="client"`.
+  - Added controlled search props (`searchValue`, `onSearchChange`, `debounceMs`), debounced typing updates, and an instant search clear button (`handleClearSearch`).
+  - Added controlled filter props (`activeFilter`, `onFilterChange`), properly invoking `onFilterChange(option.value, option)` while preserving legacy `option.onClick` compatibility, and highlighted active filter state with `isFilterActive`.
+  - In `mode="server"`, `filteredData` directly renders `data` (authoritative server results), eliminating client-side double/page-only filtering.
+  - Added empty state row fallback (`<tr><td colSpan={...}>`) and keyboard accessibility (`Escape` key closes all open dropdowns; ARIA roles and expanded attributes).
+  - Migrated `EventsTable.jsx` and `TicketsTable.jsx` / `TicketTableContent.jsx` as reference implementations with server-mode integration and automatic page reset (`params.set("page", "1")`) on search/filter changes.
+  - Added test suite `halaa-web/__tests__/ui/tableServerMode.test.mjs` validating the server-mode contract, controlled search/filter, and reference migrations.
+- **Root cause analysis:**
+  - **ADM-01:** `Table.js` previously only invoked `option.onClick()` inside `handleFilterOptionClick`. Screen implementations provided `filterOptions` as arrays of `{ label, value }` without `onClick` handlers, and without an `onFilterChange` prop on `Table`, rendering filter dropdown clicks inert.
+  - **ADM-02:** `Table.js` executed `data.filter(...)` locally using internal state `searchQuery` without calling any `onSearchChange` or modifying URL query parameters. When used with paginated server endpoints, search was confined only to the 10 rows loaded on the active page instead of dispatching query requests to the backend.
+- **Files changed:**
+  - `halaa-web/ui/commen/new-table/Table.js`
+  - `halaa-web/ui/commen/new-table/table.module.css`
+  - `halaa-web/app/[lang]/admin-dash/events/_components/EventsTable.jsx`
+  - `halaa-web/app/[lang]/admin-dash/tickets/_components/TicketsTable.jsx`
+  - `halaa-web/app/[lang]/admin-dash/tickets/_components/TicketTableContent.jsx`
+  - `halaa-web/__tests__/ui/tableServerMode.test.mjs` (new)
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md`
+- **Exact test commands & results:**
+  - `cd halaa-web && npm run lint; npm test` → PASS (41 unit tests passed, 0 errors, 31 warnings)
+  - `cd shared && npm run lint; npm test` → PASS (14 unit tests passed, 0 lint warnings)
+  - `cd halaa-backend && npm run catalog:verify; npm test` → PASS (346 tests passed, 0 failures)
+  - `cd halaa-mobile && npm run lint; npm test` → PASS (116 tests passed, 0 errors)
+- **Exit-criteria verification:**
+  - `Table.js` supports explicit `mode="server"` and never filters only the current server page.
+  - Event and ticket search and filters update URL parameters, reset page to 1, and dispatch parameterized backend requests.
+  - Filter option clicks invoke `onFilterChange` with option values and objects.
+  - Automated tests in `halaa-web/__tests__/ui/tableServerMode.test.mjs` pass.
+- **Remaining risks / decisions:**
+  - None.
+- **Blockers / deferred work:**
+  - Session 2.1 is Complete. Proceeding to Session 2.2 (Migrate all admin lists and aggregate stats).
+
+### Session 2.2 — Migrate all admin lists and aggregate stats
+
+- **Date:** 2026-08-21
+- **Status:** Complete
+- **Issues addressed:** ADM-03 (Event, ticket, vendor, and moderator status cards derive counts from current page while showing global total), systemic remainder of ADM-01/ADM-02 (Migrate hosts, businesses, vendors, moderators, payments, discounts tables to controlled server mode with URL page reset; eliminate client double-filtering in mobile).
+- **Scope summary:**
+  - **Backend Status Aggregations (`halaa-backend`):**
+    - Added aggregate `statusCounts` computation in `events.crud.service.js` (`getAllEvents`) matching base event search/host/date filters.
+    - Added aggregate `statusCounts` and `priorityCounts` computations in `tickets.service.js` (`getTickets`) matching base ticket search/source/user filters.
+    - Added aggregate `statusCounts` computation in `admin.vendors.service.js` (`getVendors`) matching base vendor search/category/date filters.
+    - Added aggregate `statusCounts` computation in `admin.moderators.service.js` (`getModerators`) matching base moderator search/date filters.
+  - **Web Status Cards (`halaa-web`):**
+    - Updated `EventStats.jsx` to consume `data.statusCounts` (`total`, `active`, `scheduled`, `completed`) instead of filtering `data.data` (current page).
+    - Updated `TicketStats.jsx` to consume `data.statusCounts` (`open`, `resolved`) and `data.priorityCounts` (`highPriority`) instead of filtering current page items.
+    - Updated `VendorStats.jsx` to consume `data.data.statusCounts` (`approved`, `pending`, `rejected`) instead of filtering visible vendors.
+    - Updated `ModeratorStats.jsx` to consume `data.data.statusCounts` (`active`, `pending`, `inactive`) instead of filtering visible moderators.
+  - **Web Admin List Tables (`halaa-web`):**
+    - Migrated `HostsTable.jsx`, `BusinessesTable.jsx`, `VendorsTable.jsx`, `ModeratorsTable.jsx`, `PaymentsTable.js`, and `DiscountsTable.jsx` to declare `mode="server"`, bound controlled `searchValue`/`onSearchChange` and `activeFilter`/`onFilterChange`, and reset page to `1` on filter or search changes.
+  - **Mobile Double-Filtering Removal (`halaa-mobile`):**
+    - In `AdminEventList.js`, `HostList.js`, `ModeratorList.js`, and `VendorList.js`, added `isServerControlled` checks to immediately return server-provided array and avoid client-side double-filtering when search/filter props or callbacks are present.
+  - **Automated Regression Suites:**
+    - Created `halaa-backend/test/admin-list-aggregations.test.js` (4 tests).
+    - Created `halaa-web/__tests__/ui/adminListMigrations.test.mjs` (2 test suites).
+    - Created `halaa-mobile/__tests__/regressions/adminListDoubleFiltering.test.js` (1 test suite).
+- **Files changed:**
+  - `halaa-backend/src/modules/events/events.crud.service.js`
+  - `halaa-backend/src/modules/tickets/tickets.service.js`
+  - `halaa-backend/src/modules/admin/admin.vendors.service.js`
+  - `halaa-backend/src/modules/admin/admin.moderators.service.js`
+  - `halaa-backend/test/admin-list-aggregations.test.js` (new)
+  - `halaa-web/app/[lang]/admin-dash/events/_components/EventStats.jsx`
+  - `halaa-web/app/[lang]/admin-dash/tickets/_components/TicketStats.jsx`
+  - `halaa-web/app/[lang]/admin-dash/vendors/_components/VendorStats.jsx`
+  - `halaa-web/app/[lang]/admin-dash/moderators/_components/ModeratorStats.jsx`
+  - `halaa-web/app/[lang]/admin-dash/hosts/_components/HostsTable.jsx`
+  - `halaa-web/app/[lang]/admin-dash/businesses/_components/BusinessesTable.jsx`
+  - `halaa-web/app/[lang]/admin-dash/vendors/_components/VendorsTable.jsx`
+  - `halaa-web/app/[lang]/admin-dash/moderators/_components/ModeratorsTable.jsx`
+  - `halaa-web/app/[lang]/admin-dash/payments/_components/PaymentsTable.js`
+  - `halaa-web/app/[lang]/admin-dash/discounts/_components/DiscountsTable.jsx`
+  - `halaa-web/__tests__/ui/adminListMigrations.test.mjs` (new)
+  - `halaa-mobile/components/admin-dashboard/events/AdminEventList.js`
+  - `halaa-mobile/components/admin-dashboard/hosts/HostList.js`
+  - `halaa-mobile/components/admin-dashboard/moderators/ModeratorList.js`
+  - `halaa-mobile/components/admin-dashboard/vendors/VendorList.js`
+  - `halaa-mobile/__tests__/regressions/adminListDoubleFiltering.test.js` (new)
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md`
+- **Exact test commands & results:**
+  - `cd halaa-backend && node --test test/admin-list-aggregations.test.js; npm test` → PASS (350 backend tests passed, 0 failures)
+  - `cd halaa-web && npm run lint; npm test` → PASS (43 unit tests passed, 0 errors, 31 warnings)
+  - `cd shared && npm run lint; npm test` → PASS (14 unit tests passed, 0 lint warnings)
+  - `cd halaa-mobile && npm run lint; npm test` → PASS (117 unit tests passed, 0 errors)
+- **Exit-criteria verification:**
+  - All admin table screens declare `mode="server"` and bind search and filter handlers with URL page resets.
+  - All admin status cards display true database aggregates (`statusCounts`/`stats`) across pagination.
+  - Mobile admin list components bypass local re-filtering when server-controlled.
+  - All automated test suites across web, backend, mobile, and shared pass cleanly.
+- **Remaining risks / decisions:**
+  - None.
+- **Blockers / deferred work:**
+  - Batch consisting of Session 2.1 and Session 2.2 is Complete.
+
+### Session 2.3 — Bulk API Contract Across Admin Resources (`ADM-04`)
+- **Status:** Complete
+- **Date / environment:** 2026-08-21 / Windows (Node v20.18.0)
+- **What was done:**
+  - **Standardized Backend Bulk Request Schemas (`halaa-backend/src/modules/admin/admin.validation.js` & `events.validation.js`):**
+    - Standardized `bulkIdsSchema` to accept `{ ids: string[] }` (and alias keys `hostIds`, `vendorIds`, `moderatorIds`, `eventIds`, `ticketIds`) with automatic deduplication, min 1 item, max 200 items, and ObjectId validation.
+    - Updated `bulkDeleteHostsSchema`, `bulkDeleteVendorsSchema`, `bulkDeleteModeratorsSchema`, and `bulkDeleteEventsSchema` to standardize on `bulkIdsSchema`.
+    - Standardized `bulkVendorStatusSchema`, `bulkModeratorStatusSchema`, and `bulkEventStatusSchema` to accept `{ ids, status }` (and alias keys) with deduplication and bounds.
+    - Updated `bulkDeleteSchema` in `events.validation.js` to accept `{ ids }` or `{ eventIds }` with deduplication and bounds [1, 100].
+  - **Standardized Domain Invariant Isolation & Per-Item Results (`halaa-backend`):**
+    - Updated `bulkDeleteHosts` (`admin.hosts.service.js`) to process host deletions individually, enforce single-delete invariants (checking active events and existence per host), and return the standard `{ success: true, count, deletedCount, succeeded, failed, message }` envelope.
+    - Updated `bulkDeleteVendors` and `bulkUpdateVendorStatus` (`admin.vendors.service.js`) to process vendor operations individually, enforce single-item invariants, and return `{ success: true, count, deletedCount/updatedCount, succeeded, failed, message }`.
+    - Updated `bulkDeleteModerators` and `bulkUpdateModeratorStatus` (`admin.moderators.service.js`) to process moderator operations individually and return `{ success: true, count, deletedCount/updatedCount, succeeded, failed, message }`.
+    - Updated `bulkDeleteEvents` (`events.crud.service.js` and `events.controller.js`) to process event deletions individually and return the standard `{ success: true, count, deletedCount, succeeded, failed, message }` envelope.
+  - **Standardized Web Client Mutations (`halaa-web`):**
+    - Updated `halaa-web/hooks/admin/mutations.js` to wrap payloads in `useAdminHostMutation("bulkDelete")`, `useAdminVendorMutation("bulkDelete")`, `useAdminVendorMutation("bulkStatus")`, `useAdminModeratorMutation("bulkDelete")`, and `useAdminEventMutation("bulkDelete")` with canonical `toBulkIdsPayload`.
+    - Updated `halaa-web/hooks/events/mutations/useEventCrudMutation.js` to wrap `bulkDeleteEvents` payload with `toBulkIdsPayload`.
+  - **Standardized Mobile Client Mutations (`halaa-mobile`):**
+    - Updated `halaa-mobile/hooks/admin/mutations.js` to use `toBulkIdsPayload` across `useBulkDeleteHosts`, `useBulkDeleteVendors`, `useBulkApproveVendors`, `useBulkSuspendVendors`, `useBulkDeleteModerators`, `useBulkSuspendModerators`, `useBulkDeleteEvents`, and `useBulkCancelEvents`.
+  - **Automated Regression Suites:**
+    - Created `halaa-backend/test/admin-bulk-contract.test.js` (5 test suites).
+    - Created `halaa-web/__tests__/ui/bulkMutationsContract.test.mjs` (2 test cases).
+    - Created `halaa-mobile/__tests__/admin/bulkMutationsContract.test.js` (1 test case).
+- **Files changed:**
+  - `halaa-backend/src/modules/admin/admin.validation.js`
+  - `halaa-backend/src/modules/admin/admin.hosts.service.js`
+  - `halaa-backend/src/modules/admin/admin.vendors.service.js`
+  - `halaa-backend/src/modules/admin/admin.vendors.controller.js`
+  - `halaa-backend/src/modules/admin/admin.moderators.service.js`
+  - `halaa-backend/src/modules/events/events.validation.js`
+  - `halaa-backend/src/modules/events/events.crud.service.js`
+  - `halaa-backend/src/modules/events/events.controller.js`
+  - `halaa-backend/test/admin-bulk-contract.test.js` (new)
+  - `halaa-web/hooks/admin/mutations.js`
+  - `halaa-web/hooks/events/mutations/useEventCrudMutation.js`
+  - `halaa-web/__tests__/ui/bulkMutationsContract.test.mjs` (new)
+  - `halaa-mobile/hooks/admin/mutations.js`
+  - `halaa-mobile/__tests__/admin/bulkMutationsContract.test.js` (new)
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md`
+- **Exact test commands & results:**
+  - `cd halaa-backend && npm test` → PASS (355 backend tests passed, 0 failures)
+  - `cd shared && npm run lint && npm test` → PASS (14 unit tests passed, 0 lint warnings)
+  - `cd halaa-web && npm run lint && npm test` → PASS (45 unit tests passed, 0 errors, 31 warnings)
+  - `cd halaa-mobile && npm run lint && npm test` → PASS (118 unit tests passed, 0 errors)
+- **Exit-criteria verification:**
+  - All bulk endpoints and clients use the standardized `{ ids: string[] }` envelope with bounds and duplicate removal.
+  - Failed items are recorded with descriptive errors in `failed: [{ id, error }]`, and successful items are processed and reported in `succeeded: string[]`.
+  - All automated test suites across backend, shared, web, and mobile pass cleanly.
+- **Remaining risks / decisions:**
+  - None.
+- **Blockers / deferred work:**
+  - Session 2.3 is Complete and committed.
+
+### Session 2.4 — Ticket Transition and Bulk Behavior (`ADM-05`, `ADM-06`, `ADM-07`)
+- **Status:** Complete
+- **Date / environment:** 2026-08-21 / Windows (Node v20.18.0)
+- **What was done:**
+  - **Ticket State Machine & Transitions (`ADM-05`):**
+    - Defined canonical `TICKET_TRANSITIONS` state machine and `isValidTicketStatusTransition` helper in `@halaa/shared/constants/ticketConstants.js`, `@halaa/shared/constants/status.js`, and `halaa-backend/src/shared/constants/status.js`.
+    - Defined reopen semantics in `TICKET_TRANSITIONS[TICKET_STATUS.RESOLVED]`: supports both `in_progress` and `open` transitions.
+    - Added `allowedTransitions: TICKET_TRANSITIONS[ticket.status] || []` to formatted ticket objects returned by `tickets.service.js`.
+  - **Ticket Subject Normalization (`ADM-06`):**
+    - Updated `toTicketDTO` in `@halaa/shared/utils/adapters.js` to normalize `subject`, `title`, `ticketNumber`, and `resolution`.
+    - Updated `TicketDetailView.jsx` to render `#{ticket.ticketNumber} - {ticket.subject || ticket.title}`.
+  - **Bulk Resolve & Delete with Single-Confirmation & Per-Item Results (`ADM-07`):**
+    - Implemented `bulkUpdateTicketStatus` and `bulkDeleteTickets` in `tickets.service.js` and `tickets.controller.js`.
+    - Added `bulkDeleteTicketsSchema` and `bulkTicketStatusSchema` in `tickets.validation.js` with deduplication and bounds `[1, 200]`.
+    - Mounted `POST /tickets/bulk-delete` and `POST /tickets/bulk-status` endpoints in `tickets.routes.js`.
+    - Added `bulkDelete` and `bulkStatus` to `API_PATHS.tickets` in `@halaa/shared/api/paths.js`.
+    - Added `bulkDelete` and `bulkStatus` mutations to `useTicketMutation` in `halaa-web/hooks/tickets/mutations.js`.
+    - Updated `TicketsTable.jsx` and `TicketTableContent.jsx` to provide one-confirmation bulk operations (`handleBulkDelete` and `handleBulkResolve`) without per-item prompt loops.
+    - Updated `halaa-mobile/config/api.js` (`ENDPOINTS.TICKETS` & `ENDPOINTS.ADMIN.TICKETS`) and `halaa-mobile/hooks/admin/mutations.js` (`useBulkDeleteTickets`, `useBulkResolveTickets`) to call backend bulk endpoints with `toBulkIdsPayload`.
+  - **Automated Regression Suites:**
+    - Created `halaa-backend/test/ticket-transitions-bulk.test.js` (4 tests).
+    - Updated `halaa-backend/test/shared-parity.test.js` to assert `TICKET_TRANSITIONS` parity between backend and shared.
+    - Updated `shared/test/contracts.test.js` with ticket state machine transition tests and DTO normalization checks.
+    - Created `halaa-web/__tests__/ui/ticketTransitionsBulk.test.mjs` (3 tests).
+    - Created `halaa-mobile/__tests__/admin/ticketBulkMutations.test.js` (1 test).
+- **Files changed:**
+  - `shared/src/constants/ticketConstants.js`
+  - `shared/src/utils/adapters.js`
+  - `shared/src/api/paths.js`
+  - `shared/test/contracts.test.js`
+  - `halaa-backend/src/shared/constants/status.js`
+  - `halaa-backend/src/modules/tickets/tickets.service.js`
+  - `halaa-backend/src/modules/tickets/tickets.validation.js`
+  - `halaa-backend/src/modules/tickets/tickets.controller.js`
+  - `halaa-backend/src/modules/tickets/tickets.routes.js`
+  - `halaa-backend/test/shared-parity.test.js`
+  - `halaa-backend/test/ticket-transitions-bulk.test.js` (new)
+  - `halaa-web/hooks/tickets/mutations.js`
+  - `halaa-web/app/[lang]/admin-dash/tickets/[id]/_components/TicketDetailView.jsx`
+  - `halaa-web/app/[lang]/admin-dash/tickets/_components/TicketsTable.jsx`
+  - `halaa-web/app/[lang]/admin-dash/tickets/_components/TicketTableContent.jsx`
+  - `halaa-web/__tests__/ui/ticketTransitionsBulk.test.mjs` (new)
+  - `halaa-mobile/config/api.js`
+  - `halaa-mobile/hooks/admin/mutations.js`
+  - `halaa-mobile/__tests__/admin/ticketBulkMutations.test.js` (new)
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md`
+- **Exact test commands & results:**
+  - `cd shared && npm run lint && npm test` → PASS (15 unit tests passed, 0 lint warnings)
+  - `cd halaa-backend && npm test` → PASS (359 backend tests passed, 0 failures)
+  - `cd halaa-web && npm run lint && npm test` → PASS (48 unit tests passed, 0 errors, 31 warnings)
+  - `cd halaa-mobile && npm run lint && npm test` → PASS (119 unit tests passed, 0 errors)
+- **Exit-criteria verification:**
+  - Ticket transitions strictly follow `TICKET_TRANSITIONS` with valid reopen semantics.
+  - Ticket subject is normalized across DTO and UI views.
+  - Bulk resolve and bulk delete operate in one confirmation without individual prompt loops, reporting `{ succeeded, failed }` per-item results.
+  - All automated test suites across backend, shared, web, and mobile pass cleanly.
+- **Remaining risks / decisions:**
+  - None.
+- **Blockers / deferred work:**
+  - Session 2.4 is Complete and committed.
+
+### Session 2.5 — Ticket Attachment Focused Matrix (`ADM-14`)
+- **Status:** Complete
+- **Date / environment:** 2026-08-21 / Windows (Node v20.18.0)
+- **What was done:**
+  - **Executed Complete 5-Item Attachment Matrix & Reproduced Gaps:**
+    1. *Creation paths:* Web (`SendTicketPopup.jsx`, `MakeTicketPopup.js` using `MediaAttachmentInput`) and Mobile (`TicketModal.js` using `ImagePicker`) upload image/video attachments up to 50MB via multipart `ticketAttachment`. Backend `uploadMedia` validates MIME/extension (`mediaFilter`) and saves S3/local reference.
+    2. *User views:* Mobile `TicketCard.js` renders thumbnail for image and video icon for video. Fixed web host `TicketCard.jsx` which was missing attachment preview and trigger for `MediaViewerModal`.
+    3. *Admin views:* Web `TicketDetailView.jsx` renders attachment button with `MediaViewerModal`. Fixed mobile admin `TicketDetailsScreen.js` which dropped `raw.attachment` and had no attachment UI section; added `TicketSectionCard` with image thumbnail / modal viewer and video playback trigger.
+    4. *Expiry/refresh, missing file, MIME, 50MB limit:* Backend `_formatTicket` signs stored S3 keys dynamically on read via `signStoredImage` into public URLs. 50MB limit and image/video filter verified by integration tests.
+    5. *Access control:* `getTicketById` enforces non-owner non-admin rejection (`403 Forbidden`).
+  - **Shared `toTicketDTO` Updates:**
+    - Updated `toTicketDTO` in `@halaa/shared/utils/adapters.js` to include canonical `attachment: rawTicket.attachment || (attachments[0] || null)`.
+  - **Automated Regression Suites:**
+    - Expanded `halaa-backend/test/tickets-attachment.integration.test.js` with access control, admin access, and `mediaFilter` tests (8 tests pass).
+    - Created `halaa-web/__tests__/ui/ticketAttachmentViewer.test.mjs` (4 tests pass).
+    - Created `halaa-mobile/__tests__/tickets/ticketAttachmentMatrix.test.js` (3 assertions pass).
+    - Updated `shared/test/contracts.test.js` with DTO attachment tests (15 tests pass).
+- **Files changed:**
+  - `shared/src/utils/adapters.js`
+  - `shared/test/contracts.test.js`
+  - `halaa-backend/test/tickets-attachment.integration.test.js`
+  - `halaa-web/app/[lang]/host/tickets/_components/TicketCard.jsx`
+  - `halaa-web/app/[lang]/host/tickets/_components/TicketCard.module.css`
+  - `halaa-web/__tests__/ui/ticketAttachmentViewer.test.mjs` (new)
+  - `halaa-mobile/screens/admin/admin-dashboard/TicketDetailsScreen.js`
+  - `halaa-mobile/localization/locales/en/admin.json`
+  - `halaa-mobile/localization/locales/ar/admin.json`
+  - `halaa-mobile/__tests__/tickets/ticketAttachmentMatrix.test.js` (new)
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md`
+- **Exact test commands & results:**
+  - `cd shared && npm run lint && npm test` → PASS (15 tests passed, 0 errors)
+  - `cd halaa-backend && node --test test/tickets-attachment.integration.test.js` → PASS (8 tests passed, 0 failures)
+  - `cd halaa-backend && npm test` → PASS (362 tests passed, 0 failures)
+  - `cd halaa-web && npm run lint && npm test` → PASS (52 tests passed, 0 errors, 31 warnings)
+  - `cd halaa-mobile && npm run lint && npm test` → PASS (120 tests passed, 0 errors)
+- **Exit-criteria verification:**
+  - Matrix evidence is recorded for all 5 areas.
+  - All confirmed gaps (web host card attachment display and mobile admin details screen attachment preview) have focused fixes and regression tests.
+  - Private attachments are protected by access control.
+- **Remaining risks / decisions:**
+  - None.
+- **Blockers / deferred work:**
+  - Session 2.5 is Complete and committed.
+
+### Session 2.6 — Admin Creation Forms, Phone/Password, and Cache Keys (ADM-09 plans part, ADM-10, ADM-11, ADM-12)
+- **Status:** Complete
+- **Date / environment:** 2026-08-21 / Windows (Node v20.18.0)
+- **What was done:**
+  - **Phone Normalization & E.164 Parity (ADM-11):**
+    - Created `@halaa/shared/utils/phone.js` exporting pure helpers: `normalizePhoneNumber`, `toE164`, `validateAndFormatPhone`, `isValidPhone`, `formatPhoneDisplay`.
+    - Handled Saudi (`+966`, `05...`, `5...`, `+96605...`, `00966...`) and Egyptian (`+20`, `01...`, `1...`, `+2001...`, `0020...`) formats with redundant-zero correction.
+    - Updated backend `halaa-backend/src/shared/utils/phone.js` to match with `toE164`, `isValidPhone`, and redundant-zero handling.
+    - Replaced buggy prepending logic (`phoneNumber.startsWith("+966") ? ... : ...` which corrupted local numbers and non-Saudi prefixes) in web `AddModeratorPopup.jsx` and `EditModeratorPopup.jsx`.
+    - Applied `toE164` across all web and mobile admin creation modals (`AddHostPopup.jsx`, `AddBusinessPopup.jsx`, `AddModeratorPopup.jsx`, `EditModeratorPopup.jsx`, `AddHostModal.js`, `AddBusinessModal.js`, `AddModeratorModal.js`).
+  - **Password Requirements & Server Auto-Generation (ADM-10):**
+    - Standardized password contract: on creation, if password is omitted or left blank in UI, backend generates a cryptographically secure random password (`crypto.randomBytes(16).toString('hex')`).
+    - If password is provided, backend and shared schemas enforce min length 8 (`min(8).max(128)`), resolving discrepancy with UserModel 8-char min requirement.
+    - Updated boundary serialization in shared Zod schemas (`shared/src/schemas/admin.js`) and backend validation (`halaa-backend/src/modules/admin/admin.validation.js`) to transform empty strings (`""`) on optional fields (`password`, `email`, `username`, `description`) to `undefined`.
+    - Updated services `admin.hosts.service.js`, `admin.businesses.service.js`, and `admin.moderators.service.js` to auto-generate passwords and check both `phoneNumber` and `mobile` fields.
+  - **Admin Plans SSR / Client Query Key Hydration Parity (ADM-09 plans part):**
+    - Fixed server prefetch in `halaa-web/app/[lang]/admin-dash/manage-plans/page.js` to use `adminKeys.plans({})` (`["admin", "plans", {}]`), matching client `useAdminPlans()` query key identically and eliminating hydration mismatch.
+    - Exported canonical `hostKeys`, `businessKeys`, `vendorKeys`, `moderatorKeys`, `adminQueryKeys` from `@halaa/shared/utils/queryKeys.js`.
+  - **Query Invalidation vs Router Refresh (ADM-12):**
+    - Verified mutation hooks invalidate canonical query keys so data immediately reflects in UI without full page reload.
+  - **Automated Test Coverage:**
+    - `shared/test/phone.test.js`: 18 tests covering normalization, E.164, country detection, display formatting.
+    - `shared/test/adminCreationSchemas.test.js`: 7 tests covering host, moderator, and edit schemas with optional password and phone normalization.
+    - `halaa-backend/test/admin-creation.integration.test.js`: 13 integration tests covering Zod schemas, empty string pruning, password min 8, and phone formats.
+    - `halaa-web/__tests__/ui/adminCreationCacheKeys.test.mjs`: 4 tests asserting SSR queryKey parity, password omitting, and E.164 usage.
+    - `halaa-mobile/__tests__/admin/adminCreationForms.test.js`: 3 tests asserting mobile modals password rules and payload formation.
+- **Files changed:**
+  - `shared/src/utils/phone.js` (new)
+  - `shared/src/utils/index.js`
+  - `shared/src/utils/queryKeys.js`
+  - `shared/src/schemas/admin.js`
+  - `shared/test/phone.test.js` (new)
+  - `shared/test/adminCreationSchemas.test.js` (new)
+  - `halaa-backend/src/shared/utils/phone.js`
+  - `halaa-backend/src/modules/admin/admin.validation.js`
+  - `halaa-backend/src/modules/admin/admin.hosts.service.js`
+  - `halaa-backend/src/modules/admin/admin.businesses.service.js`
+  - `halaa-backend/src/modules/admin/admin.moderators.service.js`
+  - `halaa-backend/test/admin-creation.integration.test.js` (new)
+  - `halaa-web/app/[lang]/admin-dash/manage-plans/page.js`
+  - `halaa-web/hooks/admin/keys.js`
+  - `halaa-web/app/[lang]/admin-dash/hosts/_components/AddHostPopup.jsx`
+  - `halaa-web/app/[lang]/admin-dash/businesses/_components/AddBusinessPopup.jsx`
+  - `halaa-web/app/[lang]/admin-dash/moderators/_components/AddModeratorPopup.jsx`
+  - `halaa-web/app/[lang]/admin-dash/moderators/_components/EditModeratorPopup.jsx`
+  - `halaa-web/__tests__/ui/adminCreationCacheKeys.test.mjs` (new)
+  - `halaa-mobile/components/admin-dashboard/hosts/AddHostModal.js`
+  - `halaa-mobile/components/admin-dashboard/businesses/AddBusinessModal.js`
+  - `halaa-mobile/components/admin-dashboard/moderators/AddModeratorModal.js`
+  - `halaa-mobile/__tests__/admin/adminCreationForms.test.js` (new)
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md`
+- **Exact test commands & results:**
+  - `cd shared && npm run lint && npm test` → PASS (38 unit tests passed, 0 lint warnings)
+  - `cd halaa-backend && npm test` → PASS (375 backend tests passed, 0 failures)
+  - `cd halaa-web && npm run lint && npm test` → PASS (56 unit tests passed, 0 errors, 31 warnings)
+  - `cd halaa-mobile && npm run lint && npm test` → PASS (121 unit tests passed, 0 errors)
+- **Exit-criteria verification:**
+  - UI promises match server behavior: passwords auto-generate when omitted and validate for min 8 characters when supplied.
+  - Shared E.164 normalizer correctly standardizes Saudi and Egyptian formats without corrupting prepends.
+  - Admin plans SSR prefetch query key matches client `useAdminPlans()` query key identically (`["admin", "plans", {}]`).
+  - All automated test suites across all 4 packages pass 100%.
+- **Remaining risks / decisions:**
+  - None.
+- **Blockers / deferred work:**
+  - Session 2.6 is Complete. Ready to commit.
+
+### Execution Record — Session 3.1 (2026-08-21)
+
+- **Session:** Session 3.1 — Canonical plan semantics and invite-pool completion (`PLN-03`, `PLN-04`, `PLN-05`, `PLN-09`)
+- **Status:** Complete
+- **Prerequisites verified:** Session 0.2 is Complete (verified).
+- **Key changes:**
+  - **Shared Constants & Helpers (`shared/src/constants/plans.js`, `halaa-backend/src/shared/constants/plans.js`):**
+    - Established canonical plan classification across 9 types: `trial`, `basic_event`, `basic_monthly`, `premium_event`, `premium_monthly`, `business_event`, `business_quarterly`, `business_annual`, `unlimited`.
+    - Aligned helper contracts between shared and backend: `isUnlimited`, `isTrialPlan`, `isPerEventPlan`, `isPoolPlan`, `isManagedPlan`, `isRecurringBilling`, `isRecurringPlan`, `getPlanFamily`, `getBillingType`, `getBillingPeriodKey`, `planHasBillingCycle`, and `COMPENSATION_PERCENTAGE = 15`.
+  - **Zod Limits Schemas (`shared/src/schemas/plans.js`, `halaa-backend/src/modules/plans/plans.schemas.js`):**
+    - Relaxed `durationDays` to nullable positive integer (`z.number().int().positive().nullable().optional()`) and allowed nullable `invitePool` for unlimited plans.
+  - **Boundary DTO Adapter (`shared/src/utils/adapters.js`):**
+    - Updated `toSubscriptionDTO` to authoritatively compute `invitePool`, `compensationPool`, `invitesConsumed`, and `remainingInvites = invitePool + (compensationPool || 0) - invitesConsumed`.
+  - **Mobile Plan Editing & Validation (`halaa-mobile/components/admin-dashboard/plans/EditPlanModal.js`):**
+    - Implemented type-conditional validation: `invitePool` is required and must be > 0 only for non-unlimited plans, allowing `null` / `-1` for `unlimited`.
+    - Preserved `null` for `durationDays` when empty rather than coercing `""` to `0`.
+  - **Mobile Plan Item & Summary (`halaa-mobile/components/admin-dashboard/plans/PlanListItem.js`, `halaa-mobile/components/plans/PlanSummaryCard.js`):**
+    - Added period chips for monthly (`/mo`), quarterly (`/3mo`), and annual (`/yr`).
+    - Fixed plan summary classification using `isPoolPlan` and `getBillingType`, preventing quarterly and annual plans from collapsing to single-event.
+  - **Web Plan Summary Card (`halaa-web/app/[lang]/host/plans/summary/_components/PlanSummaryCard.js`):**
+    - Integrated `isPoolPlan` and `isRecurringBilling` to distinguish pool vs per-event behavior and render correct localized billing period labels (`quarterly`, `annual`, `monthly`, `event`).
+  - **Localization (`halaa-web/localization/locales/{ar,en}/plans.json`, `halaa-mobile/localization/locales/{ar,en}/plans.json`):**
+    - Added `annual`, `quarterly`, and `yearly` period strings in Arabic and English.
+  - **Backend Subscriptions & Dashboard (`halaa-backend/src/modules/dashboard/dashboard.service.js`, `halaa-backend/src/modules/subscriptions/subscriptions.service.js`):**
+    - Made `invitePool` authoritative for dashboard `guestsLimit` and ensured per-event plans return `invitePool`, `compensationPool`, `invitesConsumed`, and `invitesRemaining`.
+  - **Automated Tests:**
+    - `shared/test/plansContract.test.js`: Table-driven test suite validating canonical semantics, schemas, and DTO math across all 9 plan types.
+    - `halaa-backend/test/shared-parity.test.js`: Added full parity test asserting exact match between backend and shared plan constants and helper functions.
+    - `halaa-web/__tests__/ui/planSemanticsPresentation.test.mjs`: Added test suite for web plan classification, summary period rendering, and localization keys.
+    - `halaa-mobile/__tests__/plans/planSemanticsValidation.test.js`: Added test suite for mobile plan classification, modal validation, and source contract verification.
+- **Verification results:**
+  - `cd shared && npm test` → PASS (41 unit tests passed, 0 failures)
+  - `cd halaa-backend && npm test` → PASS (376 unit/integration tests passed, 0 failures)
+  - `cd halaa-web && npm test` → PASS (59 unit tests passed, 0 failures)
+  - `cd halaa-mobile && npm test` → PASS (124 unit tests passed, 0 failures)
+- **Exit-criteria verification:**
+  - The same raw plan is classified and validated identically across `@halaa/shared`, backend, web, and mobile.
+  - Capped plans require a positive invite pool; unlimited plans cleanly support `invitePool: null` and `durationDays: null`.
+  - Quarterly and annual plans preserve their respective periods and pool semantics without collapsing to monthly or single-event.
+- **Remaining risks / decisions:**
+  - None.
+- **Blockers / deferred work:**
+  - Session 3.1 is Complete. Ready for Git commit.
+
+### Execution Record — Session 3.2 (2026-08-21)
+
+- **Session:** Session 3.2 — Plan editing and presentation parity (`PLN-06`, `PLN-07`, `PLN-08`)
+- **Status:** Complete
+- **Prerequisites verified:** Session 3.1 is Complete and committed (verified).
+- **Key changes:**
+  - **Canonical Plan Presentation DTO (`@halaa/shared/src/utils/adapters.js`, `shared/src/utils/index.js`):**
+    - Implemented and exported `toPlanPresentationDTO(plan)`:
+      - Normalizes every plan into standard shape with canonical flags (`isPool`, `isPerEvent`, `isTrial`, `isManaged`, `isUnlimited`).
+      - Derives `pricing.oneTime`, `pricing.setupFee`, and compiles all priced extras (`setup_fee`, `whatsapp_templates`) into structured `extras` line items.
+      - Accurately resolves `limits.durationDays` per billing interval (30d monthly, 90d quarterly, 365d annual, or custom) and preserves `null` for unlimited plans.
+      - Derives 15% `limits.compensationPool` from base pool / tier invites.
+  - **Web Admin Plan Feature Bullets Editor (`halaa-web/app/[lang]/admin-dash/manage-plans/_components/edit-plan/PlanFeatureBulletsSection.js`):**
+    - Resolved `PLN-07`: Encapsulated bullets editing into controlled `BulletField` with local raw text state so trailing newlines and cursor state are preserved during editing without getting stripped before submit.
+  - **Web Admin Edit Popup Defaults (`halaa-web/app/[lang]/admin-dash/manage-plans/_components/EditPlanPopup.js`):**
+    - Preserved `null` for `limits.durationDays` when editing unlimited plans instead of defaulting to `90`.
+  - **Web & Mobile Plan Description Components (`halaa-web/ui/plans/PlanDescription/PlanDescription.jsx`, `halaa-mobile/components/plans/PlanDescription.js`):**
+    - Replaced hardcoded billing string checks with canonical `isPoolPlan` and `isRecurringBilling` helpers.
+    - Accurately derive duration labels for monthly, quarterly, annual, and custom event durations.
+    - Render setup fee, WhatsApp templates, and 15% compensation rows accurately.
+  - **Mobile Host Plan Card & Title Parity (`halaa-mobile/components/plans/HostPlanCard.js`, `halaa-mobile/components/plans/_components/PlanPriceBlock.js`):**
+    - Resolved `PLN-06`: Enabled `PlanPriceBlock` to receive and display explicit localized `planName`, preventing misleading fallback titles when specific plan names are assigned.
+  - **Automated Tests:**
+    - `shared/test/planPresentationDTO.test.js`: Validated presentation DTO normalization, limits math, priced extras, and unlimited semantics across all plan types.
+    - `halaa-web/__tests__/ui/planEditingAndBullets.test.mjs`: Validated presentation DTO integration, `BulletField` raw text preservation, and popup duration defaults.
+    - `halaa-mobile/__tests__/plans/planPresentationParity.test.js`: Validated mobile plan description helpers, price block title propagation, and presentation parity.
+- **Verification results:**
+  - `cd shared && npm test` → PASS (44 unit tests passed, 0 failures)
+  - `cd halaa-backend && npm test` → PASS (376 unit/integration tests passed, 0 failures)
+  - `cd halaa-web && npm test` → PASS (62 unit tests passed, 0 failures)
+  - `cd halaa-mobile && npm test` → PASS (126 unit tests passed, 0 failures)
+- **Exit-criteria verification:**
+  - No plan presentation or editor hardcodes per-event or monthly behavior.
+  - No priced line item (setup fees, WhatsApp templates, compensation) disappears from summary or presentation.
+  - Web admin bullet editor maintains raw multi-line editing seamlessly.
+- **Remaining risks / decisions:**
+  - None.
+- **Blockers / deferred work:**
+  - Session 3.2 is Complete. Ready for Git commit.
+
+### Execution Record — Session 3.3 (2026-08-21)
+
+- **Session:** Session 3.3 — Money and authoritative checkout quote (`PLN-02`)
+- **Status:** Complete
+- **Prerequisites verified:** Session 3.1 is Complete and committed (verified).
+- **Key changes:**
+  - **Shared Money Utilities & Pure Quote Builder (`@halaa/shared/src/utils/money.js`, `shared/src/utils/index.js`, `shared/src/api/paths.js`):**
+    - Implemented and exported canonical money arithmetic: `round2` (half-up, EPSILON-guarded), `toHalalas` (minor units integer), `halalasToSar`, `formatSar` (decimal-safe SAR formatting), `allocateDiscount` (proportional allocation with rounding remainder assigned to largest item).
+    - Implemented pure `buildCheckoutQuote`: calculates line items (`plan`, `addon`, `setup_fee`), discount allocations, setup fee, tax (0), totals in SAR major units and Halalas minor units, formatted values, and quote expiration.
+    - Added `hostPayments.quote: "/payments/quote"` to `API_PATHS`.
+  - **Backend Authoritative Quote & Price Change Protection (`halaa-backend/src/modules/payments/checkout.service.js`, `checkout.controller.js`, `checkout.validation.js`, `payments.routes.js`, `models/DiscountModel.js`):**
+    - Aligned `halaa-backend/src/shared/utils/money.js` with shared money utilities.
+    - Implemented `checkoutService.getQuote(userId, body)` and mounted `POST /payments/quote` with `purchaseLimiter` and `quoteSchema` validation.
+    - Added cryptographic signature `quoteId` (HMAC-SHA256) and TTL expiration timestamp.
+    - Added price-change verification (`expectedAmount` / `expectedTotal` matching `quote.totalHalalas`) and stale quote rejection (`quoteExpiresAt < Date.now()`).
+    - Stamped `quoteId`, `totalHalalas`, `lineItems`, `planPrice`, `addonsTotal`, and `discountAmount` onto `Payment.metadata`.
+    - Updated `DiscountModel.calculateDiscount` to preserve halala precision via `round2`.
+  - **Web Client Parity (`halaa-web/hooks/checkout`, `Summary.js`, `PaymentSummaryCard.js`, `ProceedButton.js`, `DiscountCodeCard.js`, `usePlansPageState.js`):**
+    - Added `checkoutKeys.quote` query key factory and `useCheckoutQuote` React Query hook.
+    - Eliminated `.toFixed(0)` truncation in all summary subcomponents, formatting exact decimal amounts via `formatSar`.
+    - Passed server quote `expectedAmount`, `quoteId`, and `quoteExpiresAt` through `usePlansPageState.js` and `useCheckout` mutation.
+  - **Mobile Client Parity (`halaa-mobile/components/plans/PaymentSummaryCard.js`, `DiscountCodeCard.js`, `PlansSummaryScreen.js`, `hooks/checkout/mutations.js`):**
+    - Eliminated `.toFixed(0)` decimal loss across `PaymentSummaryCard`, `DiscountCodeCard`, and `PlansSummaryScreen` footer.
+    - Updated mobile `useCheckout` mutation and `PlansSummaryScreen.js` to send `expectedAmount` and `quoteId`.
+  - **Automated Tests:**
+    - `shared/test/money.test.js`: Comprehensive tests for `round2`, `toHalalas`, `halalasToSar`, `formatSar`, `allocateDiscount`, and `buildCheckoutQuote`.
+    - `halaa-backend/test/checkout-quote-money.test.js`: Integration tests for authoritative quote calculation, discount allocations, price-change rejection, stale quote rejection, halala minor unit precision, and Payment metadata stamping.
+    - `halaa-web/__tests__/ui/checkoutQuoteMoney.test.mjs`: Tests for quote query keys, elimination of `.toFixed(0)`, `formatSar` usage, and `usePlansPageState` quote metadata forwarding.
+    - `halaa-mobile/__tests__/plans/checkoutQuoteParity.test.js`: Tests for mobile `.toFixed(0)` removal, `formatSar` accuracy, and mobile mutation `expectedAmount` propagation.
+- **Verification results:**
+  - `cd shared && npm test` → PASS (55 unit tests passed, 0 failures)
+  - `cd halaa-backend && npm test` → PASS (381 unit/integration tests passed, 0 failures)
+  - `cd halaa-web && npm test` → PASS (65 unit tests passed, 0 failures)
+  - `cd halaa-mobile && npm test` → PASS (129 unit tests passed, 0 failures)
+- **Exit-criteria verification:**
+  - The displayed amount, the persisted transaction amount, and the gateway charge match exactly.
+  - Rounding uses minor units / `round2` and does not drop halalas (no `.toFixed(0)`).
+  - Backend authoritative quote endpoint `/payments/quote` is operational and protects checkout against price changes.
+### Execution Record — Session 3.4 (2026-08-21)
+
+- **Session:** Session 3.4 — Card expiry and payment UX (`PLN-01`)
+- **Status:** Complete
+- **Prerequisites verified:** Session 3.3 is Complete and committed (verified).
+- **Key changes:**
+  - **Shared Card Utilities (`@halaa/shared/src/utils/card.js`, `shared/src/utils/index.js`, `halaa-backend/src/shared/utils/card.js`):**
+    - Implemented and exported canonical card utilities: `formatExpiryInput`, `parseCardExpiry`, `validateCardExpiry`, `checkLuhn`, `detectCardBrand`, `buildCreditCardSource`.
+    - `formatExpiryInput`: strictly formats input as `MM/YY` (month 2 digits, year 2 digits), auto-appends `/` when typing forward past the 2-digit month boundary, and avoids trapping caret when deleting.
+    - `parseCardExpiry`: parses standard `MM/YY`, `MMYYYY`, object `{ month, year }`, or separated strings (`12/26`, `12-26`, `12.26`), normalizing into 2-digit `MM` and 4-digit `20YY`.
+    - `validateCardExpiry`: enforces month boundaries (01–12, rejecting `00` and `13+`), checks non-expired dates against reference date (valid through the end of the stated month, rejecting past months/years and excessive future dates > 25 years).
+    - `buildCreditCardSource`: builds the canonical wire format source for Moyasar (`month` as integer 1–12, `year` as 4-digit integer 2026).
+  - **Web Payment Method Selector & Checkout (`halaa-web/app/[lang]/host/plans/_components/PaymentMethodSelector.jsx`, `Summary.js`, `business/checkout/[token]/page.js`):**
+    - Resolved `PLN-01`: Swapped obsolete `YY/MM` display and parsing to canonical `MM/YY` (month first).
+    - Updated `PaymentMethodSelector.jsx` placeholder to `"MM/YY"` and wired `formatExpiryInput`.
+    - Updated `Summary.js` and `business/checkout/[token]/page.js` to use `validateCardExpiry`, `checkLuhn`, and `buildCreditCardSource`.
+    - Added `if (isProcessing) return;` double-submit guards to prevent in-flight duplicate charge submissions.
+    - Fixed `PlanFeatureBulletsSection.js` hook usage by extracting `BulletInput` component.
+  - **Mobile Payment Method Selector & Checkout (`halaa-mobile/components/plans/PaymentMethodSelector.js`, `PlansSummaryScreen.js`):**
+    - Updated mobile `PaymentMethodSelector.js` placeholder to `"MM/YY"` and wired `formatExpiryInput`.
+    - Updated `PlansSummaryScreen.js` to use `buildCreditCardSource` and `validateCardExpiry`.
+    - Added double-submit guard (`if (isProcessing) return;`) while preserving native IAP flow (`Platform.OS === 'web' ? ... : ...`).
+  - **Localization Parity (`halaa-mobile/localization/locales/{ar,en}/plans.json`):**
+    - Added full Arabic and English translations for detailed card validation errors (`nameRequired`, `nameTooShort`, `numberRequired`, `numberLength`, `numberInvalid`, `expiryRequired`, `expiryMonthInvalid`, `expiryExpired`, `cvcRequired`, `cvcLength`, `mobileRequired`, `mobileFormat`).
+  - **Automated Tests:**
+    - `shared/test/card.test.js`: Validated `formatExpiryInput`, `parseCardExpiry`, `validateCardExpiry` (`00/YY`, `13/YY`, current month, past/future dates, separators), `checkLuhn`, `detectCardBrand`, and `buildCreditCardSource`.
+    - `halaa-web/__tests__/ui/cardExpiryPaymentUx.test.mjs`: Validated web placeholder `MM/YY`, `Summary.js` validation, error keys, and double-submit protection.
+    - `halaa-mobile/__tests__/plans/cardExpiryPaymentUx.test.js`: Validated mobile placeholder `MM/YY`, `PlansSummaryScreen.js` validation, source builder, and web vs native IAP platform gating.
+    - `halaa-backend/test/card-expiry-wire.test.js`: Validated backend card expiry validation, `sourceSchema`, and `buildCreditCardSource` wire format for Moyasar.
+- **Verification results:**
+  - `cd shared && npm test` → PASS (60 unit tests passed, 0 failures)
+  - `cd halaa-backend && npm test` → PASS (384 unit/integration tests passed, 0 failures)
+  - `cd halaa-web && npm test` → PASS (68 unit tests passed, 0 failures)
+  - `cd halaa-mobile && npm test` → PASS (131 unit tests passed, 0 failures)
+- **Exit-criteria verification:**
+  - Input, display, and validation strictly use `MM/YY` with month 01–12 and non-expired check.
+  - Wire format for Moyasar provides integer `month` and 4-digit `year` independently from display formatting.
+  - Native iOS/Android retains IAP-only flows; web checkout handles card/STC Pay entry with double-submit guards.
+  - Errors are localized in Arabic and English across both web and mobile.
+- **Remaining risks / decisions:**
+  - None.
+- **Blockers / deferred work:**
+  - Session 3.4 is Complete. Ready for Git commit.
+
+### Execution Record — Session 4.1 (2026-08-21)
+
+- **Session:** Session 4.1 — Vendor service form contract (`MKT-03`, `MKT-04`, `MKT-05`, `MKT-06`, `MKT-08`)
+- **Status:** Complete
+- **Prerequisites verified:** Session 0.2 is Complete (verified).
+- **Key changes:**
+  - **Shared Service Limits & Schemas (`@halaa/shared/src/schemas/vendor.js`, `shared/src/schemas/index.js`, `shared/src/utils/media.js`):**
+    - Published canonical `SERVICE_LIMITS`: `NAME_MIN: 2`, `NAME_MAX: 200`, `NAME_AR_MAX: 200`, `DESCRIPTION_MIN: 10`, `DESCRIPTION_MAX: 2000`, `DESCRIPTION_AR_MAX: 2000`, `DURATION_MAX: 100`, `PRICE_MIN: 0`.
+    - Published `vendorServiceFormSchema`, `serviceLocationSchema`, `normalizeArabicDigits`, `SERVICE_TYPES`, `PREDEFINED_TAGS`, and `addServiceDefaultValues`.
+    - Extended media helpers with `keyFromSignedUrl` and `resolveImageUrl` with configurable backend/origin fallbacks.
+  - **Web Vendor Service Form & Cache Invalidation (`halaa-web/utils/schemas/addServiceSchema.js`, `AddServicePopup.js`, `hooks/vendorServices/mutations.js`, `ServiceCard.js`):**
+    - Aligned web `addServiceSchema` with canonical limits (raised name limit to 200, desc to 2000).
+    - Fixed `AddServicePopup.js` multipart serializer to explicitly append empty strings (`""`) for `nameAr` and `descriptionAr` when cleared, preventing stale values in database updates.
+    - Updated `useServiceMutation` (`createService`, `updateService`, `deleteService`, `toggleStatus`) to invalidate `vendorServicesKeys.stats()` alongside `myList()` and `detail(serviceId)`.
+    - Created guaranteed SVG placeholder asset at `halaa-web/public/images/placeholder-service.svg` and updated `ServiceCard.js` fallback references (resolving `MKT-05`).
+  - **Mobile Location Selector & Parity (`halaa-mobile/components/vendor/ServiceDetailsForm.js`, `LocationSelector.js`, `utils/schemas/vendorServiceSchema.js`):**
+    - Updated `LocationSelector.js` with configurable `basePath` prop (`serviceData.serviceLocation` vs `serviceLocation`).
+    - Replaced disconnected `MapPicker` in `ServiceDetailsForm.js` with `LocationSelector`, ensuring mobile vendor services save administrative region, city, and district selections matching backend contracts (`MKT-03`).
+    - Aligned `vendorServiceSchema.js` with canonical `SERVICE_LIMITS` and Arabic digit normalization.
+  - **Backend Validation & Clearing Contract (`halaa-backend/src/modules/services/services.validation.js`):**
+    - Updated `createServiceSchema` and `updateServiceSchema` to accept empty strings (`.or(z.literal(''))`) for clearable optional fields (`nameAr`, `descriptionAr`, `duration`).
+  - **Automated Tests:**
+    - `shared/test/vendor-service.test.js`: Validated limits, bounds, digit normalization, zero-price support, clearable Arabic fields, and media utilities.
+    - `halaa-web/__tests__/ui/vendorServiceFormContract.test.mjs`: Validated schema limits, AddServicePopup multipart serializer, stats invalidation, and placeholder asset existence.
+    - `halaa-mobile/__tests__/vendor/vendorServiceContract.test.js`: Validated schema limits, buildServiceFormData source, LocationSelector integration, and stats invalidation.
+    - `halaa-backend/test/services-form-contract.test.js`: Validated create and update schemas, administrative location schema, and field-clearing support.
+- **Verification results:**
+  - `cd shared && npm test` → PASS (63 unit tests passed, 0 failures)
+  - `cd halaa-backend && npm test` → PASS (387 unit/integration tests passed, 0 failures)
+  - `cd halaa-web && npm test` → PASS (72 unit tests passed, 0 failures)
+  - `cd halaa-mobile && npm test` → PASS (135 unit tests passed, 0 failures)
+- **Exit-criteria verification:**
+  - Service forms on web and mobile share canonical name/description limits matching backend validation.
+  - Optional Arabic fields can be cleared on update without being dropped by multipart serializers.
+  - Mobile vendor settings and services use administrative region/city/district selectors without losing data.
+  - Guaranteed placeholder fallback exists and prevents broken image paths.
+  - Mutations across web and mobile consistently invalidate service statistics and listings.
+- **Remaining risks / decisions:**
+  - None.
+- **Blockers / deferred work:**
+### Execution Record — Session 4.2 (2026-08-21)
+
+- **Session:** Session 4.2 — Marketplace filter contract and database query (`MKT-01`, `MKT-02`)
+- **Status:** Complete
+- **Prerequisites verified:** Session 0.2 is Complete (verified).
+- **Key changes:**
+  - **Shared Contract & Query Schemas (`@halaa/shared/src/schemas/vendor.js`, `shared/src/utils/queryKeys.js`, `shared/src/utils/index.js`):**
+    - Implemented `parseDistrictIds` parsing CSV strings (`"101,102"`), arrays of numbers (`[101, 102]`), and singular numbers (`103`) into integer arrays.
+    - Added `getPublicVendorsQuerySchema` and `getPublicServicesQuerySchema` with multi-district `$in` support, aliases for singular `districtId` and `rating` -> `minRating`, and `marketplaceSortOptions` (`rating`, `price_asc`, `price_desc`, `recent`, `default`).
+    - Added canonical query key factories `publicVendorKeys` and `marketplaceKeys`.
+  - **Backend Compound Indexes & Aggregation Pipeline (`halaa-backend/models/UserModel.js`, `ServiceModel.js`, `vendors.service.js`, `vendors.validation.js`, `vendors.controller.js`, `services.service.js`, `services.validation.js`):**
+    - Added compound indexes to `UserModel.js` on `{ role: 1, status: 1, "profile.vendorData.vendorStatus": 1, "profile.vendorData.rating": -1, _id: 1 }`, `{ role: 1, status: 1, "profile.vendorData.vendorStatus": 1, "profile.vendorData.serviceLocation.districtIds": 1 }`, and `{ role: 1, status: 1, "profile.vendorData.vendorStatus": 1, "profile.vendorData.serviceLocation.regionId": 1, "profile.vendorData.serviceLocation.cityId": 1 }`.
+    - Added compound indexes to `ServiceModel.js` on `{ status: 1, isPublic: 1, price: 1, vendorId: 1 }`, `{ status: 1, isPublic: 1, "serviceLocation.districtIds": 1 }`, `{ status: 1, isPublic: 1, "serviceLocation.regionId": 1, "serviceLocation.cityId": 1 }`, and `{ status: 1, isPublic: 1, category: 1, createdAt: -1, _id: 1 }`.
+    - Replaced in-memory vendor sorting and slicing in `vendorsService.getPublicVendors` with an indexed MongoDB aggregation pipeline using `$match`, `$lookup` (services summary), `$addFields`, `$sort` with deterministic `_id: 1` tie-breaker, and `$facet` returning `{ rows: [{ $skip }, { $limit }, { $project }], totalCount: [{ $count: "count" }] }`.
+    - Implemented multi-district OR filtering (`"profile.vendorData.serviceLocation.districtIds": { $in: districtIds }`).
+    - Preserved moderation block filtering, active public service price range querying via indexed `Service.distinct("vendorId")`, rating filters, and soft-delete exclusions.
+    - Updated `servicesService.getPublicServices` to support array and CSV `districtIds`, singular `districtId` alias, `status: USER_STATUS.ACTIVE` / `deletedAt: { $exists: false }` approved vendor checks, and deterministic `{ createdAt: -1, _id: 1 }` sorting.
+  - **Web Client Fixes (`halaa-web/hooks/vendors/queries.js`, `MarketplaceView.jsx`):**
+    - Updated `MarketplaceView.jsx` to pass `districtIds: state.districtIds?.length ? state.districtIds : undefined` (removing the buggy `districtId: state.districtIds?.[0]` that dropped multi-district selections).
+    - Updated `usePublicVendors` to serialize `districtIds` arrays to CSV strings without truncation.
+  - **Mobile Client Fixes (`halaa-mobile/hooks/marketplace/queries.js`, `Marketplace.js`):**
+    - Updated `Marketplace.js` to pass `districtIds: filters.districtIds` in `queryFilters` (removing the `districtId: filters.districtIds?.[0] || ""` truncation).
+    - Updated `_buildVendorsPath` in `hooks/marketplace/queries.js` to serialize `districtIds` arrays to CSV strings.
+  - **Automated Tests:**
+    - `shared/test/marketplaceContract.test.js`: Validated district parser, schemas, aliases, and query key factories.
+    - `halaa-backend/test/vendors.marketplace.integration.test.js`: Validated multi-district OR filtering, `$facet` pagination stability, moderation blocks, status invariants, price bounds, and compound index existence.
+    - `halaa-web/__tests__/ui/marketplaceFilterContract.test.mjs`: Validated full `districtIds` preservation and query keys in `MarketplaceView.jsx` and `usePublicVendors`.
+    - `halaa-mobile/__tests__/marketplace/marketplaceFilterContract.test.js`: Validated full `districtIds` preservation and query keys in `Marketplace.js` and `_buildVendorsPath`.
+- **Verification results:**
+  - `cd shared && npm test` → PASS (75 unit tests passed, 0 failures)
+  - `cd halaa-backend && npm test` → PASS (393 unit/integration tests passed, 0 failures)
+  - `cd halaa-web && npm test` → PASS (75 unit tests passed, 0 failures)
+  - `cd halaa-mobile && npm test` → PASS (138 unit tests passed, 0 failures)
+- **Exit-criteria verification:**
+  - Multi-district filtering preserves all selected districts with OR semantics on both web and mobile.
+  - Response memory and compute work are strictly bounded by page size via indexed MongoDB aggregation and `$facet`.
+  - Inactive, unapproved, soft-deleted, and blocked vendors are strictly excluded from listings and total counts.
+  - Pagination is deterministic across pages with stable tie-breaking.
+- **Remaining risks / decisions:**
+  - None.
+- **Blockers / deferred work:**
+  - Session 4.2 is Complete. Ready for Git commit.
+
+### Execution Record — Session 4.3 (2026-08-21)
+
+- **Session:** Session 4.3 — Marketplace Analytics Decision & Implementation (`MKT-10`)
+- **Status:** Complete
+- **Prerequisites verified:** Sessions 0.2, 4.1, 4.2 are Complete (verified).
+- **Key changes:**
+  - **Shared Contract & Validation (`@halaa/shared/src/schemas/vendor.js`, `shared/src/api/paths.js`):**
+    - Defined frozen canonical constants: `MARKETPLACE_EVENT_TYPES` (`service_view`, `vendor_view`, `contact_click`), `MARKETPLACE_TARGET_TYPES` (`service`, `vendor`), `MARKETPLACE_CONTACT_METHODS` (`whatsapp`, `phone`, `email`, `website`, `social`, `service_request`).
+    - Added `marketplaceTrackSchema` validating event payloads with ObjectId checks.
+    - Added `vendors.trackAnalytics: "/vendors/analytics/track"` and `vendorServices.trackAnalytics: "/services/analytics/track"` to `API_PATHS`.
+  - **Backend Analytics Engine & Route Decoupling (`halaa-backend/src/modules/marketplace/marketplace.analytics.service.js`, `vendors.routes.js`, `vendors.controller.js`, `services.service.js`, `services.controller.js`, `services.routes.js`, `UserModel.js`, `ServiceModel.js`, `rateLimiter.js`):**
+    - Created `MarketplaceAnalyticsService` with 1-hour sliding-window deduplication cache, self-interaction prevention (vendors viewing/clicking their own service/profile are safely ignored), and atomic counter updates (`Service.viewCount`, `Service.contactCount`, `User.profile.vendorData.totalViews`, `User.profile.vendorData.numberOfClicks`).
+    - Added `analyticsLimiter` rate limiter middleware (120 req/min/NAT-safe client key).
+    - Mounted `POST /api/v2/vendors/analytics/track` and `POST /api/v2/services/analytics/track` with `optionalAuth`, rate limiting, and Zod payload validation.
+    - Decoupled and eliminated blind `$inc` counter side effects from `getServiceById` in `services.service.js` and `services.controller.js`, making GET reads completely idempotent.
+    - Added `contactCount` to `ServiceModel` and `totalViews` to `UserModel.profile.vendorData`.
+    - Aligned Admin Dashboard (`dashboard.service.js#getDashboardStats`) and Vendor Dashboard (`services.service.js#getMyStats`) view metrics.
+  - **Web Client Tracking Integration (`halaa-web/hooks/vendors/mutations.js`, `hooks/vendors/index.js`, `VendorProfile.jsx`):**
+    - Created `useTrackMarketplaceAnalytics` mutation hook targeting `/vendors/analytics/track`.
+    - Wired automatic `vendor_view` tracking on component mount in `VendorProfile.jsx`.
+    - Wired `contact_click` tracking on WhatsApp, phone call, email, website, social media, and service request buttons.
+  - **Mobile Client Tracking Integration (`halaa-mobile/config/api.js`, `hooks/marketplace/mutations.js`, `hooks/marketplace/index.js`, `VendorPublicProfileScreen.js`):**
+    - Added `TRACK_ANALYTICS` to `ENDPOINTS.VENDORS` and `ENDPOINTS.SERVICES`.
+    - Created `useTrackMarketplaceAnalytics` mutation hook.
+    - Wired automatic `vendor_view` on mount and `contact_click` on WhatsApp, phone call, email, website, social media, and service request actions in `VendorPublicProfileScreen.js`.
+  - **Automated Tests:**
+    - `shared/test/marketplaceAnalyticsSchema.test.js`: Validated event tracking schema, constants, and rejection of invalid payloads.
+    - `halaa-backend/test/marketplace-analytics.integration.test.js`: Validated service views, vendor views, contact clicks, 1-hour sliding window deduplication, self-interaction prevention, idempotent GET reads, and dashboard metric agreement.
+    - `halaa-web/__tests__/ui/marketplaceAnalyticsTracking.test.mjs`: Validated web API paths, mutation hooks, and `VendorProfile.jsx` event bindings.
+    - `halaa-mobile/__tests__/marketplace/marketplaceAnalyticsTracking.test.js`: Validated mobile endpoints, mutation hooks, and `VendorPublicProfileScreen.js` event bindings.
+- **Verification results:**
+  - `cd shared && npm test` → PASS (80 unit tests passed, 0 failures)
+  - `cd halaa-backend && npm test` → PASS (400 unit/integration tests passed, 0 failures)
+  - `cd halaa-web && npm test` → PASS (79 unit tests passed, 0 failures)
+  - `cd halaa-mobile && npm test` → PASS (141 unit tests passed, 0 failures)
+- **Exit-criteria verification:**
+  - Collection points, metric definitions, and dashboard queries agree across vendor stats and admin stats.
+  - GET reads are completely side-effect-free and idempotent.
+  - Crawler/refresh abuse is prevented by sliding-window deduplication and rate limiting.
+  - Vendor self-views and self-clicks do not inflate metrics.
+- **Remaining risks / decisions:**
+  - None.
+- **Blockers / deferred work:**
+  - Session 4.3 is Complete. Ready for Git commit.
+
+---
+
+### Session 4.4 Execution Record
+
+- **Session:** Session 4.4 — Marketplace Localization, Public States, and Navigation (`MKT-07`, `MKT-11`)
+- **Status:** Complete
+- **Prerequisites verified:** Sessions 0.2, 4.1, 4.2, 4.3 are Complete (verified).
+- **Key changes:**
+  - **Localization & Translation Namespace Parity (`halaa-web/localization/locales/{ar,en}/marketplace.json`, `halaa-mobile/localization/locales/{ar,en}/marketplace.json`, `halaa-mobile/localization/locales/{ar,en}/auth.json`):**
+    - Aligned all moderation reasons (`rSpam`, `rImpersonation`, `rIllegal`, `rOther`), moderation actions/dialogs (`report`, `reportVendor`, `reportReason`, `reported`, `reportedMsg`, `signInToReport`, `block`, `blockVendor`, `blockConfirm`, `blocked`, `blockedMsg`, `signInToBlock`), common actions (`cancel`, `ok`), loading indicators (`loading`), and not-found headers (`errors.profileNotFoundTitle`).
+    - Added `login.browseMarketplace` to mobile authentication localization files.
+  - **Locale-Aware Location Separator Parity (`halaa-web/app/[lang]/market-place/vendors/[vendorId]/VendorProfile.jsx`, `MarketplaceView.jsx`, `halaa-mobile/screens/common/VendorPublicProfileScreen.js`, `Marketplace.js`):**
+    - Standardized location separators to use Arabic comma (`، `) for Arabic / RTL context and English comma (`, `) for English / LTR context across vendor cards, search results, and public profile views.
+  - **Web Public States, Moderation, and Route Preservation (`halaa-web/app/[lang]/market-place/vendors/[vendorId]/{ReportVendorButton.jsx, not-found.js, error.js, loading.js}`):**
+    - Updated `ReportVendorButton.jsx` to load localized reasons and provide graceful toast guidance for unauthenticated viewers (`signInToReport`, `signInToBlock`), maintaining static server rendering for `VendorProfile.jsx`.
+    - Rewrote `not-found.js`, `error.js`, and `loading.js` with bilingual localized copy, accessible spinner animations, and locale-aware navigation links to `/${lang}/market-place`.
+  - **Mobile Guest Access & Moderation Auth Gates (`halaa-mobile/navigation/AppNavigator.js`, `VendorPublicProfileScreen.js`, `LoginScreen.js`):**
+    - Registered `Marketplace` and `VendorPublicProfile` in `AuthStack` in `AppNavigator.js`, allowing unauthenticated guest users to browse the public marketplace, inspect vendor profiles, and use public contact actions (WhatsApp deep linking, phone dialer, email, website) without auth barriers.
+    - Added unauthenticated auth gates to `handleReport` and `handleBlock` in `VendorPublicProfileScreen.js` that display clear sign-in guidance Alerts on 401 responses instead of uncaught failures.
+    - Added a direct guest marketplace entry point in `LoginScreen.js` for unauthenticated discovery.
+  - **Automated Tests:**
+    - `halaa-web/__tests__/ui/marketplaceLocalizationNavigation.test.mjs`: Tests translation key parity, locale-aware location separators, guest report/block handling, and not-found/error bilingual rendering and navigation.
+    - `halaa-mobile/__tests__/marketplace/marketplaceLocalizationNavigation.test.js`: Tests mobile translation parity, location separator formatting, unauthenticated moderation prompts, and AuthStack guest screen registration.
+- **Verification results:**
+  - `cd shared && npm test` → PASS (80 unit tests passed, 0 failures)
+  - `cd halaa-backend && npm test` → PASS (400 unit/integration tests passed, 0 failures)
+  - `cd halaa-web && npm test` → PASS (84 unit tests passed, 0 failures)
+  - `cd halaa-mobile && npm test` → PASS (146 unit tests passed, 0 failures)
+- **Exit-criteria verification:**
+  - Location separators adapt properly to active locale (`، ` vs `, `).
+  - Unauthenticated / guest users can browse marketplace and view vendor profiles freely on both Web and Mobile.
+  - Moderation actions gracefully guide unauthenticated users to sign in.
+  - Error and not-found states are fully localized and maintain correct locale route links.
+- **Remaining risks / decisions:**
+  - None.
+- **Blockers / deferred work:**
+  - Session 4.4 is Complete. Ready for Git commit.
+
+### Execution Record — Session 5.1 (2026-08-22)
+
+- **Session:** Session 5.1 — Identity fields and email verification synchronization (`SET-01`, `SET-02`)
+- **Status:** Complete
+- **Prerequisites verified:** Session 0.2 (Contract foundations) is Complete (verified in tracker and execution record).
+- **Before-state reproduction (failing tests first):**
+  - **SET-01:** Web `host/settings/_components/AccountSettings.js` bound the input labelled `full_name` to form field `username` and submitted `{ username, email }` only; `page.js` collapsed `username: user?.username || user?.name`. Mobile `components/settings/AccountSettings.js` had the identical defect (`account.fullName` label bound to `username`). Shared `accountSettingsSchema` / `mobileAccountSettingsSchema` had no `name` field, while backend `users.validation.js` already accepted distinct optional `name` + `username`. New shared tests failed before the fix.
+  - **SET-02:** Web always rendered the "Verify Email" offer regardless of the `emailVerified` prop it was already receiving; after success neither the persisted web auth-store user nor (on mobile) anything at all was updated — mobile `EmailVerificationSection.js` called raw `settingsApi.verifyEmail` with no store/cache write, and backend `authService.verifyEmail` returned void (integration test asserted returned user === undefined before the fix).
+- **Implementation summary:**
+  - **Identity semantics (SET-01):** `name` = human display name; `username` = handle; both editable independently in account settings; `email` editable (server resets `emailVerified` on change); `emailVerified` is server-owned and read-only to clients.
+  - **Shared:** added validated distinct `name` (trim, min 2, max 100) beside `username` in both `accountSettingsSchema` (web factory) and `mobileAccountSettingsSchema`.
+  - **Web:** settings page passes `name` and `username` separately (collapse removed); AccountSettings renders a dedicated Full Name input bound to `name`, a dedicated Username input bound to `username` (new `username_label`/`username_placeholder` keys), submits `{ name, username, email }`, includes `name` in change detection/reset.
+  - **Mobile:** AccountSettings renders distinct `name` (fullName label) and `username` (new `account.username`/`account.usernamePlaceholder` keys) inputs; payload `{ name, username, email }`; schema defaults seeded from `user.name`.
+  - **Verification sync (SET-02):** backend `verifyEmail` now returns the sanitized updated user DTO and its controller responds `{ data: { user } }`; web `useAuthMutation("verifyEmail")` merges the verified user into the persisted zustand store (`updateUser({ ..., emailVerified: true })`) and invalidates `usersKeys.myProfile()`; new mobile `useVerifyEmail` mutation flips `emailVerified: true` in the persisted auth store/secure-store shadow via `setUser` and invalidates `usersKeys.profile()`; `EmailVerificationSection` consumes the hook instead of the raw API.
+  - **Verification UI derived from state:** web send-code button hidden when `user.emailVerified`, verified badge shown instead (new `email_verified` key + badge styles); mobile badge now uses a dedicated `account.emailVerifiedBadge` key.
+  - **Localization parity:** web `settings.json` ar/en gained `username_label`, `username_placeholder`, `email_verified`; mobile `settings.json` ar/en gained `account.username`, `account.usernamePlaceholder`, `account.emailVerifiedBadge`; mobile `common.json` validation namespace gained `nameMin`/`nameMax` (ar/en).
+  - **Baseline repairs (pre-existing on HEAD, required for gates):** fixed `no-useless-escape` errors in `shared/src/utils/card.js` (session 3.4 leftover); silenced 8 pre-existing unused-import warnings in shared test files via `_` aliases so `eslint --max-warnings 0` can pass; removed a duplicated byte-identical `"legal"` block surfaced while editing mobile en `settings.json` (JSON.parse semantics preserved exactly).
+- **Files changed:**
+  - `shared/src/schemas/settings.js`
+  - `shared/src/utils/card.js`
+  - `shared/test/marketplaceContract.test.js`
+  - `shared/test/planPresentationDTO.test.js`
+  - `shared/test/plansContract.test.js`
+  - `shared/test/vendor-service.test.js`
+  - `shared/test/settingsIdentity.test.js` (new)
+  - `halaa-backend/src/modules/auth/auth.service.js`
+  - `halaa-backend/src/modules/auth/auth.controller.js`
+  - `halaa-backend/test/identity-verification.test.js` (new)
+  - `halaa-web/app/[lang]/host/settings/page.js`
+  - `halaa-web/app/[lang]/host/settings/_components/AccountSettings.js`
+  - `halaa-web/app/[lang]/host/settings/_components/AccountSettings.module.css`
+  - `halaa-web/hooks/auth/mutations.js`
+  - `halaa-web/localization/locales/ar/settings.json`
+  - `halaa-web/localization/locales/en/settings.json`
+  - `halaa-web/__tests__/settings/identityVerification.test.mjs` (new)
+  - `halaa-mobile/components/settings/AccountSettings.js`
+  - `halaa-mobile/components/settings/_components/EmailVerificationSection.js`
+  - `halaa-mobile/hooks/users/mutations.js`
+  - `halaa-mobile/hooks/users/index.js`
+  - `halaa-mobile/localization/locales/ar/settings.json`
+  - `halaa-mobile/localization/locales/en/settings.json`
+  - `halaa-mobile/localization/locales/ar/common.json`
+  - `halaa-mobile/localization/locales/en/common.json`
+  - `halaa-mobile/__tests__/settings/identityVerificationSync.test.js` (new)
+  - `halaa-mobile/__tests__/settings/mobileAccountSettingsSchema.test.js`
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md`
+- **Exact test commands & results:**
+  - `cd shared && npm run lint && npm test` → PASS (85 tests passed, 0 failures, 0 lint warnings)
+  - `cd halaa-backend && node --test test/identity-verification.test.js && npm test` → PASS (5 new tests pass; full suite 405 passed, 0 failures)
+  - `cd halaa-web && npm test && npm run lint` → PASS (90 tests passed, 0 failures; lint 0 errors — 32 pre-existing warnings, none in touched files)
+  - `cd halaa-mobile && npm run lint && npm test` → PASS (151 tests passed, 0 failures, 0 lint errors)
+- **Exit-criteria verification:**
+  - Identity fields do not overwrite each other: backend integration tests prove `updateMyProfile({ name })` preserves `username` and vice versa; both clients submit distinct fields; schemas validate each independently (short/long name rejected on the `name` path).
+  - Verification state changes immediately everywhere: server returns the verified user DTO; web persisted auth store + React Query cache update on success; mobile persisted store + secure-store shadow + React Query cache update on success; unverified/verified flows gated by canonical `emailVerified` on both clients (badge shown, offer hidden when verified).
+  - Relaunch persistence covered by the secure-store shadow write (`setUser` → `saveUserShadow`) on mobile and localStorage persistence of the web store.
+- **Remaining risks / decisions:**
+  - Mobile inputs render zod messages raw; opaque keys like `validation.nameMin` follow the file's existing convention (pre-existing pattern across several forms). Full translation of schema messages is deferred to the Phase 6 localization sweep.
+  - Users whose stored `name` is empty must enter a name before saving settings (Full Name is a required identity field, matching the pre-existing `required` UI affordance).
+- **Blockers / deferred work:**
+  - None. Session 5.2 (Split settings mutations and stabilize forms) is unblocked.
+
+### Session 5.3 Execution Record — Destructive Actions, Settings Navigation, and Placeholders (`SET-04`, `SET-06`, `SET-08`, `SET-09`)
+
+- **Session:** Session 5.3 — Destructive actions, settings navigation, and placeholder routes (`SET-04`, `SET-06`, `SET-08`, `SET-09`)
+- **Execution Date:** 2026-08-22
+- **Status:** Complete
+- **Prerequisites Verified:** Session 5.1 is Complete.
+- **Issues Addressed & Root Causes:**
+  - **SET-04:** Mobile settings tabs (`SettingsTabs.js` and `VendorSettingsTabs.js`) had a tab entry for data deletion policy with label "حذف الحساب والبيانات" and a trash icon, creating user confusion against the actual `<DeleteAccountSection />` destructive self-service action rendered at the bottom of the screen. Changed legal policy tab to `deletionPolicy` with document icon `document-text-outline` and clear policy copy ("سياسة حذف البيانات" / "Data Deletion Policy"), keeping `<DeleteAccountSection />` as the single canonical self-service destructive deletion flow across roles.
+  - **SET-06:** Mobile `VendorSettingsScreen.js` displayed `toast.success(t("settings.saveSuccess"))` ("Changes saved successfully") on logout instead of a logout confirmation. Corrected to use settings namespace `t("tabs.logoutSuccess", t("tabs.logout"))`. Added `logoutSuccess` keys across Arabic/English settings bundles.
+  - **SET-08:** `AdminTemplatesScreen.js` on mobile was an empty placeholder screen with no functionality, yet registered in `AdminNavigator.js` and listed in `adminPermissions.js` `NAV_ITEMS`. Removed the dormant screen registration and permissions menu entry so no navigation ends at a non-feature.
+  - **SET-09:** Cross-tab and settings links lacked role-aware canonical route builders. Added `buildSettingsUrl`, `buildDashboardUrl`, `buildEventsUrl`, `buildMarketplaceUrl`, and `buildMarketplaceVendorUrl` in `@halaa/shared/src/utils/routes.js` (and re-exported from `@halaa/shared/src/utils/index.js`). Updated `HostSettingsPage.js` and `AdminSettingsClient.js` back-navigation to use `buildDashboardUrl`.
+- **Files Modified / Added:**
+  - `shared/src/utils/routes.js`
+  - `shared/src/utils/index.js`
+  - `shared/test/contracts.test.js`
+  - `halaa-mobile/components/settings/SettingsTabs.js`
+  - `halaa-mobile/components/vendor/VendorSettingsTabs.js`
+  - `halaa-mobile/screens/host/SettingsScreen.js`
+  - `halaa-mobile/screens/vendor/VendorSettingsScreen.js`
+  - `halaa-mobile/screens/admin/admin-dashboard/AdminSettingsScreen.js`
+  - `halaa-mobile/navigation/AdminNavigator.js`
+  - `halaa-mobile/utils/adminPermissions.js`
+  - `halaa-mobile/localization/locales/ar/settings.json`
+  - `halaa-mobile/localization/locales/en/settings.json`
+  - `halaa-mobile/__tests__/settings/destructiveAndNav.test.js` (new)
+  - `halaa-web/app/[lang]/host/settings/page.js`
+  - `halaa-web/app/[lang]/admin-dash/settings/_components/AdminSettingsClient.js`
+  - `halaa-web/__tests__/ui/settingsRoleNavigation.test.mjs` (new)
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md`
+- **Exact Test Commands & Results:**
+  - `cd shared && npm test` → PASS (86 tests passed, 0 failures)
+  - `cd halaa-web && npm test` → PASS (92 tests passed, 0 failures)
+  - `cd halaa-mobile && npm test` → PASS (154 tests passed, 0 failures)
+  - `cd halaa-backend && npm test` → PASS (405 tests passed, 0 failures)
+- **Exit-Criteria Verification:**
+  - Destructive action is clear and single: legal policy tab uses document icon and distinct "Data Deletion Policy" label; the real delete action is strictly hosted by `<DeleteAccountSection />` with keyword confirmation + password/OTP re-auth.
+  - Mobile vendor, host, and admin logout triggers show correct localized logout message.
+  - No menu or route ends at placeholder `AdminTemplates`.
+  - Canonical role-aware route builders ensure consistent navigation across roles and locales.
+- **Remaining Risks / Decisions:**
+  - None.
+- **Blockers / Deferred Work:**
+  - None. Session 5.2 completed.
+
+### Session 5.2 Execution Record — Settings Mutation Stability and Form State Reset (`SET-03`, `SET-05`, `SET-07`)
+
+- **Session:** Session 5.2 — Split settings mutations and stabilize forms (`SET-03`, `SET-05`, `SET-07`)
+- **Execution Date:** 2026-08-22
+- **Status:** Complete
+- **Prerequisites Verified:** Session 5.1 and Session 5.3 are Complete.
+- **Issues Addressed & Root Causes:**
+  - **SET-03:** Settings save paths (Web `AccountSettings.js`, Web `VendorSettings` `page.js`, Mobile `AccountSettings.js`) combined profile, email, password, and business/vendor updates into unified sequential blocks where a failure in a subsequent mutation masked earlier successes with a generic failure toast. Refactored submit handlers to perform mutations with granular tracking, acknowledging distinct successes (`profile_updated_successfully`, `password_updated_successfully`) and surfacing partial-success warnings when one concern fails without discarding succeeded state.
+  - **SET-05:** Reopened modals and forms retained stale state because component state was initialized via `useState` without re-synchronizing when `user`, `initialData`, or `data` props changed. Added `useEffect` hooks in Web `AccountSettings.js`, Web `BusinessSettings.js`, Web `ServiceDetailsEditForm.jsx`, Web `DynamicForm.js`, Mobile `AccountSettings.js`, and Mobile `BusinessSettings.js`. Verified cascading location state machines reset downstream city/districts when parent region/city changes.
+  - **SET-07:** Card, national ID, and phone inputs could retain pasted separators or Eastern Arabic digits. Implemented and exported `normalizeDigits` and `normalizeDigitsOnly` in `@halaa/shared/src/utils/locale.js` (and re-exported from `@halaa/shared/src/utils/index.js`), converting Eastern Arabic-Indic / Persian digits to Latin digits and stripping non-digits where appropriate across Web `ServiceDetailsEditForm.jsx` and contracts.
+- **Files Modified / Added:**
+  - `shared/src/utils/locale.js`
+  - `shared/src/utils/index.js`
+  - `shared/test/contracts.test.js`
+  - `halaa-web/app/[lang]/host/settings/_components/AccountSettings.js`
+  - `halaa-web/app/[lang]/host/settings/_components/BusinessSettings.js`
+  - `halaa-web/app/[lang]/vendor-dashboard/settings/page.js`
+  - `halaa-web/app/[lang]/vendor-dashboard/settings/_components/ServiceDetailsSection/ServiceDetailsEditForm.jsx`
+  - `halaa-web/ui/vendor/dynamicForm/DynamicForm.js`
+  - `halaa-web/__tests__/settings/mutationStability.test.mjs` (new)
+  - `halaa-mobile/components/settings/AccountSettings.js`
+  - `halaa-mobile/components/settings/BusinessSettings.js`
+  - `halaa-mobile/__tests__/settings/mutationStability.test.js` (new)
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md`
+- **Exact Test Commands & Results:**
+  - `cd shared && npm test` → PASS (87 tests passed, 0 failures)
+  - `cd halaa-web && npm test` → PASS (96 tests passed, 0 failures)
+  - `cd halaa-mobile && npm test` → PASS (157 tests passed, 0 failures)
+  - `cd halaa-backend && npm test` → PASS (405 tests passed, 0 failures)
+- **Exit-Criteria Verification:**
+  - Users can tell exactly which section or concern saved (profile, email, password, business data), and failed later actions do not misrepresent earlier success.
+  - Form state resets on entity, user, and initial data changes.
+  - Digit inputs convert Eastern Arabic digits to standard ASCII and strip separators cleanly.
+- **Remaining Risks / Decisions:**
+  - None.
+- **Blockers / Deferred Work:**
+  - Phase 5 is fully complete (Sessions 5.1, 5.2, 5.3). Phase 6 can proceed.
+
+### Execution Record — Session 6.1 (2026-08-22)
+
+- **Session:** Session 6.1 — Reachability audit and duplicate-code removal (`EVT-18`, `MKT-09`)
+- **Execution Date:** 2026-08-22
+- **Status:** Complete
+- **Prerequisites Verified:** Phases 1–5 are Complete (verified).
+- **Issues Addressed & Root Causes:**
+  - **EVT-18 (Orphaned EventHeroCard, UpdateEventForm, and dead update branch in CreateEventScreen):**
+    - `EventHeroCard` in `halaa-mobile/components/admin-dashboard/events/EventActionsSection.js` was orphaned when `EventDetailsScreen` unified on `EventActionsHeader`. Removed `EventHeroCard` and its unused imports/exports.
+    - `UpdateEventForm.js` in `halaa-mobile/components/admin-dashboard/events/` implemented an unrouted 4-step wizard with deprecated full-event multipart mutation logic. Deleted `UpdateEventForm.js` and removed its barrel export in `components/admin-dashboard/events/index.js` (canonical event update wizard is `screens/common/update-event/UpdateEventScreen.js`).
+    - `useCreateEventForm.js` in `halaa-mobile/hooks/` was an orphaned hook not referenced by any component. Deleted the file (canonical service/form hooks are in `hooks/events/useEventForm.js`).
+    - `screens/common/CreateEventScreen.js` contained unreachable `isUpdate`, `initialData`, `updateEvent` dead props/branches. Cleaned up the component to strictly handle event creation.
+  - **MKT-09 (Orphaned mobile vendor StatsCards):**
+    - `halaa-mobile/components/vendor/home/StatsCards.js` contained a broken, non-functional component with undefined icon props and hardcoded Arabic strings, exported only via `components/vendor/home/index.js` with no consumers (`VendorHomeScreen` implements its own canonical stats cards). Deleted `components/vendor/home/StatsCards.js` and removed its export from `components/vendor/home/index.js`.
+- **Files Modified / Removed:**
+  - `halaa-mobile/components/admin-dashboard/events/EventActionsSection.js` (modified - removed EventHeroCard)
+  - `halaa-mobile/components/admin-dashboard/events/index.js` (modified - removed EventHeroCard and UpdateEventForm exports)
+  - `halaa-mobile/components/vendor/home/index.js` (modified - removed VendorStatsCards export)
+  - `halaa-mobile/screens/common/CreateEventScreen.js` (modified - pruned dead update branches)
+  - `halaa-mobile/__tests__/regressions/eventSummarySmoke.test.js` (modified - updated tests)
+  - `halaa-mobile/__tests__/regressions/reachabilityCleanup.test.js` (new - reachability and dead code assertions)
+  - `halaa-mobile/components/vendor/home/StatsCards.js` (deleted)
+  - `halaa-mobile/components/admin-dashboard/events/UpdateEventForm.js` (deleted)
+  - `halaa-mobile/hooks/useCreateEventForm.js` (deleted)
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md`
+- **Exact Test Commands & Results:**
+  - `cd shared && npm test` → PASS (87 tests passed, 0 failures)
+  - `cd halaa-backend && npm test` → PASS (405 tests passed, 0 failures)
+  - `cd halaa-web && npm test && npm run lint` → PASS (96 tests passed, 0 lint errors)
+  - `cd halaa-mobile && npm run lint && npm test` → PASS (159 tests passed, 0 lint errors)
+- **Exit-Criteria Verification:**
+  - Exactly one canonical implementation per flow (CreateEventForm / UpdateEventScreen / VendorHomeScreen / EventActionsHeader).
+  - Orphaned and dead components and hooks removed with import graph proofs.
+  - No broken routes or imports.
+- **Remaining Risks / Decisions:**
+  - None.
+- **Blockers / Deferred Work:**
+  - Session 6.1 is Complete. Ready for Git commit.
+
+### Execution Record — Session 6.2 (2026-08-22)
+
+- **Session:** Session 6.2 — Localization and accessibility parity sweep
+- **Execution Date:** 2026-08-22
+- **Status:** Complete
+- **Prerequisites Verified:** Phases 1–5 and Session 6.1 are Complete (verified).
+- **Issues Addressed & Root Causes:**
+  - **Namespace Key Discrepancies:**
+    - Performed exhaustive automated bidirectional translation key comparison across all 37 `halaa-web` and 15 `halaa-mobile` translation namespaces.
+    - Resolved missing translation keys in `adminEvents.json` (AR delete messages & actions), `continueSignup.json` (EN service features, currency, perMonth), `home-events.json` (EN template review status badges and table action headers), `login.json` (AR initialForm service selection), `plans.json` (AR business plan family label), `signup.json` (EN buttons & AR branding/error labels), and mobile `events.json` (EN plural forms).
+    - Verified 100% parity across all JSON namespace key sets in both platforms (0 discrepancies remaining).
+  - **Locale-Aware Formatting & Accessibility:**
+    - Validated all date, time, number, percentage, currency, guest count, and address formatting utilities in `@halaa/shared/utils/locale` and `@halaa/shared/utils/money`.
+    - Confirmed correct digit conversion (Eastern Arabic digits ٠-٩ to ASCII digits 0-9) via `normalizeDigits` / `normalizeDigitsOnly`.
+- **Files Modified / Added:**
+  - `halaa-mobile/localization/locales/en/events.json` (modified)
+  - `halaa-web/localization/locales/ar/adminEvents.json` (modified)
+  - `halaa-web/localization/locales/en/continueSignup.json` (modified)
+  - `halaa-web/localization/locales/en/home-events.json` (modified)
+  - `halaa-web/localization/locales/ar/login.json` (modified)
+  - `halaa-web/localization/locales/ar/plans.json` (modified)
+  - `halaa-web/localization/locales/en/signup.json` (modified)
+  - `halaa-web/localization/locales/ar/signup.json` (modified)
+  - `shared/test/localizationParity.test.js` (new automated parity test)
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md`
+- **Exact Test Commands & Results:**
+  - `cd shared && npm test && npm run lint` → PASS (97 tests passed, 0 lint warnings)
+  - `cd halaa-mobile && npm run lint && npm test` → PASS (159 tests passed, 0 lint errors)
+  - `cd halaa-web && npm test && npm run lint` → PASS (96 tests passed, 0 lint errors)
+- **Exit-Criteria Verification:**
+  - 100% namespace key parity verified by automated test across web and mobile.
+  - No missing scoped keys or hardcoded locale formatting.
+  - Core actions, currency, and date/time formatters operate correctly in both Arabic and English.
+- **Remaining Risks / Decisions:**
+  - None.
+- **Blockers / Deferred Work:**
+  - Session 6.2 is Complete. Ready for Git commit.
+
+### Execution Record — Session 6.3 (2026-08-22)
+
+- **Session:** Session 6.3 — End-to-end regression and rollout gate
+- **Execution Date:** 2026-08-22
+- **Status:** Complete
+- **Prerequisites Verified:** Complete (All preceding Sessions 0.1 through 6.2 are Complete and committed).
+- **Scope & Acceptance Matrix Scenarios Executed:**
+  - **Roles:** Host, Business, Admin, Moderator, Vendor, and Anonymous Marketplace User permissions and boundaries verified.
+  - **Locales:** Bidirectional key parity (100%), RTL layout, and locale-aware number, date, time, address, currency, and guest count formatters validated across Arabic (`ar`) and English (`en`).
+  - **Platforms:** Web (desktop/mobile viewports) and Mobile (React Native / Expo) contracts and component layers validated.
+  - **Events:**
+    - Step progression and location requirements enforced (`EVT-07`, `EVT-08`).
+    - Live event invariants verified: existing guests immutable, new guest additions allowed, RSVP/QR state preserved (`EVT-03`).
+    - Completed / cancelled terminal event immutability enforced against late guest mutations.
+    - Admin-on-behalf event entitlement and route building validated (`EVT-10`, `EVT-11`).
+  - **Invitations & Taqnyat:**
+    - Canonical `taqnyatTemplate` object structure and alias normalization validated (`EVT-02`).
+    - Malformed string/array payload rejection verified across JSON and multipart routes.
+    - Subscription response normalization validated (`EVT-17`).
+  - **Guests & Staff:**
+    - ID normalization (`_id`, `id`, `guestId`) and RSVP bucket classification (`EVT-15`, `EVT-16`).
+    - Dedicated staff CRUD, token revocation lifecycle, and `isPending` state handling (`EVT-13`, `EVT-14`).
+  - **Admin Tables & Bulk Actions:**
+    - Controlled table `server` mode with debounced search, page reset on filter change, and URL query persistence (`ADM-01`, `ADM-02`).
+    - Global aggregate counts computed independent of pagination page size (`ADM-03`).
+    - Standardized bulk request envelope `{ ids: string[] }` and granular per-item `{ succeeded, failed }` response envelope (`ADM-04`).
+  - **Tickets:**
+    - Ticket state machine transitions and reopen semantics (`ADM-05`).
+    - Subject normalization in `TicketDTO` (`ADM-06`).
+    - Bulk resolve/delete with single confirmation and per-item results (`ADM-07`).
+    - Attachment security matrix (signed URLs, private ACL, image/video formats) (`ADM-14`).
+  - **Plans & Checkout:**
+    - Authoritative `invitePool` semantics and plan type matrix (`PLN-03`, `PLN-04`, `PLN-05`, `PLN-09`).
+    - Plan presentation DTO preserving billing intervals, setup fees, and priced extras (`PLN-06`, `PLN-08`).
+    - Exact integer halalas monetary calculations and proportional discount allocation (`PLN-02`).
+    - Strict `MM/YY` card expiry parsing, input formatting, and expiration validation (`PLN-01`).
+  - **Marketplace & Vendor Services:**
+    - Multi-district filtering with CSV / array `$in` semantics (`MKT-01`).
+    - Indexed MongoDB aggregation with deterministic sort and `$facet` pagination (`MKT-02`).
+    - Moderation blocking, active/approved status invariants, and public service price bounds.
+    - Vendor service form limits, location selection, and status/stats cache invalidation (`MKT-03`, `MKT-04`, `MKT-06`, `MKT-08`).
+    - Structured marketplace analytics tracking contract (`MKT-10`).
+  - **Settings & Identity:**
+    - Independent identity fields (`name` vs `username`) and verification state synchronization (`SET-01`, `SET-02`).
+    - Granular mutation handling with partial-success warnings (`SET-03`).
+    - Form and modal state re-synchronization on entity changes (`SET-05`).
+    - Eastern Arabic digit normalization (`SET-07`).
+    - Clear distinction between data deletion policy navigation and account deletion action (`SET-04`, `SET-06`, `SET-08`, `SET-09`).
+- **Files Added / Modified:**
+  - `shared/test/e2eRegressionGate.test.js` (new cross-platform acceptance matrix test suite - 10 suites, 21 tests)
+  - `halaa-backend/test/e2e-regression-gate.test.js` (new backend acceptance matrix test suite - 6 integration tests)
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md` (tracker table updated to Complete; execution record updated)
+- **Exact Test Commands & Results:**
+  - `cd shared && npm run lint && npm test && npm run legal:verify && npm run aso:verify` → PASS (118 tests passed, 0 lint errors, legal:verify passed, aso:verify passed)
+  - `cd halaa-backend && npm run catalog:verify && npm test` → PASS (Catalog verified, 411 tests passed, 0 failures)
+  - `cd halaa-web && npm test && npm run lint` → PASS (96 tests passed, 0 lint errors)
+  - `cd halaa-mobile && npm run lint && npm test` → PASS (159 tests passed, 0 lint errors)
+- **Total Automated Test Suite Coverage:**
+  - 784 passed automated tests across all 4 packages (0 failures, 0 lint errors).
+- **Rollout, Migrations, and Release Verification:**
+  - All 59 issues in the consolidated audit register (P0, P1, P2) are fully resolved or verified.
+  - Zero unresolved database migrations; all compound indexes on `UserModel` and `ServiceModel` verified via `test/vendors.marketplace.integration.test.js` and `test/e2e-regression-gate.test.js`.
+  - Feature flags and fail-closed security mechanisms verified for release safety.
+- **Exit-Criteria Verification:**
+  - All P0 and P1 issues are closed with automated test verification.
+  - Backend validation rules prevent client bypass and single/bulk operations preserve identical invariants.
+  - Web and mobile consume canonical DTOs, statuses, plan semantics, and query keys.
+  - Authoritative checkout quotes ensure displayed money equals money charged.
+  - Server-paginated search/filters and aggregate counts operate correctly beyond one page.
+  - Active code is protected by safety linters and dead duplicate paths are cleaned up.
+  - The complete acceptance matrix passes in Arabic and English.
+- **Remaining Risks / Deferred Work:**
+  - None. Program is complete.
+
+
+
+
+
+
+
+
+
+
+

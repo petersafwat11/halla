@@ -34,7 +34,16 @@ async function getModerators({ page = 1, limit = 10, search, status, from, to })
     query.createdAt = dateRange;
   }
 
-  const [moderators, total] = await Promise.all([
+  const baseQuery = { role: { $in: [ROLES.MODERATOR, ROLES.ADMIN] } };
+  if (search) {
+    const searchQuery = buildSearchQuery(search, ['username', 'name', 'email', 'phoneNumber']);
+    Object.assign(baseQuery, searchQuery);
+  }
+  if (Object.keys(dateRange).length > 0) {
+    baseQuery.createdAt = dateRange;
+  }
+
+  const [moderators, total, statusAgg] = await Promise.all([
     User.find(query)
       .select('-password -passwordResetToken')
       .sort({ createdAt: -1 })
@@ -42,10 +51,26 @@ async function getModerators({ page = 1, limit = 10, search, status, from, to })
       .limit(limit)
       .lean(),
     User.countDocuments(query),
+    User.aggregate([
+      { $match: baseQuery },
+      { $group: { _id: '$status', count: { $sum: 1 } } },
+    ]),
   ]);
+
+  const counts = {};
+  statusAgg.forEach((s) => {
+    if (s._id) counts[s._id] = s.count;
+  });
 
   return {
     moderators: moderators.map(m => formatUserResponse(m)),
+    statusCounts: {
+      active: counts.active || 0,
+      pending: counts.pending || 0,
+      inactive: counts.inactive || 0,
+      suspended: counts.suspended || 0,
+      ...counts,
+    },
     pagination: {
       page,
       limit,
@@ -66,30 +91,30 @@ async function createModerator({ email, phoneNumber, name, username, password, p
   const normalizedPhone = phoneNumber ? normalizePhoneNumber(phoneNumber) : undefined;
   const existingUser = await User.findOne({
     $or: [
-      { email: email?.toLowerCase() },
-      { phoneNumber: normalizedPhone },
+      ...(email ? [{ email: email.toLowerCase() }] : []),
+      ...(normalizedPhone ? [{ phoneNumber: normalizedPhone }, { mobile: normalizedPhone }] : []),
     ],
   });
 
   if (existingUser) {
-    if (existingUser.email === email?.toLowerCase()) {
+    if (email && existingUser.email === email.toLowerCase()) {
       throw new ConflictError('Email already exists', 'email');
     }
-    if (existingUser.phoneNumber === normalizedPhone) {
-      throw new ConflictError('Phone number already exists', 'phoneNumber');
-    }
+    throw new ConflictError('Phone number already exists', 'phoneNumber');
   }
 
   // Pin the role to a platform role so a tampered request body can't escalate.
   const PLATFORM_ALLOWED = [ROLES.MODERATOR, ROLES.ADMIN];
   const moderatorRole = PLATFORM_ALLOWED.includes(requestedRole) ? requestedRole : ROLES.MODERATOR;
+  const effectivePassword = password || require('crypto').randomBytes(16).toString('hex');
 
   const moderator = await User.create({
     email: email?.toLowerCase(),
     phoneNumber: normalizedPhone,
+    mobile: normalizedPhone,
     name,
     username: username || `moderator_${Date.now()}`,
-    password,
+    password: effectivePassword,
     role: moderatorRole,
     status: USER_STATUS.ACTIVE,
     ...(Array.isArray(permissions) && permissions.length > 0 ? { permissions } : {}),
@@ -197,23 +222,36 @@ async function deleteModerator(moderatorId) {
  * Bulk delete moderators
  */
 async function bulkDeleteModerators(moderatorIds) {
-  const query = {
-    _id: { $in: moderatorIds },
-    role: { $in: [ROLES.MODERATOR, ROLES.ADMIN] },
-  };
+  const uniqueIds = Array.from(new Set((moderatorIds || []).map(String)));
+  const succeeded = [];
+  const failed = [];
 
-  const result = await User.updateMany(
-    query,
-    {
-      status: USER_STATUS.DELETED,
-      deletedAt: new Date(),
+  for (const id of uniqueIds) {
+    try {
+      const moderator = await User.findOne({ _id: id, role: { $in: [ROLES.MODERATOR, ROLES.ADMIN] } });
+      if (!moderator) {
+        throw new NotFoundError('Moderator');
+      }
+      moderator.status = USER_STATUS.DELETED;
+      moderator.deletedAt = new Date();
+      await moderator.save();
+      succeeded.push(id.toString());
+    } catch (err) {
+      failed.push({
+        id: id.toString(),
+        error: err.message || 'Failed to delete moderator',
+      });
     }
-  );
+  }
 
   return {
     success: true,
-    deleted: result.modifiedCount,
-    message: `${result.modifiedCount} moderator(s) deleted successfully`,
+    count: succeeded.length,
+    deleted: succeeded.length,
+    deletedCount: succeeded.length,
+    succeeded,
+    failed,
+    message: `${succeeded.length} moderator(s) deleted successfully`,
   };
 }
 
@@ -221,17 +259,30 @@ async function bulkDeleteModerators(moderatorIds) {
  * Bulk update moderator status
  */
 async function bulkUpdateModeratorStatus(moderatorIds, status) {
-  const query = {
-    _id: { $in: moderatorIds },
-    role: { $in: [ROLES.MODERATOR, ROLES.ADMIN] },
-  };
+  const uniqueIds = Array.from(new Set((moderatorIds || []).map(String)));
+  const succeeded = [];
+  const failed = [];
 
-  const result = await User.updateMany(query, { status });
+  for (const id of uniqueIds) {
+    try {
+      await updateModeratorStatus(id, status);
+      succeeded.push(id.toString());
+    } catch (err) {
+      failed.push({
+        id: id.toString(),
+        error: err.message || 'Failed to update moderator status',
+      });
+    }
+  }
 
   return {
     success: true,
-    updated: result.modifiedCount,
-    message: `${result.modifiedCount} moderator(s) updated to ${status}`,
+    count: succeeded.length,
+    updated: succeeded.length,
+    updatedCount: succeeded.length,
+    succeeded,
+    failed,
+    message: `${succeeded.length} moderator(s) updated to ${status}`,
   };
 }
 

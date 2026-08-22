@@ -183,10 +183,17 @@ class SubscriptionsService {
 
     if (isPerEventPlan(planType)) {
       const maxEvents = subscription.limits?.maxEvents ?? 1;
-      const maxInvitesPerEvent = subscription.limits?.maxInvitesPerEvent ?? 0;
+      const invitePool = subscription.invitePool ?? subscription.limits?.invitePool ?? subscription.limits?.maxInvitesPerEvent ?? 0;
+      const compensationPool = subscription.compensationPool ?? (invitePool > 0 ? Math.floor(invitePool * (COMPENSATION_PERCENTAGE / 100)) : 0);
+      const invitesConsumed = subscription.invitesConsumed || 0;
+      const invitesRemaining = Math.max(0, invitePool + compensationPool - invitesConsumed);
       return {
         maxEvents,
-        maxInvitesPerEvent,
+        maxInvitesPerEvent: invitePool,
+        invitePool,
+        compensationPool,
+        invitesConsumed,
+        invitesRemaining,
         eventsUsed,
         eventsRemaining: maxEvents === -1 ? -1 : Math.max(0, maxEvents - eventsUsed),
       };

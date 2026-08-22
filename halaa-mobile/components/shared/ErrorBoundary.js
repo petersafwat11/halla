@@ -2,6 +2,26 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as Sentry from "@sentry/react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+export const LAST_BOUNDARY_ERROR_KEY = "@last_boundary_error";
+
+export const getLastBoundaryError = async () => {
+  try {
+    const raw = await AsyncStorage.getItem(LAST_BOUNDARY_ERROR_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
+export const clearLastBoundaryError = async () => {
+  try {
+    await AsyncStorage.removeItem(LAST_BOUNDARY_ERROR_KEY);
+  } catch {
+    // ignore
+  }
+};
 
 /**
  * App-level error boundary.
@@ -37,6 +57,13 @@ class ErrorBoundary extends React.Component {
     Sentry.captureException(error, {
       contexts: { react: { componentStack: info?.componentStack } },
     });
+    const errorPayload = {
+      name: error?.name || "Error",
+      message: error?.message || "Unknown error",
+      componentStack: info?.componentStack ? info.componentStack.trim().slice(0, 1000) : null,
+      timestamp: new Date().toISOString(),
+    };
+    AsyncStorage.setItem(LAST_BOUNDARY_ERROR_KEY, JSON.stringify(errorPayload)).catch(() => {});
     this.setState({ info });
   }
 

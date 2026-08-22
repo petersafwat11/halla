@@ -5,7 +5,8 @@
     "title": "Current Plan",
     "events": "Events",
     "invites": "Invites",
-    "daysRemaining": "Days Remaining"
+    "daysRemaining": "Days Remaining",
+    "noExpiry": "No expiry"
   },
   "noActiveSubscription": {
     "title": "No active subscription",
@@ -108,9 +109,14 @@
     "title": "Add-Ons",
     "subtitle": "Enhance your plan with optional extras",
     "loadFailed": "Could not load add-ons.",
+    "selectedCount": "{{count}} selected",
     "selectedCount_one": "1 selected",
     "selectedCount_other": "{{count}} selected",
     "clearAll": "Clear all",
+    "businessCustomization": {
+      "title": "Business Customization",
+      "description": "Full branding and logo customization for your business"
+    },
     "extraInvites": {
       "title": "Extra Invites",
       "description": "Add more invites to your plan",
@@ -154,6 +160,7 @@
   },
   "summary": {
     "title": "Order Summary",
+    "subtitle": "Review your order before payment",
     "planDetails": "Plan Details",
     "invitePool": "Invite Pool",
     "validDays": "Valid for",
@@ -180,6 +187,7 @@
     },
     "periods": {
       "yearly": "1 year (365 days)",
+      "annual": "1 year (365 days)",
       "quarterly": "90 days",
       "monthly": "30 days",
       "event": "90 days (1 event)",
@@ -257,6 +265,18 @@
       "expiryInvalid": "Expiry date looks invalid.",
       "cvcInvalid": "CVC looks invalid.",
       "stcMobileInvalid": "Enter a valid Saudi mobile number (starts with 05).",
+      "nameRequired": "Cardholder name is required",
+      "nameTooShort": "Please enter full cardholder name",
+      "numberRequired": "Card number is required",
+      "numberLength": "Card number must be 15 or 16 digits",
+      "numberInvalid": "Invalid card number",
+      "expiryRequired": "Expiry date is required",
+      "expiryMonthInvalid": "Invalid month (01-12)",
+      "expiryExpired": "Card has expired",
+      "cvcRequired": "CVC is required",
+      "cvcLength": "CVC must be 3 or 4 digits",
+      "mobileRequired": "Mobile number is required",
+      "mobileFormat": "Must be a valid Saudi number (e.g. 05xxxxxxxx)",
       "applepayUnavailable": "Apple Pay is not yet available on mobile. Please choose another method.",
       "iapUnavailable": "In-app purchases aren't available on this device.",
       "planUnavailable": "This plan isn't available for purchase right now.",
@@ -391,5 +411,44 @@
     "privacy": "Privacy",
     "refund": "Refund Policy",
     "support": "Support"
+  },
+  "checkout": {
+    "card": {
+      "name": "Name on Card",
+      "number": "Card Number",
+      "expiry": "Expiry Date (MM/YY)",
+      "cvc": "Security Code (CVC)",
+      "secureNote": "Payment is fully encrypted and secure"
+    },
+    "stcpay": {
+      "mobile": "STC Pay Mobile Number",
+      "note": "You will receive a notification to authorize payment in STC Pay"
+    },
+    "applepay": {
+      "note": "Pay securely and quickly with Apple Pay"
+    },
+    "errors": {
+      "nameRequired": "Name is required",
+      "nameTooShort": "Name is too short",
+      "numberRequired": "Card number is required",
+      "numberLength": "Card number is incomplete",
+      "numberInvalid": "Invalid card number",
+      "cvcRequired": "CVC is required",
+      "cvcLength": "CVC must be 3 or 4 digits",
+      "mobileRequired": "Mobile number is required",
+      "mobileFormat": "Invalid mobile number format",
+      "applepayUnavailable": "Apple Pay is not available on this device",
+      "planUnavailable": "Plan is not available for purchase right now",
+      "addonUnavailable": "Add-on is not available for purchase right now"
+    },
+    "iap": {
+      "restored": "Purchases restored successfully",
+      "restoreFailed": "Failed to restore purchases",
+      "note": "Purchases are processed through your app store account",
+      "restoring": "Restoring purchases...",
+      "restore": "Restore Purchases",
+      "manage": "Manage Subscription",
+      "unavailable": "In-app purchase is currently unavailable"
+    }
   }
 }

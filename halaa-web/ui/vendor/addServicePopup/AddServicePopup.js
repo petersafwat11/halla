@@ -133,14 +133,15 @@ const AddServicePopup = ({ onClose, onSuccess, editingService = null }) => {
 
   const onSubmit = async (data) => {
     const formData = new FormData();
-    formData.append("name", data.serviceName);
-    if (data.serviceNameAr?.trim()) formData.append("nameAr", data.serviceNameAr.trim());
+    formData.append("name", data.serviceName?.trim());
+    formData.append("nameAr", data.serviceNameAr != null ? data.serviceNameAr.trim() : "");
     formData.append("category", data.serviceType);
-    formData.append("description", data.description);
-    if (data.descriptionAr?.trim()) formData.append("descriptionAr", data.descriptionAr.trim());
+    formData.append("description", data.description?.trim());
+    formData.append("descriptionAr", data.descriptionAr != null ? data.descriptionAr.trim() : "");
     formData.append("price", String(data.price));
     formData.append("tags", JSON.stringify(selectedTags.map((t) => t.value)));
     formData.append("included", JSON.stringify(included));
+
 
     if (data.image && data.image.length > 0) {
       formData.append("image", data.image[0]);

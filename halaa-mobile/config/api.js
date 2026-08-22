@@ -133,6 +133,8 @@ export const ENDPOINTS = {
     UPDATE_REMINDER_SETTINGS: API_PATHS.events.updateReminderSettings,
     LIST_STAFF_TOKENS: API_PATHS.events.listStaffTokens,
     REVOKE_STAFF: API_PATHS.events.revokeStaffAccess,
+    CAPABILITIES: API_PATHS.events.capabilities,
+    ENTITLEMENT: API_PATHS.events.entitlement,
   },
 
   GUESTS: {
@@ -180,6 +182,7 @@ export const ENDPOINTS = {
     CATEGORIES: API_PATHS.vendors.getCategories,
     PUBLIC: API_PATHS.vendors.getPublicVendors,
     PUBLIC_BY_ID: API_PATHS.vendors.getPublicVendor,
+    TRACK_ANALYTICS: API_PATHS.vendors.trackAnalytics,
   },
 
   SERVICES: {
@@ -188,6 +191,7 @@ export const ENDPOINTS = {
     STATS: API_PATHS.vendorServices.getMyStats,
     BY_ID: API_PATHS.vendorServices.getService,
     TOGGLE_STATUS: API_PATHS.vendorServices.toggleServiceStatus,
+    TRACK_ANALYTICS: API_PATHS.vendorServices.trackAnalytics,
   },
 
   TICKETS: {
@@ -197,6 +201,8 @@ export const ENDPOINTS = {
     RATING_INFO: API_PATHS.tickets.getTicketForRating,
     ASSIGN: API_PATHS.tickets.assignTicket,
     STATUS: API_PATHS.tickets.updateTicketStatus,
+    BULK_DELETE: API_PATHS.tickets.bulkDelete,
+    BULK_STATUS: API_PATHS.tickets.bulkStatus,
     EXPORT: API_PATHS.tickets.exportTickets,
   },
 
@@ -321,6 +327,8 @@ export const ENDPOINTS = {
     TICKETS: {
       BASE: API_PATHS.tickets.getMyTickets,
       BY_ID: API_PATHS.tickets.getTicketById,
+      BULK_DELETE: API_PATHS.tickets.bulkDelete,
+      BULK_STATUS: API_PATHS.tickets.bulkStatus,
       EXPORT: API_PATHS.tickets.exportTickets,
     },
     SUBSCRIPTIONS: {

@@ -8,7 +8,7 @@ const Service = require('../../../models/ServiceModel');
 const User = require('../../../models/UserModel');
 const mongoose = require('mongoose');
 const { NotFoundError, ValidationError } = require('../../shared/errors');
-const { SERVICE_STATUS, VENDOR_STATUS } = require('../../shared/constants');
+const { SERVICE_STATUS, VENDOR_STATUS, USER_STATUS } = require('../../shared/constants');
 const { containsProhibited } = require('../../shared/utils/contentFilter');
 const { extractStoredRef, signStoredImage } = require('../../shared/utils/s3Upload');
 const logger = require('../../shared/utils/logger');
@@ -27,6 +27,8 @@ class ServicesService {
 
     let approvedVendorIds = await User.distinct('_id', {
       role: 'vendor',
+      status: USER_STATUS.ACTIVE,
+      deletedAt: { $exists: false },
       'profile.vendorData.vendorStatus': VENDOR_STATUS.APPROVED,
     });
     const blocked = await moderationService.getBlockedKeySet('user', options.viewerId);
@@ -58,8 +60,13 @@ class ServicesService {
     if (filters.regionId) query['serviceLocation.regionId'] = parseInt(filters.regionId);
     if (filters.cityId) query['serviceLocation.cityId'] = parseInt(filters.cityId);
     if (filters.districtIds) {
-      const ids = filters.districtIds.split(',').map(Number).filter(Boolean);
+      const ids = Array.isArray(filters.districtIds)
+        ? filters.districtIds.map(Number).filter((n) => Number.isInteger(n) && n > 0)
+        : String(filters.districtIds).split(',').map((s) => Number(s.trim())).filter((n) => Number.isInteger(n) && n > 0);
       if (ids.length) query['serviceLocation.districtIds'] = { $in: ids };
+    } else if (filters.districtId) {
+      const id = parseInt(filters.districtId);
+      if (Number.isInteger(id) && id > 0) query['serviceLocation.districtIds'] = { $in: [id] };
     }
     if (filters.minPrice || filters.maxPrice) {
       query.price = {};
@@ -75,7 +82,7 @@ class ServicesService {
         .populate('vendorId', vendorPopulateFields)
         .skip(skip)
         .limit(limit)
-        .sort({ createdAt: -1 })
+        .sort({ createdAt: -1, _id: 1 })
         .lean(),
       Service.countDocuments(query),
     ]);
@@ -138,7 +145,7 @@ class ServicesService {
    * Vendors are scoped to their own services; non-vendors only see public+active
    * services and trigger a best-effort view counter increment.
    */
-  async getServiceById(serviceId, vendorId = null, trackView = false, viewerId = null) {
+  async getServiceById(serviceId, vendorId = null, _trackView = false, viewerId = null) {
     const query = { _id: serviceId };
     if (vendorId) {
       query.vendorId = vendorId;
@@ -162,16 +169,6 @@ class ServicesService {
       const blocked = await moderationService.getBlockedKeySet('user', viewerId);
       if (blocked.has(`user:${service.vendorId._id}`)) {
         throw new NotFoundError('Service');
-      }
-    }
-
-    if (trackView) {
-      // Best-effort analytics counters — fire-and-forget, no transaction.
-      Service.findByIdAndUpdate(serviceId, { $inc: { viewCount: 1 } }).exec();
-      if (service.vendorId?._id) {
-        User.findByIdAndUpdate(service.vendorId._id, {
-          $inc: { 'profile.vendorData.numberOfClicks': 1 },
-        }).exec();
       }
     }
 

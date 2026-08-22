@@ -87,8 +87,8 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
     } else if (!EMAIL_RE.test(formData.email)) {
       e.email = t("moderators.add.invalidEmail");
     }
-    if (!isEdit && !formData.password.trim()) {
-      e.password = t("moderators.add.passwordRequired");
+    if (!isEdit && formData.password.trim() && formData.password.trim().length < 8) {
+      e.password = t("moderators.add.passwordMin", "Password must be at least 8 characters");
     }
     if (!isEdit && !formData.phoneNumber.trim()) {
       e.phoneNumber = t("moderators.add.phoneRequired");
@@ -102,11 +102,13 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
     try {
       const payload = {
         name:        formData.name.trim(),
-        email:       formData.email.trim(),
+        email:       formData.email.trim().toLowerCase(),
         phoneNumber: formData.phoneNumber.trim() || undefined,
         role:        formData.role,
       };
-      if (!isEdit) payload.password = formData.password;
+      if (!isEdit && formData.password && formData.password.trim()) {
+        payload.password = formData.password.trim();
+      }
 
       if (isEdit) {
         await updateModerator.mutateAsync({
@@ -207,7 +209,7 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
 
             {!isEdit ? (
               <View style={styles.field}>
-                <Text style={styles.label}>{t("moderators.add.password")} *</Text>
+                <Text style={styles.label}>{t("moderators.add.password")}</Text>
                 <View
                   style={[
                     styles.inputRow,
@@ -222,7 +224,7 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
                   />
                   <TextInput
                     style={styles.input}
-                    placeholder={t("moderators.add.password")}
+                    placeholder={t("moderators.add.passwordPlaceholder", "Leave blank to auto-generate")}
                     placeholderTextColor={colors.natural[350]}
                     value={formData.password}
                     onChangeText={(v) => updateField("password", v)}

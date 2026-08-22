@@ -171,6 +171,38 @@ router.get(
   eventsController.getSingleEventStats
 );
 
+/**
+ * @swagger
+ * /events/{id}/capabilities:
+ *   get:
+ *     summary: Get event capabilities / entitlement
+ *     description: Retrieve event owner's stamped plan capabilities, limits, and live event edit rules
+ *     tags: [Events]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - $ref: '#/components/parameters/IdParam'
+ *     responses:
+ *       200:
+ *         description: Event capabilities retrieved successfully
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ */
+router.get(
+  "/:id/capabilities",
+  validateObjectId("id"),
+  eventsController.getEventCapabilities
+);
+
+router.get(
+  "/:id/entitlement",
+  validateObjectId("id"),
+  eventsController.getEventCapabilities
+);
+
+
 // ============================================
 // EXPORT ROUTES
 // ============================================
@@ -498,6 +530,7 @@ router.patch(
   parseFormDataJsonFields([
     "selectedTemplate",
     "visualTemplate",
+    "taqnyatTemplate",
     "fieldValues",
     "guestReplies",
   ]),

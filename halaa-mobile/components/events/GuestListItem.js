@@ -164,24 +164,28 @@ const GuestListItem = ({
             </View>
           ) : (
             <>
-              <TouchableOpacity
-                style={styles.actionButton}
-                onPress={() => onEdit?.(guest)}
-                activeOpacity={0.7}
-              >
-                <View style={styles.editButton}>
-                  <Ionicons name="create-outline" size={16} color="#6B4E33" />
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.actionButton}
-                onPress={() => onDelete?.(guest)}
-                activeOpacity={0.7}
-              >
-                <View style={styles.deleteButton}>
-                  <Ionicons name="trash-outline" size={16} color="#C0392B" />
-                </View>
-              </TouchableOpacity>
+              {typeof onEdit === "function" ? (
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={() => onEdit(guest)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.editButton}>
+                    <Ionicons name="create-outline" size={16} color="#6B4E33" />
+                  </View>
+                </TouchableOpacity>
+              ) : null}
+              {typeof onDelete === "function" ? (
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={() => onDelete(guest)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.deleteButton}>
+                    <Ionicons name="trash-outline" size={16} color="#C0392B" />
+                  </View>
+                </TouchableOpacity>
+              ) : null}
             </>
           )}
         </View>

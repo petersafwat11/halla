@@ -152,3 +152,34 @@ exports.exportTickets = catchAsync(async (req, res) => {
   res.setHeader("Content-Disposition", "attachment; filename=tickets.xlsx");
   res.send(buffer);
 });
+
+/**
+ * Bulk delete tickets
+ * POST /api/v2/tickets/bulk-delete
+ */
+exports.bulkDeleteTickets = catchAsync(async (req, res) => {
+  const ids = req.body.ids || req.body.ticketIds || [];
+  const result = await ticketsService.bulkDeleteTickets(
+    ids,
+    req.user._id,
+    isAdminRole(req.user.role)
+  );
+  sendSuccess(res, result);
+});
+
+/**
+ * Bulk update ticket status
+ * POST /api/v2/tickets/bulk-status
+ */
+exports.bulkUpdateTicketStatus = catchAsync(async (req, res) => {
+  const ids = req.body.ids || req.body.ticketIds || [];
+  const { status, resolution } = req.body;
+  const result = await ticketsService.bulkUpdateTicketStatus(
+    ids,
+    status,
+    resolution,
+    req.user._id,
+    isAdminRole(req.user.role)
+  );
+  sendSuccess(res, result);
+});

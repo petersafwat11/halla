@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { formatExpiryInput, detectCardBrand as sharedDetectCardBrand } from "@halaa/shared/utils";
 import { useTranslation } from "../../localization";
 import { colors, spacing, borderRadius, typography } from "../../styles/tokens";
 
@@ -114,9 +115,10 @@ const PaymentMethodSelector = ({
     if (cardData) {
       setCard(cardData);
       if (cardData.month && cardData.year) {
+        const mm = cardData.month.toString().padStart(2, "0");
         const yy = cardData.year.toString().slice(-2);
-        // Display order is YY/MM (year first), matching the web input mask.
-        setExpiryText(`${yy}/${cardData.month}`);
+        // Display order is MM/YY (month first), matching standard card expiry format.
+        setExpiryText(`${mm}/${yy}`);
       }
     }
   }, [cardData]);
@@ -139,30 +141,14 @@ const PaymentMethodSelector = ({
   };
 
   const handleExpiryChange = (text) => {
-    // True when the edit shrank the field (backspace / delete). Drives whether
-    // we auto-insert the "/" at the 2-digit boundary — re-adding it while
-    // deleting is what traps the caret and makes the field feel buggy.
-    const deleting = text.length < expiryText.length;
-
-    const digits = text.replace(/\D/g, "").slice(0, 4);
-
-    let formatted = digits;
-    if (digits.length >= 3) {
-      formatted = `${digits.slice(0, 2)}/${digits.slice(2)}`;
-    } else if (digits.length === 2 && !deleting) {
-      formatted = `${digits}/`;
-    }
+    const { formatted, month, year } = formatExpiryInput(text, expiryText);
     setExpiryText(formatted);
 
-    // Display mask is YY/MM: first pair is the 2-digit year, second the month.
-    // The stored contract stays month="MM" + year="20YY" so checkout/Moyasar
-    // receive the real month and full year unchanged.
-    const yy = digits.slice(0, 2);
-    const mm = digits.slice(2, 4);
+    // Stored contract: month="MM", year="20YY"
     const next = {
       ...card,
-      month: mm,
-      year: yy.length === 2 ? `20${yy}` : "",
+      month,
+      year,
     };
     setCard(next);
     onCardChange?.(next);
@@ -174,7 +160,7 @@ const PaymentMethodSelector = ({
     onMobileChange?.(val);
   };
 
-  const activeCardBrand = detectCardBrand(card.number || "");
+  const activeCardBrand = (sharedDetectCardBrand || detectCardBrand)(card.number || "");
 
   const renderCardInputBrandIcon = () => {
     switch (activeCardBrand) {
@@ -264,7 +250,7 @@ const PaymentMethodSelector = ({
               <Text style={styles.label}>{t("checkout.card.expiry", "Expiry date")}</Text>
               <TextInput
                 style={[styles.input, styles.ltrInput, errors.expiry && styles.inputError]}
-                placeholder="YY/MM"
+                placeholder="MM/YY"
                 placeholderTextColor={colors.natural[350]}
                 keyboardType="number-pad"
                 maxLength={5}

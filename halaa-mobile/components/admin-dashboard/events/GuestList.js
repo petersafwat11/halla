@@ -18,6 +18,9 @@ import {
   backgrounds,
 } from "../../../styles/tokens";
 
+import { toGuestDTO } from "@halaa/shared/utils";
+import { classifyRsvpBucket } from "@halaa/shared/constants";
+
 const RSVP_CONFIG = {
   confirmed: { color: "#2A8C5B", bg: "#EAF4EF", label: "Confirmed" },
   pending:   { color: "#D38200", bg: "#FBF3E6", label: "Pending" },
@@ -35,10 +38,17 @@ const GuestList = ({ guests = [], onRefresh, loading }) => {
   const { t } = useTranslation("events");
   const [activeFilter, setActiveFilter] = useState("all");
 
+  const normalizedGuests = useMemo(() => {
+    return (guests || []).map((g) => toGuestDTO(g)).filter(Boolean);
+  }, [guests]);
+
   const filtered = useMemo(() => {
-    if (activeFilter === "all") return guests;
-    return guests.filter((g) => g.rsvpStatus?.toLowerCase() === activeFilter);
-  }, [guests, activeFilter]);
+    if (activeFilter === "all") return normalizedGuests;
+    return normalizedGuests.filter((g) => {
+      const bucket = classifyRsvpBucket(g.status || g.rsvpStatus);
+      return bucket === activeFilter || g.status === activeFilter || g.rsvpStatus === activeFilter;
+    });
+  }, [normalizedGuests, activeFilter]);
 
   const renderItem = ({ item }) => {
     const rsvpKey = item.rsvpStatus?.toLowerCase();

@@ -7,9 +7,11 @@
     "terms": "Terms & Conditions",
     "communityRules": "Community Rules",
     "refund": "Cancellation & Refund",
-    "deletion": "Delete Account & Data",
+    "deletion": "Data Deletion Policy",
+    "deletionPolicy": "Data Deletion Policy",
     "support": "Support & Contact",
     "logout": "Logout",
+    "logoutSuccess": "Logged out successfully",
     "comingSoon": "Coming soon"
   },
   "legal": {
@@ -21,6 +23,9 @@
     "fullName": "Full Name",
     "fullNamePlaceholder": "Enter your full name",
     "email": "Email Address",
+    "usernamePlaceholder": "Enter your username",
+    "username": "Username",
+    "emailVerifiedBadge": "Email verified",
     "emailPlaceholder": "Enter your email",
     "sendCode": "Send Code",
     "sending": "Sending...",
@@ -40,11 +45,14 @@
     "updateSuccess": "Account updated successfully",
     "updateError": "Failed to update account",
     "wrongCurrentPassword": "Current password is incorrect",
+    "passwordUpdateSuccess": "Password updated successfully",
     "verificationCodeSent": "Verification code sent to your email",
     "verificationCodeError": "Failed to send verification code",
     "invalidVerificationCode": "Invalid verification code",
     "emailVerified": "Email verified successfully",
-    "verificationError": "Failed to verify email"
+    "verificationError": "Failed to verify email",
+    "profileSavedPasswordFailed": "Profile updated, but password change failed",
+    "passwordSavedProfileFailed": "Password updated, but profile update failed"
   },
   "deleteAccount": {
     "button": "Delete Account",
@@ -115,9 +123,5 @@
     "title": "Privacy",
     "privacyPolicy": "Privacy Policy",
     "termsOfService": "Terms of Service"
-  },
-  "legal": {
-    "lastUpdated": "Last updated",
-    "ugcAcceptNotice": "By posting content, you agree to:"
   }
 }

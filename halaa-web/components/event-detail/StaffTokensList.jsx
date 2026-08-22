@@ -86,7 +86,7 @@ export default function StaffTokensList({ eventId, staffList }) {
                 type="button"
                 className={styles.revokeButton}
                 onClick={() => handleRevoke(member._id || member.id)}
-                disabled={revokeMutation.isLoading}
+                disabled={revokeMutation.isPending || revokeMutation.isLoading}
               >
                 {t("singleEvent.staffTokens.revoke")}
               </button>

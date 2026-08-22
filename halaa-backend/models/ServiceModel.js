@@ -127,6 +127,10 @@ const serviceSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    contactCount: {
+      type: Number,
+      default: 0,
+    },
     rating: {
       type: Number,
       default: 0,
@@ -148,6 +152,10 @@ const serviceSchema = new mongoose.Schema(
 // Indexes for efficient querying
 serviceSchema.index({ vendorId: 1, status: 1 });
 serviceSchema.index({ vendorId: 1, status: 1, isPublic: 1, price: 1 });
+serviceSchema.index({ status: 1, isPublic: 1, price: 1, vendorId: 1 });
+serviceSchema.index({ status: 1, isPublic: 1, "serviceLocation.regionId": 1, "serviceLocation.cityId": 1 });
+serviceSchema.index({ status: 1, isPublic: 1, "serviceLocation.districtIds": 1 });
+serviceSchema.index({ status: 1, isPublic: 1, category: 1, createdAt: -1, _id: 1 });
 serviceSchema.index({ category: 1, status: 1 });
 serviceSchema.index({ "serviceLocation.regionId": 1 });
 serviceSchema.index({ "serviceLocation.cityId": 1 });

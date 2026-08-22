@@ -18,9 +18,8 @@ export default async function AdminManagePlansPage({ params }) {
   if (token) {
     await prefetchServerData({
       queryClient,
-      // Note: client uses `adminKeys.plans(filters)` with a filters arg;
-      // the prefetch here passes no params, so we use the prefix.
-      queryKey: adminKeys.plansAll(),
+      // Canonical key parity with useAdminPlans() on client: ["admin", "plans", {}]
+      queryKey: adminKeys.plans({}),
       path: API_PATHS.plans.adminGetAll,
       token,
     });

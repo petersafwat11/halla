@@ -16,8 +16,11 @@ const { formatRiyadh } = require("../../shared/utils/timezone");
 // Import existing models during migration
 const Event = require("../../../models/EventModel");
 const Guest = require("../../../models/GuestModel");
+const Subscription = require("../../../models/SubscriptionModel");
 const { isPoolPlan, isPerEventPlan } = require('../../shared/constants/plans');
 const { countsAgainstPlanStatusFilter } = require('../../shared/constants/events');
+const { classifyRsvpBucket } = require('../../shared/constants/status');
+const { isTrialFromPlan } = require('../../shared/utils/schedulingWindow');
 
 module.exports = {
   /**
@@ -217,10 +220,94 @@ module.exports = {
       eventDetails: eventObj.eventDetails || null,
       eventId,
       totalGuests: guests.length,
-      confirmed: guests.filter((g) => g.status === "confirmed").length,
+      confirmed: guests.filter((g) => ['confirmed', 'checked_in'].includes(g.status)).length,
       declined: guests.filter((g) => g.status === "declined").length,
-      pending: guests.filter((g) => g.status === "invited").length,
+      pending: guests.filter((g) => classifyRsvpBucket(g.status) === "pending").length,
       checkedIn: guests.filter((g) => g.status === "checked_in").length,
+    };
+  },
+
+  /**
+   * Get event capabilities and entitlement based on event ownership and stamped subscription.
+   * Resolves EVT-10 and unifies admin-on-behalf capability resolution.
+   *
+   * @param {string} eventId
+   * @param {Object} userContext
+   * @returns {Promise<Object>}
+   */
+  async getEventCapabilities(eventId, userContext) {
+    const query = this._buildScopedEventQuery(eventId, userContext);
+    const event = await Event.findOne(query).populate("host", "username email phoneNumber");
+    if (!event) throw new NotFoundError("Event");
+
+    let sub = null;
+    if (event.subscriptionId) {
+      sub = await Subscription.findById(event.subscriptionId)
+        .populate("planId", "planType code limits name")
+        .lean();
+    }
+
+    if (!sub && event.host) {
+      const hostId = event.host._id || event.host;
+      sub = await Subscription.findOne({
+        userId: hostId,
+        status: { $in: ["active", "trial"] },
+      })
+        .sort({ createdAt: -1 })
+        .populate("planId", "planType code limits name")
+        .lean();
+    }
+
+    const isPerEvent = sub ? isPerEventPlan(sub.planId?.planType || sub.planType) : false;
+    const isPool = sub ? isPoolPlan(sub.planId?.planType || sub.planType) : false;
+    const invitePool = sub?.invitePool ?? null;
+    const compensationPool = sub?.compensationPool || 0;
+    const invitesConsumed = sub?.invitesConsumed || 0;
+    const invitesRemaining =
+      sub && invitePool !== null
+        ? Math.max(0, invitePool + compensationPool - invitesConsumed)
+        : null;
+
+    const isGuestUnlimited = invitePool === null && !isPerEvent;
+    const guestLimit =
+      invitePool !== null
+        ? invitePool + compensationPool
+        : (event.guestLimit || sub?.limits?.maxInvitesPerEvent || -1);
+
+    const isTrial = isTrialFromPlan(sub?.planId);
+    const isLive = event.status === EVENT_STATUS.LIVE;
+    const isCompleted = event.status === EVENT_STATUS.COMPLETED;
+    const isCancelled = event.status === EVENT_STATUS.CANCELLED;
+    const isTerminal = [
+      EVENT_STATUS.COMPLETED,
+      EVENT_STATUS.CANCELLED,
+      EVENT_STATUS.DELETED,
+      EVENT_STATUS.FAILED,
+      EVENT_STATUS.ARCHIVED,
+    ].includes(event.status);
+
+    return {
+      eventId: event._id,
+      hostId: event.host?._id || event.host,
+      subscriptionId: sub?._id || null,
+      hasSubscription: !!sub,
+      status: sub?.status || null,
+      planType: sub?.planId?.planType || sub?.planType || null,
+      planCode: sub?.planId?.code || sub?.planCode || null,
+      isSingleEvent: isPerEvent,
+      isPoolPlan: isPool,
+      isTrial,
+      invitePool,
+      invitesRemaining,
+      isGuestUnlimited,
+      guestLimit,
+      eventStatus: event.status,
+      isLive,
+      isCompleted,
+      isCancelled,
+      isTerminal,
+      canEditEvent: !isTerminal,
+      allowAddOnly: isLive,
     };
   },
 

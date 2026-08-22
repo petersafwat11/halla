@@ -1,9 +1,11 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { FaLock } from "react-icons/fa";
 import { IoIosArrowForward } from "react-icons/io";
 import { useValidateDiscount } from "@/hooks/discounts";
+import { useCheckoutQuote } from "@/hooks/checkout";
+import { round2, formatSar, validateCardExpiry, checkLuhn } from "@halaa/shared/utils";
 import ErrorBoundary from "@/ui/common/error/ErrorBoundary";
 import LegalSurfaceLinks from "@/ui/common/LegalSurfaceLinks";
 import PaymentMethodSelector from "../_components/PaymentMethodSelector";
@@ -43,9 +45,32 @@ const Summary = ({
   const validateDiscount = useValidateDiscount();
   const discountLoading = validateDiscount.isPending;
 
-  const planPrice = parseFloat(selectedPlan?.price) || 0;
-  const subtotal = planPrice + addonTotal;
-  const finalTotal = Math.max(0, subtotal - discountAmount);
+  const formattedAddons = useMemo(() => {
+    return addonItems.map((item) => {
+      const type = item.addonType || item.type;
+      const base = { addonType: type, scope: "org" };
+      if (type === "extra_invites") {
+        return { ...base, scope: "pool", quantity: item.quantity };
+      }
+      if (type === "design_template") {
+        return { ...base, templateType: item.templateType };
+      }
+      return base;
+    });
+  }, [addonItems]);
+
+  const { data: quoteResponse } = useCheckoutQuote({
+    planCode: selectedPlan?.code,
+    addons: formattedAddons,
+    discountCode: discountApplied ? appliedCode : null,
+    enabled: Boolean(selectedPlan?.code),
+  });
+
+  const quote = quoteResponse?.data || quoteResponse || null;
+  const planPrice = quote?.planPrice ?? (parseFloat(selectedPlan?.price) || 0);
+  const effectiveDiscountAmount = quote?.discountAmount ?? discountAmount;
+  const subtotal = round2(planPrice + (quote?.addonsTotal ?? addonTotal));
+  const finalTotal = quote?.total ?? Math.max(0, round2(subtotal - effectiveDiscountAmount));
 
   const handleApplyDiscount = async () => {
     if (!discountCode.trim()) return;
@@ -84,20 +109,6 @@ const Summary = ({
     setDiscountError("");
   };
 
-  const checkLuhn = (number) => {
-    let sum = 0;
-    let shouldDouble = false;
-    for (let i = number.length - 1; i >= 0; i--) {
-      let digit = parseInt(number.charAt(i), 10);
-      if (shouldDouble) {
-        if ((digit *= 2) > 9) digit -= 9;
-      }
-      sum += digit;
-      shouldDouble = !shouldDouble;
-    }
-    return sum % 10 === 0;
-  };
-
   const validateForm = () => {
     const newErrors = {};
     if (paymentMethod === "creditcard") {
@@ -121,20 +132,9 @@ const Summary = ({
         newErrors.number = t("checkout.errors.numberInvalid", "Invalid card number");
       }
 
-      if (!month || !year) {
-        newErrors.expiry = t("checkout.errors.expiryRequired", "Expiry date is required");
-      } else {
-        const m = parseInt(month, 10);
-        const y = parseInt(year, 10);
-        const currentDate = new Date();
-        const currentYear = currentDate.getFullYear();
-        const currentMonth = currentDate.getMonth() + 1;
-
-        if (isNaN(m) || m < 1 || m > 12) {
-          newErrors.expiry = t("checkout.errors.expiryMonthInvalid", "Invalid month (01-12)");
-        } else if (isNaN(y) || y < currentYear || (y === currentYear && m < currentMonth)) {
-          newErrors.expiry = t("checkout.errors.expiryExpired", "Card has expired");
-        }
+      const expiryCheck = validateCardExpiry(month, year);
+      if (!expiryCheck.valid) {
+        newErrors.expiry = t(expiryCheck.errorKey, "Invalid expiry date");
       }
 
       if (!cvc) {
@@ -156,12 +156,18 @@ const Summary = ({
   };
 
   const handlePayment = async () => {
+    if (isProcessing) return;
     if (!validateForm()) {
       return;
     }
     setIsProcessing(true);
     try {
-      await onProceedToPayment();
+      await onProceedToPayment(quote || {
+        total: finalTotal,
+        planPrice,
+        addonsTotal: quote?.addonsTotal ?? addonTotal,
+        discountAmount: effectiveDiscountAmount,
+      });
     } finally {
       setIsProcessing(false);
     }
@@ -203,7 +209,7 @@ const Summary = ({
                 onRemove={handleRemoveDiscount}
                 applied={discountApplied}
                 loading={discountLoading}
-                amount={discountAmount}
+                amount={effectiveDiscountAmount}
                 appliedCode={appliedCode}
                 errorMessage={discountError}
                 t={t}
@@ -235,7 +241,7 @@ const Summary = ({
               <PaymentSummaryCard
                 planPrice={planPrice}
                 addonItems={addonItems}
-                discountAmount={discountAmount}
+                discountAmount={effectiveDiscountAmount}
                 finalTotal={finalTotal}
                 t={t}
               />

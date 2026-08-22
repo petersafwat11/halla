@@ -149,6 +149,16 @@ module.exports = {
       .filter((g) => !incomingPhones.has(normalizePhoneNumber(g.phone)))
       .map((g) => g._id);
 
+    // EVT-03: Live event invariants — existing guests are immutable, new guests allowed.
+    if (event.status === 'live') {
+      if (toDeleteIds.length > 0) {
+        throw new ValidationError('Cannot remove existing guests from a live event');
+      }
+      if (toUpdate.length > 0) {
+        throw new ValidationError('Cannot modify existing guests on a live event');
+      }
+    }
+
     const normalisedStaff = staffList.map((s) => ({
       name: s.name,
       phone: s.phone,

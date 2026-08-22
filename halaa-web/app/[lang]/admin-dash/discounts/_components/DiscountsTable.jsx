@@ -45,7 +45,18 @@ export default function DiscountsTable({ onEdit }) {
   const { t, i18n } = useTranslation("adminDiscounts");
   const router = useRouter();
   const searchParams = useSearchParams();
-  const filters = buildFilters(searchParams);
+
+  const filters = useMemo(() => {
+    const status = searchParams.get("status");
+    return {
+      page: searchParams.get("page") || 1,
+      limit: 20,
+      search: searchParams.get("search") || "",
+      status: status || "",
+      isActive:
+        status === "active" ? true : status === "inactive" ? false : undefined,
+    };
+  }, [searchParams]);
 
   const { data, isLoading, error } = useDiscounts(filters);
 
@@ -82,25 +93,32 @@ export default function DiscountsTable({ onEdit }) {
   };
 
   const handlePageChange = useCallback((page) => {
-    const params = new URLSearchParams(searchParams);
-    params.set("page", page);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", String(page));
     router.push(`?${params.toString()}`);
   }, [searchParams, router]);
 
-  const filterOptions = useMemo(() => {
-    const navigate = (status) => () => {
-      const params = new URLSearchParams(searchParams);
-      if (status === null) params.delete("status");
-      else params.set("status", status);
-      params.delete("page");
-      router.push(`?${params.toString()}`);
-    };
-    return [
-      { text: t("discounts.filter.all", "الكل"), onClick: navigate(null) },
-      { text: t("discounts.filter.active", "نشطة"), onClick: navigate("active") },
-      { text: t("discounts.filter.inactive", "معطلة"), onClick: navigate("inactive") },
-    ];
-  }, [searchParams, router, t]);
+  const handleSearchChange = useCallback((query) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (query) {
+      params.set("search", query);
+    } else {
+      params.delete("search");
+    }
+    params.set("page", "1");
+    router.push(`?${params.toString()}`);
+  }, [searchParams, router]);
+
+  const handleFilterChange = useCallback((status) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (status) {
+      params.set("status", status);
+    } else {
+      params.delete("status");
+    }
+    params.set("page", "1");
+    router.push(`?${params.toString()}`);
+  }, [searchParams, router]);
 
   if (isLoading) return <SimpleLoading />;
   if (error)
@@ -218,6 +236,7 @@ export default function DiscountsTable({ onEdit }) {
   return (
     <div className={styles.container}>
       <Table
+        mode="server"
         title={t("discounts.tableTitle", "أكواد الخصم")}
         headers={[
           t("discounts.columns.code", "الكود"),
@@ -229,12 +248,20 @@ export default function DiscountsTable({ onEdit }) {
         ]}
         headerKeys={["code", "discountType", "value", "usage", "status", "expires"]}
         data={tableData}
+        searchValue={filters.search}
+        onSearchChange={handleSearchChange}
+        activeFilter={filters.status}
+        onFilterChange={handleFilterChange}
         renderCell={renderCell}
         getRowActions={getRowActions}
         showCheckboxes={false}
-        filterOptions={filterOptions}
+        filterOptions={[
+          { label: t("discounts.filter.all", "الكل"), value: "" },
+          { label: t("discounts.filter.active", "نشطة"), value: "active" },
+          { label: t("discounts.filter.inactive", "معطلة"), value: "inactive" },
+        ]}
         pagination={{
-          currentPage: parseInt(filters.page),
+          currentPage: parseInt(filters.page, 10) || 1,
           totalPages: pagination.pages || 1,
           totalItems: pagination.total || 0,
           onPageChange: handlePageChange,

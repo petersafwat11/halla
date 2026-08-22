@@ -35,6 +35,15 @@
       "inYourHandsInvitation": {
         "title": "Your Invitation in Your Hands",
         "description": "Design and send your invitations easily via WhatsApp with a special QR code for each guest!"
+      },
+      "features": {
+        "largeScaleCompetitivePricing": "Competitive pricing for high-volume merchants",
+        "customReportsAnalytics": "Custom reports and analytics",
+        "phoneSupportPriority": "24/7 Priority phone support",
+        "globalLocalSales": "Global & local selling (50 markets)",
+        "designSendGuestTracking": "Design, send & track attendance",
+        "designSendWhatsappQRCodes": "Design and send your invitation easily via WhatsApp with a unique QR code for each guest!",
+        "additional": "20+ additional features - click for more"
       }
     },
     "nextButton": "Next",
@@ -52,5 +61,7 @@
       "usernameMinLength": "Username must be at least 3 characters",
       "passwordConfirmRequired": "Please confirm your password"
     }
-  }
+  },
+  "currency": "SAR",
+  "perMonth": "/month"
 }

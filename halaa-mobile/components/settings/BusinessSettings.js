@@ -36,6 +36,12 @@ const BusinessSettings = ({ user = {}, onProfileUpdate }) => {
   const [logoPreview, setLogoPreview] = useState(user?.avatar || null);
   const [saving, setSaving] = useState(false);
 
+  React.useEffect(() => {
+    setDescription(initialDescription);
+    setLogoPreview(user?.avatar || null);
+    setLogoAsset(null);
+  }, [initialDescription, user?.avatar]);
+
   const isDirty = description !== initialDescription || logoAsset !== null;
 
   const pickLogo = async () => {

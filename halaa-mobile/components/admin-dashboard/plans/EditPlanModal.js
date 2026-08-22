@@ -45,7 +45,7 @@ const buildState = (plan) => ({
   oneTime: plan?.pricing?.oneTime ?? 0,
   maxEvents: plan?.limits?.maxEvents ?? 1,
   invitePool: plan?.limits?.invitePool ?? null,
-  durationDays: plan?.limits?.durationDays ?? 90,
+  durationDays: plan?.limits?.durationDays ?? (plan?.planType === "unlimited" ? null : 90),
   maxHosts: plan?.limits?.maxHosts ?? null,
   whatsAppTemplates: plan?.features?.whatsAppTemplates ?? 0,
   setupFeeAmount: plan?.setupFeeAmount ?? 0,
@@ -131,25 +131,36 @@ const EditPlanModal = ({ visible, onClose, plan, onSave }) => {
       toast.warning(t("plans.fields.nameAr") + " / " + t("plans.fields.nameEn"));
       return;
     }
-    // invitePool is required for every plan type now (per-event plans carry
-    // a pool too). Reject empty/zero/negative before hitting the API.
-    if (!(Number(form.invitePool) > 0)) {
+    const isUnlimitedPlan = plan.planType === "unlimited";
+    const parsedInvitePool = toNum(form.invitePool);
+    // For non-unlimited plans, invitePool is required and must be > 0.
+    // Unlimited plans may use invitePool: null or -1.
+    if (!isUnlimitedPlan && (!parsedInvitePool || parsedInvitePool <= 0)) {
       toast.warning(t("plans.fields.invitePoolRequired"));
       return;
     }
     try {
+      const parsedDuration = toNum(form.durationDays);
+      const limits = {
+        maxEvents: toNum(form.maxEvents) ?? 1,
+        invitePool: isUnlimitedPlan
+          ? (parsedInvitePool === -1 ? -1 : null)
+          : parsedInvitePool,
+        maxHosts: toNum(form.maxHosts),
+      };
+      if (parsedDuration && parsedDuration > 0) {
+        limits.durationDays = parsedDuration;
+      } else if (isUnlimitedPlan || parsedDuration === null) {
+        limits.durationDays = null;
+      }
+
       const payload = {
         nameAr: form.nameAr.trim(),
         nameEn: form.nameEn.trim(),
         descriptionAr: form.descriptionAr,
         descriptionEn: form.descriptionEn,
         pricing: { oneTime: Number(form.oneTime) || 0 },
-        limits: {
-          maxEvents: Number(form.maxEvents),
-          invitePool: Number(form.invitePool),
-          durationDays: Number(form.durationDays),
-          maxHosts: form.maxHosts,
-        },
+        limits,
         features: {
           whatsAppTemplates: Number(form.whatsAppTemplates) || 0,
         },
@@ -288,7 +299,7 @@ const EditPlanModal = ({ visible, onClose, plan, onSave }) => {
               <NumberField
                 label={t("plans.fields.durationDays")}
                 value={form.durationDays}
-                onChangeText={(txt) => setField("durationDays", toNum(txt) ?? 0)}
+                onChangeText={(txt) => setField("durationDays", toNum(txt))}
                 placeholder="90"
               />
               <NumberField

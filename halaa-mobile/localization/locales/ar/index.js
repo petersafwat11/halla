@@ -14,6 +14,7 @@ import vendor from "./vendor.json";
 import postEvent from "./postEvent.json";
 import staff from "./staff.json";
 import createEvent from "./createEvent.json";
+import payments from "./payments.json";
 
 export default {
   common,
@@ -31,4 +32,5 @@ export default {
   postEvent,
   staff,
   createEvent,
+  payments,
 };

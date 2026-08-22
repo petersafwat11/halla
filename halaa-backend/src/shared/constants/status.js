@@ -96,6 +96,33 @@ const RSVP_STATUS = {
 };
 
 /**
+ * Canonical RSVP Buckets (EVT-16 root cause resolution)
+ * Maps all variations of guest states to authoritative reporting buckets.
+ */
+const RSVP_BUCKETS = Object.freeze({
+  PENDING: Object.freeze(['invited', 'pending']),
+  CONFIRMED: Object.freeze(['confirmed', 'checked_in']),
+  DECLINED: Object.freeze(['declined']),
+  ATTENDED: Object.freeze(['checked_in']),
+  NO_SHOW: Object.freeze(['no_show']),
+});
+
+/**
+ * Classifies any guest status string into a canonical RSVP bucket:
+ * 'pending' | 'confirmed' | 'declined' | 'attended' | 'no_show'
+ */
+const classifyRsvpBucket = (status) => {
+  if (!status) return 'pending';
+  const s = String(status).toLowerCase().trim();
+  if (RSVP_BUCKETS.ATTENDED.includes(s)) return 'attended';
+  if (RSVP_BUCKETS.CONFIRMED.includes(s)) return 'confirmed';
+  if (RSVP_BUCKETS.DECLINED.includes(s)) return 'declined';
+  if (RSVP_BUCKETS.NO_SHOW.includes(s)) return 'no_show';
+  if (RSVP_BUCKETS.PENDING.includes(s)) return 'pending';
+  return 'pending';
+};
+
+/**
  * Invitation type — chosen by the host in create-event Step 4. Encodes two
  * independent dimensions in one enum: whether the guest can reply
  * (confirm/decline) and whether confirmation sends a QR entry code.
@@ -210,15 +237,116 @@ const RATE_LIMIT = {
   PASSWORD_RESET: { WINDOW_MS: 60 * 60 * 1000, MAX_REQUESTS: 3 },
 };
 
+const EVENT_TRANSITIONS = Object.freeze({
+  [EVENT_STATUS.PENDING_SCHEDULING]: Object.freeze([
+    EVENT_STATUS.SCHEDULED,
+    EVENT_STATUS.CANCELLED,
+    EVENT_STATUS.DELETED,
+  ]),
+  [EVENT_STATUS.PENDING_REVIEW]: Object.freeze([
+    EVENT_STATUS.PENDING_SCHEDULING,
+    EVENT_STATUS.SCHEDULED,
+    EVENT_STATUS.CANCELLED,
+    EVENT_STATUS.DELETED,
+  ]),
+  [EVENT_STATUS.SCHEDULED]: Object.freeze([
+    EVENT_STATUS.LIVE,
+    EVENT_STATUS.PUBLISHED,
+    EVENT_STATUS.COMPLETED,
+    EVENT_STATUS.CANCELLED,
+    EVENT_STATUS.DELETED,
+  ]),
+  [EVENT_STATUS.LIVE]: Object.freeze([
+    EVENT_STATUS.COMPLETED,
+    EVENT_STATUS.CANCELLED,
+    EVENT_STATUS.DELETED,
+  ]),
+  [EVENT_STATUS.PUBLISHED]: Object.freeze([
+    EVENT_STATUS.LIVE,
+    EVENT_STATUS.COMPLETED,
+    EVENT_STATUS.CANCELLED,
+    EVENT_STATUS.DELETED,
+  ]),
+  [EVENT_STATUS.COMPLETED]: Object.freeze([
+    EVENT_STATUS.SCHEDULED,
+    EVENT_STATUS.ARCHIVED,
+    EVENT_STATUS.DELETED,
+  ]),
+  [EVENT_STATUS.CANCELLED]: Object.freeze([
+    EVENT_STATUS.SCHEDULED,
+    EVENT_STATUS.PENDING_SCHEDULING,
+    EVENT_STATUS.ARCHIVED,
+    EVENT_STATUS.DELETED,
+  ]),
+  [EVENT_STATUS.FAILED]: Object.freeze([
+    EVENT_STATUS.SCHEDULED,
+    EVENT_STATUS.CANCELLED,
+    EVENT_STATUS.DELETED,
+  ]),
+  [EVENT_STATUS.ARCHIVED]: Object.freeze([
+    EVENT_STATUS.DELETED,
+  ]),
+  [EVENT_STATUS.DELETED]: Object.freeze([]),
+});
+
+const isValidEventStatusTransition = (fromStatus, toStatus) => {
+  if (!fromStatus || !toStatus) return false;
+  if (fromStatus === toStatus) return true; // idempotent
+  const allowed = EVENT_TRANSITIONS[fromStatus];
+  return Array.isArray(allowed) && allowed.includes(toStatus);
+};
+
+/**
+ * Valid ticket status transitions (state machine)
+ */
+const TICKET_TRANSITIONS = Object.freeze({
+  [TICKET_STATUS.OPEN]: Object.freeze([
+    TICKET_STATUS.IN_PROGRESS,
+    TICKET_STATUS.RESOLVED,
+    TICKET_STATUS.CLOSED,
+  ]),
+  [TICKET_STATUS.IN_PROGRESS]: Object.freeze([
+    TICKET_STATUS.WAITING_RESPONSE,
+    TICKET_STATUS.RESOLVED,
+    TICKET_STATUS.CLOSED,
+  ]),
+  [TICKET_STATUS.WAITING_RESPONSE]: Object.freeze([
+    TICKET_STATUS.IN_PROGRESS,
+    TICKET_STATUS.RESOLVED,
+    TICKET_STATUS.CLOSED,
+  ]),
+  [TICKET_STATUS.RESOLVED]: Object.freeze([
+    TICKET_STATUS.IN_PROGRESS,
+    TICKET_STATUS.OPEN,
+    TICKET_STATUS.CLOSED,
+  ]),
+  [TICKET_STATUS.CLOSED]: Object.freeze([]),
+});
+
+const isValidTicketStatusTransition = (fromStatus, toStatus) => {
+  if (!fromStatus || !toStatus) return false;
+  if (fromStatus === toStatus) return true; // idempotent
+  const allowed = TICKET_TRANSITIONS[fromStatus];
+  return Array.isArray(allowed) && allowed.includes(toStatus);
+};
+
 module.exports = {
   USER_STATUS,
   VENDOR_STATUS,
   EVENT_STATUS,
+  EVENT_STATUS_VALUES: Object.values(EVENT_STATUS),
+  EVENT_TRANSITIONS,
+  isValidEventStatusTransition,
+  TICKET_TRANSITIONS,
+  isValidTicketStatusTransition,
   SUBSCRIPTION_STATUS,
   TICKET_STATUS,
   TICKET_PRIORITY,
   RSVP_STATUS,
+  RSVP_BUCKETS,
+  classifyRsvpBucket,
   INVITATION_TYPE,
+  INVITATION_TYPE_VALUES: Object.values(INVITATION_TYPE),
   invitationAllowsReply,
   invitationIncludesQr,
   CHECKIN_STATUS,

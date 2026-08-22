@@ -1,0 +1,28 @@
+{
+  "title": "Payment History",
+  "empty": "No payments yet",
+  "errors": {
+    "loadFailed": "Failed to load payment history"
+  },
+  "pager": {
+    "prev": "Prev",
+    "next": "Next"
+  },
+  "table": {
+    "status": {
+      "completed": "Completed",
+      "pending": "Pending",
+      "failed": "Failed",
+      "refunded": "Refunded",
+      "cancelled": "Cancelled"
+    },
+    "filter": {
+      "all": "All",
+      "success": "Success",
+      "completed": "Completed",
+      "pending": "Pending",
+      "cancelled": "Cancelled",
+      "failed": "Failed"
+    }
+  }
+}

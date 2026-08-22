@@ -86,8 +86,27 @@
     "askAboutService": "Ask about service",
     "requestService": "Request service",
     "requestQuote": "Request a quote",
-    "email": "Email"
+    "email": "Email",
+    "report": "Report",
+    "reportVendor": "Report vendor",
+    "reportReason": "Pick a reason",
+    "rSpam": "Spam",
+    "rImpersonation": "Impersonation",
+    "rIllegal": "Prohibited content",
+    "rOther": "Other",
+    "reported": "Reported",
+    "reportedMsg": "Reported. Thank you, our team will review this.",
+    "signInToReport": "Please sign in to report.",
+    "block": "Block",
+    "blockVendor": "Block vendor",
+    "blockConfirm": "Hide this vendor and their services from your marketplace?",
+    "blocked": "Vendor blocked",
+    "blockedMsg": "Vendor blocked and hidden from marketplace.",
+    "signInToBlock": "Please sign in to block."
   },
+  "cancel": "Cancel",
+  "ok": "OK",
+  "loading": "Loading...",
   "currency": "SAR",
   "title": "Halaa Marketplace",
   "hero": {
@@ -110,6 +129,8 @@
   "errors": {
     "loadFailed": "We could not load vendors right now.",
     "loadFailedTitle": "Marketplace unavailable",
+    "profileNotFoundTitle": "Vendor not found",
+    "profileLoadFailed": "This vendor profile is currently unavailable",
     "retry": "Try again",
     "categoriesLoadFailed": "Categories could not be loaded"
   },

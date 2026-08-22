@@ -13,10 +13,83 @@ const bulletsTextToArray = (text) =>
     .map((line) => line.trim())
     .filter((line) => line.length > 0);
 
+const BulletInput = ({
+  field,
+  labelKey,
+  placeholderKey,
+  helpKey,
+  dir,
+  error,
+}) => {
+  const { t } = useTranslation("admin");
+  const [rawText, setRawText] = React.useState(() =>
+    bulletsArrayToText(field.value)
+  );
+
+  // Keep local state in sync if external form value resets
+  React.useEffect(() => {
+    const externalText = bulletsArrayToText(field.value);
+    if (bulletsArrayToText(bulletsTextToArray(rawText)) !== externalText) {
+      setRawText(externalText);
+    }
+  }, [field.value]);
+
+  const handleChange = (e) => {
+    const newText = e.target.value;
+    setRawText(newText);
+    field.onChange(bulletsTextToArray(newText));
+  };
+
+  return (
+    <div className={styles.bulletField}>
+      <label className={styles.bulletLabel}>{t(labelKey)}</label>
+      <textarea
+        className={styles.bulletTextarea}
+        dir={dir}
+        rows={8}
+        placeholder={t(placeholderKey)}
+        value={rawText}
+        onChange={handleChange}
+      />
+      <span className={styles.bulletHint}>
+        {error?.message || (helpKey ? t(helpKey) : "")}
+      </span>
+    </div>
+  );
+};
+
+const BulletField = ({
+  name,
+  labelKey,
+  placeholderKey,
+  helpKey,
+  dir,
+  error,
+}) => {
+  const { control } = useFormContext();
+
+  return (
+    <Controller
+      name={name}
+      control={control}
+      render={({ field }) => (
+        <BulletInput
+          field={field}
+          labelKey={labelKey}
+          placeholderKey={placeholderKey}
+          helpKey={helpKey}
+          dir={dir}
+          error={error}
+        />
+      )}
+    />
+  );
+};
+
+
 const PlanFeatureBulletsSection = () => {
   const { t } = useTranslation("admin");
   const {
-    control,
     formState: { errors },
   } = useFormContext();
 
@@ -26,56 +99,22 @@ const PlanFeatureBulletsSection = () => {
         {t("managePlans.editPopup.sections.featureBullets")}
       </h3>
 
-      <Controller
+      <BulletField
         name="featureBullets.ar"
-        control={control}
-        render={({ field }) => (
-          <div className={styles.bulletField}>
-            <label className={styles.bulletLabel}>
-              {t("managePlans.editPopup.fields.featureBulletsAr.label")}
-            </label>
-            <textarea
-              className={styles.bulletTextarea}
-              dir="rtl"
-              rows={8}
-              placeholder={t(
-                "managePlans.editPopup.fields.featureBulletsAr.placeholder"
-              )}
-              value={bulletsArrayToText(field.value)}
-              onChange={(e) => field.onChange(bulletsTextToArray(e.target.value))}
-            />
-            <span className={styles.bulletHint}>
-              {errors.featureBullets?.ar?.message ||
-                t("managePlans.editPopup.fields.featureBulletsAr.help")}
-            </span>
-          </div>
-        )}
+        labelKey="managePlans.editPopup.fields.featureBulletsAr.label"
+        placeholderKey="managePlans.editPopup.fields.featureBulletsAr.placeholder"
+        helpKey="managePlans.editPopup.fields.featureBulletsAr.help"
+        dir="rtl"
+        error={errors.featureBullets?.ar}
       />
 
-      <Controller
+      <BulletField
         name="featureBullets.en"
-        control={control}
-        render={({ field }) => (
-          <div className={styles.bulletField}>
-            <label className={styles.bulletLabel}>
-              {t("managePlans.editPopup.fields.featureBulletsEn.label")}
-            </label>
-            <textarea
-              className={styles.bulletTextarea}
-              dir="ltr"
-              rows={8}
-              placeholder={t(
-                "managePlans.editPopup.fields.featureBulletsEn.placeholder"
-              )}
-              value={bulletsArrayToText(field.value)}
-              onChange={(e) => field.onChange(bulletsTextToArray(e.target.value))}
-            />
-            <span className={styles.bulletHint}>
-              {errors.featureBullets?.en?.message ||
-                t("managePlans.editPopup.fields.featureBulletsEn.help")}
-            </span>
-          </div>
-        )}
+        labelKey="managePlans.editPopup.fields.featureBulletsEn.label"
+        placeholderKey="managePlans.editPopup.fields.featureBulletsEn.placeholder"
+        helpKey="managePlans.editPopup.fields.featureBulletsEn.help"
+        dir="ltr"
+        error={errors.featureBullets?.en}
       />
     </div>
   );

@@ -88,33 +88,68 @@ const publicPhone = (value) => {
 };
 
 class VendorsService {
+  _extractDistrictIds(filters = {}) {
+    if (filters.districtIds) {
+      if (Array.isArray(filters.districtIds)) {
+        const ids = filters.districtIds.map(Number).filter((n) => Number.isInteger(n) && n > 0);
+        if (ids.length) return ids;
+      } else if (typeof filters.districtIds === "string") {
+        const ids = filters.districtIds
+          .split(",")
+          .map((s) => Number(s.trim()))
+          .filter((n) => Number.isInteger(n) && n > 0);
+        if (ids.length) return ids;
+      } else if (typeof filters.districtIds === "number" && Number.isInteger(filters.districtIds) && filters.districtIds > 0) {
+        return [filters.districtIds];
+      }
+    }
+    if (hasValue(filters.districtId)) {
+      const id = Number(filters.districtId);
+      if (Number.isInteger(id) && id > 0) return [id];
+    }
+    return null;
+  }
+
   _buildPublicVendorQuery(filters = {}) {
     const query = {
       role: "vendor",
       status: USER_STATUS.ACTIVE,
+      deletedAt: { $exists: false },
       "profile.vendorData.vendorStatus": VENDOR_STATUS.APPROVED,
     };
     if (filters.search) {
-      const escaped = filters.search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      query.$or = [
-        { name: { $regex: escaped, $options: "i" } },
-        { "profile.vendorData.brandName": { $regex: escaped, $options: "i" } },
-        { "profile.vendorData.serviceDescription": { $regex: escaped, $options: "i" } },
-        { "profile.vendorData.taglineAr": { $regex: escaped, $options: "i" } },
-        { "profile.vendorData.taglineEn": { $regex: escaped, $options: "i" } },
-        { "profile.vendorData.aboutAr": { $regex: escaped, $options: "i" } },
-        { "profile.vendorData.aboutEn": { $regex: escaped, $options: "i" } },
-      ];
+      const escaped = String(filters.search).trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      if (escaped) {
+        query.$or = [
+          { name: { $regex: escaped, $options: "i" } },
+          { "profile.vendorData.brandName": { $regex: escaped, $options: "i" } },
+          { "profile.vendorData.serviceDescription": { $regex: escaped, $options: "i" } },
+          { "profile.vendorData.taglineAr": { $regex: escaped, $options: "i" } },
+          { "profile.vendorData.taglineEn": { $regex: escaped, $options: "i" } },
+          { "profile.vendorData.aboutAr": { $regex: escaped, $options: "i" } },
+          { "profile.vendorData.aboutEn": { $regex: escaped, $options: "i" } },
+        ];
+      }
     }
-    if (filters.category) {
+    if (filters.category && filters.category !== "all") {
       query[`profile.vendorData.serviceCategories.${filters.category}`] = { $exists: true, $ne: [] };
     }
-    if (hasValue(filters.regionId)) query["profile.vendorData.serviceLocation.regionId"] = Number(filters.regionId);
-    if (hasValue(filters.cityId)) query["profile.vendorData.serviceLocation.cityId"] = Number(filters.cityId);
-    if (hasValue(filters.districtId)) {
-      query["profile.vendorData.serviceLocation.districtIds"] = Number(filters.districtId);
+    if (hasValue(filters.regionId)) {
+      query["profile.vendorData.serviceLocation.regionId"] = Number(filters.regionId);
     }
-    if (hasValue(filters.rating)) query["profile.vendorData.rating"] = { $gte: Number(filters.rating) };
+    if (hasValue(filters.cityId)) {
+      query["profile.vendorData.serviceLocation.cityId"] = Number(filters.cityId);
+    }
+    const districtIds = this._extractDistrictIds(filters);
+    if (districtIds && districtIds.length > 0) {
+      query["profile.vendorData.serviceLocation.districtIds"] = { $in: districtIds };
+    }
+    const minRating = hasValue(filters.minRating)
+      ? Number(filters.minRating)
+      : (hasValue(filters.rating) ? Number(filters.rating) : null);
+    if (minRating !== null && !Number.isNaN(minRating)) {
+      query["profile.vendorData.rating"] = { $gte: minRating };
+    }
     return query;
   }
 
@@ -173,44 +208,142 @@ class VendorsService {
   async getPublicVendors(filters = {}, options = {}) {
     const page = Math.max(1, Number(options.page) || 1);
     const limit = Math.min(100, Math.max(1, Number(options.limit) || 12));
+    const skip = (page - 1) * limit;
     const language = safeLanguage(options.language);
     const query = this._buildPublicVendorQuery(filters);
+
     const blocked = await moderationService.getBlockedKeySet("user", options.viewerId);
     const blockedVendorIds = [...blocked]
       .filter((key) => key.startsWith("user:"))
       .map((key) => key.slice("user:".length));
-    if (blockedVendorIds.length) query._id = { $nin: blockedVendorIds };
+
+    if (blockedVendorIds.length) {
+      const blockedObjectIds = blockedVendorIds
+        .filter((id) => mongoose.Types.ObjectId.isValid(id))
+        .map((id) => new mongoose.Types.ObjectId(id));
+      if (blockedObjectIds.length) {
+        query._id = { $nin: blockedObjectIds };
+      }
+    }
 
     if (hasValue(filters.minPrice) || hasValue(filters.maxPrice)) {
       const priceQuery = { status: SERVICE_STATUS.ACTIVE, isPublic: true, price: {} };
       if (hasValue(filters.minPrice)) priceQuery.price.$gte = Number(filters.minPrice);
       if (hasValue(filters.maxPrice)) priceQuery.price.$lte = Number(filters.maxPrice);
-      const ids = await Service.distinct("vendorId", priceQuery);
-      query._id = {
-        ...(query._id || {}),
-        $in: ids.length ? ids : [null],
-      };
+      const matchedVendorIds = await Service.distinct("vendorId", priceQuery);
+      const validIds = matchedVendorIds.filter((id) => id != null);
+      if (query._id?.$nin) {
+        const ninSet = new Set(query._id.$nin.map((id) => String(id)));
+        const filtered = validIds.filter((id) => !ninSet.has(String(id)));
+        query._id = { $in: filtered };
+      } else {
+        query._id = { $in: validIds };
+      }
     }
 
-    const candidateDocs = await User.find(query).select(PUBLIC_VENDOR_SELECT).lean();
-    const summaries = await this._getServiceSummaries(candidateDocs.map((vendor) => vendor._id));
-    // Single deterministic ordering: admin rating → active public services → recent activity.
-    candidateDocs.sort((a, b) => {
-      const av = a.profile?.vendorData || {};
-      const bv = b.profile?.vendorData || {};
-      const as = summaries.get(String(a._id));
-      const bs = summaries.get(String(b._id));
-      return (bv.rating ?? -1) - (av.rating ?? -1)
-        || (bs?.serviceCount || 0) - (as?.serviceCount || 0)
-        || new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt)
-        || String(a._id).localeCompare(String(b._id));
-    });
+    let sortStage = {
+      vendorRating: -1,
+      vendorServiceCount: -1,
+      effectiveDate: -1,
+      _id: 1,
+    };
 
-    const total = candidateDocs.length;
-    const vendors = candidateDocs.slice((page - 1) * limit, page * limit);
-    const data = await Promise.all(vendors.map((vendor) =>
-      this._formatVendorSummary(vendor, summaries.get(String(vendor._id)), language)));
-    return { data, pagination: { page, limit, total, pages: Math.ceil(total / limit) } };
+    if (filters.sort === "rating") {
+      sortStage = { vendorRating: -1, vendorServiceCount: -1, _id: 1 };
+    } else if (filters.sort === "price_asc") {
+      sortStage = { minPrice: 1, vendorRating: -1, _id: 1 };
+    } else if (filters.sort === "price_desc") {
+      sortStage = { minPrice: -1, vendorRating: -1, _id: 1 };
+    } else if (filters.sort === "recent") {
+      sortStage = { effectiveDate: -1, vendorRating: -1, _id: 1 };
+    }
+
+    const pipeline = [
+      { $match: query },
+      {
+        $lookup: {
+          from: "services",
+          let: { vId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ["$vendorId", "$$vId"] },
+                    { $eq: ["$status", SERVICE_STATUS.ACTIVE] },
+                    { $eq: ["$isPublic", true] },
+                  ],
+                },
+              },
+            },
+            { $sort: { price: 1, createdAt: -1, _id: 1 } },
+            {
+              $group: {
+                _id: "$vendorId",
+                serviceCount: { $sum: 1 },
+                minPrice: { $min: "$price" },
+                currency: { $first: "$currency" },
+                firstServiceImage: { $first: "$image" },
+                updatedAt: { $max: "$updatedAt" },
+              },
+            },
+          ],
+          as: "serviceSummaryArr",
+        },
+      },
+      {
+        $addFields: {
+          serviceSummary: { $arrayElemAt: ["$serviceSummaryArr", 0] },
+          vendorRating: { $ifNull: ["$profile.vendorData.rating", -1] },
+          vendorServiceCount: { $ifNull: [{ $arrayElemAt: ["$serviceSummaryArr.serviceCount", 0] }, 0] },
+          minPrice: { $ifNull: [{ $arrayElemAt: ["$serviceSummaryArr.minPrice", 0] }, 999999999] },
+          effectiveDate: { $ifNull: ["$updatedAt", "$createdAt"] },
+        },
+      },
+      { $sort: sortStage },
+      {
+        $facet: {
+          rows: [
+            { $skip: skip },
+            { $limit: limit },
+            {
+              $project: {
+                _id: 1,
+                name: 1,
+                email: 1,
+                mobile: 1,
+                phoneNumber: 1,
+                createdAt: 1,
+                updatedAt: 1,
+                profile: 1,
+                serviceSummary: 1,
+              },
+            },
+          ],
+          totalCount: [{ $count: "count" }],
+        },
+      },
+    ];
+
+    const [aggResult] = await User.aggregate(pipeline);
+    const rows = aggResult?.rows || [];
+    const total = aggResult?.totalCount?.[0]?.count || 0;
+
+    const data = await Promise.all(
+      rows.map((vendor) =>
+        this._formatVendorSummary(vendor, vendor.serviceSummary, language)
+      )
+    );
+
+    return {
+      data,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit) || 1,
+      },
+    };
   }
 
   async getPublicVendorById(vendorId, options = {}) {

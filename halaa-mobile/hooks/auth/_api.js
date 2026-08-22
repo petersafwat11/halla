@@ -12,8 +12,8 @@
  */
 
 import { API_BASE_URL, ENDPOINTS } from "../../config/api";
-import { patchJson, postForm, postJson } from "../../services/authErrors";
-import { fetchWithTimeout } from "../../services/http";
+import { apiErrorFromResponse, patchJson, postForm, postJson } from "../../services/authErrors";
+import { apiFetch, fetchWithTimeout } from "../../services/http";
 import { dlog } from "../../utils/log";
 
 /**
@@ -182,11 +182,15 @@ export const verifySignupOTP = async ({ mobile, otp }) => {
 };
 
 export const completeProfile = async ({ username, email, password, token }) => {
-  const data = await patchJson(
-    ENDPOINTS.AUTH.COMPLETE_PROFILE,
-    { username, email, password, passwordConfirm: password },
-    { headers: { Authorization: `Bearer ${token}` } },
-  );
+  const res = await apiFetch(ENDPOINTS.AUTH.COMPLETE_PROFILE, {
+    method: "PATCH",
+    body: { username, email, password, passwordConfirm: password },
+    ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {}),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw apiErrorFromResponse({ status: res.status, data: data || {} });
+  }
   return {
     token: data.token,
     refreshToken: data.refreshToken,

@@ -58,7 +58,7 @@ exports.bulkDeleteVendors = catchAsync(async (req, res) => {
 exports.bulkUpdateVendorStatus = catchAsync(async (req, res) => {
   const { ids, status } = req.body;
 
-  const result = await adminService.bulkUpdateVendorStatus(ids, status);
+  const result = await adminService.bulkUpdateVendorStatus(ids, status, req.user?._id);
   sendSuccess(res, result, result.message);
 });
 

@@ -56,7 +56,15 @@ const AddHostModal = ({ visible, onClose, onSuccess }) => {
 
     const handleSave = async (data) => {
         try {
-            await createHost.mutateAsync(data);
+            const payload = {
+                name: data.name.trim(),
+                email: data.email.trim().toLowerCase(),
+                phoneNumber: data.phoneNumber.trim(),
+            };
+            if (data.password && data.password.trim()) {
+                payload.password = data.password.trim();
+            }
+            await createHost.mutateAsync(payload);
             toast.success(t("hosts.add.success"));
             reset();
             onClose();

@@ -1,28 +1,157 @@
 /**
- * Event status enum — frontend mirror of `halaa-backend/src/shared/constants/status.js → EVENT_STATUS`.
- *
- * Frontend code should import from here instead of using string literals
- * so a backend rename surfaces as a build / lint failure rather than a
- * silent UI bug. The FE intentionally exposes the subset of statuses the
- * UI actually renders; backend has additional internal states
- * (pending_review, published, archived, deleted) that are not user-facing.
+ * Event and guest status enums — mirror of `halaa-backend/src/shared/constants/status.js`.
  */
 
 export const EVENT_STATUS = Object.freeze({
   PENDING_SCHEDULING: "pending_scheduling",
+  PENDING_REVIEW: "pending_review",
   SCHEDULED: "scheduled",
   LIVE: "live",
-  COMPLETED: "completed",
+  PUBLISHED: "published",
   CANCELLED: "cancelled",
+  COMPLETED: "completed",
+  ARCHIVED: "archived",
   FAILED: "failed",
+  DELETED: "deleted",
 });
 
 export const EVENT_STATUSES = Object.freeze(Object.values(EVENT_STATUS));
+export const EVENT_STATUS_VALUES = EVENT_STATUSES;
 
 export const EVENT_STATUS_GROUPS = Object.freeze({
-  PRE_LAUNCH: [EVENT_STATUS.PENDING_SCHEDULING, EVENT_STATUS.SCHEDULED],
-  ACTIVE: [EVENT_STATUS.LIVE],
-  TERMINAL: [EVENT_STATUS.COMPLETED, EVENT_STATUS.CANCELLED, EVENT_STATUS.FAILED],
+  PRE_LAUNCH: Object.freeze([
+    EVENT_STATUS.PENDING_SCHEDULING,
+    EVENT_STATUS.PENDING_REVIEW,
+    EVENT_STATUS.SCHEDULED,
+    EVENT_STATUS.PUBLISHED,
+  ]),
+  ACTIVE: Object.freeze([
+    EVENT_STATUS.LIVE,
+    EVENT_STATUS.SCHEDULED,
+    EVENT_STATUS.PUBLISHED,
+  ]),
+  TERMINAL: Object.freeze([
+    EVENT_STATUS.COMPLETED,
+    EVENT_STATUS.CANCELLED,
+    EVENT_STATUS.FAILED,
+    EVENT_STATUS.DELETED,
+    EVENT_STATUS.ARCHIVED,
+  ]),
 });
+
+/**
+ * Guest RSVP status
+ */
+export const RSVP_STATUS = Object.freeze({
+  PENDING: "pending",
+  CONFIRMED: "confirmed",
+  DECLINED: "declined",
+});
+
+/**
+ * Guest lifecycle status
+ */
+export const GUEST_STATUS = Object.freeze({
+  INVITED: "invited",
+  CONFIRMED: "confirmed",
+  DECLINED: "declined",
+  CHECKED_IN: "checked_in",
+  NO_SHOW: "no_show",
+});
+
+/**
+ * Guest check-in status
+ */
+export const CHECKIN_STATUS = Object.freeze({
+  NOT_CHECKED_IN: "not_checked_in",
+  CHECKED_IN: "checked_in",
+  NO_SHOW: "no_show",
+});
+
+/**
+ * Canonical RSVP Buckets (EVT-16 root cause resolution)
+ * Maps all variations of guest states to authoritative reporting buckets.
+ */
+export const RSVP_BUCKETS = Object.freeze({
+  PENDING: Object.freeze(["invited", "pending"]),
+  CONFIRMED: Object.freeze(["confirmed", "checked_in"]),
+  DECLINED: Object.freeze(["declined"]),
+  ATTENDED: Object.freeze(["checked_in"]),
+  NO_SHOW: Object.freeze(["no_show"]),
+});
+
+/**
+ * Classifies any guest status string into a canonical RSVP bucket:
+ * 'pending' | 'confirmed' | 'declined' | 'attended' | 'no_show'
+ */
+export const classifyRsvpBucket = (status) => {
+  if (!status) return "pending";
+  const s = String(status).toLowerCase().trim();
+  if (RSVP_BUCKETS.ATTENDED.includes(s)) return "attended";
+  if (RSVP_BUCKETS.CONFIRMED.includes(s)) return "confirmed";
+  if (RSVP_BUCKETS.DECLINED.includes(s)) return "declined";
+  if (RSVP_BUCKETS.NO_SHOW.includes(s)) return "no_show";
+  if (RSVP_BUCKETS.PENDING.includes(s)) return "pending";
+  return "pending";
+};
+
+export const EVENT_TRANSITIONS = Object.freeze({
+  [EVENT_STATUS.PENDING_SCHEDULING]: Object.freeze([
+    EVENT_STATUS.SCHEDULED,
+    EVENT_STATUS.CANCELLED,
+    EVENT_STATUS.DELETED,
+  ]),
+  [EVENT_STATUS.PENDING_REVIEW]: Object.freeze([
+    EVENT_STATUS.PENDING_SCHEDULING,
+    EVENT_STATUS.SCHEDULED,
+    EVENT_STATUS.CANCELLED,
+    EVENT_STATUS.DELETED,
+  ]),
+  [EVENT_STATUS.SCHEDULED]: Object.freeze([
+    EVENT_STATUS.LIVE,
+    EVENT_STATUS.PUBLISHED,
+    EVENT_STATUS.COMPLETED,
+    EVENT_STATUS.CANCELLED,
+    EVENT_STATUS.DELETED,
+  ]),
+  [EVENT_STATUS.LIVE]: Object.freeze([
+    EVENT_STATUS.COMPLETED,
+    EVENT_STATUS.CANCELLED,
+    EVENT_STATUS.DELETED,
+  ]),
+  [EVENT_STATUS.PUBLISHED]: Object.freeze([
+    EVENT_STATUS.LIVE,
+    EVENT_STATUS.COMPLETED,
+    EVENT_STATUS.CANCELLED,
+    EVENT_STATUS.DELETED,
+  ]),
+  [EVENT_STATUS.COMPLETED]: Object.freeze([
+    EVENT_STATUS.SCHEDULED,
+    EVENT_STATUS.ARCHIVED,
+    EVENT_STATUS.DELETED,
+  ]),
+  [EVENT_STATUS.CANCELLED]: Object.freeze([
+    EVENT_STATUS.SCHEDULED,
+    EVENT_STATUS.PENDING_SCHEDULING,
+    EVENT_STATUS.ARCHIVED,
+    EVENT_STATUS.DELETED,
+  ]),
+  [EVENT_STATUS.FAILED]: Object.freeze([
+    EVENT_STATUS.SCHEDULED,
+    EVENT_STATUS.CANCELLED,
+    EVENT_STATUS.DELETED,
+  ]),
+  [EVENT_STATUS.ARCHIVED]: Object.freeze([
+    EVENT_STATUS.DELETED,
+  ]),
+  [EVENT_STATUS.DELETED]: Object.freeze([]),
+});
+
+export const isValidEventStatusTransition = (fromStatus, toStatus) => {
+  if (!fromStatus || !toStatus) return false;
+  if (fromStatus === toStatus) return true; // idempotent
+  const allowed = EVENT_TRANSITIONS[fromStatus];
+  return Array.isArray(allowed) && allowed.includes(toStatus);
+};
 
 export default EVENT_STATUS;

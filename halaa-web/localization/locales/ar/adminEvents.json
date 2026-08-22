@@ -221,8 +221,11 @@
   "singleEvent": {
     "title": "تفاصيل المناسبة",
     "hostInfo": "المضيف: {{hostName}}",
+    "deleteSuccess": "تم حذف المناسبة بنجاح",
+    "deleteError": "فشل حذف المناسبة",
     "actions": {
       "edit": "تعديل المناسبة",
+      "editGuests": "تعديل الضيوف",
       "delete": "حذف المناسبة",
       "sendReminder": "إرسال تذكير",
       "testMessage": "رسالة تجريبية",

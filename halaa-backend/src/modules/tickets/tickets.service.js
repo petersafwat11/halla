@@ -9,6 +9,8 @@ const {
   ROLES,
   TICKET_STATUS,
   TICKET_PRIORITY,
+  TICKET_TRANSITIONS,
+  isValidTicketStatusTransition,
   PERMISSIONS,
   USER_STATUS,
 } = require("../../shared/constants");
@@ -37,14 +39,8 @@ const TICKET_SOURCE = {
   OTHER: "other",
 };
 
-// Valid status transitions matrix
-const VALID_TRANSITIONS = {
-  [TICKET_STATUS.OPEN]: [TICKET_STATUS.IN_PROGRESS, TICKET_STATUS.RESOLVED, TICKET_STATUS.CLOSED],
-  [TICKET_STATUS.IN_PROGRESS]: [TICKET_STATUS.WAITING_RESPONSE, TICKET_STATUS.RESOLVED, TICKET_STATUS.CLOSED],
-  [TICKET_STATUS.WAITING_RESPONSE]: [TICKET_STATUS.IN_PROGRESS, TICKET_STATUS.RESOLVED, TICKET_STATUS.CLOSED],
-  [TICKET_STATUS.RESOLVED]: [TICKET_STATUS.CLOSED, TICKET_STATUS.IN_PROGRESS],
-  [TICKET_STATUS.CLOSED]: [],
-};
+// Valid status transitions matrix (mirrors TICKET_TRANSITIONS)
+const VALID_TRANSITIONS = TICKET_TRANSITIONS;
 
 class TicketsService {
   /**
@@ -119,7 +115,20 @@ class TicketsService {
       ];
     }
 
-    const [tickets, total] = await Promise.all([
+    let baseAggQuery = {};
+    if (!isAdmin) {
+      baseAggQuery.user = userId;
+    }
+    if (source) baseAggQuery.source = source;
+    if (search) {
+      const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      baseAggQuery.$or = [
+        { subject: { $regex: escaped, $options: "i" } },
+        { message: { $regex: escaped, $options: "i" } },
+      ];
+    }
+
+    const [tickets, total, statusAgg, priorityAgg] = await Promise.all([
       Ticket.find(query)
         .sort({ createdAt: -1 })
         .skip(skip)
@@ -128,7 +137,20 @@ class TicketsService {
         .populate("assignedTo", "username name email")
         .lean(),
       Ticket.countDocuments(query),
+      Ticket.aggregate([
+        { $match: baseAggQuery },
+        { $group: { _id: '$status', count: { $sum: 1 } } },
+      ]),
+      Ticket.aggregate([
+        { $match: baseAggQuery },
+        { $group: { _id: '$priority', count: { $sum: 1 } } },
+      ]),
     ]);
+
+    const statusCounts = {};
+    statusAgg.forEach((s) => { statusCounts[s._id] = s.count; });
+    const priorityCounts = {};
+    priorityAgg.forEach((p) => { priorityCounts[p._id] = p.count; });
 
     return {
       data: await Promise.all(
@@ -136,6 +158,21 @@ class TicketsService {
           this._formatTicket(t, { includeAssignmentNote: isAdmin })
         )
       ),
+      statusCounts: {
+        open: statusCounts.open || 0,
+        in_progress: statusCounts.in_progress || 0,
+        waiting_response: statusCounts.waiting_response || 0,
+        resolved: statusCounts.resolved || 0,
+        closed: statusCounts.closed || 0,
+        ...statusCounts,
+      },
+      priorityCounts: {
+        low: priorityCounts.low || 0,
+        medium: priorityCounts.medium || 0,
+        high: priorityCounts.high || 0,
+        urgent: priorityCounts.urgent || 0,
+        ...priorityCounts,
+      },
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     };
   }
@@ -318,6 +355,140 @@ class TicketsService {
       throw new ForbiddenError("You can only delete your own tickets");
     }
     await ticket.deleteOne();
+  }
+
+  /**
+   * Bulk delete tickets
+   * @param {Array<string>} ticketIds
+   * @param {string} userId
+   * @param {boolean} isAdmin
+   * @returns {Promise<{success: boolean, count: number, deleted: number, deletedCount: number, succeeded: Array<string>, failed: Array<{id: string, error: string}>, message: string}>}
+   */
+  async bulkDeleteTickets(ticketIds, userId, isAdmin) {
+    const rawIds = Array.isArray(ticketIds) ? ticketIds : [];
+    const uniqueIds = Array.from(new Set(rawIds.map((id) => id?.toString?.() || String(id)))).filter(Boolean);
+
+    const succeeded = [];
+    const failed = [];
+
+    for (const id of uniqueIds) {
+      try {
+        const ticket = await Ticket.findById(id);
+        if (!ticket) {
+          failed.push({ id, error: "Ticket not found" });
+          continue;
+        }
+
+        if (!isAdmin && ticket.user?.toString() !== userId?.toString()) {
+          failed.push({ id, error: "You can only delete your own tickets" });
+          continue;
+        }
+
+        await ticket.deleteOne();
+        succeeded.push(id);
+      } catch (err) {
+        failed.push({ id, error: err.message || "Failed to delete ticket" });
+      }
+    }
+
+    return {
+      success: true,
+      count: succeeded.length,
+      deleted: succeeded.length,
+      deletedCount: succeeded.length,
+      succeeded,
+      failed,
+      message: `${succeeded.length} ticket(s) deleted successfully`,
+    };
+  }
+
+  /**
+   * Bulk update ticket status
+   * @param {Array<string>} ticketIds
+   * @param {string} status
+   * @param {string} [resolution]
+   * @param {string} [actorId]
+   * @param {boolean} [isAdmin=true]
+   * @returns {Promise<{success: boolean, count: number, updated: number, updatedCount: number, succeeded: Array<string>, failed: Array<{id: string, error: string}>, message: string}>}
+   */
+  async bulkUpdateTicketStatus(ticketIds, status, resolution = null, actorId = null, isAdmin = true) {
+    if (!Object.values(TICKET_STATUS).includes(status)) {
+      throw new ValidationError("Invalid status");
+    }
+
+    const rawIds = Array.isArray(ticketIds) ? ticketIds : [];
+    const uniqueIds = Array.from(new Set(rawIds.map((id) => id?.toString?.() || String(id)))).filter(Boolean);
+
+    const succeeded = [];
+    const failed = [];
+
+    for (const id of uniqueIds) {
+      try {
+        const existing = await Ticket.findById(id);
+        if (!existing) {
+          failed.push({ id, error: "Ticket not found" });
+          continue;
+        }
+
+        if (!isAdmin && existing.user?.toString() !== actorId?.toString()) {
+          failed.push({ id, error: "Forbidden: Not ticket owner" });
+          continue;
+        }
+
+        const allowed = TICKET_TRANSITIONS[existing.status] || [];
+        if (!allowed.includes(status)) {
+          failed.push({
+            id,
+            error: `Cannot transition ticket from '${existing.status}' to '${status}'`,
+          });
+          continue;
+        }
+
+        const updateData = { status };
+        if (status === TICKET_STATUS.RESOLVED) {
+          updateData.resolvedAt = new Date();
+          if (actorId) updateData.resolvedBy = actorId;
+          if (resolution) {
+            updateData.resolutionResponse = {
+              message: resolution,
+              resolvedBy: actorId || null,
+              resolvedAt: new Date(),
+            };
+          }
+        }
+        if (status === TICKET_STATUS.CLOSED) {
+          updateData.closedAt = new Date();
+        }
+
+        const updated = await Ticket.findByIdAndUpdate(id, updateData, { new: true });
+        if (updated) {
+          succeeded.push(id);
+          // Non-blocking notification & audit
+          this._notifyTicketStatusChange(updated, status).catch((err) =>
+            logger.error("ticket status notification failed", err)
+          );
+          logAudit({
+            action: "ticket.status_updated",
+            actor: { _id: actorId },
+            targetType: "ticket",
+            targetId: updated._id,
+            metadata: { previousStatus: existing.status, newStatus: status, resolution, bulk: true },
+          }).catch((err) => logger.error("ticket status audit log failed", err));
+        }
+      } catch (err) {
+        failed.push({ id, error: err.message || "Failed to update ticket status" });
+      }
+    }
+
+    return {
+      success: true,
+      count: succeeded.length,
+      updated: succeeded.length,
+      updatedCount: succeeded.length,
+      succeeded,
+      failed,
+      message: `${succeeded.length} ticket(s) updated to ${status}`,
+    };
   }
 
   /**
@@ -511,6 +682,7 @@ class TicketsService {
       createdAt: ticket.createdAt,
       resolvedAt: ticket.resolvedAt,
       closedAt: ticket.closedAt,
+      allowedTransitions: TICKET_TRANSITIONS[ticket.status] || [],
     };
 
     return formatted;

@@ -68,30 +68,28 @@ exports.updateEventStatus = catchAsync(async (req, res) => {
 
   if (!status) throw new ValidationError('Status is required');
 
-  const event = await adminService.updateEventStatus(id, status);
+  const event = await adminService.updateEventStatus(id, status, req.user);
   sendSuccess(res, { event }, 'Event status updated successfully');
 });
 
 exports.deleteEvent = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const result = await adminService.deleteEvent(id);
+  const result = await adminService.deleteEvent(id, req.user);
   sendSuccess(res, result, result.message);
 });
 
 exports.bulkDeleteEvents = catchAsync(async (req, res) => {
   const { ids } = req.body;
 
-  const result = await adminService.bulkDeleteEvents(ids);
+  const result = await adminService.bulkDeleteEvents(ids, req.user);
   sendSuccess(res, result, result.message);
 });
 
 exports.bulkUpdateEventStatus = catchAsync(async (req, res) => {
   const { ids, status } = req.body;
 
-  const results = await Promise.all(
-    ids.map((id) => adminService.updateEventStatus(id, status))
-  );
-  sendSuccess(res, { updated: results.length }, `${results.length} event(s) updated to ${status}`);
+  const result = await adminService.bulkUpdateEventStatus(ids, status, req.user);
+  sendSuccess(res, result, result.message);
 });
 
 exports.getEventById = catchAsync(async (req, res) => {
@@ -104,12 +102,17 @@ exports.updateEventFull = catchAsync(async (req, res) => {
 
   try {
     if (req.body.eventDetails) updateData.eventDetails = JSON.parse(req.body.eventDetails);
-    if (req.body.guestList) updateData.guestList = JSON.parse(req.body.guestList);
-    if (req.body.staffList) updateData.staffList = JSON.parse(req.body.staffList);
+    if (req.body.guestList) {
+      throw new ValidationError('Updating guestList via full-event update is not permitted. Use dedicated guest endpoints.');
+    }
+    if (req.body.staffList) {
+      throw new ValidationError('Updating staffList via full-event update is not permitted. Use dedicated staff endpoints.');
+    }
     if (req.body.visualTemplate) updateData.visualTemplate = JSON.parse(req.body.visualTemplate);
     if (req.body.taqnyatTemplate) updateData.taqnyatTemplate = JSON.parse(req.body.taqnyatTemplate);
     if (req.body.guestReplies) updateData.guestReplies = JSON.parse(req.body.guestReplies);
   } catch (error) {
+    if (error instanceof ValidationError) throw error;
     throw new ValidationError(`Invalid JSON format: ${error.message}`);
   }
   // Scalar — no JSON.parse needed.

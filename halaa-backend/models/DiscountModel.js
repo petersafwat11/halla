@@ -79,9 +79,10 @@ discountSchema.methods.isValid = function () {
  * @returns {number} discount amount (not the final price)
  */
 discountSchema.methods.calculateDiscount = function (price) {
+  const { round2 } = require('../src/shared/utils/money');
   if (this.discountType === 'percentage') {
     const pct = Math.min(this.value, 100);
-    return Math.floor(price * (pct / 100));
+    return round2(price * (pct / 100));
   }
   // fixed
   return Math.min(this.value, price);

@@ -386,8 +386,9 @@ const ACTIONS = {
         selectedTemplate?._id ||
         selectedTemplate?.id;
       const settings = {};
-      if (selectedTemplate !== undefined) settings.selectedTemplate = selectedTemplate;
-      if (ref) settings.taqnyatTemplateRef = ref;
+      if (ref) {
+        settings.taqnyatTemplate = { templateRef: ref };
+      }
       // Step 4 also carries the auto-reply text + the invitation type. These
       // MUST be forwarded here — previously the mutation destructured only the
       // template, so guestReplies edits on the update wizard were silently

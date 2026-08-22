@@ -12,7 +12,7 @@ import {
   saveOnboardingSeen,
 } from "../services/secureStorage";
 
-// Import your screen components here
+// Import screen components
 import WelcomeWrapper from "../components/welcom/WelcomeWrapper";
 import HomeScreen from "../screens/host/HomeScreen";
 import VendorHomeScreen from "../screens/vendor/VendorHomeScreen";
@@ -53,6 +53,7 @@ import PaymentReturnScreen from "../screens/host/PaymentReturnScreen";
 import PaymentsScreen from "../screens/host/PaymentsScreen";
 import InvitationScreen from "../screens/guest-portal/InvitationScreen";
 import ForcePasswordChangeScreen from "../screens/host/ForcePasswordChangeScreen";
+import CompleteProfileScreen from "../screens/auth/CompleteProfileScreen";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -63,9 +64,7 @@ const VendorHomeStackNav = createStackNavigator();
 const MarketplaceStackNav = createStackNavigator();
 const HostEventsStackNav = createStackNavigator();
 
-// Plans tab — branches on account type. A business account is still
-// `role:host` (so it uses host navigation), but its "Plans" tab must show the
-// business plans screen instead of the personal-host one.
+// Plans tab — branches on account type.
 function PlansTabScreen() {
   const isBusiness = useAuthStore((state) => state.isBusiness());
   return isBusiness ? <BusinessPlansScreen /> : <PlansScreen />;
@@ -105,8 +104,7 @@ function VendorSettingsStackNavigator() {
 }
 
 // Home/Marketplace stacks nested inside the tabs so screens pushed from them
-// (Notifications, vendor public profile) keep the bottom tab bar visible —
-// same pattern as the Settings stacks above.
+// keep the bottom tab bar visible.
 function HostHomeStackNavigator() {
   return (
     <HomeStackNav.Navigator screenOptions={{ headerShown: false }}>
@@ -345,10 +343,11 @@ function AuthStack() {
       <Stack.Screen name="VendorSignup" component={VendorSignupScreen} />
       <Stack.Screen name="PostEvent" component={PostEventScreen} />
       <Stack.Screen name="StaffPortal" component={StaffPortalScreen} />
-      {/* Guest invitation — public, deep-linkable via
-          halaa://invitation/<code>. No auth required; the invitation
-          code itself is the proof of identity. */}
+      {/* Guest invitation & marketplace — public, deep-linkable.
+          No auth required for guest viewing and public contact actions. */}
       <Stack.Screen name="Invitation" component={InvitationScreen} />
+      <Stack.Screen name="Marketplace" component={Marketplace} />
+      <Stack.Screen name="VendorPublicProfile" component={VendorPublicProfileScreen} />
     </Stack.Navigator>
   );
 }
@@ -384,7 +383,6 @@ function VendorStack() {
     >
       <Stack.Screen name="MainTabs" component={VendorTabNavigator} />
       <Stack.Screen name="VendorServices" component={VendorServicesScreen} />
-
       <Stack.Screen name="VendorSettings" component={VendorSettingsScreen} />
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
       <Stack.Screen name="Invitation" component={InvitationScreen} />
@@ -408,18 +406,25 @@ function AdminStack() {
   );
 }
 
-// Forced password-change gate. Admin-created business accounts carry
-// `mustChangePassword:true` and are 403-gated (PASSWORD_CHANGE_REQUIRED) on
-// every endpoint by the backend until they set their own password — so the
-// client must keep them on this single screen with no tab to escape to.
-// ForcePasswordChangeScreen rotates the session on success, which clears the
-// flag and lets the root navigator fall through to the normal role stack.
+// Forced password-change gate.
 function ForcePasswordChangeStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen
         name="ForcePasswordChange"
         component={ForcePasswordChangeScreen}
+      />
+    </Stack.Navigator>
+  );
+}
+
+// Profile-completion gate for host accounts after OTP
+function CompleteProfileStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen
+        name="CompleteProfile"
+        component={CompleteProfileScreen}
       />
     </Stack.Navigator>
   );
@@ -445,11 +450,12 @@ export default function AppNavigator() {
     return <AuthStack />;
   }
 
-  // Forced password change takes precedence over every role stack — see
-  // ForcePasswordChangeStack above. Without this gate such accounts route
-  // straight to HostStack and hit a 403 on every screen with no way out.
   if (user?.mustChangePassword === true) {
     return <ForcePasswordChangeStack />;
+  }
+
+  if (role === "host" && user?.roleData?.profileCompleted === false) {
+    return <CompleteProfileStack />;
   }
 
   // Show appropriate stack based on user role
@@ -463,8 +469,6 @@ export default function AppNavigator() {
     case "moderator":
       return <AdminStack />;
     default:
-      // Never silently route to HostStack. An unmapped role is
-      // a real bug — surface it instead of pretending the user is a host.
       console.error("Unsupported account role:", role);
       return (
         <View style={styles.loadingContainer}>

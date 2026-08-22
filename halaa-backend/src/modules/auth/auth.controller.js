@@ -483,8 +483,8 @@ exports.sendEmailVerificationCode = catchAsync(async (req, res) => {
  * POST /api/v2/auth/verify-email
  */
 exports.verifyEmail = catchAsync(async (req, res) => {
-  await authService.verifyEmail(req.user._id, req.body.code);
-  sendSuccess(res, null, "Email verified successfully");
+  const updatedUser = await authService.verifyEmail(req.user._id, req.body.code);
+  sendSuccess(res, { user: updatedUser }, "Email verified successfully");
 });
 
 // Shared auth helpers for controllers that issue tokens / set auth cookies

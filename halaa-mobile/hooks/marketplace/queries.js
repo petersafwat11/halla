@@ -15,13 +15,21 @@ const _buildVendorsPath = (params) => {
   if (params.search) queryParams.append("search", params.search);
   if (params.serviceType && params.serviceType !== "all") {
     queryParams.append("category", params.serviceType);
+  } else if (params.category && params.category !== "all") {
+    queryParams.append("category", params.category);
   }
   if (params.regionId) queryParams.append("regionId", params.regionId);
   if (params.cityId) queryParams.append("cityId", params.cityId);
-  if (params.districtId) queryParams.append("districtId", params.districtId);
+  if (params.districtIds !== undefined && params.districtIds !== null && params.districtIds !== "") {
+    const dVal = Array.isArray(params.districtIds) ? params.districtIds.join(",") : params.districtIds;
+    if (dVal) queryParams.append("districtIds", dVal);
+  } else if (params.districtId) {
+    queryParams.append("districtIds", params.districtId);
+  }
   if (params.minPrice) queryParams.append("minPrice", params.minPrice);
   if (params.maxPrice) queryParams.append("maxPrice", params.maxPrice);
-  if (params.rating) queryParams.append("rating", params.rating);
+  if (params.rating || params.minRating) queryParams.append("rating", params.rating || params.minRating);
+  if (params.sort) queryParams.append("sort", params.sort);
   if (params.lang) queryParams.append("lang", params.lang);
   if (params.page) queryParams.append("page", params.page);
   if (params.limit) queryParams.append("limit", params.limit);

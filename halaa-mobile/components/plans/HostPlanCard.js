@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { getLocalized } from "@halaa/shared/utils/locale";
 import { useTranslation } from "../../localization";
 import {
   colors,
@@ -32,6 +33,9 @@ const HostPlanCard = ({
   );
 
   const price = matchedPlan?.price || 0;
+  const planName = matchedPlan
+    ? getLocalized(matchedPlan, "name", lang) || matchedPlan.name
+    : null;
 
   return (
     <View style={[styles.card, isPopular && styles.cardPopular]}>
@@ -43,7 +47,11 @@ const HostPlanCard = ({
         </View>
       ) : null}
 
-      <PlanPriceBlock planFamily={planFamily} price={price} />
+      <PlanPriceBlock
+        planFamily={planFamily}
+        price={price}
+        planName={planName}
+      />
 
       <InviteSelector
         plans={plans}

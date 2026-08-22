@@ -33,6 +33,8 @@ jobs:
         run: npm run lint
       - name: Lint halaa-mobile
         run: npm run lint
+      - name: Test halaa-mobile
+        run: npm run test
       - name: Expo config check
         run: npx --yes expo config --type public > /dev/null
       - name: Metro bundle (production, android)

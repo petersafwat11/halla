@@ -17,6 +17,7 @@ import { useTranslation } from "react-i18next";
 import DatePicker from "../commen/DatePicker";
 import TimePicker from "../commen/TimePicker";
 import Button from "../commen/Button";
+import { normalizeSubscriptionResponse } from "@halaa/shared/utils";
 import { useScheduleSend } from "../../hooks/messaging";
 import { useMySubscription } from "../../hooks/users";
 
@@ -81,7 +82,8 @@ const ScheduleSendingModal = ({
   const { t } = useTranslation("events");
   const scheduleSend = useScheduleSend();
   const { data: subData } = useMySubscription();
-  const isTrial = subData?.data?.subscription?.[0]?.planCode === "trial";
+  const normalizedSub = normalizeSubscriptionResponse(subData);
+  const isTrial = normalizedSub.subscription?.planCode === "trial";
 
   const methods = useForm({
     resolver: zodResolver(buildSchema(t, isTrial)),

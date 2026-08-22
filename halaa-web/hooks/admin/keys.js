@@ -33,9 +33,9 @@ export const adminKeys = {
   moderators: (filters) => [...adminKeys.all, "moderators", filters],
   moderatorsAll: () => [...adminKeys.all, "moderators"],
 
-  plans: (filters) => [...adminKeys.all, "plans", filters],
+  plans: (filters = {}) => [...adminKeys.all, "plans", filters],
   plansAll: () => [...adminKeys.all, "plans"],
-  assignablePlans: (filters) => [...adminKeys.all, "assignable-plans", filters],
+  assignablePlans: (filters = {}) => [...adminKeys.all, "assignable-plans", filters],
 
   payments: (filters) => [...adminKeys.all, "payments", filters],
   paymentsAll: () => [...adminKeys.all, "payments"],

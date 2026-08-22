@@ -59,6 +59,7 @@ const PATHS = {
 
     // Mobile-only
     updatePushToken: "/auth/update-push-token",
+    removePushToken: "/auth/remove-push-token",
   },
 
   // ============================================
@@ -118,6 +119,10 @@ const PATHS = {
     // Send to new guests — initial pool-charged send to guests added after
     // launch (invitation.sent != true). Optional guestIds narrows the set.
     sendNewGuests: (id) => `/events/${id}/send-new-guests`,
+
+    // Capabilities & Entitlements (EVT-10)
+    capabilities: (id) => `/events/${id}/capabilities`,
+    entitlement: (id) => `/events/${id}/entitlement`,
   },
 
   // ============================================
@@ -172,6 +177,7 @@ const PATHS = {
   hostPayments: {
     getById: (id) => `/payments/${id}`,
     poll3ds: (id) => `/payments/${id}/poll`,
+    quote: "/payments/quote",
     checkout: "/payments/checkout",
     export: "/subscriptions/payments/export",
   },
@@ -224,8 +230,10 @@ const PATHS = {
     getTicketById: (id) => `/tickets/${id}`,
     updateTicket: (id) => `/tickets/${id}`,
     deleteTicket: (id) => `/tickets/${id}`,
+    bulkDelete: "/tickets/bulk-delete",
     assignTicket: (id) => `/tickets/${id}/assign`,
     updateTicketStatus: (id) => `/tickets/${id}/status`,
+    bulkStatus: "/tickets/bulk-status",
     exportTickets: "/tickets/export",
     rateTicket: (id) => `/tickets/${id}/rate`,
     getTicketForRating: (id) => `/tickets/${id}/rating-info`,
@@ -273,6 +281,7 @@ const PATHS = {
     getCategories: "/vendors/categories",
     getPublicVendors: "/vendors/public",
     getPublicVendor: (id) => `/vendors/public/${id}`,
+    trackAnalytics: "/vendors/analytics/track",
   },
 
   // ============================================
@@ -400,6 +409,7 @@ const PATHS = {
     updateService: (id) => `/services/${id}`,
     toggleServiceStatus: (id) => `/services/${id}/toggle-status`,
     deleteService: (id) => `/services/${id}`,
+    trackAnalytics: "/services/analytics/track",
   },
 
   // ============================================

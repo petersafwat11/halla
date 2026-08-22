@@ -16,7 +16,8 @@ const router = express.Router();
 
 const { validateZod } = require('../../shared/middleware/validation');
 const { optionalAuth } = require('../../shared/middleware/auth');
-const { getPublicVendorsQuerySchema } = require('./vendors.validation');
+const { analyticsLimiter } = require('../../shared/middleware/rateLimiter');
+const { getPublicVendorsQuerySchema, marketplaceTrackSchema } = require('./vendors.validation');
 const vendorsController = require('./vendors.controller');
 
 /**
@@ -110,5 +111,50 @@ router.get('/public/:vendorId', optionalAuth, vendorsController.getPublicVendor)
  *               $ref: '#/components/schemas/VendorCategoriesResponse'
  */
 router.get('/categories', vendorsController.getCategories);
+
+/**
+ * @swagger
+ * /vendors/analytics/track:
+ *   post:
+ *     summary: Track marketplace analytics event
+ *     description: Tracks a deduplicated interaction event (service_view, vendor_view, contact_click)
+ *     tags: [Vendors]
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [eventType, targetType, targetId]
+ *             properties:
+ *               eventType:
+ *                 type: string
+ *                 enum: [service_view, vendor_view, contact_click]
+ *               targetType:
+ *                 type: string
+ *                 enum: [service, vendor]
+ *               targetId:
+ *                 type: string
+ *               contactMethod:
+ *                 type: string
+ *                 enum: [whatsapp, phone, email, website, social, service_request]
+ *               metadata:
+ *                 type: object
+ *     responses:
+ *       200:
+ *         description: Event recorded successfully
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ */
+router.post(
+  '/analytics/track',
+  analyticsLimiter,
+  optionalAuth,
+  validateZod(marketplaceTrackSchema),
+  vendorsController.trackAnalytics
+);
 
 module.exports = router;

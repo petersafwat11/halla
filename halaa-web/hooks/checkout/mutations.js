@@ -68,6 +68,10 @@ export const useCheckout = () => {
       discountCode,
       source,
       callbackUrl,
+      expectedAmount,
+      expectedTotal,
+      quoteId,
+      quoteExpiresAt,
     }) => {
       if (!planCode) throw new Error("planCode is required");
       const idempotencyKey = newIdempotencyKey();
@@ -80,6 +84,10 @@ export const useCheckout = () => {
           ...(discountCode ? { discountCode } : {}),
           ...(source ? { source } : {}),
           ...(callbackUrl ? { callbackUrl } : {}),
+          ...(expectedAmount != null ? { expectedAmount } : {}),
+          ...(expectedTotal != null ? { expectedTotal } : {}),
+          ...(quoteId ? { quoteId } : {}),
+          ...(quoteExpiresAt ? { quoteExpiresAt } : {}),
         },
         headers: { "Idempotency-Key": idempotencyKey },
       });

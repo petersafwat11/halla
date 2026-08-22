@@ -120,32 +120,18 @@ export default [
     plugins: {
       'react-hooks': reactHooks,
     },
-    // Phase 9 is lock-in only — turn off pre-existing JS-quality noise that
-    // would surface dozens of warnings the unification work didn't cause.
+    // Safety lint rules enforced for active mobile code (Session 0.1):
+    // - no-undef, no-unreachable, no-dupe-keys, valid-typeof, no-unsafe-optional-chaining
+    // Only pre-existing noise (unused vars) is silenced.
     rules: {
       ...lockInRules,
+      'no-undef': 'error',
+      'no-unreachable': 'error',
+      'no-dupe-keys': 'error',
+      'valid-typeof': 'error',
+      'no-unsafe-optional-chaining': 'error',
+      'no-empty': ['error', { allowEmptyCatch: true }],
       'no-unused-vars': 'off',
-      'no-undef': 'off',
-      'no-empty': 'off',
-      'no-prototype-builtins': 'off',
-      'no-useless-escape': 'off',
-      'no-case-declarations': 'off',
-      'no-irregular-whitespace': 'off',
-      'no-misleading-character-class': 'off',
-      'no-control-regex': 'off',
-      'no-async-promise-executor': 'off',
-      'no-cond-assign': 'off',
-      'no-constant-condition': 'off',
-      'no-dupe-keys': 'off',
-      'no-self-assign': 'off',
-      'no-unsafe-optional-chaining': 'off',
-      'no-useless-catch': 'off',
-      'no-fallthrough': 'off',
-      'no-redeclare': 'off',
-      'no-sparse-arrays': 'off',
-      'no-unreachable': 'off',
-      'getter-return': 'off',
-      'valid-typeof': 'off',
     },
   },
   {

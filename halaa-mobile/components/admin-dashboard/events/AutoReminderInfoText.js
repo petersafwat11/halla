@@ -14,6 +14,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../../localization";
 import { formatDate, formatTime } from "@halaa/shared/utils/locale";
+import { normalizeSubscriptionResponse } from "@halaa/shared/utils";
 import { useToast } from "../../../contexts/ToastContext";
 import { useUpdateReminderSettings } from "../../../hooks/events/mutations/useEventMutation";
 import { useMySubscription } from "../../../hooks/users";
@@ -54,8 +55,8 @@ const AutoReminderInfoText = ({ event }) => {
   // the host's current plan code (same heuristic the web popup uses). This is
   // advisory only; the backend is authoritative for trial reminders.
   const { data: subData } = useMySubscription();
-  const isTrial =
-    subData?.data?.subscription?.[0]?.planCode === "trial";
+  const normalizedSub = normalizeSubscriptionResponse(subData);
+  const isTrial = normalizedSub.subscription?.planCode === "trial";
 
   const [modalOpen, setModalOpen] = useState(false);
   const [customReminderTime, setCustomReminderTime] = useState(false);

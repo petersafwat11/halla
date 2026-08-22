@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const Plan = require('../../../models/PlanModel');
 const Subscription = require('../../../models/SubscriptionModel');
 const Payment = require('../../../models/PaymentModel');
@@ -22,8 +23,116 @@ const notificationService = require('../notifications/notifications.service');
 const email = require('../../../email');
 const config = require('../../config');
 const subscriptionLifecycle = require('../subscriptions/subscriptionLifecycle.service');
+const {
+  round2,
+  toHalalas,
+  halalasToSar,
+  formatSar,
+  buildCheckoutQuote,
+} = require('../../shared/utils/money');
+const setupFeeService = require('../business/business.setupFee.service');
 
 class CheckoutService {
+  /**
+   * Authoritative checkout quote calculation (PLN-02).
+   * Computes exact plan price, addons subtotal, discount allocation, setup fee,
+   * currency, totals in SAR major and Halalas integer minor units, and quote signature.
+   */
+  async getQuote(userId, body = {}) {
+    const { planCode, addons = [], discountCode } = body;
+
+    const plan = await Plan.getOrCreateByCode(planCode);
+    if (!plan) throw new ValidationError('Invalid plan code');
+
+    let user = null;
+    if (userId) {
+      user = await User.findById(userId);
+      if (user) {
+        if (plan.availableFor === 'business' && user.accountType !== 'business') {
+          throw new ValidationError('This plan is reserved for business accounts');
+        }
+        if (plan.availableFor === 'host' && user.role !== ROLES.HOST) {
+          throw new ValidationError('This plan is not available for your account type');
+        }
+        if (planCode === 'trial') {
+          const hadSubscriptionBefore = await Subscription.findOne({
+            userId,
+            status: { $ne: SUBSCRIPTION_STATUS.CANCELLED },
+          });
+          if (hadSubscriptionBefore) {
+            throw new ValidationError('Trial plan can only be used once. Please choose a paid plan.');
+          }
+        }
+      }
+    }
+
+    const planPrice = round2(plan?.pricing?.oneTime ?? 0);
+    const isFreePlan = planCode === 'trial' || planPrice <= 0;
+
+    if (isFreePlan && addons.length > 0) {
+      throw new ValidationError(
+        'Add-ons cannot be combined with the trial plan. Subscribe to a paid plan first.'
+      );
+    }
+
+    const resolvedAddons = this._resolveAndPriceAddons(addons, plan);
+    const addonsTotal = round2(resolvedAddons.reduce((s, a) => s + (a.price || 0), 0));
+    const subtotal = round2(planPrice + addonsTotal);
+
+    let discountAmount = 0;
+    let validatedDiscountCode = null;
+    let discountValid = null;
+    let discountReason = null;
+
+    if (discountCode) {
+      const discountsService = require('../discounts/discounts.service');
+      const result = await discountsService.validate(
+        discountCode,
+        subtotal,
+        plan.planType
+      );
+      if (result.valid) {
+        discountAmount = round2(result.discountAmount || 0);
+        validatedDiscountCode = result.code;
+        discountValid = true;
+      } else {
+        discountValid = false;
+        discountReason = result.reason;
+      }
+    }
+
+    let setupFee = 0;
+    if (user && user.accountType === 'business' && plan.availableFor === 'business') {
+      setupFee = round2(await setupFeeService.computeOwed(userId, plan));
+    }
+
+    const quote = buildCheckoutQuote({
+      plan,
+      addons: resolvedAddons,
+      discountAmount,
+      discountCode: validatedDiscountCode,
+      setupFee,
+      currency: plan?.currency || 'SAR',
+    });
+
+    if (discountCode && discountValid === false) {
+      quote.discountValid = false;
+      quote.discountReason = discountReason;
+    } else if (discountCode && discountValid === true) {
+      quote.discountValid = true;
+    }
+
+    const payloadToHash = `${userId || 'anon'}:${plan.code}:${quote.totalHalalas}:${quote.discountCode || ''}:${quote.quoteExpiresAt.getTime()}`;
+    const quoteHash = crypto
+      .createHmac('sha256', process.env.JWT_SECRET || 'halla_quote_secret')
+      .update(payloadToHash)
+      .digest('hex')
+      .slice(0, 24);
+    quote.quoteId = `quote_${quoteHash}`;
+
+    return quote;
+  }
+
   /**
    * Bundled plan + addons checkout. Charges plan+addons−discount as a single
    * Moyasar transaction, then on success activates the subscription and
@@ -37,74 +146,50 @@ class CheckoutService {
    *     actually got, ops handles the failed lines.
    */
   async checkout(userId, body, { idempotencyKey } = {}) {
-    const { planCode, addons = [], discountCode, source, callbackUrl } = body;
-
-    const plan = await Plan.getOrCreateByCode(planCode);
-    if (!plan) throw new ValidationError('Invalid plan code');
+    const {
+      planCode,
+      addons = [],
+      discountCode,
+      source,
+      callbackUrl,
+      expectedAmount,
+      expectedTotal,
+      quoteExpiresAt,
+    } = body;
 
     const user = await User.findById(userId);
     if (!user) throw new NotFoundError('User');
-    // DEC-02 (signed 2026-07-01): an eligible business account may self-purchase
-    // its FIRST business plan on web AND mobile — no admin pre-activation
-    // required. Only the audience gate remains: a non-business account can never
-    // buy a business plan, and a personal host can never buy one either.
-    // Managed/negotiated business contracts still flow through the admin
-    // assignment service; this self-checkout covers the self-serve business tiers.
-    if (plan.availableFor === 'business') {
-      if (user.accountType !== 'business') {
-        throw new ValidationError('This plan is reserved for business accounts');
-      }
-    }
-    if (plan.availableFor === 'host' && user.role !== ROLES.HOST) {
-      throw new ValidationError('This plan is not available for your account type');
+
+    const quote = await this.getQuote(userId, body);
+
+    if (discountCode && quote.discountValid === false) {
+      throw new ValidationError(`Discount code: ${quote.discountReason || 'invalid'}`);
     }
 
-    if (planCode === 'trial') {
-      const hadSubscriptionBefore = await Subscription.findOne({
-        userId,
-        status: { $ne: SUBSCRIPTION_STATUS.CANCELLED },
-      });
-      if (hadSubscriptionBefore) {
-        throw new ValidationError('Trial plan can only be used once. Please choose a paid plan.');
-      }
-    }
-
-    const planPrice = plan?.pricing?.oneTime ?? 0;
-    const isFreePlan = planCode === 'trial' || planPrice <= 0;
-
-    // Trial + addons would let the user activate addons without paying for
-    // them (free plan path skips the charge). Reject upfront — addons can be
-    // purchased separately once the user is on a paid plan.
-    if (isFreePlan && addons.length > 0) {
+    // Price change verification (PLN-02)
+    const expected = expectedAmount != null ? expectedAmount : expectedTotal;
+    if (expected != null && toHalalas(expected) !== quote.totalHalalas) {
       throw new ValidationError(
-        'Add-ons cannot be combined with the trial plan. Subscribe to a paid plan first.'
+        `Price changed since quote was generated. Expected ${expected} SAR, but current total is ${quote.total} SAR. Please review the updated quote.`
       );
     }
 
-    const resolvedAddons = this._resolveAndPriceAddons(addons, plan);
-    const addonsTotal = resolvedAddons.reduce((s, a) => s + a.price, 0);
-    const subtotal = planPrice + addonsTotal;
-
-    let discountAmount = 0;
-    let validatedDiscountCode = null;
-    if (discountCode) {
-      const discountsService = require('../discounts/discounts.service');
-      // Discount applies to the full bundled subtotal (plan + addons). The
-      // user-visible Summary computes its preview on the same base, so the
-      // amount they see is the amount we charge.
-      const result = await discountsService.validate(
-        discountCode,
-        subtotal,
-        plan.planType
-      );
-      if (!result.valid) {
-        throw new ValidationError(`Discount code: ${result.reason}`);
+    // Stale quote verification (PLN-02)
+    if (quoteExpiresAt) {
+      const expDate = new Date(quoteExpiresAt);
+      if (!isNaN(expDate.getTime()) && expDate.getTime() < Date.now()) {
+        throw new ValidationError('Quote has expired. Please refresh and review the updated amount.');
       }
-      discountAmount = result.discountAmount || 0;
-      validatedDiscountCode = result.code;
     }
 
-    const total = Math.max(0, subtotal - discountAmount);
+    const plan = await Plan.getOrCreateByCode(planCode);
+    const planPrice = quote.planPrice;
+    const resolvedAddons = quote.lineItems.filter((l) => l.type === 'addon');
+    const addonsTotal = quote.addonsTotal;
+    const discountAmount = quote.discountAmount;
+    const validatedDiscountCode = quote.discountCode;
+    const total = quote.total;
+    const isFreePlan = planCode === 'trial' || (planPrice <= 0 && addonsTotal <= 0);
 
     // Free path: trial or fully discounted. No charge → fulfill immediately.
     if (total <= 0 || isFreePlan) {
@@ -115,7 +200,14 @@ class CheckoutService {
         discountCode: validatedDiscountCode,
         paymentRecord: null,
         addons: resolvedAddons,
-        totals: { planPrice, addonsTotal, discountAmount, total },
+        totals: {
+          planPrice,
+          addonsTotal,
+          discountAmount,
+          total: 0,
+          totalHalalas: 0,
+          quoteId: quote.quoteId,
+        },
       });
     }
 
@@ -155,7 +247,14 @@ class CheckoutService {
           requiresAction: true,
           redirectUrl: existingCheckout.redirectUrl,
           paymentId: existingCheckout._id,
-          totals: { planPrice, addonsTotal, discountAmount, total },
+          totals: {
+            planPrice,
+            addonsTotal,
+            discountAmount,
+            total,
+            totalHalalas: quote.totalHalalas,
+            quoteId: quote.quoteId,
+          },
         };
       }
       // PAID/AUTHORIZED/CAPTURED — return the bundle that was already
@@ -172,7 +271,14 @@ class CheckoutService {
           failedAddons: existingCheckout.metadata?.checkoutFailedAddons || [],
           alreadyFinalized: true,
           paymentId: existingCheckout._id,
-          totals: { planPrice, addonsTotal, discountAmount, total },
+          totals: {
+            planPrice,
+            addonsTotal,
+            discountAmount,
+            total,
+            totalHalalas: quote.totalHalalas,
+            quoteId: quote.quoteId,
+          },
         };
       }
       // Paid but no subscription yet — finalize now (idempotent via
@@ -188,7 +294,14 @@ class CheckoutService {
         discountCode: validatedDiscountCode,
         paymentRecord: existingCheckout,
         addons: resolvedAddons,
-        totals: { planPrice, addonsTotal, discountAmount, total },
+        totals: {
+          planPrice,
+          addonsTotal,
+          discountAmount,
+          total,
+          totalHalalas: quote.totalHalalas,
+          quoteId: quote.quoteId,
+        },
       });
     }
 
@@ -212,6 +325,11 @@ class CheckoutService {
         addonCount: resolvedAddons.length,
         userId: String(userId),
         checkoutKey: derivedKey,
+        quoteId: body.quoteId || quote.quoteId,
+        totalHalalas: quote.totalHalalas,
+        planPrice: quote.planPrice,
+        addonsTotal: quote.addonsTotal,
+        lineItems: quote.lineItems,
       },
     });
 
@@ -280,7 +398,14 @@ class CheckoutService {
         requiresAction: true,
         redirectUrl: charge.redirectUrl,
         paymentId: paymentRecord._id,
-        totals: { planPrice, addonsTotal, discountAmount, total },
+        totals: {
+          planPrice,
+          addonsTotal,
+          discountAmount,
+          total,
+          totalHalalas: quote.totalHalalas,
+          quoteId: quote.quoteId,
+        },
       };
     }
 
@@ -298,7 +423,14 @@ class CheckoutService {
       discountCode: validatedDiscountCode,
       paymentRecord,
       addons: resolvedAddons,
-      totals: { planPrice, addonsTotal, discountAmount, total },
+      totals: {
+        planPrice,
+        addonsTotal,
+        discountAmount,
+        total,
+        totalHalalas: quote.totalHalalas,
+        quoteId: quote.quoteId,
+      },
     });
   }
 
@@ -350,6 +482,8 @@ class CheckoutService {
         addonsTotal: (intent.addons || []).reduce((s, a) => s + (a.price || 0), 0),
         discountAmount: intent.discountAmount || 0,
         total: payment.amount,
+        totalHalalas: toHalalas(payment.amount),
+        quoteId: payment.metadata?.quoteId || null,
       },
     });
   }

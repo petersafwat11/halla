@@ -78,7 +78,27 @@
       "name": "الاسم الكامل",
       "namePlaceholder": "أدخل اسمك الكامل",
       "email": "البريد الإلكتروني",
-      "emailPlaceholder": "أدخل بريدك الإلكتروني"
+      "emailPlaceholder": "أدخل بريدك الإلكتروني",
+      "confirmDeleteLogoTitle": "حذف الشعار",
+      "confirmDeleteLogoMsg": "هل أنت متأكد من حذف الشعار؟"
+    },
+
+    "basicAccountInfo": {
+      "businessName": "اسم النشاط التجاري",
+      "businessNamePlaceholder": "أدخل اسم النشاط التجاري",
+      "phoneWhatsapp": "رقم الواتساب",
+      "phoneHelp": "يستخدم للتواصل مع العملاء"
+    },
+
+    "phoneOtp": {
+      "title": "التحقق من رقم الهاتف",
+      "subtitle": "أدخل رمز التحقق المرسل إلى هاتفك",
+      "verify": "تحقق",
+      "sending": "جاري الإرسال...",
+      "resend": "إعادة إرسال",
+      "sendFailed": "فشل إرسال رمز التحقق",
+      "success": "تم تغيير رقم الهاتف بنجاح",
+      "verifyFailed": "رمز التحقق غير صحيح"
     },
 
     "serviceDetails": {
@@ -92,7 +112,13 @@
       "nationalId": "رقم الهوية الوطنية",
       "nationalIdPlaceholder": "أدخل رقم هويتك الوطنية",
       "nationalIdImage": "صورة الهوية الوطنية",
-      "commercialRecord": "صورة السجل التجاري"
+      "commercialRecord": "صورة السجل التجاري",
+      "confirmDeleteTitle": "حذف الملف",
+      "confirmDeleteMsg": "هل أنت متأكد من حذف هذا الملف؟",
+      "taglineAr": "العنوان الترويجي بالعربية",
+      "taglineEn": "العنوان الترويجي بالإنجليزية",
+      "aboutAr": "نبذة بالعربية",
+      "aboutEn": "نبذة بالإنجليزية"
     },
 
     "imagesAndPricing": {
@@ -101,17 +127,28 @@
       "portfolioImages": "صور المعرض",
       "pricePackages": "باقات الأسعار",
       "noPortfolioImages": "لا توجد صور معرض بعد",
-      "noPricePackages": "لا توجد باقات أسعار بعد"
+      "noPricePackages": "لا توجد باقات أسعار بعد",
+      "confirmDeleteTitle": "تأكيد الحذف",
+      "confirmDeleteMsg": "هل أنت متأكد من الحذف؟",
+      "deleted": "تم الحذف بنجاح",
+      "deleteFailed": "فشل الحذف. يرجى المحاولة مرة أخرى."
     },
 
     "additionalLinks": {
       "title": "روابط التواصل الاجتماعي",
       "description": "أضف روابط وسائل التواصل الاجتماعي والموقع الإلكتروني",
       "website": "الموقع الإلكتروني",
+      "websitePlaceholder": "أدخل رابط الموقع الإلكتروني",
       "instagram": "إنستغرام",
+      "instagramPlaceholder": "أدخل حساب إنستغرام",
       "facebook": "فيسبوك",
+      "facebookPlaceholder": "أدخل رابط فيسبوك",
       "twitter": "تويتر",
-      "tiktok": "تيك توك"
+      "twitterPlaceholder": "أدخل حساب تويتر/X",
+      "tiktok": "تيك توك",
+      "tiktokPlaceholder": "أدخل حساب تيك توك",
+      "whatsapp": "واتساب",
+      "whatsappPlaceholder": "أدخل رقم الواتساب"
     },
 
     "permissions": {

@@ -28,7 +28,7 @@ const buildDefaults = (plan) => ({
   limits: {
     maxEvents: plan?.limits?.maxEvents ?? 1,
     invitePool: plan?.limits?.invitePool ?? null,
-    durationDays: plan?.limits?.durationDays ?? 90,
+    durationDays: plan?.limits?.durationDays ?? (plan?.planType === "unlimited" ? null : 90),
     maxHosts: plan?.limits?.maxHosts ?? null,
   },
   features: {

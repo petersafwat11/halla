@@ -78,7 +78,27 @@
       "name": "Full Name",
       "namePlaceholder": "Enter your full name",
       "email": "Email Address",
-      "emailPlaceholder": "Enter your email address"
+      "emailPlaceholder": "Enter your email address",
+      "confirmDeleteLogoTitle": "Delete Logo",
+      "confirmDeleteLogoMsg": "Are you sure you want to delete the logo?"
+    },
+
+    "basicAccountInfo": {
+      "businessName": "Business Name",
+      "businessNamePlaceholder": "Enter business name",
+      "phoneWhatsapp": "WhatsApp Number",
+      "phoneHelp": "Used to communicate with clients"
+    },
+
+    "phoneOtp": {
+      "title": "Verify Phone Number",
+      "subtitle": "Enter the code sent to your phone",
+      "verify": "Verify",
+      "sending": "Sending...",
+      "resend": "Resend",
+      "sendFailed": "Failed to send OTP",
+      "success": "Phone number updated successfully",
+      "verifyFailed": "Invalid verification code"
     },
 
     "serviceDetails": {
@@ -92,7 +112,13 @@
       "nationalId": "National ID",
       "nationalIdPlaceholder": "Enter your national ID number",
       "nationalIdImage": "National ID Image",
-      "commercialRecord": "Commercial Record Image"
+      "commercialRecord": "Commercial Record Image",
+      "confirmDeleteTitle": "Delete File",
+      "confirmDeleteMsg": "Are you sure you want to delete this file?",
+      "taglineAr": "Tagline (Arabic)",
+      "taglineEn": "Tagline (English)",
+      "aboutAr": "About (Arabic)",
+      "aboutEn": "About (English)"
     },
 
     "imagesAndPricing": {
@@ -101,17 +127,28 @@
       "portfolioImages": "Portfolio Images",
       "pricePackages": "Price Packages",
       "noPortfolioImages": "No portfolio images yet",
-      "noPricePackages": "No price packages yet"
+      "noPricePackages": "No price packages yet",
+      "confirmDeleteTitle": "Confirm Deletion",
+      "confirmDeleteMsg": "Are you sure you want to delete this item?",
+      "deleted": "Deleted successfully",
+      "deleteFailed": "Deletion failed. Please try again."
     },
 
     "additionalLinks": {
       "title": "Social Links",
       "description": "Add your social media and website links",
       "website": "Website",
+      "websitePlaceholder": "Enter website URL",
       "instagram": "Instagram",
+      "instagramPlaceholder": "Enter Instagram username or link",
       "facebook": "Facebook",
+      "facebookPlaceholder": "Enter Facebook profile link",
       "twitter": "Twitter",
-      "tiktok": "TikTok"
+      "twitterPlaceholder": "Enter Twitter/X handle",
+      "tiktok": "TikTok",
+      "tiktokPlaceholder": "Enter TikTok handle",
+      "whatsapp": "WhatsApp",
+      "whatsappPlaceholder": "Enter WhatsApp number"
     },
 
     "permissions": {

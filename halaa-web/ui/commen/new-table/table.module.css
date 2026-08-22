@@ -112,6 +112,40 @@
   color: #a0a0a0;
 }
 
+.clearSearchButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.2rem;
+  color: #888;
+  transition: color 0.2s;
+  flex-shrink: 0;
+}
+
+.clearSearchButton:hover {
+  color: #2c2c2c;
+}
+
+.filterButtonActive {
+  background: #faf5ef !important;
+  border: 1px solid #e7d8c6 !important;
+}
+
+.filterButtonActive span {
+  color: #6b4e33 !important;
+  font-weight: 700 !important;
+}
+
+.emptyCell {
+  text-align: center !important;
+  padding: 3.2rem 1.6rem !important;
+  color: #888;
+  font-size: 1.3rem;
+}
+
 .moreButton {
   display: flex;
   align-items: center;

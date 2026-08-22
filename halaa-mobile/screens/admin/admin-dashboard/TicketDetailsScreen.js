@@ -8,6 +8,9 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  Image,
+  Modal,
+  Linking,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRoute, useNavigation } from "@react-navigation/native";
@@ -22,6 +25,7 @@ import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
 import { formatDate as formatLocaleDate, formatDateTime as formatLocaleDateTime } from "@halaa/shared/utils/locale";
 import { canEditPage, canDeleteOnPage, PAGES } from "../../../utils/adminPermissions";
+import { getImageUrl } from "../../../utils/imageUtils";
 import TopBar from "../../../components/plans/TopBar";
 import DirectionalIonicon from "../../../components/common/DirectionalIonicon";
 import { ResolveTicketModal, AssignTicketModal, TicketSectionCard, TicketInfoRow, TicketHeroCard } from "../../../components/admin-dashboard/tickets";
@@ -62,6 +66,7 @@ const TicketDetailsScreen = () => {
 
   const [resolveModal, setResolveModal] = useState(false);
   const [assignModal, setAssignModal] = useState(false);
+  const [imageViewerVisible, setImageViewerVisible] = useState(false);
 
   if (error) toast.error(t("ticketDetails.loadFailed"));
 
@@ -71,6 +76,7 @@ const TicketDetailsScreen = () => {
     message: raw.message, status: raw.status || "open", priority: raw.priority || "medium",
     category: raw.category, submittedBy: raw.user, assignedTo: raw.assignedTo,
     assignmentNote: raw.assignmentNote,
+    attachment: raw.attachment || null,
     resolution: raw.resolution, createdAt: raw.createdAt, updatedAt: raw.updatedAt,
   } : null;
 
@@ -135,6 +141,44 @@ const TicketDetailsScreen = () => {
         <TicketSectionCard title={t("ticketDetails.message")} icon="chatbubble-outline">
           <View style={styles.messageBlock}><Text style={styles.messageText}>{ticket.message || t("ticketDetails.noMessage")}</Text></View>
         </TicketSectionCard>
+
+        {ticket.attachment?.url && (
+          <TicketSectionCard title={t("ticketDetails.attachment", "Attachment")} icon="attach-outline">
+            <View style={styles.attachmentContainer}>
+              {ticket.attachment.type === "image" ? (
+                <TouchableOpacity
+                  style={styles.attachmentThumbWrap}
+                  onPress={() => setImageViewerVisible(true)}
+                  activeOpacity={0.8}
+                >
+                  <Image
+                    source={{ uri: getImageUrl(ticket.attachment.url) }}
+                    style={styles.attachmentThumb}
+                  />
+                  <View style={styles.attachmentThumbOverlay}>
+                    <Ionicons name="expand-outline" size={16} color="#fff" />
+                  </View>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  style={styles.attachmentVideoThumb}
+                  onPress={() => Linking.openURL(ticket.attachment.url).catch(() => {})}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="videocam" size={24} color="#c28e5c" />
+                  <View style={styles.attachmentPlayBadge}>
+                    <Ionicons name="play" size={11} color="#fff" />
+                  </View>
+                </TouchableOpacity>
+              )}
+              <Text style={styles.attachmentLabel}>
+                {ticket.attachment.type === "image"
+                  ? t("ticketDetails.viewImage", "View Image")
+                  : t("ticketDetails.viewVideo", "Play Video")}
+              </Text>
+            </View>
+          </TicketSectionCard>
+        )}
 
         {ticket.resolution && (
           <TicketSectionCard title={t("ticketDetails.resolution")} icon="checkmark-circle-outline">
@@ -218,6 +262,34 @@ const TicketDetailsScreen = () => {
         <View style={{ height: spacing[32] }} />
       </ScrollView>
 
+      {ticket?.attachment?.type === "image" && (
+        <Modal
+          visible={imageViewerVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setImageViewerVisible(false)}
+        >
+          <TouchableOpacity
+            style={styles.viewerOverlay}
+            activeOpacity={1}
+            onPress={() => setImageViewerVisible(false)}
+          >
+            <Image
+              source={{ uri: getImageUrl(ticket.attachment.url) }}
+              style={styles.viewerImage}
+              resizeMode="contain"
+            />
+            <TouchableOpacity
+              style={styles.viewerClose}
+              onPress={() => setImageViewerVisible(false)}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            >
+              <Ionicons name="close" size={28} color="#fff" />
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </Modal>
+      )}
+
       <ResolveTicketModal visible={resolveModal} ticket={ticket} onClose={() => setResolveModal(false)} onSave={() => { setResolveModal(false); toast.success(t("ticketDetails.ticketResolved")); refetch(); }} />
       <AssignTicketModal visible={assignModal} ticket={ticket} onClose={() => setAssignModal(false)} onSave={() => { setAssignModal(false); toast.success(t("ticketDetails.ticketAssigned")); refetch(); }} />
     </SafeAreaView>
@@ -232,6 +304,77 @@ const styles = StyleSheet.create({
   messageBlock: { padding: spacing[16] }, messageText: { fontSize: typography.fontSize.body.medium, color: colors.natural[800], lineHeight: 22 },
   resolutionBlock: { padding: spacing[16], backgroundColor: "#EAF4EF40", gap: spacing[8] }, resolutionText: { fontSize: typography.fontSize.body.medium, color: colors.natural[800], lineHeight: 22 },
   resolutionMeta: { flexDirection: "row", alignItems: "center", gap: spacing[8], marginTop: spacing[4] }, resolutionMetaText: { fontSize: 12, color: colors.natural[450] },
+  attachmentContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing[12],
+    padding: spacing[16],
+  },
+  attachmentThumbWrap: {
+    width: 64,
+    height: 64,
+    borderRadius: 10,
+    overflow: "hidden",
+    position: "relative",
+  },
+  attachmentThumb: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+    backgroundColor: "#eee",
+  },
+  attachmentThumbOverlay: {
+    position: "absolute",
+    right: 4,
+    bottom: 4,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  attachmentVideoThumb: {
+    width: 64,
+    height: 64,
+    borderRadius: 10,
+    backgroundColor: "#f5ece4",
+    justifyContent: "center",
+    alignItems: "center",
+    position: "relative",
+  },
+  attachmentPlayBadge: {
+    position: "absolute",
+    right: 4,
+    bottom: 4,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: "#c28e5c",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  attachmentLabel: {
+    flex: 1,
+    fontSize: 14,
+    color: "#c28e5c",
+    fontWeight: "600",
+  },
+  viewerOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.9)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  viewerImage: {
+    width: "100%",
+    height: "80%",
+  },
+  viewerClose: {
+    position: "absolute",
+    top: 48,
+    right: 24,
+  },
   actionRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: spacing[16], paddingVertical: spacing[12] },
   actionRowLeft: { flexDirection: "row", alignItems: "center", gap: spacing[12], flex: 1 },
   actionIcon: { width: 40, height: 40, borderRadius: 12, alignItems: "center", justifyContent: "center" },

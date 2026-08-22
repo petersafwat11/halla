@@ -86,7 +86,7 @@ const DiscountCodeCard = ({
           <Text style={styles.discountSuccess}>
             {t("summary.discount.success", {
               code: appliedCode,
-              amount: (amount || 0).toFixed(0),
+              amount: typeof amount === "number" ? amount.toFixed(2).replace(/\.00$/, "") : amount,
             })}
           </Text>
         ) : null}

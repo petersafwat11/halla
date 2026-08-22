@@ -45,33 +45,93 @@ const staffEntry = z.object({
   status: z.enum(Object.values(SUPERVISOR_STATUS)).optional(),
 }).passthrough();
 
-const eventDetailsSchema = z.object({
-  title: z.string().trim().min(1).max(200),
+const eventLocationSchema = z.object({
+  address: z.string().trim().min(1, 'location address is required').max(500),
+  latitude: z.number().min(-90).max(90).optional().nullable(),
+  longitude: z.number().min(-180).max(180).optional().nullable(),
+  city: z.string().trim().max(100).optional().nullable(),
+  country: z.string().trim().max(100).optional().nullable(),
+}).passthrough();
+
+const createEventDetailsSchema = z.object({
+  title: z.string().trim().min(1, 'event title is required').max(200),
+  type: z.enum(EVENT_CATEGORY_VALUES, {
+    errorMap: () => ({ message: 'valid event type is required' }),
+  }),
+  date: z.union([z.string().trim().min(1, 'event date is required'), z.date()], {
+    errorMap: () => ({ message: 'event date is required' }),
+  }),
+  time: z.string().trim().min(1, 'event time is required'),
+  location: eventLocationSchema,
+  description: z.string().trim().max(2000).optional().nullable(),
+}).passthrough();
+
+const visualTemplateInputSchema = z
+  .object({
+    templateRef: objectId.optional().nullable(),
+    fieldValues: z.record(z.any()).optional().default({}),
+    bakedImagePath: z.string().optional().nullable(),
+    isCustomUpload: z.boolean().optional(),
+  })
+  .passthrough();
+
+const taqnyatTemplateInputSchema = z
+  .object({
+    templateRef: objectId.optional().nullable(),
+  })
+  .passthrough();
+
+const guestRepliesInputSchema = z
+  .object({
+    onAttend: z.string().optional().nullable(),
+    onAbsent: z.string().optional().nullable(),
+  })
+  .passthrough();
+
+const createEventSchema = z
+  .object({
+    eventDetails: createEventDetailsSchema,
+    guestList: z.array(guestEntry).optional().default([]),
+    staffList: z.array(staffEntry).optional().default([]),
+    visualTemplate: visualTemplateInputSchema.optional().nullable(),
+    taqnyatTemplate: taqnyatTemplateInputSchema.optional().nullable(),
+    guestReplies: guestRepliesInputSchema.optional().nullable(),
+    invitationType: invitationTypeSchema.optional(),
+    launchSettings: z.object({}).passthrough().optional(),
+    // Boundary aliases
+    taqnyatTemplateRef: objectId.optional().nullable(),
+    selectedTemplate: z.any().optional(),
+  })
+  .transform((data) => {
+    const result = { ...data };
+    if (result.taqnyatTemplateRef && !result.taqnyatTemplate) {
+      result.taqnyatTemplate = { templateRef: String(result.taqnyatTemplateRef) };
+    } else if (result.selectedTemplate && !result.taqnyatTemplate) {
+      const ref =
+        result.selectedTemplate?.templateRef ||
+        result.selectedTemplate?._id ||
+        result.selectedTemplate?.id;
+      if (ref) {
+        result.taqnyatTemplate = { templateRef: String(ref) };
+      }
+    }
+    return result;
+  });
+
+const updateEventDetailsSchema = z.object({
+  title: z.string().trim().min(1).max(200).optional(),
   type: z.enum(EVENT_CATEGORY_VALUES).optional(),
-  date: z.union([z.string(), z.date()]).optional(),
-  time: z.string().optional(),
+  date: z.union([z.string().trim().min(1), z.date()]).optional(),
+  time: z.string().trim().min(1).optional(),
   location: z.object({
-    address: z.string().optional(),
-    latitude: z.number().optional(),
-    longitude: z.number().optional(),
-    city: z.string().optional(),
-    country: z.string().optional(),
+    address: z.string().trim().min(1, 'location address cannot be empty').max(500).optional(),
+    latitude: z.number().min(-90).max(90).optional().nullable(),
+    longitude: z.number().min(-180).max(180).optional().nullable(),
+    city: z.string().trim().max(100).optional().nullable(),
+    country: z.string().trim().max(100).optional().nullable(),
   }).partial().passthrough().optional(),
-  description: z.string().optional(),
-}).passthrough();
-
-const createEventSchema = z.object({
-  eventDetails: eventDetailsSchema,
-  guestList: z.array(guestEntry).optional().default([]),
-  staffList: z.array(staffEntry).optional().default([]),
-  visualTemplate: z.object({}).passthrough().optional(),
-  taqnyatTemplate: z.object({}).passthrough().optional(),
-  guestReplies: z.object({}).passthrough().optional(),
-  invitationType: invitationTypeSchema.optional(),
-  launchSettings: z.object({}).passthrough().optional(),
-}).passthrough();
-
-const updateEventDetailsSchema = eventDetailsSchema.partial().refine(
+  description: z.string().trim().max(2000).optional().nullable(),
+}).partial().passthrough().refine(
   (val) => Object.keys(val).length > 0,
   { message: 'At least one field is required' }
 );
@@ -96,9 +156,43 @@ const updateStep2Schema = z.object({
   { path: ['staffList'], message: 'staffList (or supervisorsList) is required' }
 );
 
-const updateInvitationSettingsSchema = z.object({
-  invitationType: invitationTypeSchema.optional(),
-}).passthrough();
+const updateInvitationSettingsSchema = z
+  .object({
+    visualTemplate: visualTemplateInputSchema.optional().nullable(),
+    taqnyatTemplate: taqnyatTemplateInputSchema.optional().nullable(),
+    guestReplies: guestRepliesInputSchema.optional().nullable(),
+    invitationType: invitationTypeSchema.optional(),
+    templateImage: z.string().optional().nullable(),
+    // Boundary migration aliases
+    taqnyatTemplateRef: objectId.optional().nullable(),
+    selectedTemplate: z.any().optional(),
+    attendanceAutoReply: z.string().optional().nullable(),
+    absenceAutoReply: z.string().optional().nullable(),
+  })
+  .transform((data) => {
+    const result = { ...data };
+    if (result.taqnyatTemplateRef && !result.taqnyatTemplate) {
+      result.taqnyatTemplate = { templateRef: String(result.taqnyatTemplateRef) };
+    } else if (result.selectedTemplate && !result.taqnyatTemplate) {
+      const ref =
+        result.selectedTemplate?.templateRef ||
+        result.selectedTemplate?._id ||
+        result.selectedTemplate?.id;
+      if (ref) {
+        result.taqnyatTemplate = { templateRef: String(ref) };
+      }
+    }
+    if (
+      (result.attendanceAutoReply || result.absenceAutoReply) &&
+      !result.guestReplies
+    ) {
+      result.guestReplies = {
+        onAttend: result.attendanceAutoReply || "",
+        onAbsent: result.absenceAutoReply || "",
+      };
+    }
+    return result;
+  });
 
 const updateLaunchSettingsSchema = z.object({
   scheduledDate: z.union([z.string(), z.date()]).optional(),
@@ -133,9 +227,20 @@ const updateStaffStatusSchema = z.object({
   status: z.enum(Object.values(SUPERVISOR_STATUS)),
 }).strict();
 
-const bulkDeleteSchema = z.object({
-  eventIds: z.array(objectId).min(1).max(100),
-}).strict();
+const bulkDeleteSchema = z
+  .object({
+    ids: z.array(objectId).optional(),
+    eventIds: z.array(objectId).optional(),
+  })
+  .transform((data) => {
+    const rawList = data.ids || data.eventIds || [];
+    const uniqueIds = Array.from(new Set(rawList.map(String)));
+    return { ids: uniqueIds, eventIds: uniqueIds };
+  })
+  .refine((data) => data.ids.length >= 1 && data.ids.length <= 100, {
+    message: 'ids must contain between 1 and 100 items',
+    path: ['ids'],
+  });
 
 const adminUpdateStatusSchema = z.object({
   status: z.enum(Object.values(EVENT_STATUS)),

@@ -13,6 +13,8 @@ import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import Button from "@/ui/commen/button/Button";
 import styles from "./AddModeratorPopup.module.css";
 
+import { toE164 } from "@halaa/shared/utils/phone";
+
 export default function EditModeratorPopup({ moderator, onClose }) {
   const { t } = useTranslation("adminModerators");
   const updateModerator = useAdminModeratorMutation("update");
@@ -25,26 +27,27 @@ export default function EditModeratorPopup({ moderator, onClose }) {
   const defaultRole = "moderator";
 
   const rawPhone = moderator?.phoneNumber || moderator?.phone || "";
-  const displayPhone = rawPhone.replace(/^\+966/, "");
 
   const methods = useForm({
     resolver: zodResolver(editModeratorSchema),
     defaultValues: {
       name: moderator?.name || moderator?.username || "",
       email: moderator?.email || "",
-      phoneNumber: displayPhone,
+      phoneNumber: rawPhone,
       role: moderator?.role || defaultRole,
     },
   });
 
   const onSubmit = async (formData) => {
-    const phone = formData.phoneNumber.startsWith("+966")
-      ? formData.phoneNumber
-      : `+966${formData.phoneNumber}`;
     try {
       await updateModerator.mutateAsync({
         moderatorId: moderator.id || moderator._id,
-        data: { ...formData, phoneNumber: phone },
+        data: {
+          name: formData.name.trim(),
+          email: formData.email.trim().toLowerCase(),
+          phoneNumber: toE164(formData.phoneNumber),
+          role: formData.role,
+        },
       });
       toastUtils.success(t("editModerator.success", "Moderator updated successfully"));
       onClose();

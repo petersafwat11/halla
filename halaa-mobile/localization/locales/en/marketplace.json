@@ -36,8 +36,17 @@
     "4stars": "4+ stars",
     "3stars": "3+ stars",
     "2stars": "2+ stars",
+    "noDistricts": "No districts available",
     "reset": "Reset",
     "apply": "Apply Filters"
+  },
+  "common": {
+    "errors": {
+      "locationLoadFailed": "Could not load locations"
+    },
+    "actions": {
+      "retry": "Retry"
+    }
   },
   "vendor": {
     "defaultName": "Service",
@@ -71,8 +80,26 @@
     "askAboutService": "Ask about service",
     "requestService": "Request service",
     "requestQuote": "Request a quote",
-    "email": "Email"
+    "email": "Email",
+    "report": "Report",
+    "reportVendor": "Report vendor",
+    "reportReason": "Pick a reason",
+    "rSpam": "Spam",
+    "rImpersonation": "Impersonation",
+    "rIllegal": "Prohibited content",
+    "rOther": "Other",
+    "reported": "Reported",
+    "reportedMsg": "Reported. Thank you, our team will review this.",
+    "signInToReport": "Please sign in to report.",
+    "block": "Block",
+    "blockVendor": "Block vendor",
+    "blockConfirm": "Hide this vendor and their services from your marketplace?",
+    "blocked": "Vendor blocked",
+    "blockedMsg": "Vendor blocked and hidden from marketplace.",
+    "signInToBlock": "Please sign in to block."
   },
+  "cancel": "Cancel",
+  "ok": "OK",
   "results": {
     "title": "{{count}} vendors",
     "subtitle": "Approved providers for your occasion"
@@ -84,6 +111,7 @@
   "loading": "Loading...",
   "errors": {
     "loadFailed": "Failed to load vendors",
+    "profileNotFoundTitle": "Vendor not found",
     "profileLoadFailed": "This vendor profile is unavailable",
     "retry": "Try again",
     "categoriesLoadFailed": "Failed to load categories"

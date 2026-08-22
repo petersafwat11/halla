@@ -33,6 +33,8 @@
       },
       "buttons": {
         "confirm": "Confirm",
+        "next": "Next",
+        "continue": "Continue",
         "continueButton": "Continue",
         "backButton": "Back",
         "submitButton": "Create Account"

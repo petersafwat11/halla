@@ -5,6 +5,7 @@ import {
   QueryClientServerProvider,
 } from "@/services/http";
 import { API_PATHS } from "@halaa/shared/api/paths";
+import { eventsKeys } from "@/hooks/events/keys";
 import { requirePageAccess } from "@/services/serverAuth";
 import UpdateEventWizard from "../../host/update-event/_components/UpdateEventWizard";
 import styles from "./page.module.css";
@@ -29,13 +30,19 @@ export default async function AdminUpdateEventPage({ params, searchParams }) {
     try {
       await prefetchServerData({
         queryClient,
-        queryKey: ["events", "by-id", eventId],
+        queryKey: eventsKeys.detail(eventId),
         path: API_PATHS.events.getEventById(eventId),
         token,
       });
       await prefetchServerData({
         queryClient,
-        queryKey: ["events", "subscription-info"],
+        queryKey: eventsKeys.capabilities(eventId),
+        path: API_PATHS.events.capabilities(eventId),
+        token,
+      });
+      await prefetchServerData({
+        queryClient,
+        queryKey: eventsKeys.subscriptionInfo(),
         path: API_PATHS.events.getSubscriptionInfo,
         token,
       });

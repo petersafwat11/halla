@@ -9,6 +9,7 @@ export {
   useUpdateProfile,
   useChangePassword,
   useUpdateNotificationSettings,
+  useVerifyEmail,
   useDeleteAccount,
 } from "./mutations";
 export { usersKeys, subscriptionInfoKeys } from "./keys";

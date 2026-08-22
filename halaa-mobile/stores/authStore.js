@@ -205,9 +205,18 @@ export const useAuthStore = create((set, get) => ({
 
     set({ status: "loading", error: null });
     try {
-      const { token, refreshToken, user } = await verifyOTPAPI({ mobile: tempMobile, otp });
+      const { token, refreshToken, user, profileCompleted } = await verifyOTPAPI({ mobile: tempMobile, otp });
       const role = requireRole(user);
-      await get()._persistAuth({ user, accessToken: token, refreshToken, role });
+      const normalizedUser = {
+        ...user,
+        roleData: {
+          ...(user.roleData || {}),
+          ...(profileCompleted !== undefined && user.roleData?.profileCompleted === undefined
+            ? { profileCompleted }
+            : {}),
+        },
+      };
+      await get()._persistAuth({ user: normalizedUser, accessToken: token, refreshToken, role });
       set({ tempMobile: null });
       return { success: true };
     } catch (error) {
@@ -234,7 +243,7 @@ export const useAuthStore = create((set, get) => ({
 
     set({ status: "loading", error: null });
     try {
-      const { token, refreshToken, user } = await verifySignupOTPAPI({
+      const { token, refreshToken, user, profileCompleted } = await verifySignupOTPAPI({
         mobile: tempMobile,
         otp,
       });
@@ -250,8 +259,17 @@ export const useAuthStore = create((set, get) => ({
       // are responsible for routing such users back to the
       // complete-profile screen.
       const role = requireRole(user);
+      const normalizedUser = {
+        ...user,
+        roleData: {
+          ...(user.roleData || {}),
+          ...(profileCompleted !== undefined && user.roleData?.profileCompleted === undefined
+            ? { profileCompleted }
+            : {}),
+        },
+      };
       await get()._persistAuth({
-        user,
+        user: normalizedUser,
         accessToken: token,
         refreshToken,
         role,
@@ -264,16 +282,13 @@ export const useAuthStore = create((set, get) => ({
   },
 
   completeProfile: async ({ fullName, email, password }) => {
-    const { token } = get();
-    if (!token) return { success: false, error: "No signup token found" };
-
     set({ status: "loading", error: null });
     try {
       const result = await completeProfileAPI({
         username: fullName,
         email,
         password,
-        token,
+        token: get().token,
       });
       const role = requireRole(result.user);
       await get()._persistAuth({
@@ -285,7 +300,7 @@ export const useAuthStore = create((set, get) => ({
       set({ tempMobile: null });
       return { success: true };
     } catch (error) {
-      set({ status: "unauthenticated", error: error.message || "Failed to complete profile" });
+      set({ status: "authenticated", error: error.message || "Failed to complete profile" });
       return failure(error, "Failed to complete profile");
     }
   },

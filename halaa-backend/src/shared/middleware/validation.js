@@ -369,8 +369,13 @@ exports.parseFormDataJsonFields = (fields = []) => {
     for (const key of fields) {
       const value = req.body[key];
       if (typeof value !== 'string') continue;
+      const trimmed = value.trim();
+      if (trimmed === '') {
+        delete req.body[key];
+        continue;
+      }
       try {
-        req.body[key] = JSON.parse(value);
+        req.body[key] = JSON.parse(trimmed);
       } catch (err) {
         return next(
           new AppError(`Invalid JSON in field "${key}": ${err.message}`, 400)

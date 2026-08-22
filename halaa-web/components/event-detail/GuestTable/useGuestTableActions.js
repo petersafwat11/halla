@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { handleError } from "@/services/errorHandlingService";
 import { downloadExportFile } from "@/services/http";
 import { API_PATHS } from "@halaa/shared/api/paths";
-import { useSendReminder } from "@/hooks/messaging";
+import { useSendReminder, useSendBulkInvitations } from "@/hooks/messaging";
 
 export default function useGuestTableActions({
   t,
@@ -26,6 +26,7 @@ export default function useGuestTableActions({
 }) {
   const queryClient = useQueryClient();
   const sendReminderMutation = useSendReminder();
+  const sendBulkInvitationsMutation = useSendBulkInvitations();
 
   const handleExportGuests = async () => {
     try {
@@ -145,9 +146,31 @@ export default function useGuestTableActions({
     if (selectedGuests.length === 0) return;
     setIsSendingInvitation(true);
     try {
-      toast.success(
-        t("messaging.invitationsSent", { count: selectedGuests.length })
-      );
+      const result = await sendBulkInvitationsMutation.mutateAsync({
+        eventId,
+        guestIds: selectedGuests,
+        channel: "whatsapp",
+      });
+      const data = result?.data || result;
+      const successful = data?.successful ?? selectedGuests.length;
+      const failed = data?.failed ?? 0;
+
+      if (failed > 0 && successful > 0) {
+        toast.warn(
+          t("messaging.invitationsPartial", {
+            successful,
+            failed,
+            defaultValue: `تم إرسال ${successful} دعوة بنجاح، وفشل إرسال ${failed}`,
+          })
+        );
+      } else {
+        toast.success(
+          t("messaging.invitationsSent", {
+            count: successful,
+            defaultValue: `تم إرسال ${successful} دعوة بنجاح`,
+          })
+        );
+      }
       setShowInvitationPopup(false);
       setSelectedGuests([]);
     } catch (error) {

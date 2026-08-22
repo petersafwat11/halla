@@ -2,6 +2,8 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, spacing, borderRadius } from "../../../styles/tokens";
+import { toGuestDTO } from "@halaa/shared/utils";
+import { classifyRsvpBucket } from "@halaa/shared/constants";
 
 const RSVP_CONFIG = {
   confirmed: { color: "#2A8C5B", bg: "#EAF4EF", labelKey: "confirmed" },
@@ -10,8 +12,9 @@ const RSVP_CONFIG = {
 };
 
 const GuestListSection = ({ guestList, t, SectionCard }) => {
-  const renderGuest = (g, idx) => {
-    const rsvpKey = g.rsvpStatus?.toLowerCase();
+  const renderGuest = (rawGuest, idx) => {
+    const g = toGuestDTO(rawGuest) || rawGuest;
+    const rsvpKey = classifyRsvpBucket(g.status || g.rsvpStatus);
     const rsvpCfg = RSVP_CONFIG[rsvpKey] || { color: "#666", bg: "#F5F5F5", labelKey: "unknown" };
     const label = t(`eventDetails.rsvpStatuses.${rsvpCfg.labelKey}`, rsvpCfg.labelKey);
 

@@ -11,7 +11,7 @@
  * pure functions, not React hooks, so callers can `import` them anywhere.
  */
 
-import { DEFAULT_INVITATION_TYPE } from "../../utils/invitationTypes";
+import { DEFAULT_INVITATION_TYPE } from "../../utils/invitationTypes.js";
 
 // ============================================================================
 // VALIDATION HELPERS
@@ -223,27 +223,16 @@ export const validateStepData = (stepNumber, formData) => {
         formData.taqnyatTemplateRef
       );
     case 5:
-      return true;
+      // Resolves EVT-07: Mandatory review confirmation
+      return formData.confirmReviewed === true;
     case 6:
+      // Full wizard validation across all steps
       return !!(
-        formData.eventType &&
-        formData.eventName &&
-        formData.eventDate &&
-        formData.eventTime &&
-        formData.address?.address &&
-        formData.guestList &&
-        formData.guestList.length > 0 &&
-        // Step-3 satisfied: either a predefined template ref, a custom
-        // upload (templateImage), or both. visualTemplate truthy alone
-        // is no longer enough — an empty {isCustomUpload:true} with no
-        // image must NOT pass.
-        (formData.visualTemplate?.templateRef ||
-          formData.visualTemplate?._id ||
-          formData.visualTemplate?.id ||
-          formData.templateImage) &&
-        (formData.selectedTemplate?.name ||
-          formData.taqnyatTemplate?.templateRef) &&
-        formData.confirmReviewed
+        validateStepData(1, formData) &&
+        validateStepData(2, formData) &&
+        validateStepData(3, formData) &&
+        validateStepData(4, formData) &&
+        formData.confirmReviewed === true
       );
     default:
       return false;
