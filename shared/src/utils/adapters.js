@@ -1,4 +1,4 @@
-import { classifyRsvpBucket } from "../constants/eventStatus.js";
+import { classifyRsvpBucket } from "../constants/status.js";
 import {
   COMPENSATION_PERCENTAGE,
   isPoolPlan,
