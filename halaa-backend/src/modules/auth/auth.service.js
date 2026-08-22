@@ -1231,9 +1231,11 @@ class AuthService {
 
   /**
    * Verify the user's email using the 6-digit code.
+   * Returns the sanitized user DTO (with `emailVerified: true`) so clients
+   * can update their persisted user snapshot without an extra round-trip.
    * @param {string} userId
    * @param {string} code
-   * @returns {Promise<void>}
+   * @returns {Promise<Object>} updated public user
    */
   async verifyEmail(userId, code) {
     const user = await User.findById(userId);
@@ -1254,6 +1256,8 @@ class AuthService {
     }
 
     await user.save({ validateBeforeSave: false });
+
+    return await this.sanitizeUser(user);
   }
 
   // ============================================

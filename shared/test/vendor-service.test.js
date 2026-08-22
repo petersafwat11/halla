@@ -4,7 +4,7 @@ import {
   SERVICE_LIMITS,
   SERVICE_TYPES,
   PREDEFINED_TAGS,
-  normalizeArabicDigits,
+  normalizeArabicDigits as _normalizeArabicDigits,
   vendorServiceFormSchema,
 } from "../src/schemas/vendor.js";
 import { keyFromSignedUrl, resolveImageUrl } from "../src/utils/media.js";

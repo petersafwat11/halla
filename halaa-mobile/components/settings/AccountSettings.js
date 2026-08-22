@@ -32,6 +32,7 @@ const AccountSettings = ({
     resolver: zodResolver(accountSettingsSchema),
     mode: "onChange",
     defaultValues: {
+      name: user?.name || "",
       username: user?.username || "",
       email: user?.email || "",
       currentPassword: "",
@@ -53,8 +54,13 @@ const AccountSettings = ({
     setLoading(true);
     try {
       let hasChanges = false;
-      if (data.username !== user?.username || data.email !== user?.email) {
+      if (
+        data.name !== (user?.name || "") ||
+        data.username !== user?.username ||
+        data.email !== user?.email
+      ) {
         const profileData = {
+          name: data.name,
           username: data.username,
           email: data.email,
         };
@@ -76,6 +82,7 @@ const AccountSettings = ({
       }
 
       reset({
+        name: data.name,
         username: data.username,
         email: data.email,
         currentPassword: "",
@@ -116,9 +123,16 @@ const AccountSettings = ({
 
             <View style={styles.inputsGroup}>
               <TextInput
-                name="username"
+                name="name"
                 label={t("account.fullName")}
                 placeholder={t("account.fullNamePlaceholder")}
+                disabled={loading}
+              />
+
+              <TextInput
+                name="username"
+                label={t("account.username")}
+                placeholder={t("account.usernamePlaceholder")}
                 disabled={loading}
               />
 

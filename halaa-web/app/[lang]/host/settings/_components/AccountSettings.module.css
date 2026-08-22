@@ -42,6 +42,22 @@
   margin-bottom: 0;
 }
 
+.verifiedBadge {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 999px;
+  background: #eaf4ef;
+  border: 1px solid #cde7d8;
+  color: #2a8c5b;
+  font-size: 1.3rem;
+  font-weight: 600;
+  height: fit-content;
+  white-space: nowrap;
+}
+
 .passwordSection {
   display: flex;
   flex-direction: column;

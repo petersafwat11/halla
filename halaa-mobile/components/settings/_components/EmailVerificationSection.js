@@ -12,6 +12,7 @@ import { useToast } from "../../../contexts/ToastContext";
 import { useAuthStore } from "../../../stores/authStore";
 import { EmailInput, OTPInput } from "../../commen";
 import { settingsApi } from "../../../hooks/users/_api";
+import { useVerifyEmail } from "../../../hooks/users/mutations";
 
 const EmailVerificationSection = ({ emailValue, loading }) => {
   const { t } = useTranslation("settings");
@@ -21,6 +22,8 @@ const EmailVerificationSection = ({ emailValue, loading }) => {
   const [showVerificationInput, setShowVerificationInput] = useState(false);
   const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
+
+  const verifyEmailMutation = useVerifyEmail();
 
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
 
@@ -53,7 +56,7 @@ const EmailVerificationSection = ({ emailValue, loading }) => {
 
     setIsVerifyingEmail(true);
     try {
-      await settingsApi.verifyEmail(verificationCode);
+      await verifyEmailMutation.mutateAsync(verificationCode);
       toast.success(t("account.emailVerified"));
       setShowVerificationInput(false);
       setVerificationCode("");
@@ -90,7 +93,9 @@ const EmailVerificationSection = ({ emailValue, loading }) => {
         {user?.emailVerified && (
           <View style={styles.verifiedBadge}>
             <Ionicons name="checkmark-circle" size={16} color="#2A8C5B" />
-            <Text style={styles.verifiedText}>{t("account.emailVerified")}</Text>
+            <Text style={styles.verifiedText}>
+              {t("account.emailVerifiedBadge")}
+            </Text>
           </View>
         )}
 

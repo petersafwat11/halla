@@ -26,6 +26,7 @@ const AccountSettings = ({ user = {} }) => {
     resolver: zodResolver(accountSettingsSchema(t)),
     mode: "onChange",
     defaultValues: {
+      name: user.name || "",
       username: user.username || "",
       email: user.email || "",
       currentPassword: "",
@@ -46,6 +47,7 @@ const AccountSettings = ({ user = {} }) => {
   const onSubmit = async (formData) => {
     try {
       const profileChanged =
+        formData.name !== (user.name || "") ||
         formData.username !== (user.username || "") ||
         formData.email !== (user.email || "");
 
@@ -62,7 +64,11 @@ const AccountSettings = ({ user = {} }) => {
 
       let response = null;
       if (profileChanged) {
-        const profileData = { username: formData.username, email: formData.email };
+        const profileData = {
+          name: formData.name,
+          username: formData.username,
+          email: formData.email,
+        };
         response = await updateProfileMutation.mutateAsync(profileData);
 
         if (response.status === "success") {
@@ -71,6 +77,7 @@ const AccountSettings = ({ user = {} }) => {
       }
 
       reset({
+        name: response?.data?.user?.name || formData.name,
         username: response?.data?.user?.username || formData.username,
         email: response?.data?.user?.email || formData.email,
         currentPassword: "",
@@ -114,13 +121,24 @@ const AccountSettings = ({ user = {} }) => {
   return (
     <FormProvider {...methods}>
       <form className={styles.container} onSubmit={handleSubmit(onSubmit)}>
-        <div className={styles.inputsContainer}>
+          <div className={styles.inputsContainer}>
           <div className={styles.nameAndEmailRow}>
             <div className={styles.inputRow}>
               <InputGroup
-                name="username"
+                name="name"
                 label={t("full_name")}
                 placeholder={t("full_name_placeholder")}
+                type="text"
+                iconPath="auth/profile.svg"
+                required
+              />
+            </div>
+
+            <div className={styles.inputRow}>
+              <InputGroup
+                name="username"
+                label={t("username_label")}
+                placeholder={t("username_placeholder")}
                 type="text"
                 iconPath="auth/profile.svg"
                 required
@@ -136,7 +154,7 @@ const AccountSettings = ({ user = {} }) => {
                 iconPath="auth/email.svg"
                 required
               />
-              {!showVerificationInput && (
+              {!user.emailVerified && !showVerificationInput && (
                 <Button
                   type="button"
                   variant="secondary"
@@ -145,6 +163,11 @@ const AccountSettings = ({ user = {} }) => {
                   onClick={handleSendVerificationCode}
                   disabled={isVerifying}
                 />
+              )}
+              {user.emailVerified && (
+                <span className={styles.verifiedBadge} role="status">
+                  {t("email_verified")}
+                </span>
               )}
             </div>
 

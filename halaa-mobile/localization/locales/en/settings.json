@@ -21,6 +21,9 @@
     "fullName": "Full Name",
     "fullNamePlaceholder": "Enter your full name",
     "email": "Email Address",
+    "usernamePlaceholder": "Enter your username",
+    "username": "Username",
+    "emailVerifiedBadge": "Email verified",
     "emailPlaceholder": "Enter your email",
     "sendCode": "Send Code",
     "sending": "Sending...",
@@ -115,9 +118,5 @@
     "title": "Privacy",
     "privacyPolicy": "Privacy Policy",
     "termsOfService": "Terms of Service"
-  },
-  "legal": {
-    "lastUpdated": "Last updated",
-    "ugcAcceptNotice": "By posting content, you agree to:"
   }
 }

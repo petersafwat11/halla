@@ -6,7 +6,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { toPlanPresentationDTO } from "../src/utils/adapters.js";
-import { PLAN_TYPES, PLAN_FAMILIES, BILLING_TYPES } from "../src/constants/plans.js";
+import { PLAN_TYPES as _PLAN_TYPES, PLAN_FAMILIES as _PLAN_FAMILIES, BILLING_TYPES as _BILLING_TYPES } from "../src/constants/plans.js";
 
 test("toPlanPresentationDTO: Normalizes business quarterly plan with setup fee and extras (PLN-08)", () => {
   const rawPlan = {

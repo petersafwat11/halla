@@ -2,7 +2,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import {
   parseDistrictIds,
-  marketplaceSortOptions,
+  marketplaceSortOptions as _marketplaceSortOptions,
   getPublicVendorsQuerySchema,
   getPublicServicesQuerySchema,
 } from "../src/schemas/vendor.js";

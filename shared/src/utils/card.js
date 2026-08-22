@@ -57,7 +57,7 @@ export function parseCardExpiry(expiry) {
   } else if (typeof expiry === "string") {
     const cleaned = expiry.trim();
     if (cleaned.includes("/") || cleaned.includes("-") || cleaned.includes(".")) {
-      const parts = cleaned.split(/[\/\-\.]/).map((p) => p.trim().replace(/\D/g, ""));
+      const parts = cleaned.split(/[/.-]/).map((p) => p.trim().replace(/\D/g, ""));
       if (parts.length >= 2) {
         monthStr = parts[0];
         yearStr = parts[1];

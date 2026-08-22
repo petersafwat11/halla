@@ -201,7 +201,15 @@ export const useAuthMutation = (action) => {
           path: API_PATHS.auth.verifyEmail,
           data: { code },
         }),
-      onSuccess: () => {
+      onSuccess: (response) => {
+        // Sync the persisted user snapshot immediately so every surface
+        // reading the auth store sees `emailVerified: true` without
+        // waiting for the profile refetch below.
+        const verifiedUser = response?.data?.user;
+        useAuthStore.getState().updateUser({
+          ...(verifiedUser || {}),
+          emailVerified: true,
+        });
         queryClient.invalidateQueries({ queryKey: usersKeys.myProfile() });
       },
     },
