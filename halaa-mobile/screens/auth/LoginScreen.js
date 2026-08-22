@@ -139,6 +139,15 @@ export default function LoginScreen({ navigation }) {
                       <Text style={styles.signupLink}>{t("login.signUp", "إنشاء حساب")}</Text>
                     </TouchableOpacity>
                   </View>
+
+                  <TouchableOpacity
+                    style={styles.guestMarketplaceContainer}
+                    onPress={() => navigation.navigate("Marketplace")}
+                  >
+                    <Text style={styles.guestMarketplaceLink}>
+                      {t("login.browseMarketplace", "تصفح السوق كزائر")}
+                    </Text>
+                  </TouchableOpacity>
                 </>
               ) : (
                 <OTPVerificationForm
@@ -181,4 +190,6 @@ const styles = StyleSheet.create({
   signupContainer: { flexDirection: "row", justifyContent: "center", alignItems: "center", marginTop: 24 },
   signupText: { fontSize: 14, fontFamily: "Cairo_400Regular", color: "#666" },
   signupLink: { fontSize: 14, fontFamily: "Cairo_600SemiBold", color: "#c28e5c" },
+  guestMarketplaceContainer: { alignItems: "center", marginTop: 14, marginBottom: 8 },
+  guestMarketplaceLink: { fontSize: 13, fontFamily: "Cairo_600SemiBold", color: "#8c6036" },
 });

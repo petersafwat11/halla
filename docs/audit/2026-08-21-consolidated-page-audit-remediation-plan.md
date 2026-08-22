@@ -267,7 +267,7 @@ Update one row only after its exit criteria and required tests pass. Use `Blocke
 | 4.2 Marketplace filters/query | Complete | 0.2 |
 
 | 4.3 Marketplace analytics | Complete | Product decision |
-| 4.4 Marketplace locale/navigation | Not started | Access decision; preferably 4.2 |
+| 4.4 Marketplace locale/navigation | Complete | Access decision; preferably 4.2 |
 | 5.1 Identity/email verification | Not started | 0.2 |
 | 5.2 Settings mutation/form stability | Not started | 5.1 |
 | 5.3 Settings destructive/navigation paths | Not started | 5.1 |
@@ -1819,6 +1819,45 @@ This program is complete only when:
   - None.
 - **Blockers / deferred work:**
   - Session 4.3 is Complete. Ready for Git commit.
+
+---
+
+### Session 4.4 Execution Record
+
+- **Session:** Session 4.4 — Marketplace Localization, Public States, and Navigation (`MKT-07`, `MKT-11`)
+- **Status:** Complete
+- **Prerequisites verified:** Sessions 0.2, 4.1, 4.2, 4.3 are Complete (verified).
+- **Key changes:**
+  - **Localization & Translation Namespace Parity (`halaa-web/localization/locales/{ar,en}/marketplace.json`, `halaa-mobile/localization/locales/{ar,en}/marketplace.json`, `halaa-mobile/localization/locales/{ar,en}/auth.json`):**
+    - Aligned all moderation reasons (`rSpam`, `rImpersonation`, `rIllegal`, `rOther`), moderation actions/dialogs (`report`, `reportVendor`, `reportReason`, `reported`, `reportedMsg`, `signInToReport`, `block`, `blockVendor`, `blockConfirm`, `blocked`, `blockedMsg`, `signInToBlock`), common actions (`cancel`, `ok`), loading indicators (`loading`), and not-found headers (`errors.profileNotFoundTitle`).
+    - Added `login.browseMarketplace` to mobile authentication localization files.
+  - **Locale-Aware Location Separator Parity (`halaa-web/app/[lang]/market-place/vendors/[vendorId]/VendorProfile.jsx`, `MarketplaceView.jsx`, `halaa-mobile/screens/common/VendorPublicProfileScreen.js`, `Marketplace.js`):**
+    - Standardized location separators to use Arabic comma (`، `) for Arabic / RTL context and English comma (`, `) for English / LTR context across vendor cards, search results, and public profile views.
+  - **Web Public States, Moderation, and Route Preservation (`halaa-web/app/[lang]/market-place/vendors/[vendorId]/{ReportVendorButton.jsx, not-found.js, error.js, loading.js}`):**
+    - Updated `ReportVendorButton.jsx` to load localized reasons and provide graceful toast guidance for unauthenticated viewers (`signInToReport`, `signInToBlock`), maintaining static server rendering for `VendorProfile.jsx`.
+    - Rewrote `not-found.js`, `error.js`, and `loading.js` with bilingual localized copy, accessible spinner animations, and locale-aware navigation links to `/${lang}/market-place`.
+  - **Mobile Guest Access & Moderation Auth Gates (`halaa-mobile/navigation/AppNavigator.js`, `VendorPublicProfileScreen.js`, `LoginScreen.js`):**
+    - Registered `Marketplace` and `VendorPublicProfile` in `AuthStack` in `AppNavigator.js`, allowing unauthenticated guest users to browse the public marketplace, inspect vendor profiles, and use public contact actions (WhatsApp deep linking, phone dialer, email, website) without auth barriers.
+    - Added unauthenticated auth gates to `handleReport` and `handleBlock` in `VendorPublicProfileScreen.js` that display clear sign-in guidance Alerts on 401 responses instead of uncaught failures.
+    - Added a direct guest marketplace entry point in `LoginScreen.js` for unauthenticated discovery.
+  - **Automated Tests:**
+    - `halaa-web/__tests__/ui/marketplaceLocalizationNavigation.test.mjs`: Tests translation key parity, locale-aware location separators, guest report/block handling, and not-found/error bilingual rendering and navigation.
+    - `halaa-mobile/__tests__/marketplace/marketplaceLocalizationNavigation.test.js`: Tests mobile translation parity, location separator formatting, unauthenticated moderation prompts, and AuthStack guest screen registration.
+- **Verification results:**
+  - `cd shared && npm test` → PASS (80 unit tests passed, 0 failures)
+  - `cd halaa-backend && npm test` → PASS (400 unit/integration tests passed, 0 failures)
+  - `cd halaa-web && npm test` → PASS (84 unit tests passed, 0 failures)
+  - `cd halaa-mobile && npm test` → PASS (146 unit tests passed, 0 failures)
+- **Exit-criteria verification:**
+  - Location separators adapt properly to active locale (`، ` vs `, `).
+  - Unauthenticated / guest users can browse marketplace and view vendor profiles freely on both Web and Mobile.
+  - Moderation actions gracefully guide unauthenticated users to sign in.
+  - Error and not-found states are fully localized and maintain correct locale route links.
+- **Remaining risks / decisions:**
+  - None.
+- **Blockers / deferred work:**
+  - Session 4.4 is Complete. Ready for Git commit.
+
 
 
 

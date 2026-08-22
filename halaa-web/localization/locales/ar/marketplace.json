@@ -86,8 +86,27 @@
     "askAboutService": "استفسر عن الخدمة",
     "requestService": "طلب الخدمة",
     "requestQuote": "طلب عرض سعر",
-    "email": "البريد الإلكتروني"
+    "email": "البريد الإلكتروني",
+    "report": "إبلاغ",
+    "reportVendor": "إبلاغ عن مزود",
+    "reportReason": "اختر سبب الإبلاغ",
+    "rSpam": "محتوى مزعج",
+    "rImpersonation": "انتحال هوية",
+    "rIllegal": "محتوى مخالف",
+    "rOther": "أخرى",
+    "reported": "تم الإبلاغ",
+    "reportedMsg": "تم الإبلاغ. شكرًا لك، سيقوم فريقنا بمراجعته.",
+    "signInToReport": "سجّل الدخول للإبلاغ.",
+    "block": "حظر",
+    "blockVendor": "حظر مقدم الخدمة",
+    "blockConfirm": "هل تريد إخفاء هذا المزود وخدماته من سوقك؟",
+    "blocked": "تم الحظر",
+    "blockedMsg": "تم حظر مقدم الخدمة وإخفاؤه من السوق.",
+    "signInToBlock": "سجّل الدخول للحظر."
   },
+  "cancel": "إلغاء",
+  "ok": "حسناً",
+  "loading": "جاري التحميل...",
   "currency": "ريال",
   "title": "سوق هلا",
   "hero": {
@@ -110,6 +129,8 @@
   "errors": {
     "loadFailed": "تعذر تحميل المزودين حالياً.",
     "loadFailedTitle": "السوق غير متاح",
+    "profileNotFoundTitle": "مزود الخدمة غير موجود",
+    "profileLoadFailed": "ملف هذا المزود غير متاح حالياً",
     "retry": "حاول مرة أخرى",
     "categoriesLoadFailed": "تعذر تحميل الفئات"
   },

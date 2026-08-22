@@ -70,7 +70,7 @@ export default function VendorPublicProfileScreen({ route, navigation }) {
 
   const location = useMemo(() => {
     const value = vendor?.location || vendor?.serviceLocation;
-    return [isAr ? value?.cityNameAr : value?.cityNameEn, isAr ? value?.regionNameAr : value?.regionNameEn].filter(Boolean).join("، ");
+    return [isAr ? value?.cityNameAr : value?.cityNameEn, isAr ? value?.regionNameAr : value?.regionNameEn].filter(Boolean).join(isAr ? "، " : ", ");
   }, [vendor, isAr]);
 
   if (isLoading) {
@@ -115,19 +115,26 @@ export default function VendorPublicProfileScreen({ route, navigation }) {
           reason,
         },
       });
-      if (!res.ok) throw new Error("report_failed");
+      if (!res.ok) {
+        if (res.status === 401) {
+          Alert.alert(t("vendor.report", "Report"), t("vendor.signInToReport", isAr ? "سجّل الدخول للإبلاغ." : "Please sign in to report."));
+          return;
+        }
+        throw new Error("report_failed");
+      }
       Alert.alert(
         t("vendor.reported", "Reported"),
         t("vendor.reportedMsg", "Thank you. Our team will review this.")
       );
     } catch {
-      Alert.alert(t("errors.generic", "Something went wrong"));
+      Alert.alert(t("errors.generic", isAr ? "حدث خطأ ما" : "Something went wrong"));
     }
   };
   const handleReport = () => {
     Alert.alert(t("vendor.report", "Report vendor"), t("vendor.reportReason", "Pick a reason"), [
       { text: t("vendor.rSpam", "Spam"), onPress: () => reportVendor("spam") },
       { text: t("vendor.rImpersonation", "Impersonation"), onPress: () => reportVendor("impersonation") },
+      { text: t("vendor.rIllegal", isAr ? "محتوى مخالف" : "Prohibited content"), onPress: () => reportVendor("illegal") },
       { text: t("vendor.rOther", "Other"), onPress: () => reportVendor("other") },
       { text: t("cancel", "Cancel"), style: "cancel" },
     ]);
@@ -138,14 +145,20 @@ export default function VendorPublicProfileScreen({ route, navigation }) {
         method: "POST",
         body: { blockedActorType: "user", blockedActorId: vendor.id },
       });
-      if (!res.ok) throw new Error("block_failed");
+      if (!res.ok) {
+        if (res.status === 401) {
+          Alert.alert(t("vendor.block", "Block"), t("vendor.signInToBlock", isAr ? "سجّل الدخول للحظر." : "Please sign in to block."));
+          return;
+        }
+        throw new Error("block_failed");
+      }
       Alert.alert(
         t("vendor.blocked", "Vendor blocked"),
         t("vendor.blockedMsg", "This vendor will no longer appear in your marketplace."),
         [{ text: t("ok", "OK"), onPress: () => navigation.goBack() }]
       );
     } catch {
-      Alert.alert(t("errors.generic", "Something went wrong"));
+      Alert.alert(t("errors.generic", isAr ? "حدث خطأ ما" : "Something went wrong"));
     }
   };
   const handleBlock = () => {

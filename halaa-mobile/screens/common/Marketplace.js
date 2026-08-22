@@ -41,26 +41,64 @@ export default function Marketplace({ navigation }) {
     return () => clearTimeout(timer);
   }, [searchInput]);
 
-  const queryFilters = useMemo(() => ({ ...filters, search, districtIds: filters.districtIds, rating: filters.minRating, lang: i18n.language }), [filters, search, i18n.language]);
-  const { data, isLoading, error, refetch, isRefetching, fetchNextPage, hasNextPage, isFetchingNextPage } = useMarketplaceVendors(queryFilters);
-  useEffect(() => { if (error) toast.error(t("errors.loadFailed")); }, [error, toast, t]);
+  const queryFilters = useMemo(
+    () => ({
+      ...filters,
+      search,
+      districtIds: filters.districtIds,
+      rating: filters.minRating,
+      lang: i18n.language,
+    }),
+    [filters, search, i18n.language]
+  );
 
-  const vendors = useMemo(() => (data?.pages?.flatMap((page) => page?.data || []) || []).map((vendor) => {
-    const value = vendor.location || vendor.serviceLocation;
-    const isAr = i18n.language === "ar";
-    return {
-      ...vendor,
-      description: vendor.tagline || vendor.shortDescription,
-      serviceCategories: vendor.categories || vendor.serviceCategories || [],
-      location: [isAr ? value?.cityNameAr : value?.cityNameEn, isAr ? value?.regionNameAr : value?.regionNameEn].filter(Boolean).join("، ") || t("vendor.defaultLocation"),
-      minPrice: vendor.startingPrice?.amount ?? vendor.minPrice,
-      currency: vendor.startingPrice?.currency || t("vendor.sar"),
-    };
-  }), [data, i18n.language, t]);
+  const {
+    data,
+    isLoading,
+    error,
+    refetch,
+    isRefetching,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useMarketplaceVendors(queryFilters);
+
+  useEffect(() => {
+    if (error) toast.error(t("errors.loadFailed"));
+  }, [error, toast, t]);
+
+  const vendors = useMemo(
+    () =>
+      (data?.pages?.flatMap((page) => page?.data || []) || []).map((vendor) => {
+        const value = vendor.location || vendor.serviceLocation;
+        const isAr = i18n.language === "ar";
+        return {
+          ...vendor,
+          description: vendor.tagline || vendor.shortDescription,
+          serviceCategories: vendor.categories || vendor.serviceCategories || [],
+          location:
+            [isAr ? value?.cityNameAr : value?.cityNameEn, isAr ? value?.regionNameAr : value?.regionNameEn]
+              .filter(Boolean)
+              .join(isAr ? "، " : ", ") || t("vendor.defaultLocation"),
+          minPrice: vendor.startingPrice?.amount ?? vendor.minPrice,
+          currency: vendor.startingPrice?.currency || t("vendor.sar"),
+        };
+      }),
+    [data, i18n.language, t]
+  );
 
   const categories = categoriesQuery.data?.data?.categories || [];
   const total = data?.pages?.[0]?.pagination?.total || vendors.length;
-  const activeFilterCount = [filters.serviceType !== "all", filters.regionId, filters.cityId, filters.districtIds?.length, filters.minPrice, filters.maxPrice, filters.minRating].filter(Boolean).length;
+  const activeFilterCount = [
+    filters.serviceType !== "all",
+    filters.regionId,
+    filters.cityId,
+    filters.districtIds?.length,
+    filters.minPrice,
+    filters.maxPrice,
+    filters.minRating,
+  ].filter(Boolean).length;
+
   const chooseCategory = (value) => setFilters((current) => ({ ...current, serviceType: value }));
 
   return (
@@ -68,7 +106,12 @@ export default function Marketplace({ navigation }) {
       <StatusBar barStyle="light-content" backgroundColor={colors.primary[500]} />
       <TopBar title={`${t("title")}${total ? ` (${total})` : ""}`} onBack={() => navigation?.goBack()} showBack={false} />
       <View style={styles.content}>
-        <SearchAndFilter searchQuery={searchInput} onSearch={setSearchInput} onFilterPress={() => setFiltersOpen(true)} activeFiltersCount={activeFilterCount} />
+        <SearchAndFilter
+          searchQuery={searchInput}
+          onSearch={setSearchInput}
+          onFilterPress={() => setFiltersOpen(true)}
+          activeFiltersCount={activeFilterCount}
+        />
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -78,17 +121,49 @@ export default function Marketplace({ navigation }) {
           {[{ key: "all", label: t("sections.all") }, ...categories.map((item) => ({ key: item.key, label: i18n.language === "ar" ? item.nameAr : item.nameEn }))].map((item) => {
             const active = filters.serviceType === item.key;
             return (
-              <TouchableOpacity key={item.key} style={[styles.category, active && styles.categoryActive]} onPress={() => chooseCategory(item.key)}>
-                <Ionicons name={CATEGORY_ICONS[item.key] || "grid-outline"} size={15} color={active ? colors.natural[50] : colors.primary[500]} />
+              <TouchableOpacity
+                key={item.key}
+                style={[styles.category, active && styles.categoryActive]}
+                onPress={() => chooseCategory(item.key)}
+              >
+                <Ionicons
+                  name={CATEGORY_ICONS[item.key] || "grid-outline"}
+                  size={15}
+                  color={active ? colors.natural[50] : colors.primary[500]}
+                />
                 <Text style={[styles.categoryText, active && styles.categoryTextActive]}>{item.label}</Text>
               </TouchableOpacity>
             );
           })}
         </ScrollView>
-        <View style={styles.resultRow}><Text style={styles.resultTitle}>{t("results.title", { count: total })}</Text><Text style={styles.resultHint}>{t("results.subtitle")}</Text></View>
-        <VendorCards vendors={vendors} onVendorPress={(vendor) => navigation.navigate("VendorPublicProfile", { vendorId: vendor.id })} loading={isLoading} error={error} onRetry={refetch} onReset={() => { setFilters(EMPTY_FILTERS); setSearchInput(""); setSearch(""); }} refreshing={isRefetching} onRefresh={refetch} onEndReached={() => hasNextPage && !isFetchingNextPage && fetchNextPage()} isFetchingNextPage={isFetchingNextPage} />
+        <View style={styles.resultRow}>
+          <Text style={styles.resultTitle}>{t("results.title", { count: total })}</Text>
+          <Text style={styles.resultHint}>{t("results.subtitle")}</Text>
+        </View>
+        <VendorCards
+          vendors={vendors}
+          onVendorPress={(vendor) => navigation.navigate("VendorPublicProfile", { vendorId: vendor.id })}
+          loading={isLoading}
+          error={error}
+          onRetry={refetch}
+          onReset={() => {
+            setFilters(EMPTY_FILTERS);
+            setSearchInput("");
+            setSearch("");
+          }}
+          refreshing={isRefetching}
+          onRefresh={refetch}
+          onEndReached={() => hasNextPage && !isFetchingNextPage && fetchNextPage()}
+          isFetchingNextPage={isFetchingNextPage}
+        />
       </View>
-      <FilterPopup visible={filtersOpen} onClose={() => setFiltersOpen(false)} filters={filters} onApplyFilters={setFilters} onResetFilters={() => setFilters(EMPTY_FILTERS)} />
+      <FilterPopup
+        visible={filtersOpen}
+        onClose={() => setFiltersOpen(false)}
+        filters={filters}
+        onApplyFilters={setFilters}
+        onResetFilters={() => setFilters(EMPTY_FILTERS)}
+      />
     </SafeAreaView>
   );
 }

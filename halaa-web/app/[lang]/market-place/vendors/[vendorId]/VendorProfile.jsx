@@ -56,7 +56,7 @@ export default function VendorProfile({
     rtl ? district?.nameAr : district?.nameEn,
     rtl ? locationData?.cityNameAr : locationData?.cityNameEn,
     rtl ? locationData?.regionNameAr : locationData?.regionNameEn,
-  ].filter(Boolean).join("، ");
+  ].filter(Boolean).join(rtl ? "، " : ", ");
 
   const categoryNames = (vendor.categories || []).map((key) => copy.sections?.[key] || key);
   const contact = vendor.contact || {};
