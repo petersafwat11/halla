@@ -83,7 +83,7 @@
   "pageTitle": "اختر باقتك",
   "pageSubtitle": "اختر الباقة المناسبة لمناسبتك",
   "loading": "جار التحميل...",
-  "planFamilies": { "basic": "هلا بيسك", "premium": "هلا بريميوم" },
+  "planFamilies": { "basic": "هلا بيسك", "premium": "هلا بريميوم", "business": "هلا أعمال" },
   "planFamilyDescriptions": {
     "basic": "تدير كل شيء بنفسك — نحن نتولى الجانب التقني",
     "premium": "فريقنا يدير كل شيء عنك"

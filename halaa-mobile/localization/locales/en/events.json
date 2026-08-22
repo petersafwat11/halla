@@ -2,6 +2,9 @@
   "title": "Events",
   "guestCount_zero": "0 guests",
   "guestCount_one": "1 guest",
+  "guestCount_two": "2 guests",
+  "guestCount_few": "{{count}} guests",
+  "guestCount_many": "{{count}} guests",
   "guestCount_other": "{{count}} guests",
   "list": {
     "searchPlaceholder": "Search events...",

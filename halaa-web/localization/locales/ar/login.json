@@ -38,7 +38,25 @@
       "noAccount": "ليس لديك حساب؟",
       "createAccount": "إنشاء حساب"
     },
-    "email": {},
+    "initialForm": {
+      "title": "اختيار الخدمة",
+      "description": "ما نوع الحدث الذي تريد تنظيمه؟",
+      "service": {
+        "label": "اختر الخدمة",
+        "placeholder": "اختر نوع الخدمة",
+        "options": {
+          "hosted": "دعوتك علينا",
+          "selfService": "دعوتك بيدك"
+        },
+        "descriptions": {
+          "hosted": "فريق هلا يتولى كل شيء من تصميم وإرسال ومتابعة الحضور.",
+          "selfService": "صمم وأرسل دعواتك بسهولة عبر الواتساب مع كود QR خاص لكل ضيف!"
+        },
+        "errors": {
+          "serviceRequired": "يرجى اختيار نوع الخدمة"
+        }
+      }
+    },
     "errors": {
       "emailRequired": "البريد الإلكتروني مطلوب",
       "invalidEmail": "قم بإدخال بريد إالكتروني صالح مثال example@domain.com",
