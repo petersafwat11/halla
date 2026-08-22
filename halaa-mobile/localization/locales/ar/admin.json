@@ -277,7 +277,9 @@
       "emailRequired": "البريد الإلكتروني مطلوب",
       "invalidEmail": "يرجى إدخال بريد إلكتروني صالح",
       "passwordRequired": "كلمة المرور مطلوبة",
-      "saveFailed": "فشل حفظ المشرف"
+      "saveFailed": "فشل حفظ المشرف",
+      "passwordMin": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
+      "passwordPlaceholder": "أدخل كلمة المرور"
     },
     "permissions": {
       "manageHosts": "إدارة المضيفين",
@@ -586,7 +588,8 @@
       "cancel": "إلغاء المناسبة",
       "suspend": "إيقاف المناسبة",
       "activate": "تفعيل المناسبة",
-      "viewHost": "عرض المضيف"
+      "viewHost": "عرض المضيف",
+      "cancelConfirm": "هل أنت متأكد من إلغاء هذه المناسبة؟"
     },
     "guests": {
       "title": "قائمة الضيوف",
@@ -976,7 +979,8 @@
       "max": "حد أقصى",
       "event": "فعالية",
       "events": "فعاليات",
-      "oneEvent": "فعالية واحدة"
+      "oneEvent": "فعالية واحدة",
+      "perQuarter": "/ربع سنة"
     },
     "details": {
       "name": "اسم الخطة",
@@ -1366,7 +1370,11 @@
       "statusUpdated": "تم تحديث الحالة",
       "statusUpdateFailed": "فشل تحديث الحالة",
       "deleted": "تم حذف الحساب",
-      "deleteFailed": "فشل حذف الحساب"
+      "deleteFailed": "فشل حذف الحساب",
+      "statusConfirmTitle": "تغيير الحالة",
+      "statusConfirmBody": "هل أنت متأكد من تغيير حالة هذا الحساب؟",
+      "deleteConfirmTitle": "حذف الحساب",
+      "deleteConfirmBody": "هل أنت متأكد من حذف هذا الحساب؟"
     },
     "deleteConfirm": {
       "title": "حذف حساب الأعمال",

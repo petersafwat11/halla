@@ -36,8 +36,17 @@
     "4stars": "4+ نجوم",
     "3stars": "3+ نجوم",
     "2stars": "2+ نجوم",
+    "noDistricts": "لا توجد أحياء متاحة",
     "reset": "إعادة تعيين",
     "apply": "تطبيق التصفية"
+  },
+  "common": {
+    "errors": {
+      "locationLoadFailed": "تعذر تحميل المواقع"
+    },
+    "actions": {
+      "retry": "إعادة المحاولة"
+    }
   },
   "vendor": {
     "defaultName": "خدمة",

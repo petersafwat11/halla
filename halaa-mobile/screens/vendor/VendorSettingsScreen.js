@@ -39,7 +39,7 @@ const VendorSettingsScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <View style={styles.container}>
-        <TopBar title={t("settings.title")} showBack={true} />
+        <TopBar title={tSettings("title", "Settings")} showBack={true} />
         <View style={styles.content}>
           <ScrollView
             showsVerticalScrollIndicator={false}

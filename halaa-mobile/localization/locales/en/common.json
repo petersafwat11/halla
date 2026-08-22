@@ -1,6 +1,7 @@
 {
-  "success": "successful",
-  "templates": "Event templates",
+  "success": "Success",
+  "select": "Select",
+  "templates": "Event Templates",
   "templates_categories_error": "Could not load categories",
   "templates_load_error": "Could not load templates",
   "no_templates_available": "No templates available",
@@ -52,7 +53,12 @@
       "message": "You're all caught up! Check back later."
     },
     "delete": "Delete",
-    "justNow": "Just now"
+    "justNow": "Just now",
+    "markReadError": "Failed to mark notification as read",
+    "deleteError": "Failed to delete notification",
+    "markAllError": "Failed to mark all notifications as read",
+    "clearAllError": "Failed to clear notifications",
+    "loadError": "Failed to load notifications"
   },
   "fonts": {
     "cairo": {

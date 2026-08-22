@@ -1,5 +1,6 @@
 {
   "success": "بنجاح",
+  "select": "اختر",
   "templates": "قوالب المناسبات",
   "templates_categories_error": "تعذر تحميل الفئات",
   "templates_load_error": "تعذر تحميل القوالب",
@@ -52,7 +53,12 @@
       "message": "أنت على اطلاع بكل شيء! تحقق لاحقاً."
     },
     "delete": "حذف",
-    "justNow": "الآن"
+    "justNow": "الآن",
+    "markReadError": "فشل تحديد الإشعار كمقروء",
+    "deleteError": "فشل حذف الإشعار",
+    "markAllError": "فشل تحديد جميع الإشعارات كمقروءة",
+    "clearAllError": "فشل مسح الإشعارات",
+    "loadError": "فشل تحميل الإشعارات"
   },
   "fonts": {
     "cairo": {

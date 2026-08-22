@@ -10,6 +10,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useTranslation } from "../../localization";
 import { useAvailableAddons } from "../../hooks";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
 import {
   colors,
   spacing,
@@ -211,11 +212,7 @@ const AddonsSection = ({ onAddonsChange, showBusiness = false }) => {
                   {t(`addons.designTypes.${tier.type}`)}
                 </Text>
                 <Text style={styles.designPrice}>
-                  {tier.price}
-                  <Text style={styles.designPriceUnit}>
-                    {" "}
-                    {t("common.currency.sar")}
-                  </Text>
+                  {isolateLtr(`${tier.price} ${t("common.currency.sar")}`)}
                 </Text>
               </TouchableOpacity>
             );
@@ -268,11 +265,7 @@ const AddonsSection = ({ onAddonsChange, showBusiness = false }) => {
                 })}
             </Text>
             <Text style={styles.designPrice}>
-              {bizPrice}
-              <Text style={styles.designPriceUnit}>
-                {" "}
-                {t("common.currency.sar")}
-              </Text>
+              {isolateLtr(`${bizPrice} ${t("common.currency.sar")}`)}
             </Text>
           </TouchableOpacity>
         </AddonCard>
@@ -316,11 +309,7 @@ const SummaryBar = ({ t, selectedCount, total, onClear }) =>
         </Text>
         <View style={styles.summaryDivider} />
         <Text style={styles.summaryTotal}>
-          {total}
-          <Text style={styles.summaryTotalUnit}>
-            {" "}
-            {t("common.currency.sar")}
-          </Text>
+          {isolateLtr(`${total} ${t("common.currency.sar")}`)}
         </Text>
         {onClear ? (
           <TouchableOpacity
@@ -375,11 +364,7 @@ const AddonCard = ({
             style={styles.selectedChipIcon}
           />
           <Text style={styles.selectedChipText}>
-            {activePrice}
-            <Text style={styles.selectedChipUnit}>
-              {" "}
-              {t("common.currency.sar")}
-            </Text>
+            {isolateLtr(`${activePrice} ${t("common.currency.sar")}`)}
           </Text>
         </LinearGradient>
       ) : null}
@@ -402,13 +387,9 @@ const TierTile = ({ active, onPress, quantity, price, t }) => {
           end={{ x: 0, y: 1 }}
           style={[styles.tile, styles.tileActive]}
         >
-          <Text style={[styles.tileQty, styles.tileQtyActive]}>+{quantity}</Text>
+          <Text style={[styles.tileQty, styles.tileQtyActive]}>{isolateLtr(`+${quantity}`)}</Text>
           <Text style={[styles.tilePrice, styles.tilePriceActive]}>
-            {price}
-            <Text style={styles.tilePriceUnit}>
-              {" "}
-              {t("common.currency.sar")}
-            </Text>
+            {isolateLtr(`${price} ${t("common.currency.sar")}`)}
           </Text>
         </LinearGradient>
       </TouchableOpacity>
@@ -421,10 +402,9 @@ const TierTile = ({ active, onPress, quantity, price, t }) => {
       onPress={onPress}
       activeOpacity={0.85}
     >
-      <Text style={styles.tileQty}>+{quantity}</Text>
+      <Text style={styles.tileQty}>{isolateLtr(`+${quantity}`)}</Text>
       <Text style={styles.tilePrice}>
-        {price}
-        <Text style={styles.tilePriceUnit}> {t("common.currency.sar")}</Text>
+        {isolateLtr(`${price} ${t("common.currency.sar")}`)}
       </Text>
     </TouchableOpacity>
   );
@@ -452,11 +432,13 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontFamily: "Cairo_700Bold",
     fontSize: typography.fontSize.title.medium,
+    lineHeight: 24,
     color: colors.secondary[700],
   },
   sectionSubtitle: {
     fontFamily: "Cairo_400Regular",
     fontSize: typography.fontSize.body.small,
+    lineHeight: 18,
     color: colors.natural[400],
   },
 
@@ -491,6 +473,7 @@ const styles = StyleSheet.create({
   summaryCount: {
     fontFamily: "Cairo_700Bold",
     fontSize: typography.fontSize.caption.large,
+    lineHeight: 18,
     color: colors.secondary[700],
   },
   summaryDivider: {
@@ -501,6 +484,7 @@ const styles = StyleSheet.create({
   summaryTotal: {
     fontFamily: "Cairo_700Bold",
     fontSize: typography.fontSize.body.medium,
+    lineHeight: 20,
     color: colors.primary[700],
   },
   summaryTotalUnit: {
@@ -562,6 +546,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontFamily: "Cairo_700Bold",
     fontSize: typography.fontSize.title.small,
+    lineHeight: 22,
     color: colors.secondary[700],
   },
   cardDesc: {
@@ -590,6 +575,7 @@ const styles = StyleSheet.create({
   selectedChipText: {
     fontFamily: "Cairo_700Bold",
     fontSize: typography.fontSize.caption.large,
+    lineHeight: 18,
     color: colors.natural[50],
   },
   selectedChipUnit: {
@@ -615,7 +601,7 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_400Regular",
     fontSize: typography.fontSize.caption.large,
     color: colors.natural[450],
-    lineHeight: 16,
+    lineHeight: 18,
   },
   tileWrap: {
     flexBasis: "22%",
@@ -650,6 +636,7 @@ const styles = StyleSheet.create({
   tilePrice: {
     fontFamily: "Cairo_500Medium",
     fontSize: typography.fontSize.caption.large,
+    lineHeight: 18,
     color: colors.accent[500],
   },
   tilePriceActive: {
@@ -698,6 +685,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontFamily: "Cairo_600SemiBold",
     fontSize: typography.fontSize.body.small,
+    lineHeight: 18,
     color: colors.secondary[700],
   },
   designNameActive: {
@@ -706,6 +694,7 @@ const styles = StyleSheet.create({
   designPrice: {
     fontFamily: "Cairo_700Bold",
     fontSize: typography.fontSize.body.medium,
+    lineHeight: 20,
     color: colors.primary[600],
   },
   designPriceUnit: {

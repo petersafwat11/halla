@@ -13,9 +13,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLanguage, useTranslation } from "../../localization";
 import { getStatusVisual } from "../../constants/statusColors";
 import { getImageUrl } from "../../utils/imageUtils";
+import { formatDateTime } from "@halaa/shared/utils/locale";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
 
 const TicketCard = ({ ticket, onDelete, onEdit, onRate, index }) => {
-  const { t } = useTranslation("tickets");
+  const { t, currentLanguage } = useTranslation("tickets");
 
   const scaleAnim = React.useRef(new Animated.Value(0)).current;
   const [imageViewerVisible, setImageViewerVisible] = React.useState(false);
@@ -38,17 +40,13 @@ const TicketCard = ({ ticket, onDelete, onEdit, onRate, index }) => {
     }).start();
   }, []);
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    const hours = String(date.getHours()).padStart(2, "0");
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-    return { date: `${year}-${month}-${day}`, time: `${hours}:${minutes}` };
-  };
-
-  const { date, time } = formatDate(ticket.createdAt);
+  const formattedDate = formatDateTime(ticket.createdAt, currentLanguage, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
   const { fg: statusFg, bg: statusBg } = getStatusVisual(ticket.status);
 
   return (
@@ -121,8 +119,7 @@ const TicketCard = ({ ticket, onDelete, onEdit, onRate, index }) => {
           <Text style={styles.createdLabel}>
             {t("createdAt")}
           </Text>
-          <Text style={styles.date}>{date}</Text>
-          <Text style={styles.time}>{time}</Text>
+          <Text style={styles.date}>{isolateLtr(formattedDate)}</Text>
         </View>
 
         <Text

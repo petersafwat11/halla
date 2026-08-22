@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { useTranslation } from "../../../localization";
 import { formatNumber } from "@halaa/shared/utils/locale";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
 import { colors, spacing, typography } from "../../../styles/tokens";
 import SarIcon from "../../commen/SarIcon";
 
@@ -19,7 +20,9 @@ const PlanPriceBlock = ({ planFamily, price, planName }) => {
       <View style={styles.cardTopRow}>
         <Text style={styles.cardName}>{name}</Text>
         <View style={styles.priceRow}>
-          <Text style={styles.priceNum}>{formatNumber(price || 0, currentLanguage)}</Text>
+          <Text style={styles.priceNum}>
+            {isolateLtr(formatNumber(price || 0, currentLanguage))}
+          </Text>
           <SarIcon size={20} color={colors.secondary[700]} />
         </View>
       </View>
@@ -40,12 +43,13 @@ const styles = StyleSheet.create({
   cardTopRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "flex-start",
+    alignItems: "center",
     gap: spacing[12],
   },
   cardName: {
     fontFamily: "Cairo_700Bold",
     fontSize: typography.fontSize.title.large,
+    lineHeight: 28,
     color: colors.secondary[700],
     flex: 1,
     minWidth: 0,
@@ -59,7 +63,7 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_700Bold",
     fontSize: 26,
     color: colors.secondary[700],
-    lineHeight: 28,
+    lineHeight: 36,
   },
   cardTagline: {
     fontFamily: "Cairo_600SemiBold",

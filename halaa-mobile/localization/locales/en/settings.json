@@ -45,11 +45,14 @@
     "updateSuccess": "Account updated successfully",
     "updateError": "Failed to update account",
     "wrongCurrentPassword": "Current password is incorrect",
+    "passwordUpdateSuccess": "Password updated successfully",
     "verificationCodeSent": "Verification code sent to your email",
     "verificationCodeError": "Failed to send verification code",
     "invalidVerificationCode": "Invalid verification code",
     "emailVerified": "Email verified successfully",
-    "verificationError": "Failed to verify email"
+    "verificationError": "Failed to verify email",
+    "profileSavedPasswordFailed": "Profile updated, but password change failed",
+    "passwordSavedProfileFailed": "Password updated, but profile update failed"
   },
   "deleteAccount": {
     "button": "Delete Account",

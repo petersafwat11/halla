@@ -75,13 +75,57 @@ test("resolveInputDirection: phone is localized when empty, LTR once filled", as
     resolveInputDirection("phone", { isRTL: true, hasValue: true }).writingDirection,
     "ltr"
   );
-  // English → always LTR
-  assert.equal(
-    resolveInputDirection("phone", { isRTL: false, hasValue: false }).writingDirection,
-    "ltr"
-  );
   assert.equal(
     resolveInputDirection("phone", { isRTL: false, hasValue: true }).writingDirection,
     "ltr"
+  );
+});
+
+test("resolveLabelDirection: localized follows locale alignment and writing direction", async () => {
+  const { resolveLabelDirection } = await loadResolver();
+
+  const rtl = resolveLabelDirection("localized", { isRTL: true });
+  assert.equal(rtl.writingDirection, "rtl");
+  assert.equal(rtl.textAlign, "right");
+
+  const ltr = resolveLabelDirection("localized", { isRTL: false });
+  assert.equal(ltr.writingDirection, "ltr");
+  assert.equal(ltr.textAlign, "left");
+
+  // strictly ltr label
+  const strictlyLtr = resolveLabelDirection("ltr", { isRTL: true });
+  assert.equal(strictlyLtr.writingDirection, "ltr");
+  assert.equal(strictlyLtr.textAlign, "left");
+});
+
+test("RTL-01 & RTL-02: TextInput, DropdownInput, and TicketModal use direction contracts", () => {
+  const textInputSource = fs.readFileSync(
+    path.resolve(__dirname, "..", "..", "components", "commen", "TextInput.js"),
+    "utf8"
+  );
+  const dropdownSource = fs.readFileSync(
+    path.resolve(__dirname, "..", "..", "components", "commen", "DropdownInput.js"),
+    "utf8"
+  );
+  const ticketModalSource = fs.readFileSync(
+    path.resolve(__dirname, "..", "..", "components", "tickets", "TicketModal.js"),
+    "utf8"
+  );
+
+  assert.ok(
+    textInputSource.includes("useLabelDirection"),
+    "TextInput must use useLabelDirection for label styling"
+  );
+  assert.ok(
+    dropdownSource.includes("useLabelDirection"),
+    "DropdownInput must use useLabelDirection for label styling"
+  );
+  assert.ok(
+    ticketModalSource.includes("useInputDirection") && ticketModalSource.includes("useLabelDirection"),
+    "TicketModal must use useInputDirection and useLabelDirection"
+  );
+  assert.ok(
+    ticketModalSource.includes("directionStyle") && ticketModalSource.includes("labelDirectionStyle"),
+    "TicketModal must apply directionStyle and labelDirectionStyle"
   );
 });

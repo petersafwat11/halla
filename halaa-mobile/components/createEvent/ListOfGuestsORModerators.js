@@ -10,6 +10,7 @@ import {
   FlatList
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "../../localization";
 import EditGuestOrModeratorsModal from "./EditGuestOrModeratorsModal";
 import CategoryPickerSheet from "../commen/CategoryPickerSheet";
@@ -77,6 +78,7 @@ const ListOfGuestsORModerators = ({
   allowAddOnly = false,
 }) => {
   const { t } = useTranslation("createEvent");
+  const insets = useSafeAreaInsets();
   const [editingItem, setEditingItem] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selected, setSelected] = useState({}); // id -> true
@@ -186,7 +188,10 @@ const ListOfGuestsORModerators = ({
       >
         <Pressable style={styles.overlay} onPress={onClose}>
           <Pressable
-            style={styles.modalContainer}
+            style={[
+              styles.modalContainer,
+              { paddingBottom: Math.max(insets?.bottom || 0, 16) }
+            ]}
             onPress={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -204,7 +209,7 @@ const ListOfGuestsORModerators = ({
                 </TouchableOpacity>
               </View>
               <Text style={styles.headerSubtitle}>
-                إجمالي: {list.length} {type === "guest" ? "ضيف" : "مشرف"}
+                {t("total_label", { defaultValue: "إجمالي" })}: {list.length} {type === "guest" ? t("guest_singular", { defaultValue: "ضيف" }) : t("moderator_singular", { defaultValue: "مشرف" })}
               </Text>
             </View>
 
@@ -223,7 +228,9 @@ const ListOfGuestsORModerators = ({
             ) : (
               <View style={styles.emptyState}>
                 <Text style={styles.emptyStateText}>
-                  لا يوجد {type === "guest" ? "ضيوف" : "مشرفين"} حتى الآن
+                  {type === "guest"
+                    ? t("no_guests_yet", { defaultValue: "لا يوجد ضيوف حتى الآن" })
+                    : t("no_moderators_yet", { defaultValue: "لا يوجد مشرفين حتى الآن" })}
                 </Text>
               </View>
             )}

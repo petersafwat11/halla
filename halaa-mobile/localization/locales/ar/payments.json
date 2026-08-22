@@ -1,0 +1,28 @@
+{
+  "title": "سجل المدفوعات",
+  "empty": "لا توجد عمليات دفع بعد",
+  "errors": {
+    "loadFailed": "فشل تحميل سجل المدفوعات"
+  },
+  "pager": {
+    "prev": "السابق",
+    "next": "التالي"
+  },
+  "table": {
+    "status": {
+      "completed": "مكتمل",
+      "pending": "معلق",
+      "failed": "فاشل",
+      "refunded": "مسترجع",
+      "cancelled": "ملغي"
+    },
+    "filter": {
+      "all": "الكل",
+      "success": "ناجح",
+      "completed": "مكتمل",
+      "pending": "معلق",
+      "cancelled": "ملغي",
+      "failed": "فاشل"
+    }
+  }
+}

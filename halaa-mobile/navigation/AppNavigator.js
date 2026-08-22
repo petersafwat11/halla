@@ -53,6 +53,7 @@ import PaymentReturnScreen from "../screens/host/PaymentReturnScreen";
 import PaymentsScreen from "../screens/host/PaymentsScreen";
 import InvitationScreen from "../screens/guest-portal/InvitationScreen";
 import ForcePasswordChangeScreen from "../screens/host/ForcePasswordChangeScreen";
+import CompleteProfileScreen from "../screens/auth/CompleteProfileScreen";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -417,6 +418,18 @@ function ForcePasswordChangeStack() {
   );
 }
 
+// Profile-completion gate for host accounts after OTP
+function CompleteProfileStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen
+        name="CompleteProfile"
+        component={CompleteProfileScreen}
+      />
+    </Stack.Navigator>
+  );
+}
+
 // Root Navigator - switches between Auth and role-based stacks based on auth status
 export default function AppNavigator() {
   const status = useAuthStore((state) => state.status);
@@ -439,6 +452,10 @@ export default function AppNavigator() {
 
   if (user?.mustChangePassword === true) {
     return <ForcePasswordChangeStack />;
+  }
+
+  if (role === "host" && user?.roleData?.profileCompleted === false) {
+    return <CompleteProfileStack />;
   }
 
   // Show appropriate stack based on user role

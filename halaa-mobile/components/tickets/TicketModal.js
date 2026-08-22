@@ -24,11 +24,14 @@ import {
   getCreateTicketDefaults,
 } from "@halaa/shared/schemas/tickets";
 import { useLanguage, useTranslation } from "../../localization";
+import { useInputDirection, useLabelDirection } from "../../hooks/useInputDirection";
 
 const MAX_ATTACHMENT_BYTES = 50 * 1024 * 1024; // 50 MB (matches backend cap)
 
 const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
   const { t } = useTranslation("tickets");
+  const directionStyle = useInputDirection("localized");
+  const labelDirectionStyle = useLabelDirection("localized");
 
   const slideAnim = React.useRef(new Animated.Value(300)).current;
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
@@ -187,7 +190,7 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
           >
             {/* Subject Input */}
             <View style={styles.section}>
-              <Text style={styles.label}>
+              <Text style={[styles.label, labelDirectionStyle]}>
                 {t("popup.subjectLabel")}
               </Text>
               <Controller
@@ -197,6 +200,7 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
                   <TextInput
                     style={[
                       styles.textInput,
+                      directionStyle,
                       errors.subject && styles.textInputError
                     ]}
                     placeholder={t("popup.subjectPlaceholder")}
@@ -205,6 +209,7 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
                     onChangeText={onChange}
                     onBlur={onBlur}
                     maxLength={200}
+                    textAlign="auto"
                   />
                 )}
               />
@@ -217,7 +222,7 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
 
             {/* Type Selection */}
             <View style={styles.section}>
-              <Text style={styles.label}>
+              <Text style={[styles.label, labelDirectionStyle]}>
                   {t("popup.typeLabel")}
               </Text>
               <Controller
@@ -258,7 +263,7 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
 
             {/* Message Input */}
             <View style={styles.section}>
-              <Text style={styles.label}>
+              <Text style={[styles.label, labelDirectionStyle]}>
                   {t("popup.messageLabel")}
               </Text>
               <Controller
@@ -268,6 +273,7 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
                   <TextInput
                     style={[
                       styles.textArea,
+                      directionStyle,
                       errors.message && styles.textAreaError]}
                       placeholder={t("popup.messagePlaceholder")}
                     placeholderTextColor="#999"
@@ -277,6 +283,7 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
                     multiline
                     numberOfLines={6}
                     textAlignVertical="top"
+                    textAlign="auto"
                   />
                 )}
               />
@@ -290,7 +297,7 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
             {/* Attachment (create mode only — edit path doesn't accept files) */}
             {!isEditMode && (
               <View style={styles.section}>
-                <Text style={styles.label}>
+                <Text style={[styles.label, labelDirectionStyle]}>
                   {t("popup.attachmentLabel")}
                 </Text>
 

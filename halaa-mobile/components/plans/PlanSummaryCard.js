@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { getLocalized } from "@halaa/shared/utils/locale";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
 import {
   COMPENSATION_PERCENTAGE,
   isPoolPlan,
@@ -94,10 +95,10 @@ const PlanSummaryCard = ({
           </View>
           <View style={styles.planPrice}>
             {priceDisplay ? (
-              <Text style={styles.priceAmount}>{priceDisplay}</Text>
+              <Text style={styles.priceAmount}>{isolateLtr(priceDisplay)}</Text>
             ) : (
               <>
-                <Text style={styles.priceAmount}>{planPrice}</Text>
+                <Text style={styles.priceAmount}>{isolateLtr(String(planPrice ?? ""))}</Text>
                 <Text style={styles.priceCurrency}>{t("summary.currency")}</Text>
               </>
             )}
@@ -212,12 +213,14 @@ const styles = StyleSheet.create({
   planName: {
     fontFamily: "Cairo_700Bold",
     fontSize: typography.fontSize.body.medium,
+    lineHeight: 20,
     color: colors.secondary[900],
     marginBottom: 2,
   },
   planType: {
     fontFamily: "Cairo_400Regular",
     fontSize: typography.fontSize.label.medium,
+    lineHeight: 18,
     color: colors.natural[450],
   },
   planPrice: {
@@ -228,7 +231,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     color: colors.primary[700],
     letterSpacing: -0.3,
-    lineHeight: 24,
+    lineHeight: 30,
   },
   priceCurrency: {
     fontFamily: "Cairo_600SemiBold",

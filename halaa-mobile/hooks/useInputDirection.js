@@ -70,3 +70,50 @@ export const useInputDirection = (
   const { isRTL } = useTranslation();
   return resolveInputDirection(contentDirection, { isRTL, hasValue });
 };
+
+/**
+ * Pure label direction resolver — resolves alignment & writing direction for form labels.
+ *
+ * @param {string} contentDirection - one of CONTENT_DIRECTIONS (default "localized")
+ * @param {{ isRTL?: boolean }} [state]
+ * @returns {{ textAlign: "left" | "right", writingDirection: "ltr" | "rtl" }}
+ */
+export const resolveLabelDirection = (
+  contentDirection = CONTENT_DIRECTIONS.LOCALIZED,
+  { isRTL = false } = {}
+) => {
+  let writingDirection;
+  let textAlign;
+
+  switch (contentDirection) {
+    case CONTENT_DIRECTIONS.LTR:
+      writingDirection = "ltr";
+      textAlign = "left";
+      break;
+    case CONTENT_DIRECTIONS.RTL:
+      writingDirection = "rtl";
+      textAlign = "right";
+      break;
+    case CONTENT_DIRECTIONS.LOCALIZED:
+    case CONTENT_DIRECTIONS.PHONE:
+    default:
+      writingDirection = isRTL ? "rtl" : "ltr";
+      textAlign = isRTL ? "right" : "left";
+      break;
+  }
+
+  return { textAlign, writingDirection };
+};
+
+/**
+ * React hook flavour for label direction.
+ *
+ * @param {string} contentDirection - one of CONTENT_DIRECTIONS
+ */
+export const useLabelDirection = (
+  contentDirection = CONTENT_DIRECTIONS.LOCALIZED
+) => {
+  const { isRTL } = useTranslation();
+  return resolveLabelDirection(contentDirection, { isRTL });
+};
+

@@ -62,7 +62,7 @@
   "guest_message": "Guest Message",
   "guest_message_placeholder": "Enter guest message",
   "event_date": "Event Date",
-  "event_date_placeholder": "Select entry date",
+  "event_date_placeholder": "Select event date",
   "event_time": "Event Time",
   "event_time_placeholder": "Select event time",
   "address": "Address",
@@ -325,7 +325,6 @@
   "event_name_placeholder": "Enter event name",
   "event_time_label": "Event Time",
   "event_date_label": "Event Date",
-  "event_date_placeholder": "Select event date",
   "event_date_hint": "Earlier dates are disabled — your event must be at least 4 days away so invitations and the reminder have time to send.",
   "event_date_hint_trial": "Earlier dates are disabled — your event must be at least 3 days away so invitations and the reminder have time to send.",
   "address_label": "Address",
@@ -410,7 +409,6 @@
   "enter_full_name": "Enter full name",
   "current_guests": "Current Guests",
   "current_moderators": "Current Gate Supervisors",
-  "save_changes": "Save Changes",
   "guest_name_error_min": "Name must be at least 2 characters",
   "guest_phone_error_invalid": "Mobile number is invalid",
   "staff_name_error_min": "Name must be at least 2 characters",
@@ -425,5 +423,34 @@
         "invalidColor": "Must be a valid color (e.g. #FF5733)"
       }
     }
-  }
+  },
+  "preview_guest_placeholder": "Guest Name",
+  "preview_body_placeholder": "We are pleased to invite you to...",
+  "preview_input_placeholder": "Message text",
+  "saved_design": "Saved Design",
+  "summary": {
+    "metrics": {
+      "guests": "Guests",
+      "moderators": "Moderators",
+      "dateTime": "Date & Time",
+      "location": "Location"
+    },
+    "schedule": {
+      "title": "Send Schedule",
+      "launchesImmediately": "Send Immediately"
+    },
+    "invitationPreview": {
+      "title": "WhatsApp Message Preview",
+      "whatsappTemplate": "WhatsApp Template",
+      "noImageSelected": "No image selected",
+      "noTemplateSelected": "No template selected",
+      "attending": "Attending",
+      "declining": "Declining"
+    }
+  },
+  "total_label": "Total",
+  "guest_singular": "Guest",
+  "moderator_singular": "Moderator",
+  "no_guests_yet": "No guests yet",
+  "no_moderators_yet": "No moderators yet"
 }

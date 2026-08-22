@@ -7,7 +7,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { useFormContext, Controller } from "react-hook-form";
-import { useInputDirection } from "../../hooks/useInputDirection";
+import { useInputDirection, useLabelDirection } from "../../hooks/useInputDirection";
 
 /**
  * Inner field renderer. Hoisted out of the Controller `render` prop so the
@@ -38,10 +38,11 @@ const TextInputField = ({
   const inputRef = React.useRef(null);
   // Localized prose: value/placeholder follow the active locale direction.
   const directionStyle = useInputDirection("localized");
+  const labelDirectionStyle = useLabelDirection("localized");
 
   return (
     <View style={styles.container}>
-      {!!label && <Text style={styles.label}>{label}</Text>}
+      {!!label && <Text style={[styles.label, labelDirectionStyle]}>{label}</Text>}
       {/* The whole box is pressable so a tap anywhere inside (padding included,
           not just the text node) focuses the input. */}
       <Pressable

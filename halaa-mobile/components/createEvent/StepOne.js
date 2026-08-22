@@ -17,6 +17,7 @@ import Svg, { Path } from "react-native-svg";
 import { normalizeSubscriptionResponse } from "@halaa/shared/utils";
 import { useMySubscription } from "../../hooks/users";
 import { EVENT_CATEGORIES } from "@halaa/shared/constants/eventCategories";
+import { useLabelDirection } from "../../hooks/useInputDirection";
 
 const CalendarIcon = () => (
   <Svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -64,6 +65,7 @@ const LocationIcon = () => (
 const StepOne = () => {
   const { control, setValue, watch } = useFormContext();
   const { t, currentLanguage } = useTranslation("createEvent");
+  const labelDirectionStyle = useLabelDirection("localized");
   const { data: subData } = useMySubscription();
   const normalizedSub = normalizeSubscriptionResponse(subData);
   const isTrial = normalizedSub.subscription?.planCode === "trial";
@@ -143,7 +145,7 @@ const StepOne = () => {
 
       {/* Event Date */}
       <View style={styles.inputGroup}>
-        <Text style={styles.label}>{t("event_date_label")}</Text>
+        <Text style={[styles.label, labelDirectionStyle]}>{t("event_date_label")}</Text>
         <TouchableOpacity
           style={styles.selectButton}
           onPress={() => setShowDatePicker(true)}
@@ -186,7 +188,7 @@ const StepOne = () => {
 
       {/* Event Time */}
       <View style={styles.inputGroup}>
-        <Text style={styles.label}>{t("event_time_label")}</Text>
+        <Text style={[styles.label, labelDirectionStyle]}>{t("event_time_label")}</Text>
         <TouchableOpacity
           style={styles.selectButton}
           onPress={() => setShowTimePicker(true)}

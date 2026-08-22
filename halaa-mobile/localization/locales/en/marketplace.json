@@ -36,8 +36,17 @@
     "4stars": "4+ stars",
     "3stars": "3+ stars",
     "2stars": "2+ stars",
+    "noDistricts": "No districts available",
     "reset": "Reset",
     "apply": "Apply Filters"
+  },
+  "common": {
+    "errors": {
+      "locationLoadFailed": "Could not load locations"
+    },
+    "actions": {
+      "retry": "Retry"
+    }
   },
   "vendor": {
     "defaultName": "Service",
