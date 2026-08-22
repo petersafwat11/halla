@@ -12,6 +12,7 @@ import ErrorFallback from "@/ui/common/error/ErrorFallback";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import { useMyProfile, useNotificationPreferences } from "@/hooks/users";
 import { USER_ROLES } from "@/utils/schemas/notificationPreferencesSchemas";
+import { buildDashboardUrl } from "@halaa/shared/utils/routes";
 import styles from "./page.module.css";
 
 const HostSettingsPage = () => {
@@ -67,7 +68,7 @@ const HostSettingsPage = () => {
         <div className={styles.header}>
           <h1 className={styles.title}>
             <IoIosArrowForward
-              onClick={() => router.push(`/${lang}/host`)}
+              onClick={() => router.push(buildDashboardUrl({ role: user?.role || "host", locale: lang }))}
               className={`${styles.backIcon} ${isArabic ? styles.backIconRtl : ""}`}
             />
             {t("title", "الإعدادات")}

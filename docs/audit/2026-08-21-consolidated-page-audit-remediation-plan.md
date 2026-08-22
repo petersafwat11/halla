@@ -270,7 +270,7 @@ Update one row only after its exit criteria and required tests pass. Use `Blocke
 | 4.4 Marketplace locale/navigation | Complete | Access decision; preferably 4.2 |
 | 5.1 Identity/email verification | Complete | 0.2 |
 | 5.2 Settings mutation/form stability | Not started | 5.1 |
-| 5.3 Settings destructive/navigation paths | Not started | 5.1 |
+| 5.3 Settings destructive/navigation paths | Complete | 5.1 |
 | 6.1 Reachability/dead-code cleanup | Not started | Phases 1–5 scoped paths stable |
 | 6.2 Localization/accessibility sweep | Not started | Phases 1–5 scoped paths stable |
 | 6.3 Final regression/release gate | Not started | All preceding required sessions |
@@ -1918,6 +1918,51 @@ This program is complete only when:
   - Users whose stored `name` is empty must enter a name before saving settings (Full Name is a required identity field, matching the pre-existing `required` UI affordance).
 - **Blockers / deferred work:**
   - None. Session 5.2 (Split settings mutations and stabilize forms) is unblocked.
+
+### Session 5.3 Execution Record — Destructive Actions, Settings Navigation, and Placeholders (`SET-04`, `SET-06`, `SET-08`, `SET-09`)
+
+- **Session:** Session 5.3 — Destructive actions, settings navigation, and placeholder routes (`SET-04`, `SET-06`, `SET-08`, `SET-09`)
+- **Execution Date:** 2026-08-22
+- **Status:** Complete
+- **Prerequisites Verified:** Session 5.1 is Complete.
+- **Issues Addressed & Root Causes:**
+  - **SET-04:** Mobile settings tabs (`SettingsTabs.js` and `VendorSettingsTabs.js`) had a tab entry for data deletion policy with label "حذف الحساب والبيانات" and a trash icon, creating user confusion against the actual `<DeleteAccountSection />` destructive self-service action rendered at the bottom of the screen. Changed legal policy tab to `deletionPolicy` with document icon `document-text-outline` and clear policy copy ("سياسة حذف البيانات" / "Data Deletion Policy"), keeping `<DeleteAccountSection />` as the single canonical self-service destructive deletion flow across roles.
+  - **SET-06:** Mobile `VendorSettingsScreen.js` displayed `toast.success(t("settings.saveSuccess"))` ("Changes saved successfully") on logout instead of a logout confirmation. Corrected to use settings namespace `t("tabs.logoutSuccess", t("tabs.logout"))`. Added `logoutSuccess` keys across Arabic/English settings bundles.
+  - **SET-08:** `AdminTemplatesScreen.js` on mobile was an empty placeholder screen with no functionality, yet registered in `AdminNavigator.js` and listed in `adminPermissions.js` `NAV_ITEMS`. Removed the dormant screen registration and permissions menu entry so no navigation ends at a non-feature.
+  - **SET-09:** Cross-tab and settings links lacked role-aware canonical route builders. Added `buildSettingsUrl`, `buildDashboardUrl`, `buildEventsUrl`, `buildMarketplaceUrl`, and `buildMarketplaceVendorUrl` in `@halaa/shared/src/utils/routes.js` (and re-exported from `@halaa/shared/src/utils/index.js`). Updated `HostSettingsPage.js` and `AdminSettingsClient.js` back-navigation to use `buildDashboardUrl`.
+- **Files Modified / Added:**
+  - `shared/src/utils/routes.js`
+  - `shared/src/utils/index.js`
+  - `shared/test/contracts.test.js`
+  - `halaa-mobile/components/settings/SettingsTabs.js`
+  - `halaa-mobile/components/vendor/VendorSettingsTabs.js`
+  - `halaa-mobile/screens/host/SettingsScreen.js`
+  - `halaa-mobile/screens/vendor/VendorSettingsScreen.js`
+  - `halaa-mobile/screens/admin/admin-dashboard/AdminSettingsScreen.js`
+  - `halaa-mobile/navigation/AdminNavigator.js`
+  - `halaa-mobile/utils/adminPermissions.js`
+  - `halaa-mobile/localization/locales/ar/settings.json`
+  - `halaa-mobile/localization/locales/en/settings.json`
+  - `halaa-mobile/__tests__/settings/destructiveAndNav.test.js` (new)
+  - `halaa-web/app/[lang]/host/settings/page.js`
+  - `halaa-web/app/[lang]/admin-dash/settings/_components/AdminSettingsClient.js`
+  - `halaa-web/__tests__/ui/settingsRoleNavigation.test.mjs` (new)
+  - `docs/audit/2026-08-21-consolidated-page-audit-remediation-plan.md`
+- **Exact Test Commands & Results:**
+  - `cd shared && npm test` → PASS (86 tests passed, 0 failures)
+  - `cd halaa-web && npm test` → PASS (92 tests passed, 0 failures)
+  - `cd halaa-mobile && npm test` → PASS (154 tests passed, 0 failures)
+  - `cd halaa-backend && npm test` → PASS (405 tests passed, 0 failures)
+- **Exit-Criteria Verification:**
+  - Destructive action is clear and single: legal policy tab uses document icon and distinct "Data Deletion Policy" label; the real delete action is strictly hosted by `<DeleteAccountSection />` with keyword confirmation + password/OTP re-auth.
+  - Mobile vendor, host, and admin logout triggers show correct localized logout message.
+  - No menu or route ends at placeholder `AdminTemplates`.
+  - Canonical role-aware route builders ensure consistent navigation across roles and locales.
+- **Remaining Risks / Decisions:**
+  - None.
+- **Blockers / Deferred Work:**
+  - None. Session 5.2 can proceed.
+
 
 
 

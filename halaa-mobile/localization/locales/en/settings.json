@@ -7,9 +7,11 @@
     "terms": "Terms & Conditions",
     "communityRules": "Community Rules",
     "refund": "Cancellation & Refund",
-    "deletion": "Delete Account & Data",
+    "deletion": "Data Deletion Policy",
+    "deletionPolicy": "Data Deletion Policy",
     "support": "Support & Contact",
     "logout": "Logout",
+    "logoutSuccess": "Logged out successfully",
     "comingSoon": "Coming soon"
   },
   "legal": {

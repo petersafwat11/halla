@@ -12,7 +12,7 @@ const VendorSettingsTabs = ({ activeTab, onTabChange, onLogout }) => {
     { id: "terms", label: t("tabs.terms"), icon: "document-text-outline" },
     { id: "communityRules", label: t("tabs.communityRules"), icon: "people-outline" },
     { id: "refund", label: t("tabs.refund"), icon: "card-outline" },
-    { id: "deletion", label: t("tabs.deletion"), icon: "trash-outline" },
+    { id: "deletion", label: t("tabs.deletionPolicy", t("tabs.deletion")), icon: "document-text-outline" },
     { id: "support", label: t("tabs.support"), icon: "help-buoy-outline" },
   ];
 

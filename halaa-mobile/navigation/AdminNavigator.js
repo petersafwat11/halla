@@ -47,7 +47,6 @@ import DeletionScreen from "../screens/legal/DeletionScreen";
 import SupportScreen from "../screens/legal/SupportScreen";
 import AdminMoreScreen from "../screens/admin/admin-dashboard/AdminMoreScreen";
 import AdminDiscountsScreen from "../screens/admin/admin-dashboard/AdminDiscountsScreen";
-import AdminTemplatesScreen from "../screens/admin/admin-dashboard/AdminTemplatesScreen";
 
 // Create navigators
 const Tab = createBottomTabNavigator();
@@ -323,14 +322,6 @@ function MoreStackNavigator() {
         <MoreStack.Screen
           name="AdminDiscounts"
           component={AdminDiscountsScreen}
-          options={{ headerShown: false }}
-        />
-      )}
-
-      {canViewPage(userRole, PAGES.TEMPLATES) && (
-        <MoreStack.Screen
-          name="AdminTemplates"
-          component={AdminTemplatesScreen}
           options={{ headerShown: false }}
         />
       )}

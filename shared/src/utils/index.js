@@ -69,6 +69,11 @@ export {
   EVENT_UPDATE_SECTION_TO_STEP,
   parseUpdateEventStep,
   buildUpdateEventUrl,
+  buildSettingsUrl,
+  buildDashboardUrl,
+  buildEventsUrl,
+  buildMarketplaceUrl,
+  buildMarketplaceVendorUrl,
 } from "./routes.js";
 export {
   normalizePhoneNumber,

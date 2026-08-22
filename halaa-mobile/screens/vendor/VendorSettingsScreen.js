@@ -1,6 +1,6 @@
 import { View, StyleSheet, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useTranslation } from "../../localization/hooks/useTranslation";
+import { useTranslation } from "../../localization";
 import { useAuthStore } from "../../stores/authStore";
 import { useToast } from "../../contexts/ToastContext";
 import TopBar from "../../components/plans/TopBar";
@@ -8,13 +8,14 @@ import VendorSettingsTabs from "../../components/vendor/VendorSettingsTabs";
 import DeleteAccountSection from "../../components/settings/DeleteAccountSection";
 
 const VendorSettingsScreen = ({ navigation }) => {
-  const { t } = useTranslation("vendor");
+  const { t: tVendor } = useTranslation("vendor");
+  const { t: tSettings } = useTranslation("settings");
   const toast = useToast();
   const { logout } = useAuthStore();
 
   const handleLogout = async () => {
     await logout();
-    toast.success(t("settings.saveSuccess"));
+    toast.success(tSettings("tabs.logoutSuccess", tSettings("tabs.logout", "Logged out successfully")));
   };
 
   const handleTabChange = (tabId) => {

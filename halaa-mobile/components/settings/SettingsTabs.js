@@ -39,8 +39,8 @@ const SettingsTabs = ({ activeTab, onTabChange, onLogout }) => {
     },
     {
       id: "deletion",
-      label: t("tabs.deletion"),
-      icon: "trash-outline",
+      label: t("tabs.deletionPolicy", t("tabs.deletion")),
+      icon: "document-text-outline",
     },
     {
       id: "support",

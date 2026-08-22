@@ -560,3 +560,46 @@ test("Route builders & parsers (EVT-11): parseUpdateEventStep and buildUpdateEve
   );
 });
 
+test("Role-aware route builders (SET-09): buildSettingsUrl, buildDashboardUrl, buildEventsUrl, buildMarketplaceUrl", async () => {
+  const {
+    buildSettingsUrl,
+    buildDashboardUrl,
+    buildEventsUrl,
+    buildMarketplaceUrl,
+    buildMarketplaceVendorUrl,
+  } = await import("../src/utils/routes.js");
+
+  // Settings URLs
+  assert.equal(buildSettingsUrl({ role: "host", locale: "ar" }), "/ar/host/settings");
+  assert.equal(buildSettingsUrl({ role: "business", locale: "en" }), "/en/host/settings");
+  assert.equal(buildSettingsUrl({ role: "vendor", locale: "ar" }), "/ar/vendor-dashboard/settings");
+  assert.equal(buildSettingsUrl({ role: "admin", locale: "en" }), "/en/admin-dash/settings");
+  assert.equal(buildSettingsUrl({ role: "super_admin", locale: "ar" }), "/ar/admin-dash/settings");
+  assert.equal(buildSettingsUrl({ role: "moderator", locale: "en" }), "/en/admin-dash/settings");
+
+  // Dashboard URLs
+  assert.equal(buildDashboardUrl({ role: "host", locale: "ar" }), "/ar/host");
+  assert.equal(buildDashboardUrl({ role: "business", locale: "en" }), "/en/host");
+  assert.equal(buildDashboardUrl({ role: "vendor", locale: "ar" }), "/ar/vendor-dashboard");
+  assert.equal(buildDashboardUrl({ role: "admin", locale: "en" }), "/en/admin-dash");
+  assert.equal(buildDashboardUrl({ role: "super_admin", locale: "ar" }), "/ar/admin-dash");
+  assert.equal(buildDashboardUrl({ role: "moderator", locale: "en" }), "/en/admin-dash");
+
+  // Events URLs
+  assert.equal(buildEventsUrl({ role: "host", locale: "ar" }), "/ar/host/events");
+  assert.equal(buildEventsUrl({ role: "admin", locale: "en" }), "/en/admin-dash/events");
+
+  // Marketplace URLs
+  assert.equal(buildMarketplaceUrl({ locale: "ar" }), "/ar/market-place");
+  assert.equal(buildMarketplaceUrl({ locale: "en" }), "/en/market-place");
+  assert.equal(
+    buildMarketplaceVendorUrl({ vendorId: "v_123", locale: "ar" }),
+    "/ar/market-place/vendors/v_123"
+  );
+  assert.equal(
+    buildMarketplaceVendorUrl({ vendorId: "v_456", locale: "en" }),
+    "/en/market-place/vendors/v_456"
+  );
+});
+
+

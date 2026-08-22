@@ -120,7 +120,6 @@ const NAV_ITEMS = [
   { key: PAGES.MODERATORS, label: "Moderators", icon: "admin", path: "/admin/moderators", requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN] },
   { key: "plans", label: "Plans", icon: "subscription", path: "/admin/plans", requiredRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN] },
   { key: PAGES.SETTINGS, label: "Settings", icon: "settings", path: "/admin/settings", requiredRoles: ADMIN_ROLES },
-  { key: PAGES.TEMPLATES, label: "Templates", icon: "images", path: "/admin/templates", requiredRoles: PLATFORM_ADMIN_ROLES },
 ];
 
 export const getNavItemsForRole = (role) => {

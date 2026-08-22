@@ -14,7 +14,7 @@ export default function SettingsScreen({ navigation }) {
 
   const handleLogout = async () => {
     await logout();
-    toast.success(t("tabs.logout"));
+    toast.success(t("tabs.logoutSuccess", t("tabs.logout")));
   };
 
   const handleTabChange = (tabId) => {

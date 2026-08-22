@@ -7,9 +7,11 @@
     "terms": "الشروط والأحكام",
     "communityRules": "قواعد المجتمع",
     "refund": "الإلغاء والاسترداد",
-    "deletion": "حذف الحساب والبيانات",
+    "deletion": "سياسة حذف البيانات",
+    "deletionPolicy": "سياسة حذف البيانات",
     "support": "الدعم والتواصل",
     "logout": "تسجيل الخروج",
+    "logoutSuccess": "تم تسجيل الخروج بنجاح",
     "comingSoon": "قريباً"
   },
   "account": {

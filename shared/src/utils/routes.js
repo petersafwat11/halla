@@ -75,3 +75,78 @@ export const buildUpdateEventUrl = ({
   const prefix = locale ? `/${locale}` : "";
   return `${prefix}/${sectionPath}?id=${eventId}&step=${normalizedStep}`;
 };
+
+/**
+ * Builds canonical settings URL based on user role and locale.
+ * @param {Object} options
+ * @param {string} [options.role="host"]
+ * @param {string} [options.locale="ar"]
+ * @returns {string}
+ */
+export const buildSettingsUrl = ({ role = "host", locale = "ar" } = {}) => {
+  const prefix = locale ? `/${locale}` : "";
+  if (role === "admin" || role === "super_admin" || role === "moderator") {
+    return `${prefix}/admin-dash/settings`;
+  }
+  if (role === "vendor") {
+    return `${prefix}/vendor-dashboard/settings`;
+  }
+  return `${prefix}/host/settings`;
+};
+
+/**
+ * Builds canonical dashboard URL based on user role and locale.
+ * @param {Object} options
+ * @param {string} [options.role="host"]
+ * @param {string} [options.locale="ar"]
+ * @returns {string}
+ */
+export const buildDashboardUrl = ({ role = "host", locale = "ar" } = {}) => {
+  const prefix = locale ? `/${locale}` : "";
+  if (role === "admin" || role === "super_admin" || role === "moderator") {
+    return `${prefix}/admin-dash`;
+  }
+  if (role === "vendor") {
+    return `${prefix}/vendor-dashboard`;
+  }
+  return `${prefix}/host`;
+};
+
+/**
+ * Builds canonical events URL based on user role and locale.
+ * @param {Object} options
+ * @param {string} [options.role="host"]
+ * @param {string} [options.locale="ar"]
+ * @returns {string}
+ */
+export const buildEventsUrl = ({ role = "host", locale = "ar" } = {}) => {
+  const prefix = locale ? `/${locale}` : "";
+  if (role === "admin" || role === "super_admin" || role === "moderator") {
+    return `${prefix}/admin-dash/events`;
+  }
+  return `${prefix}/host/events`;
+};
+
+/**
+ * Builds canonical marketplace URL.
+ * @param {Object} options
+ * @param {string} [options.locale="ar"]
+ * @returns {string}
+ */
+export const buildMarketplaceUrl = ({ locale = "ar" } = {}) => {
+  const prefix = locale ? `/${locale}` : "";
+  return `${prefix}/market-place`;
+};
+
+/**
+ * Builds canonical marketplace vendor profile URL.
+ * @param {Object} options
+ * @param {string} options.vendorId
+ * @param {string} [options.locale="ar"]
+ * @returns {string}
+ */
+export const buildMarketplaceVendorUrl = ({ vendorId, locale = "ar" } = {}) => {
+  const prefix = locale ? `/${locale}` : "";
+  return `${prefix}/market-place/vendors/${vendorId}`;
+};
+

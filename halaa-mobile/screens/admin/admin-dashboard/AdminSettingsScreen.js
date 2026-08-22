@@ -2,16 +2,20 @@ import { View, StyleSheet, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "../../../localization";
 import { useAuthStore } from "../../../stores/authStore";
+import { useToast } from "../../../contexts/ToastContext";
 import SettingsTabs from "../../../components/settings/SettingsTabs";
 import DeleteAccountSection from "../../../components/settings/DeleteAccountSection";
 import TopBar from "../../../components/plans/TopBar";
 
 export default function AdminSettingsScreen({ navigation }) {
   const { t } = useTranslation("admin");
+  const { t: tSettings } = useTranslation("settings");
+  const toast = useToast();
   const { logout } = useAuthStore();
 
   const handleLogout = async () => {
     await logout();
+    toast.success(tSettings("tabs.logoutSuccess", tSettings("tabs.logout", "Logged out successfully")));
   };
 
   const handleTabChange = (tabId) => {
