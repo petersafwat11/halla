@@ -4,10 +4,10 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  TextInput as RNTextInput,
   Modal,
   ScrollView
 } from "react-native";
+import RNTextInput from "./DirectionalTextInput";
 import { useFormContext, Controller } from "react-hook-form";
 import { Ionicons } from "@expo/vector-icons";
 

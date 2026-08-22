@@ -10,7 +10,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { Controller, useFormContext } from "react-hook-form";
 import { useTranslation } from "../../localization";
-import { useInputDirection } from "../../hooks/useInputDirection";
+import { useFieldDirection } from "../../hooks/useInputDirection";
 
 /**
  * Hoisted field renderer to satisfy Rules-of-Hooks and stabilize focus state.
@@ -21,6 +21,7 @@ const PasswordInputField = ({
   disabled,
   value,
   error,
+  helper,
   onChange,
   onBlur,
   extraProps,
@@ -29,12 +30,12 @@ const PasswordInputField = ({
   const [isSecure, setIsSecure] = useState(true);
   const inputRef = useRef(null);
   const { t } = useTranslation("common");
-  // Passwords are an intrinsically LTR token class.
-  const directionStyle = useInputDirection("ltr");
+  // Password value is LTR; field chrome still follows the selected locale.
+  const fieldDirection = useFieldDirection("ltr", { hasValue: !!value });
 
   return (
     <View style={styles.container}>
-      {label && <Text style={styles.label}>{label}</Text>}
+      {label && <Text style={[styles.label, fieldDirection.text]}>{label}</Text>}
       <Pressable
         onPress={() => !disabled && inputRef.current?.focus()}
         style={[
@@ -53,7 +54,7 @@ const PasswordInputField = ({
         <RNTextInput
           {...extraProps}
           ref={inputRef}
-          style={[styles.input, directionStyle]}
+          style={[styles.input, fieldDirection.input]}
           placeholder={placeholder}
           placeholderTextColor="#999"
           value={value || ""}
@@ -85,7 +86,12 @@ const PasswordInputField = ({
           />
         </TouchableOpacity>
       </Pressable>
-      {error && <Text style={styles.errorText}>{error.message}</Text>}
+      {error && (
+        <Text style={[styles.errorText, fieldDirection.text]}>{error.message}</Text>
+      )}
+      {!error && helper ? (
+        <Text style={[styles.helperText, fieldDirection.text]}>{helper}</Text>
+      ) : null}
     </View>
   );
 };
@@ -95,6 +101,7 @@ const PasswordInput = ({
   label,
   placeholder,
   disabled = false,
+  helper,
   rules,
   ...props
 }) => {
@@ -115,6 +122,7 @@ const PasswordInput = ({
           disabled={disabled}
           value={value}
           error={error}
+          helper={helper}
           onChange={onChange}
           onBlur={onBlur}
           extraProps={props}
@@ -179,6 +187,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: "Cairo_400Regular",
     color: "#e74c3c",
+    marginTop: 4,
+  },
+  helperText: {
+    fontSize: 12,
+    fontFamily: "Cairo_400Regular",
+    color: "#767676",
     marginTop: 4,
   },
 });

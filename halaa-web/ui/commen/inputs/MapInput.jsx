@@ -2,10 +2,11 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import { APIProvider, Map, Marker, useMap } from "@vis.gl/react-google-maps";
 import { useFormContext, useController } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import styles from "./MapInput.module.css";
 
 const DEFAULT_CENTER = { lat: 24.7136, lng: 46.6753 };
-const API_KEY = "AIzaSyCcOWxQgXGToRfKLlt1KjU_ev-ohFmPbRY";
+const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
 
 // Pure utility — defined outside component so it's never a stale closure
 const extractComponent = (result, ...types) => {
@@ -49,6 +50,7 @@ const MapInputInner = ({
   required,
   hintMessage,
 }) => {
+  const { t } = useTranslation("createEvent");
   const [markerPos, setMarkerPos] = useState(
     value?.latitude && value?.longitude
       ? { lat: value.latitude, lng: value.longitude }
@@ -111,7 +113,7 @@ const MapInputInner = ({
   }, []);
 
   const applyLocation = useCallback(
-    (result, lat, lng) => {
+    (result, lat, lng, explicitPlaceId = null) => {
       const data = {
         address: result.formatted_address,
         latitude: lat,
@@ -124,6 +126,8 @@ const MapInputInner = ({
             "administrative_area_level_1"
           ) || "",
         country: extractComponent(result, "country"),
+        placeId: explicitPlaceId || result.place_id || null,
+        provider: "google",
       };
       setSearchQuery(result.formatted_address);
       setMarkerPos({ lat, lng });
@@ -166,7 +170,7 @@ const MapInputInner = ({
       geocoder.geocode({ placeId }, (results, status) => {
         if (status === "OK" && results[0]) {
           const loc = results[0].geometry.location;
-          applyLocation(results[0], loc.lat(), loc.lng());
+          applyLocation(results[0], loc.lat(), loc.lng(), placeId);
         } else {
           setIsGeocoding(false);
         }
@@ -359,7 +363,7 @@ const MapInputInner = ({
               onFocus={() =>
                 suggestions.length > 0 && setShowSuggestions(true)
               }
-              placeholder="Search for a location..."
+              placeholder={t("map_picker_search_placeholder")}
               className={styles.search_input}
               autoComplete="off"
               spellCheck={false}
@@ -393,7 +397,7 @@ const MapInputInner = ({
               className={styles.search_btn}
               disabled={!searchQuery.trim() || isGeocoding}
             >
-              Search
+              {t("map_picker_search", "Search")}
             </button>
           </div>
 
@@ -445,7 +449,7 @@ const MapInputInner = ({
           onClick={handleLocateMe}
           disabled={isLoadingLocation}
           className={styles.locate_btn}
-          title="Use my current location"
+          title={t("map_picker_use_current")}
         >
           {isLoadingLocation ? (
             <span className={styles.spin} />
@@ -479,7 +483,7 @@ const MapInputInner = ({
           <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
           </svg>
-          Click on the map or drag the pin to set location
+          {t("map_picker_drag_hint")}
         </div>
         <Map
           defaultCenter={DEFAULT_CENTER}
@@ -524,6 +528,7 @@ const MapInputInner = ({
 };
 
 const MapInput = ({ name, label, required, hintMessage }) => {
+  const { i18n, t } = useTranslation("createEvent");
   const { control, clearErrors } = useFormContext();
   const {
     field: { value, onChange },
@@ -537,11 +542,29 @@ const MapInput = ({ name, label, required, hintMessage }) => {
       longitude: DEFAULT_CENTER.lng,
       city: "",
       country: "",
+      placeId: null,
+      provider: "google",
     },
   });
 
+  if (!API_KEY) {
+    return (
+      <div className={styles.input_group}>
+        {label && <label className={styles.label}>{label}</label>}
+        <p className={styles.error}>
+          {t("map_picker_not_configured", "The map is temporarily unavailable.")}
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <APIProvider apiKey={API_KEY} libraries={["places"]}>
+    <APIProvider
+      apiKey={API_KEY}
+      libraries={["places"]}
+      language={i18n.language === "en" ? "en" : "ar"}
+      region="SA"
+    >
       <MapInputInner
         name={name}
         value={value}

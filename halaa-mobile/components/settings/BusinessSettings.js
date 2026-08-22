@@ -3,10 +3,10 @@ import {
   View,
   Text,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
   Image,
 } from "react-native";
+import TextInput from "../commen/DirectionalTextInput";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useTranslation } from "../../localization";

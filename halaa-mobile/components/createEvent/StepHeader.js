@@ -1,6 +1,8 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Svg, Circle, G, Path, Defs, ClipPath, Rect } from "react-native-svg";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
+import { useFieldDirection } from "../../hooks/useInputDirection";
 
 const StepProgressIndicator = ({ currentStep, totalSteps }) => {
   const progress = (currentStep / totalSteps) * 100;
@@ -32,13 +34,14 @@ const StepProgressIndicator = ({ currentStep, totalSteps }) => {
         </Defs>
       </Svg>
       <Text style={styles.indicatorText}>
-        {currentStep}/{totalSteps}
+        {isolateLtr(`${currentStep}/${totalSteps}`)}
       </Text>
     </View>
   );
 };
 
 const StepHeader = ({ currentStep, totalSteps, title, description }) => {
+  const fieldDirection = useFieldDirection("localized");
   return (
     <View style={styles.container}>
       <View style={styles.content}>
@@ -47,8 +50,8 @@ const StepHeader = ({ currentStep, totalSteps, title, description }) => {
           totalSteps={totalSteps}
         />
         <View style={styles.textContainer}>
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.description}>{description}</Text>
+          <Text style={[styles.title, fieldDirection.text]}>{title}</Text>
+          <Text style={[styles.description, fieldDirection.text]}>{description}</Text>
         </View>
       </View>
     </View>
@@ -57,8 +60,8 @@ const StepHeader = ({ currentStep, totalSteps, title, description }) => {
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 24,
-    paddingVertical: 24,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
   },
   content: {
     flexDirection: "row",
@@ -66,10 +69,9 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   textContainer: {
-    // flex: 1,
+    flex: 1,
     flexDirection: "column",
     justifyContent: "flex-start",
-    // alignItems: "flex-start",
   },
   title: {
     fontSize: 16,

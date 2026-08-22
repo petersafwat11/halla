@@ -168,6 +168,7 @@ const AccountSettings = ({
                 name="username"
                 label={t("account.username")}
                 placeholder={t("account.usernamePlaceholder")}
+                contentDirection="ltr"
                 disabled={loading}
               />
 

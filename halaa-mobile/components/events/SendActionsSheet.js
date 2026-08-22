@@ -160,7 +160,6 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_400Regular",
     color: "#B08968",
     maxWidth: 140,
-    textAlign: "left",
   },
   cancelBtn: {
     marginTop: 6,

@@ -56,14 +56,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "Cairo_700Bold",
     color: "#7A4F01",
-    textAlign: "right",
   },
   message: {
     fontSize: 12,
     fontFamily: "Cairo_400Regular",
     color: "#7A4F01",
     lineHeight: 18,
-    textAlign: "right",
   },
 });
 

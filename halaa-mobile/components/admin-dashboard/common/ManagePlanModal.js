@@ -5,11 +5,11 @@ import {
   Modal,
   ScrollView,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
   ActivityIndicator,
   Share,
 } from "react-native";
+import TextInput from "../../commen/DirectionalTextInput";
 import { Ionicons } from "@expo/vector-icons";
 import PropTypes from "prop-types";
 import { Button } from "../../commen";

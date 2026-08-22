@@ -7,7 +7,8 @@ import {
   StyleSheet,
 } from "react-native";
 import { useFormContext, Controller } from "react-hook-form";
-import { useInputDirection } from "../../hooks/useInputDirection";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
+import { useFieldDirection } from "../../hooks/useInputDirection";
 
 /**
  * Inner renderer hoisted out of the Controller `render` prop so the
@@ -24,6 +25,8 @@ const TextAreaField = ({
   numberOfLines,
   autoCapitalize,
   maxLength,
+  helper,
+  contentDirection,
   value,
   error,
   onChange,
@@ -34,12 +37,13 @@ const TextAreaField = ({
   const [isFocused, setIsFocused] = React.useState(false);
   const inputRef = React.useRef(null);
   const formValue = value ?? "";
-  // Localized prose: value/placeholder follow the active locale direction.
-  const directionStyle = useInputDirection("localized");
+  const fieldDirection = useFieldDirection(contentDirection, {
+    hasValue: formValue.length > 0,
+  });
 
   return (
     <View style={styles.container}>
-      {!!label && <Text style={styles.label}>{label}</Text>}
+      {!!label && <Text style={[styles.label, fieldDirection.text]}>{label}</Text>}
       {/* The whole box is pressable so a tap anywhere inside (padding included,
           not just the text node) focuses the input. */}
       <Pressable
@@ -54,7 +58,7 @@ const TextAreaField = ({
         <RNTextInput
           {...extraProps}
           ref={inputRef}
-          style={[styles.textArea, directionStyle, style]}
+          style={[styles.textArea, fieldDirection.input, style]}
           placeholder={placeholder}
           placeholderTextColor="#999"
           value={formValue}
@@ -73,10 +77,15 @@ const TextAreaField = ({
           maxLength={maxLength}
         />
       </Pressable>
-      {error && <Text style={styles.errorText}>{error.message}</Text>}
+      {error && (
+        <Text style={[styles.errorText, fieldDirection.text]}>{error.message}</Text>
+      )}
+      {!error && helper ? (
+        <Text style={[styles.helperText, fieldDirection.text]}>{helper}</Text>
+      ) : null}
       {maxLength && (
-        <Text style={styles.charCount}>
-          {formValue?.length || 0} / {maxLength}
+        <Text style={[styles.charCount, fieldDirection.counter]}>
+          {isolateLtr(`${formValue.length} / ${maxLength}`)}
         </Text>
       )}
     </View>
@@ -92,6 +101,8 @@ const TextAreaInput = ({
   disabled = false,
   numberOfLines = 3,
   maxLength,
+  helper,
+  contentDirection = "localized",
   rules,
   style,
   ...props
@@ -115,6 +126,8 @@ const TextAreaInput = ({
           numberOfLines={numberOfLines}
           autoCapitalize={autoCapitalize}
           maxLength={maxLength}
+          helper={helper}
+          contentDirection={contentDirection}
           value={value}
           error={error}
           onChange={onChange}
@@ -177,6 +190,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: "Cairo_400Regular",
     color: "#e74c3c",
+    marginTop: 4,
+  },
+  helperText: {
+    fontSize: 12,
+    fontFamily: "Cairo_400Regular",
+    color: "#767676",
     marginTop: 4,
   },
 });

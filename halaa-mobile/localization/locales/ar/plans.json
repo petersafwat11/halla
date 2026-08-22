@@ -230,6 +230,7 @@
     "paymentFailed": "فشل في الدفع. يرجى المحاولة مرة أخرى.",
     "invalidPlan": "رمز الباقة غير صالح.",
     "processing": "جاري المعالجة...",
+    "priceUnavailable": "السعر غير متاح",
     "proceedButton": "متابعة للدفع"
   },
   "toasts": {

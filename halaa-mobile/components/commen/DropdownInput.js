@@ -10,8 +10,9 @@ import {
 } from "react-native";
 import { useFormContext, Controller } from "react-hook-form";
 import { Ionicons } from "@expo/vector-icons";
+import { isolateAuto } from "@halaa/shared/utils/bidi";
 import { useTranslation } from "../../localization";
-import { useLabelDirection } from "../../hooks/useInputDirection";
+import { useFieldDirection } from "../../hooks/useInputDirection";
 
 /**
  * Hoisted field renderer to satisfy Rules-of-Hooks.
@@ -29,7 +30,7 @@ const DropdownInputField = ({
 }) => {
   const { t } = useTranslation("common");
   const [isOpen, setIsOpen] = useState(false);
-  const labelDirectionStyle = useLabelDirection("localized");
+  const fieldDirection = useFieldDirection("localized", { hasValue: !!value });
 
   const selectedOption = options.find((opt) => opt.value === value) || null;
 
@@ -42,7 +43,7 @@ const DropdownInputField = ({
 
   return (
     <View style={styles.container}>
-      {label && <Text style={[styles.label, labelDirectionStyle]}>{label}</Text>}
+      {label && <Text style={[styles.label, fieldDirection.text]}>{label}</Text>}
       <TouchableOpacity
         style={[
           styles.inputContainer,
@@ -53,17 +54,20 @@ const DropdownInputField = ({
         disabled={disabled}
         activeOpacity={0.7}
       >
-        <Ionicons name="chevron-down" size={20} color="#656565" />
         <Text
           style={[
             styles.inputText,
+            fieldDirection.input,
             !displayValue && styles.placeholderText,
           ]}
         >
-          {displayValue || placeholder}
+          {isolateAuto(displayValue || placeholder)}
         </Text>
+        <Ionicons name="chevron-down" size={20} color="#656565" />
       </TouchableOpacity>
-      {error && <Text style={styles.errorText}>{error.message}</Text>}
+      {error && (
+        <Text style={[styles.errorText, fieldDirection.text]}>{error.message}</Text>
+      )}
 
       <Modal
         visible={isOpen}
@@ -81,15 +85,17 @@ const DropdownInputField = ({
           >
             {/* Modal Header */}
             <View style={styles.modalHeader}>
+              <View style={styles.modalTitleContainer}>
+                <Text style={[styles.modalTitle, fieldDirection.text]}>
+                  {modalTitle || t("select", "اختر")}
+                </Text>
+              </View>
               <TouchableOpacity
                 onPress={() => setIsOpen(false)}
                 hitSlop={8}
               >
                 <Ionicons name="close" size={24} color="#000" />
               </TouchableOpacity>
-              <View style={styles.modalTitleContainer}>
-                <Text style={styles.modalTitle}>{modalTitle || t("select", "اختر")}</Text>
-              </View>
             </View>
 
             {/* Options List */}
@@ -112,7 +118,9 @@ const DropdownInputField = ({
                     activeOpacity={0.7}
                   >
                     <View style={styles.optionContent}>
-                      <Text style={styles.optionText}>{item.label}</Text>
+                      <Text style={[styles.optionText, fieldDirection.text]}>
+                        {isolateAuto(item.label)}
+                      </Text>
                       {item.icon && (
                         <View style={styles.optionIcon}>{item.icon}</View>
                       )}
@@ -263,7 +271,6 @@ const styles = StyleSheet.create({
   },
   modalTitleContainer: {
     flex: 1,
-    alignItems: "flex-start",
   },
   modalTitle: {
     fontSize: 24,

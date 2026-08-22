@@ -18,16 +18,17 @@ import {
   Modal,
   Pressable,
   TouchableOpacity,
-  TextInput,
   FlatList,
   ScrollView,
   Platform,
   ActivityIndicator,
 } from "react-native";
+import TextInput from "../commen/DirectionalTextInput";
 import Svg, { Path } from "react-native-svg";
 import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system/legacy";
 import { parseVCards } from "@halaa/shared/utils/vcard";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
 import { useTranslation } from "../../localization";
 import Button from "../commen/Button";
 
@@ -147,7 +148,7 @@ const VCardImportModal = ({ visible, onClose, onAdd }) => {
         </View>
         <View style={styles.rowInfo}>
           <Text style={styles.rowName}>{item.name}</Text>
-          <Text style={styles.rowPhone}>{item.mobile}</Text>
+          <Text style={styles.rowPhone}>{isolateLtr(item.mobile)}</Text>
         </View>
       </TouchableOpacity>
     );

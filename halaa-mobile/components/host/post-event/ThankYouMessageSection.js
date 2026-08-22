@@ -2,11 +2,11 @@ import React from "react";
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   ActivityIndicator,
   StyleSheet,
 } from "react-native";
+import TextInput from "../../commen/DirectionalTextInput";
 import { Ionicons } from "@expo/vector-icons";
 
 const ThankYouMessageSection = ({
@@ -27,7 +27,6 @@ const ThankYouMessageSection = ({
       numberOfLines={4}
       placeholder={t("host.thankYouMessage.placeholder")}
       placeholderTextColor="#B0B0B0"
-      textAlign="right"
       textAlignVertical="top"
     />
     <TouchableOpacity

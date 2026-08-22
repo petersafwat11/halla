@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
   editButton: {
     position: "absolute",
     bottom: 12,
-    right: 12,
+    end: 12,
     flexDirection: "row",
     gap: 4,
     paddingHorizontal: 8,
@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
   deleteButton: {
     position: "absolute",
     top: 12,
-    left: 12,
+    start: 12,
     padding: 4,
   },
 });

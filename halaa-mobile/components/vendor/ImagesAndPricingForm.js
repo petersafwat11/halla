@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
   removeButton: {
     position: "absolute",
     top: 4,
-    right: 4,
+    end: 4,
     backgroundColor: "rgba(0, 0, 0, 0.55)",
     width: 22,
     height: 22,

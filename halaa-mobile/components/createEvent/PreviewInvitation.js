@@ -15,11 +15,13 @@ import {
   buildTaqnyatPreviewContext,
   formatDate,
 } from "@halaa/shared/utils";
+import { isolateAuto, isolateLtr } from "@halaa/shared/utils/bidi";
 import { useTranslation } from "../../localization";
 import { useAuthStore } from "../../stores/authStore";
 import TemplatePreviewCanvas from "../shared/TemplatePreviewCanvas";
 import { resolveMediaUri } from "../../utils/resolveMediaUri";
 import DirectionalIonicon from "../common/DirectionalIonicon";
+import { useFieldDirection, useInputDirection } from "../../hooks/useInputDirection";
 import {
   DEFAULT_INVITATION_TYPE,
   invitationAllowsReply,
@@ -51,6 +53,8 @@ const PreviewInvitation = ({
   invitationType = DEFAULT_INVITATION_TYPE,
 }) => {
   const { t, currentLanguage } = useTranslation("createEvent");
+  const fieldDirection = useFieldDirection("localized");
+  const brandDirection = useInputDirection("ltr");
   const hostName = useAuthStore(
     (state) => state.user?.name || state.user?.username || ""
   );
@@ -119,7 +123,9 @@ const PreviewInvitation = ({
         <Pressable style={styles.card} onPress={(e) => e.stopPropagation()}>
         {/* Screen header */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>{t("preview_title")}</Text>
+          <Text style={[styles.headerTitle, fieldDirection.text]}>
+            {t("preview_title")}
+          </Text>
           <TouchableOpacity
             onPress={onClose}
             style={styles.closeButton}
@@ -134,13 +140,13 @@ const PreviewInvitation = ({
         <View style={styles.waBar}>
           <DirectionalIonicon name="chevron-back" size={22} color="#FFF" />
           <View style={styles.waAvatar}>
-            <Text style={styles.waAvatarText}>H</Text>
+            <Text style={[styles.waAvatarText, brandDirection]}>H</Text>
           </View>
           <View style={styles.waInfo}>
-            <Text style={styles.waName} numberOfLines={1}>
+            <Text style={[styles.waName, brandDirection]} numberOfLines={1}>
               Halaa Events
             </Text>
-            <Text style={styles.waStatus}>online</Text>
+            <Text style={[styles.waStatus, brandDirection]}>online</Text>
           </View>
           <Ionicons name="ellipsis-vertical" size={18} color="#FFF" />
         </View>
@@ -177,9 +183,11 @@ const PreviewInvitation = ({
             </View>
 
             {resolvedBody ? (
-              <Text style={styles.msgBody}>{resolvedBody}</Text>
+              <Text style={[styles.msgBody, fieldDirection.text]}>
+                {isolateAuto(resolvedBody)}
+              </Text>
             ) : (
-              <Text style={styles.msgPlaceholder}>
+              <Text style={[styles.msgPlaceholder, fieldDirection.text]}>
                 {t(
                   "preview_body_placeholder",
                   "اختر قالب رسالة في الخطوة السابقة لمعاينة النص هنا"
@@ -188,7 +196,7 @@ const PreviewInvitation = ({
             )}
 
             <View style={styles.msgMeta}>
-              <Text style={styles.msgTime}>{messageTime}</Text>
+              <Text style={styles.msgTime}>{isolateLtr(messageTime)}</Text>
               <Ionicons name="checkmark-done" size={15} color="#53BDEB" />
             </View>
           </View>
@@ -215,7 +223,7 @@ const PreviewInvitation = ({
         {/* Input bar */}
         <View style={styles.inputBar}>
           <View style={styles.inputField}>
-            <Text style={styles.inputPlaceholder}>
+            <Text style={[styles.inputPlaceholder, fieldDirection.text]}>
               {t("preview_input_placeholder", "رسالة")}
             </Text>
           </View>
@@ -314,7 +322,7 @@ const styles = StyleSheet.create({
     width: "100%",
     backgroundColor: "#FFF",
     borderRadius: 12,
-    borderTopLeftRadius: 4,
+    borderTopStartRadius: 4,
     overflow: "hidden",
     shadowColor: "#0B141A",
     shadowOffset: { width: 0, height: 1 },
@@ -342,8 +350,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "Cairo_400Regular",
     lineHeight: 24,
-    textAlign: "right",
-    writingDirection: "rtl",
   },
   msgPlaceholder: {
     paddingHorizontal: 12,
@@ -353,8 +359,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: "Cairo_400Regular",
     lineHeight: 20,
-    textAlign: "right",
-    writingDirection: "rtl",
     fontStyle: "italic",
   },
   msgMeta: {
@@ -422,8 +426,6 @@ const styles = StyleSheet.create({
     color: "#8696A0",
     fontSize: 13,
     fontFamily: "Cairo_400Regular",
-    textAlign: "right",
-    writingDirection: "rtl",
   },
   micBtn: {
     width: 38,

@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from "react";
-import { View, Text, TextInput, StyleSheet } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
+import TextInput from "../../commen/DirectionalTextInput";
 import { useFormContext } from "react-hook-form";
 import { useTranslation } from "../../../localization";
 import EventsService from "../../../hooks/events/useEventForm";
@@ -43,7 +44,8 @@ export default function ModeratorForm() {
       <View style={styles.inputWrapper}>
         <Text style={styles.inputLabel}>{t("staff_phone")}</Text>
         <TextInput
-          style={[styles.textInput, { writingDirection: "ltr" }, moderatorErrors.phone && styles.textInputError]}
+          style={[styles.textInput, moderatorErrors.phone && styles.textInputError]}
+          contentDirection="phone"
           placeholder={t("staff_phone_placeholder")}
           placeholderTextColor="#999"
           value={moderatorPhone}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { View, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import { View, TouchableOpacity, StyleSheet } from "react-native";
+import TextInput from "../../commen/DirectionalTextInput";
 import { Ionicons } from "@expo/vector-icons";
 import PropTypes from "prop-types";
 import { useInputDirection } from "../../../hooks/useInputDirection";

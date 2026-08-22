@@ -21,6 +21,7 @@ const PRODUCTION_REQUIRED_SECRETS = [
   "DATABASE",
   "MOYASAR_API_KEY", // web payments
   "MOYASAR_WEBHOOK_SECRET", // Moyasar webhook auth
+  "GOOGLE_MAPS_SERVER_API_KEY", // authenticated Places + reverse-geocode proxy
 ];
 
 const unsignedWhatsAppWebhooksAllowed = () =>

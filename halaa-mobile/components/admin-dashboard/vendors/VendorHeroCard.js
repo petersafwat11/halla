@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
 import { useTranslation } from "../../../localization";
 import { colors, spacing, borderRadius, typography, backgrounds } from "../../../styles/tokens";
 import { getStatusVisual } from "../../../constants/statusColors";
@@ -39,12 +40,12 @@ const VendorHeroCard = ({ vendor }) => {
 
       <View style={styles.contactRow}>
         <Ionicons name="mail-outline" size={13} color={colors.natural[400]} />
-        <Text style={styles.contactText}>{email}</Text>
+        <Text style={styles.contactText}>{isolateLtr(email)}</Text>
       </View>
       {phone !== "—" && (
         <View style={styles.contactRow}>
           <Ionicons name="call-outline" size={13} color={colors.natural[400]} />
-          <Text style={[styles.contactText, { writingDirection: "ltr" }]}>{`‪${phone}‬`}</Text>
+          <Text style={styles.contactText}>{isolateLtr(phone)}</Text>
         </View>
       )}
 

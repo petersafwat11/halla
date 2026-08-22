@@ -45,7 +45,6 @@ test("Mobile Plan Classification: Preserves quarterly, annual, monthly, event di
   assert.equal(eIsPool, false, "Event plan is not a pool plan");
   assert.equal(isPerEventPlan(event.planType), true, "Event plan is per-event");
 });
-
 test("Mobile EditPlanModal: Source verification for type-conditional validation & durationDays safety (PLN-04)", () => {
   const modalPath = path.resolve(
     __dirname,
@@ -68,7 +67,7 @@ test("Mobile EditPlanModal: Source verification for type-conditional validation 
   );
 });
 
-test("Mobile PlanSummaryCard: Source verification for canonical classification", () => {
+test("Mobile PlanSummaryCard: Source verification for canonical classification and native price fallback", () => {
   const cardPath = path.resolve(
     __dirname,
     "../../components/plans/PlanSummaryCard.js"
@@ -86,5 +85,30 @@ test("Mobile PlanSummaryCard: Source verification for canonical classification",
   assert.ok(
     content.includes("isPool"),
     "PlanSummaryCard must use isPool rather than isMonthly only"
+  );
+  assert.ok(
+    content.includes("isNative"),
+    "PlanSummaryCard must accept isNative prop"
+  );
+  assert.ok(
+    content.includes("priceUnavailable"),
+    "PlanSummaryCard must render priceUnavailable when native and priceDisplay is not loaded"
+  );
+  assert.ok(
+    content.includes("السعر غير متاح"),
+    "PlanSummaryCard must use localized fallback 'السعر غير متاح'"
+  );
+});
+
+test("Mobile PlansSummaryScreen: Passes isNative prop to PlanSummaryCard", () => {
+  const screenPath = path.resolve(
+    __dirname,
+    "../../screens/host/PlansSummaryScreen.js"
+  );
+  const content = fs.readFileSync(screenPath, "utf8");
+
+  assert.ok(
+    content.includes("isNative={!isWeb}"),
+    "PlansSummaryScreen must pass isNative={!isWeb} to PlanSummaryCard"
   );
 });

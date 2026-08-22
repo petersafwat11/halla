@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
   ScrollView,
   Alert,
@@ -11,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import TextInput from "../../commen/DirectionalTextInput";
 import { Ionicons } from "@expo/vector-icons";
 import { useVerifyStaffAccess } from "../../../hooks/staff";
 
@@ -83,7 +83,6 @@ const LoginView = ({ onVerified, t }) => {
               value={phone}
               onChangeText={(v) => { setPhone(v); setErrors((e) => ({ ...e, phone: undefined })); }}
               keyboardType="phone-pad"
-              textAlign="right"
             />
           </View>
           {errors.phone ? <Text style={styles.fieldError}>{errors.phone}</Text> : null}
@@ -100,7 +99,7 @@ const LoginView = ({ onVerified, t }) => {
               value={eventId}
               onChangeText={(v) => { setEventId(v); setErrors((e) => ({ ...e, eventId: undefined })); }}
               autoCapitalize="none"
-              textAlign="right"
+              contentDirection="ltr"
             />
           </View>
           {errors.eventId ? <Text style={styles.fieldError}>{errors.eventId}</Text> : null}

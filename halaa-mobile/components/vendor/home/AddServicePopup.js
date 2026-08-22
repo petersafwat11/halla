@@ -8,8 +8,8 @@ import {
   ScrollView,
   Animated,
   ActivityIndicator,
-  TextInput as RNTextInput,
 } from "react-native";
+import RNTextInput from "../../commen/DirectionalTextInput";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MaterialCommunityIcons } from "@expo/vector-icons";

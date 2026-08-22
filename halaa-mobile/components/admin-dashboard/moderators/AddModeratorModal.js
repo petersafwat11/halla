@@ -6,9 +6,9 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  TextInput,
   ActivityIndicator,
 } from "react-native";
+import TextInput from "../../commen/DirectionalTextInput";
 import { Ionicons } from "@expo/vector-icons";
 import {
   colors,

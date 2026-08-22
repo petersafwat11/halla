@@ -31,6 +31,7 @@ import { formatTemplateDate } from "@halaa/shared/utils/formatTemplateDate";
 import { resolveTemplateFont } from "../../utils/cairoFont";
 import { ENDPOINTS } from "../../config/api";
 import { resolveMediaUri } from "../../utils/resolveMediaUri";
+import { useAuthStore } from "../../stores/authStore";
 
 const cmpZ = (a, b) => (a.zIndex || 0) - (b.zIndex || 0);
 
@@ -68,11 +69,20 @@ function resolveFontFamily(name, fontWeight) {
   return resolveTemplateFont(name, fontWeight);
 }
 
-function getBackgroundSource(template) {
+function sourceWithAuth(uri, token) {
+  if (!uri) return null;
+  if (!/^https?:/i.test(uri) || !token) return { uri };
+  return {
+    uri,
+    headers: { Authorization: `Bearer ${token}`, "X-Client": "mobile" },
+  };
+}
+
+function getBackgroundSource(template, token) {
   if (!template) return null;
   if (template.src) {
     if (typeof template.src === "number") return template.src;
-    if (template.src.uri) return { uri: resolveMediaUri(template.src.uri) };
+    if (template.src.uri) return sourceWithAuth(resolveMediaUri(template.src.uri), token);
   }
   const templateId = String(template._id || template.id || "");
   const isDatabaseTemplate = /^[a-f\d]{24}$/i.test(templateId);
@@ -89,20 +99,20 @@ function getBackgroundSource(template) {
   }
 
   const uri = resolveMediaUri(raw);
-  return uri ? { uri } : (template.fallbackSource || null);
+  return uri ? sourceWithAuth(uri, token) : (template.fallbackSource || null);
 }
 
-function getFallbackSource(template) {
+function getFallbackSource(template, token) {
   if (!template) return null;
   if (template.fallbackSource) return template.fallbackSource;
   if (template.thumbnailUrl) {
     const uri = resolveMediaUri(template.thumbnailUrl);
-    if (uri) return { uri };
+    if (uri) return sourceWithAuth(uri, token);
   }
   return null;
 }
 
-function DecorationItem({ decoration, containerWidth, containerHeight, primaryColor }) {
+function DecorationItem({ decoration, containerWidth, containerHeight, primaryColor, token }) {
   const left = (decoration.leftPct / 100) * containerWidth;
   const top = (decoration.topPct / 100) * containerHeight;
   const iconSize = decoration.iconSizeVh
@@ -123,7 +133,12 @@ function DecorationItem({ decoration, containerWidth, containerHeight, primaryCo
       ? (decoration.widthPct / 100) * containerWidth
       : iconSize;
     const uri = resolveMediaUri(decoration.source);
-    const source = typeof decoration.source === "number" ? decoration.source : uri ? { uri } : null;
+    const source =
+      typeof decoration.source === "number"
+        ? decoration.source
+        : uri
+          ? sourceWithAuth(uri, token)
+          : null;
     if (!source) return null;
     return (
       <View pointerEvents="none" style={[wrapperStyle, { transform: [{ translateX: -imgSize / 2 }, { translateY: -imgSize / 2 }] }]}>
@@ -191,22 +206,27 @@ export default function TemplatePreviewCanvas({
   primaryColor,
   width: widthProp,
   onBackgroundReady,
+  onBackgroundError,
 }) {
   const { t } = useTranslation("common");
+  const token = useAuthStore((state) => state.token);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
-  const primarySource = useMemo(() => getBackgroundSource(template), [template]);
-  const fallbackSource = useMemo(() => getFallbackSource(template), [template]);
+  const primarySource = useMemo(() => getBackgroundSource(template, token), [template, token]);
+  const fallbackSource = useMemo(() => getFallbackSource(template, token), [template, token]);
   const [currentSource, setCurrentSource] = useState(primarySource);
 
   useEffect(() => {
     setCurrentSource(primarySource);
-    if (typeof primarySource === "number" || !primarySource) {
+    if (typeof primarySource === "number") {
       onBackgroundReady?.(true);
+    } else if (!primarySource) {
+      onBackgroundReady?.(false);
+      onBackgroundError?.(new Error("TEMPLATE_BACKGROUND_MISSING"));
     } else {
       onBackgroundReady?.(false);
     }
-  }, [primarySource, onBackgroundReady]);
+  }, [primarySource, onBackgroundReady, onBackgroundError]);
 
   if (!template) return null;
 
@@ -240,11 +260,17 @@ export default function TemplatePreviewCanvas({
           style={styles.bgImage}
           resizeMode="cover"
           onLoad={() => onBackgroundReady?.(true)}
-          onError={() => {
+          onError={(event) => {
             if (fallbackSource && currentSource !== fallbackSource) {
+              onBackgroundReady?.(false);
               setCurrentSource(fallbackSource);
             } else {
-              onBackgroundReady?.(true);
+              onBackgroundReady?.(false);
+              onBackgroundError?.(
+                new Error(
+                  event?.nativeEvent?.error || "TEMPLATE_BACKGROUND_LOAD_FAILED"
+                )
+              );
             }
           }}
         />
@@ -256,6 +282,7 @@ export default function TemplatePreviewCanvas({
           containerWidth={width}
           containerHeight={height}
           primaryColor={primaryColor}
+          token={token}
         />
       ))}
       {overlays.map((o, i) => {

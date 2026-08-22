@@ -30,7 +30,7 @@ const {
   checkEventLimit,
   checkGuestLimit,
 } = require("../../shared/middleware/subscription");
-const { uploadTemplateImage } = require("../../shared/utils/fileUpload");
+const { uploadTemplateImage, deleteFile, s3Upload } = require("../../shared/utils/fileUpload");
 const { idempotency } = require("../../shared/middleware/idempotency");
 const {
   createEventLimiter,
@@ -60,6 +60,20 @@ const {
   extraReminderSchema,
   sendNewGuestsSchema,
 } = require("./events.validation");
+
+// Multer streams the invitation image before JSON parsing, validation and the
+// multi-record event write. If any later stage fails, remove that upload so a
+// rejected request never leaves an orphaned S3/local object.
+const cleanupRejectedTemplateUpload = (req, res, next) => {
+  res.once('finish', () => {
+    if (res.statusCode < 400 || !req.file) return;
+    const cleanup = req.file.key
+      ? s3Upload.deleteFromS3(req.file.key)
+      : deleteFile(req.file.location || req.file.path || req.file.filename);
+    Promise.resolve(cleanup).catch(() => {});
+  });
+  next();
+};
 
 const adminRouter = require("./events.admin.routes");
 
@@ -289,6 +303,7 @@ router.post(
     }
   }),
   uploadTemplateImage,
+  cleanupRejectedTemplateUpload,
   parseFormDataJsonFields([
     "eventDetails",
     "guestList",

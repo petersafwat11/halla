@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
   resetButton: {
     position: "absolute",
     top: 50,
-    right: 20,
+    end: 20,
     backgroundColor: "#ff4444",
     padding: 8,
     borderRadius: 8,

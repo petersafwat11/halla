@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
   statusDot: {
     position: "absolute",
     bottom: 1,
-    right: 1,
+    end: 1,
     width: 12,
     height: 12,
     borderRadius: 6,

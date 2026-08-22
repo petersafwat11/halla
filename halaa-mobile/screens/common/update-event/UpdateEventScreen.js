@@ -303,8 +303,8 @@ const UpdateEventScreen = () => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#F9F4EF" },
   scrollView: { flex: 1 },
-  scrollContent: { paddingHorizontal: 16, paddingVertical: 24, paddingBottom: 100 },
-  contentContainer: { marginVertical: 24 },
+  scrollContent: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 20 },
+  contentContainer: { marginTop: 12, marginBottom: 16 },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
   errorText: {
     fontSize: 16, fontFamily: "Cairo_400Regular", color: "#e74c3c",

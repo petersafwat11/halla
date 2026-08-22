@@ -9,6 +9,7 @@ import {
   ActivityIndicator
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -146,7 +147,7 @@ const AddGuestOrModeratorPopup = ({
                           {item.name || "—"}
                         </Text>
                         <Text style={styles.listPhone} numberOfLines={1}>
-                          {item.phone || item.mobile || "—"}
+                          {isolateLtr(item.phone || item.mobile || "—")}
                         </Text>
                       </View>
                       <View style={styles.listActions}>

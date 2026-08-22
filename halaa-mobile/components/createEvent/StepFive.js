@@ -11,10 +11,10 @@ import {
   View,
   Text,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
   ScrollView,
 } from "react-native";
+import TextInput from "../commen/DirectionalTextInput";
 import { useFormContext } from "react-hook-form";
 import { useTranslation } from "../../localization";
 

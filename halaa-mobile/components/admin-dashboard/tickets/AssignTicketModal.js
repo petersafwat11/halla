@@ -7,8 +7,8 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
-  TextInput,
 } from "react-native";
+import TextInput from "../../commen/DirectionalTextInput";
 import PropTypes from "prop-types";
 import { ActionButton } from "../common";
 import ModeratorList from "./ModeratorList";

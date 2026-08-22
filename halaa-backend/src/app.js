@@ -11,6 +11,7 @@ const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
 const compression = require("compression");
 const path = require("path");
+const crypto = require("crypto");
 const swaggerUi = require("swagger-ui-express");
 
 const config = require("./config");
@@ -53,6 +54,18 @@ const templatesModule = require("./modules/templates");
  */
 const createApp = () => {
   const app = express();
+
+  // Correlate every client-visible failure with one backend log entry. Accept
+  // a well-formed upstream id (nginx/load balancer) or mint a fresh UUID.
+  app.use((req, res, next) => {
+    const incoming = req.get('x-request-id');
+    req.requestId =
+      incoming && /^[A-Za-z0-9._:-]{8,128}$/.test(incoming)
+        ? incoming
+        : crypto.randomUUID();
+    res.setHeader('X-Request-ID', req.requestId);
+    next();
+  });
 
   // Trust the reverse proxy (nginx) in front of the app so `req.ip` is the
   // real client IP from X-Forwarded-For rather than the proxy's address.
@@ -131,6 +144,7 @@ const createApp = () => {
       credentials: true,
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "X-Request-ID"],
+      exposedHeaders: ["X-Request-ID"],
     })
   );
 

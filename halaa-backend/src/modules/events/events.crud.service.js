@@ -443,6 +443,9 @@ module.exports = {
 
     const guestCount = guestList.length;
     let capacitySub = null;
+    let createdEventId = null;
+    let copiedLogoKey = null;
+    let subscriptionUsageIncremented = false;
 
     if (!skipSubscriptionCheck) {
       // Validate subscription limits (async — dynamic event counting)
@@ -597,7 +600,6 @@ module.exports = {
       const owner = await User.findById(userId).select('accountType name avatar');
       const preEventId = new mongoose.Types.ObjectId();
       eventData._id = preEventId;
-      let copiedLogoKey = null;
       if (owner?.accountType === ACCOUNT_TYPES.BUSINESS) {
         eventData.invitationDeliveryMode = 'portal_link';
         let logoKey = null;
@@ -616,14 +618,8 @@ module.exports = {
       }
 
       // Create event
-      let event;
-      try {
-        event = await Event.create(eventData);
-      } catch (createErr) {
-        // Roll back the copied logo object so we don't orphan it.
-        if (copiedLogoKey) await deleteFromS3(copiedLogoKey).catch(() => {});
-        throw createErr;
-      }
+      const event = await Event.create(eventData);
+      createdEventId = event._id;
 
       // Create guests
       const guestIds = await this.createGuestsFromList(
@@ -639,6 +635,7 @@ module.exports = {
         await Subscription.findByIdAndUpdate(subscription._id, {
           $inc: { "usage.eventsCreated": 1 },
         });
+        subscriptionUsageIncremented = true;
       }
 
       // Populate and return
@@ -661,6 +658,40 @@ module.exports = {
 
       return { event: populatedEvent };
     } catch (err) {
+      // Event + guests are one logical write even on Mongo deployments where
+      // transactions are unavailable. Remove every partial record and undo the
+      // usage counter before surfacing the error. The route-level upload guard
+      // separately removes the already-streamed template image on any non-2xx.
+      if (createdEventId) {
+        const cleanup = [
+          Guest.deleteMany({ event: createdEventId }),
+          Event.deleteOne({ _id: createdEventId }),
+        ];
+        if (subscriptionUsageIncremented && subscription?._id) {
+          cleanup.push(
+            Subscription.findByIdAndUpdate(subscription._id, {
+              $inc: { "usage.eventsCreated": -1 },
+            })
+          );
+        }
+        const results = await Promise.allSettled(cleanup);
+        if (results.some((result) => result.status === 'rejected')) {
+          logger.error('event creation compensation failed', {
+            eventId: String(createdEventId),
+            failures: results
+              .filter((result) => result.status === 'rejected')
+              .map((result) => result.reason?.message),
+          });
+        }
+      }
+      if (copiedLogoKey) {
+        await deleteFromS3(copiedLogoKey).catch((cleanupError) => {
+          logger.error('event logo cleanup failed', {
+            eventId: createdEventId ? String(createdEventId) : null,
+            error: cleanupError?.message,
+          });
+        });
+      }
       // A duplicate-key on the per-event guard means a concurrent request won
       // the single-active-event slot first (the TOCTOU race the partial unique
       // index is there to close). Translate it to the same typed conflict the

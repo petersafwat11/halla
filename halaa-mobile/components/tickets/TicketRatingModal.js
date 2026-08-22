@@ -6,11 +6,11 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  TextInput,
   Animated,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import TextInput from "../commen/DirectionalTextInput";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
 import { useRateTicket } from "../../hooks";

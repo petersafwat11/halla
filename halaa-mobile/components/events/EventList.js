@@ -5,11 +5,11 @@ import {
   StyleSheet,
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   ActivityIndicator,
   Alert,
 } from "react-native";
+import TextInput from "../commen/DirectionalTextInput";
 import { Ionicons } from "@expo/vector-icons";
 import { Svg, Path } from "react-native-svg";
 import { formatPercent, formatNumber } from "@halaa/shared/utils/locale";

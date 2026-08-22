@@ -3,10 +3,10 @@ import {
   View,
   Text,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
+import TextInput from "../commen/DirectionalTextInput";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, spacing, borderRadius, typography } from "../../styles/tokens";
 

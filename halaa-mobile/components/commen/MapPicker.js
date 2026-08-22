@@ -1,509 +1,308 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Modal,
-  TextInput as RNTextInput,
-  ActivityIndicator,
-  FlatList,
-  Alert,
-  Keyboard,
+  ActivityIndicator, Alert, FlatList, Keyboard, Modal, Platform, StyleSheet,
+  Text, TouchableOpacity, View,
 } from "react-native";
-import { useFormContext, Controller } from "react-hook-form";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import { Controller, useFormContext } from "react-hook-form";
 import { Ionicons } from "@expo/vector-icons";
+import Constants from "expo-constants";
 import * as Location from "expo-location";
-import DirectionalIonicon from "../common/DirectionalIonicon";
-import { fetchWithTimeout } from "../../services/http";
+import { isolateAuto } from "@halaa/shared/utils/bidi";
+import { useTranslation } from "../../localization";
+import { useFieldDirection } from "../../hooks/useInputDirection";
+import mapsApi from "../../services/mapsApi";
+import DirectionalTextInput from "./DirectionalTextInput";
 
-const DEFAULT_LOCATION = {
-  address: "",
-  latitude: 24.7136,
-  longitude: 46.6753,
-  city: "",
-  country: "",
-};
+const DEFAULT_COORDINATE = { latitude: 24.7136, longitude: 46.6753 };
+const DEFAULT_REGION = { ...DEFAULT_COORDINATE, latitudeDelta: 0.08, longitudeDelta: 0.08 };
+const newSessionToken = () => `${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
+const isFiniteCoordinate = (value) => Number.isFinite(Number(value?.latitude)) && Number.isFinite(Number(value?.longitude));
+const normalizeLocation = (value, coordinate = DEFAULT_COORDINATE) => ({
+  address: value?.address || "",
+  latitude: Number(value?.latitude ?? coordinate.latitude),
+  longitude: Number(value?.longitude ?? coordinate.longitude),
+  city: value?.city || "",
+  country: value?.country || "",
+  placeId: value?.placeId || "",
+  provider: value?.provider || "google",
+});
 
-const MapPickerInner = ({ onChange, value, error, label, placeholder, disabled }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState(value || DEFAULT_LOCATION);
-  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
-  const searchTimeoutRef = useRef(null);
+function MapPickerInner({ onChange, value, error, label, placeholder, disabled }) {
+  const { t, currentLanguage } = useTranslation("createEvent");
+  const direction = useFieldDirection("localized", { hasValue: !!value?.address });
+  const mapRef = useRef(null);
+  const searchTimer = useRef(null);
+  const sessionToken = useRef(newSessionToken());
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+  const [locating, setLocating] = useState(false);
+  const [resolving, setResolving] = useState(false);
+  const [providerFailed, setProviderFailed] = useState(false);
+  const [draft, setDraft] = useState(() => normalizeLocation(value));
 
-  // Update forms hydrate after mount. Keep the modal marker/region aligned
-  // with the database value instead of retaining the create-flow default.
-  useEffect(() => {
-    if (!value) return;
-    setSelectedLocation(value);
-  }, [value]);
+  const nativeConfigured = useMemo(() => {
+    const maps = Constants.expoConfig?.extra?.maps || {};
+    return Platform.OS === "ios" ? maps.iosConfigured : maps.androidConfigured;
+  }, []);
+  const region = useMemo(() => ({
+    latitude: Number(draft.latitude) || DEFAULT_REGION.latitude,
+    longitude: Number(draft.longitude) || DEFAULT_REGION.longitude,
+    latitudeDelta: 0.025,
+    longitudeDelta: 0.025,
+  }), [draft.latitude, draft.longitude]);
 
-  useEffect(
-    () => () => {
-      if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
-    },
-    []
-  );
+  useEffect(() => { if (value) setDraft(normalizeLocation(value)); }, [value]);
+  useEffect(() => () => { if (searchTimer.current) clearTimeout(searchTimer.current); }, []);
 
-  const searchLocation = async (query) => {
-    if (!query || query.trim().length < 3) {
-      setSearchResults([]);
-      return;
-    }
-    setIsSearching(true);
+  const reverseCoordinate = useCallback(async (coordinate) => {
+    setResolving(true);
     try {
-      const response = await fetchWithTimeout(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1`,
-        { headers: { "User-Agent": "HalaaMobileApp/1.0", Accept: "application/json" } }
-      );
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      setSearchResults(await response.json());
-    } catch (err) {
-      console.error("Search error:", err);
-      setSearchResults([]);
-    } finally {
-      setIsSearching(false);
-    }
+      const resolved = await mapsApi.reverseGeocode({ ...coordinate, language: currentLanguage });
+      setDraft(normalizeLocation(resolved, coordinate));
+      setProviderFailed(false);
+    } catch {
+      try {
+        const [fallback] = await Location.reverseGeocodeAsync(coordinate);
+        const fallbackAddress = fallback
+          ? [fallback.name, fallback.street, fallback.city, fallback.region, fallback.country].filter(Boolean).join(", ")
+          : "";
+        setDraft((previous) => ({
+          ...previous, ...coordinate,
+          address: fallbackAddress || previous.address,
+          city: fallback?.city || previous.city || "",
+          country: fallback?.country || previous.country || "",
+          placeId: "", provider: fallbackAddress ? "device" : "manual",
+        }));
+      } catch {
+        setDraft((previous) => ({ ...previous, ...coordinate, placeId: "", provider: "manual" }));
+      }
+      setProviderFailed(true);
+    } finally { setResolving(false); }
+  }, [currentLanguage]);
+
+  const moveTo = useCallback((coordinate) => {
+    setDraft((previous) => ({ ...previous, ...coordinate }));
+    mapRef.current?.animateToRegion({ ...coordinate, latitudeDelta: 0.018, longitudeDelta: 0.018 }, 300);
+  }, []);
+
+  const search = useCallback(async (text) => {
+    const normalized = text.trim();
+    if (normalized.length < 3) { setResults([]); return; }
+    setSearching(true);
+    try {
+      const data = await mapsApi.autocompletePlaces({
+        query: normalized, language: currentLanguage, sessionToken: sessionToken.current,
+        latitude: draft.latitude, longitude: draft.longitude,
+      });
+      setResults(Array.isArray(data) ? data : data?.suggestions || []);
+      setProviderFailed(false);
+    } catch { setResults([]); setProviderFailed(true); }
+    finally { setSearching(false); }
+  }, [currentLanguage, draft.latitude, draft.longitude]);
+
+  const onSearchChange = (text) => {
+    setQuery(text);
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => search(text), 350);
   };
 
-  const handleSearchChange = (text) => {
-    setSearchQuery(text);
-    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
-    searchTimeoutRef.current = setTimeout(() => searchLocation(text), 500);
+  const selectPrediction = async (item) => {
+    const placeId = item.placeId || item.place_id;
+    if (!placeId) return;
+    setSearching(true);
+    try {
+      const location = await mapsApi.getPlaceDetails({ placeId, language: currentLanguage, sessionToken: sessionToken.current });
+      const normalized = normalizeLocation(location);
+      setDraft(normalized); moveTo(normalized); setQuery(""); setResults([]);
+      sessionToken.current = newSessionToken(); Keyboard.dismiss();
+    } catch { setProviderFailed(true); }
+    finally { setSearching(false); }
   };
 
-  const getCurrentLocation = async () => {
-    setIsLoadingLocation(true);
+  const useCurrentLocation = async () => {
+    setLocating(true);
     try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        Alert.alert("الأذونات", "يرجى السماح بالوصول إلى الموقع لاستخدام هذه الميزة");
+      const permission = await Location.requestForegroundPermissionsAsync();
+      if (permission.status !== "granted") {
+        Alert.alert(t("map_picker_permission_title"), t("map_picker_permission_message"));
         return;
       }
-      // Coarse accuracy only — the app no longer requests ACCESS_FINE_LOCATION
-      // (§7.2). City/area precision is enough to pick an event location, and the
-      // user can still choose an exact result or enter the address directly.
-      const location = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Low,
-      });
-      const { latitude, longitude } = location.coords;
-      const addresses = await Location.reverseGeocodeAsync({ latitude, longitude });
-      if (addresses?.length > 0) {
-        const addr = addresses[0];
-        setSelectedLocation({
-          address: `${addr.street || ""} ${addr.city || ""} ${addr.country || ""}`.trim(),
-          latitude, longitude,
-          city: addr.city || "", country: addr.country || "",
-        });
-      }
-    } catch (err) {
-      console.error("Location error:", err);
-      Alert.alert("خطأ", "فشل في الحصول على الموقع الحالي");
-    } finally {
-      setIsLoadingLocation(false);
-    }
-  };
-
-  const handleSelectSearchResult = (result) => {
-    const lat = parseFloat(result.lat);
-    const lon = parseFloat(result.lon);
-    setSelectedLocation({
-      address: result.display_name,
-      latitude: lat, longitude: lon,
-      city: result.address?.city || result.address?.town || "",
-      country: result.address?.country || "",
-    });
-    setSearchQuery("");
-    setSearchResults([]);
-    Keyboard.dismiss();
+      const current = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      const coordinate = { latitude: current.coords.latitude, longitude: current.coords.longitude };
+      moveTo(coordinate); await reverseCoordinate(coordinate);
+    } catch { setProviderFailed(true); }
+    finally { setLocating(false); }
   };
 
   const useTypedAddress = () => {
-    const address = searchQuery.trim();
+    const address = query.trim();
     if (address.length < 3) return;
-    setSelectedLocation({ address, city: "", country: "" });
-    setSearchResults([]);
-    Keyboard.dismiss();
+    setDraft((previous) => ({ ...previous, address, city: "", country: "", placeId: "", provider: "manual" }));
+    setResults([]); Keyboard.dismiss();
   };
-
-  const handleConfirm = () => {
-    onChange(selectedLocation);
-    setIsOpen(false);
+  const openPicker = () => {
+    setDraft(normalizeLocation(value)); setQuery(""); setResults([]); setProviderFailed(false);
+    sessionToken.current = newSessionToken(); setOpen(true);
   };
-
-  const handleCancel = () => {
-    setSelectedLocation(value || DEFAULT_LOCATION);
-    setSearchQuery("");
-    setSearchResults([]);
-    setIsOpen(false);
+  const closePicker = () => { setDraft(normalizeLocation(value)); setOpen(false); };
+  const confirm = () => {
+    if (!draft.address.trim() || !isFiniteCoordinate(draft)) return;
+    onChange(normalizeLocation(draft)); setOpen(false);
   };
-
   const displayValue = value?.address || "";
+  const predictionText = (item) => item.text || item.description || item.formattedAddress || "";
 
   return (
     <View style={styles.container}>
-      {label && <Text style={styles.label}>{label}</Text>}
-
+      {label ? <Text style={[styles.label, direction.text]}>{label}</Text> : null}
       <TouchableOpacity
-        style={[
-          styles.inputContainer,
-          error && styles.inputContainerError,
-          disabled && styles.inputContainerDisabled,
-        ]}
-        onPress={() => !disabled && setIsOpen(true)}
-        disabled={disabled}
-        activeOpacity={0.7}
+        style={[styles.inputContainer, error && styles.inputContainerError, disabled && styles.inputContainerDisabled]}
+        onPress={openPicker} disabled={disabled} activeOpacity={0.75}
       >
         <View style={styles.inputContent}>
-          <Ionicons name="location-outline" size={24} color="#C28E5C" />
-          <Text
-            style={[styles.inputText, !displayValue && styles.placeholderText]}
-            numberOfLines={1}
-          >
-            {displayValue || placeholder}
+          <Ionicons name="location-outline" size={23} color="#C28E5C" />
+          <Text numberOfLines={2} style={[styles.inputText, !displayValue && styles.placeholderText, direction.input]}>
+            {isolateAuto(displayValue || placeholder)}
           </Text>
+          <Ionicons name="map-outline" size={20} color="#8B8B8B" />
         </View>
-        <Ionicons name="chevron-down" size={20} color="#999" />
       </TouchableOpacity>
+      {error ? <Text style={[styles.errorText, direction.text]}>{error.message}</Text> : null}
 
-      {error && <Text style={styles.errorText}>{error.message}</Text>}
+      <Modal visible={open} animationType="slide" onRequestClose={closePicker}>
+        <View style={styles.modal}>
+          <View style={styles.header}>
+            <TouchableOpacity onPress={closePicker} style={styles.iconButton}><Ionicons name="close" size={28} color="#292929" /></TouchableOpacity>
+            <Text style={[styles.title, direction.text]}>{t("map_picker_title")}</Text>
+            <View style={styles.iconButton} />
+          </View>
 
-      <Modal visible={isOpen} transparent animationType="slide" onRequestClose={handleCancel}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
-              <TouchableOpacity
-                onPress={handleCancel}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                style={styles.closeButton}
-              >
-                <Ionicons name="close" size={28} color="#2C2C2C" />
-              </TouchableOpacity>
-              <Text style={styles.modalTitle}>اختر موقع المناسبة</Text>
+          <View style={styles.searchWrap}>
+            <View style={styles.searchBox}>
+              {searching ? <ActivityIndicator size="small" color="#C28E5C" /> : <Ionicons name="search" size={20} color="#777" />}
+              <DirectionalTextInput value={query} onChangeText={onSearchChange} placeholder={t("map_picker_search_placeholder")}
+                placeholderTextColor="#999" style={[styles.searchInput, direction.input]} />
+              {query ? <TouchableOpacity onPress={() => onSearchChange("")}><Ionicons name="close-circle" size={20} color="#999" /></TouchableOpacity> : null}
             </View>
-
-            <View style={styles.searchContainer}>
-              <View style={styles.searchInputContainer}>
-                {isSearching ? (
-                  <ActivityIndicator size="small" color="#C28E5C" />
-                ) : (
-                  <Ionicons name="search-outline" size={20} color="#767676" />
-                )}
-                <RNTextInput
-                  style={styles.searchInput}
-                  placeholder="ابحث عن موقع (مدينة، شارع، معلم...)"
-                  placeholderTextColor="#999"
-                  value={searchQuery}
-                  onChangeText={handleSearchChange}
-                  returnKeyType="search"
-                />
-                {searchQuery.length > 0 && (
-                  <TouchableOpacity onPress={() => { setSearchQuery(""); setSearchResults([]); }}>
-                    <Ionicons name="close-circle" size={20} color="#999" />
+            {results.length ? (
+              <FlatList keyboardShouldPersistTaps="handled" data={results}
+                keyExtractor={(item, index) => String(item.placeId || item.place_id || index)} style={styles.results}
+                renderItem={({ item }) => (
+                  <TouchableOpacity onPress={() => selectPrediction(item)} style={styles.result}>
+                    <Ionicons name="location" size={18} color="#C28E5C" />
+                    <Text style={[styles.resultText, direction.input]} numberOfLines={2}>{isolateAuto(predictionText(item))}</Text>
                   </TouchableOpacity>
-                )}
-              </View>
-            </View>
+                )} />
+            ) : null}
+          </View>
 
-            {searchResults.length > 0 && (
-              <View style={styles.searchResultsContainer}>
-                <FlatList
-                  data={searchResults}
-                  keyExtractor={(item) => item.place_id.toString()}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity
-                      style={styles.searchResultItem}
-                      onPress={() => handleSelectSearchResult(item)}
-                      activeOpacity={0.7}
-                    >
-                      <Ionicons name="location" size={20} color="#C28E5C" />
-                      <Text style={styles.searchResultText} numberOfLines={2}>
-                        {item.display_name}
-                      </Text>
-                      <DirectionalIonicon name="chevron-forward" size={18} color="#999" />
-                    </TouchableOpacity>
-                  )}
-                  ItemSeparatorComponent={() => <View style={styles.separator} />}
-                />
+          <View style={styles.mapWrap}>
+            {nativeConfigured ? (
+              <MapView ref={mapRef} provider={PROVIDER_GOOGLE} style={StyleSheet.absoluteFill}
+                initialRegion={region} onPress={(event) => reverseCoordinate(event.nativeEvent.coordinate)}
+                showsCompass showsMyLocationButton={false}>
+                <Marker coordinate={{ latitude: region.latitude, longitude: region.longitude }} draggable
+                  onDragEnd={(event) => reverseCoordinate(event.nativeEvent.coordinate)} />
+              </MapView>
+            ) : (
+              <View style={styles.mapUnavailable}>
+                <Ionicons name="map-outline" size={44} color="#C28E5C" />
+                <Text style={[styles.mapUnavailableText, direction.text]}>{t("map_picker_not_configured")}</Text>
               </View>
             )}
+            {resolving ? <View style={styles.resolvingBadge}><ActivityIndicator size="small" color="#6B4E33" /></View> : null}
+          </View>
+          <Text style={[styles.dragHint, direction.text]}>{t("map_picker_drag_hint")}</Text>
+          {providerFailed ? <Text style={[styles.providerError, direction.text]}>{t("map_picker_provider_error")}</Text> : null}
 
-            <View style={styles.locationPanel}>
-              <View style={styles.locationIntroIcon}>
-                <Ionicons name="location-outline" size={34} color="#C28E5C" />
-              </View>
-              <Text style={styles.locationIntroTitle}>حدّد موقع المناسبة بأمان</Text>
-              <Text style={styles.locationIntroText}>
-                ابحث عن المدينة أو الشارع أو استخدم موقعك الحالي. يمكنك أيضًا اعتماد العنوان المكتوب مباشرة.
-              </Text>
-
-              <TouchableOpacity
-                style={styles.currentLocationButton}
-                onPress={getCurrentLocation}
-                disabled={isLoadingLocation}
-                activeOpacity={0.8}
-              >
-                {isLoadingLocation ? (
-                  <ActivityIndicator size="small" color="#FFF" />
-                ) : (
-                  <Ionicons name="locate" size={20} color="#FFF" />
-                )}
-                <Text style={styles.currentLocationText}>استخدام موقعي الحالي</Text>
+          <View style={styles.actionsArea}>
+            <TouchableOpacity onPress={useCurrentLocation} disabled={locating} style={styles.locationButton}>
+              {locating ? <ActivityIndicator size="small" color="#6B4E33" /> : <Ionicons name="locate" size={20} color="#6B4E33" />}
+              <Text style={styles.locationButtonText}>{t("map_picker_use_current")}</Text>
+            </TouchableOpacity>
+            {query.trim().length >= 3 ? (
+              <TouchableOpacity onPress={useTypedAddress} style={styles.manualButton}>
+                <Text style={[styles.manualButtonText, direction.text]}>{t("map_picker_use_typed", { address: query.trim() })}</Text>
               </TouchableOpacity>
-
-              {searchQuery.trim().length >= 3 && !isSearching ? (
-                <TouchableOpacity
-                  style={styles.typedAddressButton}
-                  onPress={useTypedAddress}
-                  activeOpacity={0.8}
-                >
-                  <Ionicons name="create-outline" size={18} color="#6B4E33" />
-                  <Text style={styles.typedAddressText} numberOfLines={2}>
-                    استخدام «{searchQuery.trim()}» كعنوان
-                  </Text>
-                </TouchableOpacity>
-              ) : null}
-
-              {selectedLocation.address ? (
-                <View style={styles.selectedAddressCard}>
-                  <View style={styles.addressIconContainer}>
-                    <Ionicons name="checkmark-circle" size={22} color="#2A8C5B" />
-                  </View>
-                  <View style={styles.addressTextContainer}>
-                    <Text style={styles.addressLabel}>الموقع المختار</Text>
-                    <Text style={styles.addressText} numberOfLines={3}>
-                      {selectedLocation.address}
-                    </Text>
-                  </View>
+            ) : null}
+            {draft.address ? (
+              <View style={styles.selectedCard}>
+                <Ionicons name="checkmark-circle" size={22} color="#2A8C5B" />
+                <View style={styles.selectedTextWrap}>
+                  <Text style={[styles.selectedLabel, direction.text]}>{t("map_picker_selected")}</Text>
+                  <Text style={[styles.selectedAddress, direction.input]} numberOfLines={3}>{isolateAuto(draft.address)}</Text>
                 </View>
-              ) : null}
-            </View>
+              </View>
+            ) : null}
+          </View>
 
-            <View style={styles.actionButtons}>
-              <TouchableOpacity style={styles.cancelButton} onPress={handleCancel} activeOpacity={0.8}>
-                <Text style={styles.cancelButtonText}>إلغاء</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.confirmButton, !selectedLocation.address && styles.confirmButtonDisabled]}
-                onPress={handleConfirm}
-                disabled={!selectedLocation.address}
-                activeOpacity={0.8}
-              >
-                <Ionicons name="checkmark" size={20} color="#FFF" />
-                <Text style={styles.confirmButtonText}>تأكيد الموقع</Text>
-              </TouchableOpacity>
-            </View>
+          <View style={styles.footer}>
+            <TouchableOpacity onPress={closePicker} style={styles.cancelButton}><Text style={styles.cancelText}>{t("cancel", { ns: "common" })}</Text></TouchableOpacity>
+            <TouchableOpacity onPress={confirm} disabled={!draft.address.trim() || !isFiniteCoordinate(draft)}
+              style={[styles.confirmButton, (!draft.address.trim() || !isFiniteCoordinate(draft)) && styles.confirmDisabled]}>
+              <Text style={styles.confirmText}>{t("map_picker_confirm")}</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
     </View>
   );
-};
+}
 
-const MapPicker = ({
-  name,
-  label,
-  placeholder = "اختر موقع المناسبة",
-  disabled = false,
-  rules,
-  value: controlledValue,
-  onChange: controlledOnChange,
-}) => {
-  // Two usage modes:
-  //   - RHF mode: parent provides `name`; we register with the form context.
-  //   - Controlled mode: parent passes `value` + `onChange` directly.
-  // The vendor settings forms use controlled mode because their schema
-  // tracks `serviceLocation` outside react-hook-form (the field is too
-  // structured for a flat zod field).
-  if (!name) {
-    return (
-      <MapPickerInner
-        onChange={controlledOnChange}
-        value={controlledValue}
-        label={label}
-        placeholder={placeholder}
-        disabled={disabled}
-      />
-    );
-  }
-
+function FormMapPicker(props) {
   const { control } = useFormContext();
-  return (
-    <Controller
-      control={control}
-      name={name}
-      rules={rules}
-      render={({ field: { onChange, value }, fieldState: { error } }) => (
-        <MapPickerInner
-          onChange={onChange}
-          value={value}
-          error={error}
-          label={label}
-          placeholder={placeholder}
-          disabled={disabled}
-        />
-      )}
-    />
-  );
-};
+  return <Controller control={control} name={props.name} rules={props.rules}
+    render={({ field: { onChange, value }, fieldState: { error } }) =>
+      <MapPickerInner {...props} onChange={onChange} value={value} error={error} />} />;
+}
+
+export default function MapPicker({ name, value, onChange, ...props }) {
+  if (name) return <FormMapPicker name={name} {...props} />;
+  return <MapPickerInner {...props} value={value} onChange={onChange || (() => {})} />;
+}
 
 const styles = StyleSheet.create({
   container: { marginBottom: 16, width: "100%" },
-  label: { fontSize: 14, fontFamily: "Cairo_600SemiBold", color: "#2C2C2C", marginBottom: 8 },
-  inputContainer: {
-    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-    borderWidth: 1, borderColor: "#E0E0E0", borderRadius: 12, backgroundColor: "#FFF",
-    paddingHorizontal: 16, paddingVertical: 14, minHeight: 56,
-  },
-  inputContent: { flexDirection: "row", alignItems: "center", gap: 12, flex: 1 },
-  inputContainerError: { borderColor: "#E74C3C", borderWidth: 1.5 },
-  inputContainerDisabled: { backgroundColor: "#F5F5F5", opacity: 0.6 },
-  inputText: { flex: 1, fontSize: 15, fontFamily: "Cairo_400Regular", color: "#2C2C2C" },
+  label: { fontFamily: "Cairo_600SemiBold", fontSize: 14, color: "#2C2C2C", marginBottom: 8 },
+  inputContainer: { borderWidth: 1, borderColor: "#E0E0E0", borderRadius: 12, minHeight: 58, paddingHorizontal: 15, justifyContent: "center", backgroundColor: "#FFF" },
+  inputContainerError: { borderColor: "#D84A3F", borderWidth: 1.5 },
+  inputContainerDisabled: { opacity: 0.55, backgroundColor: "#F5F5F5" },
+  inputContent: { flexDirection: "row", alignItems: "center", gap: 10 },
+  inputText: { flex: 1, fontFamily: "Cairo_400Regular", fontSize: 14, color: "#2C2C2C" },
   placeholderText: { color: "#999" },
-  errorText: { fontSize: 12, fontFamily: "Cairo_400Regular", color: "#E74C3C", marginTop: 6 },
-  modalOverlay: { flex: 1, backgroundColor: "rgba(0, 0, 0, 0.5)", justifyContent: "flex-end" },
-  modalContainer: {
-    backgroundColor: "#FFF", borderTopLeftRadius: 24, borderTopRightRadius: 24,
-    height: "85%", overflow: "hidden",
-  },
-  modalHeader: {
-    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-    paddingHorizontal: 20, paddingVertical: 16, borderBottomWidth: 1,
-    borderBottomColor: "#F0F0F0", backgroundColor: "#FFF",
-  },
-  closeButton: { padding: 4 },
-  modalTitle: {
-    fontSize: 16, fontFamily: "Cairo_700Bold", color: "#2C2C2C",
-    flex: 1, textAlign: "center", marginEnd: 36,
-  },
-  searchContainer: { paddingHorizontal: 20, paddingVertical: 8, backgroundColor: "#FFF" },
-  searchInputContainer: {
-    flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: "#F9F9F9",
-    borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8,
-    borderWidth: 1, borderColor: "#E0E0E0",
-  },
-  searchInput: {
-    flex: 1, fontSize: 14, fontFamily: "Cairo_400Regular", color: "#2C2C2C",
-  },
-  searchResultsContainer: {
-    maxHeight: 250, backgroundColor: "#FFF", borderBottomWidth: 1, borderBottomColor: "#F0F0F0",
-  },
-  searchResultItem: {
-    flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 20, paddingVertical: 14,
-  },
-  searchResultText: {
-    flex: 1, fontSize: 14, fontFamily: "Cairo_400Regular", color: "#2C2C2C", textAlign: "right",
-  },
-  separator: { height: 1, backgroundColor: "#F0F0F0", marginHorizontal: 20 },
-  locationPanel: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 24,
-    paddingVertical: 20,
-    backgroundColor: "#FCFAF8",
-  },
-  locationIntroIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#F5ECE4",
-    marginBottom: 12,
-  },
-  locationIntroTitle: {
-    fontSize: 17,
-    fontFamily: "Cairo_700Bold",
-    color: "#2C2C2C",
-    textAlign: "center",
-  },
-  locationIntroText: {
-    marginTop: 4,
-    marginBottom: 16,
-    maxWidth: 320,
-    fontSize: 12,
-    lineHeight: 19,
-    fontFamily: "Cairo_400Regular",
-    color: "#656565",
-    textAlign: "center",
-  },
-  currentLocationButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    width: "100%",
-    maxWidth: 320,
-    minHeight: 46,
-    borderRadius: 12,
-    backgroundColor: "#C28E5C",
-    paddingHorizontal: 16,
-  },
-  currentLocationText: {
-    fontSize: 13,
-    fontFamily: "Cairo_600SemiBold",
-    color: "#FFF",
-  },
-  typedAddressButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    width: "100%",
-    maxWidth: 320,
-    marginTop: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#E3CBB4",
-    backgroundColor: "#FFF",
-  },
-  typedAddressText: {
-    flex: 1,
-    fontSize: 12,
-    fontFamily: "Cairo_600SemiBold",
-    color: "#6B4E33",
-  },
-  selectedAddressCard: {
-    width: "100%",
-    maxWidth: 320,
-    marginTop: 14,
-    backgroundColor: "#FFF",
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "#BDDCCB",
-    padding: 14,
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 10,
-  },
-  addressIconContainer: {
-    width: 38, height: 38, borderRadius: 12, backgroundColor: "#EAF4EF",
-    justifyContent: "center", alignItems: "center",
-  },
-  addressTextContainer: { flex: 1 },
-  addressLabel: { fontSize: 12, fontFamily: "Cairo_600SemiBold", color: "#999", marginBottom: 4 },
-  addressText: { fontSize: 14, fontFamily: "Cairo_400Regular", color: "#2C2C2C", lineHeight: 20 },
-  actionButtons: {
-    flexDirection: "row", gap: 10, paddingHorizontal: 20, paddingVertical: 12,
-    paddingBottom: 16, backgroundColor: "#FFF", borderTopWidth: 1, borderTopColor: "#F0F0F0",
-  },
-  cancelButton: {
-    flex: 1, paddingVertical: 10, borderRadius: 10, borderWidth: 1.5,
-    borderColor: "#E0E0E0", backgroundColor: "#FFF", alignItems: "center", justifyContent: "center",
-  },
-  cancelButtonText: { fontSize: 14, fontFamily: "Cairo_600SemiBold", color: "#666" },
-  confirmButton: {
-    flex: 2, flexDirection: "row", gap: 6, paddingVertical: 10, borderRadius: 10,
-    backgroundColor: "#C28E5C", alignItems: "center", justifyContent: "center",
-  },
-  confirmButtonDisabled: { backgroundColor: "#CCC" },
-  confirmButtonText: { fontSize: 14, fontFamily: "Cairo_600SemiBold", color: "#FFF" },
+  errorText: { marginTop: 6, fontFamily: "Cairo_400Regular", fontSize: 12, color: "#D84A3F" },
+  modal: { flex: 1, backgroundColor: "#FCF9F5" },
+  header: { minHeight: 76, paddingTop: Platform.OS === "ios" ? 22 : 8, paddingHorizontal: 18, flexDirection: "row", alignItems: "center", backgroundColor: "#FFF", borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#E6E0DA" },
+  iconButton: { width: 42, height: 42, alignItems: "center", justifyContent: "center" },
+  title: { flex: 1, fontFamily: "Cairo_700Bold", fontSize: 18, color: "#242424", textAlign: "center" },
+  searchWrap: { padding: 14, zIndex: 4, backgroundColor: "#FFF" },
+  searchBox: { flexDirection: "row", alignItems: "center", gap: 9, borderWidth: 1, borderColor: "#DDD6CF", borderRadius: 13, paddingHorizontal: 13, minHeight: 50 },
+  searchInput: { flex: 1, fontFamily: "Cairo_400Regular", fontSize: 14, color: "#242424" },
+  results: { position: "absolute", top: 68, left: 14, right: 14, maxHeight: 230, borderRadius: 12, backgroundColor: "#FFF", borderWidth: 1, borderColor: "#E3DDD7", elevation: 8, shadowColor: "#000", shadowOpacity: 0.12, shadowRadius: 10 },
+  result: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 14, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#EEE9E4" },
+  resultText: { flex: 1, fontFamily: "Cairo_400Regular", fontSize: 13, color: "#333" },
+  mapWrap: { height: 300, marginHorizontal: 14, borderRadius: 18, overflow: "hidden", borderWidth: 1, borderColor: "#E1D7CE", backgroundColor: "#EFEAE4" },
+  mapUnavailable: { flex: 1, alignItems: "center", justifyContent: "center", gap: 10 },
+  mapUnavailableText: { fontFamily: "Cairo_600SemiBold", fontSize: 13, color: "#6B625B" },
+  resolvingBadge: { position: "absolute", top: 12, end: 12, width: 38, height: 38, borderRadius: 19, backgroundColor: "#FFF", alignItems: "center", justifyContent: "center", elevation: 3 },
+  dragHint: { marginHorizontal: 18, marginTop: 8, fontFamily: "Cairo_400Regular", fontSize: 11, color: "#777" },
+  providerError: { marginHorizontal: 18, marginTop: 4, fontFamily: "Cairo_400Regular", fontSize: 11, color: "#A0563C" },
+  actionsArea: { flex: 1, paddingHorizontal: 14, paddingTop: 10 },
+  locationButton: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, minHeight: 45, borderRadius: 12, borderWidth: 1, borderColor: "#C28E5C", backgroundColor: "#FFF" },
+  locationButtonText: { fontFamily: "Cairo_600SemiBold", fontSize: 13, color: "#6B4E33" },
+  manualButton: { marginTop: 8, paddingHorizontal: 12, paddingVertical: 8 },
+  manualButtonText: { fontFamily: "Cairo_600SemiBold", fontSize: 12, color: "#8A603C" },
+  selectedCard: { marginTop: 8, flexDirection: "row", alignItems: "flex-start", gap: 10, padding: 12, borderRadius: 12, backgroundColor: "#EDF7F1", borderWidth: 1, borderColor: "#C9E3D3" },
+  selectedTextWrap: { flex: 1 },
+  selectedLabel: { fontFamily: "Cairo_600SemiBold", fontSize: 11, color: "#397354" },
+  selectedAddress: { fontFamily: "Cairo_400Regular", fontSize: 12, lineHeight: 19, color: "#263D30" },
+  footer: { flexDirection: "row", gap: 10, paddingHorizontal: 14, paddingTop: 11, paddingBottom: Platform.OS === "ios" ? 28 : 14, backgroundColor: "#FFF", borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: "#E2DCD5" },
+  cancelButton: { flex: 1, minHeight: 48, borderRadius: 12, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#C28E5C" },
+  cancelText: { fontFamily: "Cairo_600SemiBold", color: "#7B5636", fontSize: 14 },
+  confirmButton: { flex: 2, minHeight: 48, borderRadius: 12, alignItems: "center", justifyContent: "center", backgroundColor: "#C28E5C" },
+  confirmDisabled: { backgroundColor: "#CFCBC6" },
+  confirmText: { fontFamily: "Cairo_600SemiBold", color: "#FFF", fontSize: 14 },
 });
-
-export default MapPicker;

@@ -230,6 +230,7 @@
     "paymentFailed": "Payment failed. Please try again.",
     "invalidPlan": "Invalid plan code.",
     "processing": "Processing...",
+    "priceUnavailable": "Price unavailable",
     "proceedButton": "Proceed to Payment"
   },
   "toasts": {

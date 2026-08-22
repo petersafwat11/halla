@@ -51,6 +51,8 @@ const eventLocationSchema = z.object({
   longitude: z.number().min(-180).max(180).optional().nullable(),
   city: z.string().trim().max(100).optional().nullable(),
   country: z.string().trim().max(100).optional().nullable(),
+  placeId: z.string().trim().max(300).optional().nullable(),
+  provider: z.enum(['google', 'device', 'manual']).optional().nullable(),
 }).passthrough();
 
 const createEventDetailsSchema = z.object({
@@ -129,6 +131,8 @@ const updateEventDetailsSchema = z.object({
     longitude: z.number().min(-180).max(180).optional().nullable(),
     city: z.string().trim().max(100).optional().nullable(),
     country: z.string().trim().max(100).optional().nullable(),
+    placeId: z.string().trim().max(300).optional().nullable(),
+    provider: z.enum(['google', 'device', 'manual']).optional().nullable(),
   }).partial().passthrough().optional(),
   description: z.string().trim().max(2000).optional().nullable(),
 }).partial().passthrough().refine(

@@ -3,8 +3,7 @@
  *
  * Extends the static `app.json` (still the base config) with values that must
  * come from the environment rather than committed JSON:
- *   - Android Google Maps API key (react-native-maps PROVIDER_DEFAULT renders a
- *     blank map on Android without it)
+ *   - Platform-restricted Google Maps SDK keys for Android and iOS
  *   - Sentry DSN (crash reporting)
  *   - RevenueCat public SDK keys (in-app purchases)
  *
@@ -12,12 +11,22 @@
  * are simply omitted so local/dev builds still work (maps blank, Sentry/RC no-op).
  */
 module.exports = ({ config }) => {
-  const mapsKey = process.env.GOOGLE_MAPS_API_KEY;
-  if (mapsKey) {
+  const androidMapsKey =
+    process.env.GOOGLE_MAPS_ANDROID_API_KEY || process.env.GOOGLE_MAPS_API_KEY;
+  const iosMapsKey =
+    process.env.GOOGLE_MAPS_IOS_API_KEY || process.env.GOOGLE_MAPS_API_KEY;
+  if (androidMapsKey) {
     config.android = config.android || {};
     config.android.config = {
       ...(config.android.config || {}),
-      googleMaps: { apiKey: mapsKey },
+      googleMaps: { apiKey: androidMapsKey },
+    };
+  }
+  if (iosMapsKey) {
+    config.ios = config.ios || {};
+    config.ios.config = {
+      ...(config.ios.config || {}),
+      googleMapsApiKey: iosMapsKey,
     };
   }
 
@@ -29,6 +38,10 @@ module.exports = ({ config }) => {
     revenueCat: {
       iosKey: process.env.REVENUECAT_IOS_KEY || "",
       androidKey: process.env.REVENUECAT_ANDROID_KEY || "",
+    },
+    maps: {
+      androidConfigured: !!androidMapsKey,
+      iosConfigured: !!iosMapsKey,
     },
   };
 

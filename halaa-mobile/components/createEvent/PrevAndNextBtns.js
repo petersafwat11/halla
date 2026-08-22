@@ -60,7 +60,7 @@ const PrevAndNextBtns = ({
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 24,
-    paddingVertical: 20,
+    paddingVertical: 12,
     backgroundColor: "#FFF",
   },
   buttonContainer: {

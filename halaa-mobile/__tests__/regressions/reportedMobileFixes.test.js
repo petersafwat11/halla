@@ -30,10 +30,35 @@ test("all mobile auth transports identify the native client", () => {
   }
 });
 
-test("event location picker does not mount the unconfigured native map SDK", () => {
+test("event location picker mounts Google Maps and keeps web-service keys on the backend", () => {
   const source = read("components", "commen", "MapPicker.js");
-  assert.doesNotMatch(source, /from\s+["']react-native-maps["']/);
-  assert.doesNotMatch(source, /<MapView\b/);
+  assert.match(source, /from\s+["']react-native-maps["']/);
+  assert.match(source, /<MapView\b/);
+  assert.match(source, /provider=\{PROVIDER_GOOGLE\}/);
+  assert.match(source, /mapsApi\.(autocompletePlaces|getPlaceDetails|reverseGeocode)/);
+  assert.doesNotMatch(source, /maps\.googleapis\.com/);
+});
+
+test("protected template backgrounds are authenticated and cannot bake as blank", () => {
+  const canvas = read("components", "shared", "TemplatePreviewCanvas.js");
+  const stepThree = read("components", "createEvent", "StepThree.js");
+
+  assert.match(canvas, /Authorization:\s*`Bearer \$\{token\}`/);
+  assert.match(canvas, /onBackgroundError/);
+  assert.match(canvas, /onBackgroundReady\?\.\(false\)/);
+  assert.doesNotMatch(
+    canvas,
+    /onError[\s\S]{0,300}onBackgroundReady\?\.\(true\)/
+  );
+  assert.match(stepThree, /template_background_failed/);
+});
+
+test("offerings wait for the identified RevenueCat configuration", () => {
+  const source = read("services", "purchases.js");
+  assert.match(source, /const waitForConfiguration\s*=\s*async/);
+  assert.match(source, /getAllOfferings[\s\S]*await waitForConfiguration\(\)/);
+  assert.match(source, /startsWith\(["']appl_["']\)/);
+  assert.match(source, /startsWith\(["']goog_["']\)/);
 });
 
 test("reported RTL and horizontal-tab layout regressions stay fixed", () => {

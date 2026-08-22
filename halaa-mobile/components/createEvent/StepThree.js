@@ -20,6 +20,7 @@ import * as ImagePicker from "expo-image-picker";
 import EventTemplates from "../home/EventTemplates";
 import PreviewInvitation from "./PreviewInvitation";
 import { useTranslation } from "../../localization";
+import { useFieldDirection } from "../../hooks/useInputDirection";
 import {
   buildDynamicTemplateSchema,
   buildDefaultValues,
@@ -502,7 +503,13 @@ const StepThree = () => {
  * The previous `methods.watch()` in the parent caused a re-render storm that
  * could interact badly with the keyboard manager and lose focus.
  */
-const LiveCanvas = ({ template, control, hasFields, onBackgroundReady }) => {
+const LiveCanvas = ({
+  template,
+  control,
+  hasFields,
+  onBackgroundReady,
+  onBackgroundError,
+}) => {
   const data = useWatch({ control });
   const primaryColor = useWatch({ control, name: "primaryColor" });
   return (
@@ -513,6 +520,7 @@ const LiveCanvas = ({ template, control, hasFields, onBackgroundReady }) => {
         hasFields ? primaryColor : template?.data?.primaryColor
       }
       onBackgroundReady={onBackgroundReady}
+      onBackgroundError={onBackgroundError}
     />
   );
 };
@@ -533,12 +541,18 @@ const TemplateFormModal = ({
   onClose,
   onSave,
 }) => {
+  const fieldDirection = useFieldDirection("localized");
   const canvasRef = useRef(null);
   const [baking, setBaking] = useState(false);
   const [bakeError, setBakeError] = useState(null);
   const [backgroundReady, setBackgroundReady] = useState(false);
   const handleBackgroundReady = useCallback((ready) => {
     setBackgroundReady(ready);
+    if (ready) setBakeError(null);
+  }, []);
+  const handleBackgroundError = useCallback((error) => {
+    setBackgroundReady(false);
+    setBakeError(error?.message || "TEMPLATE_BACKGROUND_LOAD_FAILED");
   }, []);
 
   const fields = template?.fields || [];
@@ -606,7 +620,9 @@ const TemplateFormModal = ({
     >
       <SafeAreaView style={styles.modalContainer} edges={["top", "bottom"]}>
         <View style={styles.modalHeader}>
-          <Text style={styles.modalTitle}>{t("edit_design_template")}</Text>
+          <Text style={[styles.modalTitle, fieldDirection.text]}>
+            {t("edit_design_template")}
+          </Text>
           <TouchableOpacity
             onPress={onClose}
             style={styles.modalCloseBtn}
@@ -641,6 +657,7 @@ const TemplateFormModal = ({
                   control={methods.control}
                   hasFields={hasFields}
                   onBackgroundReady={handleBackgroundReady}
+                  onBackgroundError={handleBackgroundError}
                 />
               </View>
 
@@ -655,7 +672,9 @@ const TemplateFormModal = ({
               {bakeError && (
                 <View style={styles.bakeWarningBadge}>
                   <Text style={styles.bakeWarningText}>
-                    {t("template_bake_failed")}
+                    {String(bakeError).startsWith("TEMPLATE_BACKGROUND")
+                      ? t("template_background_failed")
+                      : t("template_bake_failed")}
                   </Text>
                 </View>
               )}

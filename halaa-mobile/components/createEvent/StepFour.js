@@ -17,7 +17,6 @@ import {
   Animated,
   ActivityIndicator,
   ScrollView,
-  TextInput,
 } from "react-native";
 import { useFormContext } from "react-hook-form";
 import { Ionicons } from "@expo/vector-icons";
@@ -30,6 +29,9 @@ import { useHostTaqnyatTemplates } from "../../hooks/taqnyatTemplates";
 import { useTranslation } from "../../localization";
 import { useAuthStore } from "../../stores/authStore";
 import PreviewInvitation from "./PreviewInvitation";
+import DirectionalTextInput from "../commen/DirectionalTextInput";
+import { isolateAuto } from "@halaa/shared/utils/bidi";
+import { useFieldDirection } from "../../hooks/useInputDirection";
 import {
   INVITATION_TYPE_OPTIONS,
   DEFAULT_INVITATION_TYPE,
@@ -71,6 +73,7 @@ const StepFour = () => {
   const previousCategoryRef = useRef("");
   const previousInvitationTypeRef = useRef("");
   const { t, currentLanguage } = useTranslation("createEvent");
+  const fieldDirection = useFieldDirection("localized");
 
   const categoryLabel = (cat) =>
     cat ? t(`event_types.${cat}`, CATEGORY_LABELS_AR[cat] || cat) : "";
@@ -179,8 +182,8 @@ const StepFour = () => {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* ── Invitation type ──────────────────────────────────── */}
         <View style={styles.inviteTypeSection}>
-          <Text style={styles.sectionTitle}>{t("invitation_type", "نوع الدعوة")}</Text>
-          <Text style={styles.hint}>
+          <Text style={[styles.sectionTitle, fieldDirection.text]}>{t("invitation_type", "نوع الدعوة")}</Text>
+          <Text style={[styles.hint, fieldDirection.text]}>
             {t(
               "invitation_type_hint",
               "حدّد الرسالة التي تصل بعد تأكيد الضيف، أو أرسل دعوة نصية فقط بدون أزرار."
@@ -220,6 +223,7 @@ const StepFour = () => {
                         <Text
                           style={[
                             styles.inviteTypeTitle,
+                            fieldDirection.text,
                             isSelected && styles.inviteTypeTitleSelected,
                           ]}
                         >
@@ -233,7 +237,7 @@ const StepFour = () => {
                           </View>
                         )}
                       </View>
-                      <Text style={styles.inviteTypeDesc}>
+                      <Text style={[styles.inviteTypeDesc, fieldDirection.text]}>
                         {t(opt.descKey)}
                       </Text>
                     </View>
@@ -301,10 +305,10 @@ const StepFour = () => {
 
         {/* ── Taqnyat template picker ──────────────────────────── */}
         <View style={styles.header}>
-          <Text style={styles.sectionTitle}>{t("step4_title")}</Text>
+          <Text style={[styles.sectionTitle, fieldDirection.text]}>{t("step4_title")}</Text>
           {category ? (
             <View style={styles.filterRow}>
-              <Text style={styles.subtitle}>{t("step4_description")}</Text>
+              <Text style={[styles.subtitle, fieldDirection.text]}>{t("step4_description")}</Text>
               <View style={styles.categoryChip}>
                 <Text style={styles.categoryChipText}>
                   {categoryLabel(category)}
@@ -312,7 +316,7 @@ const StepFour = () => {
               </View>
             </View>
           ) : (
-            <Text style={styles.subtitle}>{t("step4_description")}</Text>
+            <Text style={[styles.subtitle, fieldDirection.text]}>{t("step4_description")}</Text>
           )}
         </View>
 
@@ -334,13 +338,13 @@ const StepFour = () => {
         ) : error ? (
           <View style={styles.emptyBox}>
             <Ionicons name="alert-circle-outline" size={36} color="#C0392B" />
-            <Text style={styles.emptyTitle}>{t("taqnyat_load_failed", "تعذّر تحميل القوالب")}</Text>
+            <Text style={[styles.emptyTitle, fieldDirection.text]}>{t("taqnyat_load_failed", "تعذّر تحميل القوالب")}</Text>
             <Text style={styles.emptyHint}>{t("try_again_later", "حاول مرة أخرى لاحقاً")}</Text>
           </View>
         ) : templates.length === 0 ? (
           <View style={styles.emptyBox}>
             <Ionicons name="mail-outline" size={36} color="#999" />
-            <Text style={styles.emptyTitle}>{t("no_taqnyat_templates", "لا توجد قوالب لهذه الفئة")}</Text>
+            <Text style={[styles.emptyTitle, fieldDirection.text]}>{t("no_taqnyat_templates", "لا توجد قوالب لهذه الفئة")}</Text>
             <Text style={styles.emptyHint}>
               {t("no_taqnyat_templates_hint", "تواصل مع الإدارة لتعيين قوالب لفئتك")}
             </Text>
@@ -372,19 +376,19 @@ const StepFour = () => {
                         <View style={styles.cardLabelIcon}>
                           <Ionicons name="mail-outline" size={14} color="#A87040" />
                         </View>
-                        <Text style={styles.cardLabelText}>
+                        <Text style={[styles.cardLabelText, fieldDirection.text]}>
                           {tplCategory ? categoryLabel(tplCategory) : t("invitation_message_label")}
                         </Text>
                       </View>
                     </View>
                     {tpl.bodyText ? (
                       <View style={styles.bubble}>
-                        <Text style={styles.bubbleText}>
-                          {resolveTaqnyatPlaceholders(
+                        <Text style={[styles.bubbleText, fieldDirection.text]}>
+                          {isolateAuto(resolveTaqnyatPlaceholders(
                             tpl.bodyText,
                             tpl.varMapping,
                             previewContext
-                          )}
+                          ))}
                         </Text>
                       </View>
                     ) : null}
@@ -402,8 +406,8 @@ const StepFour = () => {
 
         {/* ── Auto-replies (only for reply-enabled invitation types) ── */}
         <View style={styles.repliesSection}>
-          <Text style={styles.sectionTitle}>{t("auto_replies")}</Text>
-          <Text style={styles.hint}>{t("auto_replies_hint")}</Text>
+          <Text style={[styles.sectionTitle, fieldDirection.text]}>{t("auto_replies")}</Text>
+          <Text style={[styles.hint, fieldDirection.text]}>{t("auto_replies_hint")}</Text>
 
           {replyAllowed ? (
             <>
@@ -422,7 +426,7 @@ const StepFour = () => {
                 ))}
               </View>
 
-              <TextInput
+              <DirectionalTextInput
                 value={activeReplyValue}
                 onChangeText={handleReplyChange}
                 placeholder={t("auto_reply_placeholder")}
@@ -435,7 +439,7 @@ const StepFour = () => {
             </>
           ) : (
             <View style={styles.repliesDisabledNote}>
-              <Text style={styles.repliesDisabledText}>
+              <Text style={[styles.repliesDisabledText, fieldDirection.text]}>
                 {t(
                   "auto_replies_disabled_note",
                   "لا تحتوي هذه الدعوة على إمكانية الرد، لذلك لن تُرسل ردود تلقائية."
@@ -591,7 +595,7 @@ const styles = StyleSheet.create({
   bubble: {
     backgroundColor: "#FAF6EF",
     borderRadius: 10,
-    borderTopRightRadius: 4,
+    borderTopStartRadius: 4,
     padding: 12,
     borderWidth: 1,
     borderColor: "#EFE6D6",
@@ -605,7 +609,7 @@ const styles = StyleSheet.create({
   checkBadge: {
     position: "absolute",
     top: 10,
-    left: 10,
+    end: 10,
     width: 22,
     height: 22,
     borderRadius: 11,
@@ -716,7 +720,6 @@ const styles = StyleSheet.create({
     fontSize: 14.5,
     fontFamily: "Cairo_700Bold",
     color: "#2C2C2C",
-    textAlign: "right",
   },
   inviteTypeTitleSelected: {
     color: "#241D17",
@@ -738,7 +741,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: "Cairo_400Regular",
     color: "#7D7267",
-    textAlign: "right",
     lineHeight: 18,
   },
   radioCircle: {
@@ -811,7 +813,6 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_400Regular",
     color: "#8A7E74",
     lineHeight: 22,
-    textAlign: "right",
   },
 });
 

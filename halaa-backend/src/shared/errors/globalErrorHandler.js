@@ -89,12 +89,13 @@ const handleJWTExpiredError = () => {
  * @param {Error} err
  * @param {Object} res
  */
-const sendErrorDev = (err, res) => {
+const sendErrorDev = (err, req, res) => {
   const response = {
     success: false,
     status: err.status,
     message: err.message,
     code: err.code || null,
+    requestId: req.requestId || null,
   };
   // Mirror the prod top-level shape so clients see the same fields in both
   // environments. Without this, the structured fields (field/errors/meta/
@@ -120,7 +121,7 @@ const sendErrorDev = (err, res) => {
  * @param {Error} err
  * @param {Object} res
  */
-const sendErrorProd = (err, res) => {
+const sendErrorProd = (err, req, res) => {
   // Operational, trusted error: send message to client
   if (err.isOperational) {
     const response = {
@@ -128,6 +129,7 @@ const sendErrorProd = (err, res) => {
       status: err.status,
       message: err.message,
       code: err.code || null,
+      requestId: req.requestId || null,
     };
 
     // Include additional error data if present
@@ -151,6 +153,7 @@ const sendErrorProd = (err, res) => {
       status: 'error',
       message: 'Something went wrong. Please try again later.',
       code: 'INTERNAL_ERROR',
+      requestId: req.requestId || null,
     });
   }
 };
@@ -168,7 +171,7 @@ module.exports = (err, req, res, next) => {
 
   // Log error for monitoring
   if (err.statusCode >= 500) {
-    console.error(`[${new Date().toISOString()}] ${err.statusCode} - ${err.message}`);
+    console.error(`[${new Date().toISOString()}] [${req.requestId || 'no-request-id'}] ${err.statusCode} - ${err.message}`);
     if (config.isDev) {
       console.error(err.stack);
     }
@@ -190,8 +193,8 @@ module.exports = (err, req, res, next) => {
   if (err.name === 'TokenExpiredError') error = handleJWTExpiredError();
 
   if (config.isDev) {
-    sendErrorDev(error, res);
+    sendErrorDev(error, req, res);
   } else {
-    sendErrorProd(error, res);
+    sendErrorProd(error, req, res);
   }
 };

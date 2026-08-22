@@ -117,3 +117,34 @@ export const useLabelDirection = (
   return resolveLabelDirection(contentDirection, { isRTL });
 };
 
+/**
+ * Complete field-direction contract used by every form primitive.
+ *
+ * `input` controls both the value and its placeholder. `text` is shared by
+ * labels, helpers and errors. `counter` is deliberately LTR-isolated and is
+ * aligned to the logical end of the field (right in English, left in Arabic).
+ * Keeping these roles together prevents a field from becoming half RTL and
+ * half LTR when only its input is migrated.
+ */
+export const resolveFieldDirection = (
+  contentDirection = CONTENT_DIRECTIONS.LOCALIZED,
+  { isRTL = false, hasValue = false } = {}
+) => ({
+  input: resolveInputDirection(contentDirection, { isRTL, hasValue }),
+  // UI chrome always follows the selected locale even when the value itself
+  // is an LTR token such as an email, phone number or password.
+  text: resolveLabelDirection(CONTENT_DIRECTIONS.LOCALIZED, { isRTL }),
+  counter: {
+    textAlign: isRTL ? "left" : "right",
+    writingDirection: "ltr",
+  },
+});
+
+export const useFieldDirection = (
+  contentDirection = CONTENT_DIRECTIONS.LOCALIZED,
+  { hasValue = false } = {}
+) => {
+  const { isRTL } = useTranslation();
+  return resolveFieldDirection(contentDirection, { isRTL, hasValue });
+};
+

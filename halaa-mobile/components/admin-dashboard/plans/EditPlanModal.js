@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   Modal,
@@ -12,6 +11,7 @@ import {
   Switch,
   Platform,
 } from "react-native";
+import TextInput from "../../commen/DirectionalTextInput";
 import { Ionicons } from "@expo/vector-icons";
 import { useUpdatePlan } from "../../../hooks/admin";
 import { useTranslation } from "../../../localization";

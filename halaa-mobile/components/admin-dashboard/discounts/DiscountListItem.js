@@ -17,6 +17,7 @@ import {
   backgrounds,
 } from "../../../styles/tokens";
 import { getStatusVisual } from "../../../constants/statusColors";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
 
 function getDiscountStatus(discount) {
   if (discount.validUntil && new Date(discount.validUntil) < new Date())
@@ -47,7 +48,7 @@ const DiscountListItem = ({
 
   const usageLabel =
     discount.maxUses > 0
-      ? `${discount.usedCount} / ${discount.maxUses}`
+      ? isolateLtr(`${discount.usedCount} / ${discount.maxUses}`)
       : String(discount.usedCount ?? 0);
 
   const expiryLabel = discount.validUntil

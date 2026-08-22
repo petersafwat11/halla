@@ -2,13 +2,13 @@ import React, { useMemo, useState } from "react";
 import {
   View,
   Text,
-  TextInput,
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
   ScrollView,
   Image,
 } from "react-native";
+import TextInput from "../../components/commen/DirectionalTextInput";
 import { SafeAreaView } from "react-native-safe-area-context";
 import QRCode from "react-native-qrcode-svg";
 import { useTranslation } from "../../localization";

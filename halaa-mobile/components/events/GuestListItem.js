@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
 import { getStatusVisual } from "../../constants/statusColors";
 import { useTranslation } from "../../localization";
 
@@ -153,7 +154,7 @@ const GuestListItem = ({
           </View>
 
           {!!guest.phone && (
-            <Text style={styles.contactText}>{guest.phone}</Text>
+            <Text style={styles.contactText}>{isolateLtr(guest.phone)}</Text>
           )}
         </View>
 
@@ -352,7 +353,6 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_500Medium",
     color: "#2C2C2C",
     lineHeight: 17,
-    textAlign: "right",
   },
   messageRow: {
     flexDirection: "row",

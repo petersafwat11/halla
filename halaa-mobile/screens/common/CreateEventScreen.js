@@ -2,6 +2,7 @@ import React from "react";
 import { View, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
+import * as Sentry from "@sentry/react-native";
 import { useAuthStore } from "../../stores/authStore";
 import { useCreateEventForHost } from "../../hooks";
 import { useTranslation } from "../../localization";
@@ -27,6 +28,7 @@ const CreateEventScreen = () => {
 
   const navigation = useNavigation();
   const { t } = useTranslation("admin");
+  const { t: tCreate } = useTranslation("createEvent");
   const toast = useToast();
 
   const createEvent = useCreateEventForHost();
@@ -41,7 +43,18 @@ const CreateEventScreen = () => {
       toast.success(t("events.createSuccess"));
       navigation.goBack();
     } catch (e) {
-      toast.error(t("events.createError"));
+      Sentry.captureException(e, {
+        tags: {
+          operation: "event.create.admin",
+          requestId: e?.requestId || "missing",
+          backendCode: e?.code || "unknown",
+        },
+        extra: { status: e?.status || null, validationErrors: e?.errors || null },
+      });
+      const reference = e?.requestId
+        ? ` (${tCreate("error_reference")}: ${e.requestId})`
+        : "";
+      toast.error(`${e?.message || t("events.createError")}${reference}`);
     }
   };
 

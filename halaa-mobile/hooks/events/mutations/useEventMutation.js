@@ -229,7 +229,14 @@ const ACTIONS = {
       });
       const responseData = await response.json().catch(() => ({}));
       if (!response.ok) {
-        throw new Error(responseData.message || "Failed to create event");
+        const error = new Error(responseData.message || "Failed to create event");
+        error.status = response.status;
+        error.code = responseData.code || "EVENT_CREATE_FAILED";
+        error.errors = responseData.errors || null;
+        error.data = responseData;
+        error.requestId =
+          responseData.requestId || response.headers?.get?.("x-request-id") || null;
+        throw error;
       }
       return responseData;
     },

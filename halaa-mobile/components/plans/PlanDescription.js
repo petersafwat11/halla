@@ -11,6 +11,7 @@ import {
   getPlanFamily,
   getBillingType,
 } from "@halaa/shared/constants/plans";
+import { colors } from "../../styles/tokens";
 
 /**
  * <PlanDescription> — mobile mirror of the web component.
@@ -175,7 +176,7 @@ const styles = StyleSheet.create({
   tagline: {
     fontFamily: "Cairo_700Bold",
     fontSize: 14,
-    color: "#7c3aed",
+    color: colors.primary[600],
     lineHeight: 20,
   },
   duration: {
@@ -186,7 +187,7 @@ const styles = StyleSheet.create({
   includesHeading: {
     fontFamily: "Cairo_700Bold",
     fontSize: 13,
-    color: "#7c3aed",
+    color: colors.primary[600],
   },
   bullets: {
     gap: 6,

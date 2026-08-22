@@ -22,7 +22,11 @@ import {
   useRestorePurchases,
   usePurchaseFlow,
 } from "../../hooks/purchases";
-import { canPurchase, isPurchasesAvailable } from "../../services/purchases";
+import {
+  canPurchase,
+  getPurchasesDiagnostics,
+  isPurchasesAvailable,
+} from "../../services/purchases";
 import { eventPreflight, reconcileGeneric } from "../../services/billingApi";
 import { getEntry } from "../../services/billing/catalog";
 import { getPurchaseReadiness, READINESS_STATES, readinessReasonKey } from "../../services/billing/purchaseReadiness";
@@ -40,6 +44,7 @@ import DisclosureList from "../../components/plans/DisclosureList";
 import PurchaseLegalLinks from "../../components/plans/PurchaseLegalLinks";
 import DirectionalIonicon from "../../components/common/DirectionalIonicon";
 import { formatSar, round2, validateCardExpiry, checkLuhn, buildCreditCardSource } from "@halaa/shared/utils";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
 import { colors, spacing, borderRadius, typography } from "../../styles/tokens";
 
 const buildCheckoutAddons = (items = []) =>
@@ -138,6 +143,8 @@ const PlansSummaryScreen = () => {
     !readiness.retryable
       ? readinessReasonKey(readiness.state)
       : null;
+  const retryReasonKey =
+    readiness.retryable ? readinessReasonKey(readiness.state) : null;
 
   // Privacy-safe readiness telemetry (plan §5B.8): state/counts only —
   // never keys, receipts, phone/email, or RevenueCat customer data.
@@ -153,14 +160,29 @@ const PlansSummaryScreen = () => {
           retryable: readiness.retryable,
           catalogEntries: catalogEntries.length,
           offeringsPackages:
-            offeringsAll?.availablePackages?.length ?? null,
+            Object.values(offeringsAll || {}).reduce(
+              (count, offering) => count + (offering?.availablePackages?.length || 0),
+              0
+            ),
           targetCode: selectedPlan?.code || null,
+          purchases: getPurchasesDiagnostics(),
+          offeringsErrorCode: offeringsError?.code || null,
+          catalogErrorCode: catalogError?.code || null,
         },
       });
     } catch (_) {
       // Telemetry must never break the purchase surface.
     }
-  }, [isWeb, readiness.state, readiness.retryable, catalogEntries.length, offeringsAll, selectedPlan]);
+  }, [
+    isWeb,
+    readiness.state,
+    readiness.retryable,
+    catalogEntries.length,
+    offeringsAll,
+    offeringsError,
+    catalogError,
+    selectedPlan,
+  ]);
 
   // Subscription change classification → Google replacement mode (P0-07/MOB-02).
   const currentEntry = useMemo(
@@ -461,6 +483,7 @@ const PlansSummaryScreen = () => {
             locale={currentLanguage}
             planPrice={planPrice}
             priceDisplay={!isWeb ? storePriceString : null}
+            isNative={!isWeb}
             addonItems={addonItems}
             t={t}
           />
@@ -604,18 +627,25 @@ const PlansSummaryScreen = () => {
                   nativeLoading ? (
                     <ActivityIndicator size="small" color={colors.primary[500]} />
                   ) : nativeRetryable ? (
-                    <TouchableOpacity
-                      onPress={() => {
-                        refetchCatalog();
-                        refetchOfferings();
-                      }}
-                    >
-                      <Text style={styles.footerRetryText}>
-                        {t("common.retry", "إعادة المحاولة")}
-                      </Text>
-                    </TouchableOpacity>
+                    <View style={styles.footerUnavailableWrap}>
+                      {retryReasonKey ? (
+                        <Text style={styles.footerUnavailableReason}>
+                          {t(retryReasonKey)}
+                        </Text>
+                      ) : null}
+                      <TouchableOpacity
+                        onPress={() => {
+                          refetchCatalog();
+                          refetchOfferings();
+                        }}
+                      >
+                        <Text style={styles.footerRetryText}>
+                          {t("common.retry", "إعادة المحاولة")}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
                   ) : storePriceString ? (
-                    <Text style={styles.footerTotalAmount}>{storePriceString}</Text>
+                    <Text style={styles.footerTotalAmount}>{isolateLtr(storePriceString)}</Text>
                   ) : (
                     <View style={styles.footerUnavailableWrap}>
                       <Text style={styles.footerUnavailable}>
@@ -631,7 +661,7 @@ const PlansSummaryScreen = () => {
                 ) : (
                   <>
                     <Text style={styles.footerTotalAmount}>
-                      {formatSar(finalTotal, { trimTrailingZeros: true })}
+                      {isolateLtr(formatSar(finalTotal, { trimTrailingZeros: true }))}
                     </Text>
                     <Text style={styles.footerTotalCurrency}>
                       {t("summary.currency")}

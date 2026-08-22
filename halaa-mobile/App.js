@@ -304,6 +304,9 @@ function AppContent() {
           // the redirect URL we hand it at checkout time. The screen
           // accepts either query param shape via `usePaymentPoll`.
           PaymentReturn: "host/payments/return",
+          // Deterministic native RTL/LTR screenshot fixture. It contains no
+          // account or backend data and is used by the Maestro visual suite.
+          DirectionVisualTest: "__visual/direction",
         },
       },
     }),

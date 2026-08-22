@@ -74,6 +74,10 @@ const envSchema = Joi.object({
   UPLOAD_PATH: Joi.string().default('./public/uploads'),
   MAX_FILE_SIZE: Joi.number().default(5 * 1024 * 1024), // 5MB
 
+  // Google Maps web-service key. This key stays server-side and should be
+  // restricted to the VPS egress IP plus Places API (New) + Geocoding API.
+  GOOGLE_MAPS_SERVER_API_KEY: Joi.string().allow('').default(''),
+
   // Minimum lead time for messaging.scheduleBulkSend.
   // PAID plans: 24h. Backend rejects schedules below this with SCHEDULE_TOO_SOON
   // so callers can't bypass the client-side picker minimum.

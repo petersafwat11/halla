@@ -194,21 +194,13 @@ const PlansScreen = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <CurrentPlanCard subscription={subscription} usage={usage} />
-
-        {/* Standalone add-ons: extra invites / design templates for an active
-            plan (ADD-03). Each is purchased with its own preflight + reconcile. */}
-        {subscription ? (
-          <TouchableOpacity
-            style={styles.addonsEntry}
-            onPress={() => navigation.navigate("AddonsPurchase")}
-            activeOpacity={0.8}
-          >
-            <Ionicons name="add-circle-outline" size={18} color={colors.primary[600]} />
-            <Text style={styles.addonsEntryText}>{t("addons.manageEntry")}</Text>
-            <DirectionalIonicon name="chevron-forward" size={16} color={colors.primary[400]} />
-          </TouchableOpacity>
-        ) : null}
+        <CurrentPlanCard
+          subscription={subscription}
+          usage={usage}
+          onBuyAddons={
+            subscription ? () => navigation.navigate("AddonsPurchase") : undefined
+          }
+        />
 
         {/* Billing Type Toggle (event / monthly) */}
         <View style={styles.billingPills}>

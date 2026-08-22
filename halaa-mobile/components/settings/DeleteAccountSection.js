@@ -18,11 +18,11 @@ import {
   StyleSheet,
   TouchableOpacity,
   Modal,
-  TextInput,
   ActivityIndicator,
   Linking,
   Platform,
 } from "react-native";
+import TextInput from "../commen/DirectionalTextInput";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
 import { useLanguage } from "../../localization";

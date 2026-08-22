@@ -4,10 +4,10 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  TextInput,
   ActivityIndicator,
   Alert,
 } from "react-native";
+import TextInput from "../../../commen/DirectionalTextInput";
 import { Ionicons } from "@expo/vector-icons";
 import {
   usePostEventComments,

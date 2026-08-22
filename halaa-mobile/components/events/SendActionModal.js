@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
 import { useTranslation } from "../../localization";
 import { useToast } from "../../contexts/ToastContext";
 import {
@@ -199,7 +200,7 @@ export default function SendActionModal({
             {item.name || "-"}
           </Text>
           <Text style={styles.rowPhone} numberOfLines={1}>
-            {item.phone || "-"}
+            {isolateLtr(item.phone || "-")}
           </Text>
         </View>
       </TouchableOpacity>

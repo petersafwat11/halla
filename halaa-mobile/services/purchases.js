@@ -29,10 +29,30 @@ const apiKey = Platform.OS === "ios" ? keys.iosKey : keys.androidKey;
 let configured = false;
 let currentAppUserId = null;
 let signedOut = false;
+let configurationError = null;
+
+const hasCorrectPlatformKey = () => {
+  if (!apiKey) return false;
+  if (Platform.OS === "ios") return apiKey.startsWith("appl_");
+  if (Platform.OS === "android") return apiKey.startsWith("goog_");
+  return false;
+};
 
 /** True when react-native-purchases can run and an API key is present. */
 export const isPurchasesAvailable = () =>
-  Platform.OS !== "web" && !!Purchases && !!apiKey;
+  Platform.OS !== "web" && !!Purchases && hasCorrectPlatformKey();
+
+/** Wait for AppContent's authenticated-user effect to configure the SDK. */
+const waitForConfiguration = async (timeoutMs = 8000) => {
+  const deadline = Date.now() + timeoutMs;
+  while (!configured && !configurationError && Date.now() < deadline) {
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+  if (configured) return;
+  const error = configurationError || new Error("RevenueCat user configuration timed out.");
+  error.code = error.code || "PURCHASES_NOT_INITIALIZED";
+  throw error;
+};
 
 /**
  * True only when RevenueCat is configured with an IDENTIFIED, signed-in user.
@@ -57,7 +77,9 @@ export const initPurchases = async (appUserId) => {
   if (!isPurchasesAvailable() || !appUserId) return;
   const id = String(appUserId);
   try {
+    configurationError = null;
     if (!configured) {
+      if (__DEV__) Purchases.setLogLevel?.(Purchases.LOG_LEVEL?.DEBUG);
       Purchases.configure({ apiKey, appUserID: id });
       configured = true;
       currentAppUserId = id;
@@ -67,6 +89,7 @@ export const initPurchases = async (appUserId) => {
     }
     signedOut = false;
   } catch (err) {
+    configurationError = err;
     console.error("[purchases] configure/logIn failed:", err);
   }
 };
@@ -83,6 +106,7 @@ export const onSignedOut = () => {
 /** The current offering (set of purchasable packages) from RevenueCat. */
 export const getCurrentOffering = async () => {
   if (!isPurchasesAvailable()) return null;
+  await waitForConfiguration();
   const offerings = await Purchases.getOfferings();
   return offerings?.current || null;
 };
@@ -95,8 +119,14 @@ export const getCurrentOffering = async () => {
  */
 export const getAllOfferings = async () => {
   if (!isPurchasesAvailable()) return null;
-  const offerings = await Purchases.getOfferings();
-  return offerings?.all || null;
+  await waitForConfiguration();
+  try {
+    const offerings = await Purchases.getOfferings();
+    return offerings?.all || {};
+  } catch (error) {
+    error.code = error.code || "REVENUECAT_OFFERINGS_FAILED";
+    throw error;
+  }
 };
 
 /**
@@ -155,5 +185,17 @@ export const restorePurchases = async () => {
 /** Current entitlement/customer snapshot. */
 export const getCustomerInfo = async () => {
   if (!isPurchasesAvailable()) return null;
+  await waitForConfiguration();
   return Purchases.getCustomerInfo();
 };
+
+/** Privacy-safe, non-secret state for Sentry/support diagnostics. */
+export const getPurchasesDiagnostics = () => ({
+  platform: Platform.OS,
+  sdkPresent: !!Purchases,
+  keyPresent: !!apiKey,
+  keyMatchesPlatform: hasCorrectPlatformKey(),
+  configured,
+  identified: !!currentAppUserId && !signedOut,
+  configurationErrorCode: configurationError?.code || null,
+});

@@ -3,11 +3,11 @@ import {
   Modal,
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
 } from "react-native";
+import TextInput from "../commen/DirectionalTextInput";
 import { useTranslation } from "../../localization/hooks/useTranslation";
 import { useToast } from "../../contexts/ToastContext";
 import { usersApi } from "../../hooks/users/_api";

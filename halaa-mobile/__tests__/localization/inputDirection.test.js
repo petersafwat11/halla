@@ -98,6 +98,22 @@ test("resolveLabelDirection: localized follows locale alignment and writing dire
   assert.equal(strictlyLtr.textAlign, "left");
 });
 
+test("resolveFieldDirection keeps every field role in one logical contract", async () => {
+  const { resolveFieldDirection } = await loadResolver();
+
+  const rtl = resolveFieldDirection("phone", { isRTL: true, hasValue: true });
+  assert.equal(rtl.input.writingDirection, "ltr");
+  assert.equal(rtl.text.writingDirection, "rtl");
+  assert.equal(rtl.text.textAlign, "right");
+  assert.equal(rtl.counter.writingDirection, "ltr");
+  assert.equal(rtl.counter.textAlign, "left");
+
+  const ltr = resolveFieldDirection("localized", { isRTL: false });
+  assert.equal(ltr.input.writingDirection, "ltr");
+  assert.equal(ltr.text.textAlign, "left");
+  assert.equal(ltr.counter.textAlign, "right");
+});
+
 test("RTL-01 & RTL-02: TextInput, DropdownInput, and TicketModal use direction contracts", () => {
   const textInputSource = fs.readFileSync(
     path.resolve(__dirname, "..", "..", "components", "commen", "TextInput.js"),
@@ -112,20 +128,74 @@ test("RTL-01 & RTL-02: TextInput, DropdownInput, and TicketModal use direction c
     "utf8"
   );
 
+  assert.ok(textInputSource.includes("useFieldDirection"), "TextInput must use the full field contract");
   assert.ok(
-    textInputSource.includes("useLabelDirection"),
-    "TextInput must use useLabelDirection for label styling"
+    dropdownSource.includes("useFieldDirection"),
+    "DropdownInput must use the full field contract"
   );
   assert.ok(
-    dropdownSource.includes("useLabelDirection"),
-    "DropdownInput must use useLabelDirection for label styling"
+    ticketModalSource.includes("DirectionalTextInput") && ticketModalSource.includes("useFieldDirection"),
+    "TicketModal must use the direction-aware primitive and field contract"
   );
   assert.ok(
-    ticketModalSource.includes("useInputDirection") && ticketModalSource.includes("useLabelDirection"),
-    "TicketModal must use useInputDirection and useLabelDirection"
+    textInputSource.includes("fieldDirection.input") && textInputSource.includes("fieldDirection.text"),
+    "TextInput must apply the contract to both input and metadata"
   );
-  assert.ok(
-    ticketModalSource.includes("directionStyle") && ticketModalSource.includes("labelDirectionStyle"),
-    "TicketModal must apply directionStyle and labelDirectionStyle"
+});
+
+test("all direct native TextInput usage is confined to shared low-level primitives", () => {
+  const roots = ["components", "screens"];
+  const allowed = new Set([
+    "components/commen/DirectionalTextInput.js",
+    "components/commen/MobileInput.js",
+    "components/commen/OTPInput.js",
+    "components/commen/PasswordInput.js",
+    "components/commen/TextAreaInput.js",
+    "components/commen/TextInput.js",
+  ]);
+  const violations = [];
+
+  const walk = (dir) =>
+    fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) return walk(full);
+      return /\.(?:js|jsx|ts|tsx)$/.test(entry.name) ? [full] : [];
+    });
+
+  for (const root of roots) {
+    for (const file of walk(path.resolve(__dirname, "..", "..", root))) {
+      const rel = path.relative(path.resolve(__dirname, "..", ".."), file).replace(/\\/g, "/");
+      if (allowed.has(rel)) continue;
+      const source = fs.readFileSync(file, "utf8");
+      if (
+        /import\s*\{[\s\S]{0,600}?\bTextInput(?:\s+as\s+\w+)?\b[\s\S]{0,600}?\}\s*from\s*["']react-native["']/.test(source) ||
+        /require\(["']react-native["']\)[\s\S]{0,100}?TextInput/.test(source)
+      ) {
+        violations.push(rel);
+      }
+    }
+  }
+
+  assert.deepEqual(
+    violations,
+    [],
+    `Direct native TextInput bypasses the RTL field contract: ${violations.join(", ")}`
   );
+});
+
+test("Step 1 uses dedicated event-name validation copy", () => {
+  const stepOne = fs.readFileSync(
+    path.resolve(__dirname, "..", "..", "components", "createEvent", "StepOne.js"),
+    "utf8"
+  );
+  const ar = JSON.parse(
+    fs.readFileSync(path.resolve(__dirname, "..", "..", "localization", "locales", "ar", "createEvent.json"), "utf8")
+  );
+  const en = JSON.parse(
+    fs.readFileSync(path.resolve(__dirname, "..", "..", "localization", "locales", "en", "createEvent.json"), "utf8")
+  );
+
+  assert.match(stepOne, /required:\s*t\("event_name_required"\)/);
+  assert.equal(ar.event_name_required, "اسم المناسبة مطلوب");
+  assert.equal(en.event_name_required, "Event name is required");
 });

@@ -477,7 +477,7 @@ const styles = StyleSheet.create({
   docRemove: {
     position: "absolute",
     top: -8,
-    right: -8,
+    end: -8,
     width: 26,
     height: 26,
     borderRadius: 13,

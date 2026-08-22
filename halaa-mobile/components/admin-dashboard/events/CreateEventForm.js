@@ -11,6 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { FormProvider, useForm } from "react-hook-form";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import * as Sentry from "@sentry/react-native";
 import EventsService from "../../../hooks/events/useEventForm";
 import { useTranslation } from "../../../localization";
 import {
@@ -163,7 +164,21 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
           });
         } catch (err) {
           setIsCompleting(false);
-          Alert.alert(tCreate("error", "Error"), err?.message || String(err));
+          Sentry.captureException(err, {
+            tags: {
+              operation: "event.create",
+              requestId: err?.requestId || "missing",
+              backendCode: err?.code || "unknown",
+            },
+            extra: { status: err?.status || null, validationErrors: err?.errors || null },
+          });
+          const reference = err?.requestId
+            ? `\n${tCreate("error_reference")}: ${err.requestId}`
+            : "";
+          Alert.alert(
+            tCreate("error", "Error"),
+            `${err?.message || String(err)}${reference}`
+          );
         }
         return;
       }
@@ -418,10 +433,13 @@ const styles = StyleSheet.create({
   scrollView: { flex: 1 },
   scrollContent: {
     paddingHorizontal: spacing[16],
-    paddingVertical: spacing[24],
-    paddingBottom: 100,
+    paddingTop: spacing[12],
+    paddingBottom: spacing[20],
   },
-  contentContainer: { marginVertical: spacing[24] },
+  contentContainer: {
+    marginTop: spacing[12],
+    marginBottom: spacing[16],
+  },
   hostContainer: { flex: 1, backgroundColor: "#F9F4EF" },
   floatingPreviewButton: {
     position: "absolute",

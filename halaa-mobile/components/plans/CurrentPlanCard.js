@@ -1,7 +1,8 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
+import DirectionalIonicon from "../common/DirectionalIonicon";
 import {
   colors,
   spacing,
@@ -11,7 +12,7 @@ import {
 import { getLocalized } from "@halaa/shared/utils/locale";
 import { isPoolPlan } from "@halaa/shared/constants/plans";
 
-const CurrentPlanCard = ({ subscription, usage }) => {
+const CurrentPlanCard = ({ subscription, usage, onBuyAddons }) => {
   const { t, i18n } = useTranslation("plans");
 
   if (!subscription) {
@@ -76,8 +77,29 @@ const CurrentPlanCard = ({ subscription, usage }) => {
     <View style={styles.card}>
       <View style={styles.accent} />
       <View style={styles.header}>
-        <Text style={styles.title}>{t("currentPlan.title")}</Text>
-        {planName ? <Text style={styles.planName}>{planName}</Text> : null}
+        <View style={styles.headerTitleWrap}>
+          <Text style={styles.title}>{t("currentPlan.title")}</Text>
+          {planName ? <Text style={styles.planName}>{planName}</Text> : null}
+        </View>
+        {onBuyAddons ? (
+          <TouchableOpacity
+            style={styles.buyAddonsBtn}
+            onPress={onBuyAddons}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name="add-circle-outline"
+              size={16}
+              color={colors.primary[600]}
+            />
+            <Text style={styles.buyAddonsBtnText}>{t("addons.manageEntry")}</Text>
+            <DirectionalIonicon
+              name="chevron-forward"
+              size={14}
+              color={colors.primary[400]}
+            />
+          </TouchableOpacity>
+        ) : null}
       </View>
 
       <View style={styles.statsContainer}>
@@ -198,6 +220,28 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_700Bold",
     fontSize: typography.fontSize.title.medium,
     color: colors.secondary[700],
+  },
+  headerTitleWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing[8],
+    flexShrink: 1,
+  },
+  buyAddonsBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing[4],
+    backgroundColor: colors.natural[50],
+    borderWidth: 1,
+    borderColor: colors.primary[200],
+    borderRadius: borderRadius[12],
+    paddingVertical: spacing[4],
+    paddingHorizontal: spacing[8],
+  },
+  buyAddonsBtnText: {
+    fontFamily: "Cairo_600SemiBold",
+    fontSize: typography.fontSize.caption.medium,
+    color: colors.primary[700],
   },
   planName: {
     fontFamily: "Cairo_600SemiBold",

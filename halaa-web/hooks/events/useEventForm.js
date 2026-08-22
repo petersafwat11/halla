@@ -13,6 +13,8 @@ const DEFAULT_ADDRESS = {
   longitude: 46.6753,
   city: "",
   country: "",
+  placeId: null,
+  provider: "google",
 };
 
 const DEFAULT_FORM_VALUES = {

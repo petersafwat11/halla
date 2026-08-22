@@ -66,6 +66,16 @@ const locationSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    placeId: {
+      type: String,
+      trim: true,
+      maxlength: [300, "Place ID cannot exceed 300 characters"],
+    },
+    provider: {
+      type: String,
+      enum: ["google", "device", "manual"],
+      default: "google",
+    },
   },
   { _id: false }
 );
@@ -532,18 +542,33 @@ eventSchema.pre("save", async function (next) {
       ).populate("planId");
 
       if (!subscription) {
-        return next(new Error("Subscription not found"));
+        const error = new Error("Subscription not found");
+        error.statusCode = 409;
+        error.status = "fail";
+        error.code = "EVENT_SUBSCRIPTION_NOT_FOUND";
+        error.isOperational = true;
+        return next(error);
       }
 
       // Check if subscription is active
       if (!subscription.isActive) {
-        return next(new Error("Subscription is not active"));
+        const error = new Error("Subscription is not active");
+        error.statusCode = 409;
+        error.status = "fail";
+        error.code = "EVENT_SUBSCRIPTION_INACTIVE";
+        error.isOperational = true;
+        return next(error);
       }
 
       // Check if can create event
       const canCreate = subscription.canCreateEvent();
       if (!canCreate.allowed) {
-        return next(new Error(canCreate.reason || "Cannot create event"));
+        const error = new Error(canCreate.reason || "Cannot create event");
+        error.statusCode = 409;
+        error.status = "fail";
+        error.code = "EVENT_SUBSCRIPTION_LIMIT";
+        error.isOperational = true;
+        return next(error);
       }
 
       // Set planId from subscription if not already set

@@ -325,7 +325,7 @@ const styles = StyleSheet.create({
   },
   attachmentThumbOverlay: {
     position: "absolute",
-    right: 4,
+    end: 4,
     bottom: 4,
     width: 22,
     height: 22,
@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
   },
   attachmentPlayBadge: {
     position: "absolute",
-    right: 4,
+    end: 4,
     bottom: 4,
     width: 20,
     height: 20,
@@ -373,7 +373,7 @@ const styles = StyleSheet.create({
   viewerClose: {
     position: "absolute",
     top: 48,
-    right: 24,
+    end: 24,
   },
   actionRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: spacing[16], paddingVertical: spacing[12] },
   actionRowLeft: { flexDirection: "row", alignItems: "center", gap: spacing[12], flex: 1 },

@@ -3,12 +3,12 @@ import {
   View,
   Text,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
   Modal,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import TextInput from "../../commen/DirectionalTextInput";
 import { Ionicons } from "@expo/vector-icons";
 
 const QRModal = ({ visible, onClose, onSubmit, t }) => {
@@ -36,7 +36,8 @@ const QRModal = ({ visible, onClose, onSubmit, t }) => {
             <View style={styles.inputRow}>
               <Ionicons name="qr-code-outline" size={18} color="#9CA3AF" style={styles.inputIcon} />
               <TextInput
-                style={[styles.input, { writingDirection: "ltr" }]}
+                style={styles.input}
+                contentDirection="ltr"
                 placeholder={t("checkIn.qrPlaceholder")}
                 placeholderTextColor="#9CA3AF"
                 value={code}

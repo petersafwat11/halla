@@ -2,13 +2,13 @@ import React, { useMemo, useState, useEffect } from "react";
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   Modal,
   FlatList,
   Pressable,
 } from "react-native";
+import TextInput from "./DirectionalTextInput";
 import { Ionicons } from "@expo/vector-icons";
 
 /**

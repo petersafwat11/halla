@@ -23,12 +23,12 @@ import {
   View,
   ScrollView,
   Text,
-  TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
   Dimensions,
 } from "react-native";
+import TextInput from "../../components/commen/DirectionalTextInput";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "../../localization";
 import { useAuthStore } from "../../stores/authStore";

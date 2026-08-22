@@ -1,0 +1,9 @@
+{
+  "platforms": ["android", "ios"],
+  "locales": ["ar", "en"],
+  "flows": {
+    "ar": ".maestro/direction-ar.yaml",
+    "en": ".maestro/direction-en.yaml"
+  },
+  "captures": ["fields", "preview"]
+}

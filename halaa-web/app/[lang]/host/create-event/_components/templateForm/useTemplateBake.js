@@ -49,8 +49,9 @@ const waitForLoad = (img) =>
 async function swapToProxy(rootEl) {
   const imgs = Array.from(rootEl.querySelectorAll("img"));
   const restorers = [];
-  await Promise.all(
-    imgs.map(async (img) => {
+  try {
+    await Promise.all(
+      imgs.map(async (img) => {
       const original = img.getAttribute("src");
       const originalCO = img.getAttribute("crossorigin");
       if (!original || !isAbsoluteUrl(original) || isSameOrigin(original)) {
@@ -62,13 +63,13 @@ async function swapToProxy(rootEl) {
         if (originalCO !== null) img.setAttribute("crossorigin", originalCO);
         img.setAttribute("src", original);
       });
-      try {
-        await waitForLoad(img);
-      } catch {
-        // Allow bake to proceed; html2canvas will render whatever loaded.
-      }
-    })
-  );
+      await waitForLoad(img);
+      })
+    );
+  } catch (error) {
+    restorers.forEach((restore) => restore());
+    throw error;
+  }
   return () => restorers.forEach((r) => r());
 }
 
@@ -79,6 +80,11 @@ export async function bakeTemplateImage(previewRef, _options = {}) {
 
   const restore = await swapToProxy(previewRef.current);
   try {
+    // A white canvas with text overlays is not a valid invitation image.
+    // Refuse to bake until every background/decoration image has decoded.
+    await Promise.all(
+      Array.from(previewRef.current.querySelectorAll("img")).map(waitForLoad)
+    );
     const baked = await htmlToImageConvert(previewRef, "template-image", {
       autoDownload: false,
       returnBlob: true,

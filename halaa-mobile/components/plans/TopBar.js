@@ -10,6 +10,7 @@ import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "../../localization";
 import { colors, spacing, typography } from "../../styles/tokens";
 import DirectionalIonicon from "../common/DirectionalIonicon";
+import { useFieldDirection } from "../../hooks/useInputDirection";
 
 /**
  * Logical-start app bar.
@@ -34,6 +35,7 @@ const TopBar = ({
 }) => {
   const navigation = useNavigation();
   const { t } = useTranslation("common");
+  const fieldDirection = useFieldDirection("localized");
 
   const handleBack = () => {
     if (onBack) {
@@ -87,7 +89,7 @@ const TopBar = ({
           {renderStart()}
           {!!title && (
             <Text
-              style={styles.title}
+              style={[styles.title, fieldDirection.text]}
               numberOfLines={1}
               ellipsizeMode="tail"
               accessibilityRole="header"

@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
   scheduleHeader: { flexDirection: "row", alignItems: "center", gap: 8 },
   scheduleIcon: { width: 32, height: 32, borderRadius: 8, borderWidth: 1, borderColor: "#C28E5C", alignItems: "center", justifyContent: "center" },
   scheduleTitle: { fontSize: 14, fontFamily: "Cairo_700Bold", color: "#2C2C2C" },
-  scheduleValue: { fontSize: 13, fontFamily: "Cairo_500Medium", color: "#2C2C2C", textAlign: "right", lineHeight: 20 },
+  scheduleValue: { fontSize: 13, fontFamily: "Cairo_500Medium", color: "#2C2C2C", lineHeight: 20 },
 });
 
 export default ScheduleLaunchCard;

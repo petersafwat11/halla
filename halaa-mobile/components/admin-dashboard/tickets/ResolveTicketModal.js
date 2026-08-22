@@ -5,9 +5,9 @@ import {
   StyleSheet,
   Modal,
   ScrollView,
-  TextInput,
   Alert,
 } from "react-native";
+import TextInput from "../../commen/DirectionalTextInput";
 import PropTypes from "prop-types";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";

@@ -3,9 +3,9 @@ import {
   View,
   Text,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
 } from "react-native";
+import TextInput from "../commen/DirectionalTextInput";
 import { Ionicons } from "@expo/vector-icons";
 import { formatExpiryInput, detectCardBrand as sharedDetectCardBrand } from "@halaa/shared/utils";
 import { useTranslation } from "../../localization";

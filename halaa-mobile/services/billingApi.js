@@ -10,6 +10,18 @@ import { ENDPOINTS } from "../config/api";
 
 const unwrap = async (res) => {
   const body = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const message =
+      body?.message ||
+      body?.error ||
+      body?.errors?.[0]?.message ||
+      `Request failed with status ${res.status}`;
+    const error = new Error(message);
+    error.status = res.status;
+    error.data = body;
+    error.code = body?.code;
+    throw error;
+  }
   return body && body.data !== undefined ? body.data : body;
 };
 

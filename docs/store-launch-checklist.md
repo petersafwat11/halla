@@ -7,7 +7,10 @@ where it goes.
 ## 1. EAS / build env vars (set as EAS secrets or in eas.json `env`)
 | Var | Where it's used | Value |
 |---|---|---|
-| `GOOGLE_MAPS_API_KEY` | Android map (app.config.js) | ___ (Google Cloud, restrict to `com.halla.app` + signing SHA-1) |
+| `GOOGLE_MAPS_ANDROID_API_KEY` | Android native map | ___ (restrict to `com.halaa.app` + Play signing SHA-1 + Maps SDK for Android) |
+| `GOOGLE_MAPS_IOS_API_KEY` | iOS native map | ___ (restrict to `com.halaa.app` + Maps SDK for iOS) |
+| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Web map | ___ (restrict to Halaa HTTPS referrers + Maps JavaScript/Places APIs) |
+| `GOOGLE_MAPS_SERVER_API_KEY` | Backend place search/reverse geocode | ___ (restrict to VPS IP + Places API New/Geocoding API) |
 | `SENTRY_DSN` | crash reporting (app.config.js) | ___ (Sentry project) |
 | `REVENUECAT_IOS_KEY` / `REVENUECAT_ANDROID_KEY` | IAP (app.config.js) | ___ (RevenueCat dashboard) |
 | `EXPO_PUBLIC_API_URL` | API base (already defaulted to prod) | optional staging override |

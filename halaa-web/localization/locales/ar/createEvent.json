@@ -391,6 +391,11 @@
   "staff_add_to_list": "إضافة إلى القائمة",
   "staff_edit": "تعديل",
   "staff_delete": "حذف",
+  "map_picker_search_placeholder": "ابحث عن قاعة أو مدينة أو شارع أو معلم",
+  "map_picker_search": "بحث",
+  "map_picker_use_current": "استخدام موقعي الحالي",
+  "map_picker_drag_hint": "اضغط على الخريطة أو اسحب العلامة لتحديد الموقع",
+  "map_picker_not_configured": "الخريطة غير متاحة مؤقتًا.",
   "templates": {
     "fields": {
       "validation": {

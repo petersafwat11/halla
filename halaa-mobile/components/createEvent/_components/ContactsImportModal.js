@@ -15,11 +15,12 @@ import {
   Modal,
   Pressable,
   TouchableOpacity,
-  TextInput,
   FlatList,
   ActivityIndicator,
 } from "react-native";
+import TextInput from "../../commen/DirectionalTextInput";
 import Svg, { Path } from "react-native-svg";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
 import { useTranslation } from "../../../localization";
 import Button from "../../commen/Button";
 import {
@@ -102,7 +103,7 @@ const ContactsImportModal = ({ visible, onClose, onAdd }) => {
         </View>
         <View style={styles.rowInfo}>
           <Text style={styles.rowName}>{item.name}</Text>
-          <Text style={styles.rowPhone}>{item.phones[0]}</Text>
+          <Text style={styles.rowPhone}>{isolateLtr(item.phones[0])}</Text>
         </View>
       </TouchableOpacity>
     );

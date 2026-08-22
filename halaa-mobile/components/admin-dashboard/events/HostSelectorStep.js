@@ -4,10 +4,10 @@ import {
   Text,
   TouchableOpacity,
   FlatList,
-  TextInput,
   ActivityIndicator,
   StyleSheet,
 } from 'react-native';
+import TextInput from '../../commen/DirectionalTextInput';
 import { useAdminEventTargets, useVerifyHostPhone } from '../../../hooks/admin';
 import { useTranslation } from '../../../localization';
 import { useAuthStore } from '../../../stores/authStore';

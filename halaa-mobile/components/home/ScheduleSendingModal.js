@@ -303,7 +303,6 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_400Regular",
     color: "#6B4E33",
     lineHeight: 20,
-    textAlign: "right",
   },
   actions: {
     flexDirection: "row",

@@ -8,8 +8,8 @@ import {
   Image,
   Alert,
   ActivityIndicator,
-  TextInput as RNTextInput,
 } from "react-native";
+import RNTextInput from "../commen/DirectionalTextInput";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as ImagePicker from "expo-image-picker";
@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
   avatarRemove: {
     position: "absolute",
     top: -4,
-    right: -4,
+    end: -4,
     width: 28,
     height: 28,
     borderRadius: 14,

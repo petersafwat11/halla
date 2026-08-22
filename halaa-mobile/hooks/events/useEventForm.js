@@ -316,6 +316,8 @@ export const getDefaultFormValues = () => ({
     longitude: 46.6753,
     city: "",
     country: "",
+    placeId: null,
+    provider: "google",
   },
   description: "",
 

@@ -8,8 +8,8 @@ import {
   Alert,
   ActivityIndicator,
   TouchableOpacity,
-  TextInput,
 } from "react-native";
+import TextInput from "../../components/commen/DirectionalTextInput";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";

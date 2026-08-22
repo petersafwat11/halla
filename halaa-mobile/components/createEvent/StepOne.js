@@ -9,15 +9,21 @@ import {
 import { useFormContext } from "react-hook-form";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useTranslation } from "../../localization";
-import { formatDate as formatLocaleDate } from "@halaa/shared/utils/locale";
+import {
+  formatDate as formatLocaleDate,
+  formatTime as formatLocaleTime,
+  normalizeDigits,
+} from "@halaa/shared/utils/locale";
 import TextInput from "../commen/TextInput";
 import MapPicker from "../commen/MapPicker";
 import DropdownInput from "../commen/DropdownInput";
+import IosDateTimePickerSheet from "./_components/IosDateTimePickerSheet";
 import Svg, { Path } from "react-native-svg";
 import { normalizeSubscriptionResponse } from "@halaa/shared/utils";
 import { useMySubscription } from "../../hooks/users";
 import { EVENT_CATEGORIES } from "@halaa/shared/constants/eventCategories";
-import { useLabelDirection } from "../../hooks/useInputDirection";
+import { isolateAuto } from "@halaa/shared/utils/bidi";
+import { useFieldDirection } from "../../hooks/useInputDirection";
 
 const CalendarIcon = () => (
   <Svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -62,14 +68,63 @@ const LocationIcon = () => (
   </Svg>
 );
 
+const validDateOrNull = (value) => {
+  if (!value) return null;
+  const date = value instanceof Date ? new Date(value.getTime()) : new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+const parseEventTime = (value, fallback = new Date()) => {
+  const result = validDateOrNull(fallback) || new Date();
+  result.setSeconds(0, 0);
+
+  if (value instanceof Date) {
+    const validValue = validDateOrNull(value);
+    return validValue || result;
+  }
+
+  const normalized = normalizeDigits(String(value || "").trim());
+  const match = normalized.match(
+    /^(\d{1,2}):(\d{2})(?::\d{2})?(?::)?\s*(AM|PM|صباحاً|مساءً|ص|م)?$/i
+  );
+  if (!match) return result;
+
+  let hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  const period = match[3]?.toUpperCase();
+  const isPm = period === "PM" || period === "مساءً" || period === "م";
+  const isAm = period === "AM" || period === "صباحاً" || period === "ص";
+
+  if (minutes > 59) return result;
+  if (isAm || isPm) {
+    if (hours < 1 || hours > 12) return result;
+    hours = hours % 12 + (isPm ? 12 : 0);
+  } else if (hours > 23) {
+    return result;
+  }
+
+  result.setHours(hours, minutes, 0, 0);
+  return result;
+};
+
+const toStoredEventTime = (date) => {
+  const hours = date.getHours();
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const period = hours >= 12 ? "PM" : "AM";
+  return `${hours % 12 || 12}:${minutes} ${period}`;
+};
+
 const StepOne = () => {
-  const { control, setValue, watch } = useFormContext();
-  const { t, currentLanguage } = useTranslation("createEvent");
-  const labelDirectionStyle = useLabelDirection("localized");
+  const { setValue, watch } = useFormContext();
+  const { t, currentLanguage, isRTL } = useTranslation("createEvent");
+  const fieldDirection = useFieldDirection("localized");
   const { data: subData } = useMySubscription();
   const normalizedSub = normalizeSubscriptionResponse(subData);
   const isTrial = normalizedSub.subscription?.planCode === "trial";
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [draftDate, setDraftDate] = useState(() => new Date());
+  const [draftTime, setDraftTime] = useState(() => new Date());
 
   // Earliest selectable event date enforces the backend event-date floor:
   //   event date ≥ now + minLead + 3d  (trial minLead = 15min → ~now+3d;
@@ -83,7 +138,6 @@ const StepOne = () => {
     d.setHours(0, 0, 0, 0);
     return d;
   }, [isTrial]);
-  const [showTimePicker, setShowTimePicker] = useState(false);
 
   const eventDate = watch("eventDate");
   const eventTime = watch("eventTime");
@@ -103,25 +157,57 @@ const StepOne = () => {
     return formatLocaleDate(date, currentLanguage || "ar");
   };
 
+  const pickerLocale = currentLanguage === "ar" ? "ar-SA" : "en-US";
+
+  const commitDate = (selectedDate) => {
+    setValue("eventDate", selectedDate, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
+  };
+
+  const commitTime = (selectedTime) => {
+    setValue("eventTime", toStoredEventTime(selectedTime), {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
+  };
+
+  const openDatePicker = () => {
+    const savedDate = validDateOrNull(eventDate);
+    setDraftDate(
+      savedDate && savedDate.getTime() >= minDate.getTime()
+        ? savedDate
+        : new Date(minDate.getTime())
+    );
+    setShowTimePicker(false);
+    setShowDatePicker(true);
+  };
+
+  const openTimePicker = () => {
+    setDraftTime(parseEventTime(eventTime));
+    setShowDatePicker(false);
+    setShowTimePicker(true);
+  };
+
   const handleDateChange = (event, selectedDate) => {
-    setShowDatePicker(Platform.OS === "ios");
-    if (selectedDate) {
-      setValue("eventDate", selectedDate, { shouldValidate: true });
+    if (Platform.OS !== "ios") {
+      setShowDatePicker(false);
+      if (event?.type !== "dismissed" && selectedDate) commitDate(selectedDate);
+      return;
     }
+    if (selectedDate) setDraftDate(selectedDate);
   };
 
   const handleTimeChange = (event, selectedTime) => {
-    setShowTimePicker(Platform.OS === "ios");
-    if (selectedTime) {
-      const hours = selectedTime.getHours();
-      const minutes = selectedTime.getMinutes();
-      const ampm = hours >= 12 ? "PM" : "AM";
-      const hours12 = hours % 12 || 12;
-      const timeString = `${hours12}:${minutes
-        .toString()
-        .padStart(2, "0")} ${ampm}`;
-      setValue("eventTime", timeString, { shouldValidate: true });
+    if (Platform.OS !== "ios") {
+      setShowTimePicker(false);
+      if (event?.type !== "dismissed" && selectedTime) commitTime(selectedTime);
+      return;
     }
+    if (selectedTime) setDraftTime(selectedTime);
   };
 
   return (
@@ -131,7 +217,7 @@ const StepOne = () => {
         name="eventName"
         label={t("event_name_label")}
         placeholder={t("event_name_placeholder")}
-        rules={{ required: t("title_required") }}
+        rules={{ required: t("event_name_required") }}
       />
 
       {/* Event Type — shared dropdown */}
@@ -145,36 +231,42 @@ const StepOne = () => {
 
       {/* Event Date */}
       <View style={styles.inputGroup}>
-        <Text style={[styles.label, labelDirectionStyle]}>{t("event_date_label")}</Text>
+        <Text style={[styles.label, fieldDirection.text]}>{t("event_date_label")}</Text>
         <TouchableOpacity
-          style={styles.selectButton}
-          onPress={() => setShowDatePicker(true)}
+          style={[styles.selectButton, showDatePicker && styles.selectButtonActive]}
+          onPress={openDatePicker}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel={t("event_date_label")}
+          accessibilityState={{ expanded: showDatePicker }}
         >
           <CalendarIcon />
           <Text
             style={[
               styles.selectButtonText,
+              fieldDirection.input,
               !eventDate && styles.selectButtonPlaceholder,
               { flex: 1 },
             ]}
           >
-            {eventDate ? formatDate(eventDate) : t("event_date_placeholder")}
+            {eventDate
+              ? isolateAuto(formatDate(eventDate))
+              : t("event_date_placeholder")}
           </Text>
         </TouchableOpacity>
       </View>
 
-      {showDatePicker && (
+      {showDatePicker && Platform.OS !== "ios" && (
         <DateTimePicker
-          value={eventDate || minDate}
+          value={draftDate}
           mode="date"
-          display={Platform.OS === "ios" ? "spinner" : "default"}
+          display="default"
           onChange={handleDateChange}
           minimumDate={minDate}
         />
       )}
 
-      <Text style={styles.dateHint}>
+      <Text style={[styles.dateHint, fieldDirection.text]}>
         {isTrial
           ? t(
               "event_date_hint_trial",
@@ -188,32 +280,76 @@ const StepOne = () => {
 
       {/* Event Time */}
       <View style={styles.inputGroup}>
-        <Text style={[styles.label, labelDirectionStyle]}>{t("event_time_label")}</Text>
+        <Text style={[styles.label, fieldDirection.text]}>{t("event_time_label")}</Text>
         <TouchableOpacity
-          style={styles.selectButton}
-          onPress={() => setShowTimePicker(true)}
+          style={[styles.selectButton, showTimePicker && styles.selectButtonActive]}
+          onPress={openTimePicker}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel={t("event_time_label")}
+          accessibilityState={{ expanded: showTimePicker }}
         >
           <ClockIcon />
           <Text
             style={[
               styles.selectButtonText,
+              fieldDirection.input,
               !eventTime && styles.selectButtonPlaceholder,
               { flex: 1 },
             ]}
           >
-            {eventTime || t("event_time_placeholder")}
+            {eventTime
+              ? isolateAuto(formatLocaleTime(eventTime, currentLanguage || "ar"))
+              : t("event_time_placeholder")}
           </Text>
         </TouchableOpacity>
       </View>
 
-      {showTimePicker && (
+      {showTimePicker && Platform.OS !== "ios" && (
         <DateTimePicker
-          value={new Date()}
+          value={draftTime}
           mode="time"
-          display={Platform.OS === "ios" ? "spinner" : "default"}
+          display="default"
           onChange={handleTimeChange}
         />
+      )}
+
+      {Platform.OS === "ios" && (
+        <>
+          <IosDateTimePickerSheet
+            visible={showDatePicker}
+            mode="date"
+            title={t("event_date_label")}
+            value={draftDate}
+            minimumDate={minDate}
+            cancelLabel={t("cancel")}
+            confirmLabel={t("confirm")}
+            locale={pickerLocale}
+            isRTL={isRTL}
+            onChange={handleDateChange}
+            onCancel={() => setShowDatePicker(false)}
+            onConfirm={() => {
+              commitDate(draftDate);
+              setShowDatePicker(false);
+            }}
+          />
+          <IosDateTimePickerSheet
+            visible={showTimePicker}
+            mode="time"
+            title={t("event_time_label")}
+            value={draftTime}
+            cancelLabel={t("cancel")}
+            confirmLabel={t("confirm")}
+            locale={pickerLocale}
+            isRTL={isRTL}
+            onChange={handleTimeChange}
+            onCancel={() => setShowTimePicker(false)}
+            onConfirm={() => {
+              commitTime(draftTime);
+              setShowTimePicker(false);
+            }}
+          />
+        </>
       )}
 
       {/* Location */}
@@ -265,6 +401,10 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: "Cairo_400Regular",
     color: "#2c2c2c",
+  },
+  selectButtonActive: {
+    borderColor: "#C28E5C",
+    backgroundColor: "#FFFCF9",
   },
   selectButtonPlaceholder: {
     color: "#999",

@@ -5,7 +5,6 @@ import {
   StyleSheet,
   Modal,
   TouchableOpacity,
-  TextInput,
   ScrollView,
   Animated,
   KeyboardAvoidingView,
@@ -24,14 +23,15 @@ import {
   getCreateTicketDefaults,
 } from "@halaa/shared/schemas/tickets";
 import { useLanguage, useTranslation } from "../../localization";
-import { useInputDirection, useLabelDirection } from "../../hooks/useInputDirection";
+import DirectionalTextInput from "../commen/DirectionalTextInput";
+import { isolateAuto } from "@halaa/shared/utils/bidi";
+import { useFieldDirection } from "../../hooks/useInputDirection";
 
 const MAX_ATTACHMENT_BYTES = 50 * 1024 * 1024; // 50 MB (matches backend cap)
 
 const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
   const { t } = useTranslation("tickets");
-  const directionStyle = useInputDirection("localized");
-  const labelDirectionStyle = useLabelDirection("localized");
+  const fieldDirection = useFieldDirection("localized");
 
   const slideAnim = React.useRef(new Animated.Value(300)).current;
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
@@ -170,7 +170,7 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
         >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>
+            <Text style={[styles.title, fieldDirection.text]}>
               {isEditMode ? t("popup.editTitle") : t("popup.createTitle")}
             </Text>
             <TouchableOpacity
@@ -190,17 +190,16 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
           >
             {/* Subject Input */}
             <View style={styles.section}>
-              <Text style={[styles.label, labelDirectionStyle]}>
+              <Text style={[styles.label, fieldDirection.text]}>
                 {t("popup.subjectLabel")}
               </Text>
               <Controller
                 control={control}
                 name="subject"
                 render={({ field: { onChange, onBlur, value } }) => (
-                  <TextInput
+                  <DirectionalTextInput
                     style={[
                       styles.textInput,
-                      directionStyle,
                       errors.subject && styles.textInputError
                     ]}
                     placeholder={t("popup.subjectPlaceholder")}
@@ -209,12 +208,11 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
                     onChangeText={onChange}
                     onBlur={onBlur}
                     maxLength={200}
-                    textAlign="auto"
                   />
                 )}
               />
               {errors.subject && (
-                <Text style={styles.errorText}>
+                <Text style={[styles.errorText, fieldDirection.text]}>
                   {t(errors.subject.message)}
                 </Text>
               )}
@@ -222,7 +220,7 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
 
             {/* Type Selection */}
             <View style={styles.section}>
-              <Text style={[styles.label, labelDirectionStyle]}>
+              <Text style={[styles.label, fieldDirection.text]}>
                   {t("popup.typeLabel")}
               </Text>
               <Controller
@@ -245,6 +243,7 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
                         <Text
                           style={[
                             styles.typeButtonText,
+                            fieldDirection.text,
                             value === type && styles.typeButtonTextActive]}
                         >
                           {t(`types.${type}`)}
@@ -255,7 +254,7 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
                 )}
               />
               {errors.type && (
-                <Text style={styles.errorText}>
+                <Text style={[styles.errorText, fieldDirection.text]}>
                   {t(errors.type.message)}
                 </Text>
               )}
@@ -263,17 +262,16 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
 
             {/* Message Input */}
             <View style={styles.section}>
-              <Text style={[styles.label, labelDirectionStyle]}>
+              <Text style={[styles.label, fieldDirection.text]}>
                   {t("popup.messageLabel")}
               </Text>
               <Controller
                 control={control}
                 name="message"
                 render={({ field: { onChange, onBlur, value } }) => (
-                  <TextInput
+                  <DirectionalTextInput
                     style={[
                       styles.textArea,
-                      directionStyle,
                       errors.message && styles.textAreaError]}
                       placeholder={t("popup.messagePlaceholder")}
                     placeholderTextColor="#999"
@@ -283,12 +281,11 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
                     multiline
                     numberOfLines={6}
                     textAlignVertical="top"
-                    textAlign="auto"
                   />
                 )}
               />
               {errors.message && (
-                <Text style={styles.errorText}>
+                <Text style={[styles.errorText, fieldDirection.text]}>
                   {t(errors.message.message)}
                 </Text>
               )}
@@ -297,7 +294,7 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
             {/* Attachment (create mode only — edit path doesn't accept files) */}
             {!isEditMode && (
               <View style={styles.section}>
-                <Text style={[styles.label, labelDirectionStyle]}>
+                <Text style={[styles.label, fieldDirection.text]}>
                   {t("popup.attachmentLabel")}
                 </Text>
 
@@ -314,7 +311,7 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
                       />
                     )}
                     <Text style={styles.attachmentName} numberOfLines={1}>
-                      {attachment.name}
+                      {isolateAuto(attachment.name)}
                     </Text>
                     <TouchableOpacity
                       style={styles.attachmentRemove}

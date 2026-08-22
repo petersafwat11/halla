@@ -1,4 +1,5 @@
 export { default as TextInput } from "./TextInput";
+export { default as DirectionalTextInput } from "./DirectionalTextInput";
 export { default as EmailInput } from "./EmailInput";
 export { default as PasswordInput } from "./PasswordInput";
 export { default as MobileInput } from "./MobileInput";
@@ -9,3 +10,4 @@ export { default as ToggleInput } from "./ToggleInput";
 export { default as TextAreaInput } from "./TextAreaInput";
 export { default as DropdownInput } from "./DropdownInput";
 export { default as ImageInput } from "./ImageInput";
+export { default as MapPicker } from "./MapPicker";

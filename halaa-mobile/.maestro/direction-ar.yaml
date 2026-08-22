@@ -1,0 +1,24 @@
+appId: com.halaa.app
+name: Direction contract - Arabic
+tags:
+  - visual
+  - rtl
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    text: "العربية - اللغة العربية"
+- tapOn:
+    text: "حسناً"
+    optional: true
+- openLink: "halaa://__visual/direction"
+- extendedWaitUntil:
+    visible:
+      id: "direction-visual-root"
+    timeout: 15000
+- assertVisible: "اسم المناسبة مطلوب"
+- takeScreenshot: "direction-fields-ar"
+- tapOn:
+    id: "open-direction-preview"
+- assertVisible: "معاينة الدعوة"
+- takeScreenshot: "direction-preview-ar"

@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { getLocalized } from "@halaa/shared/utils/locale";
-import { isolateLtr } from "@halaa/shared/utils/bidi";
+import { isolateAuto, isolateLtr } from "@halaa/shared/utils/bidi";
 import {
   COMPENSATION_PERCENTAGE,
   isPoolPlan,
@@ -19,6 +19,7 @@ const PlanSummaryCard = ({
   // When set (native IAP), the store's localized price string is shown and the
   // backend SAR amount + currency label are suppressed (P0-13 / §5.4).
   priceDisplay = null,
+  isNative = false,
   addonItems = [],
   t,
 }) => {
@@ -51,8 +52,8 @@ const PlanSummaryCard = ({
       0;
 
   const inviteLabel = isPool
-    ? `${baseInvites} ${t("summary.invitePool") || t("inviteSelector.poolLabel")}`
-    : `${baseInvites} ${t("summary.invitesLabel")}`;
+    ? `${isolateLtr(baseInvites)} ${t("summary.invitePool") || t("inviteSelector.poolLabel")}`
+    : `${isolateLtr(baseInvites)} ${t("summary.invitesLabel")}`;
 
   const eventLabel = isPool
     ? t("summary.unlimitedEvents")
@@ -89,13 +90,17 @@ const PlanSummaryCard = ({
           </View>
           <View style={styles.planDetails}>
             <Text style={styles.planName} numberOfLines={2}>
-              {planName}
+              {isolateAuto(planName)}
             </Text>
             <Text style={styles.planType}>{planSubtitle}</Text>
           </View>
           <View style={styles.planPrice}>
             {priceDisplay ? (
               <Text style={styles.priceAmount}>{isolateLtr(priceDisplay)}</Text>
+            ) : isNative ? (
+              <Text style={styles.priceUnavailable}>
+                {t("summary.priceUnavailable", "السعر غير متاح")}
+              </Text>
             ) : (
               <>
                 <Text style={styles.priceAmount}>{isolateLtr(String(planPrice ?? ""))}</Text>
@@ -113,7 +118,7 @@ const PlanSummaryCard = ({
           {extraInvites > 0 ? (
             <FeatureRow
               iconName="add-circle-outline"
-              text={`${extraInvites} ${t("summary.extraInvites")}`}
+              text={`${isolateLtr(extraInvites)} ${t("summary.extraInvites")}`}
             />
           ) : null}
           <FeatureRow
@@ -122,7 +127,7 @@ const PlanSummaryCard = ({
           />
           <FeatureRow
             iconName="gift-outline"
-            text={`${compensationCount} ${t("summary.compensationInvites")}`}
+            text={`${isolateLtr(compensationCount)} ${t("summary.compensationInvites")}`}
           />
         </View>
 
@@ -136,7 +141,7 @@ const PlanSummaryCard = ({
             />
             <Text style={styles.totalLabel}>{t("summary.totalInvites")}</Text>
           </View>
-          <Text style={styles.totalValue}>{totalInvites}</Text>
+          <Text style={styles.totalValue}>{isolateLtr(totalInvites)}</Text>
         </View>
         <Text style={styles.totalHint}>
           {t("summary.totalInvitesHint")}
@@ -237,6 +242,12 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_600SemiBold",
     fontSize: typography.fontSize.label.small,
     color: colors.primary[600],
+  },
+  priceUnavailable: {
+    fontFamily: "Cairo_600SemiBold",
+    fontSize: typography.fontSize.label.large,
+    color: colors.natural[450],
+    lineHeight: 22,
   },
   featuresSummary: {
     gap: spacing[8],

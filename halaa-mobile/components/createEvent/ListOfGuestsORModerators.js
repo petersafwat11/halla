@@ -10,6 +10,7 @@ import {
   FlatList
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "../../localization";
 import EditGuestOrModeratorsModal from "./EditGuestOrModeratorsModal";
@@ -147,7 +148,7 @@ const ListOfGuestsORModerators = ({
             {item.name}
           </Text>
           <Text style={styles.listItemPhone}>
-            {item.phone || item.mobile}
+            {isolateLtr(item.phone || item.mobile)}
           </Text>
           {item.category ? (
             <View style={styles.categoryBadge}>

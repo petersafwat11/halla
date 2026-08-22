@@ -17,7 +17,16 @@ const router = express.Router();
 const locationsController = require('./locations.controller');
 const { apiLimiter } = require('../../shared/middleware/rateLimiter');
 const { validateZod } = require('../../shared/middleware/validation');
-const { regionIdParam, cityIdParam, searchQuery } = require('./locations.validation');
+const { protect } = require('../../shared/middleware/auth');
+const {
+  regionIdParam,
+  cityIdParam,
+  searchQuery,
+  googleAutocompleteQuery,
+  googlePlaceParams,
+  googlePlaceQuery,
+  googleReverseQuery,
+} = require('./locations.validation');
 
 // All routes are public (no auth required)
 
@@ -169,5 +178,30 @@ router.get('/all', apiLimiter, locationsController.getAllLocations);
  *         $ref: '#/components/responses/BadRequest'
  */
 router.get('/search', apiLimiter, validateZod(searchQuery, 'query'), locationsController.searchLocations);
+
+// Google web-service proxy. Authentication and rate limiting prevent the
+// server key from becoming a public quota relay.
+router.get(
+  '/google/autocomplete',
+  protect,
+  apiLimiter,
+  validateZod(googleAutocompleteQuery, 'query'),
+  locationsController.googleAutocomplete
+);
+router.get(
+  '/google/places/:placeId',
+  protect,
+  apiLimiter,
+  validateZod(googlePlaceParams, 'params'),
+  validateZod(googlePlaceQuery, 'query'),
+  locationsController.googlePlaceDetails
+);
+router.get(
+  '/google/reverse-geocode',
+  protect,
+  apiLimiter,
+  validateZod(googleReverseQuery, 'query'),
+  locationsController.googleReverseGeocode
+);
 
 module.exports = router;

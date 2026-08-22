@@ -12,13 +12,14 @@ import {
   Modal,
   Pressable,
   TouchableOpacity,
-  TextInput,
   ScrollView,
   FlatList,
   ActivityIndicator,
 } from "react-native";
+import TextInput from "../commen/DirectionalTextInput";
 import Svg, { Path } from "react-native-svg";
 import { Ionicons } from "@expo/vector-icons";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
 import { useTranslation } from "../../localization";
 import Button from "../commen/Button";
 import CategoryPickerSheet from "../commen/CategoryPickerSheet";
@@ -128,7 +129,7 @@ const ReuseGuestsModal = ({
         </View>
         <View style={styles.rowInfo}>
           <Text style={styles.rowName}>{item.name}</Text>
-          <Text style={styles.rowPhone}>{item.phone}</Text>
+          <Text style={styles.rowPhone}>{isolateLtr(item.phone)}</Text>
         </View>
         {item.category ? (
           <View style={styles.badge}>

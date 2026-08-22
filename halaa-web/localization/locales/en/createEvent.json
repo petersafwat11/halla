@@ -391,6 +391,11 @@
   "staff_add_to_list": "Add to List",
   "staff_edit": "Edit",
   "staff_delete": "Delete",
+  "map_picker_search_placeholder": "Search by venue, city, street or landmark",
+  "map_picker_search": "Search",
+  "map_picker_use_current": "Use my current location",
+  "map_picker_drag_hint": "Click the map or drag the pin to adjust the location",
+  "map_picker_not_configured": "The map is temporarily unavailable.",
   "templates": {
     "fields": {
       "validation": {

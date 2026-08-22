@@ -1,0 +1,24 @@
+appId: com.halaa.app
+name: Direction contract - English
+tags:
+  - visual
+  - ltr
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    text: "English - English Language"
+- tapOn:
+    text: "OK"
+    optional: true
+- openLink: "halaa://__visual/direction"
+- extendedWaitUntil:
+    visible:
+      id: "direction-visual-root"
+    timeout: 15000
+- assertVisible: "Event name is required"
+- takeScreenshot: "direction-fields-en"
+- tapOn:
+    id: "open-direction-preview"
+- assertVisible: "Preview Invitation"
+- takeScreenshot: "direction-preview-en"

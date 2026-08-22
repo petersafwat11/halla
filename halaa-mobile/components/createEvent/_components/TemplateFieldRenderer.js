@@ -23,16 +23,16 @@ export const renderTemplateField = (field, locale, t) => {
   const label = locale === "ar" ? field.labelAr : field.labelEn;
   const placeholder = locale === "ar" ? field.placeholderAr : field.placeholderEn;
   const name = field.key;
-  const writingDirection = field.dir === "ltr" ? "ltr" : field.dir === "rtl" ? "rtl" : "auto";
+  const contentDirection = field.dir === "ltr" ? "ltr" : field.dir === "rtl" ? "rtl" : "localized";
 
   switch (field.type) {
     case "text":
       return (
-        <TextInput key={name} name={name} label={label} placeholder={placeholder} keyboardType={INPUT_MODE_TO_KEYBOARD[field.inputMode] ?? "default"} autoCapitalize={field.autoCapitalize ?? "sentences"} style={{ writingDirection }} />
+        <TextInput key={name} name={name} label={label} placeholder={placeholder} keyboardType={INPUT_MODE_TO_KEYBOARD[field.inputMode] ?? "default"} autoCapitalize={field.autoCapitalize ?? "sentences"} contentDirection={contentDirection} />
       );
     case "textarea":
       return (
-        <TextAreaInput key={name} name={name} label={label} placeholder={placeholder} numberOfLines={field.rows ?? 3} maxLength={field.maxLength} autoCapitalize={field.autoCapitalize ?? "sentences"} style={{ writingDirection }} />
+        <TextAreaInput key={name} name={name} label={label} placeholder={placeholder} numberOfLines={field.rows ?? 3} maxLength={field.maxLength} autoCapitalize={field.autoCapitalize ?? "sentences"} contentDirection={contentDirection} />
       );
     case "date":
       return <DatePicker key={name} name={name} label={label} placeholder={placeholder} />;
@@ -43,11 +43,11 @@ export const renderTemplateField = (field, locale, t) => {
     case "font":
       return <DropdownInput key={name} name={name} label={label} placeholder={placeholder} options={FONT_OPTIONS} />;
     case "number":
-      return <TextInput key={name} name={name} label={label} placeholder={placeholder} keyboardType={INPUT_MODE_TO_KEYBOARD[field.inputMode] ?? "numeric"} style={{ writingDirection }} />;
+      return <TextInput key={name} name={name} label={label} placeholder={placeholder} keyboardType={INPUT_MODE_TO_KEYBOARD[field.inputMode] ?? "numeric"} contentDirection="ltr" />;
     case "email":
-      return <TextInput key={name} name={name} label={label} placeholder={placeholder} keyboardType="email-address" autoCapitalize="none" style={{ writingDirection: "ltr" }} />;
+      return <TextInput key={name} name={name} label={label} placeholder={placeholder} keyboardType="email-address" autoCapitalize="none" contentDirection="ltr" />;
     case "password":
-      return <TextInput key={name} name={name} label={label} placeholder={placeholder} secureTextEntry={true} autoCapitalize="none" style={{ writingDirection: "ltr" }} />;
+      return <TextInput key={name} name={name} label={label} placeholder={placeholder} secureTextEntry={true} autoCapitalize="none" contentDirection="ltr" />;
     default:
       return null;
   }

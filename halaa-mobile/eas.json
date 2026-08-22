@@ -22,6 +22,20 @@
         "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       }
     },
+    "visual-test": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "ios": {
+        "simulator": true
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://halaa.com.sa/api/v2",
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true",
+        "EXPO_PUBLIC_VISUAL_TESTS": "true"
+      }
+    },
     "production": {
       "autoIncrement": true,
       "ios": {

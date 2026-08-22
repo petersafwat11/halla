@@ -8,7 +8,8 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useFormContext, Controller } from "react-hook-form";
-import { useInputDirection } from "../../hooks/useInputDirection";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
+import { useFieldDirection } from "../../hooks/useInputDirection";
 
 /**
  * Hoisted field renderer to satisfy Rules-of-Hooks and stabilize focus state.
@@ -20,6 +21,7 @@ const MobileInputField = ({
   countryCode,
   value,
   error,
+  helper,
   onChange,
   onBlur,
   extraProps,
@@ -29,11 +31,11 @@ const MobileInputField = ({
 
   const hasValue = !!value && String(value).length > 0;
   // "phone": localized (RTL) placeholder while empty, LTR digits once non-empty
-  const directionStyle = useInputDirection("phone", { hasValue });
+  const fieldDirection = useFieldDirection("phone", { hasValue });
 
   return (
     <View style={styles.container}>
-      {label && <Text style={styles.label}>{label}</Text>}
+      {label && <Text style={[styles.label, fieldDirection.text]}>{label}</Text>}
       <Pressable
         onPress={() => !disabled && inputRef.current?.focus()}
         style={[
@@ -50,12 +52,12 @@ const MobileInputField = ({
           style={styles.icon}
         />
         <View style={styles.countryCode}>
-          <Text style={styles.countryCodeText}>{countryCode}</Text>
+          <Text style={styles.countryCodeText}>{isolateLtr(countryCode)}</Text>
         </View>
         <RNTextInput
           {...extraProps}
           ref={inputRef}
-          style={[styles.input, directionStyle]}
+          style={[styles.input, fieldDirection.input]}
           placeholder={placeholder}
           placeholderTextColor="#999"
           value={value || ""}
@@ -69,7 +71,12 @@ const MobileInputField = ({
           editable={!disabled}
         />
       </Pressable>
-      {error && <Text style={styles.errorText}>{error.message}</Text>}
+      {error && (
+        <Text style={[styles.errorText, fieldDirection.text]}>{error.message}</Text>
+      )}
+      {!error && helper ? (
+        <Text style={[styles.helperText, fieldDirection.text]}>{helper}</Text>
+      ) : null}
     </View>
   );
 };
@@ -80,6 +87,7 @@ const MobileInput = ({
   placeholder,
   disabled = false,
   countryCode = "+966",
+  helper,
   rules,
   ...props
 }) => {
@@ -101,6 +109,7 @@ const MobileInput = ({
           countryCode={countryCode}
           value={value}
           error={error}
+          helper={helper}
           onChange={onChange}
           onBlur={onBlur}
           extraProps={props}
@@ -173,6 +182,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: "Cairo_400Regular",
     color: "#e74c3c",
+    marginTop: 4,
+  },
+  helperText: {
+    fontSize: 12,
+    fontFamily: "Cairo_400Regular",
+    color: "#767676",
     marginTop: 4,
   },
 });

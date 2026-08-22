@@ -73,6 +73,10 @@ const config = {
     maxSize: env.MAX_FILE_SIZE,
   },
 
+  maps: {
+    serverApiKey: env.GOOGLE_MAPS_SERVER_API_KEY,
+  },
+
   export: {
     maxRows: env.EXPORT_MAX_ROWS || 10000,
   },

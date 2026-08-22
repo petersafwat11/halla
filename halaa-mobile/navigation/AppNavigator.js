@@ -54,6 +54,7 @@ import PaymentsScreen from "../screens/host/PaymentsScreen";
 import InvitationScreen from "../screens/guest-portal/InvitationScreen";
 import ForcePasswordChangeScreen from "../screens/host/ForcePasswordChangeScreen";
 import CompleteProfileScreen from "../screens/auth/CompleteProfileScreen";
+import DirectionVisualTestScreen from "../screens/dev/DirectionVisualTestScreen";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -348,6 +349,7 @@ function AuthStack() {
       <Stack.Screen name="Invitation" component={InvitationScreen} />
       <Stack.Screen name="Marketplace" component={Marketplace} />
       <Stack.Screen name="VendorPublicProfile" component={VendorPublicProfileScreen} />
+      <Stack.Screen name="DirectionVisualTest" component={DirectionVisualTestScreen} />
     </Stack.Navigator>
   );
 }

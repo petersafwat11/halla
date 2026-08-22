@@ -218,6 +218,9 @@ export const ENDPOINTS = {
     DISTRICTS_BY_CITY: API_PATHS.locations.getDistrictsByCity,
     ALL: API_PATHS.locations.getAllLocations,
     SEARCH: API_PATHS.locations.searchLocations,
+    GOOGLE_AUTOCOMPLETE: API_PATHS.locations.googleAutocomplete,
+    GOOGLE_PLACE_DETAILS: API_PATHS.locations.googlePlaceDetails,
+    GOOGLE_REVERSE_GEOCODE: API_PATHS.locations.googleReverseGeocode,
   },
 
   POST_EVENT: {

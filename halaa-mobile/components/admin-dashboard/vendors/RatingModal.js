@@ -6,8 +6,8 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  TextInput,
 } from "react-native";
+import TextInput from "../../commen/DirectionalTextInput";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../../localization";
 import ActionButton from "../common/ActionButton";

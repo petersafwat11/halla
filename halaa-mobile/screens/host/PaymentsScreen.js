@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "../../localization";
 import { formatDateTime } from "@halaa/shared/utils/locale";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
 import { useMyPayments } from "../../hooks";
 import TopBar from "../../components/plans/TopBar";
 
@@ -145,7 +146,7 @@ const PaymentsScreen = () => {
                   <Text style={styles.pagerBtnText}>{t("pager.prev", "Prev")}</Text>
                 </TouchableOpacity>
                 <Text style={styles.pagerLabel}>
-                  {pagination.page} / {pagination.pages}
+                  {isolateLtr(`${pagination.page} / ${pagination.pages}`)}
                 </Text>
                 <TouchableOpacity
                   disabled={page >= pagination.pages}

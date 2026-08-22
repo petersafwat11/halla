@@ -2,15 +2,18 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useFormContext, Controller } from "react-hook-form";
 import { Ionicons } from "@expo/vector-icons";
+import { isolateAuto } from "@halaa/shared/utils/bidi";
+import { useFieldDirection } from "../../hooks/useInputDirection";
 
 /**
  * Web stub for MapPicker — react-native-maps is not supported on web.
  * Shows a disabled placeholder instead.
  */
 const MapPickerInner = ({ label, placeholder, error, disabled }) => {
+  const fieldDirection = useFieldDirection("localized");
   return (
     <View style={styles.container}>
-      {label && <Text style={styles.label}>{label}</Text>}
+      {label && <Text style={[styles.label, fieldDirection.text]}>{label}</Text>}
       <TouchableOpacity
         style={[
           styles.inputContainer,
@@ -22,12 +25,14 @@ const MapPickerInner = ({ label, placeholder, error, disabled }) => {
       >
         <View style={styles.inputContent}>
           <Ionicons name="location-outline" size={24} color="#C28E5C" />
-          <Text style={styles.placeholderText}>
-            {placeholder || "Map not available on web"}
+          <Text style={[styles.placeholderText, fieldDirection.input]}>
+            {isolateAuto(placeholder || "Map not available on web")}
           </Text>
         </View>
       </TouchableOpacity>
-      {error && <Text style={styles.errorText}>{error.message}</Text>}
+      {error && (
+        <Text style={[styles.errorText, fieldDirection.text]}>{error.message}</Text>
+      )}
     </View>
   );
 };

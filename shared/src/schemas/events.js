@@ -46,6 +46,8 @@ export const locationSchema = (t = idT) =>
     longitude: z.number().min(-180).max(180).optional(),
     city: z.string().optional(),
     country: z.string().optional(),
+    placeId: z.string().max(300).optional().nullable(),
+    provider: z.enum(["google", "device", "manual"]).optional(),
   });
 
 export const visualTemplateSchema = (_t = idT) =>

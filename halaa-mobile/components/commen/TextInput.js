@@ -7,7 +7,8 @@ import {
   StyleSheet,
 } from "react-native";
 import { useFormContext, Controller } from "react-hook-form";
-import { useInputDirection, useLabelDirection } from "../../hooks/useInputDirection";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
+import { useFieldDirection } from "../../hooks/useInputDirection";
 
 /**
  * Inner field renderer. Hoisted out of the Controller `render` prop so the
@@ -29,6 +30,10 @@ const TextInputField = ({
   autoCapitalize,
   value,
   error,
+  helper,
+  maxLength,
+  showCounter,
+  contentDirection,
   onChange,
   onBlur,
   style,
@@ -36,13 +41,13 @@ const TextInputField = ({
 }) => {
   const [isFocused, setIsFocused] = React.useState(false);
   const inputRef = React.useRef(null);
-  // Localized prose: value/placeholder follow the active locale direction.
-  const directionStyle = useInputDirection("localized");
-  const labelDirectionStyle = useLabelDirection("localized");
+  const fieldDirection = useFieldDirection(contentDirection, {
+    hasValue: String(value ?? "").length > 0,
+  });
 
   return (
     <View style={styles.container}>
-      {!!label && <Text style={[styles.label, labelDirectionStyle]}>{label}</Text>}
+      {!!label && <Text style={[styles.label, fieldDirection.text]}>{label}</Text>}
       {/* The whole box is pressable so a tap anywhere inside (padding included,
           not just the text node) focuses the input. */}
       <Pressable
@@ -59,7 +64,7 @@ const TextInputField = ({
         <RNTextInput
           {...extraProps}
           ref={inputRef}
-          style={[styles.input, directionStyle, multiline && styles.inputMultiline, style]}
+          style={[styles.input, fieldDirection.input, multiline && styles.inputMultiline, style]}
           placeholder={placeholder}
           placeholderTextColor="#999"
           value={value ?? ""}
@@ -75,10 +80,21 @@ const TextInputField = ({
           editable={!isDisabled}
           multiline={multiline}
           numberOfLines={numberOfLines}
+          maxLength={maxLength}
           textAlign="auto"
         />
       </Pressable>
-      {error && <Text style={styles.errorText}>{error.message}</Text>}
+      {error && (
+        <Text style={[styles.errorText, fieldDirection.text]}>{error.message}</Text>
+      )}
+      {!error && helper ? (
+        <Text style={[styles.helperText, fieldDirection.text]}>{helper}</Text>
+      ) : null}
+      {maxLength && showCounter ? (
+        <Text style={[styles.counterText, fieldDirection.counter]}>
+          {isolateLtr(`${String(value ?? "").length} / ${maxLength}`)}
+        </Text>
+      ) : null}
     </View>
   );
 };
@@ -95,6 +111,10 @@ const TextInput = ({
   multiline = false,
   numberOfLines = 1,
   icon,
+  helper,
+  maxLength,
+  showCounter = false,
+  contentDirection = "localized",
   rules,
   style,
   ...props
@@ -123,6 +143,10 @@ const TextInput = ({
           autoCapitalize={autoCapitalize}
           value={value}
           error={error}
+          helper={helper}
+          maxLength={maxLength}
+          showCounter={showCounter}
+          contentDirection={contentDirection}
           onChange={onChange}
           onBlur={onBlur}
           style={style}
@@ -187,6 +211,18 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: "Cairo_400Regular",
     color: "#e74c3c",
+    marginTop: 4,
+  },
+  helperText: {
+    fontSize: 12,
+    fontFamily: "Cairo_400Regular",
+    color: "#767676",
+    marginTop: 4,
+  },
+  counterText: {
+    fontSize: 11,
+    fontFamily: "Cairo_400Regular",
+    color: "#767676",
     marginTop: 4,
   },
 });

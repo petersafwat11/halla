@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from "react";
-import { View, Text, TextInput, StyleSheet, Alert } from "react-native";
+import { View, Text, StyleSheet, Alert } from "react-native";
+import TextInput from "../../commen/DirectionalTextInput";
 import { useFormContext } from "react-hook-form";
 import { useTranslation } from "../../../localization";
 import EventsService from "../../../hooks/events/useEventForm";
@@ -51,7 +52,8 @@ export default function GuestForm({ isLimitReached, categories = [] }) {
       <View style={styles.inputWrapper}>
         <Text style={styles.inputLabel}>{t("guest_phone")}</Text>
         <TextInput
-          style={[styles.textInput, { writingDirection: "ltr" }, guestErrors.phone && styles.textInputError, isLimitReached && styles.textInputDisabled]}
+          style={[styles.textInput, guestErrors.phone && styles.textInputError, isLimitReached && styles.textInputDisabled]}
+          contentDirection="phone"
           placeholder={t("guest_phone_placeholder")}
           placeholderTextColor="#999"
           value={guestPhone}

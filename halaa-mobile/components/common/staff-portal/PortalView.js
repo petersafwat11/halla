@@ -3,13 +3,13 @@ import {
   View,
   Text,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
   FlatList,
   Alert,
   ActivityIndicator,
   RefreshControl,
 } from "react-native";
+import TextInput from "../../commen/DirectionalTextInput";
 import { Ionicons } from "@expo/vector-icons";
 import StatCard from "./StatCard";
 import GuestCard from "./GuestCard";
@@ -146,7 +146,6 @@ const PortalView = ({ staffInfo, eventInfo, eventId, onLogout, t }) => {
           placeholderTextColor="#9CA3AF"
           value={searchInput}
           onChangeText={handleSearch}
-          textAlign="right"
         />
         {searchInput.length > 0 && (
           <TouchableOpacity
@@ -323,7 +322,7 @@ const styles = StyleSheet.create({
   fab: {
     position: "absolute",
     bottom: 28,
-    right: 20,
+    end: 20,
     width: 60,
     height: 60,
     borderRadius: 30,

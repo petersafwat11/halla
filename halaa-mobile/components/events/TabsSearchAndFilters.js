@@ -4,8 +4,8 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  TextInput
 } from "react-native";
+import TextInput from "../commen/DirectionalTextInput";
 import { Ionicons } from "@expo/vector-icons";
 const TabsSearchAndFilters = ({
   onTabChange,

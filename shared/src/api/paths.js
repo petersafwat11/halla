@@ -272,6 +272,10 @@ const PATHS = {
     getDistrictsByCity: (cityId) => `/locations/districts/${cityId}`,
     getAllLocations: "/locations/all",
     searchLocations: "/locations/search",
+    googleAutocomplete: "/locations/google/autocomplete",
+    googlePlaceDetails: (placeId) =>
+      `/locations/google/places/${encodeURIComponent(placeId)}`,
+    googleReverseGeocode: "/locations/google/reverse-geocode",
   },
 
   // ============================================

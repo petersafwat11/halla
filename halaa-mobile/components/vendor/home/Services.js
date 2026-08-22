@@ -5,8 +5,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   FlatList,
-  TextInput as RNTextInput,
 } from "react-native";
+import RNTextInput from "../../commen/DirectionalTextInput";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import ServiceCard from "./Service";

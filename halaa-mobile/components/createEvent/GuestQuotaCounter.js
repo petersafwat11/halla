@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Svg, Path } from "react-native-svg";
 import { useTranslation } from "../../localization";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
 
 /**
  * GuestQuotaCounter Component
@@ -85,7 +86,7 @@ const GuestQuotaCounter = ({ currentGuests = 0, subscription }) => {
             <Text style={styles.counterText}>∞</Text>
           ) : (
             <Text style={styles.counterText}>
-              {currentGuests}/{guestLimit}
+              {isolateLtr(`${currentGuests}/${guestLimit}`)}
             </Text>
           )}
         </View>

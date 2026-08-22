@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
+import DirectionalTextInput from "../../commen/DirectionalTextInput";
 import { useForm, FormProvider, Controller } from "react-hook-form";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../../localization";
@@ -153,21 +154,13 @@ const SendNotificationModal = ({
                 name="titleAr"
                 rules={{ required: true }}
                 render={({ field: { onChange, value } }) => (
-                  <View style={[styles.input, errors.titleAr && styles.inputError]}>
-                    <Text
-                      style={[styles.textInput, { writingDirection: "rtl" }]}
-                      numberOfLines={1}
-                    >
-                      {value}
-                    </Text>
-                    <InputField
-                      value={value}
-                      onChangeText={onChange}
-                      placeholder={t("sendNotification.titleArPlaceholder")}
-                      style={styles.textInput}
-                      writingDirection="rtl"
-                    />
-                  </View>
+                  <InputField
+                    value={value}
+                    onChangeText={onChange}
+                    placeholder={t("sendNotification.titleArPlaceholder")}
+                    style={errors.titleAr && styles.inputError}
+                    contentDirection="rtl"
+                  />
                 )}
               />
             </View>
@@ -183,7 +176,7 @@ const SendNotificationModal = ({
                     value={value}
                     onChangeText={onChange}
                     placeholder={t("sendNotification.titleEnPlaceholder")}
-                    style={styles.textInput}
+                    contentDirection="ltr"
                   />
                 )}
               />
@@ -203,11 +196,11 @@ const SendNotificationModal = ({
                     value={value}
                     onChangeText={onChange}
                     placeholder={t("sendNotification.messageArPlaceholder")}
-                    style={[styles.textInput, styles.textArea]}
+                    style={styles.textArea}
                     multiline
                     numberOfLines={4}
                     textAlignVertical="top"
-                    writingDirection="rtl"
+                    contentDirection="rtl"
                   />
                 )}
               />
@@ -224,10 +217,11 @@ const SendNotificationModal = ({
                     value={value}
                     onChangeText={onChange}
                     placeholder={t("sendNotification.messageEnPlaceholder")}
-                    style={[styles.textInput, styles.textArea]}
+                    style={styles.textArea}
                     multiline
                     numberOfLines={4}
                     textAlignVertical="top"
+                    contentDirection="ltr"
                   />
                 )}
               />
@@ -275,11 +269,10 @@ const InputField = ({
   multiline,
   numberOfLines,
   textAlignVertical,
-  writingDirection,
+  contentDirection,
 }) => {
-  const { TextInput } = require("react-native");
   return (
-    <TextInput
+    <DirectionalTextInput
       value={value}
       onChangeText={onChangeText}
       placeholder={placeholder}
@@ -288,7 +281,7 @@ const InputField = ({
       multiline={multiline}
       numberOfLines={numberOfLines}
       textAlignVertical={textAlignVertical}
-      writingDirection={writingDirection}
+      contentDirection={contentDirection}
     />
   );
 };

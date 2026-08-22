@@ -15,9 +15,9 @@ import {
   ScrollView,
   ActivityIndicator,
   TouchableOpacity,
-  TextInput,
   Modal,
 } from "react-native";
+import TextInput from "../../../components/commen/DirectionalTextInput";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
@@ -33,6 +33,7 @@ import { useTranslation } from "../../../localization";
 import { formatDateTime as formatLocaleDateTime } from "@halaa/shared/utils/locale";
 import TopBar from "../../../components/plans/TopBar";
 import DirectionalIonicon from "../../../components/common/DirectionalIonicon";
+import { isolateAuto, isolateLtr } from "@halaa/shared/utils/bidi";
 import StatusBadge from "../../../components/admin-dashboard/common/StatusBadge";
 import {
   colors,
@@ -68,7 +69,7 @@ const Row = ({ label, value, mono = false }) => (
   <View style={styles.row}>
     <Text style={styles.rowLabel}>{label}</Text>
     <Text style={[styles.rowValue, mono && styles.mono]} numberOfLines={2}>
-      {value || "—"}
+      {mono ? isolateLtr(value || "—") : isolateAuto(value || "—")}
     </Text>
   </View>
 );
@@ -456,7 +457,7 @@ const styles = StyleSheet.create({
     gap: spacing[12],
   },
   rowLabel: { ...textStyles.bodySmall, color: colors.natural[450], flexShrink: 0 },
-  rowValue: { ...textStyles.bodySmall, color: colors.natural[900], flexShrink: 1, writingDirection: "ltr" },
+  rowValue: { ...textStyles.bodySmall, color: colors.natural[900], flexShrink: 1 },
   mono: { fontFamily: "Cairo_400Regular" },
 
   refundRow: {

@@ -1,6 +1,5 @@
-// Same-origin proxy for cross-origin image bytes. Used by the Step 3
-// template baker (html2canvas) so the canvas never depends on the
-// upstream bucket's CORS configuration. Restricts to http(s) URLs.
+// Same-origin proxy for the Step 3 template baker. It is intentionally
+// allowlisted: an open URL proxy would permit SSRF against internal services.
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -23,9 +22,44 @@ export async function GET(request) {
     return new Response("invalid protocol", { status: 400 });
   }
 
+  const configuredHosts = [
+    process.env.BACKEND_PROXY_URL,
+    process.env.INTERNAL_API_URL,
+    process.env.NEXT_PUBLIC_API_URL,
+  ]
+    .map((value) => {
+      try { return value ? new URL(value, request.url).hostname : null; }
+      catch { return null; }
+    })
+    .filter(Boolean);
+  const assetHosts = (process.env.TEMPLATE_IMAGE_ALLOWED_HOSTS || "")
+    .split(",")
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean);
+  const allowedHosts = new Set([
+    "halaa.com.sa",
+    "www.halaa.com.sa",
+    ...configuredHosts,
+    ...assetHosts,
+    ...(process.env.NODE_ENV === "development" ? ["localhost", "127.0.0.1"] : []),
+  ]);
+  if (!allowedHosts.has(parsed.hostname)) {
+    return new Response("host not allowed", { status: 403 });
+  }
+
+  const headers = {};
+  const cookie = request.headers.get("cookie");
+  const authorization = request.headers.get("authorization");
+  if (cookie) headers.cookie = cookie;
+  if (authorization) headers.authorization = authorization;
+
   let upstream;
   try {
-    upstream = await fetch(parsed.toString(), { cache: "no-store" });
+    upstream = await fetch(parsed.toString(), {
+      cache: "no-store",
+      headers,
+      signal: AbortSignal.timeout(8000),
+    });
   } catch {
     return new Response("fetch failed", { status: 502 });
   }
@@ -42,7 +76,9 @@ export async function GET(request) {
   return new Response(buf, {
     headers: {
       "Content-Type": contentType,
-      "Cache-Control": "public, max-age=86400, immutable",
+      // The upstream may be a protected template asset fetched with the
+      // caller's HttpOnly cookie. Never place it in a shared/public cache.
+      "Cache-Control": "private, no-store",
     },
   });
 }
