@@ -11,6 +11,7 @@ import {
 } from "@/hooks/admin";
 import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
+import { normalizePaymentsFilters } from "@/utils/filterNormalizer";
 import Table from "@/ui/commen/new-table/Table";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import PaymentActionModal from "./PaymentActionModal";
@@ -52,17 +53,7 @@ export default function PaymentsTable() {
   const actions = usePaymentActions();
   const exportMutation = useAdminPaymentsExport();
 
-  const filters = useMemo(
-    () => ({
-      page: searchParams.get("page") || 1,
-      limit: searchParams.get("limit") || 20,
-      search: searchParams.get("search") || "",
-      status: searchParams.get("status") || "",
-      from: searchParams.get("from") || undefined,
-      to: searchParams.get("to") || undefined,
-    }),
-    [searchParams]
-  );
+  const filters = useMemo(() => normalizePaymentsFilters(searchParams, { limit: 20 }), [searchParams]);
 
   const { data, isLoading, error } = useAdminPayments(filters);
   // Wrap the `|| []` default in its own `useMemo` so the

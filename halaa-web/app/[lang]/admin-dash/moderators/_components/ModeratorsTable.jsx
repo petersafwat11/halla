@@ -6,22 +6,25 @@ import {
   useAdminModeratorsExport,
 } from "@/hooks/admin";
 import { usePageAccess } from "@/hooks/usePageAccess";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { useState, useMemo } from "react";
 import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
 import { FiEdit2, FiCheckCircle, FiSlash, FiTrash2 } from "react-icons/fi";
+import { normalizeAdminFilters } from "@/utils/filterNormalizer";
 import Table from "@/ui/commen/new-table/Table";
-import AddModeratorPopup from "./AddModeratorPopup";
-import EditModeratorPopup from "./EditModeratorPopup";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import { getStatusVisual } from "@/utils/statusColors";
+import AddModeratorPopup from "./AddModeratorPopup";
+import EditModeratorPopup from "./EditModeratorPopup";
 import styles from "./ModeratorsTable.module.css";
 
 export default function ModeratorsTable({ showAddPopup: externalShowAdd, setShowAddPopup: externalSetShowAdd }) {
   const { t } = useTranslation("adminModerators");
   const router = useRouter();
+  const pathname = usePathname();
+  const lang = pathname?.split("/")[1] === "en" ? "en" : "ar";
   const searchParams = useSearchParams();
   const { canCreate, canUpdate, canDelete } = usePageAccess("moderators");
   const [internalShowAdd, setInternalShowAdd] = useState(false);
@@ -30,14 +33,7 @@ export default function ModeratorsTable({ showAddPopup: externalShowAdd, setShow
   const [showEditPopup, setShowEditPopup] = useState(false);
   const [selectedModerator, setSelectedModerator] = useState(null);
 
-  const filters = useMemo(() => ({
-    page: searchParams.get("page") || 1,
-    limit: searchParams.get("limit") || 10,
-    search: searchParams.get("search") || "",
-    status: searchParams.get("status") || "",
-    from: searchParams.get("from"),
-    to: searchParams.get("to"),
-  }), [searchParams]);
+  const filters = useMemo(() => normalizeAdminFilters(searchParams, { limit: 10 }), [searchParams]);
 
   const { data, isLoading } = useAdminModerators(filters);
   const deleteModerator = useAdminModeratorMutation("delete");

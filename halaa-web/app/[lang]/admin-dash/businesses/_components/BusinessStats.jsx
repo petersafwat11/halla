@@ -4,6 +4,7 @@ import { useAdminBusinesses } from "@/hooks/admin";
 import { useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { useMemo } from "react";
+import { normalizeAdminFilters } from "@/utils/filterNormalizer";
 import StatsCards from "@/ui/host/main-page/StatsCards";
 import { FaBriefcase, FaCheckCircle, FaBan, FaRegClock } from "react-icons/fa";
 
@@ -11,14 +12,7 @@ export default function BusinessStats() {
   const { t } = useTranslation("adminBusinesses");
   const searchParams = useSearchParams();
 
-  const filters = {
-    page: searchParams.get("page") || 1,
-    limit: searchParams.get("limit") || 10,
-    search: searchParams.get("search"),
-    status: searchParams.get("status"),
-    from: searchParams.get("from"),
-    to: searchParams.get("to"),
-  };
+  const filters = useMemo(() => normalizeAdminFilters(searchParams, { limit: 10 }), [searchParams]);
 
   const { data, isLoading } = useAdminBusinesses(filters);
 

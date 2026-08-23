@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { useMyTickets } from "@/hooks/tickets";
+import { normalizeTicketsFilters } from "@/utils/filterNormalizer";
 import StatsCards from "@/ui/host/main-page/StatsCards";
 import { FaTicketAlt, FaClock, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
@@ -13,15 +14,7 @@ export default function TicketStats() {
   const { t } = useTranslation("adminTickets");
   const searchParams = useSearchParams();
 
-  const filters = useMemo(() => ({
-    page: searchParams.get("page") || 1,
-    limit: searchParams.get("limit") || 10,
-    search: searchParams.get("search"),
-    status: searchParams.get("status"),
-    priority: searchParams.get("priority"),
-    from: searchParams.get("from"),
-    to: searchParams.get("to"),
-  }), [searchParams]);
+  const filters = useMemo(() => normalizeTicketsFilters(searchParams, { limit: 10 }), [searchParams]);
 
   const { data, isLoading, error } = useMyTickets(filters);
 

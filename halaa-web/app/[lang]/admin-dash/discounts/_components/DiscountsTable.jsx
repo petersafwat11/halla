@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { toastUtils } from "@/utils/toastUtils";
 import { FaToggleOn, FaToggleOff, FaCopy } from "react-icons/fa";
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
+import { normalizeDiscountsFilters } from "@/utils/filterNormalizer";
 import Table from "@/ui/commen/new-table/Table";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import {
@@ -14,17 +15,6 @@ import {
   useDeleteDiscount,
 } from "@/hooks/discounts";
 import styles from "./DiscountsTable.module.css";
-
-function buildFilters(searchParams) {
-  const status = searchParams.get("status");
-  return {
-    page: searchParams.get("page") || 1,
-    limit: 20,
-    search: searchParams.get("search") || undefined,
-    isActive:
-      status === "active" ? true : status === "inactive" ? false : undefined,
-  };
-}
 
 function getDiscountStatus(discount) {
   if (discount.validUntil && new Date(discount.validUntil) < new Date())
@@ -46,17 +36,7 @@ export default function DiscountsTable({ onEdit }) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const filters = useMemo(() => {
-    const status = searchParams.get("status");
-    return {
-      page: searchParams.get("page") || 1,
-      limit: 20,
-      search: searchParams.get("search") || "",
-      status: status || "",
-      isActive:
-        status === "active" ? true : status === "inactive" ? false : undefined,
-    };
-  }, [searchParams]);
+  const filters = useMemo(() => normalizeDiscountsFilters(searchParams, { limit: 20 }), [searchParams]);
 
   const { data, isLoading, error } = useDiscounts(filters);
 

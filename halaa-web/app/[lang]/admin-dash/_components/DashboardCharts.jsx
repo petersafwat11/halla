@@ -2,7 +2,8 @@
 
 import { useAdminDashboard } from "@/hooks/admin";
 import { useSearchParams } from "next/navigation";
-import { useTranslation } from "react-i18next";
+import { useMemo } from "react";
+import { normalizeDashboardFilters } from "@/utils/filterNormalizer";
 import PieChartComponent from "@/ui/admin/dashboard/charts/pieChart/PieChart";
 import CustomPieChart from "@/ui/admin/dashboard/charts/customPieChart/CustomPieChart";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
@@ -12,13 +13,7 @@ export default function DashboardCharts() {
   const { t } = useTranslation("adminDashboard");
   const searchParams = useSearchParams();
 
-  const from = searchParams.get("from");
-  const to = searchParams.get("to");
-  const filters = {
-    period: searchParams.get("period") || "month",
-    ...(from && { from }),
-    ...(to && { to }),
-  };
+  const filters = useMemo(() => normalizeDashboardFilters(searchParams, { period: "month" }), [searchParams]);
 
   const { data: responseData, isLoading, error } = useAdminDashboard(filters);
   const data = responseData?.data;

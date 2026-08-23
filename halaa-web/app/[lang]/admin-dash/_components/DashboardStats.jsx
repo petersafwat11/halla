@@ -15,6 +15,7 @@ import {
   FaCalendarCheck,
   FaUserFriends,
 } from "react-icons/fa";
+import { normalizeDashboardFilters } from "@/utils/filterNormalizer";
 import styles from "./DashboardStats.module.css";
 
 const ICON_COLORS = {
@@ -49,13 +50,7 @@ export default function DashboardStats() {
   const { t } = useTranslation("adminDashboard");
   const searchParams = useSearchParams();
 
-  const from = searchParams.get("from");
-  const to = searchParams.get("to");
-  const filters = {
-    period: searchParams.get("period") || "month",
-    ...(from && { from }),
-    ...(to && { to }),
-  };
+  const filters = useMemo(() => normalizeDashboardFilters(searchParams, { period: "month" }), [searchParams]);
 
   const { data: responseData, isLoading, error } = useAdminDashboard(filters);
   const data = responseData?.data;

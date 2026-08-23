@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import React from "react";
 import { setupDom } from "../helpers/domSetup.mjs";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { normalizeAdminFilters } from "../../utils/filterNormalizer.js";
 
 describe("Session 1 Web Runtime: HostsTable, BusinessesTable, ModeratorsTable renders", () => {
   let render, HostsTable, BusinessesTable, ModeratorsTable, adminKeys;
@@ -55,21 +56,28 @@ describe("Session 1 Web Runtime: HostsTable, BusinessesTable, ModeratorsTable re
     assert.ok(loadingContainer, "Loading container should mount without ReferenceError");
 
     // 2. Populated state
-    const queryKey = adminKeys.hosts({ page: 1, limit: 10, search: "", status: "", from: null, to: null });
+    const filters = normalizeAdminFilters({}, { limit: 10 });
+    const queryKey = adminKeys.hosts(filters);
     const populatedWrapper = createSeededWrapper(queryKey, {
       status: "success",
       data: {
         hosts: [
           {
-            _id: "h1",
-            name: "Host One",
-            email: "host1@example.com",
-            phone: "966500000001",
+            _id: "host-1",
+            id: "host-1",
+            name: "Test Host",
+            email: "host@example.com",
+            phoneNumber: "+966500000001",
             status: "active",
-            createdAt: "2026-08-01",
+            subscription: { planType: "premium" },
+            createdAt: "2026-08-01T10:00:00Z",
           },
         ],
-        pagination: { totalPages: 1, total: 1, page: 1, limit: 10 },
+        pagination: {
+          page: 1,
+          pages: 1,
+          total: 1,
+        },
       },
     });
 
@@ -79,7 +87,7 @@ describe("Session 1 Web Runtime: HostsTable, BusinessesTable, ModeratorsTable re
     );
 
     assert.ok(populatedContainer.querySelector("table"), "Hosts table should render");
-    assert.ok(populatedContainer.textContent.includes("Host One"), "Hosts table should display host name");
+    assert.ok(populatedContainer.textContent.includes("Test Host"), "Host name should be rendered in table");
   });
 
   it("renders BusinessesTable loading state and populated state without ReferenceError", () => {
@@ -92,21 +100,28 @@ describe("Session 1 Web Runtime: HostsTable, BusinessesTable, ModeratorsTable re
     assert.ok(loadingContainer, "Loading container should mount without ReferenceError");
 
     // 2. Populated state
-    const queryKey = adminKeys.businesses({ page: 1, limit: 10, search: "", status: "", from: null, to: null });
+    const filters = normalizeAdminFilters({}, { limit: 10 });
+    const queryKey = adminKeys.businesses(filters);
     const populatedWrapper = createSeededWrapper(queryKey, {
       status: "success",
       data: {
         businesses: [
           {
-            _id: "b1",
-            name: "Business Corp",
+            _id: "biz-1",
+            id: "biz-1",
+            name: "Test Business",
             email: "biz@example.com",
-            phone: "966500000002",
+            phoneNumber: "+966500000002",
             status: "active",
-            createdAt: "2026-08-01",
+            subscription: { planType: "enterprise" },
+            createdAt: "2026-08-01T10:00:00Z",
           },
         ],
-        pagination: { totalPages: 1, total: 1, page: 1, limit: 10 },
+        pagination: {
+          page: 1,
+          pages: 1,
+          total: 1,
+        },
       },
     });
 
@@ -116,7 +131,7 @@ describe("Session 1 Web Runtime: HostsTable, BusinessesTable, ModeratorsTable re
     );
 
     assert.ok(populatedContainer.querySelector("table"), "Businesses table should render");
-    assert.ok(populatedContainer.textContent.includes("Business Corp"), "Businesses table should display business name");
+    assert.ok(populatedContainer.textContent.includes("Test Business"), "Business name should be rendered in table");
   });
 
   it("renders ModeratorsTable loading state and populated state without ReferenceError", () => {
@@ -129,22 +144,28 @@ describe("Session 1 Web Runtime: HostsTable, BusinessesTable, ModeratorsTable re
     assert.ok(loadingContainer, "Loading container should mount without ReferenceError");
 
     // 2. Populated state
-    const queryKey = adminKeys.moderators({ page: 1, limit: 10, search: "", status: "", from: null, to: null });
+    const filters = normalizeAdminFilters({}, { limit: 10 });
+    const queryKey = adminKeys.moderators(filters);
     const populatedWrapper = createSeededWrapper(queryKey, {
       status: "success",
       data: {
         moderators: [
           {
-            _id: "m1",
-            name: "Moderator One",
-            email: "mod1@example.com",
-            phone: "966500000003",
+            _id: "mod-1",
+            id: "mod-1",
+            name: "Test Moderator",
+            email: "mod@example.com",
+            phoneNumber: "+966500000003",
             status: "active",
             role: "moderator",
-            createdAt: "2026-08-01",
+            createdAt: "2026-08-01T10:00:00Z",
           },
         ],
-        pagination: { totalPages: 1, total: 1, page: 1, limit: 10 },
+        pagination: {
+          page: 1,
+          pages: 1,
+          total: 1,
+        },
       },
     });
 
@@ -154,6 +175,6 @@ describe("Session 1 Web Runtime: HostsTable, BusinessesTable, ModeratorsTable re
     );
 
     assert.ok(populatedContainer.querySelector("table"), "Moderators table should render");
-    assert.ok(populatedContainer.textContent.includes("Moderator One"), "Moderators table should display moderator name");
+    assert.ok(populatedContainer.textContent.includes("Test Moderator"), "Moderator name should be rendered in table");
   });
 });

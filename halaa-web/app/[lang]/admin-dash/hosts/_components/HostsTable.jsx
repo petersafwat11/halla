@@ -12,11 +12,12 @@ import { useState, useMemo } from "react";
 import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
 import { FiEye, FiCheckCircle, FiSlash, FiCreditCard, FiTrash2 } from "react-icons/fi";
+import { normalizeAdminFilters } from "@/utils/filterNormalizer";
 import Table from "@/ui/commen/new-table/Table";
-import AddHostPopup from "./AddHostPopup";
-import SubscriptionAssignmentPopup from "../../_components/SubscriptionAssignmentPopup";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import { getStatusVisual } from "@/utils/statusColors";
+import AddHostPopup from "./AddHostPopup";
+import SubscriptionAssignmentPopup from "../../_components/SubscriptionAssignmentPopup";
 import styles from "./HostsTable.module.css";
 
 export default function HostsTable({ showAddPopup: externalShowAdd, setShowAddPopup: externalSetShowAdd }) {
@@ -32,14 +33,7 @@ export default function HostsTable({ showAddPopup: externalShowAdd, setShowAddPo
   const [showSubscriptionPopup, setShowSubscriptionPopup] = useState(false);
   const [selectedHost, setSelectedHost] = useState(null);
 
-  const filters = useMemo(() => ({
-    page: searchParams.get("page") || 1,
-    limit: searchParams.get("limit") || 10,
-    search: searchParams.get("search") || "",
-    status: searchParams.get("status") || "",
-    from: searchParams.get("from"),
-    to: searchParams.get("to"),
-  }), [searchParams]);
+  const filters = useMemo(() => normalizeAdminFilters(searchParams, { limit: 10 }), [searchParams]);
 
   const { data, isLoading } = useAdminHosts(filters);
   const deleteHost = useAdminHostMutation("delete");

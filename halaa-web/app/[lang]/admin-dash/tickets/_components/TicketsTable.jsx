@@ -7,6 +7,7 @@ import { usePageAccess } from "@/hooks/usePageAccess";
 import { useMyTickets, useTicketMutation, useExportTickets } from "@/hooks/tickets";
 import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
+import { normalizeTicketsFilters } from "@/utils/filterNormalizer";
 import Table from "@/ui/commen/new-table/Table";
 import AssignTicketPopup from "./AssignTicketPopup";
 import TicketResponsePopup from "./TicketResponsePopup";
@@ -24,15 +25,7 @@ export default function TicketsTable() {
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [viewOnly, setViewOnly] = useState(false);
 
-  const filters = useMemo(() => ({
-    page: searchParams.get("page") || 1,
-    limit: searchParams.get("limit") || 10,
-    search: searchParams.get("search") || "",
-    status: searchParams.get("status") || "",
-    priority: searchParams.get("priority") || "",
-    from: searchParams.get("from"),
-    to: searchParams.get("to"),
-  }), [searchParams]);
+  const filters = useMemo(() => normalizeTicketsFilters(searchParams, { limit: 10 }), [searchParams]);
 
   const { data, isLoading, error } = useMyTickets(filters);
   const deleteMutation = useTicketMutation("deleteTicket");

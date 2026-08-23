@@ -4,24 +4,14 @@ import { useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { FaGift, FaToggleOn, FaTimes, FaTag } from "react-icons/fa";
+import { normalizeDiscountsFilters } from "@/utils/filterNormalizer";
 import StatsCards from "@/ui/host/main-page/StatsCards";
 import { useDiscounts } from "@/hooks/discounts";
-
-function buildFilters(searchParams) {
-  const status = searchParams.get("status");
-  return {
-    page: searchParams.get("page") || 1,
-    limit: 20,
-    search: searchParams.get("search") || undefined,
-    isActive:
-      status === "active" ? true : status === "inactive" ? false : undefined,
-  };
-}
 
 export default function DiscountsStats() {
   const { t } = useTranslation("adminDiscounts");
   const searchParams = useSearchParams();
-  const filters = buildFilters(searchParams);
+  const filters = useMemo(() => normalizeDiscountsFilters(searchParams, { limit: 20 }), [searchParams]);
 
   const { data } = useDiscounts(filters);
 

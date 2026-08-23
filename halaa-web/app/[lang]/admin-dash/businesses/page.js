@@ -3,6 +3,7 @@ import { createServerQueryClient, prefetchServerData, QueryClientServerProvider 
 import { API_PATHS } from "@halaa/shared/api/paths";
 import { requirePageAccess } from "@/services/serverAuth";
 import { adminKeys } from "@/hooks/admin/keys";
+import { normalizeAdminFilters } from "@/utils/filterNormalizer";
 import BusinessesPageContent from "./_components/BusinessesPageContent";
 import styles from "./page.module.css";
 
@@ -15,14 +16,7 @@ export default async function BusinessesPage({ params, searchParams }) {
   const queryClient = createServerQueryClient();
 
   const urlParams = await searchParams;
-  const filters = {
-    page: urlParams?.page || 1,
-    limit: urlParams?.limit || 10,
-    search: urlParams?.search,
-    status: urlParams?.status,
-    from: urlParams?.from,
-    to: urlParams?.to,
-  };
+  const filters = normalizeAdminFilters(urlParams, { limit: 10 });
 
   if (token) {
     await prefetchServerData({

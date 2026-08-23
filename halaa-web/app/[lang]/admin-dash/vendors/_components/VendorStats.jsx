@@ -4,6 +4,7 @@ import { useAdminVendors } from "@/hooks/admin";
 import { useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { useMemo } from "react";
+import { normalizeAdminFilters } from "@/utils/filterNormalizer";
 import StatsCards from "@/ui/host/main-page/StatsCards";
 import { FaStore, FaCheckCircle, FaClock, FaBan } from "react-icons/fa";
 import styles from "./VendorStats.module.css";
@@ -12,14 +13,7 @@ export default function VendorStats() {
   const { t } = useTranslation("adminVendors");
   const searchParams = useSearchParams();
 
-  const filters = useMemo(() => ({
-    page: searchParams.get("page") || 1,
-    limit: searchParams.get("limit") || 10,
-    search: searchParams.get("search"),
-    status: searchParams.get("status"),
-    from: searchParams.get("from"),
-    to: searchParams.get("to"),
-  }), [searchParams]);
+  const filters = useMemo(() => normalizeAdminFilters(searchParams, { limit: 10 }), [searchParams]);
 
   const { data, isLoading } = useAdminVendors(filters);
 

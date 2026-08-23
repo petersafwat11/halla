@@ -4,6 +4,7 @@ import { useAdminHosts } from "@/hooks/admin";
 import { useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { useMemo } from "react";
+import { normalizeAdminFilters } from "@/utils/filterNormalizer";
 import StatsCards from "@/ui/host/main-page/StatsCards";
 import { FaUsers, FaUserCheck, FaUserClock, FaUserTimes } from "react-icons/fa";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
@@ -12,14 +13,7 @@ export default function HostStats() {
   const { t } = useTranslation("adminHosts");
   const searchParams = useSearchParams();
 
-  const filters = {
-    page: searchParams.get("page") || 1,
-    limit: searchParams.get("limit") || 10,
-    search: searchParams.get("search"),
-    status: searchParams.get("status"),
-    from: searchParams.get("from"),
-    to: searchParams.get("to"),
-  };
+  const filters = useMemo(() => normalizeAdminFilters(searchParams, { limit: 10 }), [searchParams]);
 
   const { data, isLoading } = useAdminHosts(filters);
 

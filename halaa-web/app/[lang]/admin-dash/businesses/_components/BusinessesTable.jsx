@@ -8,6 +8,7 @@ import { useState, useMemo } from "react";
 import { FiEye, FiCheckCircle, FiSlash, FiTrash2, FiCreditCard, FiEdit2 } from "react-icons/fi";
 import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
+import { normalizeAdminFilters } from "@/utils/filterNormalizer";
 import Table from "@/ui/commen/new-table/Table";
 import AddBusinessPopup from "./AddBusinessPopup";
 import EditBusinessPopup from "../[id]/_components/EditBusinessPopup";
@@ -24,14 +25,7 @@ export default function BusinessesTable({ showAddPopup, setShowAddPopup }) {
   const searchParams = useSearchParams();
   const { canUpdate, canDelete } = usePageAccess("businesses");
 
-  const filters = useMemo(() => ({
-    page: searchParams.get("page") || 1,
-    limit: searchParams.get("limit") || 10,
-    search: searchParams.get("search") || "",
-    status: searchParams.get("status") || "",
-    from: searchParams.get("from"),
-    to: searchParams.get("to"),
-  }), [searchParams]);
+  const filters = useMemo(() => normalizeAdminFilters(searchParams, { limit: 10 }), [searchParams]);
 
   const { data, isLoading } = useAdminBusinesses(filters);
   const suspend = useAdminBusinessMutation("suspend");

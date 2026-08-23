@@ -3,6 +3,7 @@ import { createServerQueryClient, prefetchServerData, QueryClientServerProvider 
 import { API_PATHS } from "@halaa/shared/api/paths";
 import { requirePageAccess } from "@/services/serverAuth";
 import { adminKeys } from "@/hooks/admin/keys";
+import { normalizePaymentsFilters } from "@/utils/filterNormalizer";
 import PaymentsPageHeader from "./_components/PaymentsPageHeader";
 import PaymentStats from "./_components/PaymentStats";
 import PaymentsTable from "./_components/PaymentsTable";
@@ -17,13 +18,7 @@ export default async function PaymentsPage({ params, searchParams }) {
   const queryClient = createServerQueryClient();
 
   const urlParams = await searchParams;
-  const filters = {
-    page: urlParams?.page || 1,
-    limit: urlParams?.limit || 20,
-    status: urlParams?.status,
-    from: urlParams?.from,
-    to: urlParams?.to,
-  };
+  const filters = normalizePaymentsFilters(urlParams, { limit: 20 });
 
   if (token) {
     await prefetchServerData({

@@ -3,9 +3,16 @@ import assert from "node:assert/strict";
 import React from "react";
 import { setupDom } from "../helpers/domSetup.mjs";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  normalizeAdminFilters,
+  normalizeDashboardFilters,
+  normalizeDiscountsFilters,
+  normalizeTicketsFilters,
+  normalizePaymentsFilters,
+} from "../../utils/filterNormalizer.js";
 
 describe("Session 2 Web Runtime Smoke: All 12 Admin Client Component Roots", () => {
-  let render, adminKeys, ticketsKeys, templateCategoriesKeys, taqnyatTemplatesKeys;
+  let render, adminKeys, ticketsKeys, templateCategoriesKeys, taqnyatTemplatesKeys, discountsKeys;
   let RecentActivity,
     HostsTable,
     BusinessesTable,
@@ -47,6 +54,7 @@ describe("Session 2 Web Runtime Smoke: All 12 Admin Client Component Roots", () 
 
     adminKeys = (await import("../../hooks/admin/keys.js")).adminKeys;
     ticketsKeys = (await import("../../hooks/tickets/keys.js")).ticketsKeys;
+    discountsKeys = (await import("../../hooks/discounts/keys.js")).discountsKeys;
     templateCategoriesKeys = (await import("../../hooks/templates/keys.js")).templateCategoriesKeys;
     taqnyatTemplatesKeys = (await import("../../hooks/taqnyatTemplates/keys.js")).taqnyatTemplatesKeys;
 
@@ -66,7 +74,7 @@ describe("Session 2 Web Runtime Smoke: All 12 Admin Client Component Roots", () 
   });
 
   it("1. Dashboard: RecentActivity renders populated and empty states without throwing", () => {
-    const dashKey = adminKeys.dashboard({ period: "month" });
+    const dashKey = adminKeys.dashboard(normalizeDashboardFilters({}, { period: "month" }));
     const wrapper = createSeededWrapper([
       {
         key: dashKey,
@@ -89,7 +97,7 @@ describe("Session 2 Web Runtime Smoke: All 12 Admin Client Component Roots", () 
   });
 
   it("2. Hosts: HostsTable renders populated table without throwing", () => {
-    const key = adminKeys.hosts({ page: 1, limit: 10, search: "", status: "", from: null, to: null });
+    const key = adminKeys.hosts(normalizeAdminFilters({}, { limit: 10 }));
     const wrapper = createSeededWrapper([
       {
         key,
@@ -109,7 +117,7 @@ describe("Session 2 Web Runtime Smoke: All 12 Admin Client Component Roots", () 
   });
 
   it("3. Businesses: BusinessesTable renders populated table without throwing", () => {
-    const key = adminKeys.businesses({ page: 1, limit: 10, search: "", status: "", from: null, to: null });
+    const key = adminKeys.businesses(normalizeAdminFilters({}, { limit: 10 }));
     const wrapper = createSeededWrapper([
       {
         key,
@@ -129,7 +137,7 @@ describe("Session 2 Web Runtime Smoke: All 12 Admin Client Component Roots", () 
   });
 
   it("4. Vendors: VendorsTable renders populated table without throwing", () => {
-    const key = adminKeys.vendors({ page: 1, limit: 10, search: "", status: "", from: null, to: null });
+    const key = adminKeys.vendors(normalizeAdminFilters({}, { limit: 10 }));
     const wrapper = createSeededWrapper([
       {
         key,
@@ -149,7 +157,7 @@ describe("Session 2 Web Runtime Smoke: All 12 Admin Client Component Roots", () 
   });
 
   it("5. Moderators: ModeratorsTable renders populated table without throwing", () => {
-    const key = adminKeys.moderators({ page: 1, limit: 10, search: "", status: "", from: null, to: null });
+    const key = adminKeys.moderators(normalizeAdminFilters({}, { limit: 10 }));
     const wrapper = createSeededWrapper([
       {
         key,
@@ -169,7 +177,7 @@ describe("Session 2 Web Runtime Smoke: All 12 Admin Client Component Roots", () 
   });
 
   it("6. Manage Plans: ManagePlansContent renders plan cards without throwing", () => {
-    const key = ["admin", "plans"];
+    const key = ["admin", "plans", {}];
     const wrapper = createSeededWrapper([
       {
         key,
@@ -189,7 +197,7 @@ describe("Session 2 Web Runtime Smoke: All 12 Admin Client Component Roots", () 
   });
 
   it("7. Payments: PaymentsTable renders populated table without throwing", () => {
-    const key = adminKeys.payments({ page: 1, limit: 20, search: "", status: "", from: undefined, to: undefined });
+    const key = adminKeys.payments(normalizePaymentsFilters({}, { limit: 20 }));
     const wrapper = createSeededWrapper([
       {
         key,
@@ -211,7 +219,7 @@ describe("Session 2 Web Runtime Smoke: All 12 Admin Client Component Roots", () 
   });
 
   it("8. Events: EventsTable renders populated table without throwing", () => {
-    const key = adminKeys.adminEventsList({ page: 1, limit: 10, search: "", status: "", from: null, to: null });
+    const key = adminKeys.adminEventsList(normalizeAdminFilters({}, { limit: 10 }));
     const wrapper = createSeededWrapper([
       {
         key,
@@ -234,7 +242,7 @@ describe("Session 2 Web Runtime Smoke: All 12 Admin Client Component Roots", () 
   });
 
   it("9. Tickets: TicketsTable renders populated table without throwing", () => {
-    const key = ticketsKeys.myTickets({ page: 1, limit: 10, search: "", status: "", priority: "", from: null, to: null });
+    const key = ticketsKeys.myTickets(normalizeTicketsFilters({}, { limit: 10 }));
     const wrapper = createSeededWrapper([
       {
         key,
@@ -254,7 +262,7 @@ describe("Session 2 Web Runtime Smoke: All 12 Admin Client Component Roots", () 
   });
 
   it("10. Discounts: DiscountsTable renders populated table without throwing", () => {
-    const key = ["discounts", "admin", { page: 1, limit: 20, search: "", status: "", isActive: undefined }];
+    const key = discountsKeys.adminList(normalizeDiscountsFilters({}, { limit: 20 }));
     const wrapper = createSeededWrapper([
       {
         key,

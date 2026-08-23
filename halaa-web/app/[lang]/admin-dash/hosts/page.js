@@ -1,8 +1,9 @@
-﻿import { cookies } from "next/headers";
+import { cookies } from "next/headers";
 import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/http";
 import { API_PATHS } from "@halaa/shared/api/paths";
 import { requirePageAccess } from "@/services/serverAuth";
 import { adminKeys } from "@/hooks/admin/keys";
+import { normalizeAdminFilters } from "@/utils/filterNormalizer";
 import HostsPageContent from "./_components/HostsPageContent";
 import styles from "./page.module.css";
 
@@ -15,14 +16,7 @@ export default async function HostsPage({ params, searchParams }) {
   const queryClient = createServerQueryClient();
 
   const urlParams = await searchParams;
-  const filters = {
-    page: urlParams?.page || 1,
-    limit: urlParams?.limit || 10,
-    search: urlParams?.search,
-    status: urlParams?.status,
-    from: urlParams?.from,
-    to: urlParams?.to,
-  };
+  const filters = normalizeAdminFilters(urlParams, { limit: 10 });
 
   if (token) {
     await prefetchServerData({

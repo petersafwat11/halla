@@ -3,6 +3,7 @@ import { createServerQueryClient, prefetchServerData, QueryClientServerProvider 
 import { API_PATHS } from "@halaa/shared/api/paths";
 import { requirePageAccess } from "@/services/serverAuth";
 import { discountsKeys } from "@/hooks/discounts/keys";
+import { normalizeDiscountsFilters } from "@/utils/filterNormalizer";
 import DiscountsPageContent from "./_components/DiscountsPageContent";
 
 export default async function DiscountsPage({ params, searchParams }) {
@@ -14,13 +15,7 @@ export default async function DiscountsPage({ params, searchParams }) {
   const queryClient = createServerQueryClient();
 
   const urlParams = await searchParams;
-  const status = urlParams?.status;
-  const filters = {
-    page: urlParams?.page || 1,
-    limit: 20,
-    search: urlParams?.search || undefined,
-    isActive: status === "active" ? true : status === "inactive" ? false : undefined,
-  };
+  const filters = normalizeDiscountsFilters(urlParams, { limit: 20 });
 
   if (token) {
     await prefetchServerData({

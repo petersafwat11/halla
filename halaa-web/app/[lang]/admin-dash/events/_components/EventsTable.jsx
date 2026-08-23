@@ -11,6 +11,7 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { toastUtils } from "@/utils/toastUtils";
 import { FiEye, FiCheckCircle, FiSlash, FiTrash2 } from "react-icons/fi";
+import { normalizeAdminFilters } from "@/utils/filterNormalizer";
 import Table from "@/ui/commen/new-table/Table";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import { getStatusVisual } from "@/utils/statusColors";
@@ -24,14 +25,7 @@ export default function EventsTable() {
   const searchParams = useSearchParams();
   const { canCreate, canUpdate, canDelete } = usePageAccess("events");
 
-  const filters = useMemo(() => ({
-    page: searchParams.get("page") || 1,
-    limit: searchParams.get("limit") || 10,
-    search: searchParams.get("search") || "",
-    status: searchParams.get("status") || "",
-    from: searchParams.get("from"),
-    to: searchParams.get("to"),
-  }), [searchParams]);
+  const filters = useMemo(() => normalizeAdminFilters(searchParams, { limit: 10 }), [searchParams]);
 
   const { data, isLoading, error } = useAdminEvents(filters);
 

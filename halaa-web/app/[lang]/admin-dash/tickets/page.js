@@ -1,8 +1,9 @@
-﻿import { cookies } from "next/headers";
+import { cookies } from "next/headers";
 import { createServerQueryClient, prefetchServerData, QueryClientServerProvider } from "@/services/http";
 import { API_PATHS } from "@halaa/shared/api/paths";
 import { requirePageAccess } from "@/services/serverAuth";
 import { ticketsKeys } from "@/hooks/tickets/keys";
+import { normalizeTicketsFilters } from "@/utils/filterNormalizer";
 import TicketsPageHeader from "./_components/TicketsPageHeader";
 import TicketsTable from "./_components/TicketsTable";
 import TicketStats from "./_components/TicketStats";
@@ -17,15 +18,7 @@ export default async function TicketsPage({ params, searchParams }) {
   const queryClient = createServerQueryClient();
 
   const urlParams = await searchParams;
-  const filters = {
-    page: urlParams?.page || 1,
-    limit: urlParams?.limit || 10,
-    search: urlParams?.search,
-    status: urlParams?.status,
-    priority: urlParams?.priority,
-    from: urlParams?.from,
-    to: urlParams?.to,
-  };
+  const filters = normalizeTicketsFilters(urlParams, { limit: 10 });
 
   if (token) {
     await prefetchServerData({

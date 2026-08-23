@@ -3,6 +3,7 @@ import { createServerQueryClient, prefetchServerData, QueryClientServerProvider 
 import { API_PATHS } from "@halaa/shared/api/paths";
 import { requirePageAccess } from "@/services/serverAuth";
 import { adminKeys } from "@/hooks/admin/keys";
+import { normalizeDashboardFilters } from "@/utils/filterNormalizer";
 import DashboardPageHeader from "./_components/DashboardPageHeader";
 import DashboardStats from "./_components/DashboardStats";
 import DashboardCharts from "./_components/DashboardCharts";
@@ -21,13 +22,7 @@ export default async function AdminDashboardPage({ params, searchParams }) {
   const queryClient = createServerQueryClient();
 
   const urlParams = await searchParams;
-  const from = urlParams?.from;
-  const to = urlParams?.to;
-  const filters = {
-    period: urlParams?.period || "month",
-    ...(from && { from }),
-    ...(to && { to }),
-  };
+  const filters = normalizeDashboardFilters(urlParams, { period: "month" });
 
   if (token) {
     try {

@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { useAdminPayments } from "@/hooks/admin";
+import { normalizePaymentsFilters } from "@/utils/filterNormalizer";
 import StatsCards from "@/ui/host/main-page/StatsCards";
 import { FaMoneyBillWave, FaCheckCircle, FaClock, FaTimesCircle } from "react-icons/fa";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
@@ -20,16 +21,7 @@ export default function PaymentStats() {
   const isArabic = i18n.language === "ar";
   const searchParams = useSearchParams();
 
-  const filters = useMemo(
-    () => ({
-      page: searchParams.get("page") || 1,
-      limit: searchParams.get("limit") || 20,
-      status: searchParams.get("status") || undefined,
-      from: searchParams.get("from") || undefined,
-      to: searchParams.get("to") || undefined,
-    }),
-    [searchParams]
-  );
+  const filters = useMemo(() => normalizePaymentsFilters(searchParams, { limit: 20 }), [searchParams]);
 
   const { data, isLoading } = useAdminPayments(filters);
   const stats = data?.data?.stats || {};

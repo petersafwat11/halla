@@ -11,6 +11,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
+import { normalizeAdminFilters } from "@/utils/filterNormalizer";
 import Table from "@/ui/commen/new-table/Table";
 import VendorRatingPopup from "./VendorRatingPopup";
 import StatusBadge from "./StatusBadge";
@@ -40,14 +41,7 @@ export default function VendorsTable() {
   const [showRatingPopup, setShowRatingPopup] = useState(false);
   const [selectedVendor, setSelectedVendor] = useState(null);
 
-  const filters = useMemo(() => ({
-    page: searchParams.get("page") || 1,
-    limit: searchParams.get("limit") || 10,
-    search: searchParams.get("search") || "",
-    status: searchParams.get("status") || "",
-    from: searchParams.get("from"),
-    to: searchParams.get("to"),
-  }), [searchParams]);
+  const filters = useMemo(() => normalizeAdminFilters(searchParams, { limit: 10 }), [searchParams]);
 
   const { data, isLoading, error } = useAdminVendors(filters);
   const deleteVendor = useAdminVendorMutation("delete");

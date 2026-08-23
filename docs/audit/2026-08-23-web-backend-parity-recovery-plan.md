@@ -448,9 +448,9 @@ Each row must cover success, empty, error, access expiry, hard reload, Arabic, a
 | Session | Status | Commit | Evidence/record |
 |---|---|---|---|
 | 0 — Incident baseline | Complete | b500edeb | Executable baseline tests in backend and web; failure-classification and request graph matrix established |
-| 1 — P0 runtime and lint | Complete | see record | Repaired Table.js dropdown state/refs, added useMemo imports, quarantined orphaned notifications, enabled no-undef error in ESLint |
-| 2 — Runtime smoke coverage | Complete | see record | DOM test stack established; runtime component smoke tests covering all 12 admin page roots in success, empty, and error states |
-| 3 — Query/hydration normalization | Pending | — | — |
+| 1 — P0 runtime and lint | Complete | 630878e2 | Repaired Table.js dropdown state/refs, added useMemo imports, quarantined orphaned notifications, enabled no-undef error in ESLint |
+| 2 — Runtime smoke coverage | Complete | 630878e2 | DOM test stack established; runtime component smoke tests covering all 12 admin page roots in success, empty, and error states |
+| 3 — Query/hydration normalization | Complete | see record | Canonical filter normalizer utility created and applied across all SSR prefetch pages, client tables, and stats components; byte-parity test suite passing |
 | 4 — Authentication readiness | Pending | — | — |
 | 5 — API contract parity | Pending | — | — |
 | 6 — Statistics correctness | Pending | — | — |
@@ -830,8 +830,90 @@ Direct authenticated endpoint smoke tests across all admin routes verified that 
 
 #### Remaining risks & Blockers/decisions & Deferred work
 
-- Session 3: Query key and hydration normalization (unifying `undefined` vs `""` vs `null` param serialization).
 - Session 4: Authentication readiness and silent refresh coordination.
 - Session 5 & 6: API contract parity and statistics calculation correctness.
+
+---
+
+### Execution record — Session 3 — 2026-08-23
+
+- Status: Complete
+- Commit: audit: complete session 3 canonical filters query keys and ssr hydration
+- Issues addressed: WEB-05, WEB-06, WEB-14
+
+#### Reproduction & Network Evidence
+
+- Previously, server prefetch (`page.js`) parsed URL search params into `{ search: undefined, status: undefined }`, while client table components parsed them into `{ search: "", status: "" }` or `{ from: null }`, and client stats components parsed them into `{ search: searchParams.get("search") }` (`null`).
+- Because React Query treats `{ search: undefined }`, `{ search: "" }`, and `{ search: null }` as three distinct, incompatible cache keys:
+  1. SSR-prefetched data was discarded as a cache miss on client hydration -> an immediate, duplicate browser GET fired for the same page.
+  2. Table and Stats subcomponents on the same page generated divergent query keys -> fired two duplicate simultaneous network requests instead of sharing one query cache entry.
+- `EventStats.jsx` maintained hand-rolled `useQuery` logic with a literal query key `["events", "admin", filters]` instead of consuming the shared `useAdminEvents` hook and `adminKeys.adminEventsList(filters)`.
+
+#### Root Cause
+
+- Absence of a centralized, canonical URL/filter normalizer across server prefetch pages, client table views, and statistics card components.
+
+#### Implementation Summary
+
+1. Created pure canonical filter normalizer utility `halaa-web/utils/filterNormalizer.js`:
+   - `normalizeAdminFilters(input, options)`: Standardizes `page` (integer >= 1), `limit` (integer >= 1), strips empty strings/nulls/undefined, preserves valid `search`, `status`, `from`, `to`.
+   - `normalizeDashboardFilters(input, options)`: Preserves `period` (defaulting to `"month"`), `from`, `to`.
+   - `normalizeDiscountsFilters(input, options)`: Normalizes `page`, `limit` (20), `search`, `status`, and computes strict `isActive` boolean (`true` / `false` / omitted).
+   - `normalizeTicketsFilters(input, options)`: Normalizes `page`, `limit`, `search`, `status`, `priority`, `from`, `to`.
+   - `normalizePaymentsFilters(input, options)`: Normalizes `page`, `limit` (20), `status`, `from`, `to`, `search`.
+2. Applied canonical normalizers and centralized query key factories across all admin routes:
+   - **Hosts**: `app/[lang]/admin-dash/hosts/page.js`, `HostsTable.jsx`, `HostStats.jsx`.
+   - **Businesses**: `app/[lang]/admin-dash/businesses/page.js`, `BusinessesTable.jsx`, `BusinessStats.jsx`.
+   - **Vendors**: `app/[lang]/admin-dash/vendors/page.js`, `VendorsTable.jsx`, `VendorStats.jsx`.
+   - **Moderators**: `app/[lang]/admin-dash/moderators/page.js`, `ModeratorsTable.jsx`, `ModeratorStats.jsx`.
+   - **Events**: `app/[lang]/admin-dash/events/page.js`, `EventsTable.jsx`, `EventStats.jsx` (migrated `EventStats` to shared `useAdminEvents` hook and `adminKeys.adminEventsList(filters)` key factory).
+   - **Discounts**: `app/[lang]/admin-dash/discounts/page.js`, `DiscountsTable.jsx`, `DiscountsStats.jsx`.
+   - **Tickets**: `app/[lang]/admin-dash/tickets/page.js`, `TicketsTable.jsx`, `TicketStats.jsx`.
+   - **Payments**: `app/[lang]/admin-dash/payments/page.js`, `PaymentsTable.js`, `PaymentStats.jsx`.
+   - **Dashboard**: `app/[lang]/admin-dash/page.js`, `RecentActivity.jsx`, `DashboardStats.jsx`, `DashboardCharts.jsx`.
+3. Created comprehensive test suite `__tests__/runtime/session3-canonical-filters-hydration.test.mjs`:
+   - Table-driven normalizer tests for empty, null, undefined, whitespace, malformed numbers, and valid filters.
+   - SSR hydration and query key byte-parity matrix proving server prefetch and browser query keys are byte-identical.
+   - Proving Table and Stats subcomponents on the same page produce identical query keys and share one cache entry.
+
+#### Active routes/import paths verified
+
+- `app/[lang]/admin-dash/**`
+- `utils/filterNormalizer.js`
+- `__tests__/runtime/session3-canonical-filters-hydration.test.mjs`
+- `__tests__/runtime/adminAllRoutesRuntime.test.mjs`
+- `__tests__/runtime/adminTablesRuntime.test.mjs`
+
+#### Files changed and why
+
+- `halaa-web/utils/filterNormalizer.js`: Pure canonical filter normalizer utility.
+- `halaa-web/app/[lang]/admin-dash/**`: Wired canonical normalizer in all server pages, table components, and stats cards.
+- `halaa-web/app/[lang]/admin-dash/events/_components/EventStats.jsx`: Switched from manual `useQuery` to shared `useAdminEvents` hook.
+- `halaa-web/__tests__/runtime/session3-canonical-filters-hydration.test.mjs`: Added Session 3 filter normalization & SSR hydration verification suite.
+- `halaa-web/__tests__/runtime/adminAllRoutesRuntime.test.mjs`: Updated query key seeding with normalized filters.
+- `halaa-web/__tests__/runtime/adminTablesRuntime.test.mjs`: Updated query key seeding with normalized filters.
+- `docs/audit/2026-08-23-web-backend-parity-recovery-plan.md`: Updated execution tracker and added Session 3 record.
+
+#### Exact tests and results
+
+- `npm test` in `halaa-web`:
+  `pass 135, fail 0, suites 18, duration_ms: 4283.14`
+- `npm test` in `halaa-backend`:
+  `pass 420, fail 0, suites 14, duration_ms: 24910.35`
+- `npm run lint` in `halaa-web`: 0 errors.
+- `npm run build` in `halaa-web`: 0 errors across 72 routes.
+
+#### Exit-criteria evidence
+
+- [x] Server and browser produce byte-equivalent normalized keys for the same URL.
+- [x] A hydrated admin page makes no duplicate initial data request.
+- [x] Table and statistics requests cannot silently diverge because of `undefined`/`null`/empty-string differences.
+
+#### Remaining risks & Blockers/decisions & Deferred work
+
+- Session 4: Web authentication readiness and silent refresh coordination.
+- Session 5: Cross-client API contract parity.
+- Session 6: Statistics calculation correctness across full datasets.
+
 
 

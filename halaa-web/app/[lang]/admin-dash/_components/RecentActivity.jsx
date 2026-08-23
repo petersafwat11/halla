@@ -3,7 +3,8 @@
 import { useAdminDashboard } from "@/hooks/admin";
 import { useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
+import { normalizeDashboardFilters } from "@/utils/filterNormalizer";
 import Table from "@/ui/commen/new-table/Table";
 import Bottom from "@/ui/admin/dashboard/bottom/Bottom";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
@@ -48,13 +49,7 @@ export default function RecentActivity() {
   const { t, i18n } = useTranslation("adminDashboard");
   const searchParams = useSearchParams();
 
-  const from = searchParams.get("from");
-  const to = searchParams.get("to");
-  const filters = {
-    period: searchParams.get("period") || "month",
-    ...(from && { from }),
-    ...(to && { to }),
-  };
+  const filters = useMemo(() => normalizeDashboardFilters(searchParams, { period: "month" }), [searchParams]);
 
   const { data: responseData, isLoading, error } = useAdminDashboard(filters);
   const data = responseData?.data;

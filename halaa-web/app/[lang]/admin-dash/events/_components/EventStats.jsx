@@ -1,11 +1,10 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { apiRequest } from "@/services/http";
-import { API_PATHS } from "@halaa/shared/api/paths";
+import { useAdminEvents } from "@/hooks/admin";
 import { useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { useMemo } from "react";
+import { normalizeAdminFilters } from "@/utils/filterNormalizer";
 import StatsCards from "@/ui/host/main-page/StatsCards";
 import { FaCalendarAlt, FaCheckCircle, FaClock, FaTimesCircle } from "react-icons/fa";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
@@ -14,25 +13,9 @@ export default function EventStats() {
   const { t } = useTranslation("adminEvents");
   const searchParams = useSearchParams();
 
-  const filters = useMemo(() => ({
-    page: searchParams.get("page") || 1,
-    limit: searchParams.get("limit") || 10,
-    search: searchParams.get("search"),
-    status: searchParams.get("status"),
-    from: searchParams.get("from"),
-    to: searchParams.get("to"),
-  }), [searchParams]);
+  const filters = useMemo(() => normalizeAdminFilters(searchParams, { limit: 10 }), [searchParams]);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["events", "admin", filters],
-    queryFn: () =>
-      apiRequest({
-        method: "GET",
-        path: API_PATHS.events.getAllEvents,
-        params: filters,
-      }),
-    staleTime: 5 * 60 * 1000,
-  });
+  const { data, isLoading } = useAdminEvents(filters);
 
   const statsCards = useMemo(() => {
     if (!data) return [];
