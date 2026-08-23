@@ -5,8 +5,7 @@ import React, {
   useEffect,
   useMemo,
 } from "react";
-import { I18nManager, Alert, Platform } from "react-native";
-import { reloadAppAsync } from "expo";
+import { I18nManager, Alert } from "react-native";
 import Constants from "expo-constants";
 import { I18nextProvider } from "react-i18next";
 import i18n, { i18nConfig } from "../config/i18nConfig";
@@ -38,31 +37,29 @@ const _isExpoGo = () => {
 };
 
 /**
- * Apply RTL layout to match the chosen locale. Safe to call repeatedly:
- *   - if `I18nManager.isRTL` already matches, this is a no-op.
- *   - if it doesn't, we flip + request a reload (handled by the
- *     LanguageProvider via the alert).
+ * Persist the native RTL preference for the next native launch.
  *
- * Returns `true` when a reload is needed, `false` otherwise.
+ * The live React tree does not wait for a native reload: AppRoot applies the
+ * selected locale's `direction` immediately. Waiting for reloadAppAsync here
+ * left iOS permanently blank when the native reload was interrupted or did
+ * not replace the current JS runtime.
  */
 const applyRTLForLocale = (locale) => {
   const wantRTL = i18nConfig.isRTL(locale);
   try {
-    I18nManager.allowRTL(wantRTL);
+    // Halaa supports both directions. forceRTL below stores the selected one.
+    I18nManager.allowRTL(true);
   } catch (_) {
     /* no-op on web */
   }
-  if (I18nManager.isRTL === wantRTL) return false;
   if (_isExpoGo()) {
-    // Expo Go ignores forceRTL — layout direction stays flexDirection-based.
-    return false;
+    return;
   }
   try {
     I18nManager.forceRTL(wantRTL);
   } catch (_) {
     /* unsupported on the current platform */
   }
-  return Platform.OS === "ios" || Platform.OS === "android";
 };
 
 export const LanguageProvider = ({ children }) => {
@@ -81,7 +78,6 @@ export const LanguageProvider = ({ children }) => {
   // We don't listen for device locale changes to prevent unexpected language switches
 
   const initializeLanguage = async () => {
-    let waitingForDirectionReload = false;
     try {
       console.log("[LanguageProvider] Initializing language...");
       // Check if user has already selected a language
@@ -118,33 +114,13 @@ export const LanguageProvider = ({ children }) => {
       // flexDirection-based RTL fallback in the context still applies
       // as a safety net.
       const shouldBeRTL = i18nConfig.isRTL(selectedLang);
-      const reloadNeeded = applyRTLForLocale(selectedLang);
+      applyRTLForLocale(selectedLang);
       console.log(
         "[LanguageProvider] Language initialized:",
         selectedLang,
         "| RTL:",
-        shouldBeRTL,
-        "| reloadNeeded:",
-        reloadNeeded
+        shouldBeRTL
       );
-
-      // Native RTL state is persistent and is read before the React tree is
-      // laid out. Never render the selected locale over the previous native
-      // direction: reload the same bundle once so Android and iOS start with
-      // one authoritative direction.
-      if (reloadNeeded && !_isExpoGo() && Platform.OS !== "web") {
-        waitingForDirectionReload = true;
-        try {
-          await reloadAppAsync("Apply saved Halaa language direction");
-          return;
-        } catch (reloadError) {
-          waitingForDirectionReload = false;
-          console.error(
-            "[LanguageProvider] Saved-direction reload failed:",
-            reloadError
-          );
-        }
-      }
     } catch (error) {
       console.error("Error initializing language:", error);
       // Fallback to default locale
@@ -152,7 +128,9 @@ export const LanguageProvider = ({ children }) => {
       await i18n.changeLanguage(i18nConfig.defaultLocale);
       setHasSelectedLanguage(false);
     } finally {
-      if (!waitingForDirectionReload) setIsLoading(false);
+      // Startup must always release the loading gate, even if native direction
+      // persistence is unavailable. The root `direction` remains authoritative.
+      setIsLoading(false);
     }
   };
 
@@ -166,25 +144,19 @@ export const LanguageProvider = ({ children }) => {
         setHasSelectedLanguage(true);
 
         const shouldBeRTL = i18nConfig.isRTL(languageCode);
-        const reloadNeeded = applyRTLForLocale(languageCode);
+        applyRTLForLocale(languageCode);
         console.log(
           "[LanguageProvider] Language changed to:",
           languageCode,
           "| RTL:",
-          shouldBeRTL,
-          "| reloadNeeded:",
-          reloadNeeded
+          shouldBeRTL
         );
 
         const alertTitle = languageCode === "ar" ? "تم تغيير اللغة" : "Language Changed";
         const alertMessage =
           languageCode === "ar"
-            ? reloadNeeded
-              ? "تم تغيير لغة التطبيق. سيُعاد تشغيل التطبيق الآن لتطبيق اتجاه الواجهة بالكامل."
-              : "تم تغيير لغة التطبيق بنجاح."
-            : reloadNeeded
-              ? "The app language has changed. The app will restart now to apply the layout direction."
-              : "The app language has been changed successfully.";
+            ? "تم تغيير لغة التطبيق بنجاح."
+            : "The app language has been changed successfully.";
         const buttonText = languageCode === "ar" ? "حسناً" : "OK";
 
         Alert.alert(
@@ -193,21 +165,10 @@ export const LanguageProvider = ({ children }) => {
           [
             {
               text: buttonText,
-              onPress:
-                reloadNeeded && !_isExpoGo() && Platform.OS !== "web"
-                  ? () => {
-                      reloadAppAsync("Apply Halaa language direction").catch(
-                        (reloadError) =>
-                          console.error(
-                            "[LanguageProvider] Direction reload failed:",
-                            reloadError
-                          )
-                      );
-                    }
-                  : undefined,
+              onPress: undefined,
             },
           ],
-          { cancelable: !reloadNeeded }
+          { cancelable: true }
         );
       }
     } catch (error) {

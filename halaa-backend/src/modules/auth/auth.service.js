@@ -753,10 +753,17 @@ class AuthService {
       throw new ValidationError('Invalid phone number format');
     }
 
-    // Check if user exists
+    // Completed accounts must log in. An interrupted OTP signup is allowed to
+    // request a fresh code and resume the profile-completion gate.
     const existingUser = await User.findOne({ phoneNumber: normalizedPhone });
     if (existingUser) {
-      throw new ConflictError('An account with this phone number already exists', 'phone');
+      const canResume =
+        existingUser.role === ROLES.HOST &&
+        existingUser.profile?.hostData?.profileCompleted === false;
+      if (!canResume) {
+        throw new ConflictError('An account with this phone number already exists', 'phone');
+      }
+      this._validateUserStatus(existingUser);
     }
 
     // Send OTP
@@ -817,10 +824,38 @@ class AuthService {
       throw new OTPError(verifyResult.errorType || 'invalid', null, verifyResult.meta);
     }
 
-    // Check if user already exists
+    // A verified code may resume an account that was created by an earlier
+    // request whose response never reached the device. Completed accounts are
+    // still rejected and must use login.
     let user = await User.findOne({ phoneNumber: normalizedPhone });
     if (user) {
-      throw new ConflictError('An account with this phone number already exists', 'phone');
+      const canResume =
+        user.role === ROLES.HOST &&
+        user.profile?.hostData?.profileCompleted === false;
+      if (!canResume) {
+        throw new ConflictError('An account with this phone number already exists', 'phone');
+      }
+
+      this._validateUserStatus(user);
+      let subscription = await this.getUserSubscription(user._id);
+      if (!subscription) {
+        const trialPlan = await Plan.getOrCreateByCode('trial');
+        subscription = await Subscription.createForUser(user._id, trialPlan._id, {
+          status: SUBSCRIPTION_STATUS.TRIAL,
+        });
+        user.subscription = subscription._id;
+        await user.save({ validateBeforeSave: false });
+      }
+
+      const tokens = await this.issueTokenPair(user, context);
+      return {
+        user: await this.sanitizeUser(user),
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+        subscription: subscription.getSummary ? subscription.getSummary() : subscription,
+        isNewUser: false,
+        profileCompleted: false,
+      };
     }
 
     // Create new host

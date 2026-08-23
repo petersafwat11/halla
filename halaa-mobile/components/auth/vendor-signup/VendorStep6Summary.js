@@ -1,17 +1,18 @@
 import React from 'react';
-import { View, Text, StyleSheet, I18nManager } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useFormContext } from 'react-hook-form';
 import SectionCard from '../../commen/SectionCard';
 import { useTranslation } from '../../../localization';
 
 const SummaryRow = ({ label, value }) => {
+  const { isRTL } = useTranslation();
   const displayValue = typeof value === 'object' ? JSON.stringify(value) : value;
   if (displayValue === undefined || displayValue === null || displayValue === '') return null;
   if (Array.isArray(value) && value.length === 0) return null;
   return (
     <View style={summaryStyles.row}>
       <Text style={summaryStyles.label}>{label}</Text>
-      <Text style={summaryStyles.value}>{displayValue}</Text>
+      <Text style={[summaryStyles.value, { textAlign: isRTL ? 'left' : 'right' }]}>{displayValue}</Text>
     </View>
   );
 };
@@ -25,7 +26,7 @@ const CATEGORY_KEYS = [
 const summaryStyles = StyleSheet.create({
   row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
   label: { fontSize: 13, fontFamily: 'Cairo_400Regular', color: '#888', flex: 1 },
-  value: { fontSize: 13, fontFamily: 'Cairo_600SemiBold', color: '#2c2c2c', flex: 2, textAlign: I18nManager.isRTL ? 'left' : 'right' },
+  value: { fontSize: 13, fontFamily: 'Cairo_600SemiBold', color: '#2c2c2c', flex: 2 },
 });
 
 const VendorStep6Summary = () => {

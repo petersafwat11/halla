@@ -7,9 +7,9 @@
  * this exact path over HTTPS with no redirects and expects
  * Content-Type: application/json.
  *
- * SET `APPLE_APP_ID` to "<TEAM_ID>.com.halaa.app" (Team ID from the Apple
- * Developer account). Until then this serves a placeholder appID that will NOT
- * validate — universal links won't open the app until the real Team ID is set.
+ * `APPLE_ASSOCIATED_APP_ID` may override the value, but the checked-in fallback
+ * is the real public Apple Team ID + bundle ID so a missing runtime variable
+ * cannot silently break Universal Links or domain-bound OTP AutoFill.
  *
  * Paths must mirror the mobile linking config (App.js) + app.json
  * associatedDomains.
@@ -17,18 +17,10 @@
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const realAppID = process.env.APPLE_APP_ID;
-  const appID = realAppID || "TEAMID.com.halaa.app";
-
-  // Loud failure (§5.1): a placeholder appID will NOT validate universal links.
-  // In production this must be set to "<TEAM_ID>.com.halaa.app".
-  if (!realAppID && process.env.NODE_ENV === "production") {
-    // eslint-disable-next-line no-console
-    console.error(
-      "[AASA] APPLE_APP_ID is not set in production — serving a PLACEHOLDER appID. " +
-        "Universal links (reset password / invitations) will NOT open the app until the real Team ID is configured."
-    );
-  }
+  const configuredAppID = process.env.APPLE_ASSOCIATED_APP_ID;
+  const appID = /^[A-Z0-9]{10}\.com\.halaa\.app$/.test(configuredAppID || "")
+    ? configuredAppID
+    : "YR98AH9Z39.com.halaa.app";
 
   const body = {
     applinks: {

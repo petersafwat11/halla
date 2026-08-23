@@ -27,6 +27,8 @@ const OTPVerificationForm = ({
   const { t } = useTranslation("auth");
   const [timer, setTimer] = useState(resendTimer);
   const [canResend, setCanResend] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const submittingRef = React.useRef(false);
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
 
   const methods = useForm({
@@ -82,7 +84,12 @@ const OTPVerificationForm = ({
   };
 
   const onFormSubmit = async (data) => {
-    if (onSubmit) {
+    // A ref closes the tiny window before React re-renders `loading=true`, so
+    // two fast taps cannot send two OTP verification requests.
+    if (submittingRef.current || !onSubmit) return;
+    submittingRef.current = true;
+    setIsSubmitting(true);
+    try {
       const result = await onSubmit(data);
       if (result && !result.success && result.fieldErrors) {
         Object.keys(result.fieldErrors).forEach((field) => {
@@ -92,6 +99,10 @@ const OTPVerificationForm = ({
           });
         });
       }
+      return result;
+    } finally {
+      submittingRef.current = false;
+      setIsSubmitting(false);
     }
   };
 
@@ -135,7 +146,7 @@ const OTPVerificationForm = ({
           <Button
             text={t("otp.verifyButton")}
             onPress={handleSubmit(onFormSubmit)}
-            loading={loading}
+            loading={loading || isSubmitting}
           />
           <TouchableOpacity
             onPress={onEditPhone}

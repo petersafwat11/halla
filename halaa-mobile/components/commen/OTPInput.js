@@ -45,12 +45,24 @@ const OTPInputField = ({ length, value, error, onChange }) => {
   }, [error, shakeAnimation]);
 
   const handleChange = (text, index) => {
+    const digits = String(text || "").replace(/\D/g, "");
+
+    // iOS Security Code AutoFill (and Android SMS OTP) inserts the complete
+    // code into the focused native input. Distribute that value across the
+    // visual boxes instead of truncating it to one character.
+    if (digits.length > 1) {
+      const completeOtp = digits.slice(0, length);
+      onChange(completeOtp);
+      inputRefs.current[Math.min(completeOtp.length, length) - 1]?.focus();
+      return;
+    }
+
     const newOtp = otp.split("");
-    newOtp[index] = text;
+    newOtp[index] = digits;
     const newOtpString = newOtp.join("");
     onChange(newOtpString);
 
-    if (text && index < length - 1) {
+    if (digits && index < length - 1) {
       inputRefs.current[index + 1]?.focus();
     }
   };
@@ -88,7 +100,10 @@ const OTPInputField = ({ length, value, error, onChange }) => {
             onChangeText={(text) => handleChange(text, index)}
             onKeyPress={(e) => handleKeyPress(e, index)}
             keyboardType="number-pad"
-            maxLength={1}
+            maxLength={length}
+            {...(Platform.OS === "ios"
+              ? { textContentType: "oneTimeCode" }
+              : { autoComplete: "sms-otp" })}
             textAlign="center"
             selectTextOnFocus
           />

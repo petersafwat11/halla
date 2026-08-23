@@ -84,8 +84,10 @@ const sendOTP = async (phoneNumber, lang = 'ar') => {
   });
 
   const messages = {
-    ar: `رمز التحقق الخاص بك في Halaa هو: ${otp}\nصالح لمدة 5 دقائق.`,
-    en: `Your Halaa verification code is: ${otp}\nValid for 5 minutes.`,
+    // The final domain-bound line enables Apple's secure Security Code
+    // AutoFill. halaa.com.sa is associated with com.halaa.app via AASA.
+    ar: `رمز التحقق الخاص بك في Halaa هو: ${otp}\nصالح لمدة 5 دقائق.\n@halaa.com.sa #${otp}`,
+    en: `Your Halaa verification code is: ${otp}\nValid for 5 minutes.\n@halaa.com.sa #${otp}`,
   };
 
   try {
@@ -167,9 +169,17 @@ const verifyOTP = async (phoneNumber, otp) => {
     return { success: false, errorType: 'invalid', meta: { attemptsLeft } };
   }
 
-  // soft-invalidate instead of hard-delete so the record survives for
-  // audit purposes but cannot be replayed.
-  await OTP.updateOne({ _id: stored._id }, { $set: { used: true } });
+  // Atomically claim the valid OTP. Two concurrent requests may both have
+  // read the same unused row above; only one is allowed to turn it into an
+  // authenticated session.
+  const claimed = await OTP.findOneAndUpdate(
+    { _id: stored._id, used: { $ne: true } },
+    { $set: { used: true } },
+    { new: false }
+  );
+  if (!claimed) {
+    return { success: false, errorType: 'already_used' };
+  }
   return { success: true };
 };
 
