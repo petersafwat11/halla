@@ -112,6 +112,9 @@ jobs:
           docker compose pull
           # --wait blocks until every service is healthy (or fails the deploy).
           docker compose up -d --wait --remove-orphans
+          # Caddy's bind-mounted file can change without recreating the
+          # long-running container, so explicitly load the synced config.
+          docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile
           # Idempotent: restores the tracked template masters on first local-
           # storage deploy and becomes a no-op on later pushes.
           docker compose exec -T api npm run storage:restore-templates
