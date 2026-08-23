@@ -26,6 +26,7 @@ const logger = require('../../shared/utils/logger');
 const { GUEST_STATUS } = require('../../shared/constants');
 const { ROLES } = require('../../shared/constants/roles');
 const { resolveTaqnyatTemplateRef } = require('../events/templateRefResolver');
+const { extractStoredRef, deleteFromS3 } = require('../../shared/utils/s3Upload');
 
 const dispatchService = require('./post-event.dispatch.service');
 const moderationService = require('../moderation/moderation.service');
@@ -213,7 +214,7 @@ class PostEventService {
       }
       const item = await content.addMedia({
         type: isVideo ? 'video' : 'photo',
-        url: file.location || file.path || `/uploads/post-event/${file.filename}`,
+        url: extractStoredRef(file),
         mimeType: file.mimetype,
         size: file.size,
       });
@@ -252,6 +253,12 @@ class PostEventService {
 
     const removed = await content.removeMedia(mediaId);
     if (!removed) throw new NotFoundError('Media');
+    await deleteFromS3(item.url).catch((err) => {
+      logger.warn('[post-event] failed to delete media object', {
+        mediaId,
+        error: err.message,
+      });
+    });
 
     const actorId = user?._id?.toString?.() || user?._id;
     logAudit({

@@ -17,6 +17,13 @@ const multerS3 = require("multer-s3");
 const path = require("path");
 const crypto = require("crypto");
 const fs = require("fs");
+const {
+  isLocalStorage,
+  getLocalUploadRoot,
+  localRefFromAbsolutePath,
+  deleteLocalObject,
+  copyLocalObject,
+} = require("./storageDriver");
 
 // `@aws-sdk/lib-storage` provides streaming multipart upload for buffers /
 // streams larger than the 5 MB single-part threshold. Loaded lazily so the
@@ -31,6 +38,7 @@ try {
 // Check if S3 is configured
 const isS3Configured = () => {
   return !!(
+    !isLocalStorage() &&
     process.env.AWS_ACCESS_KEY_ID &&
     process.env.AWS_SECRET_ACCESS_KEY &&
     process.env.AWS_REGION &&
@@ -110,36 +118,20 @@ const getFolderForField = (fieldname, req) => {
  * @param {string} baseDir - Base upload directory
  * @returns {Object} Multer disk storage
  */
-const createLocalStorage = (baseDir) => {
-  const uploadsDir = path.join(baseDir, "public/uploads");
+const createLocalStorage = (uploadsDir = getLocalUploadRoot()) => {
   if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
   }
 
   return multer.diskStorage({
     destination: (req, file, cb) => {
-      let uploadPath = uploadsDir;
-
-      const folderMap = {
-        logo: "logos",
-        businessLogo: "logos",
-        portfolioImages: "portfolios",
-        pricePackages: "packages",
-        commercialRecordImage: "documents",
-        nationalIdImage: "documents",
-        cv: "documents",
-        profileFile: "documents",
-        templateImage: "templates",
-        avatar: "avatars",
-        image: "services",
-        photos: "post-event",
-        video: "post-event",
-        images: "post-event",
-        ticketAttachment: "tickets",
-      };
-
-      const folder = folderMap[file.fieldname] || "general";
-      uploadPath = path.join(uploadsDir, folder);
+      const folder = getFolderForField(file.fieldname, req);
+      const uploadPath = path.resolve(uploadsDir, ...folder.split("/"));
+      const relative = path.relative(uploadsDir, uploadPath);
+      if (relative.startsWith("..") || path.isAbsolute(relative)) {
+        cb(new Error("Invalid local upload destination"));
+        return;
+      }
 
       if (!fs.existsSync(uploadPath)) {
         fs.mkdirSync(uploadPath, { recursive: true });
@@ -167,6 +159,12 @@ const createLocalStorage = (baseDir) => {
  * @returns {Object} Multer storage configuration
  */
 const createS3Storage = () => {
+  if (isLocalStorage()) {
+    const root = getLocalUploadRoot();
+    console.info(`[storage] Using persistent local storage at ${root}`);
+    return createLocalStorage(root);
+  }
+
   if (!isS3Configured() || !s3Client) {
     const allowLocal =
       process.env.NODE_ENV !== "production" &&
@@ -184,7 +182,7 @@ const createS3Storage = () => {
       "[s3Upload] WARNING: S3 not configured. Using LOCAL disk storage. " +
         "This is dev-only — uploaded files will not persist across deploys."
     );
-    return createLocalStorage(path.join(__dirname, "../../.."));
+    return createLocalStorage(getLocalUploadRoot());
   }
 
   return multerS3({
@@ -312,6 +310,9 @@ const uploadMultipleToS3 = async (files) => {
  * @returns {Promise<boolean>} Success status
  */
 const deleteFromS3 = async (key) => {
+  if (isLocalStorage()) {
+    return deleteLocalObject(key);
+  }
   if (!isS3Configured() || !s3Client) {
     console.warn("S3 not configured, cannot delete file");
     return false;
@@ -342,6 +343,9 @@ const deleteFromS3 = async (key) => {
  */
 const copyS3Object = async (sourceKey, destKey) => {
   if (!sourceKey || !destKey) return null;
+  if (isLocalStorage()) {
+    return copyLocalObject(sourceKey, destKey);
+  }
   if (!isS3Configured() || !s3Client) {
     // Dev/local without S3: fall back to referencing the source key. The
     // immutability guarantee is a no-op locally (no real object to delete).
@@ -462,6 +466,12 @@ const isS3Url = (url) => {
 const getFileUrl = (file) => {
   if (!file) return null;
 
+  // Persistent local upload. Resolve relative to UPLOAD_PATH instead of
+  // assuming the path contains a literal "public" segment.
+  if (file.path && isLocalStorage()) {
+    return localRefFromAbsolutePath(file.path);
+  }
+
   // S3 upload (multer-s3) — `location` is set by multer-s3 to the bucket
   // URL. With a private bucket this URL is not directly readable, but the
   // value is a useful canonical reference; consumers should pass the key
@@ -530,6 +540,8 @@ const extractStoredRef = (file) => {
   if (!file) return null;
   if (file.key) return file.key; // multer-s3
   if (file.path) {
+    const localRef = localRefFromAbsolutePath(file.path);
+    if (localRef) return localRef;
     const publicIndex = file.path.indexOf("public");
     if (publicIndex !== -1) {
       return file.path.substring(publicIndex + 6);
@@ -695,8 +707,12 @@ const resolveDeletableS3Key = (stored) => {
   if (!stored || typeof stored !== "string") return null;
   const s = stored.trim();
   if (!s) return null;
-  // Local-disk dev paths are never in S3.
-  if (s.startsWith("/uploads/") || s.startsWith("uploads/")) return null;
+  // Under the persistent local driver the deletion pipeline reuses this
+  // legacy collector name, but returns the local capability path so
+  // deleteFromS3() can dispatch it to deleteLocalObject().
+  if (s.startsWith("/uploads/") || s.startsWith("uploads/")) {
+    return isLocalStorage() ? (s.startsWith("/") ? s : `/${s}`) : null;
+  }
   if (s.startsWith("http://") || s.startsWith("https://")) {
     // Only delete if the URL points at OUR bucket; external URLs are not ours.
     return _extractKeyFromOurS3Url(s) || null;
@@ -723,6 +739,19 @@ const signStoredImages = async (refs) => {
  */
 const deleteFile = async (filePathOrUrl, baseDir = path.join(__dirname, "../../..")) => {
   if (!filePathOrUrl) return false;
+
+  if (
+    isLocalStorage() ||
+    String(filePathOrUrl).startsWith("/uploads/") ||
+    String(filePathOrUrl).startsWith("uploads/")
+  ) {
+    try {
+      return await deleteLocalObject(filePathOrUrl);
+    } catch (error) {
+      console.error("Error deleting local upload:", error);
+      return false;
+    }
+  }
 
   // Check if it's an S3 URL
   if (isS3Url(filePathOrUrl)) {

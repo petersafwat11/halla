@@ -105,11 +105,16 @@ jobs:
           ssh -i ~/.ssh/id_deploy "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" bash -s <<'EOF'
           set -euo pipefail
           cd /opt/halaa
+          mkdir -p data/uploads
+          chown -R 1001:1001 data/uploads
           echo "IMAGE_TAG=${{ needs.build.outputs.tag }}" > .env
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
           docker compose pull
           # --wait blocks until every service is healthy (or fails the deploy).
           docker compose up -d --wait --remove-orphans
+          # Idempotent: restores the tracked template masters on first local-
+          # storage deploy and becomes a no-op on later pushes.
+          docker compose exec -T api npm run storage:restore-templates
           docker logout ghcr.io >/dev/null 2>&1 || true
           docker compose ps
           docker image prune -f

@@ -4,11 +4,14 @@ Production runs a small Docker Compose stack on a single VPS:
 
 ```
 Internet ──HTTPS──▶ Caddy (auto-TLS) ──┬── /            ▶ web  (Next.js :3000)
-                                        └── /api/v2, /health ▶ api  (Express :8000)
+                                        └── /api/v2, /uploads, /health ▶ api  (Express :8000)
 ```
 
-MongoDB Atlas and AWS S3 are managed (not containerized). App secrets live only on
-the VPS (`/opt/halaa/config.env` + `/opt/halaa/certs/`), never in an image or in git.
+MongoDB Atlas is managed. Runtime media lives in
+`/opt/halaa/data/uploads` and is bind-mounted into the API container at
+`/app/public/uploads`, so replacing or rolling the container does not erase it.
+App secrets live only on the VPS (`/opt/halaa/config.env` +
+`/opt/halaa/certs/`), never in an image or in git.
 
 ## How a deploy works
 
@@ -39,8 +42,34 @@ sudo bash deploy/vps-bootstrap.sh
 docker login ghcr.io -u <github-user> --password-stdin <<< "<PAT>"
 
 # 4. First bring-up (or just run the deploy workflow)
-cd /opt/halaa && echo "IMAGE_TAG=latest" > .env && docker compose up -d --wait
+cd /opt/halaa
+mkdir -p data/uploads && chown -R 1001:1001 data/uploads
+echo "IMAGE_TAG=latest" > .env
+docker compose up -d --wait
+docker compose exec -T api npm run storage:restore-templates
 ```
+
+The compose file explicitly sets `FILE_STORAGE_DRIVER=local` and
+`UPLOAD_PATH=/app/public/uploads`. The deploy workflow creates the host
+directory before each rollout and then runs the idempotent template restoration
+command. That command copies the 20 tracked invitation masters into persistent
+storage, generates thumbnails, and updates only their storage references.
+
+## Media backup
+
+The bind mount protects files from container replacement, but it is still on a
+single VPS disk. Back up both of these together so database references and files
+remain consistent:
+
+- MongoDB Atlas backup/snapshot.
+- `/opt/halaa/data/uploads/` copied to storage outside this VPS.
+
+Before production user uploads are treated as durable, configure a nightly
+off-VPS backup (for example encrypted `restic` to a separate provider) and a
+weekly restore check. Do not use another directory on the same VPS as the only
+backup. At 200–500 images per month the 165 GB currently free on the VPS is
+ample, but retain alerts at 70% and 85% disk usage because phone uploads can be
+up to 10 MB and post-event videos up to 50 MB.
 
 ### TLS with Cloudflare
 Caddy issues a Let's Encrypt cert automatically. If the `halaa.com.sa` record is

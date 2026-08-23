@@ -1,8 +1,9 @@
 name: halaa
 
 # Production stack for a single VPS: Next.js web + Express API behind Caddy
-# (auto-HTTPS). MongoDB is Atlas (managed) and object storage is S3 — neither is
-# containerized. App secrets live in ./config.env on the VPS (never in the image
+# (auto-HTTPS). MongoDB is Atlas (managed). Runtime media is stored on a
+# persistent VPS bind mount; it is never written into the replaceable image
+# filesystem. App secrets live in ./config.env on the VPS (never in the image
 # or in git); the Atlas X.509 cert is mounted read-only from ./certs.
 
 services:
@@ -17,8 +18,12 @@ services:
     environment:
       NODE_ENV: production
       PORT: "8000"
+      FILE_STORAGE_DRIVER: local
+      UPLOAD_PATH: /app/public/uploads
+      PUBLIC_MEDIA_BASE_URL: https://halaa.com.sa
     volumes:
       - ./certs:/app/certs:ro
+      - ./data/uploads:/app/public/uploads
     # Ensure the container can resolve the Atlas SRV connection string.
     dns:
       - 1.1.1.1

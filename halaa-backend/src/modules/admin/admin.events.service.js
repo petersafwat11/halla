@@ -23,6 +23,7 @@ const {
   storedSendInstant,
 } = require('../../shared/utils/schedulingWindow');
 const taqnyatTemplatesService = require('../taqnyat-templates/taqnyat-templates.service');
+const { getFileUrl } = require('../../shared/utils/fileUpload');
 
 /**
  * Get event by ID (admin)
@@ -133,7 +134,7 @@ async function updateEventFull(eventId, updateData, context = {}) {
   );
 
   if (context.file) {
-    const templateImagePath = `/uploads/templates/${context.file.filename}`;
+    const templateImagePath = getFileUrl(context.file);
     event.templateImage = templateImagePath;
     event.visualTemplate = {
       ...((event.visualTemplate?.toObject?.() || event.visualTemplate) || {}),

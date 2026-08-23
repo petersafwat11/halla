@@ -1,6 +1,6 @@
 /**
  * Templates service — visual template CRUD plus host-facing list. Image
- * storage is via S3 proxy upload; sharp generates a webp thumbnail at
+ * storage is via the configured storage driver; sharp generates a webp thumbnail at
  * 320 wide on commit. Orphan cleanup runs inline on every create/update
  * failure; a daily GC job (`scripts/gcOrphanTemplateImages.js`) sweeps
  * any stragglers.
@@ -23,6 +23,15 @@ const {
   DeleteObjectCommand,
   GetObjectCommand,
 } = require("@aws-sdk/client-s3");
+const {
+  isLocalStorage,
+  normalizeObjectKey,
+  localRefForKey,
+  writeLocalObject,
+  readLocalObject,
+  deleteLocalObject,
+  contentTypeForRef,
+} = require("../../shared/utils/storageDriver");
 
 // `sharp` is loaded lazily so a dev environment without `npm install`
 // still boots; the admin upload path surfaces a clear error otherwise.
@@ -35,6 +44,7 @@ try {
 
 const isS3Configured = () =>
   !!(
+    !isLocalStorage() &&
     process.env.AWS_ACCESS_KEY_ID &&
     process.env.AWS_SECRET_ACCESS_KEY &&
     process.env.AWS_REGION &&
@@ -58,6 +68,7 @@ function getS3() {
 // CloudFront when provisioned, otherwise the bucket URL.
 function s3KeyToUrl(key) {
   if (!key) return null;
+  if (isLocalStorage()) return localRefForKey(key);
   if (process.env.CLOUDFRONT_DOMAIN) {
     return `https://${process.env.CLOUDFRONT_DOMAIN}/${key}`;
   }
@@ -69,6 +80,14 @@ function s3KeyToUrl(key) {
 
 async function deleteS3Key(key) {
   if (!key) return;
+  if (isLocalStorage()) {
+    try {
+      await deleteLocalObject(key);
+    } catch (err) {
+      logger.error("[templates.service] local delete failed", { message: err.message });
+    }
+    return;
+  }
   const client = getS3();
   if (!client) return;
   try {
@@ -91,11 +110,16 @@ async function handleImageUpload({ fileBuffer, filename, contentType, templateId
   if (!filename || filename.length > 200) {
     throw new ValidationError("filename is required (max 200 chars)");
   }
-  const client = getS3();
-  if (!client) throw new AppError("S3 is not configured", 500, "S3_NOT_CONFIGURED");
-
   const safeFilename = String(filename).replace(/[^a-zA-Z0-9._-]/g, "-");
   const key = `templates/${templateId}/original-${Date.now()}-${safeFilename}`;
+
+  if (isLocalStorage()) {
+    const storedRef = await writeLocalObject({ key, body: fileBuffer });
+    return { s3Key: storedRef };
+  }
+
+  const client = getS3();
+  if (!client) throw new AppError("S3 is not configured", 500, "S3_NOT_CONFIGURED");
 
   await client.send(
     new PutObjectCommand({
@@ -123,29 +147,40 @@ async function processImage(s3Key) {
       naturalHeight: 1350,
     };
   }
-  const client = getS3();
-  if (!client) {
-    throw new AppError("S3 is not configured", 500, "S3_NOT_CONFIGURED");
+  let buffer;
+  if (isLocalStorage()) {
+    buffer = await readLocalObject(s3Key);
+  } else {
+    const client = getS3();
+    if (!client) {
+      throw new AppError("S3 is not configured", 500, "S3_NOT_CONFIGURED");
+    }
+    const obj = await client.send(
+      new GetObjectCommand({ Bucket: process.env.AWS_S3_BUCKET, Key: s3Key })
+    );
+    const chunks = [];
+    for await (const chunk of obj.Body) chunks.push(chunk);
+    buffer = Buffer.concat(chunks);
   }
-
-  const obj = await client.send(
-    new GetObjectCommand({ Bucket: process.env.AWS_S3_BUCKET, Key: s3Key })
-  );
-  const chunks = [];
-  for await (const chunk of obj.Body) chunks.push(chunk);
-  const buffer = Buffer.concat(chunks);
 
   const meta = await sharp(buffer).metadata();
   const naturalWidth = meta.width || 1080;
   const naturalHeight = meta.height || 1350;
 
   const thumbBuffer = await sharp(buffer).resize({ width: 320 }).webp({ quality: 80 }).toBuffer();
-  const thumbnailKey = s3Key.replace(/^(templates\/[^/]+)\/original-(.+)$/, (_m, dir, name) => {
+  const originalKey = normalizeObjectKey(s3Key);
+  const thumbnailKey = originalKey.replace(/^(templates\/[^/]+)\/original-(.+)$/, (_m, dir, name) => {
     return `${dir}/thumb-${name}.webp`;
   });
 
   // Cache-Control set so CloudFront/browsers cache aggressively — the S3 key
   // includes a Date.now() suffix so changes always produce a fresh URL.
+  if (isLocalStorage()) {
+    const thumbnailRef = await writeLocalObject({ key: thumbnailKey, body: thumbBuffer });
+    return { thumbnailS3Key: thumbnailRef, naturalWidth, naturalHeight };
+  }
+
+  const client = getS3();
   await client.send(
     new PutObjectCommand({
       Bucket: process.env.AWS_S3_BUCKET,
@@ -250,6 +285,20 @@ async function getAsset(id, variant = "thumbnail") {
       ? doc.imageS3Key
       : doc.thumbnailS3Key || doc.imageS3Key;
   if (!key) throw new NotFoundError("Template image");
+
+  if (isLocalStorage()) {
+    try {
+      const body = await readLocalObject(key);
+      return {
+        body,
+        contentType: contentTypeForRef(key),
+        etag: null,
+      };
+    } catch (err) {
+      if (err.code === "ENOENT") throw new NotFoundError("Template image");
+      throw err;
+    }
+  }
 
   const client = getS3();
   if (!client) {

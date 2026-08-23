@@ -46,7 +46,6 @@ const mergeSectionData = (existing = {}, incoming = {}) => {
 // the new upload has already succeeded.
 const safeDeleteOldKey = async (oldKey) => {
   if (!oldKey || typeof oldKey !== "string") return;
-  if (oldKey.startsWith("/uploads/") || oldKey.startsWith("uploads/")) return;
   if (oldKey.startsWith("http")) return; // legacy URL — ignore
   try {
     await deleteFromS3(oldKey);

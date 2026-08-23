@@ -71,6 +71,7 @@ const envSchema = Joi.object({
   BACKEND_URL: Joi.string().default('http://localhost:8000'),
 
   // File Upload
+  FILE_STORAGE_DRIVER: Joi.string().valid('s3', 'local').default('s3'),
   UPLOAD_PATH: Joi.string().default('./public/uploads'),
   MAX_FILE_SIZE: Joi.number().default(5 * 1024 * 1024), // 5MB
 

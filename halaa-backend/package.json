@@ -4,6 +4,7 @@
   "description": "halla app",
   "main": "src/server.js",
   "scripts": {
+    "storage:restore-templates": "node scripts/restoreTemplatesToLocalStorage.js",
     "test": "node --test test/*.test.js",
     "migrate:public-template-categories": "node scripts/migratePublicTemplateCategories.js",
     "migrate:vendor-copy": "node scripts/migrate-vendor-localized-copy.js",

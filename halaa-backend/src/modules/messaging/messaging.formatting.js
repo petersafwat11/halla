@@ -159,6 +159,14 @@ function getEventImageUrl(event, taqnyatTemplate = null) {
     event.visualTemplate?.bakedImagePath || event.templateImage;
   if (!imagePath) return null;
   if (imagePath.startsWith('http')) return imagePath;
+  if (imagePath.startsWith('/uploads/') || imagePath.startsWith('uploads/')) {
+    const publicBase = String(
+      process.env.PUBLIC_MEDIA_BASE_URL || process.env.FRONTEND_URL || ''
+    ).replace(/\/$/, '');
+    if (publicBase.startsWith('http')) {
+      return `${publicBase}/${imagePath.replace(/^\//, '')}`;
+    }
+  }
   return null;
 }
 

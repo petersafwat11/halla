@@ -13,7 +13,7 @@ halaa.com.sa {
 	encode zstd gzip
 
 	# API + health probes → Express backend container
-	@api path /api/v2/* /api/* /health /health/*
+	@api path /api/v2/* /api/* /health /health/* /uploads/*
 	handle @api {
 		reverse_proxy api:8000
 	}

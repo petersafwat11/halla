@@ -10,7 +10,7 @@ const cookieParser = require("cookie-parser");
 const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
 const compression = require("compression");
-const path = require("path");
+const { getLocalUploadRoot } = require("./shared/utils/storageDriver");
 const crypto = require("crypto");
 const swaggerUi = require("swagger-ui-express");
 
@@ -193,7 +193,15 @@ const createApp = () => {
 
   app.use(
     "/uploads",
-    express.static(path.join(__dirname, "../public/uploads"))
+    express.static(getLocalUploadRoot(), {
+      fallthrough: false,
+      index: false,
+      maxAge: "1y",
+      immutable: true,
+      setHeaders: (res) => {
+        res.setHeader("X-Content-Type-Options", "nosniff");
+      },
+    })
   );
 
   // ============================================
