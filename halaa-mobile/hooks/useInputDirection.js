@@ -74,6 +74,12 @@ export const useInputDirection = (
 /**
  * Pure label direction resolver — resolves alignment & writing direction for form labels.
  *
+ * React Native mirrors the physical `left`/`right` text-align values when the
+ * native layout is RTL: `left` behaves as logical start and `right` as logical
+ * end. Therefore localized UI chrome must use `left` in both locales. Returning
+ * `right` for Arabic double-mirrors it to the left on Android, which is the
+ * regression that made Step 1 disagree with the untouched Step 2 fields.
+ *
  * @param {string} contentDirection - one of CONTENT_DIRECTIONS (default "localized")
  * @param {{ isRTL?: boolean }} [state]
  * @returns {{ textAlign: "left" | "right", writingDirection: "ltr" | "rtl" }}
@@ -92,13 +98,13 @@ export const resolveLabelDirection = (
       break;
     case CONTENT_DIRECTIONS.RTL:
       writingDirection = "rtl";
-      textAlign = "right";
+      textAlign = isRTL ? "left" : "right";
       break;
     case CONTENT_DIRECTIONS.LOCALIZED:
     case CONTENT_DIRECTIONS.PHONE:
     default:
       writingDirection = isRTL ? "rtl" : "ltr";
-      textAlign = isRTL ? "right" : "left";
+      textAlign = "left";
       break;
   }
 
@@ -135,7 +141,8 @@ export const resolveFieldDirection = (
   // is an LTR token such as an email, phone number or password.
   text: resolveLabelDirection(CONTENT_DIRECTIONS.LOCALIZED, { isRTL }),
   counter: {
-    textAlign: isRTL ? "left" : "right",
+    // `right` is logical end in React Native (right in LTR, left in RTL).
+    textAlign: "right",
     writingDirection: "ltr",
   },
 });

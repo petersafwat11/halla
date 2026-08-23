@@ -266,7 +266,7 @@ export default function MapPicker({ name, value, onChange, ...props }) {
 
 const styles = StyleSheet.create({
   container: { marginBottom: 16, width: "100%" },
-  label: { fontFamily: "Cairo_600SemiBold", fontSize: 14, color: "#2C2C2C", marginBottom: 8 },
+  label: { width: "100%", fontFamily: "Cairo_600SemiBold", fontSize: 14, color: "#2C2C2C", marginBottom: 8 },
   inputContainer: { borderWidth: 1, borderColor: "#E0E0E0", borderRadius: 12, minHeight: 58, paddingHorizontal: 15, justifyContent: "center", backgroundColor: "#FFF" },
   inputContainerError: { borderColor: "#D84A3F", borderWidth: 1.5 },
   inputContainerDisabled: { opacity: 0.55, backgroundColor: "#F5F5F5" },

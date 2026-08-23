@@ -78,55 +78,53 @@ async function main() {
     }
   }
 
-  // 2. Activate One-Time Products Purchase Options
+  // 2. Activate One-Time Products Purchase Options.
+  //
+  // Purchase-option state is output-only on the OneTimeProduct resource. The
+  // supported state transition is the dedicated batchUpdateStates endpoint;
+  // patching `purchaseOptions.state` leaves the option in DRAFT (the exact
+  // failure that previously kept RevenueCat offerings unavailable).
+  const draftPurchaseOptions = [];
   for (const otp of oneTimeProducts) {
     const productId = otp.productId;
     const purchaseOptions = otp.purchaseOptions || [];
-    let hasDraft = false;
     for (const po of purchaseOptions) {
-      if (po.state === "DRAFT" || !po.state || po.state !== "ACTIVE") {
-        hasDraft = true;
-        break;
+      if (po.state !== "ACTIVE") {
+        draftPurchaseOptions.push({ productId, purchaseOptionId: po.purchaseOptionId });
       }
     }
 
-    if (!hasDraft && purchaseOptions.length > 0) {
+    if (purchaseOptions.length > 0 && purchaseOptions.every((po) => po.state === "ACTIVE")) {
       console.log(`  ✓ One-Time Product [${productId}] purchase options are already ACTIVE`);
       oneTimeSkipped++;
-      continue;
+    }
+  }
+
+  if (draftPurchaseOptions.length > 0) {
+    for (const option of draftPurchaseOptions) {
+      console.log(
+        `  → Activating One-Time Product [${option.productId}] Purchase Option [${option.purchaseOptionId}]...`
+      );
     }
 
-    console.log(`  → Publishing / Activating One-Time Product [${productId}]...`);
     if (!isDryRun) {
-      try {
-        const updateUrl = `${packagePath}/oneTimeProducts:batchUpdate`;
-        await requestJson(updateUrl, {
-          method: "POST",
-          headers,
-          body: {
-            requests: [
-              {
-                oneTimeProduct: {
-                  ...otp,
-                  purchaseOptions: purchaseOptions.map((po) => ({
-                    ...po,
-                    state: "ACTIVE",
-                  })),
-                },
-                updateMask: "purchaseOptions",
-                regionsVersion: regionsVersion ? { version: regionsVersion } : undefined,
-              },
-            ],
-          },
-        });
-        console.log(`    ✓ Updated to ACTIVE.`);
-        oneTimeActivated++;
-      } catch (err) {
-        console.error(`    ✗ Failed to activate: ${err.message}`);
-      }
-    } else {
-      oneTimeActivated++;
+      const updateStatesUrl = `${packagePath}/oneTimeProducts/-/purchaseOptions:batchUpdateStates`;
+      await requestJson(updateStatesUrl, {
+        method: "POST",
+        headers,
+        body: {
+          requests: draftPurchaseOptions.map(({ productId, purchaseOptionId }) => ({
+            activatePurchaseOptionRequest: {
+              packageName,
+              productId,
+              purchaseOptionId,
+            },
+          })),
+        },
+      });
     }
+
+    oneTimeActivated = draftPurchaseOptions.length;
   }
 
   console.log("\n==================================================");

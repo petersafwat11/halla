@@ -209,13 +209,25 @@ export const validateStepData = (stepNumber, formData) => {
     }
     case 2:
       return !!(formData.guestList && formData.guestList.length > 0);
-    case 3:
-      return !!(
-        formData.visualTemplate?.templateRef ||
-        formData.visualTemplate?._id ||
-        formData.visualTemplate?.id ||
-        formData.templateImage
+    case 3: {
+      const visualTemplate = formData.visualTemplate;
+      const hasBakedOrUploadedImage = !!formData.templateImage;
+      const isCustomUpload = visualTemplate?.isCustomUpload === true;
+      const hasTemplateRef = !!(
+        visualTemplate?.templateRef ||
+        visualTemplate?._id ||
+        visualTemplate?.id
       );
+
+      // A predefined template is not complete until its protected
+      // background loaded and the customised canvas was baked. Template
+      // metadata alone previously allowed the wizard to continue with a
+      // null image, producing an invalid final request. Custom uploads also
+      // require the picked image rather than the mode flag by itself.
+      return (
+        hasBakedOrUploadedImage && (isCustomUpload || hasTemplateRef)
+      );
+    }
     case 4:
       return !!(
         formData.selectedTemplate?.name ||

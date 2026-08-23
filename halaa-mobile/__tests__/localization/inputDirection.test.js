@@ -81,12 +81,12 @@ test("resolveInputDirection: phone is localized when empty, LTR once filled", as
   );
 });
 
-test("resolveLabelDirection: localized follows locale alignment and writing direction", async () => {
+test("resolveLabelDirection: localized uses native logical-start alignment", async () => {
   const { resolveLabelDirection } = await loadResolver();
 
   const rtl = resolveLabelDirection("localized", { isRTL: true });
   assert.equal(rtl.writingDirection, "rtl");
-  assert.equal(rtl.textAlign, "right");
+  assert.equal(rtl.textAlign, "left");
 
   const ltr = resolveLabelDirection("localized", { isRTL: false });
   assert.equal(ltr.writingDirection, "ltr");
@@ -104,9 +104,9 @@ test("resolveFieldDirection keeps every field role in one logical contract", asy
   const rtl = resolveFieldDirection("phone", { isRTL: true, hasValue: true });
   assert.equal(rtl.input.writingDirection, "ltr");
   assert.equal(rtl.text.writingDirection, "rtl");
-  assert.equal(rtl.text.textAlign, "right");
+  assert.equal(rtl.text.textAlign, "left");
   assert.equal(rtl.counter.writingDirection, "ltr");
-  assert.equal(rtl.counter.textAlign, "left");
+  assert.equal(rtl.counter.textAlign, "right");
 
   const ltr = resolveFieldDirection("localized", { isRTL: false });
   assert.equal(ltr.input.writingDirection, "ltr");

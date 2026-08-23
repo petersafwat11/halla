@@ -211,6 +211,7 @@ const styles = StyleSheet.create({
     color: "#2C2C2C",
     marginBottom: 8,
     paddingHorizontal: 8,
+    width: "100%",
   },
   inputContainer: {
     flexDirection: "row",

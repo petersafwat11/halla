@@ -412,44 +412,5 @@
     "privacy": "Privacy",
     "refund": "Refund Policy",
     "support": "Support"
-  },
-  "checkout": {
-    "card": {
-      "name": "Name on Card",
-      "number": "Card Number",
-      "expiry": "Expiry Date (MM/YY)",
-      "cvc": "Security Code (CVC)",
-      "secureNote": "Payment is fully encrypted and secure"
-    },
-    "stcpay": {
-      "mobile": "STC Pay Mobile Number",
-      "note": "You will receive a notification to authorize payment in STC Pay"
-    },
-    "applepay": {
-      "note": "Pay securely and quickly with Apple Pay"
-    },
-    "errors": {
-      "nameRequired": "Name is required",
-      "nameTooShort": "Name is too short",
-      "numberRequired": "Card number is required",
-      "numberLength": "Card number is incomplete",
-      "numberInvalid": "Invalid card number",
-      "cvcRequired": "CVC is required",
-      "cvcLength": "CVC must be 3 or 4 digits",
-      "mobileRequired": "Mobile number is required",
-      "mobileFormat": "Invalid mobile number format",
-      "applepayUnavailable": "Apple Pay is not available on this device",
-      "planUnavailable": "Plan is not available for purchase right now",
-      "addonUnavailable": "Add-on is not available for purchase right now"
-    },
-    "iap": {
-      "restored": "Purchases restored successfully",
-      "restoreFailed": "Failed to restore purchases",
-      "note": "Purchases are processed through your app store account",
-      "restoring": "Restoring purchases...",
-      "restore": "Restore Purchases",
-      "manage": "Manage Subscription",
-      "unavailable": "In-app purchase is currently unavailable"
-    }
   }
 }

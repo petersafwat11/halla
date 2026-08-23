@@ -93,6 +93,7 @@
       [
         "expo-localization",
         {
+          "supportsRTL": true,
           "supportedLocales": {
             "ios": ["ar", "en"],
             "android": ["ar", "en"]

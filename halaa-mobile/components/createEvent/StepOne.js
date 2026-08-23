@@ -240,7 +240,6 @@ const StepOne = () => {
           accessibilityLabel={t("event_date_label")}
           accessibilityState={{ expanded: showDatePicker }}
         >
-          <CalendarIcon />
           <Text
             style={[
               styles.selectButtonText,
@@ -253,6 +252,7 @@ const StepOne = () => {
               ? isolateAuto(formatDate(eventDate))
               : t("event_date_placeholder")}
           </Text>
+          <CalendarIcon />
         </TouchableOpacity>
       </View>
 
@@ -289,7 +289,6 @@ const StepOne = () => {
           accessibilityLabel={t("event_time_label")}
           accessibilityState={{ expanded: showTimePicker }}
         >
-          <ClockIcon />
           <Text
             style={[
               styles.selectButtonText,
@@ -302,6 +301,7 @@ const StepOne = () => {
               ? isolateAuto(formatLocaleTime(eventTime, currentLanguage || "ar"))
               : t("event_time_placeholder")}
           </Text>
+          <ClockIcon />
         </TouchableOpacity>
       </View>
 
@@ -385,6 +385,7 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_600SemiBold",
     color: "#2c2c2c",
     marginBottom: 8,
+    width: "100%",
   },
   selectButton: {
     flexDirection: "row",
