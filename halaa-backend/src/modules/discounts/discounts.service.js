@@ -33,7 +33,8 @@ class DiscountsService {
     const limitNum = parseInt(limit);
     const skip = (pageNum - 1) * limitNum;
 
-    const [total, discounts] = await Promise.all([
+    const now = new Date();
+    const [total, discounts, statsAgg] = await Promise.all([
       Discount.countDocuments(query),
       Discount.find(query)
         .populate('createdBy', 'name email')
@@ -41,7 +42,46 @@ class DiscountsService {
         .skip(skip)
         .limit(limitNum)
         .lean(),
+      Discount.aggregate([
+        { $match: query },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: 1 },
+            active: { $sum: { $cond: [{ $eq: ['$isActive', true] }, 1, 0] } },
+            expired: {
+              $sum: {
+                $cond: [
+                  {
+                    $and: [
+                      { $ne: ['$validUntil', null] },
+                      { $lt: ['$validUntil', now] },
+                    ],
+                  },
+                  1,
+                  0,
+                ],
+              },
+            },
+            totalUsed: { $sum: { $ifNull: ['$usedCount', 0] } },
+          },
+        },
+      ]),
     ]);
+
+    const stats = statsAgg[0]
+      ? {
+          total: statsAgg[0].total || 0,
+          active: statsAgg[0].active || 0,
+          expired: statsAgg[0].expired || 0,
+          totalUsed: statsAgg[0].totalUsed || 0,
+        }
+      : {
+          total: 0,
+          active: 0,
+          expired: 0,
+          totalUsed: 0,
+        };
 
     return {
       discounts: discounts.map(this._format),
@@ -51,6 +91,7 @@ class DiscountsService {
         pages: Math.ceil(total / limitNum),
         limit: limitNum,
       },
+      stats,
     };
   }
 

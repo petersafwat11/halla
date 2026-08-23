@@ -22,13 +22,26 @@ export const keyFromSignedUrl = (url) => {
   }
 };
 
+export const VENDOR_CATEGORY_KEYS = [
+  "eventPlanning",
+  "mediaProduction",
+  "giftsAndGiveaways",
+  "foodAndBeverages",
+  "beautyAndFashion",
+  "logisticsAndDelivery",
+  "corporateServices",
+  "supportServices",
+  "technicalServices",
+  "soundLightingEntertainment",
+  "hallsAndVenues",
+];
+
 /**
  * Resolve an image value from the API to a renderable URL.
  *
- * The backend now signs all S3 image fields at serialization, so the value
- * the API hands us is already a complete `http(s)://...` URL. The only
- * other case we handle is the local-disk dev fallback (paths under
- * `/uploads/...`), which we prefix with `BACKEND_URL`.
+ * Fully-qualified http(s) URLs pass through. Paths starting with /uploads/
+ * are prefixed with BACKEND_URL. Local relative static paths (starting with /)
+ * pass through directly.
  */
 export const getImageUrl = (imagePath) => {
   if (!imagePath || typeof imagePath !== "string") return null;
@@ -41,25 +54,52 @@ export const getImageUrl = (imagePath) => {
   if (imagePath.startsWith("uploads/")) {
     return `${BACKEND_URL}/${imagePath}`;
   }
+  if (imagePath.startsWith("/")) {
+    return imagePath;
+  }
   return null;
 };
 
 /**
- * Extract categories as flat array from serviceCategories object
+ * Extract categories as flat array from serviceCategories object or array
  * @param {Object|Array} serviceCategories - Categories data from API
  * @returns {Array} - Flat array of category names
  */
 export const extractCategoriesArray = (serviceCategories) => {
   if (!serviceCategories) return [];
-  if (Array.isArray(serviceCategories)) return serviceCategories;
+  if (Array.isArray(serviceCategories)) return serviceCategories.filter((k) => typeof k === "string");
 
-  const allCategories = [];
-  Object.keys(serviceCategories).forEach((key) => {
-    if (Array.isArray(serviceCategories[key])) {
-      allCategories.push(...serviceCategories[key]);
+  if (typeof serviceCategories === "object") {
+    const keys = Object.keys(serviceCategories);
+    return keys.filter((key) => {
+      const val = serviceCategories[key];
+      return (
+        val !== false &&
+        val !== null &&
+        val !== undefined &&
+        (VENDOR_CATEGORY_KEYS.includes(key) || (Array.isArray(val) && val.length >= 0) || val === true)
+      );
+    });
+  }
+
+  return [];
+};
+
+/**
+ * Convert an array of category keys into the backend strict object shape:
+ * e.g. ["mediaProduction", "foodAndBeverages"] -> { mediaProduction: [], foodAndBeverages: [] }
+ * @param {string[]} categoryKeys - Array of category keys
+ * @returns {Object} - Object keyed by category names with array values
+ */
+export const buildServiceCategoriesPayload = (categoryKeys) => {
+  if (!categoryKeys || !Array.isArray(categoryKeys)) return {};
+  const payload = {};
+  categoryKeys.forEach((key) => {
+    if (VENDOR_CATEGORY_KEYS.includes(key)) {
+      payload[key] = [];
     }
   });
-  return allCategories;
+  return payload;
 };
 
 /**

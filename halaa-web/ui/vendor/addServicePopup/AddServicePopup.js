@@ -107,7 +107,11 @@ const AddServicePopup = ({ onClose, onSuccess, editingService = null }) => {
   };
 
   const getTagsDisplayText = () =>
-    selectedTags.length === 0 ? "" : selectedTags.map((tag) => tag.label).join("، ");
+    selectedTags.length === 0
+      ? ""
+      : selectedTags
+          .map((tag) => tag.label || t(tag.labelKey, tag.labelAr || tag.value))
+          .join("، ");
 
   const handleAddIncluded = () => {
     const value = includedInput.trim();

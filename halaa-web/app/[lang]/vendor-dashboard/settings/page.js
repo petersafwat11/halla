@@ -210,7 +210,9 @@ const VendorSettings = () => {
                 email: vendorData?.email || "",
                 phoneNumber:
                   vendorData?.mobile || vendorData?.phoneNumber || "",
-                avatar: getImageUrl(vendorData?.roleData?.businessLogo),
+                avatar: getImageUrl(
+                  vendorData?.roleData?.businessLogo || vendorData?.avatar
+                ),
               }}
               onSave={savePersonalInfo}
               onPhoneVerified={refetchProfile}
@@ -222,6 +224,10 @@ const VendorSettings = () => {
                 data={{
                   serviceDescription:
                     vendorData?.roleData?.serviceDescription || "",
+                  taglineAr: vendorData?.roleData?.taglineAr || "",
+                  taglineEn: vendorData?.roleData?.taglineEn || "",
+                  aboutAr: vendorData?.roleData?.aboutAr || "",
+                  aboutEn: vendorData?.roleData?.aboutEn || "",
                   nationalId: vendorData?.roleData?.nationalId || "",
                   nationalIdImage: getImageUrl(
                     vendorData?.roleData?.nationalIdImage
@@ -261,6 +267,7 @@ const VendorSettings = () => {
                 facebook: vendorData?.roleData?.socialLinks?.facebook || "",
                 twitter: vendorData?.roleData?.socialLinks?.twitter || "",
                 tiktok: vendorData?.roleData?.socialLinks?.tiktok || "",
+                whatsapp: vendorData?.roleData?.socialLinks?.whatsapp || "",
               }}
               onSave={saveVendorSection}
             />

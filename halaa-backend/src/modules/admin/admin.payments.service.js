@@ -69,7 +69,7 @@ async function getPayments({ page = 1, limit = 10, status, search, from, to } = 
       .lean(),
     Payment.countDocuments(match),
     Payment.aggregate([
-      { $match: baseMatch },
+      { $match: match },
       { $group: { _id: '$status', count: { $sum: 1 }, revenue: { $sum: '$amount' } } },
     ]),
   ]);

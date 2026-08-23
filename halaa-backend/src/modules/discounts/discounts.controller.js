@@ -17,7 +17,13 @@ class DiscountsController {
   getAll = catchAsync(async (req, res) => {
     const { page, limit, search, isActive } = req.query;
     const result = await discountsService.getAll({ page, limit, search, isActive });
-    sendPaginated(res, result.discounts, result.pagination);
+    res.status(200).json({
+      success: true,
+      status: 'success',
+      data: result.discounts,
+      pagination: result.pagination,
+      stats: result.stats,
+    });
   });
 
   getById = catchAsync(async (req, res) => {

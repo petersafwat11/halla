@@ -403,16 +403,30 @@ class UsersService {
 
     if (arrayFields.has(field)) {
       const current = Array.isArray(vd[field]) ? vd[field] : [];
-      if (!current.includes(key)) {
+      const matchIndex = current.findIndex((item) => {
+        if (!item || typeof item !== "string") return false;
+        if (item === key) return true;
+        if (item.endsWith(key) || item.includes(key)) return true;
+        try {
+          const u = new URL(item);
+          const path = u.pathname.startsWith("/") ? u.pathname.slice(1) : u.pathname;
+          return path === key || decodeURIComponent(path) === key;
+        } catch {
+          return false;
+        }
+      });
+      if (matchIndex === -1) {
         throw new NotFoundError(`Image (${field}/${key})`);
       }
+      const matchedItem = current[matchIndex];
+      const updated = current.filter((_, idx) => idx !== matchIndex);
       // `user.set(path, value)` is the mongoose-idiomatic way to write a
       // nested path — it marks the path dirty and routes through the schema
       // setter so the change is persisted (direct property assignment on a
       // mongoose subdocument was failing to save the new value).
-      user.set(path, current.filter((k) => k !== key));
+      user.set(path, updated);
       await user.save({ validateBeforeSave: false });
-      await safeDeleteOldKey(key);
+      await safeDeleteOldKey(matchedItem);
       return { user: await user.toPublicJSON() };
     }
 

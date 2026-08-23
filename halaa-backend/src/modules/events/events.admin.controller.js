@@ -23,7 +23,13 @@ exports.getAllEvents = catchAsync(async (req, res) => {
   const options = { page: parseInt(page) || 1, limit: parseInt(limit) || 10 };
 
   const result = await eventsService.getAllEvents(filters, options);
-  sendPaginated(res, result.data, result.pagination);
+  res.status(200).json({
+    success: true,
+    status: "success",
+    data: result.data,
+    statusCounts: result.statusCounts,
+    pagination: result.pagination,
+  });
 });
 
 /**

@@ -22,6 +22,10 @@ const ServiceDetailsSection = ({ data, onSave, onRefetch }) => {
 
   const displayData = {
     serviceDescription: data?.serviceDescription || "",
+    taglineAr: data?.taglineAr || "",
+    taglineEn: data?.taglineEn || "",
+    aboutAr: data?.aboutAr || "",
+    aboutEn: data?.aboutEn || "",
     nationalId: data?.nationalId || "",
     nationalIdImage: data?.nationalIdImage || null,
     commercialRecordImage: data?.commercialRecordImage || null,
@@ -58,7 +62,7 @@ const ServiceDetailsSection = ({ data, onSave, onRefetch }) => {
       >
         <div className={styles.docRow}>
           {renderDoc(
-            t("serviceDetails.otherLicenses"),
+            t("serviceDetails.nationalIdImage", t("serviceDetails.otherLicenses", "صورة الهوية الوطنية / الإقامة (اختياري)")),
             displayData.nationalIdImage
           )}
           {renderDoc(
@@ -74,24 +78,44 @@ const ServiceDetailsSection = ({ data, onSave, onRefetch }) => {
           />
         </FieldGrid>
 
-        <ReadField
-          block
-          label={t("serviceDetails.serviceDescription")}
-          value={displayData.serviceDescription}
-          placeholder={t("serviceDetails.serviceDescriptionPlaceholder", "-")}
-        />
+        {(displayData.taglineAr || displayData.taglineEn) && (
+          <FieldGrid>
+            {displayData.taglineAr && (
+              <ReadField
+                label={t("serviceDetails.taglineAr", "النبذة القصيرة بالعربية")}
+                value={displayData.taglineAr}
+              />
+            )}
+            {displayData.taglineEn && (
+              <ReadField
+                label={t("serviceDetails.taglineEn", "Short tagline in English")}
+                value={displayData.taglineEn}
+              />
+            )}
+          </FieldGrid>
+        )}
+
+        {(displayData.aboutAr || displayData.aboutEn || displayData.serviceDescription) && (
+          <ReadField
+            block
+            label={t("serviceDetails.aboutAr", t("serviceDetails.serviceDescription", "النبذة التعريفية"))}
+            value={displayData.aboutAr || displayData.serviceDescription || displayData.aboutEn}
+            placeholder={t("serviceDetails.serviceDescriptionPlaceholder", "-")}
+          />
+        )}
 
         <div className={styles.field}>
           <span className={styles.label}>{t("serviceDetails.activities")}</span>
           {activities.length > 0 ? (
             <div className={styles.tags}>
-              {activities.map((activity, index) => (
-                <span key={index} className={styles.tag}>
-                  {typeof activity === "string"
-                    ? activity
-                    : activity?.name || activity}
-                </span>
-              ))}
+              {activities.map((activity, index) => {
+                const key = typeof activity === "string" ? activity : activity?.name || activity;
+                return (
+                  <span key={index} className={styles.tag}>
+                    {t(`services.serviceTypes.${key}`, key)}
+                  </span>
+                );
+              })}
             </div>
           ) : (
             <EmptyState>{t("serviceDetails.noActivities", "-")}</EmptyState>

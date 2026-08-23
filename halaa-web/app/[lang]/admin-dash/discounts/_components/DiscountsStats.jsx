@@ -16,15 +16,16 @@ export default function DiscountsStats() {
   const { data } = useDiscounts(filters);
 
   const statsCards = useMemo(() => {
-    const discounts = data?.data || [];
-    const total = data?.pagination?.total ?? 0;
     if (!data) return [];
+    const stats = data?.stats || data?.data?.stats;
+    const discounts = Array.isArray(data?.data) ? data.data : [];
+    const total = stats?.total ?? data?.pagination?.total ?? 0;
     const now = new Date();
-    const active = discounts.filter((d) => d.isActive).length;
-    const expired = discounts.filter(
+    const active = stats?.active !== undefined ? stats.active : discounts.filter((d) => d.isActive).length;
+    const expired = stats?.expired !== undefined ? stats.expired : discounts.filter(
       (d) => d.validUntil && new Date(d.validUntil) < now
     ).length;
-    const totalUsed = discounts.reduce((sum, d) => sum + (d.usedCount || 0), 0);
+    const totalUsed = stats?.totalUsed !== undefined ? stats.totalUsed : discounts.reduce((sum, d) => sum + (d.usedCount || 0), 0);
 
     return [
       {

@@ -21,14 +21,16 @@ const DocumentUploadsRow = ({
   return (
     <div className={styles.editFormRow}>
       <div className={styles.editFormField}>
-        <label className={styles.editFormLabel}>{t("serviceDetails.otherLicenses")}</label>
+        <label className={styles.editFormLabel}>
+          {t("serviceDetails.nationalIdImage", t("serviceDetails.otherLicenses", "صورة الهوية الوطنية / الإقامة (اختياري)"))}
+        </label>
         <UploadFileStandalone
           value={nationalIdImages}
           onChange={setNationalIdImages}
           multiple={false}
           acceptImages={true}
           existingImages={existingNationalIdImages}
-          placeholder={t("serviceDetails.uploadLicense", "Upload license image")}
+          placeholder={t("serviceDetails.uploadNationalId", t("serviceDetails.uploadLicense", "Upload National ID / Iqama image"))}
           onDeleteExisting={onDeleteNationalId}
           isDeletingExisting={isDeletingNationalId}
         />

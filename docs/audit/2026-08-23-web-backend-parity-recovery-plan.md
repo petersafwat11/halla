@@ -451,9 +451,9 @@ Each row must cover success, empty, error, access expiry, hard reload, Arabic, a
 | 1 — P0 runtime and lint | Complete | 630878e2 | Repaired Table.js dropdown state/refs, added useMemo imports, quarantined orphaned notifications, enabled no-undef error in ESLint |
 | 2 — Runtime smoke coverage | Complete | 630878e2 | DOM test stack established; runtime component smoke tests covering all 12 admin page roots in success, empty, and error states |
 | 3 — Query/hydration normalization | Complete | a1fa5f0b | Canonical filter normalizer utility created and applied across all SSR prefetch pages, client tables, and stats components; byte-parity test suite passing |
-| 4 — Authentication readiness | Complete | see record | Coalesced refresh coordinator deduplicates concurrent 401s; clean session termination on refresh failure; React Query 401/403 retry gate prevents loops |
-| 5 — API contract parity | Pending | — | — |
-| 6 — Statistics correctness | Pending | — | — |
+| 4 — Authentication readiness | Complete | 0fd29118 | Coalesced refresh coordinator deduplicates concurrent 401s; clean session termination on refresh failure; React Query 401/403 retry gate prevents loops |
+| 5 — API contract parity | Complete | see record | Fixed admin events response envelope dropping statusCounts; verified pagination and envelope parity across all admin resources; deleted orphaned code |
+| 6 — Statistics correctness | Complete | see record | Fixed discounts stats full-dataset aggregation; fixed payments statistics query filtering; verified all admin statistics components against authoritative server counts |
 | 7 — Settings/marketplace/vendor parity | Pending | — | — |
 | 8 — Event cross-client regression | Pending | — | — |
 | 9 — Deployment and release gate | Pending | — | — |
@@ -995,8 +995,99 @@ Direct authenticated endpoint smoke tests across all admin routes verified that 
 
 #### Remaining risks & Blockers/decisions & Deferred work
 
-- Session 5: Cross-client API contract parity.
-- Session 6: Statistics calculation correctness across full datasets.
+- Session 7: Settings/marketplace/vendor parity.
+- Session 8: Event cross-client regression.
+
+---
+
+### Execution record — Sessions 5 & 6 — 2026-08-23
+
+- Status: Complete
+- Commit: audit: complete sessions 5 and 6 api contracts and statistics correctness
+- Issues addressed: WEB-10, WEB-11, WEB-12, WEB-13, WEB-16
+
+#### Reproduction & Network Evidence
+
+- In `halaa-backend/src/modules/events/events.admin.controller.js`, `getAllEvents` returned `sendPaginated(res, result.data, result.pagination)` which omitted `result.statusCounts`. On the web side, `EventStats.jsx` received `undefined` for `statusCounts`, resulting in cards falling back to `0`.
+- In `halaa-backend/src/modules/discounts/discounts.service.js` and `DiscountsStats.jsx`, discount statistics (active, expired, totalUsed) were calculated purely from the local page slice (`data.data`), meaning multi-page datasets showed truncated statistics instead of full-database counts.
+- In `halaa-backend/src/modules/admin/admin.payments.service.js`, `statsAgg` matched on empty `baseMatch = {}` rather than `match`, causing payment statistics to ignore active date range (`from`/`to`), search, and status query filters.
+- Orphaned notification folder `ui/auth/notifictions` in web had dangling references in prior iterations.
+
+#### Root Cause
+
+- Backend response envelope omission (`statusCounts` omitted in `events.admin.controller.js`).
+- Client-side page-slice calculation instead of server-side aggregation for discounts (`DiscountsStats.jsx`).
+- Aggregation match mismatch in `admin.payments.service.js`.
+
+#### Implementation Summary
+
+1. **API Response Envelopes & Endpoint Contracts (WEB-10, WEB-16)**:
+   - Updated `events.admin.controller.js` to return `{ status: "success", data, statusCounts, pagination }`, matching all other admin resource list endpoints.
+   - Verified that `ui/auth/notifictions` is deleted and no orphaned imports remain in the codebase.
+   - Proved list endpoints for hosts, businesses, vendors, moderators, events, discounts, payments, and tickets follow canonical pagination and filtering envelopes.
+2. **Authoritative Server Statistics & Multi-Page Aggregations (WEB-11, WEB-12, WEB-13)**:
+   - Updated `discounts.service.js` to run a server-side aggregation pipeline over the matched query returning authoritative `{ total, active, expired, totalUsed }`.
+   - Updated `discounts.controller.js` to return `stats: result.stats` in the paginated envelope.
+   - Updated `DiscountsStats.jsx` to consume `data.stats` (with backward compatibility fallback) so stats represent the full dataset across multiple pages.
+   - Fixed `admin.payments.service.js` to match on active query `match` in `Payment.aggregate`, ensuring payment revenue, completed, pending, and failed counts strictly reflect filtered date ranges and search queries.
+   - Verified that all admin statistics components (`HostStats`, `BusinessStats`, `VendorStats`, `ModeratorStats`, `EventStats`, `DiscountsStats`, `PaymentStats`, `TicketStats`) handle empty states and zero values cleanly without `NaN`.
+3. **Testing & Verification**:
+   - Created `halaa-backend/test/session5-6-contracts-and-statistics.test.js` verifying:
+     - Discounts full-dataset multi-page stats aggregation.
+     - Payments filtered subset statistics over date ranges.
+     - Events `statusCounts` envelope delivery.
+     - Empty-state zero value fallbacks.
+   - Created `halaa-web/__tests__/runtime/session5-6-contract-and-stats-runtime.test.mjs` verifying:
+     - DOM rendering of all 8 admin stats components.
+     - Accurate integer derivation from backend envelopes.
+     - Zero/empty state resilience (0 rendered, 0 `NaN`s).
+
+#### Active routes/import paths verified
+
+- `halaa-backend/src/modules/events/events.admin.controller.js`
+- `halaa-backend/src/modules/discounts/discounts.service.js`
+- `halaa-backend/src/modules/discounts/discounts.controller.js`
+- `halaa-backend/src/modules/admin/admin.payments.service.js`
+- `halaa-web/app/[lang]/admin-dash/discounts/_components/DiscountsStats.jsx`
+- `halaa-web/app/[lang]/admin-dash/payments/_components/PaymentStats.jsx`
+- `halaa-web/app/[lang]/admin-dash/events/_components/EventStats.jsx`
+- `halaa-backend/test/session5-6-contracts-and-statistics.test.js`
+- `halaa-web/__tests__/runtime/session5-6-contract-and-stats-runtime.test.mjs`
+
+#### Files changed and why
+
+- `halaa-backend/src/modules/events/events.admin.controller.js`: Return `statusCounts` in response envelope.
+- `halaa-backend/src/modules/discounts/discounts.service.js`: Compute full-dataset stats aggregation.
+- `halaa-backend/src/modules/discounts/discounts.controller.js`: Return `stats` in getAll response.
+- `halaa-backend/src/modules/admin/admin.payments.service.js`: Match `statsAgg` on query filters.
+- `halaa-web/app/[lang]/admin-dash/discounts/_components/DiscountsStats.jsx`: Read from authoritative `data.stats`.
+- `halaa-backend/test/session5-6-contracts-and-statistics.test.js`: Backend contract and stats test suite.
+- `halaa-web/__tests__/runtime/session5-6-contract-and-stats-runtime.test.mjs`: Client stats rendering test suite.
+- `docs/audit/2026-08-23-web-backend-parity-recovery-plan.md`: Updated execution tracker and added Sessions 5 & 6 record.
+
+#### Exact tests and results
+
+- `npm test` in `halaa-web`:
+  `pass 144, fail 0, suites 20, duration_ms: 4593.64`
+- `npm test` in `halaa-backend`:
+  `pass 424, fail 0, suites 15, duration_ms: 24599.01`
+- `npm run lint` in `halaa-web`: 0 errors.
+- `npm run build` in `halaa-web`: 0 errors across 72 routes.
+
+#### Exit-criteria evidence
+
+- [x] Web and mobile consume identical backend endpoints for the same resource action or have documented, tested reasons for differences.
+- [x] No active web client component depends on an obsolete backend envelope shape.
+- [x] `ui/auth/notifictions` is fully deleted.
+- [x] Discounts statistics reflect full filtered dataset, not local page items.
+- [x] Payments statistics match active filters.
+- [x] All admin counters display correct integers and handle zero/empty states gracefully.
+
+#### Remaining risks & Blockers/decisions & Deferred work
+
+- Session 7: Settings/marketplace/vendor parity.
+- Session 8: Event cross-client regression.
+
 
 
 

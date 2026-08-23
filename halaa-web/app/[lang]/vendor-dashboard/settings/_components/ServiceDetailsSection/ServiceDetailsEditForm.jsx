@@ -12,6 +12,10 @@ import { validateForm, serviceDetailsSchema } from "@/utils/schemas/vendorSettin
 import { apiRequest } from "@/services/http";
 import { API_PATHS } from "@halaa/shared/api/paths";
 import { normalizeDigitsOnly } from "@halaa/shared/utils/locale";
+import {
+  VENDOR_CATEGORY_KEYS,
+  buildServiceCategoriesPayload,
+} from "@/utils/vendorHelpers";
 
 const ServiceDetailsEditForm = ({
   data,
@@ -31,6 +35,9 @@ const ServiceDetailsEditForm = ({
     aboutEn: data?.aboutEn || "",
     nationalId: normalizeDigitsOnly(data?.nationalId || ""),
   });
+  const [selectedCategories, setSelectedCategories] = useState(
+    data?.serviceCategories || []
+  );
   const [errors, setErrors] = useState({});
   const [nationalIdImages, setNationalIdImages] = useState([]);
   const [commercialRecordImages, setCommercialRecordImages] = useState([]);
@@ -49,6 +56,7 @@ const ServiceDetailsEditForm = ({
       aboutEn: data?.aboutEn || "",
       nationalId: normalizeDigitsOnly(data?.nationalId || ""),
     });
+    setSelectedCategories(data?.serviceCategories || []);
     setSelectedRegion(data?.serviceLocation?.regionId || "");
     setSelectedCity(data?.serviceLocation?.cityId || "");
     setSelectedDistricts(data?.serviceLocation?.districtIds || []);
@@ -123,13 +131,17 @@ const ServiceDetailsEditForm = ({
     try {
       if (onSave) {
         const payload = {
-          serviceDescription: formData.description,
+          serviceDescription:
+            formData.aboutAr || formData.taglineAr || formData.description || "",
           taglineAr: formData.taglineAr,
           taglineEn: formData.taglineEn,
           aboutAr: formData.aboutAr,
           aboutEn: formData.aboutEn,
           nationalId: formData.nationalId,
         };
+        if (Array.isArray(selectedCategories) && selectedCategories.length > 0) {
+          payload.serviceCategories = buildServiceCategoriesPayload(selectedCategories);
+        }
         if (nationalIdImages.length > 0) {
           payload.nationalIdImage = nationalIdImages;
         }
@@ -255,18 +267,33 @@ const ServiceDetailsEditForm = ({
           </div>
         ))}
 
-        <div className={styles.editFormField}>
-          <label className={styles.editFormLabel}>{t("serviceDetails.serviceDescription")}</label>
-          <textarea
-            className={styles.editFormTextarea}
-            value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            placeholder={t("serviceDetails.serviceDescriptionPlaceholder")}
-            rows={4}
-          />
-          {errors.serviceDescription && (
-            <span className={styles.error}>{errors.serviceDescription}</span>
-          )}
+        <div className={styles.editFormSection}>
+          <label className={styles.editFormSectionLabel}>
+            {t("serviceDetails.categories", "الأنشطة / التصنيفات")}
+          </label>
+          <div className={styles.categoryChips}>
+            {VENDOR_CATEGORY_KEYS.map((key) => {
+              const selected = selectedCategories.includes(key);
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  className={`${styles.categoryChip} ${
+                    selected ? styles.categoryChipSelected : ""
+                  }`}
+                  onClick={() => {
+                    setSelectedCategories((prev) =>
+                      prev.includes(key)
+                        ? prev.filter((k) => k !== key)
+                        : [...prev, key]
+                    );
+                  }}
+                >
+                  {t(`services.serviceTypes.${key}`, key)}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         <div className={styles.editFormSection}>
