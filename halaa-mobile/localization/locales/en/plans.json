@@ -248,6 +248,7 @@
     "card": {
       "name": "Cardholder name",
       "number": "Card number",
+      "expiry": "Expiry date",
       "month": "MM",
       "year": "YYYY",
       "cvc": "CVC",
