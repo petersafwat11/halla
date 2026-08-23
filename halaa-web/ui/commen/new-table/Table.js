@@ -59,6 +59,15 @@ const Table = ({
     noData: emptyMessage || t("noData", "لا توجد بيانات"),
   };
   const [selectedRows, setSelectedRows] = useState([]);
+  const [dropdownPosition, setDropdownPosition] = useState({});
+
+  const dropdownRefs = useRef({});
+  const actionsTriggerRef = useRef(null);
+  const filterTriggerRef = useRef(null);
+  const bulkTriggerRef = useRef(null);
+  const actionsRef = useRef(null);
+  const filterRef = useRef(null);
+  const bulkActionsRef = useRef(null);
 
   // Lift selection to parent using a ref to avoid unnecessary re-triggers
   const onSelectionChangeRef = useRef(onSelectionChange);
@@ -151,6 +160,52 @@ const Table = ({
       window.removeEventListener("scroll", recalculatePositions, true);
       window.removeEventListener("resize", recalculatePositions);
     };
+  }, [actionsDropdownOpen, filterDropdownOpen, bulkActionsDropdownOpen]);
+
+  // Close dropdowns on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Close filter dropdown if clicked outside
+      if (
+        filterDropdownOpen &&
+        filterRef.current &&
+        !filterRef.current.contains(event.target) &&
+        !dropdownRefs.current["filter"]?.contains(event.target)
+      ) {
+        setFilterDropdownOpen(false);
+        filterTriggerRef.current = null;
+      }
+
+      // Close bulk actions dropdown if clicked outside
+      if (
+        bulkActionsDropdownOpen &&
+        bulkActionsRef.current &&
+        !bulkActionsRef.current.contains(event.target) &&
+        !dropdownRefs.current["bulkActions"]?.contains(event.target)
+      ) {
+        setBulkActionsDropdownOpen(false);
+        bulkTriggerRef.current = null;
+      }
+
+      // Close actions dropdown if clicked outside
+      if (actionsDropdownOpen !== null) {
+        const key = `actions-${actionsDropdownOpen}`;
+        const currentActionsEl = dropdownRefs.current[key];
+        const triggerEl = actionsTriggerRef.current;
+        if (
+          currentActionsEl &&
+          !currentActionsEl.contains(event.target) &&
+          triggerEl &&
+          !triggerEl.contains(event.target)
+        ) {
+          setActionsDropdownOpen(null);
+          actionsTriggerRef.current = null;
+        }
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [actionsDropdownOpen, filterDropdownOpen, bulkActionsDropdownOpen]);
 
   // Close dropdowns on Escape key press

@@ -98,6 +98,7 @@ const lockInRules = {
       ],
     },
   ],
+  'no-undef': 'error',
   'no-restricted-syntax': [
     'error',
     {

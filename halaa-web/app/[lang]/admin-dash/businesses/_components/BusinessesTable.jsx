@@ -4,7 +4,7 @@ import { useAdminBusinesses, useAdminBusinessMutation } from "@/hooks/admin";
 import { usePageAccess } from "@/hooks/usePageAccess";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { FiEye, FiCheckCircle, FiSlash, FiTrash2, FiCreditCard, FiEdit2 } from "react-icons/fi";
 import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";

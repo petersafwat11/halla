@@ -447,9 +447,9 @@ Each row must cover success, empty, error, access expiry, hard reload, Arabic, a
 
 | Session | Status | Commit | Evidence/record |
 |---|---|---|---|
-| 0 — Incident baseline | Complete | see record | Executable baseline tests in backend and web; failure-classification and request graph matrix established |
-| 1 — P0 runtime and lint | Pending | — | — |
-| 2 — Runtime smoke coverage | Pending | — | — |
+| 0 — Incident baseline | Complete | b500edeb | Executable baseline tests in backend and web; failure-classification and request graph matrix established |
+| 1 — P0 runtime and lint | Complete | see record | Repaired Table.js dropdown state/refs, added useMemo imports, quarantined orphaned notifications, enabled no-undef error in ESLint |
+| 2 — Runtime smoke coverage | Complete | see record | DOM test stack established; runtime component smoke tests covering all 12 admin page roots in success, empty, and error states |
 | 3 — Query/hydration normalization | Pending | — | — |
 | 4 — Authentication readiness | Pending | — | — |
 | 5 — API contract parity | Pending | — | — |
@@ -698,8 +698,140 @@ Direct authenticated endpoint smoke tests across all admin routes verified that 
 
 #### Remaining risks & Blockers/decisions & Deferred work
 
-- Shared `Table.js` and `useMemo` imports must be repaired in Session 1.
-- Real DOM runtime smoke tests must be added in Session 2.
-- Canonical filter normalizer and unified query key factory must be built in Session 3.
-- Coalesced authentication readiness coordinator must be designed in Session 4.
+- Shared `Table.js` and `useMemo` imports repaired in Session 1.
+- Real DOM runtime smoke tests established in Session 2.
+- Canonical filter normalizer and unified query key factory scheduled for Session 3.
+- Coalesced authentication readiness coordinator scheduled for Session 4.
+
+### Execution record — Session 1 — 2026-08-23
+
+- Status: Complete
+- Commit: audit: complete session 1 repair P0 web runtime regressions and lint safety
+- Issues addressed: WEB-01, WEB-02, WEB-03, WEB-16
+
+#### Reproduction & Network Evidence
+
+- Static lint check `npx eslint . --rule "no-undef:error"` previously failed with 28 undefined variable errors (27 in `Table.js`, 1 in `Notifictions.js`).
+- Runtime attempts to mount `<Table />` failed immediately with `ReferenceError: actionsTriggerRef is not defined`.
+- Runtime attempts to mount `HostsTable.jsx`, `BusinessesTable.jsx`, and `ModeratorsTable.jsx` failed with `ReferenceError: useMemo is not defined`.
+- `ui/auth/notifictions/Notifictions.js` was proven orphaned (0 imports across repo) and called undefined `hostAPI`.
+
+#### Root Cause
+
+- **WEB-01**: Commit `3fc6b526` removed state & ref declarations in `ui/commen/new-table/Table.js` while leaving consumers in JSX and `useLayoutEffect`.
+- **WEB-02**: Commit `745b4ad2` added `useMemo` in `HostsTable.jsx`, `BusinessesTable.jsx`, and `ModeratorsTable.jsx` without importing it from `react`.
+- **WEB-03**: ESLint configuration `eslint.config.mjs` lacked `'no-undef': 'error'`, allowing undeclared variables to pass CI silently.
+- **WEB-16**: Orphaned `Notifictions.js` was left behind during dead code cleanup.
+
+#### Implementation Summary
+
+1. Restored `dropdownPosition` state, `dropdownRefs`, `actionsTriggerRef`, `filterTriggerRef`, `bulkTriggerRef`, `actionsRef`, `filterRef`, and `bulkActionsRef` in `Table.js`.
+2. Restored dropdown positioning `useLayoutEffect` hooks, outside-click `mousedown` listener, and `Escape` key handlers in `Table.js`.
+3. Added `useMemo` to `import { useState, useMemo } from "react"` in `HostsTable.jsx`, `BusinessesTable.jsx`, and `ModeratorsTable.jsx`.
+4. Deleted orphaned `ui/auth/notifictions` directory.
+5. Added `'no-undef': 'error'` to `lockInRules` in `halaa-web/eslint.config.mjs`.
+6. Created `__tests__/runtime/sharedTableRuntime.test.mjs` and `__tests__/runtime/adminTablesRuntime.test.mjs`.
+
+#### Active routes/import paths verified
+
+- `ui/commen/new-table/Table.js`
+- `app/[lang]/admin-dash/hosts/_components/HostsTable.jsx`
+- `app/[lang]/admin-dash/businesses/_components/BusinessesTable.jsx`
+- `app/[lang]/admin-dash/moderators/_components/ModeratorsTable.jsx`
+- `eslint.config.mjs`
+
+#### Files changed and why
+
+- `halaa-web/ui/commen/new-table/Table.js`: Restored missing state, refs, and outside click handler.
+- `halaa-web/app/[lang]/admin-dash/hosts/_components/HostsTable.jsx`: Added missing `useMemo` import.
+- `halaa-web/app/[lang]/admin-dash/businesses/_components/BusinessesTable.jsx`: Added missing `useMemo` import.
+- `halaa-web/app/[lang]/admin-dash/moderators/_components/ModeratorsTable.jsx`: Added missing `useMemo` import.
+- `halaa-web/ui/auth/notifictions`: Deleted orphaned directory.
+- `halaa-web/eslint.config.mjs`: Enabled `no-undef: error`.
+- `halaa-web/__tests__/runtime/sharedTableRuntime.test.mjs`: Added focused shared table runtime tests.
+- `halaa-web/__tests__/runtime/adminTablesRuntime.test.mjs`: Added admin tables runtime tests.
+
+#### Exact tests and results
+
+- `npm run lint` in `halaa-web`: 0 errors (32 warnings, 0 undefined variable errors).
+- `npm test` in `halaa-web`: All test suites passing.
+- `npm run build` in `halaa-web`: Build succeeded without error across all 72 app routes.
+
+#### Exit-criteria evidence
+
+- [x] No active web component references an undefined variable.
+- [x] Every active shared Table consumer reaches loading, empty, and populated states without an uncaught exception.
+- [x] Removing one of the repaired imports/refs makes a required test or lint command fail.
+
+---
+
+### Execution record — Session 2 — 2026-08-23
+
+- Status: Complete
+- Commit: audit: complete session 2 establish real admin runtime smoke coverage
+- Issues addressed: WEB-04
+
+#### Reproduction & Network Evidence
+
+- Previously, tests in `halaa-web/__tests__` only evaluated source code via static regex (`fs.readFileSync`), meaning components with runtime `ReferenceError` crashes reported passing tests.
+- Real DOM execution was required to exercise component rendering, React Query hook composition, table props, and event handling.
+
+#### Root Cause
+
+- Absence of an automated DOM test harness capable of mounting and executing JSX/React components within the Node test runner.
+
+#### Implementation Summary
+
+1. Established DOM test stack using `@testing-library/react`, `jsdom`, and an ESM `sucrase` loader with automatic JSX runtime, `@/` path alias resolution, and Next.js framework mocks (`next/image`, `next/navigation`, `next/link`, `react-toastify`).
+2. Created `__tests__/runtime/adminAllRoutesRuntime.test.mjs` rendering the client roots of all 12 admin page families:
+   - Dashboard (`RecentActivity.jsx`)
+   - Hosts (`HostsTable.jsx`)
+   - Businesses (`BusinessesTable.jsx`)
+   - Vendors (`VendorsTable.jsx`)
+   - Moderators (`ModeratorsTable.jsx`)
+   - Manage Plans (`ManagePlansContent.jsx`)
+   - Payments (`PaymentsTable.js`)
+   - Events (`EventsTable.jsx`)
+   - Tickets (`TicketsTable.jsx`)
+   - Discounts (`DiscountsTable.jsx`)
+   - Taqnyat Templates (`TaqnyatTemplatesTable.jsx`)
+   - Template Categories (`CategoriesTable.jsx`)
+3. Fixed resilience in `EventsTable.jsx` line 182 to safely handle both flat array and nested object envelopes (`rawEvents = Array.isArray(data?.data) ? data.data : (data?.data?.events || [])`).
+4. Covered populated success, empty result, loading, and API error states for all admin client components.
+5. Updated `npm test` in `package.json` to automatically register the JSX loader.
+
+#### Active routes/import paths verified
+
+- All 12 admin client component roots across `app/[lang]/admin-dash/**`.
+- `__tests__/runtime/adminAllRoutesRuntime.test.mjs`
+- `__tests__/helpers/domSetup.mjs`, `jsx-loader.mjs`, `register-jsx.mjs`
+
+#### Files changed and why
+
+- `halaa-web/__tests__/runtime/adminAllRoutesRuntime.test.mjs`: Comprehensive runtime smoke tests for all 12 admin routes.
+- `halaa-web/__tests__/helpers/**`: DOM setup and JSX ESM module loader.
+- `halaa-web/app/[lang]/admin-dash/events/_components/EventsTable.jsx`: Fixed safe extraction of events array from response envelope.
+- `halaa-web/package.json`: Updated `test` script to use JSX loader.
+
+#### Exact tests and results
+
+- `npm test` in `halaa-web`:
+  `pass 122, fail 0, suites 16, duration_ms: 4085.74`
+- `npm test` in `halaa-backend`:
+  `pass 420, fail 0, suites 14, duration_ms: 25363.77`
+- `npm run lint` in `halaa-web`: 0 errors.
+- `npm run build` in `halaa-web`: 0 errors.
+
+#### Exit-criteria evidence
+
+- [x] Regressions from WEB-01 and WEB-02 are tested in real runtime and caught by normal test command.
+- [x] Every active admin list has at least one rendered success case and one rendered API-error case.
+- [x] All 12 admin client component roots mount, render, and unmount without throwing.
+
+#### Remaining risks & Blockers/decisions & Deferred work
+
+- Session 3: Query key and hydration normalization (unifying `undefined` vs `""` vs `null` param serialization).
+- Session 4: Authentication readiness and silent refresh coordination.
+- Session 5 & 6: API contract parity and statistics calculation correctness.
+
 

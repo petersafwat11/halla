@@ -179,7 +179,8 @@ export default function EventsTable() {
     return value;
   };
 
-  const tableData = (data?.data || []).map((event) => ({
+  const rawEvents = Array.isArray(data?.data) ? data.data : (data?.data?.events || []);
+  const tableData = rawEvents.map((event) => ({
     id: event.id || event._id,
     title: event.title || "-",
     host: event.host?.name || event.host?.username || event.hostName || "-",
