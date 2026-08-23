@@ -139,6 +139,23 @@ const useAuthStore = create(
       },
 
       /**
+       * Synchronously clear local auth state (used during session termination / reset)
+       */
+      clearAuthState: () => {
+        set({
+          user: null,
+          subscription: null,
+          status: "unauthenticated",
+          error: null,
+          otpSent: false,
+          otpPhone: null,
+          otpType: null,
+          resetTokenSent: false,
+          resetEmail: null,
+        });
+      },
+
+      /**
        * Logout - revoke server-side refresh token and clear local state.
        *
        * Calls /auth/logout (best-effort, non-throwing) so the backend
@@ -164,17 +181,7 @@ const useAuthStore = create(
           }
         }
 
-        set({
-          user: null,
-          subscription: null,
-          status: "unauthenticated",
-          error: null,
-          otpSent: false,
-          otpPhone: null,
-          otpType: null,
-          resetTokenSent: false,
-          resetEmail: null,
-        });
+        get().clearAuthState();
 
         if (typeof window !== "undefined") {
           const { cookieUtils } = await import("@/utils/cookieUtils");

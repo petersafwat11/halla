@@ -46,7 +46,7 @@ const axiosInstance = axios.create({
 // firing two parallel rotations against the same token causes the backend
 // to detect replay and revoke the entire session.
 let _refreshPromise = null;
-const _refreshOnce = async () => {
+export const _refreshOnce = async () => {
   if (_refreshPromise) return _refreshPromise;
   _refreshPromise = (async () => {
     try {
@@ -66,6 +66,56 @@ const _refreshOnce = async () => {
     }
   })();
   return _refreshPromise;
+};
+
+// Session termination coordinator: ensures cleanup runs only once during session death
+let _isTerminating = false;
+
+/**
+ * Cleanly terminate the web user session on expired/revoked refresh.
+ * 1. Clears React Query cache to discard cached data and abort pending queries.
+ * 2. Resets Zustand auth store state.
+ * 3. Clears all JS-readable routing cookies.
+ * 4. Redirects to localized login with returnUrl.
+ */
+export const terminateSession = async () => {
+  if (typeof window === "undefined") return;
+  if (_isTerminating) return;
+  _isTerminating = true;
+
+  try {
+    const { clearQueryCache } = await import("@/providers/ReactQueryProvider");
+    clearQueryCache();
+  } catch (e) {
+    // ignore
+  }
+
+  try {
+    const { default: useAuthStore } = await import("@/stores/authStore");
+    useAuthStore.getState().clearAuthState();
+  } catch (e) {
+    // ignore
+  }
+
+  try {
+    const { cookieUtils } = await import("@/utils/cookieUtils");
+    cookieUtils.clearAuthCookies();
+  } catch (e) {
+    Cookies.remove("token");
+    Cookies.remove("userType");
+    Cookies.remove("profileCompleted");
+    Cookies.remove("mustChangePassword");
+  }
+
+  const pathname = window.location.pathname || "";
+  if (!pathname.includes("/login")) {
+    const segments = pathname.split("/").filter(Boolean);
+    const locale = segments[0] === "en" || segments[0] === "ar" ? segments[0] : "ar";
+    const returnUrl = encodeURIComponent(pathname + (window.location.search || ""));
+    setTimeout(() => {
+      window.location.href = `/${locale}/login?returnUrl=${returnUrl}`;
+    }, 50);
+  }
 };
 
 // Request interceptor for timing + request id.
@@ -160,19 +210,10 @@ axiosInstance.interceptors.response.use(
         return axiosInstance(cfg);
       }
       if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
-        // If there was no session to begin with, this 401 came from a public
-        // page that incidentally fired an authenticated request. Bouncing an
-        // anonymous visitor to /login would be wrong — just reject.
-        const hadSession = Cookies.get('userType');
+        // If there was a session or user routing cookie, cleanly terminate session
+        const hadSession = Cookies.get('userType') || Cookies.get('token');
         if (hadSession) {
-          // The HttpOnly access/refresh cookies are cleared server-side by
-          // /auth/logout; here we only clear the JS-readable routing hints.
-          Cookies.remove('token'); // legacy cookie cleanup
-          Cookies.remove('userType');
-          Cookies.remove('profileCompleted');
-          setTimeout(() => {
-            window.location.href = '/login';
-          }, 100);
+          terminateSession();
         }
       }
     }

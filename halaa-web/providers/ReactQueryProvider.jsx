@@ -18,6 +18,13 @@ export default function ReactQueryProvider({ children }) {
           queries: {
             staleTime: 60 * 1000, // 1 minute
             refetchOnWindowFocus: false,
+            retry: (failureCount, error) => {
+              // Never retry on 401 (Auth) or 403 (Forbidden) — axios interceptor
+              // already handles silent refresh attempt. Retrying here causes storms.
+              const status = error?.parsedError?.status || error?.response?.status || error?.status;
+              if (status === 401 || status === 403) return false;
+              return failureCount < 2;
+            },
           },
         },
       })

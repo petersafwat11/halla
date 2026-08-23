@@ -41,6 +41,7 @@ export const cookieUtils = {
     cookieUtils.deleteCookie("token");
     cookieUtils.deleteCookie("userType");
     cookieUtils.deleteCookie("profileCompleted");
+    cookieUtils.deleteCookie("mustChangePassword");
   },
 
   /**

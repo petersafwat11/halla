@@ -450,8 +450,8 @@ Each row must cover success, empty, error, access expiry, hard reload, Arabic, a
 | 0 — Incident baseline | Complete | b500edeb | Executable baseline tests in backend and web; failure-classification and request graph matrix established |
 | 1 — P0 runtime and lint | Complete | 630878e2 | Repaired Table.js dropdown state/refs, added useMemo imports, quarantined orphaned notifications, enabled no-undef error in ESLint |
 | 2 — Runtime smoke coverage | Complete | 630878e2 | DOM test stack established; runtime component smoke tests covering all 12 admin page roots in success, empty, and error states |
-| 3 — Query/hydration normalization | Complete | see record | Canonical filter normalizer utility created and applied across all SSR prefetch pages, client tables, and stats components; byte-parity test suite passing |
-| 4 — Authentication readiness | Pending | — | — |
+| 3 — Query/hydration normalization | Complete | a1fa5f0b | Canonical filter normalizer utility created and applied across all SSR prefetch pages, client tables, and stats components; byte-parity test suite passing |
+| 4 — Authentication readiness | Complete | see record | Coalesced refresh coordinator deduplicates concurrent 401s; clean session termination on refresh failure; React Query 401/403 retry gate prevents loops |
 | 5 — API contract parity | Pending | — | — |
 | 6 — Statistics correctness | Pending | — | — |
 | 7 — Settings/marketplace/vendor parity | Pending | — | — |
@@ -911,9 +911,93 @@ Direct authenticated endpoint smoke tests across all admin routes verified that 
 
 #### Remaining risks & Blockers/decisions & Deferred work
 
-- Session 4: Web authentication readiness and silent refresh coordination.
 - Session 5: Cross-client API contract parity.
 - Session 6: Statistics calculation correctness across full datasets.
+
+---
+
+### Execution record — Session 4 — 2026-08-23
+
+- Status: Complete
+- Commit: audit: complete session 4 web authentication and first request readiness
+- Issues addressed: WEB-07, WEB-08
+
+#### Reproduction & Network Evidence
+
+- In the baseline state, when access token cookies expired, concurrent protected queries fired simultaneous 401 requests.
+- While `_refreshOnce` in `services/http.js` coalesced the `/auth/refresh` network call, failed refreshes left stale `user` state and `status: "authenticated"` in `useAuthStore` (localStorage), did not purge active React Query caches, and could trigger infinite query retries or un-localized `/login` redirects.
+- In `ReactQueryProvider.jsx`, default query options lacked an explicit auth-error retry gate, meaning queries that received 401 or 403 could trigger redundant background query refetches.
+
+#### Root Cause
+
+- Absence of an explicit session termination coordinator (`terminateSession`) in `http.js` and missing 401/403 retry guards in React Query default options.
+
+#### Implementation Summary
+
+1. **Authentication Lifecycle & Security Guarantees Documented**:
+   - Access token: HttpOnly cookie, short TTL (15m), path `/`.
+   - Refresh token: HttpOnly cookie, 30-day TTL, path `/api/v2/auth/refresh`, rotated on each use with reuse/replay detection.
+   - Server components: Only have access to cookies sent on the page route (`access_token` and `userType`). Server components cannot and must not attempt refresh directly because the refresh cookie is path-restricted.
+   - If the access token is absent/expired on SSR, SSR prefetch gracefully skips (`if (token) await prefetchServerData(...)`), and browser hydration triggers the client refresh coordinator seamlessly.
+2. **Coalesced Browser Refresh Coordinator**:
+   - Maintained single in-flight `_refreshPromise` in `services/http.js` with microtask cleanup.
+   - Ensured exact 1-retry ceiling via `cfg._retry = true` before replay; skipped retry for auth routes (`/auth/login`, `/auth/refresh`, `/auth/logout`) and guest post-event paths to prevent retry loops.
+3. **Session Termination Coordinator (`terminateSession`)**:
+   - Implemented in `services/http.js`:
+     - Clears React Query cache immediately via `clearQueryCache()`, terminating in-flight queries and discarding protected data.
+     - Synchronously resets `useAuthStore` via `clearAuthState()` (`user: null`, `status: "unauthenticated"`).
+     - Clears all JS-readable routing cookies (`userType`, `profileCompleted`, `mustChangePassword`, `token`).
+     - Redirects cleanly to localized login preserving locale and returnUrl (`/${locale}/login?returnUrl=...`).
+4. **React Query Retry Gate**:
+   - Updated `ReactQueryProvider.jsx` default query options with custom `retry` function: immediately rejects 401 and 403 errors (returns `false`), preventing background retry storms on expired sessions.
+5. **Cookie Cleanup Integrity**:
+   - Added `mustChangePassword` to `cookieUtils.clearAuthCookies()` to ensure complete routing cookie cleanup.
+6. **Testing & Verification**:
+   - Created `__tests__/runtime/session4-auth-readiness.test.mjs` verifying:
+     - Coalesced refresh deduplication under 10 concurrent requests.
+     - Single retry guarantee (no infinite loops) and auth route exclusions.
+     - React Query 401/403 rejection without background retries.
+     - Complete session termination and state reset.
+
+#### Active routes/import paths verified
+
+- `services/http.js`
+- `stores/authStore.js`
+- `providers/ReactQueryProvider.jsx`
+- `utils/cookieUtils.js`
+- `middleware.js`
+- `__tests__/runtime/session4-auth-readiness.test.mjs`
+
+#### Files changed and why
+
+- `halaa-web/services/http.js`: Added `terminateSession`, exported `_refreshOnce`, cleaned up 401 handling.
+- `halaa-web/stores/authStore.js`: Added synchronous `clearAuthState` method to avoid circular network calls on termination.
+- `halaa-web/providers/ReactQueryProvider.jsx`: Added 401/403 retry guard in default query options.
+- `halaa-web/utils/cookieUtils.js`: Added `mustChangePassword` to `clearAuthCookies`.
+- `halaa-web/__tests__/runtime/session4-auth-readiness.test.mjs`: Comprehensive Session 4 verification test suite.
+- `docs/audit/2026-08-23-web-backend-parity-recovery-plan.md`: Updated execution tracker and added Session 4 record.
+
+#### Exact tests and results
+
+- `npm test` in `halaa-web`:
+  `pass 140, fail 0, suites 19, duration_ms: 4401.75`
+- `npm test` in `halaa-backend`:
+  `pass 420, fail 0, suites 14, duration_ms: 24934.37`
+- `npm run lint` in `halaa-web`: 0 errors.
+- `npm run build` in `halaa-web`: 0 errors across 72 routes.
+
+#### Exit-criteria evidence
+
+- [x] A hard reload on a protected page with an expired access token does not generate multiple parallel refresh requests.
+- [x] When refresh fails, protected queries do not continue retrying, and the user is redirected cleanly.
+- [x] `userType` cookie is strictly an advisory routing hint and is validated against the authenticated user payload.
+- [x] No security or cookie protections are weakened.
+
+#### Remaining risks & Blockers/decisions & Deferred work
+
+- Session 5: Cross-client API contract parity.
+- Session 6: Statistics calculation correctness across full datasets.
+
 
 
 
