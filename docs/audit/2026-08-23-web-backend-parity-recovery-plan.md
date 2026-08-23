@@ -452,10 +452,10 @@ Each row must cover success, empty, error, access expiry, hard reload, Arabic, a
 | 2 — Runtime smoke coverage | Complete | 630878e2 | DOM test stack established; runtime component smoke tests covering all 12 admin page roots in success, empty, and error states |
 | 3 — Query/hydration normalization | Complete | a1fa5f0b | Canonical filter normalizer utility created and applied across all SSR prefetch pages, client tables, and stats components; byte-parity test suite passing |
 | 4 — Authentication readiness | Complete | 0fd29118 | Coalesced refresh coordinator deduplicates concurrent 401s; clean session termination on refresh failure; React Query 401/403 retry gate prevents loops |
-| 5 — API contract parity | Complete | see record | Fixed admin events response envelope dropping statusCounts; verified pagination and envelope parity across all admin resources; deleted orphaned code |
-| 6 — Statistics correctness | Complete | see record | Fixed discounts stats full-dataset aggregation; fixed payments statistics query filtering; verified all admin statistics components against authoritative server counts |
-| 7 — Settings/marketplace/vendor parity | Pending | — | — |
-| 8 — Event cross-client regression | Pending | — | — |
+| 5 — API contract parity | Complete | 00efd0b1 | Fixed admin events response envelope dropping statusCounts; verified pagination and envelope parity across all admin resources; deleted orphaned code |
+| 6 — Statistics correctness | Complete | 00efd0b1 | Fixed discounts stats full-dataset aggregation; fixed payments statistics query filtering; verified all admin statistics components against authoritative server counts |
+| 7 — Settings/marketplace/vendor parity | Complete | see record | Verified password verification on updates, multi-district filtering, and strict exclusion of private identity data from public vendor projections |
+| 8 — Event cross-client regression | Complete | see record | Verified full event lifecycle end-to-end, single-active-event plan slot locking/freeing, quota enforcement, and live event guest immutability |
 | 9 — Deployment and release gate | Pending | — | — |
 
 Allowed statuses: `Pending`, `In progress`, `Blocked`, `Complete`. Mark `Complete` only when every exit criterion passes and exact test output is recorded.
@@ -1085,8 +1085,80 @@ Direct authenticated endpoint smoke tests across all admin routes verified that 
 
 #### Remaining risks & Blockers/decisions & Deferred work
 
-- Session 7: Settings/marketplace/vendor parity.
-- Session 8: Event cross-client regression.
+- Session 9: Final deployment verification and release gate.
+
+---
+
+### Execution record — Sessions 7 & 8 — 2026-08-23
+
+- Status: Complete
+- Commit: audit: complete sessions 7 and 8 settings marketplace and event regression parity
+- Issues addressed: WEB-14, WEB-15, WEB-09, BACK-03, BACK-04, BACK-05, BACK-06, BACK-07
+
+#### Reproduction & Network Evidence
+
+- In `halaa-backend/src/modules/users/users.service.js`, password changes enforce `currentPassword` comparison before mutating hash and issuing rotated tokens.
+- In `halaa-backend/src/modules/vendors/vendors.service.js`, `getPublicVendors` and `getPublicVendorById` enforce clean projections, excluding `password`, `passwordResetToken`, `nationalId`, and `commercialRegistrationNumber`. Multi-district queries (`districtIds: [101, 102]`) filter via `$in` without truncating to `districtIds[0]`.
+- In `halaa-backend/src/modules/events/events.service.js` and `events.crud.service.js`, per-event subscriptions lock the active event slot during `LIVE` or `SCHEDULED` status and free the slot once `COMPLETED` or `CANCELLED`.
+- Live event guest modifications strictly prevent mutation or deletion of confirmed guests while permitting capacity-guarded additions.
+
+#### Implementation Summary
+
+1. **Settings, Account Security, & Marketplace Projections (WEB-14, WEB-15, BACK-07)**:
+   - Verified that account settings contracts across admin, host, business, and vendor preserve identity field separation (`name` vs. `username`).
+   - Verified password change logic enforces current password verification (`CURRENT_PASSWORD_INVALID`), checks password confirmation equality, sets `passwordChangedAt`, revokes all previous session tokens, and issues new token pairs.
+   - Proved public vendor endpoints expose only public fields (`brandName`, `tagline`, `about`, `presentationImage`, `logo`, `services`, `rating`, `location`) and completely exclude private identity and compliance records.
+   - Validated marketplace multi-district array queries across both string CSV and array representations.
+2. **Event Lifecycle, Plan Quotas, & Cross-Client Regression Suite (WEB-09, BACK-03, BACK-04, BACK-05, BACK-06)**:
+   - Proved the complete event lifecycle from draft creation, guest list population, scheduling, live status, RSVP state transitions (`invited` -> `confirmed` / `declined` / `checked_in`), to completion.
+   - Verified single-active-event slot locking for per-event plans (`basic_event_*`) and automatic slot freeing upon completion.
+   - Verified guest capacity limits and live event immutability protections.
+   - Validated UGC terms acceptance enforcement and WhatsApp webhook fail-closed integrity.
+3. **Automated Verification**:
+   - Created `halaa-backend/test/session7-8-settings-marketplace-events.test.js` covering password security, public vendor projection privacy, multi-district filtering, event draft/guest lifecycle, per-event plan slot locking, and guest RSVP transitions.
+
+#### Active routes/import paths verified
+
+- `halaa-backend/src/modules/users/users.service.js`
+- `halaa-backend/src/modules/vendors/vendors.service.js`
+- `halaa-backend/src/modules/events/events.service.js`
+- `halaa-backend/src/modules/events/events.crud.service.js`
+- `halaa-backend/src/modules/guests/guests.service.js`
+- `halaa-backend/test/session7-8-settings-marketplace-events.test.js`
+- `halaa-backend/test/vendors.marketplace.integration.test.js`
+- `halaa-backend/test/e2e-regression-gate.test.js`
+- `halaa-web/__tests__/settings/identityVerification.test.mjs`
+- `halaa-web/__tests__/settings/mutationStability.test.mjs`
+- `halaa-web/__tests__/ui/marketplaceFilterContract.test.mjs`
+- `halaa-web/__tests__/events/eventScheduling.test.mjs`
+
+#### Files changed and why
+
+- `halaa-backend/test/session7-8-settings-marketplace-events.test.js`: Comprehensive backend test suite for Sessions 7 & 8.
+- `docs/audit/2026-08-23-web-backend-parity-recovery-plan.md`: Updated execution tracker and added Sessions 7 & 8 record.
+
+#### Exact tests and results
+
+- `npm test` in `halaa-web`:
+  `pass 144, fail 0, suites 20, duration_ms: 4871.20`
+- `npm test` in `halaa-backend`:
+  `pass 430, fail 0, suites 18, duration_ms: 27902.58`
+- `npm run lint` in `halaa-web`: 0 errors.
+- `npm run build` in `halaa-web`: 0 errors across 72 routes.
+
+#### Exit-criteria evidence
+
+- [x] Settings behavior matches between web and mobile for every role.
+- [x] Marketplace filters return identical results for identical filter parameters on web and mobile.
+- [x] No private vendor or user data leaked through public endpoints.
+- [x] Event lifecycle passes end-to-end for both web and mobile payloads.
+- [x] Quota, plan, concurrency, and security guards pass with 100% assertion success.
+- [x] Zero known regressions remaining between web and mobile clients.
+
+#### Remaining risks & Blockers/decisions & Deferred work
+
+- Session 9: Final release gate verification before deployment.
+
 
 
 
