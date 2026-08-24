@@ -11,6 +11,11 @@ test("billingApi: Source verification for non-2xx response rejection", () => {
   assert.ok(content.includes("throw error"), "billingApi unwrap must throw error on non-2xx");
   assert.ok(content.includes("error.status = res.status"), "billingApi unwrap must attach status to error");
   assert.ok(content.includes("error.data = body"), "billingApi unwrap must attach body data to error");
+  assert.match(
+    content,
+    /RECONCILE_EXACT[\s\S]*timeoutMs:\s*5000/,
+    "exact reconciliation must use a short request timeout"
+  );
 });
 
 test("billingApi: unwrap logic behavior on 2xx vs non-2xx responses", async () => {

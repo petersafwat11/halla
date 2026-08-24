@@ -46,10 +46,19 @@ const EnabledSchema = z
   .object({
     REVENUECAT_WEBHOOK_AUTH: secret("REVENUECAT_WEBHOOK_AUTH"),
     REVENUECAT_API_KEY: secret("REVENUECAT_API_KEY"),
-    REVENUECAT_APP_ID: secret("REVENUECAT_APP_ID"),
-    REVENUECAT_ENVIRONMENT: z.enum(ENVIRONMENTS, {
-      errorMap: () => ({ message: "REVENUECAT_ENVIRONMENT must be SANDBOX or PRODUCTION" }),
-    }),
+    // Backward-compatible single-app pin. New deployments should use
+    // REVENUECAT_APP_IDS because one RevenueCat project can contain distinct
+    // App Store and Play Store app records.
+    REVENUECAT_APP_ID: secret("REVENUECAT_APP_ID").optional(),
+    // Backward-compatible single-environment pin. New deployments should use
+    // REVENUECAT_ENVIRONMENTS so one authenticated webhook can receive both
+    // TestFlight/Sandbox and production store events without silently dropping
+    // either environment.
+    REVENUECAT_ENVIRONMENT: z
+      .enum(ENVIRONMENTS, {
+        errorMap: () => ({ message: "REVENUECAT_ENVIRONMENT must be SANDBOX or PRODUCTION" }),
+      })
+      .optional(),
     REVENUECAT_RECURRING_ENTITLEMENT_ID: secret("REVENUECAT_RECURRING_ENTITLEMENT_ID"),
   })
   .passthrough();
@@ -79,6 +88,27 @@ function loadBillingConfig(env = process.env) {
   const apiVersions = csv(env.REVENUECAT_API_VERSION_ALLOWLIST, ["1.0"]);
   if (!apiVersions.length) errors.push("REVENUECAT_API_VERSION_ALLOWLIST must list at least one api_version");
 
+  const appIds = csv(
+    env.REVENUECAT_APP_IDS,
+    present(env.REVENUECAT_APP_ID) ? [env.REVENUECAT_APP_ID] : []
+  );
+  if (!appIds.length) {
+    errors.push("REVENUECAT_APP_IDS must list at least one RevenueCat app id when native billing is enabled");
+  }
+
+  const environments = csv(
+    env.REVENUECAT_ENVIRONMENTS,
+    present(env.REVENUECAT_ENVIRONMENT) ? [env.REVENUECAT_ENVIRONMENT] : []
+  );
+  if (!environments.length) {
+    errors.push("REVENUECAT_ENVIRONMENTS must list SANDBOX and/or PRODUCTION when native billing is enabled");
+  }
+  for (const environment of environments) {
+    if (!ENVIRONMENTS.includes(environment)) {
+      errors.push(`REVENUECAT_ENVIRONMENTS contains unknown environment "${environment}"`);
+    }
+  }
+
   // Contradiction: the configured recurring entitlement must equal the catalog's.
   const catalogEntitlement = commerce.RECURRING_ENTITLEMENT_ID;
   const configuredEntitlement = env.REVENUECAT_RECURRING_ENTITLEMENT_ID;
@@ -107,8 +137,14 @@ function loadBillingConfig(env = process.env) {
     enabled: true,
     webhookAuth: env.REVENUECAT_WEBHOOK_AUTH,
     apiKey: env.REVENUECAT_API_KEY,
-    appId: env.REVENUECAT_APP_ID,
-    environment: env.REVENUECAT_ENVIRONMENT,
+    // `appId` remains for older consumers; envelope validation uses the
+    // explicit allowlist below.
+    appId: appIds.length === 1 ? appIds[0] : null,
+    appIds,
+    // `environment` remains for older consumers; envelope validation uses the
+    // explicit allowlist below.
+    environment: environments.length === 1 ? environments[0] : null,
+    environments,
     recurringEntitlementId: configuredEntitlement || catalogEntitlement,
     allowedStores,
     apiVersions,
@@ -155,6 +191,8 @@ function getBillingReadiness(env = process.env) {
       catalogVersion: integrity.catalogVersion,
       catalogHash: integrity.catalogHash,
       productMaps: maps.ok,
+      appIds: cfg.value?.appIds || [],
+      environments: cfg.value?.environments || [],
       planProducts: Object.keys(maps.planMap).length,
       addonProducts: Object.keys(maps.addonMap).length,
     },

@@ -202,3 +202,26 @@ test("reconcileExact does NOT cross accounts: a different user's unused entitlem
   assert.equal(res.payload.data.state, "pending");
   assert.equal(res.payload.data.ids.eventEntitlementId, null);
 });
+
+test("reconcileExact rejects a store product that contradicts the requested catalog code", async () => {
+  const call = (req) =>
+    new Promise((resolve, reject) => {
+      const res = { statusCode: 0, payload: null };
+      res.status = (c) => { res.statusCode = c; return res; };
+      res.json = (b) => { res.payload = b; resolve(res); return res; };
+      reconcileController.reconcileExact(req, res, (e) => (e ? reject(e) : resolve(res)));
+    });
+
+  const res = await call({
+    user: { _id: userId },
+    body: {
+      catalogCode: EVENT_CODE,
+      transactionId: "txn-wrong-product",
+      storeProductId: "com.halaa.premium_monthly_100",
+    },
+  });
+
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.payload.data.state, "failed");
+  assert.equal(res.payload.data.reason, "store_product_mismatch");
+});

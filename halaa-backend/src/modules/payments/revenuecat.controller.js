@@ -43,7 +43,15 @@ const leaseMs = () => {
 const envelopeConfig = () => ({
   apiVersions: csv(process.env.REVENUECAT_API_VERSION_ALLOWLIST, ["1.0"]),
   appId: process.env.REVENUECAT_APP_ID || null,
+  appIds: csv(
+    process.env.REVENUECAT_APP_IDS,
+    process.env.REVENUECAT_APP_ID ? [process.env.REVENUECAT_APP_ID] : []
+  ),
   environment: process.env.REVENUECAT_ENVIRONMENT || null,
+  environments: csv(
+    process.env.REVENUECAT_ENVIRONMENTS,
+    process.env.REVENUECAT_ENVIRONMENT ? [process.env.REVENUECAT_ENVIRONMENT] : []
+  ),
   allowedStores: csv(process.env.REVENUECAT_ALLOWED_STORES, ["APP_STORE", "PLAY_STORE"]),
   recurringEntitlementId: process.env.REVENUECAT_RECURRING_ENTITLEMENT_ID || commerce.RECURRING_ENTITLEMENT_ID,
 });

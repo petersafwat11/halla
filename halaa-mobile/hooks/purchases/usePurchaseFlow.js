@@ -15,6 +15,7 @@
  */
 
 import { useCallback, useRef, useState } from "react";
+import * as Sentry from "@sentry/react-native";
 import { purchasePackage } from "../../services/purchases";
 import { reconcileExact } from "../../services/billingApi";
 import { mapReconcileState, isPurchaseCancelled } from "../../services/billing/reconcileState";
@@ -23,6 +24,28 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const BUSY_PHASES = new Set(["preflight", "purchasing", "reconciling"]);
 const IDLE = { phase: "idle" };
+
+const addFlowBreadcrumb = (phase, data = {}, level = "info") => {
+  try {
+    Sentry.addBreadcrumb({
+      category: "purchase.flow",
+      message: phase,
+      level,
+      // Deliberately excludes transaction ids, receipts, customer info, and
+      // store credentials. These fields are safe operational diagnostics.
+      data: {
+        phase,
+        state: data.state || null,
+        reason: data.reason || null,
+        attempt: data.attempt || null,
+        errorCode: data.errorCode || null,
+        httpStatus: data.httpStatus || null,
+      },
+    });
+  } catch (_) {
+    // Telemetry must never interfere with a purchase.
+  }
+};
 
 /**
  * @returns {{
@@ -33,7 +56,11 @@ const IDLE = { phase: "idle" };
  *   reset: () => void,
  * }}
  */
-export function usePurchaseFlow({ pollAttempts = 10, pollDelayMs = 1500 } = {}) {
+export function usePurchaseFlow({
+  pollAttempts = 12,
+  pollDelayMs = 2000,
+  pollTimeoutMs = 30000,
+} = {}) {
   const [status, setStatus] = useState(IDLE);
   const inFlight = useRef(false);
   const lastArgs = useRef(null); // { catalogCode, transactionId, storeProductId, operation }
@@ -41,20 +68,33 @@ export function usePurchaseFlow({ pollAttempts = 10, pollDelayMs = 1500 } = {}) 
   const pollExact = useCallback(
     async (args, attempts, delayMs) => {
       let last = { state: "pending", reason: "awaiting_webhook" };
+      const deadline = Date.now() + pollTimeoutMs;
       for (let i = 0; i < attempts; i += 1) {
         try {
           last = await reconcileExact(args);
-        } catch {
-          /* transient — keep polling */
+        } catch (error) {
+          last = {
+            state: "pending",
+            reason: "reconcile_unavailable",
+            errorCode: error?.code || error?.name || "RECONCILE_REQUEST_FAILED",
+            httpStatus: error?.status || null,
+          };
         }
         const m = mapReconcileState(last && last.state);
-        setStatus({ phase: "reconciling", state: last && last.state, reason: last && last.reason, attempt: i + 1, reconcile: last });
+        const next = { phase: "reconciling", state: last && last.state, reason: last && last.reason, attempt: i + 1, reconcile: last };
+        setStatus(next);
+        addFlowBreadcrumb("reconciling", {
+          ...next,
+          errorCode: last?.errorCode,
+          httpStatus: last?.httpStatus,
+        }, last?.reason === "reconcile_unavailable" ? "warning" : "info");
         if (m.terminal) break;
-        if (i < attempts - 1) await sleep(delayMs);
+        if (i >= attempts - 1 || Date.now() >= deadline) break;
+        await sleep(Math.min(delayMs, Math.max(0, deadline - Date.now())));
       }
       return last;
     },
-    []
+    [pollTimeoutMs]
   );
 
   /**
@@ -94,6 +134,7 @@ export function usePurchaseFlow({ pollAttempts = 10, pollDelayMs = 1500 } = {}) 
         }
 
         setStatus({ phase: "purchasing" });
+        addFlowBreadcrumb("purchasing");
         let result;
         try {
           result = await purchasePackage(pkg, changeInfo || null);
@@ -104,6 +145,10 @@ export function usePurchaseFlow({ pollAttempts = 10, pollDelayMs = 1500 } = {}) 
             return s;
           }
           const s = { phase: "error", reason: (err && err.message) || "purchase_failed" };
+          addFlowBreadcrumb("purchase_error", {
+            reason: "purchase_failed",
+            errorCode: err?.code || err?.name || null,
+          }, "error");
           setStatus(s);
           return s;
         }
@@ -126,6 +171,7 @@ export function usePurchaseFlow({ pollAttempts = 10, pollDelayMs = 1500 } = {}) 
         lastArgs.current = args;
 
         setStatus({ phase: "reconciling", state: "pending", attempt: 0 });
+        addFlowBreadcrumb("reconcile_started", { state: "pending" });
         const final = await pollExact(args, pollAttempts, pollDelayMs);
         const s = { phase: "done", state: final && final.state, reason: final && final.reason, reconcile: final, result };
         setStatus(s);

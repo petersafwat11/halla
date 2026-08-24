@@ -16,6 +16,8 @@ const commerce = require("../../shared/commerce");
 const lineage = require("./revenuecat.lineage");
 const { deriveExactState } = require("./revenuecat.reconcileExact");
 const { checkEligible } = require("./revenuecat.eligibility");
+const { getBillingReadiness } = require("./revenuecat.config");
+const AppError = require("../../shared/errors/AppError");
 
 const RevenueCatEvent = require("../../../models/RevenueCatEventModel");
 const EventEntitlement = require("../../../models/EventEntitlementModel");
@@ -26,13 +28,29 @@ const { isPoolPlan, isUnlimited } = require("../../shared/constants/plans");
 /** POST reconcile-exact — the exact expected-purchase contract. */
 exports.reconcileExact = catchAsync(async (req, res) => {
   const user = req.user;
-  const { catalogCode, transactionId = null } = req.body || {};
+  const { catalogCode, transactionId = null, storeProductId = null } = req.body || {};
   const catalogItem = commerce.getEntryByCode(catalogCode);
   if (!catalogItem) {
     return sendSuccess(res, { state: "failed", reason: "unknown_catalog_code", catalogCode, transactionId });
   }
 
-  const lin = { originalTransactionId: transactionId, transactionId, productId: catalogItem.iosProductId };
+  const expectedProducts = new Set(
+    [catalogItem.iosProductId, catalogItem.androidProductId].filter(Boolean)
+  );
+  if (storeProductId && !expectedProducts.has(storeProductId)) {
+    return sendSuccess(res, {
+      state: "failed",
+      reason: "store_product_mismatch",
+      catalogCode,
+      transactionId,
+    });
+  }
+
+  const lin = {
+    originalTransactionId: transactionId,
+    transactionId,
+    productId: storeProductId || catalogItem.iosProductId || catalogItem.androidProductId,
+  };
   let [subscription, eventEntitlement, addon, event] = await Promise.all([
     catalogItem.kind === "subscription" ? lineage.findSubscriptionByLineage(user._id, lin) : null,
     catalogItem.kind === "event_consumable" ? lineage.findEventEntitlementByTxn(transactionId) : null,
@@ -145,6 +163,21 @@ exports.fulfillmentStatus = catchAsync(async (req, res) => {
  * prices/periods from the store package — never from here.
  */
 exports.storeCatalog = catchAsync(async (req, res) => {
+  const billing = getBillingReadiness();
+  if (!billing.enabled || !billing.ready) {
+    const error = new AppError(
+      "Native billing is temporarily unavailable.",
+      503,
+      "NATIVE_BILLING_NOT_READY"
+    );
+    // Privacy-safe diagnostics only: booleans/counts/names, never credentials.
+    error.meta = {
+      enabled: billing.enabled,
+      checks: billing.checks,
+      errors: billing.errors,
+    };
+    throw error;
+  }
   const user = req.user;
   const integrity = commerce.getCatalogIntegrity();
   const entries = commerce.getStoreSafeCatalog().map((e) => ({

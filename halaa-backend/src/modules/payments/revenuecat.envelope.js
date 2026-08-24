@@ -56,14 +56,27 @@ function validateEnvelope(n, ctx) {
       return dead("api_version_not_allowed");
     }
   }
-  // app id pin.
-  if (config.appId && n.appId && n.appId !== config.appId) return ignore("app_id_mismatch");
-  if (config.appId && !n.appId) return dead("missing_app_id");
-  // environment pin.
-  if (config.environment && n.environment && n.environment !== config.environment) {
+  // App id allowlist. RevenueCat represents the App Store and Play Store apps
+  // with different ids even when both belong to this project.
+  const appIds = Array.isArray(config.appIds) && config.appIds.length
+    ? config.appIds
+    : config.appId
+      ? [config.appId]
+      : [];
+  if (appIds.length && n.appId && !appIds.includes(n.appId)) return ignore("app_id_mismatch");
+  if (appIds.length && !n.appId) return dead("missing_app_id");
+  // Environment allowlist. TestFlight purchases are SANDBOX even when the app
+  // binary uses the production bundle id, so deployments may explicitly accept
+  // both while still rejecting unknown/missing environments fail-closed.
+  const environments = Array.isArray(config.environments) && config.environments.length
+    ? config.environments
+    : config.environment
+      ? [config.environment]
+      : [];
+  if (environments.length && n.environment && !environments.includes(n.environment)) {
     return ignore("environment_mismatch");
   }
-  if (config.environment && !n.environment) return dead("missing_environment");
+  if (environments.length && !n.environment) return dead("missing_environment");
 
   // App User ID (or original/alias) must be present to resolve the account.
   if (!n.appUserId && !n.originalAppUserId && (!n.aliases || !n.aliases.length)) {

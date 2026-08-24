@@ -39,6 +39,10 @@ export async function fetchStoreCatalog() {
 export async function reconcileExact({ catalogCode, transactionId, storeProductId, operation }) {
   const res = await apiFetch(ENDPOINTS.REVENUECAT.RECONCILE_EXACT, {
     method: "POST",
+    // Reconciliation is a short status read. A bounded request prevents one
+    // poor mobile connection from holding the non-dismissible modal for the
+    // global 30-second API timeout on every polling attempt.
+    timeoutMs: 5000,
     body: {
       catalogCode,
       ...(transactionId ? { transactionId } : {}),

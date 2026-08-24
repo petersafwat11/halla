@@ -15,7 +15,7 @@ const maps = resolveProductMaps({});
 const baseCtx = () => ({
   config: {
     apiVersions: ["1.0"],
-    appId: "app1",
+    appIds: ["app1", "app2"],
     environment: "PRODUCTION",
     allowedStores: ["APP_STORE", "PLAY_STORE"],
     recurringEntitlementId: "recurring_access",
@@ -79,8 +79,18 @@ test("TRANSFER is accepted product-less (reducer sends it to manual review)", ()
 test("environment mismatch → ignore", () => {
   assert.equal(run({ environment: "SANDBOX" }).code, "environment_mismatch");
 });
+test("explicit environment allowlist accepts both TestFlight sandbox and production", () => {
+  const ctx = baseCtx();
+  ctx.config.environments = ["SANDBOX", "PRODUCTION"];
+  assert.equal(run({ environment: "SANDBOX" }, ctx).disposition, "accept");
+  assert.equal(run({ environment: "PRODUCTION" }, ctx).disposition, "accept");
+});
 test("app id mismatch → ignore", () => {
   assert.equal(run({ app_id: "other" }).code, "app_id_mismatch");
+});
+test("app id allowlist accepts both App Store and Play Store apps", () => {
+  assert.equal(run({ app_id: "app1" }).disposition, "accept");
+  assert.equal(run({ app_id: "app2" }).disposition, "accept");
 });
 test("unsupported store → ignore", () => {
   assert.equal(run({ store: "AMAZON" }).code, "store_not_allowed");
