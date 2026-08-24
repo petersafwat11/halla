@@ -12,8 +12,10 @@ export default function ViewListButton({ count, onPress, t }) {
   return (
     <TouchableOpacity style={styles.viewListButton} onPress={onPress} activeOpacity={0.7}>
       <ListIcon />
+      {/* Parentheses are authored inside the translation string so they can
+          never BiDi-detach from the count in Arabic (blueprint §6). */}
       <Text style={styles.viewListButtonText}>
-        {t("guest_list_title")} ({count})
+        {t("guest_list_title_count", { count })}
       </Text>
     </TouchableOpacity>
   );

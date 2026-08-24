@@ -1,30 +1,49 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { useTranslation } from "../../../localization";
+import { formatCount } from "@halaa/shared/utils/locale";
 
+/**
+ * RSVP summary row. Label + count live in ONE interpolated translation
+ * string per locale ("موافق ٥" / "Accepted 5"), so punctuation/digit order
+ * is authored per locale and never concatenated in JSX (blueprint §6).
+ * The colour dots are physical artwork and stay in logical source order.
+ */
 export default function LastEventStatsRow({ stats }) {
-  const { t } = useTranslation("home");
+  const { t, currentLanguage } = useTranslation("home");
+  const locale = currentLanguage || "ar";
   const noResponse = stats?.invited ?? 0;
   const declined = stats?.declined ?? 0;
   const approved = stats?.confirmed ?? 0;
 
+  const items = [
+    {
+      key: "lastEvent.noResponseCount",
+      value: noResponse,
+      color: "#A0A0A0",
+    },
+    {
+      key: "lastEvent.declinedCount",
+      value: declined,
+      color: "#C0392B",
+    },
+    {
+      key: "lastEvent.approvedCount",
+      value: approved,
+      color: "#2A8C5B",
+    },
+  ];
+
   return (
     <View style={styles.statsRow}>
-      <View style={styles.statItem}>
-        <Text style={styles.statLabel}>{noResponse}</Text>
-        <Text style={styles.statLabel}>{t("lastEvent.noResponse")}: </Text>
-        <View style={[styles.statDot, { backgroundColor: "#A0A0A0" }]} />
-      </View>
-      <View style={styles.statItem}>
-        <Text style={styles.statLabel}>{declined}</Text>
-        <Text style={styles.statLabel}>{t("lastEvent.declined")}: </Text>
-        <View style={[styles.statDot, { backgroundColor: "#C0392B" }]} />
-      </View>
-      <View style={styles.statItem}>
-        <Text style={styles.statLabel}>{approved}</Text>
-        <Text style={styles.statLabel}>{t("lastEvent.approved")}: </Text>
-        <View style={[styles.statDot, { backgroundColor: "#2A8C5B" }]} />
-      </View>
+      {items.map((item) => (
+        <View style={styles.statItem} key={item.key}>
+          <View style={[styles.statDot, { backgroundColor: item.color }]} />
+          <Text style={styles.statLabel} numberOfLines={1}>
+            {t(item.key, { count: formatCount(item.value, locale) })}
+          </Text>
+        </View>
+      ))}
     </View>
   );
 }
@@ -47,6 +66,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   statLabel: {
+    flexShrink: 1,
     fontSize: 12,
     fontFamily: "Cairo_400Regular",
     color: "#2C2C2C",

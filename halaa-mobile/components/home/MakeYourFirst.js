@@ -1,6 +1,8 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { Svg, Path, G, Defs, ClipPath, Rect } from "react-native-svg";
+import { View, StyleSheet, TouchableOpacity } from "react-native";
+import { Svg, Path } from "react-native-svg";
+import { useTranslation } from "../../localization";
+import LocalizedText from "../commen/LocalizedText";
 
 const GiftIcon = () => (
   <Svg width="32" height="32" viewBox="0 0 32 32" fill="none">
@@ -60,12 +62,20 @@ const GiftIcon = () => (
 );
 
 const MakeYourFirst = ({ onCreatePress }) => {
+  const { t } = useTranslation("events");
+
   return (
     <View style={styles.container}>
       <View style={styles.content}>
         <View style={styles.textContainer}>
-          <Text style={styles.title}>ابدأ بإنشاء أول مناسبة لك مجانا</Text>
-          <Text style={styles.subtitle}>لديك تجربة مجانية لدعوة 5 أفراد</Text>
+          {/* App-authored empty-state copy: localized roles, keys only —
+              no inline bilingual literals (blueprint §6). */}
+          <LocalizedText role="sectionTitle" style={styles.title} numberOfLines={2}>
+            {t("makeYourFirst.title")}
+          </LocalizedText>
+          <LocalizedText role="description" style={styles.subtitle} numberOfLines={2}>
+            {t("makeYourFirst.subtitle")}
+          </LocalizedText>
         </View>
         <GiftIcon />
       </View>
@@ -74,8 +84,11 @@ const MakeYourFirst = ({ onCreatePress }) => {
         style={styles.subcreateButton}
         onPress={onCreatePress}
         activeOpacity={0.7}
+        accessibilityRole="button"
       >
-        <Text style={styles.createButtonText}>إنشاء مناسبتك</Text>
+        <LocalizedText center style={styles.createButtonText}>
+          {t("makeYourFirst.createButton")}
+        </LocalizedText>
         <Svg width="16" height="16" viewBox="0 0 16 16" fill="none">
           <Path
             d="M4 8H12"

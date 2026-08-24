@@ -150,7 +150,12 @@ export default function ImportExportSection({ isLimitReached, isUnlimited, guest
           </View>
           {importErrors.map((err, idx) => (
             <Text key={idx} style={styles.importErrorItem}>
-              • {t("row")} {err.row}: {err.errors.join("، ")}
+              {/* Row number + joined reasons interpolate inside one authored
+                  string so the colon/punctuation order follows the locale. */}
+              {t("import_error_row", {
+                row: err.row,
+                message: err.errors.join("، "),
+              })}
             </Text>
           ))}
         </View>

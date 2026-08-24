@@ -11,6 +11,7 @@ const {
   INVITATION_TYPE,
   EVENT_CATEGORY_VALUES,
 } = require('../../shared/constants');
+const { clampPhoneInput, SAUDI_PHONE_REGEX } = require('../../shared/utils/phone');
 
 // Invitation type (Step 4) — reply×QR selector. Optional everywhere; the
 // model default (reply_and_qr) applies when omitted.
@@ -20,15 +21,14 @@ const objectId = z
   .string()
   .regex(/^[0-9a-fA-F]{24}$/, 'must be a 24-char hex ObjectId');
 
-// Saudi mobile: 9 digits starting with 5 (E.164 minus the +966).
-// Allow optional +966/966 prefix and strip non-digits before checking.
+// Saudi mobile: 10 digits starting with 05 or 9 digits starting with 5.
 const saudiPhone = z
   .string()
   .min(1, 'phone is required')
-  .transform((v) => v.replace(/[\s\-\(\)\.]/g, ''))
+  .transform((v) => clampPhoneInput(v))
   .refine(
-    (v) => /^(\+?966)?5\d{8}$/.test(v) || /^05\d{8}$/.test(v),
-    { message: 'phone must be a Saudi mobile number (5xxxxxxxx)' }
+    (v) => SAUDI_PHONE_REGEX.test(v),
+    { message: 'phone must be a valid Saudi mobile number (10 digits starting with 05 or 9 digits starting with 5)' }
   );
 
 const guestEntry = z.object({

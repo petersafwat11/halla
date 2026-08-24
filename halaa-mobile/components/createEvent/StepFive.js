@@ -78,6 +78,7 @@ const StepFive = () => {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.sectionLabel}>{t("invitation_message_label")}</Text>
       <TextInput
+        contentDirection="adaptive"
         value={invitationMessage}
         onChangeText={handleInvitationChange}
         placeholder={t("invitation_message_placeholder")}
@@ -107,6 +108,7 @@ const StepFive = () => {
       </View>
 
       <TextInput
+        contentDirection="adaptive"
         value={activeReplyValue}
         onChangeText={handleReplyChange}
         placeholder={t("auto_reply_placeholder")}
@@ -121,6 +123,7 @@ const StepFive = () => {
         {t("add_note_label")} <Text style={styles.optional}>{t("optional")}</Text>
       </Text>
       <TextInput
+        contentDirection="adaptive"
         value={hostNote}
         onChangeText={handleNoteChange}
         placeholder={t("add_note_placeholder")}

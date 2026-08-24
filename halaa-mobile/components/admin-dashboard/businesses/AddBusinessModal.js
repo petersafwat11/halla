@@ -1,7 +1,6 @@
 import React from "react";
 import {
   View,
-  Text,
   Modal,
   ScrollView,
   StyleSheet,
@@ -19,6 +18,8 @@ import {
   TextAreaInput,
   ImageInput,
 } from "../../commen";
+import LocalizedText from "../../commen/LocalizedText";
+import { CONTENT_DIRECTIONS } from "../../../hooks/useInputDirection";
 import { useCreateBusiness } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
@@ -104,8 +105,8 @@ const AddBusinessModal = ({ visible, onClose, onSaved }) => {
         <View style={styles.modalContainer}>
           <View style={styles.header}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.kicker}>{cb("kicker", "Business")}</Text>
-              <Text style={styles.title}>{cb("title", "Add Business")}</Text>
+              <LocalizedText style={styles.kicker}>{cb("kicker", "Business")}</LocalizedText>
+              <LocalizedText style={styles.title}>{cb("title", "Add Business")}</LocalizedText>
             </View>
             <TouchableOpacity onPress={close} style={styles.closeButton}>
               <Ionicons name="close" size={24} color={colors.natural[900]} />
@@ -123,6 +124,7 @@ const AddBusinessModal = ({ visible, onClose, onSaved }) => {
                 name="name"
                 label={cb("name", "Name")}
                 placeholder={cb("namePlaceholder", "Business name")}
+                contentDirection={CONTENT_DIRECTIONS.ADAPTIVE}
                 rules={{ required: cb("nameRequired", "Name is required") }}
               />
               <EmailInput
@@ -150,6 +152,7 @@ const AddBusinessModal = ({ visible, onClose, onSaved }) => {
                 name="description"
                 label={cb("description", "Description")}
                 placeholder={cb("descriptionPlaceholder", "Optional")}
+                contentDirection={CONTENT_DIRECTIONS.ADAPTIVE}
                 maxLength={2000}
               />
               <ImageInput

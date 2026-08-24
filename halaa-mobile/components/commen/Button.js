@@ -1,13 +1,13 @@
 import React from "react";
 import {
   TouchableOpacity,
-  Text,
   StyleSheet,
   ActivityIndicator,
   Animated,
   Platform,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import LocalizedText from "./LocalizedText";
 
 const Button = ({
   text,
@@ -80,7 +80,8 @@ const Button = ({
           size="small"
         />
       ) : (
-        <Text style={[getTextStyle(), textStyle]}>{text}</Text>
+        /* Button labels are app copy — always the UI locale's direction. */
+        <LocalizedText style={[getTextStyle(), textStyle]}>{text}</LocalizedText>
       )}
     </Animated.View>
   );
@@ -103,7 +104,9 @@ const Button = ({
           {loading ? (
             <ActivityIndicator color="#fff" size="small" />
           ) : (
-            <Text style={[getTextStyle(), textStyle]}>{text}</Text>
+            <LocalizedText style={[getTextStyle(), textStyle]}>
+              {text}
+            </LocalizedText>
           )}
         </LinearGradient>
       </TouchableOpacity>

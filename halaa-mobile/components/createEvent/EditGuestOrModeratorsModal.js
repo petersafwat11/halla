@@ -1,17 +1,22 @@
 import React, { useState, useEffect } from "react";
 import {
   View,
-  Text,
   StyleSheet,
   Modal,
   TouchableOpacity,
-  Pressable
+  Pressable,
 } from "react-native";
 import { useTranslation } from "../../localization";
-import TextInput from "../commen/TextInput";
 import Button from "../commen/Button";
+import FormField from "../commen/FormField";
+import LocalizedText from "../commen/LocalizedText";
 import CategorySelect from "../commen/CategorySelect";
 import Svg, { Path } from "react-native-svg";
+import {
+  clampPhoneInput,
+  getPhoneMaxLength,
+  DEFAULT_PHONE_PLACEHOLDER,
+} from "@halaa/shared/utils/phone";
 
 const CloseIcon = () => (
   <Svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -31,9 +36,10 @@ const EditGuestOrModeratorsModal = ({
   item,
   type = "guest",
   onSave,
-  categories = []
+  categories = [],
 }) => {
-  const { t } = useTranslation("events");
+  const { t } = useTranslation(["events", "createEvent"]);
+  const { t: tCreate } = useTranslation("createEvent");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [category, setCategory] = useState("");
@@ -49,14 +55,10 @@ const EditGuestOrModeratorsModal = ({
   }, [item]);
 
   const handleSave = () => {
-    const result = onSave(item.id, { name, phone, category });
+    const result = onSave(item?.id, { name, phone, category });
 
     if (result && !result.success && result.errors) {
-      // Validators return i18n keys; translate before surfacing.
-      setErrors({
-        name: result.errors.name ? t(result.errors.name) : null,
-        phone: result.errors.phone ? t(result.errors.phone) : null,
-      });
+      setErrors(result.errors);
     }
   };
 
@@ -77,15 +79,19 @@ const EditGuestOrModeratorsModal = ({
           style={styles.modalContainer}
           onPress={(e) => e.stopPropagation()}
         >
-          {/* Header */}
+          {/* Header — localized title at logical start, close action at end */}
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>
-              {type === "guest" ? "تعديل بيانات الضيف" : "تعديل بيانات المشرف"}
-            </Text>
+            <LocalizedText role="sectionTitle" style={styles.headerTitle}>
+              {type === "guest"
+                ? tCreate("edit_guest")
+                : tCreate("edit_moderator")}
+            </LocalizedText>
             <TouchableOpacity
               style={styles.closeButton}
               onPress={handleClose}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={tCreate("close")}
             >
               <CloseIcon />
             </TouchableOpacity>
@@ -93,43 +99,66 @@ const EditGuestOrModeratorsModal = ({
 
           {/* Form */}
           <View style={styles.form}>
-            <TextInput
-              label={type === "guest" ? "اسم الضيف" : "اسم المشرف"}
-              placeholder={type === "guest" ? "أدخل اسم الضيف" : "أدخل اسم المشرف"}
+            {/* Arbitrary user text → adaptive through the shared field shell:
+                label/error stay in the UI locale while Latin names render LTR
+                and Arabic names RTL. */}
+            <FormField
+              label={
+                type === "guest"
+                  ? tCreate("guest_name")
+                  : tCreate("moderator_name")
+              }
+              placeholder={
+                type === "guest"
+                  ? tCreate("guest_name_placeholder")
+                  : tCreate("moderator_name_placeholder")
+              }
               value={name}
               onChangeText={(text) => {
                 setName(text);
-                setErrors({ ...errors, name: null });
+                setErrors((prev) => ({ ...prev, name: null }));
               }}
-              error={errors.name}
+              contentDirection="adaptive"
+              error={errors.name ? t(errors.name, { defaultValue: errors.name }) : null}
             />
 
-            <TextInput
-              label="رقم الجوال"
-              placeholder="5xxxxxxxx"
+            {/* Phone digits remain LTR once filled. */}
+            <FormField
+              label={
+                type === "guest"
+                  ? tCreate("guest_phone")
+                  : tCreate("moderator_phone")
+              }
+              placeholder={tCreate("guest_phone_placeholder", DEFAULT_PHONE_PLACEHOLDER)}
               value={phone}
               onChangeText={(text) => {
-                setPhone(text);
-                setErrors({ ...errors, phone: null });
+                const clamped = clampPhoneInput(text);
+                setPhone(clamped);
+                setErrors((prev) => ({ ...prev, phone: null }));
               }}
+              contentDirection="phone"
               keyboardType="phone-pad"
-              error={errors.phone}
+              maxLength={getPhoneMaxLength(phone)}
+              error={errors.phone ? t(errors.phone, { defaultValue: errors.phone }) : null}
             />
 
             {type === "guest" && (
-              <CategorySelect
-                label="التصنيف"
-                value={category}
-                onChange={setCategory}
-                options={categories}
-              />
+              <View style={styles.inputWrapper}>
+                <CategorySelect
+                  label={tCreate("category")}
+                  placeholder={tCreate("category_placeholder")}
+                  value={category}
+                  onChange={setCategory}
+                  options={categories}
+                />
+              </View>
             )}
           </View>
 
           {/* Actions */}
           <View style={styles.actions}>
             <Button
-              text="حفظ التعديلات"
+              text={tCreate("save_changes")}
               onPress={handleSave}
               disabled={!name.trim() || !phone.trim()}
             />
@@ -138,7 +167,9 @@ const EditGuestOrModeratorsModal = ({
               onPress={handleClose}
               activeOpacity={0.7}
             >
-              <Text style={styles.cancelButtonText}>إلغاء</Text>
+              <LocalizedText style={styles.cancelButtonText}>
+                {tCreate("cancel")}
+              </LocalizedText>
             </TouchableOpacity>
           </View>
         </Pressable>
@@ -153,14 +184,14 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 24
+    paddingHorizontal: 24,
   },
   modalContainer: {
     width: "100%",
     maxWidth: 400,
     backgroundColor: "#FFF",
     borderRadius: 16,
-    overflow: "hidden"
+    overflow: "hidden",
   },
   header: {
     flexDirection: "row",
@@ -170,36 +201,39 @@ const styles = StyleSheet.create({
     paddingTop: 24,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#F0F0F0"
+    borderBottomColor: "#F0F0F0",
   },
   headerTitle: {
+    flex: 1,
     fontSize: 18,
-    fontFamily: "Cairo_700Bold",
-    color: "#2C2C2C",
-    flex: 1
-  },  closeButton: {
-    padding: 4
+  },
+  closeButton: {
+    padding: 4,
   },
   form: {
-    padding: 24
+    padding: 24,
+  },
+  inputWrapper: {
+    marginBottom: 16,
+    width: "100%",
   },
   actions: {
     paddingHorizontal: 24,
     paddingBottom: 24,
-    gap: 12
+    gap: 12,
   },
   cancelButton: {
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: 12,
     backgroundColor: "#F5F5F5",
-    alignItems: "center"
+    alignItems: "center",
   },
   cancelButtonText: {
     fontSize: 16,
     fontFamily: "Cairo_600SemiBold",
-    color: "#656565"
-  }
+    color: "#656565",
+  },
 });
 
 export default EditGuestOrModeratorsModal;

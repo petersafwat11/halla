@@ -69,6 +69,6 @@
     }
   },
   "validation": {
-    "invalidSaudiPhone": "Please enter a valid Saudi phone number"
+    "invalidSaudiPhone": "Phone number must be 10 digits (starting with 05) or 9 digits (starting with 5)"
   }
 }

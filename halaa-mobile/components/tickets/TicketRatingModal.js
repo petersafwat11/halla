@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   View,
-  Text,
   Modal,
   StyleSheet,
   ScrollView,
@@ -10,11 +9,13 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import TextInput from "../commen/DirectionalTextInput";
+import DirectionalTextInput from "../commen/DirectionalTextInput";
+import LocalizedText from "../commen/LocalizedText";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
 import { useRateTicket } from "../../hooks";
 import { useToast } from "../../contexts/ToastContext";
+import { CONTENT_DIRECTIONS } from "../../hooks/useInputDirection";
 
 const RATING_LABEL_KEYS = ["veryPoor", "poor", "average", "good", "excellent"];
 
@@ -79,6 +80,8 @@ const TicketRatingModal = ({ visible, onClose, ticket }) => {
         style={styles.starButton}
         disabled={rateTicketMutation.isPending}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={t(`rating.${RATING_LABEL_KEYS[i - 1]}`)}
       >
         <Ionicons
           name={i <= rating ? "star" : "star-outline"}
@@ -109,12 +112,15 @@ const TicketRatingModal = ({ visible, onClose, ticket }) => {
         >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>{t("title")}</Text>
+            <LocalizedText style={styles.title}>
+              {t("title")}
+            </LocalizedText>
             <TouchableOpacity
               style={styles.closeButton}
               onPress={handleClose}
               disabled={rateTicketMutation.isPending}
               activeOpacity={0.7}
+              accessibilityLabel={t("buttons.cancel")}
             >
               <Ionicons name="close" size={24} color="#666" />
             </TouchableOpacity>
@@ -129,31 +135,41 @@ const TicketRatingModal = ({ visible, onClose, ticket }) => {
             {ticket && (
               <View style={styles.ticketInfo}>
                 <Ionicons name="ticket-outline" size={20} color="#c28e5c" />
-                <Text style={styles.ticketType} numberOfLines={1}>
+                <LocalizedText style={styles.ticketType} numberOfLines={1}>
                   {tTickets(`types.${ticket.type}`)}
-                </Text>
+                </LocalizedText>
               </View>
             )}
 
             {/* Star rating */}
             <View style={styles.section}>
-              <Text style={styles.question}>{t("rating.question")}</Text>
-              <View style={styles.starsContainer}>{renderStars()}</View>
+              <LocalizedText style={styles.question} center>
+                {t("rating.question")}
+              </LocalizedText>
+              {/* Star order is intentionally physical: a 1→5 rating scale is
+                  numeric geometry, not navigation, so it must not mirror with
+                  the locale (blueprint §7). Pinned LTR in both languages. */}
+              <View style={[styles.starsContainer, styles.starsDirection]}>{renderStars()}</View>
               {rating > 0 && (
-                <Text style={styles.ratingLabel}>
+                <LocalizedText style={styles.ratingLabel} center>
                   {t(`rating.${RATING_LABEL_KEYS[rating - 1]}`)}
-                </Text>
+                </LocalizedText>
               )}
               {!!ratingError && (
-                <Text style={styles.errorText}>{ratingError}</Text>
+                <LocalizedText style={styles.errorText} center>
+                  {ratingError}
+                </LocalizedText>
               )}
             </View>
 
             {/* Feedback */}
             <View style={styles.section}>
-              <Text style={styles.label}>{t("feedback.label")}</Text>
-              <TextInput
+              <LocalizedText style={styles.label}>
+                {t("feedback.label")}
+              </LocalizedText>
+              <DirectionalTextInput
                 style={styles.textArea}
+                contentDirection={CONTENT_DIRECTIONS.ADAPTIVE}
                 value={feedback}
                 onChangeText={setFeedback}
                 placeholder={t("feedback.placeholder")}
@@ -175,7 +191,9 @@ const TicketRatingModal = ({ visible, onClose, ticket }) => {
               disabled={rateTicketMutation.isPending}
               activeOpacity={0.7}
             >
-              <Text style={styles.cancelButtonText}>{t("buttons.cancel")}</Text>
+              <LocalizedText style={styles.cancelButtonText} center>
+                {t("buttons.cancel")}
+              </LocalizedText>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -187,11 +205,11 @@ const TicketRatingModal = ({ visible, onClose, ticket }) => {
               disabled={rateTicketMutation.isPending}
               activeOpacity={0.7}
             >
-              <Text style={styles.submitButtonText}>
+              <LocalizedText style={styles.submitButtonText} center>
                 {rateTicketMutation.isPending
                   ? t("buttons.submitting")
                   : t("buttons.submit")}
-              </Text>
+              </LocalizedText>
             </TouchableOpacity>
           </View>
         </Animated.View>
@@ -272,6 +290,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 8,
     paddingVertical: 8,
+  },
+  // Intentional physical geometry (blueprint §7): the 1→5 rating scale reads
+  // left-to-right in every locale, so the row is pinned LTR and must not
+  // mirror under the app's forced RTL.
+  starsDirection: {
+    direction: "ltr",
   },
   starButton: {
     padding: 4,

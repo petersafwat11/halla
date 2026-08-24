@@ -7,6 +7,7 @@ import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
 import { colors } from "../../../styles/tokens";
 import { getLocalized, formatDate } from "@halaa/shared/utils/locale";
+import { isolateLtr, isolateAuto } from "@halaa/shared/utils/bidi";
 import AdminListItem from "../common/AdminListItem";
 
 const BusinessListItem = ({ business, onPress, onManagePlan, selected = false, onSelect }) => {
@@ -29,7 +30,10 @@ const BusinessListItem = ({ business, onPress, onManagePlan, selected = false, o
 
     Alert.alert(
       t("businesses.actions.statusConfirmTitle", { action: actionLabel }),
-      t("businesses.actions.statusConfirmBody", { action: actionLabel, name }),
+      t("businesses.actions.statusConfirmBody", {
+        action: actionLabel,
+        name: isolateAuto(name),
+      }),
       [
         { text: t("common.cancel"), style: "cancel" },
         {
@@ -51,7 +55,7 @@ const BusinessListItem = ({ business, onPress, onManagePlan, selected = false, o
   const handleDelete = () => {
     Alert.alert(
       t("businesses.actions.deleteConfirmTitle"),
-      t("businesses.actions.deleteConfirmBody", { name }),
+      t("businesses.actions.deleteConfirmBody", { name: isolateAuto(name) }),
       [
         { text: t("common.cancel"), style: "cancel" },
         {
@@ -106,15 +110,23 @@ const BusinessListItem = ({ business, onPress, onManagePlan, selected = false, o
     <AdminListItem
       title={name || t("businesses.labels.unnamed")}
       subtitle={email}
-      subtitleAlt={phoneNumber ? `‪${phoneNumber}‬` : null}
+      // Phone digits are intrinsically LTR — isolated via the shared BiDi
+      // helper (never ad-hoc embedding marks).
+      subtitleAlt={phoneNumber ? isolateLtr(phoneNumber) : null}
       avatarColor={colors.primary[500]}
       status={status}
       details={[
-        { icon: "card-outline", text: planName || t("businesses.labels.noPlan") },
+        {
+          icon: "card-outline",
+          // Plan display names are backend bilingual content — first-strong.
+          // The "No plan" fallback is app copy, so adaptivity follows planName.
+          text: planName || t("businesses.labels.noPlan"),
+          adaptive: Boolean(planName),
+        },
         {
           icon: "calendar-outline",
           text: formattedDate
-            ? `${t("businesses.labels.joined")} ${formattedDate}`
+            ? t("common.joinedDate", { date: formattedDate })
             : t("common.unknown"),
         },
       ]}

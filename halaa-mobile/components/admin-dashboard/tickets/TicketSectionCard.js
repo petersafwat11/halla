@@ -1,29 +1,74 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import AdaptiveText from "../../commen/AdaptiveText";
+import LocalizedText from "../../commen/LocalizedText";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
 import { colors, spacing, borderRadius, typography } from "../../../styles/tokens";
 
+/**
+ * TicketSectionCard - Reusable card container with icon + title header.
+ *
+ * The section title is app copy and always follows the UI locale. Header
+ * icons are semantic (message/attachment/details) — never mirrored.
+ */
 const TicketSectionCard = ({ title, icon, children }) => (
   <View style={styles.sectionCard}>
     <View style={styles.sectionHeader}>
       <View style={styles.sectionIconWrap}>
         <Ionicons name={icon} size={16} color={colors.primary[500]} />
       </View>
-      <Text style={styles.sectionTitle}>{title}</Text>
+      <LocalizedText style={styles.sectionTitle}>{title}</LocalizedText>
     </View>
     {children}
   </View>
 );
 
-const TicketInfoRow = ({ icon, label, value, badge, last }) => (
-  <View style={[styles.infoRow, last && styles.infoRowLast]}>
-    <View style={styles.infoLeft}>
-      <Ionicons name={icon} size={15} color={colors.natural[400]} />
-      <Text style={styles.infoLabel}>{label}</Text>
+/**
+ * TicketInfoRow - Label / value row inside a TicketSectionCard.
+ *
+ * The label is app copy and always follows the UI locale; it never changes
+ * with the value's script (blueprint §5.1). The value mode is declared per
+ * row (blueprint §5):
+ *   - "adaptive"   (default) arbitrary user/backend content — first-strong
+ *                  direction with isolation (names, categories);
+ *   - "ltr"        intrinsically LTR tokens — email, username, IDs;
+ *   - "localized"  locale-formatted app values (dates, counts) rendered with
+ *                  first-strong isolation so mixed digit runs cannot split.
+ */
+const TicketInfoRow = ({ icon, label, value, badge, last, mode = "adaptive" }) => {
+  if (badge || mode === "adaptive") {
+    return (
+      <View style={[styles.infoRow, last && styles.infoRowLast]}>
+        <View style={styles.infoLeft}>
+          <Ionicons name={icon} size={15} color={colors.natural[400]} />
+          <LocalizedText style={styles.infoLabel}>{label}</LocalizedText>
+        </View>
+        {badge ?? (
+          <AdaptiveText style={styles.infoValue} numberOfLines={1}>
+            {value ?? "—"}
+          </AdaptiveText>
+        )}
+      </View>
+    );
+  }
+
+  const isLtrValue = mode === "ltr";
+  return (
+    <View style={[styles.infoRow, last && styles.infoRowLast]}>
+      <View style={styles.infoLeft}>
+        <Ionicons name={icon} size={15} color={colors.natural[400]} />
+        <LocalizedText style={styles.infoLabel}>{label}</LocalizedText>
+      </View>
+      <LocalizedText
+        style={[styles.infoValue, isLtrValue ? styles.ltrValue : null]}
+        numberOfLines={1}
+      >
+        {isLtrValue ? isolateLtr(value ?? "—") : (value ?? "—")}
+      </LocalizedText>
     </View>
-    {badge || <Text style={styles.infoValue} numberOfLines={1}>{value ?? "—"}</Text>}
-  </View>
-);
+  );
+};
 
 const styles = StyleSheet.create({
   sectionCard: {
@@ -72,6 +117,9 @@ const styles = StyleSheet.create({
     color: colors.natural[800],
     fontWeight: "500",
     maxWidth: "55%",
+  },
+  ltrValue: {
+    writingDirection: "ltr",
   },
 });
 

@@ -28,6 +28,8 @@ import AccessLinksSheet from "../../components/host/post-event/AccessLinksSheet"
 import PublishControls from "../../components/host/post-event/PublishControls";
 import LegalLinks from "../../components/legal/LegalLinks";
 import DirectionalIonicon from "../../components/common/DirectionalIonicon";
+import LocalizedText from "../../components/commen/LocalizedText";
+import AdaptiveText from "../../components/commen/AdaptiveText";
 
 const StatusBanner = ({ isPublished, t }) => (
   <View
@@ -36,12 +38,13 @@ const StatusBanner = ({ isPublished, t }) => (
       isPublished ? styles.publishedBanner : styles.draftBanner,
     ]}
   >
+    {/* Status glyph is semantic, not directional — never mirrored. */}
     <Ionicons
       name={isPublished ? "checkmark-circle" : "time-outline"}
       size={16}
       color={isPublished ? "#2A8C5B" : "#C28E5C"}
     />
-    <Text
+    <LocalizedText
       style={[
         styles.statusText,
         { color: isPublished ? "#2A8C5B" : "#C28E5C" },
@@ -50,7 +53,7 @@ const StatusBanner = ({ isPublished, t }) => (
       {isPublished
         ? t("hostPostEvent.status.published")
         : t("hostPostEvent.status.draft")}
-    </Text>
+    </LocalizedText>
   </View>
 );
 
@@ -189,17 +192,19 @@ const ManagePostEventScreen = ({ navigation, route }) => {
     return (
       <SafeAreaView style={styles.safeArea} edges={["top"]}>
         <View style={styles.centered}>
-          <Text style={styles.errorText}>
+          {/* Backend error text is arbitrary content — adaptive first-strong
+              direction; the localized retry label below stays locale-driven. */}
+          <AdaptiveText style={styles.errorText}>
             {contentQuery.error?.message ||
               t("hostPostEvent.errors.loadFailed")}
-          </Text>
+          </AdaptiveText>
           <TouchableOpacity
             style={styles.retryButton}
             onPress={() => contentQuery.refetch()}
           >
-            <Text style={styles.retryText}>
+            <LocalizedText style={styles.retryText}>
               {t("hostPostEvent.errors.retry")}
-            </Text>
+            </LocalizedText>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -213,10 +218,13 @@ const ManagePostEventScreen = ({ navigation, route }) => {
           style={styles.backButton}
           onPress={() => navigation.goBack()}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel={t("common.back", { defaultValue: "Back" })}
         >
+          {/* Back arrow is a directional navigation glyph — flips with locale. */}
           <DirectionalIonicon name="arrow-back" size={20} color="#F9F4EF" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t("host.title")}</Text>
+        <LocalizedText style={styles.headerTitle}>{t("host.title")}</LocalizedText>
         <View style={styles.headerRight} />
       </View>
 
@@ -229,9 +237,9 @@ const ManagePostEventScreen = ({ navigation, route }) => {
 
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>
+            <LocalizedText style={styles.sectionTitle}>
               {t("hostPostEvent.photos.title")}
-            </Text>
+            </LocalizedText>
           </View>
           <MediaUploader
             media={media}

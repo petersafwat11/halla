@@ -1,19 +1,20 @@
 import React from "react";
 import {
   View,
-  Text,
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "../../../localization";
+import { formatCount } from "@halaa/shared/utils/locale";
+import LocalizedText from "../../commen/LocalizedText";
 import {
   colors,
   spacing,
   borderRadius,
   typography,
-  textStyles,
 } from "../../../styles/tokens";
 
 /**
@@ -34,6 +35,7 @@ const BulkActionsBar = ({
   onClearSelection,
   actions = [],
 }) => {
+  const { t, currentLanguage } = useTranslation("admin");
   const selectedCount = selectedIds.length;
   if (selectedCount === 0) return null;
 
@@ -41,7 +43,7 @@ const BulkActionsBar = ({
 
   return (
     <View style={styles.container}>
-      {/* Left: select-all toggle + count */}
+      {/* Logical start: select-all toggle + count */}
       <TouchableOpacity
         style={styles.selectSection}
         onPress={allSelected ? onClearSelection : onSelectAll}
@@ -54,10 +56,11 @@ const BulkActionsBar = ({
             color={allSelected ? "#fff" : colors.primary[500]}
           />
         </View>
-        <Text style={styles.countText}>
-          <Text style={styles.countNum}>{selectedCount}</Text>
-          {" selected"}
-        </Text>
+        <LocalizedText style={styles.countText}>
+          {t("common.selectedCount", {
+            count: formatCount(selectedCount, currentLanguage),
+          })}
+        </LocalizedText>
       </TouchableOpacity>
 
       {/* Middle: scrollable action buttons */}
@@ -88,9 +91,9 @@ const BulkActionsBar = ({
               ) : (
                 <View style={styles.actionBtnContent}>
                   <Ionicons name={action.icon} size={14} color={btnColor} />
-                  <Text style={[styles.actionBtnText, { color: btnColor }]}>
+                  <LocalizedText style={[styles.actionBtnText, { color: btnColor }]}>
                     {action.label}
-                  </Text>
+                  </LocalizedText>
                 </View>
               )}
             </TouchableOpacity>
@@ -98,7 +101,7 @@ const BulkActionsBar = ({
         })}
       </ScrollView>
 
-      {/* Right: close / deselect-all */}
+      {/* Logical end: close / deselect-all */}
       <TouchableOpacity
         style={styles.closeBtn}
         onPress={onClearSelection}
@@ -145,10 +148,6 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.label.large,
     color: colors.natural[700],
     fontWeight: typography.fontWeight.regular,
-  },
-  countNum: {
-    fontWeight: typography.fontWeight.semibold,
-    color: colors.primary[700],
   },
   actionsScroll: { flex: 1 },
   actionsContent: {

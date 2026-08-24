@@ -4,6 +4,7 @@
  */
 
 import { z } from "zod";
+import { saudiPhone } from "@halaa/shared/schemas/_shared";
 
 // ============================================
 // GUEST SCHEMAS
@@ -139,10 +140,7 @@ export const CheckInByIdSchema = (t = idT) =>
  */
 export const CheckInByPhoneSchema = (t = idT) =>
   z.object({
-    phone: z
-      .string()
-      .min(9, t("checkIn.phoneMinLength"))
-      .regex(/^[0-9+\-\s()]+$/, t("checkIn.phoneInvalid")),
+    phone: saudiPhone(t),
   });
 
 /**

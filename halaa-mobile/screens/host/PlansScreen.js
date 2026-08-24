@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useMemo } from "react";
 import {
   View,
-  Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
+import LocalizedText from "../components/commen/LocalizedText";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
@@ -136,7 +136,7 @@ const PlansScreen = () => {
         <TopBar title={t("pageTitle")} showBack={true} />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary[500]} />
-          <Text style={styles.loadingText}>{t("loading")}</Text>
+          <LocalizedText style={styles.loadingText}>{t("loading")}</LocalizedText>
         </View>
       </SafeAreaView>
     );
@@ -148,13 +148,13 @@ const PlansScreen = () => {
         <TopBar title={t("pageTitle")} showBack={true} />
         <View style={styles.errorContainer}>
           <Ionicons name="alert-circle-outline" size={48} color={colors.error[500]} />
-          <Text style={styles.errorText}>{t("errors.loadFailed")}</Text>
+          <LocalizedText style={styles.errorText}>{t("errors.loadFailed")}</LocalizedText>
           <TouchableOpacity
             style={styles.retryButton}
             onPress={handleRetry}
             activeOpacity={0.85}
           >
-            <Text style={styles.retryButtonText}>{t("errors.retry")}</Text>
+            <LocalizedText style={styles.retryButtonText}>{t("errors.retry")}</LocalizedText>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -178,7 +178,7 @@ const PlansScreen = () => {
             onPress={handleContinueToSummary}
             activeOpacity={0.85}
           >
-            <Text style={styles.continueBtnText}>{t("buttons.continueToSummary")}</Text>
+            <LocalizedText style={styles.continueBtnText}>{t("buttons.continueToSummary")}</LocalizedText>
           </TouchableOpacity>
         </ScrollView>
       </SafeAreaView>
@@ -216,14 +216,14 @@ const PlansScreen = () => {
                 }}
                 activeOpacity={0.7}
               >
-                <Text
+                <LocalizedText
                   style={[
                     styles.billingPillText,
                     active && styles.billingPillTextActive,
                   ]}
                 >
                   {t(`billingTypes.${type}`)}
-                </Text>
+                </LocalizedText>
               </TouchableOpacity>
             );
           })}
@@ -232,7 +232,7 @@ const PlansScreen = () => {
         {/* Plan cards */}
         {basicPlans.length === 0 && premiumPlans.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>{t("errors.noPlansAvailable")}</Text>
+            <LocalizedText style={styles.emptyText}>{t("errors.noPlansAvailable")}</LocalizedText>
           </View>
         ) : (
           <>

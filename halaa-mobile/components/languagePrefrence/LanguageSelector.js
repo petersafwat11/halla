@@ -14,14 +14,12 @@ const LanguageSelector = ({ onLanguageSelect }) => {
     {
       code: "ar",
       name: "العربية",
-      subtitle: "اللغة العربية",
       flag: "🇸🇦",
       direction: "rtl",
     },
     {
       code: "en",
       name: "English",
-      subtitle: "English Language",
       flag: "🇺🇸",
       direction: "ltr",
     },
@@ -57,7 +55,7 @@ const LanguageSelector = ({ onLanguageSelect }) => {
                 onPress={() => handleLanguageSelect(language.code)}
                 activeOpacity={0.8}
                 accessibilityRole="button"
-                accessibilityLabel={`${language.name} - ${language.subtitle}`}
+                accessibilityLabel={language.name}
               >
                 <View style={styles.languageContent}>
                   <Text style={styles.flag}>{language.flag}</Text>
@@ -69,14 +67,6 @@ const LanguageSelector = ({ onLanguageSelect }) => {
                       ]}
                     >
                       {language.name}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.languageSubtitle,
-                        { writingDirection: language.direction },
-                      ]}
-                    >
-                      {language.subtitle}
                     </Text>
                   </View>
                   <View style={styles.arrow}>
@@ -182,12 +172,6 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontFamily: "Cairo_700Bold",
     color: "#2c2c2c",
-    marginBottom: 4,
-  },
-  languageSubtitle: {
-    fontSize: 14,
-    fontFamily: "Cairo_400Regular",
-    color: "#666",
   },
   arrow: {
     width: 44,

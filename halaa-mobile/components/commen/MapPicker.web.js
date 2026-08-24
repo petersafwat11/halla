@@ -9,8 +9,14 @@ import { useFieldDirection } from "../../hooks/useInputDirection";
  * Web stub for MapPicker — react-native-maps is not supported on web.
  * Shows a disabled placeholder instead.
  */
-const MapPickerInner = ({ label, placeholder, error, disabled }) => {
-  const fieldDirection = useFieldDirection("localized");
+const MapPickerInner = ({
+  label,
+  placeholder,
+  error,
+  disabled,
+  contentDirection = "localized",
+}) => {
+  const fieldDirection = useFieldDirection(contentDirection);
   return (
     <View style={styles.container}>
       {label && <Text style={[styles.label, fieldDirection.text]}>{label}</Text>}
@@ -43,6 +49,7 @@ const MapPicker = ({
   placeholder = "Map not available on web",
   disabled = false,
   rules,
+  contentDirection = "localized",
 }) => {
   const { control } = useFormContext();
 
@@ -59,6 +66,7 @@ const MapPicker = ({
           label={label}
           placeholder={placeholder}
           disabled={disabled}
+          contentDirection={contentDirection}
         />
       )}
     />

@@ -1,6 +1,7 @@
 import React from "react";
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
+import { View, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
 import { useTranslation } from "../../../localization";
+import LocalizedText from "../../commen/LocalizedText";
 import { colors, spacing, borderRadius, typography, backgrounds } from "../../../styles/tokens";
 
 const TABS = [
@@ -29,10 +30,12 @@ const PlanTabs = ({ activeTab, onTabChange }) => {
               key={tab.key}
               style={[styles.tab, isActive && styles.activeTab]}
               onPress={() => onTabChange(tab.key)}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: isActive }}
             >
-              <Text style={[styles.tabText, isActive && styles.activeTabText]}>
+              <LocalizedText style={[styles.tabText, isActive && styles.activeTabText]}>
                 {t(tab.labelKey)}
-              </Text>
+              </LocalizedText>
             </TouchableOpacity>
           );
         })}

@@ -8,8 +8,20 @@ import {
 } from "react-native";
 import TextInput from "../commen/DirectionalTextInput";
 import { Ionicons } from "@expo/vector-icons";
+import LocalizedText from "../commen/LocalizedText";
+import AdaptiveText from "../commen/AdaptiveText";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
+import { formatSar } from "@halaa/shared/utils";
 import { colors, spacing, borderRadius, typography } from "../../styles/tokens";
 
+/**
+ * Discount-code card (web/Moyasar checkout only).
+ *
+ * Field contract: the code is a canonical LTR token (`contentDirection="ltr"`)
+ * with a localized label/placeholder/error chrome that follows the UI locale
+ * and never flips with the typed value. The applied-success line interpolates
+ * the code and amount as isolated tokens inside the translated sentence.
+ */
 const DiscountCodeCard = ({
   discountCode,
   applied,
@@ -24,6 +36,11 @@ const DiscountCodeCard = ({
 }) => {
   const applyDisabled = !discountCode.trim() || loading;
 
+  const formattedAmount =
+    typeof amount === "number"
+      ? formatSar(amount, { trimTrailingZeros: true })
+      : String(amount ?? "");
+
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
@@ -32,7 +49,9 @@ const DiscountCodeCard = ({
           size={16}
           color={colors.primary[500]}
         />
-        <Text style={styles.cardTitle}>{t("summary.discount.title")}</Text>
+        <LocalizedText style={styles.cardTitle}>
+          {t("summary.discount.title")}
+        </LocalizedText>
       </View>
 
       <View style={styles.cardContent}>
@@ -43,6 +62,7 @@ const DiscountCodeCard = ({
               applied && styles.discountInputApplied,
               !!errorMessage && !applied && styles.discountInputError,
             ]}
+            contentDirection="ltr"
             placeholder={t("summary.discount.placeholder")}
             placeholderTextColor={colors.natural[350]}
             value={discountCode}
@@ -83,16 +103,21 @@ const DiscountCodeCard = ({
         </View>
 
         {applied ? (
-          <Text style={styles.discountSuccess}>
+          <LocalizedText style={styles.discountSuccess}>
             {t("summary.discount.success", {
-              code: appliedCode,
-              amount: typeof amount === "number" ? amount.toFixed(2).replace(/\.00$/, "") : amount,
+              // Code + amount are LTR tokens isolated inside the sentence.
+              code: isolateLtr(appliedCode),
+              amount: isolateLtr(formattedAmount),
             })}
-          </Text>
+          </LocalizedText>
         ) : null}
 
         {errorMessage && !applied ? (
-          <Text style={styles.discountErrorMsg}>{errorMessage}</Text>
+          // Backend validation reasons may arrive in either script — follow
+          // the content's first strong character, not the UI locale.
+          <AdaptiveText style={styles.discountErrorMsg}>
+            {errorMessage}
+          </AdaptiveText>
         ) : null}
       </View>
     </View>

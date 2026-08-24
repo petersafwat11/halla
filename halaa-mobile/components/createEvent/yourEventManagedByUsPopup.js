@@ -1,14 +1,24 @@
 import React from "react";
 import {
   View,
-  Text,
   StyleSheet,
   Modal,
   TouchableOpacity,
   Image,
   Pressable
 } from "react-native";
+import { useTranslation } from "../../localization";
+import LocalizedText from "../commen/LocalizedText";
+
+/**
+ * Onboarding popup shown in the host create-event wizard. All copy is
+ * app-authored → `LocalizedText` roles so title/body/buttons always follow
+ * the UI locale (blueprint §6); centre alignment is the designed layout and
+ * the writing direction still comes from the locale.
+ */
 const YourEventManagedByUsPopup = ({ visible, onClose, onContactUs }) => {
+  const { t } = useTranslation("createEvent");
+
   return (
     <Modal
       visible={visible}
@@ -31,12 +41,12 @@ const YourEventManagedByUsPopup = ({ visible, onClose, onContactUs }) => {
 
             {/* Title and Description */}
             <View style={styles.textContainer}>
-              <Text style={styles.title}>
-                دعوتك علينا
-              </Text>
-              <Text style={styles.description}>
-                ممكن تبعتلنا كل التفاصيل، واحنا هنخليلك كل الخطوات سهلة وبسيطة!
-              </Text>
+              <LocalizedText role="pageTitle" style={styles.title} center>
+                {t("managed_popup_title")}
+              </LocalizedText>
+              <LocalizedText role="body" style={styles.description} center>
+                {t("managed_popup_description")}
+              </LocalizedText>
             </View>
           </View>
 
@@ -47,7 +57,9 @@ const YourEventManagedByUsPopup = ({ visible, onClose, onContactUs }) => {
               onPress={onContactUs}
               activeOpacity={0.7}
             >
-              <Text style={styles.primaryButtonText}>تواصل معنا</Text>
+              <LocalizedText style={styles.primaryButtonText}>
+                {t("managed_popup_contact")}
+              </LocalizedText>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -55,7 +67,9 @@ const YourEventManagedByUsPopup = ({ visible, onClose, onContactUs }) => {
               onPress={onClose}
               activeOpacity={0.7}
             >
-              <Text style={styles.secondaryButtonText}>تخطى</Text>
+              <LocalizedText style={styles.secondaryButtonText}>
+                {t("managed_popup_skip")}
+              </LocalizedText>
             </TouchableOpacity>
           </View>
         </Pressable>
@@ -96,20 +110,23 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     alignItems: "center",
     gap: 16
-  },  title: {
+  },
+  title: {
     fontSize: 24,
     fontFamily: "Cairo_700Bold",
     color: "#2C2C2C",
     lineHeight: 32,
     textAlign: "center"
-  },description: {
+  },
+  description: {
     fontSize: 16,
     fontFamily: "Cairo_400Regular",
     color: "#656565",
     lineHeight: 24,
     letterSpacing: 0.08,
     textAlign: "center"
-  },buttonContainer: {
+  },
+  buttonContainer: {
     flexDirection: "column",
     alignItems: "flex-start",
     backgroundColor: "#FFF",

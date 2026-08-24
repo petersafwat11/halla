@@ -1,7 +1,6 @@
 import React, { useRef, useEffect } from "react";
 import {
   View,
-  Text,
   TouchableOpacity,
   StyleSheet,
   Animated,
@@ -9,6 +8,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
 import DirectionalIonicon from "../common/DirectionalIonicon";
+import LocalizedText from "../commen/LocalizedText";
 
 const ROLES = [
   {
@@ -68,12 +68,13 @@ function RoleCard({ role, index, onPress }) {
           <Ionicons name={role.icon} size={26} color={role.accentColor} />
         </View>
         <View style={styles.cardText}>
-          <Text style={styles.cardTitle} numberOfLines={1}>
+          {/* Role title/description are app copy — always the UI locale. */}
+          <LocalizedText role="label" numberOfLines={1} style={styles.cardTitle}>
             {t(role.titleKey)}
-          </Text>
-          <Text style={styles.cardDesc} numberOfLines={2}>
+          </LocalizedText>
+          <LocalizedText role="hint" numberOfLines={2} style={styles.cardDesc}>
             {t(role.descKey)}
-          </Text>
+          </LocalizedText>
         </View>
         <DirectionalIonicon
           name="chevron-forward"
@@ -119,8 +120,12 @@ export default function RoleSelectionView({ onSelectRole, onLogin }) {
         <View style={styles.logoCircle}>
           <Ionicons name="layers-outline" size={30} color="#c28e5c" />
         </View>
-        <Text style={styles.title}>{t("signup.selectRole")}</Text>
-        <Text style={styles.subtitle}>{t("signup.selectRoleDescription")}</Text>
+        <LocalizedText role="pageTitle" center style={styles.title}>
+          {t("signup.selectRole")}
+        </LocalizedText>
+        <LocalizedText role="description" center style={styles.subtitle}>
+          {t("signup.selectRoleDescription")}
+        </LocalizedText>
       </Animated.View>
 
       <View style={styles.cards}>
@@ -135,9 +140,13 @@ export default function RoleSelectionView({ onSelectRole, onLogin }) {
       </View>
 
       <View style={styles.loginRow}>
-        <Text style={styles.loginText}>{t("signup.hasAccount")}</Text>
+        <LocalizedText style={styles.loginText}>
+          {t("signup.hasAccount")}
+        </LocalizedText>
         <TouchableOpacity onPress={onLogin} accessibilityRole="link">
-          <Text style={styles.loginLink}>{t("signup.signIn")}</Text>
+          <LocalizedText style={styles.loginLink}>
+            {t("signup.signIn")}
+          </LocalizedText>
         </TouchableOpacity>
       </View>
     </View>
@@ -171,13 +180,11 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_700Bold",
     color: "#2c2c2c",
     marginBottom: 6,
-    textAlign: "center",
+    lineHeight: 34,
   },
   subtitle: {
     fontSize: 14,
-    fontFamily: "Cairo_400Regular",
     color: "#a0a0a0",
-    textAlign: "center",
     lineHeight: 22,
   },
   cards: {
@@ -218,7 +225,6 @@ const styles = StyleSheet.create({
   },
   cardDesc: {
     fontSize: 13,
-    fontFamily: "Cairo_400Regular",
     color: "#a0a0a0",
     lineHeight: 20,
   },

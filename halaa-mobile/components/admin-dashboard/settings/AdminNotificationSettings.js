@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   View,
-  Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
@@ -11,6 +10,7 @@ import { useForm, FormProvider } from "react-hook-form";
 import { ToggleInput } from "../../commen";
 import { useTranslation } from "../../../localization";
 import { useToast } from "../../../contexts/ToastContext";
+import LocalizedText from "../../commen/LocalizedText";
 import {
   colors,
   spacing,
@@ -109,12 +109,12 @@ const AdminNotificationSettings = ({ initialData, onUpdate }) => {
         >
           {/* App Notifications Section */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
+            <LocalizedText role="sectionTitle" style={styles.sectionTitle}>
               {t("settings.notifications.appNotifications")}
-            </Text>
-            <Text style={styles.sectionDescription}>
+            </LocalizedText>
+            <LocalizedText role="description" style={styles.sectionDescription}>
               {t("settings.notifications.appDescription")}
-            </Text>
+            </LocalizedText>
 
             <View style={styles.togglesGroup}>
               <ToggleInput
@@ -152,12 +152,12 @@ const AdminNotificationSettings = ({ initialData, onUpdate }) => {
 
           {/* Email Notifications Section */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
+            <LocalizedText role="sectionTitle" style={styles.sectionTitle}>
               {t("settings.notifications.emailNotifications")}
-            </Text>
-            <Text style={styles.sectionDescription}>
+            </LocalizedText>
+            <LocalizedText role="description" style={styles.sectionDescription}>
               {t("settings.notifications.emailDescription")}
-            </Text>
+            </LocalizedText>
 
             <View style={styles.togglesGroup}>
               <ToggleInput
@@ -196,9 +196,9 @@ const AdminNotificationSettings = ({ initialData, onUpdate }) => {
               disabled={loading || !isDirty}
               activeOpacity={0.7}
             >
-              <Text style={styles.cancelButtonText}>
+              <LocalizedText style={styles.cancelButtonText}>
                 {t("common.cancel")}
-              </Text>
+              </LocalizedText>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -210,9 +210,9 @@ const AdminNotificationSettings = ({ initialData, onUpdate }) => {
               disabled={!isDirty || loading}
               activeOpacity={0.7}
             >
-              <Text style={styles.saveButtonText}>
+              <LocalizedText style={styles.saveButtonText}>
                 {loading ? t("common.loading") : t("common.save")}
-              </Text>
+              </LocalizedText>
             </TouchableOpacity>
           </View>
         </ScrollView>

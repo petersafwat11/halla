@@ -1,16 +1,29 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { getLocalized } from "@halaa/shared/utils/locale";
-import { isolateAuto, isolateLtr } from "@halaa/shared/utils/bidi";
+import LocalizedText from "../commen/LocalizedText";
+import AdaptiveText from "../commen/AdaptiveText";
 import {
   COMPENSATION_PERCENTAGE,
   isPoolPlan,
   isRecurringBilling,
   getBillingType,
 } from "@halaa/shared/constants/plans";
+import { getLocalized } from "@halaa/shared/utils/locale";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
+import { countToken, priceToken } from "@halaa/shared/utils/displayTokens";
 import { colors, spacing, borderRadius, typography } from "../../styles/tokens";
 
+/**
+ * Checkout plan summary.
+ *
+ * Content contract (blueprint §5/§6):
+ *  - plan name: backend bilingual/mixed value → AdaptiveText (first strong);
+ *  - prices/counts: atomic formatted tokens (priceToken/countToken), never
+ *    JSX-concatenated sentences;
+ *  - labels, subtitles and hints: localized copy that always follows the UI
+ *    locale, regardless of the values around them.
+ */
 const PlanSummaryCard = ({
   selectedPlan,
   billingType,
@@ -34,8 +47,7 @@ const PlanSummaryCard = ({
     isRecurringBilling(effectiveBillingType) ||
     selectedPlan?.isPoolSubscription === true;
 
-  const planName =
-    getLocalized(selectedPlan, "name", locale) || t("summary.planDetails");
+  const planName = getLocalized(selectedPlan, "name", locale) || t("summary.planDetails");
 
   const planSubtitle = isPool
     ? t("summary.unlimitedEvents")
@@ -51,9 +63,15 @@ const PlanSummaryCard = ({
       selectedPlan?.limits?.maxInvitesPerEvent ??
       0;
 
+  // Feature rows are full translation keys with pre-formatted isolated count
+  // tokens interpolated — no manual label + number concatenation.
   const inviteLabel = isPool
-    ? `${isolateLtr(baseInvites)} ${t("summary.invitePool") || t("inviteSelector.poolLabel")}`
-    : `${isolateLtr(baseInvites)} ${t("summary.invitesLabel")}`;
+    ? t("summary.poolInvitesRow", {
+        count: countToken(baseInvites, locale),
+      })
+    : t("summary.baseInvitesRow", {
+        count: countToken(baseInvites, locale),
+      });
 
   const eventLabel = isPool
     ? t("summary.unlimitedEvents")
@@ -76,7 +94,9 @@ const PlanSummaryCard = ({
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
-        <Text style={styles.cardTitle}>{t("summary.planDetails")}</Text>
+        <LocalizedText style={styles.cardTitle}>
+          {t("summary.planDetails")}
+        </LocalizedText>
       </View>
 
       <View style={styles.cardContent}>
@@ -89,23 +109,28 @@ const PlanSummaryCard = ({
             />
           </View>
           <View style={styles.planDetails}>
-            <Text style={styles.planName} numberOfLines={2}>
-              {isolateAuto(planName)}
-            </Text>
-            <Text style={styles.planType}>{planSubtitle}</Text>
+            <AdaptiveText style={styles.planName} numberOfLines={2}>
+              {planName}
+            </AdaptiveText>
+            <LocalizedText style={styles.planType}>
+              {planSubtitle}
+            </LocalizedText>
           </View>
           <View style={styles.planPrice}>
             {priceDisplay ? (
-              <Text style={styles.priceAmount}>{isolateLtr(priceDisplay)}</Text>
+              // Native store price string — trusted, isolated verbatim.
+              <LocalizedText style={styles.priceAmount}>
+                {isolateLtr(priceDisplay)}
+              </LocalizedText>
             ) : isNative ? (
-              <Text style={styles.priceUnavailable}>
-                {t("summary.priceUnavailable", "السعر غير متاح")}
-              </Text>
+              <LocalizedText style={styles.priceUnavailable}>
+                {t("summary.priceUnavailable")}
+              </LocalizedText>
             ) : (
-              <>
-                <Text style={styles.priceAmount}>{isolateLtr(String(planPrice ?? ""))}</Text>
-                <Text style={styles.priceCurrency}>{t("summary.currency")}</Text>
-              </>
+              // Web/Moyasar: ONE atomic price token (amount + currency).
+              <LocalizedText style={styles.priceAmount}>
+                {priceToken(planPrice, t("summary.currency"))}
+              </LocalizedText>
             )}
           </View>
         </View>
@@ -118,7 +143,9 @@ const PlanSummaryCard = ({
           {extraInvites > 0 ? (
             <FeatureRow
               iconName="add-circle-outline"
-              text={`${isolateLtr(extraInvites)} ${t("summary.extraInvites")}`}
+              text={t("summary.extraInvitesRow", {
+                count: countToken(extraInvites, locale),
+              })}
             />
           ) : null}
           <FeatureRow
@@ -127,7 +154,9 @@ const PlanSummaryCard = ({
           />
           <FeatureRow
             iconName="gift-outline"
-            text={`${isolateLtr(compensationCount)} ${t("summary.compensationInvites")}`}
+            text={t("summary.compensationInvitesRow", {
+              count: countToken(compensationCount, locale),
+            })}
           />
         </View>
 
@@ -139,21 +168,25 @@ const PlanSummaryCard = ({
               size={18}
               color={colors.primary[700]}
             />
-            <Text style={styles.totalLabel}>{t("summary.totalInvites")}</Text>
+            <LocalizedText style={styles.totalLabel}>
+              {t("summary.totalInvites")}
+            </LocalizedText>
           </View>
-          <Text style={styles.totalValue}>{isolateLtr(totalInvites)}</Text>
+          <LocalizedText style={styles.totalValue}>
+            {countToken(totalInvites, locale)}
+          </LocalizedText>
         </View>
-        <Text style={styles.totalHint}>
+        <LocalizedText style={styles.totalHint}>
           {t("summary.totalInvitesHint")}
-        </Text>
-        <Text style={styles.totalHint}>
+        </LocalizedText>
+        <LocalizedText style={styles.totalHint}>
           {t("summary.compensationHint")}
-        </Text>
-        <Text style={styles.totalHint}>
+        </LocalizedText>
+        <LocalizedText style={styles.totalHint}>
           {isPool
             ? t("summary.poolPlanHint")
             : t("summary.perEventPlanHint")}
-        </Text>
+        </LocalizedText>
       </View>
     </View>
   );
@@ -162,7 +195,7 @@ const PlanSummaryCard = ({
 const FeatureRow = ({ iconName, text }) => (
   <View style={styles.featureItem}>
     <Ionicons name={iconName} size={16} color={colors.primary[600]} />
-    <Text style={styles.featureText}>{text}</Text>
+    <LocalizedText style={styles.featureText}>{text}</LocalizedText>
   </View>
 );
 

@@ -4,7 +4,6 @@ import {
   View,
   ScrollView,
   TouchableOpacity,
-  Text,
   KeyboardAvoidingView,
   Platform,
   Dimensions,
@@ -15,6 +14,7 @@ import { useAuthStore } from "../../stores/authStore";
 import { useToast } from "../../contexts/ToastContext";
 import { ForgetPasswordForm, EmailSentView } from "../../components/auth";
 import TopBar from "../../components/plans/TopBar";
+import LocalizedText from "../../components/commen/LocalizedText";
 import { authErrorMessage } from "../../services/authErrors";
 
 const { width } = Dimensions.get("window");
@@ -82,9 +82,9 @@ export default function ForgetPasswordScreen({ navigation }) {
                   onPress={handleBackToLogin}
                   style={styles.backToLoginButton}
                 >
-                  <Text style={styles.backToLoginText}>
+                  <LocalizedText style={styles.backToLoginText}>
                     {t("forgetPassword.backToLogin")}
-                  </Text>
+                  </LocalizedText>
                 </TouchableOpacity>
               )}
             </View>

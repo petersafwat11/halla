@@ -1,10 +1,11 @@
 import React, { useEffect } from "react";
 import {
-  View, Text, StyleSheet, Modal, TouchableOpacity,
+  View, StyleSheet, Modal, TouchableOpacity,
   ScrollView, Animated, Dimensions, ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
+import LocalizedText from "../commen/LocalizedText";
 import { FilterDropdown } from "./_components/FilterDropdown";
 import { DistrictCheckboxes, PriceRangeInputs } from "./_components/FilterInputs";
 import { useFilterData } from "../../hooks/useFilterData";
@@ -50,24 +51,36 @@ export default function FilterPopup({ visible, onClose, filters, onApplyFilters,
       <View style={styles.overlay}>
         <TouchableOpacity style={styles.overlayTouchable} activeOpacity={1} onPress={onClose} />
         <Animated.View style={[styles.popup, { transform: [{ translateY: slideAnim }] }]}>
+          {/* Sheet header anatomy (blueprint §7): localized title at the
+              reading start/center and the close affordance at the LOGICAL
+              END — plain JSX order under the inherited direction, no
+              physical anchoring. */}
           <View style={styles.header}>
-            <TouchableOpacity onPress={onClose} activeOpacity={0.7}>
+            <View style={styles.headerBalance} />
+            <LocalizedText center style={styles.title} numberOfLines={1}>
+              {t("filters.title")}
+            </LocalizedText>
+            <TouchableOpacity
+              onPress={onClose}
+              activeOpacity={0.7}
+              hitSlop={{ top: 10, bottom: 10, start: 10, end: 10 }}
+              accessibilityRole="button"
+              accessibilityLabel={t("common.actions.close")}
+            >
               <Ionicons name="close" size={24} color={COLORS.textDark} />
             </TouchableOpacity>
-            <Text style={styles.title}>{t("filters.title")}</Text>
-            <View style={styles.placeholder} />
           </View>
 
           <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
             {hasError && (
               <View style={styles.errorBanner}>
-                <Text style={styles.errorText}>
-                  {t("common.errors.locationLoadFailed", "Couldn't load locations")}
-                </Text>
-                <TouchableOpacity onPress={retryAll} activeOpacity={0.7} style={styles.retryButton}>
-                  <Text style={styles.retryButtonText}>
-                    {t("common.actions.retry", "Retry")}
-                  </Text>
+                <LocalizedText style={styles.errorText}>
+                  {t("common.errors.locationLoadFailed")}
+                </LocalizedText>
+                <TouchableOpacity onPress={retryAll} activeOpacity={0.7} style={styles.retryButton} accessibilityRole="button">
+                  <LocalizedText style={styles.retryButtonText}>
+                    {t("common.actions.retry")}
+                  </LocalizedText>
                 </TouchableOpacity>
               </View>
             )}
@@ -129,7 +142,7 @@ export default function FilterPopup({ visible, onClose, filters, onApplyFilters,
                     loading={false}
                   />
                 ) : (
-                  <Text style={styles.noDataText}>{t("filters.noDistricts")}</Text>
+                  <LocalizedText center style={styles.noDataText}>{t("filters.noDistricts")}</LocalizedText>
                 )}
               </FilterField>
             )}
@@ -159,12 +172,13 @@ export default function FilterPopup({ visible, onClose, filters, onApplyFilters,
 
           </ScrollView>
 
+          {/* Footer actions stay in logical source order: Reset → Apply. */}
           <View style={styles.footer}>
-            <TouchableOpacity style={styles.resetButton} onPress={handleReset} activeOpacity={0.7}>
-              <Text style={styles.resetButtonText}>{t("filters.reset")}</Text>
+            <TouchableOpacity style={styles.resetButton} onPress={handleReset} activeOpacity={0.7} accessibilityRole="button">
+              <LocalizedText style={styles.resetButtonText}>{t("filters.reset")}</LocalizedText>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.applyButton} onPress={handleApply} activeOpacity={0.7}>
-              <Text style={styles.applyButtonText}>{t("filters.apply")}</Text>
+            <TouchableOpacity style={styles.applyButton} onPress={handleApply} activeOpacity={0.7} accessibilityRole="button">
+              <LocalizedText style={styles.applyButtonText}>{t("filters.apply")}</LocalizedText>
             </TouchableOpacity>
           </View>
         </Animated.View>
@@ -175,15 +189,15 @@ export default function FilterPopup({ visible, onClose, filters, onApplyFilters,
 
 const FilterField = ({ label, children }) => (
   <View style={filterGroup}>
-    <Text style={filterLabel}>{label}</Text>
+    {/* Field metadata always follows the UI locale — never the picked value. */}
+    <LocalizedText role="label" style={filterLabel}>{label}</LocalizedText>
     {children}
   </View>
 );
 
 const filterGroup = { marginBottom: 24 };
 const filterLabel = {
-  fontSize: 14, fontFamily: "Cairo_600SemiBold",
-  color: COLORS.textDark, marginBottom: 8,
+  marginBottom: 8,
 };
 
 const styles = StyleSheet.create({
@@ -197,11 +211,11 @@ const styles = StyleSheet.create({
     flexDirection: "row", justifyContent: "space-between", alignItems: "center",
     padding: 20, borderBottomWidth: 1, borderBottomColor: COLORS.borderLight,
   },
+  headerBalance: { width: 24, height: 24 },
   title: {
     fontSize: 18, fontFamily: "Cairo_700Bold", color: COLORS.textDark,
-    textAlign: "center", flex: 1,
+    flex: 1, marginHorizontal: 12,
   },
-  placeholder: { width: 24, height: 24 },
   content: { flex: 1, padding: 20 },
   dropdownTrigger: {
     flexDirection: "row", alignItems: "center", backgroundColor: COLORS.bgLight,
@@ -214,15 +228,15 @@ const styles = StyleSheet.create({
   },
   resetButton: {
     flex: 1, backgroundColor: COLORS.bgLight, borderRadius: 12, paddingVertical: 14,
-    alignItems: "center", borderWidth: 1, borderColor: COLORS.primary,
+    alignItems: "center", justifyContent: "center", minHeight: 48, borderWidth: 1, borderColor: COLORS.primary,
   },
   resetButtonText: { fontSize: 16, fontFamily: "Cairo_600SemiBold", color: COLORS.primary },
   applyButton: {
     flex: 1, backgroundColor: COLORS.primary, borderRadius: 12,
-    paddingVertical: 14, alignItems: "center",
+    paddingVertical: 14, alignItems: "center", justifyContent: "center", minHeight: 48,
   },
   applyButtonText: { fontSize: 16, fontFamily: "Cairo_600SemiBold", color: "#FFF" },
-  noDataText: { fontSize: 13, fontFamily: "Cairo_400Regular", color: "#888", textAlign: "center", paddingVertical: 12 },
+  noDataText: { fontSize: 13, fontFamily: "Cairo_400Regular", color: "#888", paddingVertical: 12 },
   errorBanner: {
     backgroundColor: "#FEF2F2",
     borderColor: "#FCA5A5",
@@ -242,6 +256,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 6,
+    minHeight: 36,
+    justifyContent: "center",
   },
   retryButtonText: { fontSize: 13, fontFamily: "Cairo_600SemiBold", color: "#FFF" },
 });

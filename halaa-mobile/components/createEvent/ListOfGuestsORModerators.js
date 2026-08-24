@@ -11,8 +11,11 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { isolateLtr } from "@halaa/shared/utils/bidi";
+import { formatCount } from "@halaa/shared/utils/locale";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "../../localization";
+import AdaptiveText from "../commen/AdaptiveText";
+import LocalizedText from "../commen/LocalizedText";
 import EditGuestOrModeratorsModal from "./EditGuestOrModeratorsModal";
 import CategoryPickerSheet from "../commen/CategoryPickerSheet";
 import Svg, { Path } from "react-native-svg";
@@ -78,7 +81,7 @@ const ListOfGuestsORModerators = ({
   categories = [],
   allowAddOnly = false,
 }) => {
-  const { t } = useTranslation("createEvent");
+  const { t, currentLanguage } = useTranslation("createEvent");
   const insets = useSafeAreaInsets();
   const [editingItem, setEditingItem] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -144,15 +147,19 @@ const ListOfGuestsORModerators = ({
           <PersonIcon />
         </View>
         <View style={styles.listItemInfo}>
-          <Text style={styles.listItemName}>
+          {/* Guest/moderator names and user-created categories are arbitrary
+              user content — adaptive first-strong rendering (blueprint §5.3). */}
+          <AdaptiveText style={styles.listItemName} numberOfLines={1}>
             {item.name}
-          </Text>
+          </AdaptiveText>
           <Text style={styles.listItemPhone}>
             {isolateLtr(item.phone || item.mobile)}
           </Text>
           {item.category ? (
             <View style={styles.categoryBadge}>
-              <Text style={styles.categoryBadgeText}>{item.category}</Text>
+              <AdaptiveText style={styles.categoryBadgeText} numberOfLines={1}>
+                {item.category}
+              </AdaptiveText>
             </View>
           ) : null}
         </View>
@@ -198,9 +205,9 @@ const ListOfGuestsORModerators = ({
             {/* Header */}
             <View style={styles.header}>
               <View style={styles.headerTop}>
-                <Text style={styles.headerTitle}>
+                <LocalizedText role="sectionTitle" style={styles.headerTitle}>
                   {title}
-                </Text>
+                </LocalizedText>
                 <TouchableOpacity
                   style={styles.closeButton}
                   onPress={onClose}
@@ -209,8 +216,16 @@ const ListOfGuestsORModerators = ({
                   <CloseIcon />
                 </TouchableOpacity>
               </View>
+              {/* Total is one authored interpolation per list type — the
+                  count never gets concatenated into the sentence in JSX. */}
               <Text style={styles.headerSubtitle}>
-                {t("total_label", { defaultValue: "إجمالي" })}: {list.length} {type === "guest" ? t("guest_singular", { defaultValue: "ضيف" }) : t("moderator_singular", { defaultValue: "مشرف" })}
+                {type === "guest"
+                  ? t("total_guests_count", {
+                      count: formatCount(list.length, currentLanguage || "ar"),
+                    })
+                  : t("total_moderators_count", {
+                      count: formatCount(list.length, currentLanguage || "ar"),
+                    })}
               </Text>
             </View>
 

@@ -13,8 +13,10 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLanguage, useTranslation } from "../../localization";
 import { getStatusVisual } from "../../constants/statusColors";
 import { getImageUrl } from "../../utils/imageUtils";
+import LocalizedText from "../commen/LocalizedText";
+import AdaptiveText from "../commen/AdaptiveText";
 import { formatDateTime } from "@halaa/shared/utils/locale";
-import { isolateLtr } from "@halaa/shared/utils/bidi";
+import { isolateAuto } from "@halaa/shared/utils/bidi";
 
 const TicketCard = ({ ticket, onDelete, onEdit, onRate, index }) => {
   const { t, currentLanguage } = useTranslation("tickets");
@@ -62,9 +64,9 @@ const TicketCard = ({ ticket, onDelete, onEdit, onRate, index }) => {
             styles.statusBadge,
             { backgroundColor: statusBg }]}
         >
-          <Text style={[styles.statusText, { color: statusFg }]}>
+          <LocalizedText style={[styles.statusText, { color: statusFg }]}>
             {t(`status.${ticket.status}`)}
-          </Text>
+          </LocalizedText>
         </View>
 
         <View style={styles.actions}>
@@ -75,9 +77,9 @@ const TicketCard = ({ ticket, onDelete, onEdit, onRate, index }) => {
               activeOpacity={0.7}
             >
               <Ionicons name="create-outline" size={16} color="#3498db" />
-                  <Text style={[styles.actionText, styles.editText]}>
+                  <LocalizedText style={[styles.actionText, styles.editText]}>
                     {t("actions.edit")}
-                  </Text>
+                  </LocalizedText>
             </TouchableOpacity>
           )}
 
@@ -89,9 +91,9 @@ const TicketCard = ({ ticket, onDelete, onEdit, onRate, index }) => {
                 activeOpacity={0.7}
               >
                 <Ionicons name="star-outline" size={16} color="#f39c12" />
-                <Text style={[styles.actionText, styles.rateText]}>
+                <LocalizedText style={[styles.actionText, styles.rateText]}>
                   {t("ratingInline.rateButton")}
-                </Text>
+                </LocalizedText>
               </TouchableOpacity>
             )}
 
@@ -101,33 +103,36 @@ const TicketCard = ({ ticket, onDelete, onEdit, onRate, index }) => {
             activeOpacity={0.7}
           >
             <Ionicons name="trash-outline" size={16} color="#e74c3c" />
-            <Text style={[styles.actionText, styles.deleteText]}>
+            <LocalizedText style={[styles.actionText, styles.deleteText]}>
               {t("actions.delete")}
-            </Text>
+            </LocalizedText>
           </TouchableOpacity>
         </View>
       </View>
 
       {/* Type */}
-      <Text style={styles.type}>
+      <LocalizedText style={styles.type}>
         {t(`types.${ticket.type}`)}
-      </Text>
+      </LocalizedText>
 
       {/* Bottom Section: Date and Message */}
       <View style={styles.bottom}>
         <View style={styles.dateContainer}>
-          <Text style={styles.createdLabel}>
+          <LocalizedText style={styles.createdLabel}>
             {t("createdAt")}
-          </Text>
-          <Text style={styles.date}>{isolateLtr(formattedDate)}</Text>
+          </LocalizedText>
+          {/* First-strong isolation: the formatted value is Arabic script in
+              Arabic UI and Latin in English UI — an LTR isolate would force a
+              wrong base direction around the Arabic date/time segments. */}
+          <Text style={styles.date}>{isolateAuto(formattedDate)}</Text>
         </View>
 
-        <Text
+        <AdaptiveText
           style={styles.message}
           numberOfLines={2}
         >
           {ticket.message}
-        </Text>
+        </AdaptiveText>
       </View>
 
       {/* Attachment (image thumbnail -> viewer, or video -> open in browser) */}
@@ -159,18 +164,20 @@ const TicketCard = ({ ticket, onDelete, onEdit, onRate, index }) => {
               </View>
             </TouchableOpacity>
           )}
-          <Text style={styles.attachmentLabel}>
+          <LocalizedText style={styles.attachmentLabel}>
             {attachment.type === "image"
               ? t("card.viewAttachment")
               : t("card.playVideo")}
-          </Text>
+          </LocalizedText>
         </View>
       )}
 
       {/* Existing rating display */}
       {ticket.userRating?.rating > 0 && (
         <View style={styles.ratingRow}>
-          <View style={styles.ratingStars}>
+          {/* Physical star geometry (1→5) is intentional — see
+              TicketRatingModal; must not mirror with the locale. */}
+          <View style={[styles.ratingStars, styles.ratingStarsDirection]}>
             {[1, 2, 3, 4, 5].map((i) => (
               <Ionicons
                 key={i}
@@ -180,7 +187,9 @@ const TicketCard = ({ ticket, onDelete, onEdit, onRate, index }) => {
               />
             ))}
           </View>
-          <Text style={styles.ratedLabel}>{t("ratingInline.alreadyRated")}</Text>
+          <LocalizedText style={styles.ratedLabel}>
+            {t("ratingInline.alreadyRated")}
+          </LocalizedText>
         </View>
       )}
 
@@ -303,6 +312,10 @@ const styles = StyleSheet.create({
   ratingStars: {
     flexDirection: "row",
     gap: 2,
+  },
+  // Intentional physical 1→5 numeric scale — pinned LTR in every locale.
+  ratingStarsDirection: {
+    direction: "ltr",
   },
   ratedLabel: {
     fontSize: 12,

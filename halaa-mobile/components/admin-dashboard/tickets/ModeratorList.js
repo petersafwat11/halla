@@ -1,7 +1,10 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../../localization";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
+import AdaptiveText from "../../commen/AdaptiveText";
+import LocalizedText from "../../commen/LocalizedText";
 import {
   colors,
   spacing,
@@ -11,6 +14,13 @@ import {
   backgrounds,
 } from "../../../styles/tokens";
 
+/**
+ * Assign-ticket moderator radio list.
+ *
+ * Classification (blueprint §5): the display name is backend content
+ * (adaptive, first-strong + isolate); the email is an intrinsically LTR
+ * token; the empty-state message is app copy that follows the UI locale.
+ */
 const ModeratorListItem = ({ moderator, isSelected, onPress }) => {
   const { t } = useTranslation("admin");
   const modId = moderator.id || moderator._id;
@@ -20,25 +30,28 @@ const ModeratorListItem = ({ moderator, isSelected, onPress }) => {
       style={[styles.moderatorItem, isSelected && styles.moderatorItemSelected]}
       onPress={() => onPress(modId)}
       activeOpacity={0.75}
+      accessibilityRole="radio"
+      accessibilityState={{ checked: isSelected }}
     >
       <View style={styles.moderatorItemLeft}>
         <View style={[styles.radio, isSelected && styles.radioSelected]}>
           {isSelected && <View style={styles.radioDot} />}
         </View>
         <View style={styles.moderatorInfo}>
-          <Text
+          <AdaptiveText
             style={[styles.moderatorName, isSelected && styles.moderatorNameSelected]}
             numberOfLines={1}
           >
             {moderator.name || moderator.username || t("common.unknown")}
-          </Text>
+          </AdaptiveText>
           {moderator.email ? (
-            <Text style={styles.moderatorEmail} numberOfLines={1}>
-              {moderator.email}
-            </Text>
+            <AdaptiveText style={[styles.moderatorEmail, styles.ltrToken]} isolate={false} numberOfLines={1}>
+              {isolateLtr(moderator.email)}
+            </AdaptiveText>
           ) : null}
         </View>
       </View>
+      {/* Selected check is a semantic state icon — never mirrored. */}
       {isSelected && (
         <Ionicons name="checkmark-circle" size={20} color={colors.primary[500]} />
       )}
@@ -53,7 +66,7 @@ const ModeratorList = ({ moderators, selectedModeratorId, onSelect }) => {
     return (
       <View style={styles.emptyModerators}>
         <Ionicons name="people-outline" size={28} color={colors.natural[300]} />
-        <Text style={styles.emptyText}>{t("tickets.assign.noModeratorsAvailable")}</Text>
+        <LocalizedText style={styles.emptyText}>{t("tickets.assign.noModeratorsAvailable")}</LocalizedText>
       </View>
     );
   }

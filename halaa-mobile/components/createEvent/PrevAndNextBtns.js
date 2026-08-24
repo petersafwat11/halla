@@ -1,20 +1,30 @@
 import React from "react";
 import {
   View,
-  Text,
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
+import { useTranslation } from "../../localization";
+import LocalizedText from "../commen/LocalizedText";
+
+/**
+ * Wizard footer. Source order + a plain logical `row` produce
+ * Previous → Next in LTR and the mirrored visual order in RTL (blueprint
+ * §4.1). Default labels come from translation keys — never literals.
+ */
 const PrevAndNextBtns = ({
   onNext,
   onPrevious,
   showPrevious = true,
   isNextDisabled = false,
-  nextButtonText = "التالى",
-  previousButtonText = "السابق",
+  nextButtonText,
+  previousButtonText,
   isLoading = false,
 }) => {
+  const { t } = useTranslation("createEvent");
+  const resolvedNextLabel = nextButtonText ?? t("next_button");
+  const resolvedPreviousLabel = previousButtonText ?? t("previous_button");
   return (
     <View style={styles.container}>
       <View style={styles.buttonContainer}>
@@ -26,7 +36,9 @@ const PrevAndNextBtns = ({
             disabled={isLoading}
             activeOpacity={0.7}
           >
-            <Text style={styles.prevButtonText}>{previousButtonText}</Text>
+            <LocalizedText style={styles.prevButtonText}>
+              {resolvedPreviousLabel}
+            </LocalizedText>
           </TouchableOpacity>
         )}
         {/* Next Button */}
@@ -42,14 +54,14 @@ const PrevAndNextBtns = ({
           {isLoading ? (
             <ActivityIndicator color="#CEA57D" />
           ) : (
-            <Text
+            <LocalizedText
               style={[
                 styles.nextButtonText,
                 isNextDisabled && styles.nextButtonTextDisabled,
               ]}
             >
-              {nextButtonText}
-            </Text>
+              {resolvedNextLabel}
+            </LocalizedText>
           )}
         </TouchableOpacity>
       </View>
@@ -59,14 +71,14 @@ const PrevAndNextBtns = ({
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    backgroundColor: "#FFF",
+    width: "100%",
+    paddingVertical: 8,
   },
   buttonContainer: {
+    width: "100%",
     flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 16,
+    alignItems: "center",
+    gap: 12,
   },
   nextButton: {
     flex: 1,
@@ -113,3 +125,4 @@ const styles = StyleSheet.create({
 });
 
 export default PrevAndNextBtns;
+

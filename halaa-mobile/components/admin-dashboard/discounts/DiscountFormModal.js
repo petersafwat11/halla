@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import {
   View,
-  Text,
   Modal,
   StyleSheet,
   ScrollView,
@@ -16,6 +15,7 @@ import { useTranslation } from "../../../localization";
 import { useCreateDiscount, useUpdateDiscount } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 import { Button } from "../../../components/commen";
+import LocalizedText from "../../commen/LocalizedText";
 import DiscountFormFields from "./_components/DiscountFormFields";
 import { discountSchema } from "@halaa/shared/schemas/admin";
 import { buildPayload } from "./discountsFormUtils";
@@ -130,10 +130,17 @@ const DiscountFormModal = ({ visible, discount, onClose, onSave }) => {
       >
         <View style={styles.sheet}>
           <View style={styles.header}>
-            <Text style={styles.title}>
+            <LocalizedText role="sectionTitle" style={styles.title}>
               {isEdit ? t("discounts.form.editTitle") : t("discounts.form.createTitle")}
-            </Text>
-            <TouchableOpacity onPress={handleClose} activeOpacity={0.7}>
+            </LocalizedText>
+            <TouchableOpacity
+              onPress={handleClose}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={t("discounts.form.cancel")}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              {/* Close is semantic — never mirrored. */}
               <Ionicons name="close" size={22} color={colors.natural[600]} />
             </TouchableOpacity>
           </View>

@@ -10,7 +10,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useTranslation } from "../../localization";
 import { useAvailableAddons } from "../../hooks";
+import LocalizedText from "../commen/LocalizedText";
+import AdaptiveText from "../commen/AdaptiveText";
+import { getLocalized } from "@halaa/shared/utils/locale";
 import { isolateLtr } from "@halaa/shared/utils/bidi";
+import { countToken, priceToken } from "@halaa/shared/utils/displayTokens";
 import {
   colors,
   spacing,
@@ -23,9 +27,15 @@ import {
  * purchase happens in PlansSummaryScreen → useCheckout (single bundled
  * Moyasar charge for plan + addons − discount). This component never calls
  * the addons-purchase endpoint directly.
+ *
+ * Price/count contract: every SAR amount renders through the shared atomic
+ * `priceToken`; tier quantities are locale-formatted counts glued to their
+ * "+" sign inside an LTR isolate so neither can BiDi-reorder (blueprint §6).
  */
 const AddonsSection = ({ onAddonsChange, showBusiness = false }) => {
-  const { t } = useTranslation("plans");
+  const { t, i18n } = useTranslation("plans");
+  const lang = i18n.language || "ar";
+  const sarLabel = t("common.currency.sar");
   const { data: catalogResponse, isLoading, error } = useAvailableAddons();
   const catalog = catalogResponse?.data || null;
 
@@ -38,6 +48,14 @@ const AddonsSection = ({ onAddonsChange, showBusiness = false }) => {
     [catalog]
   );
   const bizPrice = tiers.businessCustomization?.price || 0;
+  const bizName = tiers.businessCustomization
+    ? getLocalized(tiers.businessCustomization, "name", lang) ||
+      tiers.businessCustomization.nameEn
+    : null;
+  const bizDescription = tiers.businessCustomization
+    ? getLocalized(tiers.businessCustomization, "description", lang) ||
+      tiers.businessCustomization.descriptionEn
+    : null;
 
   // Extra-invite tiers stack: the user can pick MULTIPLE tiers that add up.
   // We track the selected tiers by their (unique) `quantity` so each one
@@ -131,9 +149,9 @@ const AddonsSection = ({ onAddonsChange, showBusiness = false }) => {
         <SectionHeader t={t} />
         <View style={styles.errorState}>
           <Ionicons name="alert-circle" size={18} color="#B91C1C" />
-          <Text style={styles.errorText}>
-            {t("addons.loadFailed", { defaultValue: "Could not load add-ons." })}
-          </Text>
+          <LocalizedText style={styles.errorText}>
+            {t("addons.loadFailed")}
+          </LocalizedText>
         </View>
       </View>
     );
@@ -151,7 +169,7 @@ const AddonsSection = ({ onAddonsChange, showBusiness = false }) => {
         description={t("addons.extraInvites.description")}
         isActive={extraInvites.length > 0}
         activePrice={extraInvites.length > 0 ? invitesSubtotal : null}
-        t={t}
+        sarLabel={sarLabel}
       >
         <View style={styles.tierRow}>
           {tiers.extraInvites.map((tier) => (
@@ -160,8 +178,8 @@ const AddonsSection = ({ onAddonsChange, showBusiness = false }) => {
               active={extraInvites.some((s) => s.quantity === tier.quantity)}
               onPress={() => toggleInv(tier)}
               quantity={tier.quantity}
-              price={tier.price}
-              t={t}
+              price={priceToken(tier.price, sarLabel)}
+              qtyLabel={isolateLtr(`+${countToken(tier.quantity, lang)}`)}
             />
           ))}
         </View>
@@ -171,7 +189,9 @@ const AddonsSection = ({ onAddonsChange, showBusiness = false }) => {
             size={14}
             color={colors.primary[600]}
           />
-          <Text style={styles.hintText}>{t("addons.extraInvites.stackHint")}</Text>
+          <LocalizedText style={styles.hintText}>
+            {t("addons.extraInvites.stackHint")}
+          </LocalizedText>
         </View>
       </AddonCard>
 
@@ -183,7 +203,7 @@ const AddonsSection = ({ onAddonsChange, showBusiness = false }) => {
         description={t("addons.designTemplate.description")}
         isActive={!!designTemplate}
         activePrice={designTemplate?.price}
-        t={t}
+        sarLabel={sarLabel}
       >
         <View style={styles.designList}>
           {tiers.designTemplate.map((tier) => {
@@ -212,7 +232,7 @@ const AddonsSection = ({ onAddonsChange, showBusiness = false }) => {
                   {t(`addons.designTypes.${tier.type}`)}
                 </Text>
                 <Text style={styles.designPrice}>
-                  {isolateLtr(`${tier.price} ${t("common.currency.sar")}`)}
+                  {priceToken(tier.price, sarLabel)}
                 </Text>
               </TouchableOpacity>
             );
@@ -225,17 +245,13 @@ const AddonsSection = ({ onAddonsChange, showBusiness = false }) => {
           icon="briefcase-outline"
           iconBgGradient={[colors.accent[100], colors.primary[200]]}
           iconColor={colors.secondary[700]}
-          title={t("addons.businessCustomization.title", {
-            defaultValue: "Business branding",
-          })}
-          description={t("addons.businessCustomization.description", {
-            defaultValue:
-              tiers.businessCustomization.descriptionEn ||
-              "Custom webpage + official WhatsApp templates",
-          })}
+          title={bizName || t("addons.businessCustomization.title")}
+          description={
+            bizDescription || t("addons.businessCustomization.description")
+          }
           isActive={businessCustom}
           activePrice={businessCustom ? bizPrice : null}
-          t={t}
+          sarLabel={sarLabel}
         >
           <TouchableOpacity
             style={[styles.designRow, businessCustom && styles.designRowActive]}
@@ -252,29 +268,25 @@ const AddonsSection = ({ onAddonsChange, showBusiness = false }) => {
                 <Ionicons name="checkmark" size={12} color={colors.natural[50]} />
               ) : null}
             </View>
-            <Text
+            <AdaptiveText
               style={[
                 styles.designName,
                 businessCustom && styles.designNameActive,
               ]}
               numberOfLines={2}
             >
-              {tiers.businessCustomization.nameEn ||
-                t("addons.businessCustomization.title", {
-                  defaultValue: "Business branding",
-                })}
-            </Text>
-            <Text style={styles.designPrice}>
-              {isolateLtr(`${bizPrice} ${t("common.currency.sar")}`)}
-            </Text>
+              {bizName || t("addons.businessCustomization.title")}
+            </AdaptiveText>
+            <Text style={styles.designPrice}>{priceToken(bizPrice, sarLabel)}</Text>
           </TouchableOpacity>
         </AddonCard>
       ) : null}
 
       <SummaryBar
-        t={t}
-        selectedCount={selectedCount}
-        total={total}
+        visible={selectedCount > 0}
+        totalLabel={priceToken(total, sarLabel)}
+        selectedCountLabel={t("addons.selectedCount", { count: selectedCount })}
+        clearLabel={t("addons.clearAll")}
         onClear={clearAll}
       />
     </View>
@@ -284,16 +296,18 @@ const AddonsSection = ({ onAddonsChange, showBusiness = false }) => {
 const SectionHeader = ({ t }) => (
   <View style={styles.sectionHead}>
     <View style={styles.sectionHeadText}>
-      <Text style={styles.sectionTitle}>{t("addons.title")}</Text>
-      <Text style={styles.sectionSubtitle}>{t("addons.subtitle")}</Text>
+      <LocalizedText style={styles.sectionTitle}>{t("addons.title")}</LocalizedText>
+      <LocalizedText style={styles.sectionSubtitle}>
+        {t("addons.subtitle")}
+      </LocalizedText>
     </View>
   </View>
 );
 
 // Selected count + running total, shown at the bottom of the section (just
 // above the screen's continue button) so the user sees the tally where they act.
-const SummaryBar = ({ t, selectedCount, total, onClear }) =>
-  selectedCount > 0 ? (
+const SummaryBar = ({ visible, selectedCountLabel, totalLabel, clearLabel, onClear }) =>
+  visible ? (
     <View style={styles.summaryBar}>
       <LinearGradient
         colors={[colors.primary[100], colors.primary[50]]}
@@ -301,21 +315,14 @@ const SummaryBar = ({ t, selectedCount, total, onClear }) =>
         end={{ x: 1, y: 1 }}
         style={styles.summaryChip}
       >
-        <Text style={styles.summaryCount}>
-          {t("addons.selectedCount", {
-            count: selectedCount,
-            defaultValue: `${selectedCount} selected`,
-          })}
-        </Text>
+        <Text style={styles.summaryCount}>{selectedCountLabel}</Text>
         <View style={styles.summaryDivider} />
-        <Text style={styles.summaryTotal}>
-          {isolateLtr(`${total} ${t("common.currency.sar")}`)}
-        </Text>
+        <Text style={styles.summaryTotal}>{totalLabel}</Text>
         {onClear ? (
           <TouchableOpacity
             onPress={onClear}
             style={styles.summaryClear}
-            accessibilityLabel={t("addons.clearAll", { defaultValue: "Clear all" })}
+            accessibilityLabel={clearLabel}
             hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
           >
             <Ionicons name="close" size={12} color={colors.secondary[700]} />
@@ -334,7 +341,7 @@ const AddonCard = ({
   isActive,
   activePrice,
   children,
-  t,
+  sarLabel,
 }) => (
   <View style={[styles.card, isActive && styles.cardActive]}>
     <View style={styles.cardHead}>
@@ -347,8 +354,8 @@ const AddonCard = ({
         <Ionicons name={icon} size={20} color={iconColor} />
       </LinearGradient>
       <View style={styles.cardHeadText}>
-        <Text style={styles.cardTitle}>{title}</Text>
-        <Text style={styles.cardDesc}>{description}</Text>
+        <LocalizedText style={styles.cardTitle}>{title}</LocalizedText>
+        <LocalizedText style={styles.cardDesc}>{description}</LocalizedText>
       </View>
       {isActive && activePrice != null ? (
         <LinearGradient
@@ -364,7 +371,7 @@ const AddonCard = ({
             style={styles.selectedChipIcon}
           />
           <Text style={styles.selectedChipText}>
-            {isolateLtr(`${activePrice} ${t("common.currency.sar")}`)}
+            {priceToken(activePrice, sarLabel)}
           </Text>
         </LinearGradient>
       ) : null}
@@ -373,7 +380,7 @@ const AddonCard = ({
   </View>
 );
 
-const TierTile = ({ active, onPress, quantity, price, t }) => {
+const TierTile = ({ active, onPress, qtyLabel, price }) => {
   if (active) {
     return (
       <TouchableOpacity
@@ -387,10 +394,8 @@ const TierTile = ({ active, onPress, quantity, price, t }) => {
           end={{ x: 0, y: 1 }}
           style={[styles.tile, styles.tileActive]}
         >
-          <Text style={[styles.tileQty, styles.tileQtyActive]}>{isolateLtr(`+${quantity}`)}</Text>
-          <Text style={[styles.tilePrice, styles.tilePriceActive]}>
-            {isolateLtr(`${price} ${t("common.currency.sar")}`)}
-          </Text>
+          <Text style={[styles.tileQty, styles.tileQtyActive]}>{qtyLabel}</Text>
+          <Text style={[styles.tilePrice, styles.tilePriceActive]}>{price}</Text>
         </LinearGradient>
       </TouchableOpacity>
     );
@@ -402,10 +407,8 @@ const TierTile = ({ active, onPress, quantity, price, t }) => {
       onPress={onPress}
       activeOpacity={0.85}
     >
-      <Text style={styles.tileQty}>{isolateLtr(`+${quantity}`)}</Text>
-      <Text style={styles.tilePrice}>
-        {isolateLtr(`${price} ${t("common.currency.sar")}`)}
-      </Text>
+      <Text style={styles.tileQty}>{qtyLabel}</Text>
+      <Text style={styles.tilePrice}>{price}</Text>
     </TouchableOpacity>
   );
 };

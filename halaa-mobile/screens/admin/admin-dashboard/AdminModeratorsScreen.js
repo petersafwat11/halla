@@ -10,6 +10,7 @@ import {
 import { useAuthStore } from "../../../stores/authStore";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
+import { isolateAuto } from "@halaa/shared/utils/bidi";
 import {
   canEditPage,
   canDeleteOnPage,
@@ -71,7 +72,10 @@ const AdminModeratorsScreen = ({ navigation }) => {
     const name        = m.name || m.username || t("common.unknown");
     Alert.alert(
       actionLabel,
-      `${actionLabel} "${name}"?`,
+      // Interpolated key + first-strong isolate around the backend name.
+      t(isSuspend ? "moderators.confirm.suspend" : "moderators.confirm.activate", {
+        name: isolateAuto(name),
+      }),
       [
         { text: t("common.cancel"), style: "cancel" },
         {
@@ -99,7 +103,7 @@ const AdminModeratorsScreen = ({ navigation }) => {
     const name = m.name || m.username || t("common.unknown");
     Alert.alert(
       t("moderators.delete.title"),
-      `${t("moderators.delete.message")} "${name}"? ${t("common.deleteConfirmMessage")}`,
+      t("moderators.delete.confirmMessage", { name: isolateAuto(name) }),
       [
         { text: t("common.cancel"), style: "cancel" },
         {

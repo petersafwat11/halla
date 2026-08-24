@@ -63,19 +63,23 @@ exports.validateEmail = (fieldName = "email", options = {}) => {
   };
 };
 
+const { isValidPhone, normalizePhoneNumber, normalizeDigits } = require("../utils/phone");
+
 /**
  * Validate phone number format
- * @param {string} fieldName - Name of the field containing phone
+ * @param {string} fieldName - Name of the field containing the phone number
  * @param {Object} options - Validation options
- * @param {boolean} options.required - Whether the field is required
- * @param {boolean} options.saudiOnly - Only accept Saudi phone numbers (5xxxxxxxx)
+ * @param {boolean} options.required - Whether the field is required (default: true)
+ * @param {boolean} options.saudiOnly - Whether to only accept Saudi format (default: true)
  */
-exports.validatePhone = (fieldName = "phoneNumber", options = {}) => {
+exports.validatePhoneNumber = (fieldName = "phoneNumber", options = {}) => {
+  const opts = { required: true, saudiOnly: true, ...options };
+
   return (req, res, next) => {
     let phone = req.body[fieldName];
 
     if (!phone) {
-      if (options.required) {
+      if (opts.required) {
         return next(new AppError(`${fieldName} is required`, 400));
       }
       return next();
@@ -85,14 +89,13 @@ exports.validatePhone = (fieldName = "phoneNumber", options = {}) => {
       phone = String(phone);
     }
 
-    phone = phone.replace(/[\s\-\(\)\.]/g, "");
+    phone = normalizeDigits(phone).replace(/[\s\-\(\)\.]/g, "");
 
-    if (options.saudiOnly) {
-      const saudiPattern = /^5[0-9]{8}$/;
-      if (!saudiPattern.test(phone)) {
+    if (opts.saudiOnly) {
+      if (!isValidPhone(phone)) {
         return next(
           new AppError(
-            "Invalid phone number format. Must be 9 digits starting with 5",
+            "Invalid phone number format. Must be 10 digits starting with 05 or 9 digits starting with 5",
             400
           )
         );
@@ -306,12 +309,14 @@ exports.validatePagination = (req, res, next) => {
   next();
 };
 
+exports.validatePhone = exports.validatePhoneNumber;
+
 /**
  * Validate vendor signup data
  */
 exports.validateVendorSignup = [
   exports.validateEmail("email", { required: true }),
-  exports.validatePhone("phoneNumber", { required: true }),
+  exports.validatePhoneNumber("phoneNumber", { required: true }),
   exports.validatePassword("password", { required: true }),
   exports.validateStringLength("brandName", {
     required: true,

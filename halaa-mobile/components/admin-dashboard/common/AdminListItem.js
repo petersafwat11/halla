@@ -7,8 +7,11 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
 import AdminCheckbox from "./AdminCheckbox";
 import StatusBadge from "./StatusBadge";
+import AdaptiveText from "../../commen/AdaptiveText";
+import LocalizedText from "../../commen/LocalizedText";
 import {
   colors,
   spacing,
@@ -28,14 +31,29 @@ import {
  *   avatarColor  (string?)   — Initial-circle background color (default: primary[500])
  *   status       (string?)   — Passed to StatusBadge; omit to hide badge
  *   statusDomain (string?)   — Optional domain for StatusBadge color overrides ("payment" | "subscription" | "delivery")
- *   chips        (array?)    — [{label, color, bg, icon?}] — small tag chips below header
- *   details      (array?)    — [{icon, text, color?}] — icon + text detail rows
+ *   chips        (array?)    — [{label, color, bg, icon?, adaptive?}] — small tag chips below header;
+ *                              `adaptive` marks backend/user chip values (names) so they resolve
+ *                              first-strong instead of being pinned to the UI locale
+ *   details      (array?)    — [{icon, text, color?, adaptive?, ltr?}] — icon + text detail rows;
+ *                              `adaptive` marks arbitrary backend/user values (names), `ltr` marks
+ *                              intrinsically LTR tokens (IDs, ticket numbers)
  *   extraContent (ReactNode) — Custom content slot for stars, ticket rows, etc.
  *   actions      (array?)    — [{key, label, icon, color, onPress, isPending?, disabled?}]
  *   selected     (bool)
  *   onSelect     (func?)     — If provided, a checkbox is shown
  *   onPress      (func?)     — Navigation / detail handler
+ *
+ * Title/subtitle are backend content and render through AdaptiveText
+ * (first-strong direction + isolation). Action labels are app copy and stay
+ * localized.
  */
+/**
+ * Avatar initials come from caller-provided titles that may already carry
+ * BiDi isolate marks (e.g. PaymentListItem's atomic price token). Strip the
+ * invisible controls first so the circle renders a real glyph.
+ */
+const BIDI_CONTROL_RE = /[\u200E\u200F\u202A-\u202E\u2066-\u2069]/g;
+
 const AdminListItem = ({
   title,
   subtitle,
@@ -51,7 +69,9 @@ const AdminListItem = ({
   onSelect,
   onPress,
 }) => {
-  const initial = title ? title.charAt(0).toUpperCase() : "?";
+  const initial = title
+    ? String(title).replace(BIDI_CONTROL_RE, "").charAt(0).toUpperCase() || "?"
+    : "?";
   const hasChips = chips && chips.length > 0;
   const hasDetails = details && details.length > 0;
   const hasActions = actions && actions.length > 0;
@@ -73,18 +93,18 @@ const AdminListItem = ({
             <Text style={styles.avatarInitial}>{initial}</Text>
           </View>
           <View style={styles.nameBlock}>
-            <Text style={styles.title} numberOfLines={1}>
+            <AdaptiveText style={styles.title} numberOfLines={1}>
               {title || "—"}
-            </Text>
+            </AdaptiveText>
             {subtitle ? (
-              <Text style={styles.subtitle} numberOfLines={1}>
+              <AdaptiveText style={styles.subtitle} numberOfLines={1}>
                 {subtitle}
-              </Text>
+              </AdaptiveText>
             ) : null}
             {subtitleAlt ? (
-              <Text style={styles.subtitleAlt} numberOfLines={1}>
+              <AdaptiveText style={styles.subtitleAlt} numberOfLines={1}>
                 {subtitleAlt}
-              </Text>
+              </AdaptiveText>
             ) : null}
           </View>
           {status ? (
@@ -100,9 +120,18 @@ const AdminListItem = ({
                 {chip.icon ? (
                   <Ionicons name={chip.icon} size={11} color={chip.color} />
                 ) : null}
-                <Text style={[styles.chipText, { color: chip.color }]}>
-                  {chip.label}
-                </Text>
+                {chip.adaptive ? (
+                  /* Backend/user chip value — follows its own first-strong
+                     direction, never the UI locale. */
+                  <AdaptiveText style={[styles.chipText, { color: chip.color }]}>
+                    {chip.label}
+                  </AdaptiveText>
+                ) : (
+                  /* Chip labels that are app copy — always UI-locale direction. */
+                  <LocalizedText style={[styles.chipText, { color: chip.color }]}>
+                    {chip.label}
+                  </LocalizedText>
+                )}
               </View>
             ))}
           </View>
@@ -118,12 +147,36 @@ const AdminListItem = ({
                   size={14}
                   color={d.color || colors.natural[450]}
                 />
-                <Text
-                  style={[styles.detailText, d.color ? { color: d.color } : null]}
-                  numberOfLines={1}
-                >
-                  {d.text}
-                </Text>
+                {d.adaptive ? (
+                  <AdaptiveText
+                    style={[styles.detailText, d.color ? { color: d.color } : null]}
+                    numberOfLines={1}
+                  >
+                    {d.text}
+                  </AdaptiveText>
+                ) : d.ltr ? (
+                  /* Intrinsically LTR token (ticket number, ID, phone): pinned
+                     LTR and isolated so `+`/digits cannot reorder under RTL. */
+                  <LocalizedText
+                    style={[
+                      styles.detailText,
+                      styles.ltrDetailText,
+                      d.color ? { color: d.color } : null,
+                    ]}
+                    numberOfLines={1}
+                  >
+                    {isolateLtr(d.text)}
+                  </LocalizedText>
+                ) : (
+                  /* Localized detail copy (e.g. "Joined <date>") follows the
+                     UI locale and never the value script. */
+                  <LocalizedText
+                    style={[styles.detailText, d.color ? { color: d.color } : null]}
+                    numberOfLines={1}
+                  >
+                    {d.text}
+                  </LocalizedText>
+                )}
               </View>
             ))}
           </View>
@@ -151,9 +204,10 @@ const AdminListItem = ({
               ) : (
                 <View style={styles.actionBtnContent}>
                   <Ionicons name={action.icon} size={18} color={action.color} />
-                  <Text style={[styles.actionBtnText, { color: action.color }]}>
+                  {/* Action labels are app copy — always the UI locale. */}
+                  <LocalizedText style={[styles.actionBtnText, { color: action.color }]}>
                     {action.label}
-                  </Text>
+                  </LocalizedText>
                 </View>
               )}
             </TouchableOpacity>
@@ -258,6 +312,9 @@ const styles = StyleSheet.create({
   detailText: {
     ...textStyles.bodySmall,
     color: colors.natural[600],
+  },
+  ltrDetailText: {
+    writingDirection: "ltr",
   },
 
   // ── Extra slot ──

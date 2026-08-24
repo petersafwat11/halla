@@ -16,24 +16,45 @@ test("TYPO-01 & RTL-04: PlanPriceBlock satisfies Cairo lineHeight >= 1.3 * fontS
   assert.ok(content.includes("lineHeight: 36"), "priceNum must have adequate Cairo lineHeight");
   assert.ok(content.includes("lineHeight: 28"), "cardName must have adequate Cairo lineHeight");
   assert.ok(content.includes('alignItems: "center"'), "cardTopRow must center align items to avoid raised price defect");
+  // Atomic token row: number + SAR glyph may never shrink/wrap apart.
+  assert.ok(
+    /priceRow:\s*{[\s\S]*?flexShrink:\s*0/.test(content),
+    "priceRow must be a non-shrinking atomic price token"
+  );
 });
 
-test("TYPO-01 & RTL-04: PlanSummaryCard satisfies Cairo lineHeight and uses isolateLtr on prices", () => {
+test("TYPO-01 & RTL-04: PlanSummaryCard satisfies Cairo lineHeight and isolates every price token", () => {
   const file = path.join(mobileRoot, "components/plans/PlanSummaryCard.js");
   const content = fs.readFileSync(file, "utf8");
 
   assert.ok(content.includes("isolateLtr(priceDisplay)"), "PlanSummaryCard must wrap priceDisplay in isolateLtr");
-  assert.ok(content.includes("isolateLtr(String(planPrice"), "PlanSummaryCard must wrap planPrice in isolateLtr");
+  assert.ok(
+    content.includes("priceToken(planPrice"),
+    "PlanSummaryCard must render the web price as ONE atomic priceToken (amount + currency)"
+  );
   assert.ok(content.includes("lineHeight: 30"), "priceAmount must have adequate Cairo lineHeight");
 });
 
-test("TYPO-01 & RTL-04: AddonsSection satisfies Cairo lineHeight and uses isolateLtr on addon rows", () => {
+test("TYPO-01 & RTL-04: AddonsSection satisfies Cairo lineHeight and uses the shared atomic price token", () => {
   const file = path.join(mobileRoot, "components/plans/AddonsSection.js");
   const content = fs.readFileSync(file, "utf8");
 
-  assert.ok(content.includes("isolateLtr("), "AddonsSection must import and use isolateLtr");
-  assert.ok(content.includes("isolateLtr(`${total}"), "SummaryBar total must use isolateLtr");
-  assert.ok(content.includes("isolateLtr(`${tier.price}"), "Design price must use isolateLtr");
-  assert.ok(content.includes("isolateLtr(`${activePrice}"), "AddonCard active price must use isolateLtr");
-  assert.ok(content.includes("isolateLtr(`+${quantity}`)"), "TierTile qty must use isolateLtr");
+  assert.ok(content.includes("priceToken("), "AddonsSection must import and use the shared priceToken helper");
+  assert.ok(content.includes("lineHeight: 22"), "tileQty must keep adequate Cairo lineHeight");
+  assert.ok(
+    content.includes("priceToken(total, sarLabel)"),
+    "SummaryBar total must use the atomic priceToken"
+  );
+  assert.ok(
+    content.includes("priceToken(tier.price, sarLabel)"),
+    "Design/tier prices must use the atomic priceToken"
+  );
+  assert.ok(
+    content.includes("priceToken(activePrice, sarLabel)"),
+    "AddonCard active price must use the atomic priceToken"
+  );
+  assert.ok(
+    content.includes('isolateLtr(`+${countToken(tier.quantity, lang)}`)'),
+    "TierTile qty sign+digits must stay glued inside an LTR isolate with locale digits"
+  );
 });

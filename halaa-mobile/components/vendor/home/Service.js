@@ -10,6 +10,8 @@ import {
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
+import LocalizedText from "../../commen/LocalizedText";
+import AdaptiveText from "../../commen/AdaptiveText";
 
 const ServiceCard = ({
   id,
@@ -71,34 +73,42 @@ const ServiceCard = ({
               </View>
             )}
 
-            {/* Edit Button */}
+            {/* Edit Button — pencil is semantic, anchored at the logical
+                end edge of the artwork; label follows the UI locale. */}
             <TouchableOpacity
               style={styles.editButton}
               onPress={onEdit}
               hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel={t("services.edit")}
             >
               <MaterialCommunityIcons
                 name="pencil"
                 size={16}
                 color="#C28E5C"
               />
-              <Text style={styles.editText}>{t("services.edit")}</Text>
+              <LocalizedText role="label" style={styles.editText}>
+                {t("services.edit")}
+              </LocalizedText>
             </TouchableOpacity>
           </View>
 
           {/* Content Section */}
           <View style={styles.content}>
-            {/* Title */}
-            <Text style={styles.title} numberOfLines={2}>
+            {/* Title — backend service name: first-strong direction so a
+                Latin name stays LTR inside Arabic UI and vice versa. */}
+            <AdaptiveText style={styles.title} numberOfLines={2}>
               {name}
-            </Text>
+            </AdaptiveText>
 
-            {/* Categories/Tags */}
+            {/* Categories/Tags — user/backend content (adaptive). */}
             {categories.length > 0 && (
               <View style={styles.categoriesContainer}>
                 {categories.slice(0, 4).map((category, index) => (
                   <View key={`${id}-category-${index}`} style={styles.tag}>
-                    <Text style={styles.tagText}>{category}</Text>
+                    <AdaptiveText style={styles.tagText}>
+                      {category}
+                    </AdaptiveText>
                   </View>
                 ))}
               </View>
@@ -110,6 +120,9 @@ const ServiceCard = ({
                 style={styles.priceContainer}
                 onPress={onToggle}
                 activeOpacity={0.7}
+                accessibilityRole="switch"
+                accessibilityState={{ checked: isAvailable }}
+                accessibilityLabel={`${isAvailable ? t("services.available") : t("services.unavailable")}`}
               >
                 <View style={[styles.availabilityToggle, isAvailable && styles.availabilityToggleActive]}>
                   <View
@@ -119,11 +132,15 @@ const ServiceCard = ({
                     ]}
                   />
                 </View>
-                <Text style={styles.availabilityText}>
+                <LocalizedText style={styles.availabilityText}>
                   {isAvailable ? t("services.available") : t("services.unavailable")}
-                </Text>
+                </LocalizedText>
               </TouchableOpacity>
 
+              {/* Price is one atomic token (blueprint §6): locale-formatted
+                  digits + SAR glyph are pinned LTR as a row so the number and
+                  currency icon can never split or reverse inside RTL copy.
+                  Intentionally physical, like the plan price blocks. */}
               <View style={styles.priceWithCurrency}>
                 <Text style={styles.price}>{price}</Text>
                 <MaterialCommunityIcons
@@ -134,12 +151,15 @@ const ServiceCard = ({
               </View>
             </View>
 
-            {/* Delete Button */}
+            {/* Delete Button — trash is semantic; anchored at the logical
+                start edge of the card body. */}
             {onDelete && (
               <TouchableOpacity
                 style={styles.deleteButton}
                 onPress={onDelete}
                 hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel={t("common.delete")}
               >
                 <MaterialCommunityIcons
                   name="trash-can-outline"

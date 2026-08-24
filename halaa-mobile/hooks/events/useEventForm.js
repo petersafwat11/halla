@@ -12,6 +12,7 @@
  */
 
 import { DEFAULT_INVITATION_TYPE } from "../../utils/invitationTypes.js";
+import { isValidPhone, normalizePhoneNumber } from "@halaa/shared/utils/phone";
 
 // ============================================================================
 // VALIDATION HELPERS
@@ -31,15 +32,20 @@ export const validateListItem = (item, type = "guest", existingList = []) => {
 
   if (!phone) {
     errors.phone = "events:validation.phoneRequired";
-  } else if (!/^5[0-9]{8}$/.test(phone)) {
+  } else if (!isValidPhone(phone)) {
     errors.phone = "events:validation.phoneInvalid";
   }
 
   if (phone && !item.id) {
-    const phoneExists = existingList.some(
-      (existingItem) =>
-        existingItem.phone === phone || existingItem.mobile === phone,
-    );
+    const normInput = normalizePhoneNumber(phone);
+    const phoneExists = existingList.some((existingItem) => {
+      const existingPhone = existingItem.phone || existingItem.mobile || "";
+      const existingNorm = normalizePhoneNumber(existingPhone);
+      return (
+        (normInput && existingNorm && normInput === existingNorm) ||
+        existingPhone === phone
+      );
+    });
     if (phoneExists) {
       errors.phone = "events:validation.phoneDuplicate";
     }
@@ -58,9 +64,10 @@ export const validateCSVRow = (row) => {
     errors.push("events:validation.nameRequired");
   }
 
-  if (!row.mobile || !row.mobile.trim()) {
+  const phone = String(row.mobile || "").trim();
+  if (!phone) {
     errors.push("events:validation.phoneRequired");
-  } else if (!/^5[0-9]{8}$/.test(row.mobile)) {
+  } else if (!isValidPhone(phone)) {
     errors.push("events:validation.phoneInvalid");
   }
 
@@ -134,8 +141,8 @@ export const generateCSVTemplate = (type = "guest") => {
   ];
 
   const sampleData = [
-    { name: "أحمد محمد", mobile: "512345678", category: "العائلة" },
-    { name: "فاطمة علي", mobile: "598765432", category: "العمل" },
+    { name: "أحمد محمد", mobile: "0512345678", category: "العائلة" },
+    { name: "فاطمة علي", mobile: "0598765432", category: "العمل" },
   ];
 
   const fileName = type === "guest" ? "guests-template" : "moderators-template";
@@ -143,15 +150,18 @@ export const generateCSVTemplate = (type = "guest") => {
 };
 
 export const processImportedCSV = (importedData = [], currentList = []) => {
-  const existingPhones = currentList.map((item) => item.phone || item.mobile);
+  const existingPhones = currentList.map(
+    (item) => normalizePhoneNumber(item.phone || item.mobile) || (item.phone || item.mobile)
+  );
   const duplicates = [];
   const errors = [];
   const validData = [];
 
   importedData.forEach((item, index) => {
     const phone = (item.mobile || item.phone || "").trim();
+    const normPhone = normalizePhoneNumber(phone) || phone;
 
-    if (existingPhones.includes(phone)) {
+    if (existingPhones.includes(normPhone)) {
       duplicates.push({
         row: index + 2,
         errors: ["events:validation.phoneDuplicate"],
@@ -171,7 +181,7 @@ export const processImportedCSV = (importedData = [], currentList = []) => {
       phone,
       category: (item.category || "").trim(),
     });
-    existingPhones.push(phone);
+    existingPhones.push(normPhone);
   });
 
   return { validData, errors, duplicates };

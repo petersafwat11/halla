@@ -5,13 +5,14 @@ import {
   StyleSheet,
   TouchableOpacity,
   Animated,
-  Image,
 } from "react-native";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { otpSchema } from "../../utils/schemas/authSchemas";
 import { OTPInput, Button } from "../commen";
 import { useTranslation } from "../../localization";
+import LocalizedText from "../commen/LocalizedText";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
 
 const OTPVerificationForm = ({
   onSubmit,
@@ -113,32 +114,68 @@ const OTPVerificationForm = ({
           <View style={styles.iconContainer}>
             <Text style={styles.iconText}>📱</Text>
           </View>
-          <Text style={styles.title}>{t("otp.title")}</Text>
+          <LocalizedText role="pageTitle" center style={styles.title}>
+            {t("otp.title")}
+          </LocalizedText>
         </View>
 
-        <View style={styles.description}>
-          <Text style={styles.descriptionText}>
-            {t("otp.description")} {phoneNumber}
-          </Text>
-          <Text style={styles.descriptionText}>
-            {t("otp.descriptionContinue")}
-          </Text>
-          <TouchableOpacity
-            onPress={handleResend}
-            disabled={!canResend}
-            style={styles.resendContainer}
-          >
-            <Text
-              style={[
-                styles.resendText,
-                !canResend && styles.resendTextDisabled,
-              ]}
+        {/* The phone number is an LTR token embedded inside localized copy:
+            it is interpolated into one translated sentence and wrapped in an
+            LTR isolate, so digits and the surrounding Arabic punctuation can
+            never reorder across scripts (blueprint §6). */}
+        {phoneNumber ? (
+          <View style={styles.description}>
+            <LocalizedText role="description" center style={styles.descriptionText}>
+              {t("otp.descriptionWithPhone", {
+                phone: isolateLtr(phoneNumber),
+              })}
+            </LocalizedText>
+            <LocalizedText role="description" center style={styles.descriptionText}>
+              {t("otp.descriptionContinue")}
+            </LocalizedText>
+            <TouchableOpacity
+              onPress={handleResend}
+              disabled={!canResend}
+              style={styles.resendContainer}
             >
-              {t("otp.resendCode")}{" "}
-              {!canResend && `(${timer} ${t("otp.resendTimer")})`}
-            </Text>
-          </TouchableOpacity>
-        </View>
+              {/* Cooldown seconds are LTR digits isolated inside the
+                  sentence; parentheses live inside the translation string. */}
+              <LocalizedText
+                role="label"
+                center
+                style={[styles.resendText, !canResend && styles.resendTextDisabled]}
+              >
+                {canResend
+                  ? t("otp.resendCode")
+                  : t("otp.resendIn", { seconds: isolateLtr(timer) })}
+              </LocalizedText>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.description}>
+            <LocalizedText role="description" center style={styles.descriptionText}>
+              {t("otp.description")}
+            </LocalizedText>
+            <LocalizedText role="description" center style={styles.descriptionText}>
+              {t("otp.descriptionContinue")}
+            </LocalizedText>
+            <TouchableOpacity
+              onPress={handleResend}
+              disabled={!canResend}
+              style={styles.resendContainer}
+            >
+              <LocalizedText
+                role="label"
+                center
+                style={[styles.resendText, !canResend && styles.resendTextDisabled]}
+              >
+                {canResend
+                  ? t("otp.resendCode")
+                  : t("otp.resendIn", { seconds: isolateLtr(timer) })}
+              </LocalizedText>
+            </TouchableOpacity>
+          </View>
+        )}
 
         <OTPInput name="otp" />
 
@@ -152,7 +189,9 @@ const OTPVerificationForm = ({
             onPress={onEditPhone}
             style={styles.editPhoneButton}
           >
-            <Text style={styles.editPhoneText}>{t("otp.editPhone")}</Text>
+            <LocalizedText style={styles.editPhoneText}>
+              {t("otp.editPhone")}
+            </LocalizedText>
           </TouchableOpacity>
         </View>
       </Animated.View>
@@ -183,9 +222,8 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontFamily: "Cairo_700Bold",
     color: "#2c2c2c",
-    textAlign: "center",
+    lineHeight: 32,
   },
   description: {
     alignItems: "center",
@@ -193,10 +231,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   descriptionText: {
-    fontSize: 14,
-    fontFamily: "Cairo_400Regular",
     color: "#666",
-    textAlign: "center",
     lineHeight: 22,
     marginBottom: 4,
   },
@@ -205,7 +240,6 @@ const styles = StyleSheet.create({
   },
   resendText: {
     fontSize: 14,
-    fontFamily: "Cairo_600SemiBold",
     color: "#c28e5c",
   },
   resendTextDisabled: {

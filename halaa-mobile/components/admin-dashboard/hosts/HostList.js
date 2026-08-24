@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from "react";
 import { View, Alert, StyleSheet } from "react-native";
 import { useTranslation } from "../../../localization";
+import { formatCount } from "@halaa/shared/utils/locale";
+import { isolateAuto } from "@halaa/shared/utils/bidi";
 import { backgrounds, colors } from "../../../styles/tokens";
 import { useAuthStore } from "../../../stores/authStore";
 import { canDeleteOnPage, PAGES } from "../../../utils/adminPermissions";
@@ -29,7 +31,7 @@ const HostList = ({
   activeFilter: activeFilterProp,
   onActiveFilterChange,
 }) => {
-  const { t } = useTranslation("admin");
+  const { t, currentLanguage } = useTranslation("admin");
   const [searchQueryLocal, setSearchQueryLocal] = useState("");
   const [activeFilterLocal, setActiveFilterLocal] = useState("all");
   const searchQuery = searchQueryProp ?? searchQueryLocal;
@@ -94,7 +96,10 @@ const HostList = ({
 
   const handleBulkDelete = (ids) => {
     Alert.alert(
-      `${t("hosts.deleteConfirm.title")} (${ids.length})`,
+      t("hosts.deleteConfirm.bulkTitle", {
+        // Isolate the count so parentheses cannot flip in the Arabic title.
+        count: isolateAuto(formatCount(ids.length, currentLanguage)),
+      }),
       t("hosts.deleteConfirm.bulkMessage"),
       [
         { text: t("common.cancel"), style: "cancel" },

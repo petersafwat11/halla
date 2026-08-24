@@ -1,6 +1,8 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import AdaptiveText from "../../../components/commen/AdaptiveText";
+import LocalizedText from "../../../components/commen/LocalizedText";
 import { colors, spacing, borderRadius, typography, textStyles, backgrounds } from "../../../../styles/tokens";
 
 const HOST_STATUS_COLORS = {
@@ -18,11 +20,11 @@ const AdminRecentHosts = ({ hosts, t, onViewAll }) => {
       <View style={styles.sectionHeader}>
         <View style={styles.sectionHeaderLeft}>
           <Ionicons name="people-outline" size={18} color={colors.primary[500]} />
-          <Text style={styles.sectionTitle}>{t("dashboard.recentHosts.title")}</Text>
+          <LocalizedText style={styles.sectionTitle}>{t("dashboard.recentHosts.title")}</LocalizedText>
         </View>
         {onViewAll && (
           <TouchableOpacity onPress={onViewAll}>
-            <Text style={styles.viewAllText}>{t("common.viewAll")}</Text>
+            <LocalizedText style={styles.viewAllText}>{t("common.viewAll")}</LocalizedText>
           </TouchableOpacity>
         )}
       </View>
@@ -38,13 +40,14 @@ const AdminRecentHosts = ({ hosts, t, onViewAll }) => {
                 <Text style={styles.avatarText}>{initial}</Text>
               </View>
               <View style={styles.listRowContent}>
-                <Text style={styles.listRowName} numberOfLines={1}>{name}</Text>
-                <Text style={styles.listRowSub} numberOfLines={1}>{host.email}</Text>
+                {/* Host names and emails are backend content — first-strong. */}
+                <AdaptiveText style={styles.listRowName} numberOfLines={1}>{name}</AdaptiveText>
+                <AdaptiveText style={styles.listRowSub} numberOfLines={1}>{host.email}</AdaptiveText>
               </View>
               <View style={[styles.statusBadge, { backgroundColor: `${statusColor}18` }]}>
-                <Text style={[styles.statusText, { color: statusColor }]}>
+                <LocalizedText style={[styles.statusText, { color: statusColor }]}>
                   {t(`hosts.status.${host.status}`) || host.status}
-                </Text>
+                </LocalizedText>
               </View>
             </View>
           </React.Fragment>

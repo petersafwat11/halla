@@ -7,7 +7,7 @@ tags:
 - launchApp:
     clearState: true
 - tapOn:
-    text: "العربية - اللغة العربية"
+    text: "العربية"
 - tapOn:
     text: "حسناً"
     optional: true

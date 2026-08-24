@@ -1,13 +1,13 @@
 import React from "react";
 import {
   TouchableOpacity,
-  Text,
   ActivityIndicator,
   StyleSheet,
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import PropTypes from "prop-types";
+import LocalizedText from "../../commen/LocalizedText";
 import {
   colors,
   spacing,
@@ -138,7 +138,7 @@ const ActionButton = ({
               style={styles.icon}
             />
           )}
-          <Text style={getTextStyle()}>{label}</Text>
+          <LocalizedText style={getTextStyle()}>{label}</LocalizedText>
         </View>
       )}
     </TouchableOpacity>

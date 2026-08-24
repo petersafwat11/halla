@@ -1,8 +1,9 @@
 import React from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { isolateLtr } from "@halaa/shared/utils";
+import { isolateLegalLtrTokens } from "@halaa/shared/legal";
 import { useTranslation } from "../../localization";
+import LocalizedText from "../../components/commen/LocalizedText";
 import { TopBar } from "../../components/plans";
 import {
   colors,
@@ -12,43 +13,27 @@ import {
 } from "../../styles/tokens";
 
 /**
- * Regex for intrinsically LTR tokens inside legal paragraphs:
- * email addresses, Saudi phone numbers, URLs, official Latin company name, store names.
- */
-const LTR_LEGAL_TOKEN_REGEX =
-  /(?:[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}|(?:\+966|05)\s*\d{1,2}\s*\d{3}\s*\d{4}|https?:\/\/[^\s)]+|Afaq hala Company For Communications and Information|App Store|Google Play)/g;
-
-function isolateLegalParagraph(paragraph, isRtl) {
-  if (!paragraph || !isRtl) return paragraph;
-
-  // Split by LTR tokens and wrap matching tokens with Unicode isolate
-  const parts = String(paragraph).split(LTR_LEGAL_TOKEN_REGEX);
-  const matches = String(paragraph).match(LTR_LEGAL_TOKEN_REGEX);
-
-  if (!matches) return paragraph;
-
-  const result = [];
-  for (let i = 0; i < parts.length; i++) {
-    if (parts[i]) result.push(parts[i]);
-    if (matches[i]) result.push(isolateLtr(matches[i]));
-  }
-  return result.join("");
-}
-
-/**
  * Reusable legal document screen (Privacy / Terms / Community Rules / Refund /
  * Deletion / Support). Receives a localized `data` object of shape:
  *   { badge, title, subtitle, lastUpdated, sections: [{ id, num, label, title, body }] }
  * Body paragraphs are separated by "\n\n".
  *
- * Direction is handled logically (root direction / I18nManager):
- * `flex-start` aligns to the logical reading start (right in Arabic, left in English).
- * `flexDirection: "row"` renders in logical start-to-end reading order.
+ * Direction model (blueprint §4.5):
+ *  - Layout is logical start-to-end via the inherited root direction; a plain
+ *    `flexDirection: "row"` renders section number → title in reading order.
+ *  - Every localized string (badge/title/subtitle/date line/section labels/
+ *    titles/paragraphs) renders through the shared `LocalizedText` role, so
+ *    copy always follows the UI locale regardless of embedded tokens.
+ *  - Intrinsically LTR tokens inside Arabic paragraphs AND section headers
+ *    (emails, phones, URLs, company/store names, vendor brands, percentages)
+ *    are isolated by the canonical shared matcher (`isolateLegalLtrTokens`)
+ *    so BiDi cannot scramble them; the matcher is expanded only from proven
+ *    content cases (e.g. refund §11 title "App Store و Google Play").
+ *  - Section numbers stay pinned LTR digits (intentionally physical glyph).
  */
 const LegalScreen = ({ data }) => {
   const { t, currentLanguage } = useTranslation("settings");
   const isRtl = currentLanguage === "ar";
-  const localizedTextStyle = isRtl ? styles.rtlText : styles.ltrText;
 
   const sections = Array.isArray(data?.sections) ? data.sections : [];
 
@@ -69,22 +54,28 @@ const LegalScreen = ({ data }) => {
           <View style={styles.header}>
             {hasDistinctBadge && (
               <View style={styles.badge}>
-                <Text style={[styles.badgeText, localizedTextStyle]}>{data.badge}</Text>
+                <LocalizedText style={styles.badgeText}>
+                  {data.badge}
+                </LocalizedText>
               </View>
             )}
             {!!data?.title && (
-              <Text style={[styles.title, localizedTextStyle]} accessibilityRole="header">
+              <LocalizedText
+                style={styles.title}
+                accessibilityRole="header"
+              >
                 {data.title}
-              </Text>
+              </LocalizedText>
             )}
             {!!data?.subtitle && (
-              <Text style={[styles.subtitle, localizedTextStyle]}>{data.subtitle}</Text>
+              <LocalizedText style={styles.subtitle}>
+                {data.subtitle}
+              </LocalizedText>
             )}
             {!!data?.lastUpdated && (
-              <Text style={[styles.lastUpdated, localizedTextStyle]}>
-                {t("legal.lastUpdated", { defaultValue: "Last updated" })}:{" "}
-                {data.lastUpdated}
-              </Text>
+              <LocalizedText style={styles.lastUpdated}>
+                {t("legal.lastUpdated", { date: data.lastUpdated })}
+              </LocalizedText>
             )}
           </View>
 
@@ -101,28 +92,28 @@ const LegalScreen = ({ data }) => {
                   </View>
                   <View style={styles.cardHeaderText}>
                     {!!section.label && (
-                      <Text style={[styles.sectionLabel, localizedTextStyle]}>
-                        {section.label}
-                      </Text>
+                      <LocalizedText style={styles.sectionLabel}>
+                        {isolateLegalLtrTokens(section.label, isRtl)}
+                      </LocalizedText>
                     )}
                     {!!section.title && (
-                      <Text
-                        style={[styles.sectionTitle, localizedTextStyle]}
+                      <LocalizedText
+                        style={styles.sectionTitle}
                         accessibilityRole="header"
                       >
-                        {section.title}
-                      </Text>
+                        {isolateLegalLtrTokens(section.title, isRtl)}
+                      </LocalizedText>
                     )}
                   </View>
                 </View>
 
                 {paragraphs.map((paragraph, index) => (
-                  <Text
+                  <LocalizedText
                     key={`${section.id}-p${index}`}
-                    style={[styles.paragraph, localizedTextStyle]}
+                    style={styles.paragraph}
                   >
-                    {isolateLegalParagraph(paragraph, isRtl)}
-                  </Text>
+                    {isolateLegalLtrTokens(paragraph, isRtl)}
+                  </LocalizedText>
                 ))}
               </View>
             );
@@ -233,12 +224,6 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_400Regular",
     color: colors.natural[450],
     marginTop: spacing[8],
-  },
-  rtlText: {
-    writingDirection: "rtl",
-  },
-  ltrText: {
-    writingDirection: "ltr",
   },
 });
 

@@ -155,7 +155,8 @@
       "pending": "قيد المعالجة — سيتم تطبيق إضافتك قريباً."
     },
     "history": {
-      "title": "إضافاتك"
+      "title": "إضافاتك",
+      "itemRow": "{{label}} · {{count}}"
     }
   },
   "summary": {
@@ -169,6 +170,10 @@
     "singleEvent": "مناسبة واحدة",
     "unlimitedEvents": "مناسبات غير محدودة",
     "compensationInvites": "دعوات تعويضية",
+    "compensationInvitesRow": "{{count}} دعوة تعويضية",
+    "baseInvitesRow": "{{count}} دعوة أساسية",
+    "poolInvitesRow": "{{count}} دعوة في الرصيد",
+    "extraInvitesRow": "+{{count}} دعوة إضافية",
     "extraInvites": "دعوة إضافية",
     "totalInvites": "إجمالي الدعوات",
     "totalInvitesHint": "إجمالي الرصيد = الدعوات الأساسية + الباقات الإضافية + تعويض ١٥٪.",
@@ -256,7 +261,8 @@
     },
     "stcpay": {
       "mobile": "رقم الجوال",
-      "note": "سيصلك إشعار تأكيد في تطبيق STC Pay."
+      "note": "سيصلك إشعار تأكيد في تطبيق STC Pay.",
+      "mobilePlaceholder": "05xxxxxxxx"
     },
     "applepay": {
       "note": "سيُطلب منك التأكيد عبر آبل باي في الخطوة التالية."
@@ -374,6 +380,7 @@
   "iapFlow": {
     "checking": "جارٍ التحقق من الأهلية…",
     "purchasing": "جارٍ فتح المتجر…",
+    "reconcileUnavailable": "تم حفظ عملية الشراء لدى المتجر، لكن تعذّر على هلا تأكيدها الآن. تحقق من الاتصال ثم حدّث الحالة. لا تشترِ مرة أخرى.",
     "errorGeneric": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
     "blockedTitle": "لا يمكن شراء هذا العنصر بعد",
     "continue": "متابعة",

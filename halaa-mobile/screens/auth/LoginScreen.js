@@ -4,7 +4,6 @@ import {
   View,
   ScrollView,
   TouchableOpacity,
-  Text,
   KeyboardAvoidingView,
   Platform,
   Dimensions,
@@ -20,6 +19,7 @@ import {
   OTPVerificationForm,
 } from "../../components/auth";
 import TopBar from "../../components/plans/TopBar";
+import LocalizedText from "../../components/commen/LocalizedText";
 
 const { width } = Dimensions.get("window");
 
@@ -96,7 +96,7 @@ export default function LoginScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <View style={styles.container}>
-        <TopBar title={t("login.title", "أهلا بعودتك!")} showBack={true} />
+        <TopBar title={t("login.title")} showBack={true} />
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.keyboardView}
@@ -118,25 +118,32 @@ export default function LoginScreen({ navigation }) {
                         onPress={handleForgotPassword}
                         style={styles.forgotPassword}
                       >
-                        <Text style={styles.forgotPasswordText}>
-                          {t("login.forgotPassword", "نسيت كلمة المرور؟")}
-                        </Text>
+                        {/* App copy — always the UI locale (blueprint §5.1). */}
+                        <LocalizedText style={styles.forgotPasswordText}>
+                          {t("login.forgotPassword")}
+                        </LocalizedText>
                       </TouchableOpacity>
                     </>
                   )}
 
                   <TouchableOpacity onPress={switchMethod} style={styles.switchMethod}>
-                    <Text style={styles.switchMethodText}>
+                    <LocalizedText style={styles.switchMethodText}>
                       {loginMethod === "mobile"
-                        ? t("login.loginWithEmail", "تسجيل الدخول بالبريد الإلكتروني")
-                        : t("login.loginWithMobile", "تسجيل الدخول بالهاتف")}
-                    </Text>
+                        ? t("login.loginWithEmail")
+                        : t("login.loginWithMobile")}
+                    </LocalizedText>
                   </TouchableOpacity>
 
+                  {/* Two adjacent runs in one logical row — no string
+                      concatenation, so punctuation stays inside each run. */}
                   <View style={styles.signupContainer}>
-                    <Text style={styles.signupText}>{t("login.noAccount", "ليس لديك حساب؟")} </Text>
+                    <LocalizedText style={styles.signupText}>
+                      {t("login.noAccount")}
+                    </LocalizedText>
                     <TouchableOpacity onPress={handleSignup}>
-                      <Text style={styles.signupLink}>{t("login.signUp", "إنشاء حساب")}</Text>
+                      <LocalizedText style={styles.signupLink}>
+                        {t("login.signUp")}
+                      </LocalizedText>
                     </TouchableOpacity>
                   </View>
 
@@ -144,9 +151,9 @@ export default function LoginScreen({ navigation }) {
                     style={styles.guestMarketplaceContainer}
                     onPress={() => navigation.navigate("Marketplace")}
                   >
-                    <Text style={styles.guestMarketplaceLink}>
-                      {t("login.browseMarketplace", "تصفح السوق كزائر")}
-                    </Text>
+                    <LocalizedText style={styles.guestMarketplaceLink}>
+                      {t("login.browseMarketplace")}
+                    </LocalizedText>
                   </TouchableOpacity>
                 </>
               ) : (
@@ -187,7 +194,7 @@ const styles = StyleSheet.create({
   forgotPasswordText: { fontSize: 14, fontFamily: "Cairo_600SemiBold", color: "#c28e5c" },
   switchMethod: { alignItems: "center", marginTop: 16, marginBottom: 8 },
   switchMethodText: { fontSize: 14, fontFamily: "Cairo_600SemiBold", color: "#c28e5c" },
-  signupContainer: { flexDirection: "row", justifyContent: "center", alignItems: "center", marginTop: 24 },
+  signupContainer: { flexDirection: "row", justifyContent: "center", alignItems: "center", marginTop: 24, gap: 6 },
   signupText: { fontSize: 14, fontFamily: "Cairo_400Regular", color: "#666" },
   signupLink: { fontSize: 14, fontFamily: "Cairo_600SemiBold", color: "#c28e5c" },
   guestMarketplaceContainer: { alignItems: "center", marginTop: 14, marginBottom: 8 },

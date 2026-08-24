@@ -5,6 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
 import EventList from "../../components/events/EventList";
 import MakeYourFirst from "../../components/home/MakeYourFirst";
+import AdaptiveText from "../../components/commen/AdaptiveText";
 import { TopBar } from "../../components/plans";
 import { useEventStats, useBusinessCreateEventGate } from "../../hooks";
 import { useAuthStore } from "../../stores/authStore";
@@ -59,7 +60,11 @@ const EventsScreen = ({ navigation }) => {
         ) : error ? (
           <View style={styles.errorContainer}>
             <Text style={styles.errorText}>{t("common.loadError")}</Text>
-            <Text style={styles.errorMessage}>{error?.message || String(error)}</Text>
+            {/* Backend error text is arbitrary content — first-strong
+                direction + isolation instead of the page locale. */}
+            <AdaptiveText style={styles.errorMessage}>
+              {error?.message || String(error)}
+            </AdaptiveText>
           </View>
         ) : (eventsData?.events?.length ?? 0) === 0 ? (
           <View style={styles.emptyContainer}>

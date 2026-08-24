@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, Animated } from "react-native";
 import { Button } from "../commen";
 import { useTranslation } from "../../localization";
+import LocalizedText from "../commen/LocalizedText";
 
 const EmailSentView = ({ onGoToEmail, onResend, resendDisabled = false }) => {
   const { t } = useTranslation("auth");
@@ -50,12 +51,16 @@ const EmailSentView = ({ onGoToEmail, onResend, resendDisabled = false }) => {
         <View style={styles.iconContainer}>
           <Text style={styles.iconText}>✉️</Text>
         </View>
-        <Text style={styles.title}>{t("forgetPassword.emailSentTitle")}</Text>
+        <LocalizedText role="pageTitle" center style={styles.title}>
+          {t("forgetPassword.emailSentTitle")}
+        </LocalizedText>
       </View>
 
-      <Text style={styles.description}>
+      {/* App copy follows the UI locale even though the referenced mailbox
+          address itself would be an LTR token. */}
+      <LocalizedText role="description" center style={styles.description}>
         {t("forgetPassword.emailSentDescription")}
-      </Text>
+      </LocalizedText>
 
       <View style={styles.buttons}>
         <Button
@@ -97,15 +102,10 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontFamily: "Cairo_700Bold",
     color: "#2c2c2c",
-    textAlign: "center",
   },
   description: {
-    fontSize: 14,
-    fontFamily: "Cairo_400Regular",
     color: "#666",
-    textAlign: "center",
     lineHeight: 22,
     marginBottom: 32,
     paddingHorizontal: 20,

@@ -8,7 +8,10 @@ import {
   Alert,
 } from "react-native";
 import TextInput from "../../../commen/DirectionalTextInput";
+import AdaptiveText from "../../../commen/AdaptiveText";
 import { Ionicons } from "@expo/vector-icons";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
+import { formatCount } from "@halaa/shared/utils/locale";
 import {
   usePostEventComments,
   useAddPostEventComment,
@@ -16,31 +19,8 @@ import {
   useReportPostEventContent,
   useBlockPostEventActor,
 } from "../../../../hooks/postEvent";
-import { useLanguage } from "../../../../localization";
+import { useTranslation } from "../../../../localization";
 import LegalLinks from "../../../legal/LegalLinks";
-
-// Inline AR/EN copy for the report/block actions (no extra i18n keys needed).
-const MOD_COPY = {
-  menuReport: { en: "Report comment", ar: "الإبلاغ عن التعليق" },
-  reportPost: { en: "Report this post", ar: "الإبلاغ عن هذا المنشور" },
-  report: { en: "Report", ar: "إبلاغ" },
-  menuBlock: { en: "Block user", ar: "حظر المستخدم" },
-  cancel: { en: "Cancel", ar: "إلغاء" },
-  reportTitle: { en: "Report this comment?", ar: "الإبلاغ عن هذا التعليق؟" },
-  reportMsg: { en: "Pick a reason", ar: "اختر السبب" },
-  rSpam: { en: "Spam", ar: "محتوى مزعج" },
-  rHarass: { en: "Harassment", ar: "تحرّش / إساءة" },
-  rOther: { en: "Other", ar: "أخرى" },
-  reported: { en: "Reported. Thank you.", ar: "تم الإبلاغ. شكرًا لك." },
-  blockTitle: { en: "Block this user?", ar: "حظر هذا المستخدم؟" },
-  blockMsg: {
-    en: "You won't see their content anymore.",
-    ar: "لن ترى محتواهم بعد الآن.",
-  },
-  block: { en: "Block", ar: "حظر" },
-  blocked: { en: "Blocked.", ar: "تم الحظر." },
-  failed: { en: "Something went wrong.", ar: "حدث خطأ ما." },
-};
 
 const PostInteractions = ({ post, eventId, sessionToken, t, toast }) => {
   const liked = !!post.userLiked;
@@ -55,9 +35,9 @@ const PostInteractions = ({ post, eventId, sessionToken, t, toast }) => {
   const reportContent = useReportPostEventContent();
   const blockActor = useBlockPostEventActor();
 
-  const { currentLanguage } = useLanguage();
-  const lang = currentLanguage === "ar" ? "ar" : "en";
-  const tx = (k) => MOD_COPY[k][lang];
+  // `t` arrives via props (postEvent namespace); the hook supplies the
+  // active language for locale-formatted digits.
+  const { currentLanguage } = useTranslation("postEvent");
 
   const submitReport = (c, reason) => {
     reportContent.mutate(
@@ -71,25 +51,25 @@ const PostInteractions = ({ post, eventId, sessionToken, t, toast }) => {
         reason,
       },
       {
-        onSuccess: () => toast?.success(tx("reported")),
-        onError: () => toast?.error(tx("failed")),
+        onSuccess: () => toast?.success(t("moderation.reported")),
+        onError: () => toast?.error(t("moderation.failed")),
       }
     );
   };
 
   const handleReport = (c) => {
-    Alert.alert(tx("reportTitle"), tx("reportMsg"), [
-      { text: tx("rSpam"), onPress: () => submitReport(c, "spam") },
-      { text: tx("rHarass"), onPress: () => submitReport(c, "harassment") },
-      { text: tx("rOther"), onPress: () => submitReport(c, "other") },
-      { text: tx("cancel"), style: "cancel" },
+    Alert.alert(t("moderation.reportTitle"), t("moderation.reportMsg"), [
+      { text: t("moderation.reasonSpam"), onPress: () => submitReport(c, "spam") },
+      { text: t("moderation.reasonHarassment"), onPress: () => submitReport(c, "harassment") },
+      { text: t("moderation.reasonOther"), onPress: () => submitReport(c, "other") },
+      { text: t("moderation.cancel"), style: "cancel" },
     ]);
   };
 
   const handleBlock = (c) => {
-    Alert.alert(tx("blockTitle"), tx("blockMsg"), [
+    Alert.alert(t("moderation.blockTitle"), t("moderation.blockMsg"), [
       {
-        text: tx("block"),
+        text: t("moderation.block"),
         style: "destructive",
         onPress: () =>
           blockActor.mutate(
@@ -101,21 +81,21 @@ const PostInteractions = ({ post, eventId, sessionToken, t, toast }) => {
               blockedActorId: c.guest?._id,
             },
             {
-              onSuccess: () => toast?.success(tx("blocked")),
-              onError: () => toast?.error(tx("failed")),
+              onSuccess: () => toast?.success(t("moderation.blocked")),
+              onError: () => toast?.error(t("moderation.failed")),
             }
           ),
       },
-      { text: tx("cancel"), style: "cancel" },
+      { text: t("moderation.cancel"), style: "cancel" },
     ]);
   };
 
   const openCommentMenu = (c) => {
     if (!c.guest?._id) return;
     Alert.alert(c.guest?.name || "", undefined, [
-      { text: tx("menuReport"), onPress: () => handleReport(c) },
-      { text: tx("menuBlock"), style: "destructive", onPress: () => handleBlock(c) },
-      { text: tx("cancel"), style: "cancel" },
+      { text: t("moderation.menuReport"), onPress: () => handleReport(c) },
+      { text: t("moderation.menuBlock"), style: "destructive", onPress: () => handleBlock(c) },
+      { text: t("moderation.cancel"), style: "cancel" },
     ]);
   };
 
@@ -130,18 +110,18 @@ const PostInteractions = ({ post, eventId, sessionToken, t, toast }) => {
         reason,
       },
       {
-        onSuccess: () => toast?.success(tx("reported")),
-        onError: () => toast?.error(tx("failed")),
+        onSuccess: () => toast?.success(t("moderation.reported")),
+        onError: () => toast?.error(t("moderation.failed")),
       }
     );
   };
 
   const handleReportPost = () => {
-    Alert.alert(tx("reportPost"), tx("reportMsg"), [
-      { text: tx("rSpam"), onPress: () => submitPostReport("spam") },
-      { text: tx("rHarass"), onPress: () => submitPostReport("harassment") },
-      { text: tx("rOther"), onPress: () => submitPostReport("other") },
-      { text: tx("cancel"), style: "cancel" },
+    Alert.alert(t("moderation.reportPost"), t("moderation.reportMsg"), [
+      { text: t("moderation.reasonSpam"), onPress: () => submitPostReport("spam") },
+      { text: t("moderation.reasonHarassment"), onPress: () => submitPostReport("harassment") },
+      { text: t("moderation.reasonOther"), onPress: () => submitPostReport("other") },
+      { text: t("moderation.cancel"), style: "cancel" },
     ]);
   };
 
@@ -209,7 +189,7 @@ const PostInteractions = ({ post, eventId, sessionToken, t, toast }) => {
             color={liked ? "#e74c3c" : "#666"}
           />
           <Text style={[styles.actionCount, liked && styles.actionCountLiked]}>
-            {likesCount}
+            {isolateLtr(formatCount(likesCount, currentLanguage))}
           </Text>
         </TouchableOpacity>
 
@@ -219,7 +199,9 @@ const PostInteractions = ({ post, eventId, sessionToken, t, toast }) => {
           activeOpacity={0.7}
         >
           <Ionicons name="chatbubble-outline" size={20} color="#666" />
-          <Text style={styles.actionCount}>{commentsCount}</Text>
+          <Text style={styles.actionCount}>
+            {isolateLtr(formatCount(commentsCount, currentLanguage))}
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -227,10 +209,10 @@ const PostInteractions = ({ post, eventId, sessionToken, t, toast }) => {
           onPress={handleReportPost}
           activeOpacity={0.7}
           accessibilityRole="button"
-          accessibilityLabel={tx("reportPost")}
+          accessibilityLabel={t("moderation.reportPost")}
         >
           <Ionicons name="flag-outline" size={18} color="#999" />
-          <Text style={styles.reportText}>{tx("report")}</Text>
+          <Text style={styles.reportText}>{t("moderation.report")}</Text>
         </TouchableOpacity>
       </View>
 
@@ -255,17 +237,21 @@ const PostInteractions = ({ post, eventId, sessionToken, t, toast }) => {
                   />
                 </View>
                 <View style={styles.commentBubble}>
-                  <Text style={styles.commentName}>
+                  {/* Guest name + comment body are arbitrary user content —
+                      adaptive first-strong rendering with isolation. */}
+                  <AdaptiveText style={styles.commentName} numberOfLines={1}>
                     {c.guest?.name || t("comment.guestFallback")}
-                  </Text>
-                  <Text style={styles.commentText}>{c.text}</Text>
+                  </AdaptiveText>
+                  <AdaptiveText style={styles.commentText}>
+                    {c.text}
+                  </AdaptiveText>
                 </View>
                 <TouchableOpacity
                   style={styles.commentMenuBtn}
                   onPress={() => openCommentMenu(c)}
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   accessibilityRole="button"
-                  accessibilityLabel={tx("menuReport")}
+                  accessibilityLabel={t("moderation.menuReport")}
                 >
                   <Ionicons name="ellipsis-horizontal" size={16} color="#999" />
                 </TouchableOpacity>
@@ -274,14 +260,17 @@ const PostInteractions = ({ post, eventId, sessionToken, t, toast }) => {
           )}
 
           <View style={styles.commentInputRow}>
+            {/* Guest comment text is arbitrary content — placeholder follows
+                the UI locale, a filled value follows its first strong char. */}
             <TextInput
+              contentDirection="adaptive"
               style={styles.commentInput}
               value={commentText}
               onChangeText={setCommentText}
               placeholder={t("comment.placeholder")}
               placeholderTextColor="#a0a0a0"
               multiline
-              maxLength={500}
+              maxLength={1000}
               editable={!addComment.isPending}
             />
             <TouchableOpacity
@@ -301,9 +290,12 @@ const PostInteractions = ({ post, eventId, sessionToken, t, toast }) => {
               )}
             </TouchableOpacity>
           </View>
+          {/* Legal prefix is app copy — authored translation key, never an
+              inline bilingual ternary (blueprint §6). LegalLinks resolves
+              the active locale itself. */}
           <LegalLinks
             docTypes={["terms", "community-rules"]}
-            prefix={lang === "ar" ? "بالنشر فإنك تقبل" : "By posting, you accept"}
+            prefix={t("comment.legalPrefix")}
           />
         </View>
       )}

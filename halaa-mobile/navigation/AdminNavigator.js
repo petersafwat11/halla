@@ -62,6 +62,7 @@ const MoreStack = createStackNavigator();
 function HostsStackNavigator() {
   const { user } = useAuthStore();
   const userRole = user?.role;
+  const { t } = useTranslation();
 
   return (
     <HostsStack.Navigator
@@ -73,16 +74,14 @@ function HostsStackNavigator() {
         name="AdminHostsList"
         component={AdminHostsScreen}
         options={{
-          title: "المضيفون", // Hosts in Arabic
-          headerTitle: "Hosts",
+          title: t("admin:screenTitles.hosts"),
         }}
       />
       <HostsStack.Screen
         name="HostDetails"
         component={HostDetailsScreen}
         options={{
-          title: "تفاصيل المضيف", // Host Details in Arabic
-          headerTitle: "Host Details",
+          title: t("admin:screenTitles.hostDetails"),
         }}
       />
     </HostsStack.Navigator>
@@ -94,6 +93,10 @@ function HostsStackNavigator() {
  * Contains all event management screens
  */
 function EventsStackNavigator() {
+  // Stack titles are invisible metadata (headers render in-screen via TopBar)
+  // but must still be translation keys — never per-language literals.
+  const { t } = useTranslation();
+
   return (
     <EventsStack.Navigator
       screenOptions={{
@@ -104,8 +107,7 @@ function EventsStackNavigator() {
         name="AdminEventsList"
         component={AdminEventsScreen}
         options={{
-          title: "المناسبات", // Events in Arabic
-          headerTitle: "Events",
+          title: t("admin:screenTitles.events"),
         }}
       />
 
@@ -113,8 +115,7 @@ function EventsStackNavigator() {
         name="EventDetails"
         component={EventDetailsScreen}
         options={{
-          title: "تفاصيل المناسبة", // Event Details in Arabic
-          headerTitle: "Event Details",
+          title: t("admin:screenTitles.eventDetails"),
         }}
       />
 
@@ -122,8 +123,7 @@ function EventsStackNavigator() {
         name="CreateEvent"
         component={CreateEventScreen}
         options={{
-          title: "إنشاء مناسبة", // Create Event in Arabic
-          headerTitle: "Create Event",
+          title: t("admin:screenTitles.createEvent"),
         }}
       />
 
@@ -131,8 +131,7 @@ function EventsStackNavigator() {
         name="UpdateEvent"
         component={UpdateEventScreen}
         options={{
-          title: "تعديل مناسبة",
-          headerTitle: "Update Event",
+          title: t("admin:screenTitles.updateEvent"),
         }}
       />
 
@@ -140,8 +139,7 @@ function EventsStackNavigator() {
         name="ManagePostEvent"
         component={ManagePostEventScreen}
         options={{
-          title: "إدارة ما بعد المناسبة",
-          headerTitle: "Manage Post-Event",
+          title: t("admin:screenTitles.managePostEvent"),
         }}
       />
     </EventsStack.Navigator>
@@ -153,6 +151,8 @@ function EventsStackNavigator() {
  * Contains all ticket management screens
  */
 function TicketsStackNavigator() {
+  const { t } = useTranslation();
+
   return (
     <TicketsStack.Navigator
       screenOptions={{
@@ -163,8 +163,7 @@ function TicketsStackNavigator() {
         name="AdminTicketsList"
         component={AdminTicketsScreen}
         options={{
-          title: "التذاكر", // Tickets in Arabic
-          headerTitle: "Tickets",
+          title: t("admin:screenTitles.tickets"),
         }}
       />
 
@@ -172,8 +171,7 @@ function TicketsStackNavigator() {
         name="TicketDetails"
         component={TicketDetailsScreen}
         options={{
-          title: "تفاصيل التذكرة", // Ticket Details in Arabic
-          headerTitle: "Ticket Details",
+          title: t("admin:screenTitles.ticketDetails"),
         }}
       />
     </TicketsStack.Navigator>
@@ -402,6 +400,8 @@ export default function AdminNavigator() {
           fontSize: 12,
           fontFamily: "Cairo_500Medium",
         },
+        // Hide tabs while the keyboard is open (blueprint §7).
+        tabBarHideOnKeyboard: true,
         headerShown: false,
       })}
     >

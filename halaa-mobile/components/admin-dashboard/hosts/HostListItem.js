@@ -6,6 +6,7 @@ import { useUpdateHostStatus, useDeleteHost } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
 import { formatDate } from "@halaa/shared/utils/locale";
+import { isolateAuto, isolateLtr } from "@halaa/shared/utils/bidi";
 import { colors } from "../../../styles/tokens";
 import AdminListItem from "../common/AdminListItem";
 
@@ -25,8 +26,10 @@ const HostListItem = ({ host, onPress, onManageSubscription, selected = false, o
   const handleStatusChange = () => {
     const newStatus = status === "active" ? "suspended" : "active";
     const isSuspending = newStatus === "suspended";
+    // The confirmation sentence is one interpolated translation — the host
+    // name is first-strong isolated so it cannot scramble the Arabic copy.
     const actionLabel = isSuspending ? t("common.suspend") : t("common.activate");
-    Alert.alert(actionLabel, `${actionLabel} "${name || ""}"?`, [
+    Alert.alert(actionLabel, t("hosts.actions.statusConfirmMessage", { action: actionLabel, name: isolateAuto(name || "") }), [
       { text: t("common.cancel"), style: "cancel" },
       {
         text: actionLabel,
@@ -103,15 +106,20 @@ const HostListItem = ({ host, onPress, onManageSubscription, selected = false, o
     <AdminListItem
       title={name || username || email || t("hosts.labels.unnamed")}
       subtitle={email}
-      subtitleAlt={phoneNumber ? `‪${phoneNumber}‬` : null}
+      subtitleAlt={phoneNumber ? isolateLtr(phoneNumber) : null}
       avatarColor={colors.primary[500]}
       status={status}
       details={[
-        { icon: "card-outline", text: planName || t("hosts.labels.noPlan") },
+        {
+          icon: "card-outline",
+          text: planName || t("hosts.labels.noPlan"),
+          // Plan display names are bilingual backend content.
+          adaptive: Boolean(planName),
+        },
         {
           icon: "calendar-outline",
           text: formattedDate
-            ? `${t("hosts.labels.joined")} ${formattedDate}`
+            ? t("hosts.labels.joinedDate", { date: formattedDate })
             : t("common.unknown"),
         },
       ]}

@@ -1,6 +1,7 @@
 import React from "react";
-import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
+import { View, TouchableOpacity, ActivityIndicator } from "react-native";
 import TextInput from "../../commen/DirectionalTextInput";
+import AdaptiveText from "../../commen/AdaptiveText";
 import { Ionicons } from "@expo/vector-icons";
 
 const COLORS = {
@@ -21,7 +22,11 @@ export const DistrictCheckboxes = ({ districts, selectedIds, onToggle, loading }
           key={district.district_id}
           style={checkboxItem}
           onPress={() => onToggle(district.district_id)}
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: selectedIds?.includes(district.district_id) }}
         >
+          {/* Leading selection box; the checkmark inside is semantic and is
+              never mirrored. */}
           <View
             style={[
               checkbox,
@@ -32,7 +37,10 @@ export const DistrictCheckboxes = ({ districts, selectedIds, onToggle, loading }
               <Ionicons name="checkmark" size={16} color="#FFF" />
             )}
           </View>
-          <Text style={checkboxLabel}>{district.displayName ?? district.name_ar}</Text>
+          {/* District names are backend content → adaptive direction. */}
+          <AdaptiveText style={checkboxLabel}>
+            {district.displayName ?? district.name_ar}
+          </AdaptiveText>
         </TouchableOpacity>
       ))}
     </View>
@@ -41,16 +49,21 @@ export const DistrictCheckboxes = ({ districts, selectedIds, onToggle, loading }
 
 export const PriceRangeInputs = ({ minPrice, maxPrice, onChange, t }) => (
   <View style={priceRangeContainer}>
+    {/* Amount entry uses the shared digit-entry contract (phone mode):
+        localized empty placeholder at the locale start edge, stable LTR
+        digits/cursor once a value is typed. */}
     <TextInput
       style={priceInput}
+      contentDirection="phone"
       placeholder={t("filters.minPrice")}
       keyboardType="numeric"
       value={minPrice}
       onChangeText={(value) => onChange("minPrice", value)}
     />
-    <Text style={priceSeparator}>-</Text>
+    <AdaptiveText style={priceSeparator}>-</AdaptiveText>
     <TextInput
       style={priceInput}
+      contentDirection="phone"
       placeholder={t("filters.maxPrice")}
       keyboardType="numeric"
       value={maxPrice}
@@ -72,11 +85,13 @@ const checkbox = {
 };
 const checkboxActive = { backgroundColor: COLORS.primary, borderColor: COLORS.primary };
 const checkboxLabel = {
+  flexShrink: 1,
   fontSize: 14,
   fontFamily: "Cairo_500Medium",
   color: COLORS.textDark,
 };
 const priceRangeContainer = { flexDirection: "row", alignItems: "center", gap: 8 };
+const priceSeparator = { fontSize: 16, color: COLORS.textDark };
 const priceInput = {
   flex: 1,
   backgroundColor: COLORS.bgLight,
@@ -87,6 +102,4 @@ const priceInput = {
   paddingVertical: 12,
   fontSize: 14,
   fontFamily: "Cairo_400Regular",
-  writingDirection: "ltr",
 };
-const priceSeparator = { fontSize: 16, color: COLORS.textDark };

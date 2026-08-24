@@ -2,18 +2,21 @@ import React, { useMemo, useState } from "react";
 import {
   Modal,
   View,
-  Text,
   TouchableOpacity,
   ActivityIndicator,
   ScrollView,
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { formatCount } from "@halaa/shared/utils/locale";
 import { useHostTaqnyatTemplates } from "../../../hooks/taqnyatTemplates";
 import {
   useGeneratePostEventTokens,
   useSendPostEventAccessLinks,
 } from "../../../hooks/postEvent";
+import { useTranslation } from "../../../localization";
+import AdaptiveText from "../../commen/AdaptiveText";
+import LocalizedText from "../../commen/LocalizedText";
 
 const FILTERS = ["attended", "confirmed", "all"];
 
@@ -21,6 +24,9 @@ const FILTERS = ["attended", "confirmed", "all"];
  * Modal that lets the host (a) pick a guest filter and (b) optionally
  * override the saved Taqnyat template, then dispatches the two-step
  * flow: generate access tokens, then send the access-link messages.
+ *
+ * Template names/bodies are backend content → adaptive text; every count
+ * interpolated into a toast is locale-formatted so digits match the UI.
  */
 const AccessLinksSheet = ({
   visible,
@@ -30,6 +36,7 @@ const AccessLinksSheet = ({
   t,
   toast,
 }) => {
+  const { currentLanguage } = useTranslation("postEvent");
   const [filter, setFilter] = useState("attended");
   const [overrideRef, setOverrideRef] = useState(null);
 
@@ -63,7 +70,7 @@ const AccessLinksSheet = ({
                 const breakdown = summary.channelBreakdown || {};
                 toast?.success(
                   t("host.accessLinks.success", {
-                    count: summary.sent || 0,
+                    count: formatCount(summary.sent || 0, currentLanguage),
                   })
                 );
                 if (
@@ -74,9 +81,9 @@ const AccessLinksSheet = ({
                 ) {
                   toast?.info(
                     t("host.accessLinks.channelBreakdown", {
-                      whatsapp: breakdown.whatsapp || 0,
-                      sms: breakdown.sms || 0,
-                      failed: breakdown.failed || 0,
+                      whatsapp: formatCount(breakdown.whatsapp || 0, currentLanguage),
+                      sms: formatCount(breakdown.sms || 0, currentLanguage),
+                      failed: formatCount(breakdown.failed || 0, currentLanguage),
                     })
                   );
                 }
@@ -112,15 +119,21 @@ const AccessLinksSheet = ({
       <View style={styles.backdrop}>
         <View style={styles.sheet}>
           <View style={styles.header}>
-            <Text style={styles.title}>{t("host.accessLinks.title")}</Text>
-            <TouchableOpacity onPress={onClose} disabled={sending}>
+            <LocalizedText style={styles.title}>{t("host.accessLinks.title")}</LocalizedText>
+            <TouchableOpacity
+              onPress={onClose}
+              disabled={sending}
+              accessibilityRole="button"
+              accessibilityLabel={t("host.media.cancel")}
+              hitSlop={{ top: 11, bottom: 11, start: 11, end: 11 }}
+            >
               <Ionicons name="close" size={22} color="#2C2C2C" />
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.label}>
+          <LocalizedText style={styles.label}>
             {t("host.accessLinks.filterLabel")}
-          </Text>
+          </LocalizedText>
           <View style={styles.filterRow}>
             {FILTERS.map((f) => (
               <TouchableOpacity
@@ -147,15 +160,15 @@ const AccessLinksSheet = ({
             ))}
           </View>
 
-          <Text style={styles.label}>
+          <LocalizedText style={styles.label}>
             {t("host.accessLinks.templatePicker")}
-          </Text>
+          </LocalizedText>
           {loadingTemplates ? (
             <ActivityIndicator color="#C28E5C" />
           ) : templates.length === 0 ? (
-            <Text style={styles.noTemplateText}>
+            <LocalizedText style={styles.noTemplateText}>
               {t("host.accessLinks.noTemplateConfigured")}
-            </Text>
+            </LocalizedText>
           ) : (
             <ScrollView
               horizontal
@@ -179,12 +192,12 @@ const AccessLinksSheet = ({
                     }
                     disabled={sending}
                   >
-                    <Text style={styles.tplName} numberOfLines={1}>
+                    <AdaptiveText style={styles.tplName} numberOfLines={1}>
                       {tpl.templateName}
-                    </Text>
-                    <Text style={styles.tplBody} numberOfLines={2}>
+                    </AdaptiveText>
+                    <AdaptiveText style={styles.tplBody} numberOfLines={2}>
                       {tpl.bodyText}
-                    </Text>
+                    </AdaptiveText>
                   </TouchableOpacity>
                 );
               })}
@@ -202,9 +215,9 @@ const AccessLinksSheet = ({
             ) : (
               <Ionicons name="send-outline" size={16} color="#FFF" />
             )}
-            <Text style={styles.sendButtonText}>
+            <LocalizedText style={styles.sendButtonText}>
               {t("host.accessLinks.send")}
-            </Text>
+            </LocalizedText>
           </TouchableOpacity>
         </View>
       </View>

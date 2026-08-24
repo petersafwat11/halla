@@ -6,6 +6,7 @@
  */
 
 import { getMediaUrl, getStaticAssetBaseUrl } from "./media.js";
+import { normalizePhoneNumber } from "./phone.js";
 
 /**
  * @param {string|null|undefined} imagePath
@@ -23,11 +24,7 @@ export function getMarketplaceImageUrl(imagePath, apiBaseUrl) {
 
 export function normalizeWhatsAppNumber(value) {
   if (!value) return "";
-  let digits = String(value).replace(/\D/g, "");
-  if (digits.startsWith("05") && digits.length === 10) digits = `966${digits.slice(1)}`;
-  else if (digits.startsWith("5") && digits.length === 9) digits = `966${digits}`;
-  else if (digits.startsWith("01") && digits.length === 11) digits = `20${digits.slice(1)}`;
-  return digits;
+  return normalizePhoneNumber(value);
 }
 
 export function buildVendorContactMessage({ language = "ar", vendorName, serviceName, price, currency, vendorUrl } = {}) {

@@ -9,7 +9,7 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import {
-  View, StyleSheet, ScrollView, Alert, TouchableOpacity, Text, ActivityIndicator,
+  View, StyleSheet, Alert, TouchableOpacity, ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FormProvider, useForm } from "react-hook-form";
@@ -25,6 +25,8 @@ import {
 import EventsService from "../../../hooks/events/useEventForm";
 
 import TopBar from "../../../components/plans/TopBar";
+import KeyboardAwareFormScrollView from "../../../components/commen/keyboard/KeyboardAwareFormScrollView";
+import LocalizedText from "../../../components/commen/LocalizedText";
 import StepHeader from "../../../components/createEvent/StepHeader";
 import PrevAndNextBtns from "../../../components/createEvent/PrevAndNextBtns";
 import PreviewInvitation from "../../../components/createEvent/PreviewInvitation";
@@ -208,9 +210,9 @@ const UpdateEventScreen = () => {
           {loadingEvent ? (
             <ActivityIndicator size="large" color="#C28E5C" />
           ) : (
-            <Text style={styles.errorText}>
+            <LocalizedText style={styles.errorText} center>
               {loadError || t("events.update.notAllowed")}
-            </Text>
+            </LocalizedText>
           )}
         </View>
       </SafeAreaView>
@@ -221,20 +223,22 @@ const UpdateEventScreen = () => {
     <FormProvider {...methods}>
       <SafeAreaView style={styles.container}>
         <TopBar title={t("events.update.title")} leftContent={topBarLeftContent} />
-        <ScrollView
+        {/* Single keyboard-aware scroll owner for every step (§6.2). */}
+        <KeyboardAwareFormScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
         >
           {(isLive || isCompleted) && (
             <View style={styles.lockoutBanner} accessibilityRole="alert">
-              <Text style={styles.lockoutText}>
+              {/* LocalizedText keeps the banner aligned/written in the UI
+                  locale regardless of any Latin tokens inside the message. */}
+              <LocalizedText style={styles.lockoutText}>
                 {isCompleted
                   ? t("events.update.completedLocked")
                   : currentStep === 2
                   ? t("events.update.liveAddOnly")
                   : t("events.update.liveLocked")}
-              </Text>
+              </LocalizedText>
             </View>
           )}
           <StepHeader
@@ -265,7 +269,7 @@ const UpdateEventScreen = () => {
             }
             isLoading={isSaving}
           />
-        </ScrollView>
+        </KeyboardAwareFormScrollView>
 
         {currentStep === 4 && (
           <TouchableOpacity
@@ -274,7 +278,9 @@ const UpdateEventScreen = () => {
             activeOpacity={0.8}
           >
             <Ionicons name="eye-outline" size={24} color="#FFF" />
-            <Text style={styles.floatingPreviewText}>{t("events.update.preview")}</Text>
+            <LocalizedText style={styles.floatingPreviewText}>
+              {t("events.update.preview")}
+            </LocalizedText>
           </TouchableOpacity>
         )}
 
@@ -312,7 +318,9 @@ const styles = StyleSheet.create({
   },
   closeButton: { width: 32, height: 32, justifyContent: "center", alignItems: "center" },
   floatingPreviewButton: {
-    position: "absolute", bottom: 100, right: 20, backgroundColor: "#C28E5C",
+    // Semantic end anchor — logical trailing edge (left in Arabic, right in
+    // English) under the app's forced-RTL root; never a physical `right`.
+    position: "absolute", bottom: 100, end: 20, backgroundColor: "#C28E5C",
     flexDirection: "row", alignItems: "center", justifyContent: "center",
     paddingVertical: 14, paddingHorizontal: 20, borderRadius: 25, gap: 8,
     shadowColor: "#000", shadowOffset: { width: 0, height: 4 },

@@ -1,7 +1,6 @@
 import React from "react";
 import {
   View,
-  Text,
   StyleSheet,
   Modal,
   ScrollView,
@@ -12,6 +11,9 @@ import PropTypes from "prop-types";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ActionButton } from "../common";
+import LocalizedText from "../../commen/LocalizedText";
+import { CONTENT_DIRECTIONS, useFieldDirection } from "../../../hooks/useInputDirection";
+import { isolateAuto, isolateLtr } from "@halaa/shared/utils/bidi";
 import {
   colors,
   spacing,
@@ -23,6 +25,18 @@ import { useResolveTicket } from "../../../hooks";
 import { useTranslation } from "../../../localization";
 import { ticketResolutionSchema } from "@halaa/shared/schemas/tickets";
 
+/**
+ * Resolve-ticket sheet (admin tickets list + details).
+ *
+ * Field contract (blueprint §5): the resolution message is arbitrary user
+ * content → `adaptive` (placeholder follows the UI locale while empty; a
+ * filled value follows its first strong character). Every label, error,
+ * helper and warning is app copy rendered through the localized role and
+ * never inherits the value's direction. The counter is LTR-isolated at the
+ * logical end of the field. The `#id` token in the header is intrinsically
+ * LTR; the subject is adaptive content — both are isolated inside the
+ * interpolated translation string (blueprint §6).
+ */
 const ResolveTicketModal = ({ visible, onClose, ticket, onSave }) => {
   const { t } = useTranslation("admin");
   const { t: tTickets } = useTranslation("tickets");
@@ -41,6 +55,11 @@ const ResolveTicketModal = ({ visible, onClose, ticket, onSave }) => {
   });
 
   const resolutionValue = watch("resolution") || "";
+  // Counter role from the shared field-direction contract.
+  const fieldDirection = useFieldDirection(CONTENT_DIRECTIONS.ADAPTIVE, {
+    hasValue: resolutionValue.length > 0,
+    value: resolutionValue,
+  });
 
   const handleClose = () => {
     reset({ resolution: "" });
@@ -70,10 +89,13 @@ const ResolveTicketModal = ({ visible, onClose, ticket, onSave }) => {
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <View style={styles.header}>
-            <Text style={styles.title}>{t("tickets.resolve.title")}</Text>
-            <Text style={styles.subtitle}>
-              Ticket #{ticket?.id} - {ticket?.subject}
-            </Text>
+            <LocalizedText style={styles.title}>{t("tickets.resolve.title")}</LocalizedText>
+            <LocalizedText style={styles.subtitle}>
+              {t("tickets.resolve.subtitle", {
+                ticketId: isolateLtr(`#${ticket?.id ?? ticket?._id ?? "—"}`),
+                subject: isolateAuto(ticket?.subject || t("tickets.noSubject")),
+              })}
+            </LocalizedText>
           </View>
 
           <ScrollView
@@ -81,7 +103,7 @@ const ResolveTicketModal = ({ visible, onClose, ticket, onSave }) => {
             showsVerticalScrollIndicator={false}
           >
             <View style={styles.fieldContainer}>
-              <Text style={styles.label}>{t("tickets.resolve.resolution")} *</Text>
+              <LocalizedText style={styles.label}>{t("tickets.resolve.resolutionLabel")}</LocalizedText>
               <Controller
                 control={control}
                 name="resolution"
@@ -93,6 +115,7 @@ const ResolveTicketModal = ({ visible, onClose, ticket, onSave }) => {
                     ]}
                   >
                     <TextInput
+                      contentDirection={CONTENT_DIRECTIONS.ADAPTIVE}
                       style={styles.textArea}
                       onChangeText={onChange}
                       onBlur={onBlur}
@@ -107,21 +130,22 @@ const ResolveTicketModal = ({ visible, onClose, ticket, onSave }) => {
                   </View>
                 )}
               />
+              {/* Validation copy stays localized even when the value is not. */}
               {errors.resolution && (
-                <Text style={styles.errorText}>{errors.resolution.message}</Text>
+                <LocalizedText style={styles.errorText}>{errors.resolution.message}</LocalizedText>
               )}
-              <Text style={styles.helperText}>
+              <LocalizedText style={styles.helperText}>
                 {t("tickets.resolve.resolutionHelper")}
-              </Text>
-              <Text style={styles.characterCount}>
-                {t("tickets.resolve.characterCount", { count: resolutionValue.length })}
-              </Text>
+              </LocalizedText>
+              <LocalizedText style={[styles.characterCount, fieldDirection.counter]}>
+                {isolateLtr(`${resolutionValue.length} / 5000`)}
+              </LocalizedText>
             </View>
 
             <View style={styles.warningContainer}>
-              <Text style={styles.warningText}>
+              <LocalizedText style={styles.warningText}>
                 {t("tickets.resolve.warningText")}
-              </Text>
+              </LocalizedText>
             </View>
           </ScrollView>
 
@@ -153,6 +177,7 @@ ResolveTicketModal.propTypes = {
   onClose: PropTypes.func.isRequired,
   ticket: PropTypes.shape({
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    _id: PropTypes.string,
     subject: PropTypes.string,
   }),
   onSave: PropTypes.func,

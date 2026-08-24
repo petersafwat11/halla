@@ -1,12 +1,15 @@
 import React from "react";
 import {
   View,
-  Text,
   TouchableOpacity,
   ScrollView,
   StyleSheet,
 } from "react-native";
 import PropTypes from "prop-types";
+import { formatCount } from "@halaa/shared/utils/locale";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
+import { useTranslation } from "../../../localization";
+import LocalizedText from "../../commen/LocalizedText";
 import {
   colors,
   spacing,
@@ -17,12 +20,16 @@ import {
 /**
  * FilterBar - Horizontal filter tabs
  *
+ * Labels are localized app copy; the optional count badge is a
+ * locale-formatted, LTR-isolated numeric token so it cannot BiDi-spill.
+ *
  * @param {Object} props
  * @param {Array} props.filters - Array of filter objects with { id, label, count }
  * @param {string} props.activeFilter - Currently active filter id
  * @param {Function} props.onFilterChange - Filter change handler
  */
 const FilterBar = ({ filters, activeFilter, onFilterChange }) => {
+  const { currentLanguage } = useTranslation("admin");
   return (
     <ScrollView
       horizontal
@@ -38,21 +45,26 @@ const FilterBar = ({ filters, activeFilter, onFilterChange }) => {
             style={[styles.filterChip, isActive && styles.activeFilterChip]}
             onPress={() => onFilterChange(filter.id)}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityState={{ selected: isActive }}
           >
-            <Text
+            <LocalizedText
               style={[styles.filterText, isActive && styles.activeFilterText]}
+              numberOfLines={1}
             >
               {filter.label}
-            </Text>
+            </LocalizedText>
             {filter.count !== undefined && (
               <View
                 style={[styles.countBadge, isActive && styles.activeCountBadge]}
               >
-                <Text
+                {/* Locale digits (٠١٢ / 0-9) in one LTR-isolated token,
+                    rendered through the shared localized role primitive. */}
+                <LocalizedText
                   style={[styles.countText, isActive && styles.activeCountText]}
                 >
-                  {filter.count}
-                </Text>
+                  {isolateLtr(formatCount(filter.count, currentLanguage))}
+                </LocalizedText>
               </View>
             )}
           </TouchableOpacity>

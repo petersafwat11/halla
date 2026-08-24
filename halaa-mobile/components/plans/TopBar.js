@@ -10,7 +10,10 @@ import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "../../localization";
 import { colors, spacing, typography } from "../../styles/tokens";
 import DirectionalIonicon from "../common/DirectionalIonicon";
-import { useFieldDirection } from "../../hooks/useInputDirection";
+import {
+  resolveLabelDirection,
+  resolveStrongDirection,
+} from "../../hooks/useInputDirection";
 
 /**
  * Logical-start app bar.
@@ -34,8 +37,13 @@ const TopBar = ({
   leftContent = null,
 }) => {
   const navigation = useNavigation();
-  const { t } = useTranslation("common");
-  const fieldDirection = useFieldDirection("localized");
+  const { t, isRTL } = useTranslation("common");
+  // Chrome (label direction) always follows the UI locale; the title's base
+  // writing direction follows its own first strong character so a Latin
+  // event/business name stays LTR inside an Arabic app bar and vice versa
+  // (blueprint §6: backend values are adaptive, never page-locale forced).
+  const chromeDirection = resolveLabelDirection("localized", { isRTL });
+  const titleDirection = resolveStrongDirection(title ?? "", isRTL);
 
   const handleBack = () => {
     if (onBack) {
@@ -89,7 +97,7 @@ const TopBar = ({
           {renderStart()}
           {!!title && (
             <Text
-              style={[styles.title, fieldDirection.text]}
+              style={[styles.title, chromeDirection, { writingDirection: titleDirection }]}
               numberOfLines={1}
               ellipsizeMode="tail"
               accessibilityRole="header"

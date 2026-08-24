@@ -29,6 +29,7 @@ import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system/legacy";
 import { parseVCards } from "@halaa/shared/utils/vcard";
 import { isolateLtr } from "@halaa/shared/utils/bidi";
+import { normalizePhoneNumber } from "@halaa/shared/utils/phone";
 import { useTranslation } from "../../localization";
 import Button from "../commen/Button";
 
@@ -37,23 +38,28 @@ const PLATFORMS = ["apple", "android", "computer"];
 // Local copy — keeps this file independent of the expo-contacts util.
 const normalizeSaudiMobile = (raw) => {
   if (!raw) return null;
-  let d = String(raw).replace(/[^\d+]/g, "");
-  d = d.replace(/^\+/, "");
-  if (d.startsWith("00966")) d = d.slice(5);
-  else if (d.startsWith("966")) d = d.slice(3);
-  if (d.startsWith("0")) d = d.slice(1);
-  return /^5\d{8}$/.test(d) ? d : null;
+  const normalized = normalizePhoneNumber(raw);
+  if (!normalized) return null;
+  return normalized.startsWith("966") ? normalized.slice(3) : normalized;
 };
 
 const CloseIcon = () => (
   <Svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-    <Path d="M18 6L6 18M6 6L18 18" stroke="#656565" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <Path
+      d="M18 6L6 18M6 6L18 18"
+      stroke="#656565"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </Svg>
 );
 
 const VCardImportModal = ({ visible, onClose, onAdd }) => {
   const { t } = useTranslation("createEvent");
-  const [platform, setPlatform] = useState(Platform.OS === "ios" ? "apple" : "android");
+  const [platform, setPlatform] = useState(
+    Platform.OS === "ios" ? "apple" : "android"
+  );
   const [busy, setBusy] = useState(false);
   const [parsed, setParsed] = useState(null); // null | [] | [{name,mobile}]
   const [search, setSearch] = useState("");
@@ -111,7 +117,9 @@ const VCardImportModal = ({ visible, onClose, onAdd }) => {
     if (!parsed) return [];
     const q = search.trim().toLowerCase();
     if (!q) return parsed;
-    return parsed.filter((c) => c.name.toLowerCase().includes(q) || c.mobile.includes(q));
+    return parsed.filter(
+      (c) => c.name.toLowerCase().includes(q) || c.mobile.includes(q)
+    );
   }, [parsed, search]);
 
   const selectedCount = Object.keys(selected).length;
@@ -137,12 +145,18 @@ const VCardImportModal = ({ visible, onClose, onAdd }) => {
     onClose();
   };
 
-  const steps = (t(`vcard_steps_${platform}`) || "").split("\n").filter(Boolean);
+  const steps = (t(`vcard_steps_${platform}`) || "")
+    .split("\n")
+    .filter(Boolean);
 
   const renderItem = ({ item }) => {
     const isSelected = !!selected[item.mobile];
     return (
-      <TouchableOpacity style={styles.row} onPress={() => toggle(item)} activeOpacity={0.7}>
+      <TouchableOpacity
+        style={styles.row}
+        onPress={() => toggle(item)}
+        activeOpacity={0.7}
+      >
         <View style={[styles.checkbox, isSelected && styles.checkboxOn]}>
           {isSelected && <Text style={styles.checkmark}>✓</Text>}
         </View>
@@ -155,12 +169,24 @@ const VCardImportModal = ({ visible, onClose, onAdd }) => {
   };
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={handleClose}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="slide"
+      onRequestClose={handleClose}
+    >
       <Pressable style={styles.overlay} onPress={handleClose}>
-        <Pressable style={styles.modalContainer} onPress={(e) => e.stopPropagation()}>
+        <Pressable
+          style={styles.modalContainer}
+          onPress={(e) => e.stopPropagation()}
+        >
           <View style={styles.header}>
             <Text style={styles.headerTitle}>{t("vcard_title")}</Text>
-            <TouchableOpacity style={styles.closeButton} onPress={handleClose} activeOpacity={0.7}>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={handleClose}
+              activeOpacity={0.7}
+            >
               <CloseIcon />
             </TouchableOpacity>
           </View>
@@ -177,7 +203,12 @@ const VCardImportModal = ({ visible, onClose, onAdd }) => {
                     onPress={() => setPlatform(p)}
                     activeOpacity={0.7}
                   >
-                    <Text style={[styles.tabText, platform === p && styles.tabTextActive]}>
+                    <Text
+                      style={[
+                        styles.tabText,
+                        platform === p && styles.tabTextActive,
+                      ]}
+                    >
                       {t(`vcard_platform_${p}`)}
                     </Text>
                   </TouchableOpacity>
@@ -190,7 +221,11 @@ const VCardImportModal = ({ visible, onClose, onAdd }) => {
                 ))}
               </View>
 
-              <Button text={busy ? t("loading") : t("vcard_choose_file")} onPress={handlePick} disabled={busy} />
+              <Button
+                text={busy ? t("loading") : t("vcard_choose_file")}
+                onPress={handlePick}
+                disabled={busy}
+              />
               <Text style={styles.privacy}>{t("vcard_privacy_note")}</Text>
             </ScrollView>
           ) : parsed.length === 0 ? (
@@ -201,9 +236,13 @@ const VCardImportModal = ({ visible, onClose, onAdd }) => {
           ) : (
             <>
               <View style={styles.foundBar}>
-                <Text style={styles.foundText}>{t("vcard_found", { count: parsed.length })}</Text>
+                <Text style={styles.foundText}>
+                  {t("vcard_found", { count: parsed.length })}
+                </Text>
                 <TouchableOpacity onPress={handlePick}>
-                  <Text style={styles.linkText}>{t("vcard_choose_another")}</Text>
+                  <Text style={styles.linkText}>
+                    {t("vcard_choose_another")}
+                  </Text>
                 </TouchableOpacity>
               </View>
 
@@ -237,10 +276,18 @@ const VCardImportModal = ({ visible, onClose, onAdd }) => {
                 />
                 <View style={styles.footerActions}>
                   <View style={styles.footerButton}>
-                    <Button text={t("confirm")} onPress={handleAdd} disabled={selectedCount === 0} />
+                    <Button
+                      text={t("confirm")}
+                      onPress={handleAdd}
+                      disabled={selectedCount === 0}
+                    />
                   </View>
                   <View style={styles.footerButton}>
-                    <Button text={t("cancel")} variant="secondary" onPress={handleClose} />
+                    <Button
+                      text={t("cancel")}
+                      variant="secondary"
+                      onPress={handleClose}
+                    />
                   </View>
                 </View>
               </View>
@@ -259,8 +306,18 @@ const VCardImportModal = ({ visible, onClose, onAdd }) => {
 };
 
 const styles = StyleSheet.create({
-  overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" },
-  modalContainer: { width: "100%", backgroundColor: "#FFF", borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: "90%" },
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
+  },
+  modalContainer: {
+    width: "100%",
+    backgroundColor: "#FFF",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: "90%",
+  },
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -274,20 +331,69 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 20, fontFamily: "Cairo_700Bold", color: "#2C2C2C" },
   closeButton: { padding: 4 },
   introScroll: { padding: 24, gap: 16 },
-  subtitle: { fontSize: 13, fontFamily: "Cairo_400Regular", color: "#656565", lineHeight: 21, marginBottom: 4 },
+  subtitle: {
+    fontSize: 13,
+    fontFamily: "Cairo_400Regular",
+    color: "#656565",
+    lineHeight: 21,
+    marginBottom: 4,
+  },
   tabs: { flexDirection: "row", gap: 8 },
-  tab: { flex: 1, paddingVertical: 9, borderRadius: 10, borderWidth: 1, borderColor: "#E0D5C7", alignItems: "center", backgroundColor: "#FFF" },
+  tab: {
+    flex: 1,
+    paddingVertical: 9,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#E0D5C7",
+    alignItems: "center",
+    backgroundColor: "#FFF",
+  },
   tabActive: { backgroundColor: "#C28E5C", borderColor: "#C28E5C" },
   tabText: { fontSize: 13, fontFamily: "Cairo_600SemiBold", color: "#8A6B47" },
   tabTextActive: { color: "#FFF" },
-  stepsBox: { backgroundColor: "#F9F4EF", borderRadius: 12, padding: 16, gap: 10 },
-  step: { fontSize: 13, fontFamily: "Cairo_400Regular", color: "#2C2C2C", lineHeight: 21 },
-  privacy: { fontSize: 11, fontFamily: "Cairo_400Regular", color: "#999", textAlign: "center" },
+  stepsBox: {
+    backgroundColor: "#F9F4EF",
+    borderRadius: 12,
+    padding: 16,
+    gap: 10,
+  },
+  step: {
+    fontSize: 13,
+    fontFamily: "Cairo_400Regular",
+    color: "#2C2C2C",
+    lineHeight: 21,
+  },
+  privacy: {
+    fontSize: 11,
+    fontFamily: "Cairo_400Regular",
+    color: "#999",
+    textAlign: "center",
+  },
   state: { padding: 40, alignItems: "center", gap: 16 },
-  stateText: { fontSize: 14, fontFamily: "Cairo_400Regular", color: "#999", textAlign: "center" },
-  foundBar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 24, paddingTop: 14 },
-  foundText: { fontSize: 13, fontFamily: "Cairo_600SemiBold", color: "#2C2C2C" },
-  linkText: { fontSize: 13, fontFamily: "Cairo_600SemiBold", color: "#C28E5C", textDecorationLine: "underline" },
+  stateText: {
+    fontSize: 14,
+    fontFamily: "Cairo_400Regular",
+    color: "#999",
+    textAlign: "center",
+  },
+  foundBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 24,
+    paddingTop: 14,
+  },
+  foundText: {
+    fontSize: 13,
+    fontFamily: "Cairo_600SemiBold",
+    color: "#2C2C2C",
+  },
+  linkText: {
+    fontSize: 13,
+    fontFamily: "Cairo_600SemiBold",
+    color: "#C28E5C",
+    textDecorationLine: "underline",
+  },
   filters: { paddingHorizontal: 24, paddingTop: 12 },
   search: {
     borderWidth: 1,
@@ -310,13 +416,32 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 10,
   },
-  checkbox: { width: 22, height: 22, borderRadius: 6, borderWidth: 1.5, borderColor: "#C28E5C", alignItems: "center", justifyContent: "center" },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 1.5,
+    borderColor: "#C28E5C",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   checkboxOn: { backgroundColor: "#C28E5C" },
   checkmark: { color: "#FFF", fontSize: 13, fontFamily: "Cairo_700Bold" },
   rowInfo: { flex: 1 },
   rowName: { fontSize: 15, fontFamily: "Cairo_600SemiBold", color: "#2C2C2C" },
-  rowPhone: { fontSize: 13, fontFamily: "Cairo_400Regular", color: "#656565", writingDirection: "ltr" },
-  footer: { paddingHorizontal: 24, paddingVertical: 16, borderTopWidth: 1, borderTopColor: "#F0F0F0", gap: 12 },
+  rowPhone: {
+    fontSize: 13,
+    fontFamily: "Cairo_400Regular",
+    color: "#656565",
+    writingDirection: "ltr",
+  },
+  footer: {
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: "#F0F0F0",
+    gap: 12,
+  },
   footerActions: { flexDirection: "row", alignItems: "center", gap: 12 },
   footerButton: { flex: 1 },
   categoryInput: {
@@ -329,7 +454,15 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_400Regular",
     color: "#2C2C2C",
   },
-  busyOverlay: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, alignItems: "center", justifyContent: "center" },
+  busyOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 });
 
 export default VCardImportModal;

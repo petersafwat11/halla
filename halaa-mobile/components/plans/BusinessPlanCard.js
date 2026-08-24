@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
 import { getLocalized, formatNumber } from "@halaa/shared/utils/locale";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
+import AdaptiveText from "../commen/AdaptiveText";
 import {
   colors,
   spacing,
@@ -55,11 +57,11 @@ const BusinessPlanCard = ({
       ) : null}
 
       <View style={styles.top}>
-        <Text style={styles.name} numberOfLines={2}>
+        <AdaptiveText style={styles.name} numberOfLines={2}>
           {name}
-        </Text>
+        </AdaptiveText>
         <View style={styles.priceRow}>
-          <Text style={styles.priceNum}>{formatNumber(price || 0, lang)}</Text>
+          <Text style={styles.priceNum}>{isolateLtr(formatNumber(price || 0, lang))}</Text>
           <SarIcon size={20} color={colors.secondary[700]} />
         </View>
       </View>
@@ -68,7 +70,7 @@ const BusinessPlanCard = ({
         <View style={styles.setupFeeRow}>
           <Ionicons name="construct-outline" size={14} color={colors.primary[500]} />
           <Text style={styles.setupFeeText}>
-            {t("setupFeeRow", { amount: formatNumber(setupFee, lang) })}
+            {t("setupFeeRow", { amount: isolateLtr(formatNumber(setupFee, lang)) })}
           </Text>
         </View>
       ) : null}
@@ -156,6 +158,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
+    flexShrink: 0,
   },
   priceNum: {
     fontFamily: "Cairo_700Bold",

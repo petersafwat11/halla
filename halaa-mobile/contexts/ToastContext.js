@@ -1,13 +1,13 @@
 import React, { createContext, useContext, useState, useCallback, useMemo } from "react";
 import {
   View,
-  Text,
   StyleSheet,
   Animated,
   TouchableOpacity,
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import AdaptiveText from "../components/commen/AdaptiveText";
 
 const ToastContext = createContext();
 
@@ -136,7 +136,12 @@ const Toast = ({ toast, onDismiss }) => {
       ]}
     >
       <Ionicons name={getIcon()} size={24} color={getColor()} />
-      <Text style={styles.message}>{toast.message}</Text>
+      {/* Toast copy is often a raw backend/error string (arbitrary script):
+          first-strong direction + BiDi isolation so Latin errors inside the
+          Arabic UI — and mixed tokens — cannot reorder punctuation. */}
+      <AdaptiveText style={styles.message}>
+        {toast.message}
+      </AdaptiveText>
       <TouchableOpacity onPress={onDismiss} style={styles.closeButton}>
         <Ionicons name="close" size={20} color="#666" />
       </TouchableOpacity>

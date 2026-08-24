@@ -1,11 +1,15 @@
 import React from "react";
 import {
   View,
-  Text,
   TouchableOpacity,
   ActivityIndicator,
+  StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "../../localization";
+import AdaptiveText from "../commen/AdaptiveText";
+import LocalizedText from "../commen/LocalizedText";
+import { getLocalized, localizeDigits } from "@halaa/shared/utils/locale";
 import {
   colors,
   spacing,
@@ -59,39 +63,68 @@ const getPriorityStyles = (priority) => {
   }
 };
 
-export const NotificationItem = ({
-  item,
-  isArabic,
-  onPress,
-  onDelete,
-}) => {
+/**
+ * Relative time is authored per UI locale (blueprint §8 notifications row:
+ * "dates formatted and isolated") — the backend's English `timeAgo` token
+ * is only a legacy fallback when `createdAt` is missing. Counts are
+ * rendered with the locale's digit system.
+ */
+export const formatRelativeTime = (createdAt, locale, t) => {
+  if (!createdAt) return "";
+  const diffMs = Date.now() - new Date(createdAt).getTime();
+  if (!Number.isFinite(diffMs) || diffMs < 0) return "";
+  const minutes = Math.floor(diffMs / 60000);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+  const count = (n) => localizeDigits(n, locale);
+  if (days > 0) return t("notifications.time.daysAgo", { count: count(days) });
+  if (hours > 0) return t("notifications.time.hoursAgo", { count: count(hours) });
+  if (minutes > 0)
+    return t("notifications.time.minutesAgo", { count: count(minutes) });
+  return t("notifications.time.justNow");
+};
+
+export const NotificationItem = ({ item, onPress, onDelete }) => {
+  const { t, currentLanguage } = useTranslation("common");
+  const locale = currentLanguage || "ar";
   const id = item.id || item._id;
   const iconName = getNotificationIconName(item.type);
   const { bg: iconBg, icon: iconColor } = getPriorityStyles(item.priority);
-  const title = isArabic && item.titleAr ? item.titleAr : item.title;
-  const message = isArabic && item.messageAr ? item.messageAr : item.message;
+
+  // Bilingual backend payload: pick the variant for the UI locale first,
+  // then let AdaptiveText resolve the direction of whatever script the
+  // value actually is (a Latin title in the Arabic UI must stay LTR).
+  const title = getLocalized(item, "title", locale, item.title);
+  const message = getLocalized(item, "message", locale, item.message);
+  const timeLabel =
+    formatRelativeTime(item.createdAt, locale, t) || item.timeAgo || "";
 
   return (
     <TouchableOpacity
       style={[styles.notifItem, !item.isRead && styles.notifItemUnread]}
       onPress={() => onPress(item)}
       activeOpacity={0.7}
+      accessibilityRole="button"
     >
+      {/* Unread accent anchored at the logical start edge. */}
       {!item.isRead && <View style={styles.unreadAccent} />}
 
+      {/* Priority glyph: semantic leading slot, never mirrored (§7). */}
       <View style={[styles.notifIcon, { backgroundColor: iconBg }]}>
         <Ionicons name={iconName} size={20} color={iconColor} />
       </View>
 
       <View style={styles.notifContent}>
-        <Text style={styles.notifTitle} numberOfLines={1}>
+        <AdaptiveText style={styles.notifTitle} numberOfLines={1}>
           {title}
-        </Text>
-        <Text style={styles.notifMessage} numberOfLines={2}>
+        </AdaptiveText>
+        <AdaptiveText style={styles.notifMessage} numberOfLines={2}>
           {message}
-        </Text>
+        </AdaptiveText>
         <View style={styles.notifMeta}>
-          <Text style={styles.notifTime}>{item.timeAgo || ""}</Text>
+          <LocalizedText role="caption" style={styles.notifTime}>
+            {timeLabel}
+          </LocalizedText>
           {!item.isRead && <View style={styles.unreadDot} />}
         </View>
       </View>
@@ -100,41 +133,56 @@ export const NotificationItem = ({
         style={styles.deleteBtn}
         onPress={() => onDelete(id)}
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        accessibilityRole="button"
+        accessibilityLabel={t("notifications.delete")}
       >
+        {/* Close/dismiss glyph: not mirrored; sits at the logical end. */}
         <Ionicons name="close" size={16} color={colors.natural[350]} />
       </TouchableOpacity>
     </TouchableOpacity>
   );
 };
 
-export const EmptyState = ({ t }) => (
-  <View style={styles.emptyContainer}>
-    <Ionicons
-      name="notifications-off-outline"
-      size={64}
-      color={colors.natural[300]}
-    />
-    <Text style={styles.emptyTitle}>{t("notifications.empty.title")}</Text>
-    <Text style={styles.emptyMessage}>
-      {t("notifications.empty.message")}
-    </Text>
-  </View>
-);
+export const EmptyState = () => {
+  const { t } = useTranslation("common");
+  return (
+    <View style={styles.emptyContainer}>
+      <Ionicons
+        name="notifications-off-outline"
+        size={64}
+        color={colors.natural[300]}
+      />
+      <LocalizedText role="label" center style={styles.emptyTitle}>
+        {t("notifications.empty.title")}
+      </LocalizedText>
+      <LocalizedText role="description" center style={styles.emptyMessage}>
+        {t("notifications.empty.message")}
+      </LocalizedText>
+    </View>
+  );
+};
 
-export const LoadMoreFooter = ({ hasNextPage, isFetchingNextPage, onLoadMore, t }) => {
+export const LoadMoreFooter = ({ hasNextPage, isFetchingNextPage, onLoadMore }) => {
+  const { t } = useTranslation("common");
   if (!hasNextPage) return null;
   return (
-    <TouchableOpacity style={styles.loadMoreBtn} onPress={onLoadMore}>
+    <TouchableOpacity
+      style={styles.loadMoreBtn}
+      onPress={onLoadMore}
+      accessibilityRole="button"
+    >
       {isFetchingNextPage ? (
         <ActivityIndicator size="small" color={colors.primary[500]} />
       ) : (
-        <Text style={styles.loadMoreText}>{t("notifications.loadMore")}</Text>
+        <LocalizedText role="label" center style={styles.loadMoreText}>
+          {t("notifications.loadMore")}
+        </LocalizedText>
       )}
     </TouchableOpacity>
   );
 };
 
-const styles = {
+const styles = StyleSheet.create({
   notifItem: {
     flexDirection: "row",
     alignItems: "center",
@@ -241,4 +289,4 @@ const styles = {
     fontFamily: "Cairo_600SemiBold",
     color: colors.primary[500],
   },
-};
+});

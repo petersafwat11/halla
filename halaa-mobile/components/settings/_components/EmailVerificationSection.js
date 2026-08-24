@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   View,
-  Text,
   TouchableOpacity,
   Animated,
   StyleSheet,
@@ -10,7 +9,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../../localization";
 import { useToast } from "../../../contexts/ToastContext";
 import { useAuthStore } from "../../../stores/authStore";
-import { EmailInput, OTPInput } from "../../commen";
+import { EmailInput, OTPInput, LocalizedText } from "../../commen";
 import { settingsApi } from "../../../hooks/users/_api";
 import { useVerifyEmail } from "../../../hooks/users/mutations";
 
@@ -84,23 +83,26 @@ const EmailVerificationSection = ({ emailValue, loading }) => {
             disabled={isVerifyingEmail || !emailValue}
             activeOpacity={0.7}
           >
-            <Text style={styles.verifyButtonText}>
+            <LocalizedText role="label" style={styles.verifyButtonText}>
               {isVerifyingEmail ? t("account.sending") : t("account.sendCode")}
-            </Text>
+            </LocalizedText>
           </TouchableOpacity>
         )}
 
         {user?.emailVerified && (
           <View style={styles.verifiedBadge}>
+            {/* Checkmark is semantic — never mirrored. */}
             <Ionicons name="checkmark-circle" size={16} color="#2A8C5B" />
-            <Text style={styles.verifiedText}>
+            <LocalizedText role="caption" style={styles.verifiedText}>
               {t("account.emailVerifiedBadge")}
-            </Text>
+            </LocalizedText>
           </View>
         )}
 
         {showVerificationInput && (
           <View style={styles.verificationGroup}>
+            {/* OTP digits are intrinsically LTR tokens inside the shared
+                primitive; its label/error chrome stays localized. */}
             <OTPInput
               value={verificationCode}
               onChangeText={setVerificationCode}
@@ -116,9 +118,11 @@ const EmailVerificationSection = ({ emailValue, loading }) => {
               disabled={isVerifyingEmail || verificationCode.length !== 6}
               activeOpacity={0.7}
             >
-              <Text style={styles.verifyCodeButtonText}>
-                {isVerifyingEmail ? t("account.verifying") : t("account.verifyCode")}
-              </Text>
+              <LocalizedText role="label" style={styles.verifyCodeButtonText}>
+                {isVerifyingEmail
+                  ? t("account.verifying")
+                  : t("account.verifyCode")}
+              </LocalizedText>
             </TouchableOpacity>
           </View>
         )}

@@ -1,7 +1,6 @@
 import React, { useMemo } from "react";
 import {
   View,
-  Text,
   StyleSheet,
   Modal,
   TouchableOpacity,
@@ -13,10 +12,11 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Ionicons } from "@expo/vector-icons";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../localization";
 import DatePicker from "../commen/DatePicker";
 import TimePicker from "../commen/TimePicker";
 import Button from "../commen/Button";
+import LocalizedText from "../commen/LocalizedText";
 import { normalizeSubscriptionResponse } from "@halaa/shared/utils";
 import { useScheduleSend } from "../../hooks/messaging";
 import { useMySubscription } from "../../hooks/users";
@@ -118,11 +118,11 @@ const ScheduleSendingModal = ({
   const onSubmit = async (data) => {
     const chosenDay = toDay(new Date(data.scheduledDate));
     if (minDate && chosenDay < minDate) {
-      Alert.alert(t("common.error", "خطأ"), t("scheduleSend.validation.tooSoon"));
+      Alert.alert(t("alerts.errorTitle"), t("scheduleSend.validation.tooSoon"));
       return;
     }
     if (maxDate && chosenDay > maxDate) {
-      Alert.alert(t("common.error", "خطأ"), t("scheduleSend.validation.tooLate"));
+      Alert.alert(t("alerts.errorTitle"), t("scheduleSend.validation.tooLate"));
       return;
     }
     try {
@@ -136,12 +136,17 @@ const ScheduleSendingModal = ({
       onClose();
       Alert.alert(t("scheduleSend.title"), t("scheduleSend.success"));
     } catch (error) {
+      // Localized chrome: alert titles/messages follow the UI locale even
+      // when the failure payload is an LTR backend token.
       if (error?.code === "SCHEDULE_TOO_SOON" || error?.code === "EVENT_DATE_TOO_SOON") {
-        Alert.alert(t("common.error", "خطأ"), t("scheduleSend.validation.tooSoon"));
+        Alert.alert(t("alerts.errorTitle"), t("scheduleSend.validation.tooSoon"));
       } else if (error?.code === "SCHEDULE_TOO_LATE") {
-        Alert.alert(t("common.error", "خطأ"), t("scheduleSend.validation.tooLate"));
+        Alert.alert(t("alerts.errorTitle"), t("scheduleSend.validation.tooLate"));
       } else {
-        Alert.alert(t("common.error", "خطأ"), error?.message || t("scheduleSend.error"));
+        Alert.alert(
+          t("alerts.errorTitle"),
+          error?.message || t("scheduleSend.error")
+        );
       }
     }
   };
@@ -165,13 +170,25 @@ const ScheduleSendingModal = ({
           {/* Handle bar */}
           <View style={styles.handleBar} />
 
-          {/* Header */}
+          {/* Header: title/description at the logical start, close at the
+              logical end. */}
           <View style={styles.header}>
             <View style={styles.titleWrapper}>
-              <Text style={styles.title}>{t("scheduleSend.title")}</Text>
-              <Text style={styles.description}>{t("scheduleSend.description")}</Text>
+              <LocalizedText role="pageTitle" style={styles.title}>
+                {t("scheduleSend.title")}
+              </LocalizedText>
+              <LocalizedText role="description" style={styles.description}>
+                {t("scheduleSend.description")}
+              </LocalizedText>
             </View>
-            <TouchableOpacity onPress={handleClose} hitSlop={8} disabled={isPending}>
+            <TouchableOpacity
+              onPress={handleClose}
+              hitSlop={8}
+              disabled={isPending}
+              accessibilityRole="button"
+              accessibilityLabel={t("scheduleSend.cancel")}
+            >
+              {/* Close glyph is not direction-mirrored (§7). */}
               <Ionicons name="close" size={24} color="#2C2C2C" />
             </TouchableOpacity>
           </View>
@@ -182,7 +199,8 @@ const ScheduleSendingModal = ({
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.contentInner}
             >
-              {/* Date Picker */}
+              {/* Date Picker — shared field-contract primitive: localized
+                  label/placeholder, locale-formatted date value. */}
               <DatePicker
                 name="scheduledDate"
                 label={t("scheduleSend.date")}
@@ -201,7 +219,9 @@ const ScheduleSendingModal = ({
               {/* Scheduling-window note */}
               <View style={styles.infoBox}>
                 <Ionicons name="time-outline" size={16} color="#C28E5C" />
-                <Text style={styles.infoText}>{t("scheduleSend.windowNote")}</Text>
+                <LocalizedText role="hint" style={styles.infoText}>
+                  {t("scheduleSend.windowNote")}
+                </LocalizedText>
               </View>
             </ScrollView>
 

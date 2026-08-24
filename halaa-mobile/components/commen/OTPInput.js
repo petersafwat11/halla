@@ -3,11 +3,11 @@ import {
   View,
   TextInput,
   StyleSheet,
-  Text,
   Animated,
   Platform,
 } from "react-native";
 import { useFormContext, Controller } from "react-hook-form";
+import LocalizedText from "./LocalizedText";
 
 /**
  * Hoisted inner component to satisfy Rules-of-Hooks and manage shake animation.
@@ -109,12 +109,21 @@ const OTPInputField = ({ length, value, error, onChange }) => {
           />
         ))}
       </Animated.View>
-      {error && <Text style={styles.errorText}>{error.message}</Text>}
+      {error && (
+        // Validation copy is app-authored: it follows the UI locale even
+        // though the OTP digits themselves are LTR tokens.
+        <LocalizedText role="error" center style={styles.errorText}>
+          {error.message}
+        </LocalizedText>
+      )}
     </View>
   );
 };
 
-const OTPInput = ({ name, length = 6, rules }) => {
+/**
+ * Form-bound flavour — the value lives in the surrounding react-hook-form.
+ */
+const FormOTPInput = ({ name, length, rules }) => {
   const { control } = useFormContext();
 
   return (
@@ -132,6 +141,22 @@ const OTPInput = ({ name, length = 6, rules }) => {
       )}
     />
   );
+};
+
+const OTPInput = ({ name, length = 6, rules, value, onChangeText }) => {
+  // Controlled flavour (blueprint §5.2): callers outside a form (e.g. the
+  // email-verification flow) pass `value` + `onChangeText` directly instead
+  // of registering an anonymous form field.
+  if (value !== undefined || onChangeText !== undefined) {
+    return (
+      <OTPInputField
+        length={length}
+        value={value}
+        onChange={onChangeText}
+      />
+    );
+  }
+  return <FormOTPInput name={name} length={length} rules={rules} />;
 };
 
 const styles = StyleSheet.create({

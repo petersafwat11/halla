@@ -67,7 +67,7 @@ const PreviewInvitation = ({
   const resolvedBody = useMemo(() => {
     if (!previewBody) return "";
     const context = buildTaqnyatPreviewContext({
-      guestName: t("preview_guest_placeholder", "ضيفنا الكريم"),
+      guestName: t("preview_guest_placeholder"),
       eventTitle,
       dateFormatted: formattedDate,
       eventTime,
@@ -108,7 +108,7 @@ const PreviewInvitation = ({
     return 4 / 5;
   }, [template, templateImage]);
 
-  const messageTime = t("preview_timestamp", "9:41");
+  const messageTime = t("preview_timestamp");
   const showReplyActions = invitationAllowsReply(invitationType);
 
   return (
@@ -188,10 +188,7 @@ const PreviewInvitation = ({
               </Text>
             ) : (
               <Text style={[styles.msgPlaceholder, fieldDirection.text]}>
-                {t(
-                  "preview_body_placeholder",
-                  "اختر قالب رسالة في الخطوة السابقة لمعاينة النص هنا"
-                )}
+                {t("preview_body_placeholder")}
               </Text>
             )}
 
@@ -208,14 +205,14 @@ const PreviewInvitation = ({
             <View style={styles.ctaBtn}>
               <Ionicons name="checkmark-sharp" size={15} color="#0096DE" />
               <Text style={styles.ctaText}>
-                {t("whatsapp_invitation_preview_attending", t("attending"))}
+                {t("whatsapp_invitation_preview_attending")}
               </Text>
             </View>
             <View style={styles.ctaDivider} />
             <View style={styles.ctaBtn}>
               <Ionicons name="close-sharp" size={15} color="#0096DE" />
               <Text style={styles.ctaText}>
-                {t("whatsapp_invitation_preview_declining", t("absence"))}
+                {t("whatsapp_invitation_preview_declining")}
               </Text>
             </View>
           </View>}
@@ -224,7 +221,7 @@ const PreviewInvitation = ({
         <View style={styles.inputBar}>
           <View style={styles.inputField}>
             <Text style={[styles.inputPlaceholder, fieldDirection.text]}>
-              {t("preview_input_placeholder", "رسالة")}
+              {t("preview_input_placeholder")}
             </Text>
           </View>
           <View style={styles.micBtn}>

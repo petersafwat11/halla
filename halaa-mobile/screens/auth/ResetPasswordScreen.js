@@ -15,27 +15,33 @@
  * `navigation/linking.js`. The Expo `app.json` should declare
  * `scheme: "halla"` and `intentFilters` / `associatedDomains` for the
  * universal-link variant.
+ *
+ * Direction contract (blueprint §5): the secret values are intrinsically LTR
+ * while labels, helper text and validation errors stay localized, so this
+ * screen renders its fields exclusively through the shared PasswordInput
+ * shell instead of local label/input/error triplets.
  */
 
-import React, { useState, useCallback } from "react";
+import React, { useCallback } from "react";
 import {
   StyleSheet,
   View,
   ScrollView,
-  Text,
-  TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
   Dimensions,
 } from "react-native";
-import TextInput from "../../components/commen/DirectionalTextInput";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useForm, FormProvider } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "../../localization";
 import { useAuthStore } from "../../stores/authStore";
 import { useToast } from "../../contexts/ToastContext";
 import { resetPasswordSchema } from "@halaa/shared/schemas/auth";
 import { authErrorMessage } from "../../services/authErrors";
 import TopBar from "../../components/plans/TopBar";
+import LocalizedText from "../../components/commen/LocalizedText";
+import { Button, PasswordInput } from "../../components/commen";
 
 const { width } = Dimensions.get("window");
 
@@ -47,37 +53,52 @@ export default function ResetPasswordScreen({ route, navigation }) {
 
   const token = route?.params?.token;
 
-  const [password, setPassword] = useState("");
-  const [passwordConfirm, setPasswordConfirm] = useState("");
-  const [errors, setErrors] = useState({});
+  const methods = useForm({
+    resolver: zodResolver(resetPasswordSchema(t)),
+    mode: "onBlur",
+    defaultValues: {
+      password: "",
+      passwordConfirm: "",
+    },
+  });
+  const { handleSubmit, setError } = methods;
 
-  const submit = useCallback(async () => {
-    setErrors({});
-    if (!token) {
-      toast.error(t("changePassword.tokenMissing"));
-      return;
-    }
-    const schema = resetPasswordSchema(t);
-    const parsed = schema.safeParse({ password, passwordConfirm });
-    if (!parsed.success) {
-      const fieldErrors = {};
-      for (const issue of parsed.error.issues) {
-        const key = issue.path?.[0];
-        if (key && !fieldErrors[key]) fieldErrors[key] = issue.message;
+  const submit = useCallback(
+    async ({ password, passwordConfirm }) => {
+      if (!token) {
+        toast.error(t("changePassword.tokenMissing"));
+        return null;
       }
-      setErrors(fieldErrors);
-      return;
-    }
 
-    const result = await resetPassword({ token, password, passwordConfirm });
-    if (result.success) {
-      toast.success(t("changePassword.success"));
-      // Auth store transitions to authenticated — root navigator handles routing.
-    } else {
-      const resolved = authErrorMessage(result.errorDetail, t);
-      toast.error(resolved?.message || result.error || t("errors.resetFailed"));
-    }
-  }, [password, passwordConfirm, token, resetPassword, t, toast]);
+      const result = await resetPassword({ token, password, passwordConfirm });
+      if (result.success) {
+        toast.success(t("changePassword.success"));
+        // Auth store transitions to authenticated — root navigator handles routing.
+        return result;
+      }
+      return result;
+    },
+    [token, resetPassword, t, toast]
+  );
+
+  // Schema errors render inline through the shared field shell; backend
+  // failures are surfaced as a server error on the matching field.
+  const onSubmit = useCallback(
+    async (data) => {
+      const result = await submit(data);
+      if (!result || result.success !== false) return;
+      const msg =
+        authErrorMessage(result.errorDetail, t)?.message ||
+        result.error ||
+        t("errors.resetFailed");
+      if (result.errorDetail?.field === "password") {
+        setError("password", { type: "server", message: msg });
+      } else {
+        setError("passwordConfirm", { type: "server", message: msg });
+      }
+    },
+    [submit, t, setError]
+  );
 
   const back = useCallback(() => {
     if (navigation?.canGoBack?.()) navigation.goBack();
@@ -103,65 +124,45 @@ export default function ResetPasswordScreen({ route, navigation }) {
             keyboardShouldPersistTaps="handled"
           >
             <View style={styles.content}>
-              <Text style={styles.heading}>
+              {/* Headings/body are app copy — always the UI locale. */}
+              <LocalizedText role="sectionTitle" center style={styles.heading}>
                 {t("changePassword.heading")}
-              </Text>
-              <Text style={styles.body}>
+              </LocalizedText>
+              <LocalizedText role="description" center style={styles.body}>
                 {t("changePassword.description")}
-              </Text>
+              </LocalizedText>
 
-              <View style={styles.fieldGroup}>
-                <Text style={styles.label}>
-                  {t("changePassword.newPasswordLabel")}
-                </Text>
-                <TextInput
-                  style={[styles.input, errors.password && styles.inputError]}
-                  secureTextEntry
-                  autoCapitalize="none"
-                  textContentType="newPassword"
-                  value={password}
-                  onChangeText={setPassword}
-                  placeholder={t("changePassword.newPasswordPlaceholder")}
-                  placeholderTextColor="#999"
+              <FormProvider {...methods}>
+                <View style={styles.fieldGroup}>
+                  {/* Secret value stays LTR; chrome stays localized. */}
+                  <PasswordInput
+                    name="password"
+                    label={t("changePassword.newPasswordLabel")}
+                    placeholder={t("changePassword.newPasswordPlaceholder")}
+                    textContentType="newPassword"
+                  />
+                </View>
+
+                <View style={styles.fieldGroup}>
+                  <PasswordInput
+                    name="passwordConfirm"
+                    label={t("changePassword.confirmPasswordLabel")}
+                    placeholder={t("changePassword.confirmPasswordPlaceholder")}
+                    textContentType="newPassword"
+                  />
+                </View>
+
+                <Button
+                  text={
+                    loading
+                      ? t("changePassword.submitting")
+                      : t("changePassword.submit")
+                  }
+                  onPress={handleSubmit(onSubmit)}
+                  loading={loading}
+                  style={styles.submit}
                 />
-                {errors.password ? (
-                  <Text style={styles.errorText}>{errors.password}</Text>
-                ) : null}
-              </View>
-
-              <View style={styles.fieldGroup}>
-                <Text style={styles.label}>
-                  {t("changePassword.confirmPasswordLabel")}
-                </Text>
-                <TextInput
-                  style={[
-                    styles.input,
-                    errors.passwordConfirm && styles.inputError,
-                  ]}
-                  secureTextEntry
-                  autoCapitalize="none"
-                  textContentType="newPassword"
-                  value={passwordConfirm}
-                  onChangeText={setPasswordConfirm}
-                  placeholder={t("changePassword.confirmPasswordPlaceholder")}
-                  placeholderTextColor="#999"
-                />
-                {errors.passwordConfirm ? (
-                  <Text style={styles.errorText}>{errors.passwordConfirm}</Text>
-                ) : null}
-              </View>
-
-              <TouchableOpacity
-                onPress={submit}
-                disabled={loading}
-                style={[styles.submit, loading && styles.submitDisabled]}
-              >
-                <Text style={styles.submitText}>
-                  {loading
-                    ? t("changePassword.submitting")
-                    : t("changePassword.submit")}
-                </Text>
-              </TouchableOpacity>
+              </FormProvider>
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
@@ -183,53 +184,14 @@ const styles = StyleSheet.create({
   },
   heading: {
     fontSize: 22,
-    fontFamily: "Cairo_700Bold",
+    lineHeight: 30,
     color: "#222",
     marginBottom: 8,
-    textAlign: "center",
   },
   body: {
-    fontSize: 14,
-    fontFamily: "Cairo_400Regular",
     color: "#555",
     marginBottom: 24,
-    textAlign: "center",
   },
   fieldGroup: { marginBottom: 16 },
-  label: {
-    fontSize: 14,
-    fontFamily: "Cairo_600SemiBold",
-    color: "#333",
-    marginBottom: 6,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    padding: 14,
-    fontSize: 16,
-    fontFamily: "Cairo_400Regular",
-    backgroundColor: "#fff",
-    color: "#222",
-  },
-  inputError: { borderColor: "#d32f2f" },
-  errorText: {
-    color: "#d32f2f",
-    fontSize: 12,
-    fontFamily: "Cairo_400Regular",
-    marginTop: 4,
-  },
-  submit: {
-    backgroundColor: "#c28e5c",
-    borderRadius: 8,
-    paddingVertical: 14,
-    alignItems: "center",
-    marginTop: 8,
-  },
-  submitDisabled: { opacity: 0.7 },
-  submitText: {
-    color: "#fff",
-    fontSize: 16,
-    fontFamily: "Cairo_600SemiBold",
-  },
+  submit: { marginTop: 8 },
 });

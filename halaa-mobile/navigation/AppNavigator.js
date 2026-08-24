@@ -182,6 +182,9 @@ function HostTabNavigator() {
           fontSize: 12,
           fontFamily: "Cairo_500Medium",
         },
+        // Hide tabs while the keyboard is open (blueprint §7) so form space
+        // is not consumed and the bar never competes with the keyboard.
+        tabBarHideOnKeyboard: true,
         headerShown: false,
       })}
     >
@@ -252,6 +255,8 @@ function VendorTabNavigator() {
           fontSize: 12,
           fontFamily: "Cairo_500Medium",
         },
+        // Hide tabs while the keyboard is open (blueprint §7).
+        tabBarHideOnKeyboard: true,
         headerShown: false,
       })}
     >

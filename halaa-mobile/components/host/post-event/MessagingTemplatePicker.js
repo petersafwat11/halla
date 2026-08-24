@@ -8,14 +8,19 @@ import {
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { formatCount } from "@halaa/shared/utils/locale";
+import { useTranslation } from "../../../localization";
 import { useHostTaqnyatTemplates } from "../../../hooks/taqnyatTemplates";
 import { useUpdatePostEventMessagingTemplate } from "../../../hooks/postEvent";
+import AdaptiveText from "../../commen/AdaptiveText";
+import LocalizedText from "../../commen/LocalizedText";
 
 /**
  * Mirror of the web `MessagingTemplatePicker`. Each card surfaces the
  * `templateName`, `bodyText` preview, and `varMapping.length` count.
- * Tapping a card commits the choice via
- * `PATCH /post-event/:eventId/messaging`.
+ * Template names/bodies are backend content and render adaptively
+ * (first-strong direction + isolation); the variable count is a
+ * locale-formatted interpolation.
  */
 const MessagingTemplatePicker = ({
   eventId,
@@ -23,6 +28,7 @@ const MessagingTemplatePicker = ({
   t,
   toast,
 }) => {
+  const { currentLanguage } = useTranslation("postEvent");
   const { data, isLoading } = useHostTaqnyatTemplates({
     type: "post_event",
   });
@@ -45,16 +51,18 @@ const MessagingTemplatePicker = ({
 
   return (
     <View style={styles.section}>
-      <Text style={styles.title}>{t("host.messaging.title")}</Text>
-      <Text style={styles.subtitle}>{t("host.messaging.subtitle")}</Text>
+      <LocalizedText style={styles.title}>{t("host.messaging.title")}</LocalizedText>
+      <LocalizedText style={styles.subtitle}>{t("host.messaging.subtitle")}</LocalizedText>
 
       {isLoading ? (
         <ActivityIndicator color="#C28E5C" style={{ marginVertical: 24 }} />
       ) : templates.length === 0 ? (
         <View style={styles.empty}>
           <Ionicons name="alert-circle-outline" size={28} color="#C28E5C" />
-          <Text style={styles.emptyTitle}>{t("host.messaging.empty")}</Text>
-          <Text style={styles.emptyHint}>{t("host.messaging.emptyHint")}</Text>
+          <LocalizedText style={styles.emptyTitle}>{t("host.messaging.empty")}</LocalizedText>
+          <LocalizedText style={styles.emptyHint} center>
+            {t("host.messaging.emptyHint")}
+          </LocalizedText>
         </View>
       ) : (
         <ScrollView
@@ -73,9 +81,9 @@ const MessagingTemplatePicker = ({
                 disabled={updateTemplate.isPending}
               >
                 <View style={styles.cardHeader}>
-                  <Text style={styles.cardTitle} numberOfLines={1}>
+                  <AdaptiveText style={styles.cardTitle} numberOfLines={1}>
                     {tpl.templateName}
-                  </Text>
+                  </AdaptiveText>
                   {isSelected && (
                     <Ionicons
                       name="checkmark-circle"
@@ -84,12 +92,15 @@ const MessagingTemplatePicker = ({
                     />
                   )}
                 </View>
-                <Text style={styles.cardBody} numberOfLines={3}>
+                <AdaptiveText style={styles.cardBody} numberOfLines={3}>
                   {tpl.bodyText}
-                </Text>
+                </AdaptiveText>
                 <Text style={styles.cardMeta}>
                   {t("host.messaging.varCount", {
-                    count: tpl.varMapping?.length || 0,
+                    count: formatCount(
+                      tpl.varMapping?.length || 0,
+                      currentLanguage
+                    ),
                   })}
                 </Text>
               </TouchableOpacity>

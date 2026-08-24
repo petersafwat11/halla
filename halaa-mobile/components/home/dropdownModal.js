@@ -10,9 +10,14 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Svg, Circle, G, Path, Defs, ClipPath, Rect } from "react-native-svg";
+import { useTranslation } from "../../localization";
+import { localizeDigits } from "@halaa/shared/utils/locale";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
 
-const StepIndicator = ({ progress }) => {
-  const totalSteps = 4;
+const TOTAL_STEPS = 4;
+
+const StepIndicator = ({ progress, locale }) => {
+  const totalSteps = TOTAL_STEPS;
   const completedSteps = Math.floor((progress / 100) * totalSteps);
   const currentStep = Math.min(completedSteps + 1, totalSteps);
 
@@ -36,37 +41,29 @@ const StepIndicator = ({ progress }) => {
           </ClipPath>
         </Defs>
       </Svg>
-      <Text style={styles.indicatorText}>{currentStep}/4</Text>
+      {/* "current/total" is a canonical LTR counter token (mirrors
+          StepHeader): pinned LTR so the slash cannot reorder in RTL chrome. */}
+      <Text style={[styles.indicatorText, { writingDirection: "ltr" }]}>
+        {isolateLtr(
+          `${localizeDigits(currentStep, locale)}/${localizeDigits(totalSteps, locale)}`
+        )}
+      </Text>
     </View>
   );
 };
 
 const DropdownModal = ({ visible, onClose, onStepSelect }) => {
-  const steps = [
-    {
-      id: 1,
-      title: "تفاصيل المناسبة",
-      description: "أضف تفاصيل المناسبة كما تحب.",
-      progress: 25
-    },
-    {
-      id: 2,
-      title: "قائمة المدعوين",
-      description: "ادخل كل المدعوين المختارين لحضور المناسبة",
-      progress: 50
-    },
-    {
-      id: 3,
-      title: "تخصيص الدعوة",
-      description: "قم بتخصيص القالب ودعوتك بشكل سهل",
-      progress: 75
-    },
-    {
-      id: 4,
-      title: "مراجعة واطلاق المناسبة",
-      description: "راجع كل التفاصيل بتركيز",
-      progress: 100
-    }];
+  const { t, currentLanguage } = useTranslation("home");
+  const locale = currentLanguage || "ar";
+
+  // Step titles/descriptions are authored copy from the home bundle —
+  // never inline literals (blueprint §9 Priority 3).
+  const steps = [1, 2, 3, 4].map((id) => ({
+    id,
+    title: t(`editSteps.steps.${id}.title`),
+    description: t(`editSteps.steps.${id}.description`),
+    progress: (id / TOTAL_STEPS) * 100,
+  }));
 
   return (
     <Modal
@@ -77,14 +74,20 @@ const DropdownModal = ({ visible, onClose, onStepSelect }) => {
     >
       <Pressable style={styles.overlay} onPress={onClose}>
         <Pressable style={styles.modalContainer} onPress={(e) => e.stopPropagation()}>
-          {/* Header */}
+          {/* Header: title at the logical start, close at the logical end. */}
           <View style={styles.header}>
             <View style={styles.titleContainer}>
               <Text style={styles.modalTitle}>
-                اختر الخطوة
+                {t("editSteps.title")}
               </Text>
             </View>
-            <TouchableOpacity onPress={onClose} hitSlop={8}>
+            <TouchableOpacity
+              onPress={onClose}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel={t("editSteps.cancel")}
+            >
+              {/* Close glyph is not direction-mirrored (§7). */}
               <Ionicons name="close" size={24} color="#000" />
             </TouchableOpacity>
           </View>
@@ -105,6 +108,7 @@ const DropdownModal = ({ visible, onClose, onStepSelect }) => {
                   onClose();
                 }}
                 activeOpacity={0.7}
+                accessibilityRole="button"
               >
                 <View style={styles.stepContent}>
                   <View style={styles.stepText}>
@@ -120,27 +124,30 @@ const DropdownModal = ({ visible, onClose, onStepSelect }) => {
                       {step.description}
                     </Text>
                   </View>
-                  <StepIndicator progress={step.progress} />
+                  <StepIndicator progress={step.progress} locale={locale} />
                 </View>
               </TouchableOpacity>
             ))}
           </ScrollView>
 
-          {/* Action Buttons */}
+          {/* Action Buttons — logical source order: cancel at start,
+              confirm at end. */}
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={styles.cancelButton}
               onPress={onClose}
               activeOpacity={0.7}
+              accessibilityRole="button"
             >
-              <Text style={styles.cancelButtonText}>إلغاء</Text>
+              <Text style={styles.cancelButtonText}>{t("editSteps.cancel")}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.confirmButton}
               onPress={onClose}
               activeOpacity={0.7}
+              accessibilityRole="button"
             >
-              <Text style={styles.confirmButtonText}>ذهاب</Text>
+              <Text style={styles.confirmButtonText}>{t("editSteps.go")}</Text>
             </TouchableOpacity>
           </View>
         </Pressable>

@@ -17,11 +17,12 @@ test("EVT-01: EventSummary destructures currentLanguage and includes it in useMe
     "EventSummary must destructure currentLanguage from useTranslation('createEvent')"
   );
 
-  // Uses currentLanguage in formatDate
+  // Uses currentLanguage in locale date formatting (shared helper is
+  // imported aliased as formatLocaleDate).
   assert.match(
     source,
-    /formatDate\(\s*eventDate\s*,\s*currentLanguage\s*\|\|\s*["']ar["']\s*\)/,
-    "EventSummary must pass currentLanguage to formatDate"
+    /format(?:Locale)?Date\(\s*eventDate\s*,\s*currentLanguage\s*\|\|\s*["']ar["']\s*\)/,
+    "EventSummary must pass currentLanguage to the shared date formatter"
   );
 
   // Includes currentLanguage in resolvedInvitation useMemo dependencies

@@ -5,14 +5,17 @@
  */
 
 const { z } = require('zod');
+const { clampPhoneInput, SAUDI_PHONE_REGEX } = require('../../shared/utils/phone');
 
-const phonePattern = /^(\+966|966|0)?5\d{8}$/;
 const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+$/;
 
 const phoneNumber = z
   .string()
   .trim()
-  .regex(phonePattern, 'Invalid Saudi phone number format');
+  .transform((val) => clampPhoneInput(val))
+  .refine((val) => SAUDI_PHONE_REGEX.test(val), {
+    message: 'Invalid Saudi phone number format. Must be 10 digits starting with 05 or 9 digits starting with 5',
+  });
 
 const email = z
   .string()
@@ -25,7 +28,6 @@ const password = z
   .min(8, 'Password must be at least 8 characters')
   .max(128, 'Password must be at most 128 characters')
   .regex(passwordPattern, 'Password may contain letters and numbers only and must include at least one of each');
-
 const username = z
   .string()
   .trim()

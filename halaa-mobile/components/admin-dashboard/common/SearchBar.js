@@ -3,7 +3,6 @@ import { View, TouchableOpacity, StyleSheet } from "react-native";
 import TextInput from "../../commen/DirectionalTextInput";
 import { Ionicons } from "@expo/vector-icons";
 import PropTypes from "prop-types";
-import { useInputDirection } from "../../../hooks/useInputDirection";
 import {
   colors,
   spacing,
@@ -13,6 +12,10 @@ import {
 
 /**
  * SearchBar - Search input with clear button
+ *
+ * The query is arbitrary user content (blueprint §5.3): the empty placeholder
+ * follows the UI locale while a filled value follows its first strong Arabic
+ * or Latin character, so searching "علي" and "Ali" both read correctly.
  *
  * @param {Object} props
  * @param {string} props.value - Current search value
@@ -27,8 +30,6 @@ const SearchBar = ({
   onClear,
 }) => {
   const [localValue, setLocalValue] = useState(value || "");
-  // Explicit localized direction for the iOS search placeholder.
-  const searchDirectionStyle = useInputDirection("localized");
 
   useEffect(() => {
     setLocalValue(value || "");
@@ -64,7 +65,8 @@ const SearchBar = ({
         style={styles.searchIcon}
       />
       <TextInput
-        style={[styles.input, searchDirectionStyle]}
+        contentDirection="adaptive"
+        style={styles.input}
         value={localValue}
         onChangeText={setLocalValue}
         placeholder={placeholder}

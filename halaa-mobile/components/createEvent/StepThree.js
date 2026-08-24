@@ -21,6 +21,7 @@ import EventTemplates from "../home/EventTemplates";
 import PreviewInvitation from "./PreviewInvitation";
 import { useTranslation } from "../../localization";
 import { useFieldDirection } from "../../hooks/useInputDirection";
+import AdaptiveText from "../commen/AdaptiveText";
 import {
   buildDynamicTemplateSchema,
   buildDefaultValues,
@@ -262,11 +263,13 @@ const StepThree = () => {
             ) : null}
           </View>
           {mode === "template" && selectedTemplate && (
-            <Text style={styles.confirmedCardTemplateName}>
+            /* Backend template names are arbitrary content — adaptive
+               first-strong rendering, never the page locale. */
+            <AdaptiveText style={styles.confirmedCardTemplateName} numberOfLines={1}>
               {locale === "ar"
                 ? selectedTemplate.nameAr || selectedTemplate.name || selectedTemplate.templateName
                 : selectedTemplate.nameEn || selectedTemplate.name || selectedTemplate.templateName}
-            </Text>
+            </AdaptiveText>
           )}
           {mode === "template" && !selectedTemplate && hasTemplateRef && (
             <Text style={styles.confirmedCardTemplateName}>
@@ -358,13 +361,16 @@ const StepThree = () => {
 
               {showPredefinedSelectionRow && (
                 <View style={styles.selectedRow}>
+                  {/* Label run stays localized; the backend template name is
+                      an isolated adaptive run so a Latin name cannot reorder
+                      the localized "Selected:" prefix around it. */}
                   <Text style={styles.selectedLabel}>
                     {t("selected_template")}:{" "}
-                    <Text style={styles.selectedName}>
+                    <AdaptiveText style={styles.selectedName}>
                       {locale === "ar"
                         ? selectedTemplate.nameAr || selectedTemplate.name
                         : selectedTemplate.nameEn || selectedTemplate.name}
-                    </Text>
+                    </AdaptiveText>
                   </Text>
 
                   <View style={styles.actionsRow}>

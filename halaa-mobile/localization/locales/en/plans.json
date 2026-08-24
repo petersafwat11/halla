@@ -155,7 +155,8 @@
       "pending": "Processing — your add-on will be applied shortly."
     },
     "history": {
-      "title": "Your add-ons"
+      "title": "Your add-ons",
+      "itemRow": "{{label}} · {{count}}"
     }
   },
   "summary": {
@@ -169,6 +170,10 @@
     "singleEvent": "Single event",
     "unlimitedEvents": "Unlimited events",
     "compensationInvites": "compensation invites",
+    "compensationInvitesRow": "{{count}} compensation invites",
+    "baseInvitesRow": "{{count}} base invites",
+    "poolInvitesRow": "{{count}} pool invites",
+    "extraInvitesRow": "+{{count}} extra invites",
     "extraInvites": "extra invites",
     "totalInvites": "Total invites",
     "totalInvitesHint": "Total pool = base invites + extra packages + 15% compensation.",
@@ -256,7 +261,8 @@
     },
     "stcpay": {
       "mobile": "Mobile number",
-      "note": "You'll receive a confirmation prompt in your STC Pay app."
+      "note": "You'll receive a confirmation prompt in your STC Pay app.",
+      "mobilePlaceholder": "05xxxxxxxx"
     },
     "applepay": {
       "note": "You'll be prompted by Apple Pay on the next step."
@@ -374,6 +380,7 @@
   "iapFlow": {
     "checking": "Checking eligibility…",
     "purchasing": "Opening the store…",
+    "reconcileUnavailable": "Your purchase is saved by the store, but Halaa cannot confirm it right now. Check your connection, then refresh the status. Do not purchase again.",
     "errorGeneric": "Something went wrong. Please try again.",
     "blockedTitle": "Can't purchase this yet",
     "continue": "Continue",

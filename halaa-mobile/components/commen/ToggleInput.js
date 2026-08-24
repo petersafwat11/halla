@@ -1,10 +1,14 @@
 import React from "react";
 import { View, Text, Switch, StyleSheet, Animated } from "react-native";
 import { useFormContext, Controller } from "react-hook-form";
+import { useFieldDirection } from "../../hooks/useInputDirection";
 
 const ToggleInput = ({ name, label, disabled = false, description, rules }) => {
   const { control } = useFormContext();
   const [scaleValue] = React.useState(new Animated.Value(1));
+  // Label/description are app-authored copy: they always follow the UI
+  // locale, never the value of the switch or any related content.
+  const fieldDirection = useFieldDirection("localized");
 
   const handlePress = () => {
     if (!disabled) {
@@ -33,12 +37,16 @@ const ToggleInput = ({ name, label, disabled = false, description, rules }) => {
           style={[styles.container, { transform: [{ scale: scaleValue }] }]}
         >
           <View style={styles.labelContainer}>
-            <Text style={[styles.label, disabled && styles.labelDisabled]}>
+            <Text
+              style={[styles.label, fieldDirection.text, disabled && styles.labelDisabled]}
+            >
               {label}
             </Text>
             {description && (
               <View style={styles.content}>
-                <Text style={styles.description}>{description}</Text>
+                <Text style={[styles.description, fieldDirection.text]}>
+                  {description}
+                </Text>
               </View>
             )}
           </View>

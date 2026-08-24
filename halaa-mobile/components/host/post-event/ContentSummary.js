@@ -1,7 +1,16 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { formatCount } from "@halaa/shared/utils/locale";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
+import { useTranslation } from "../../../localization";
+import LocalizedText from "../../commen/LocalizedText";
 
+/**
+ * Media summary. Counts are locale-formatted (٠١٢ / 0-9) and each value is
+ * an LTR-isolated atomic token so it cannot BiDi-scramble in Arabic rows.
+ */
 const ContentSummary = ({ media = [], content, t }) => {
+  const { currentLanguage } = useTranslation("postEvent");
   const photoCount = media.filter((m) => m.type === "photo").length;
   const videoCount = media.filter((m) => m.type === "video").length;
   const commentCount = media.reduce(
@@ -12,29 +21,31 @@ const ContentSummary = ({ media = [], content, t }) => {
     content?.stats?.totalLikes ??
     media.reduce((acc, m) => acc + (m.likesCount || m.likes?.length || 0), 0);
 
+  const stats = [
+    { value: photoCount, label: t("host.summary.photos") },
+    { value: videoCount, label: t("host.summary.videos") },
+    { value: commentCount, label: t("host.summary.comments") },
+    { value: likeCount, label: t("host.summary.likes") },
+  ];
+
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{t("host.summary.title")}</Text>
+      <LocalizedText style={styles.sectionTitle}>
+        {t("host.summary.title")}
+      </LocalizedText>
       <View style={styles.summaryRow}>
-        <View style={styles.summaryItem}>
-          <Text style={styles.summaryValue}>{photoCount}</Text>
-          <Text style={styles.summaryLabel}>{t("host.summary.photos")}</Text>
-        </View>
-        <View style={styles.summarySep} />
-        <View style={styles.summaryItem}>
-          <Text style={styles.summaryValue}>{videoCount}</Text>
-          <Text style={styles.summaryLabel}>{t("host.summary.videos")}</Text>
-        </View>
-        <View style={styles.summarySep} />
-        <View style={styles.summaryItem}>
-          <Text style={styles.summaryValue}>{commentCount}</Text>
-          <Text style={styles.summaryLabel}>{t("host.summary.comments")}</Text>
-        </View>
-        <View style={styles.summarySep} />
-        <View style={styles.summaryItem}>
-          <Text style={styles.summaryValue}>{likeCount}</Text>
-          <Text style={styles.summaryLabel}>{t("host.summary.likes")}</Text>
-        </View>
+        {stats.map(({ value, label }, index) => (
+          <React.Fragment key={label}>
+            {index > 0 && <View style={styles.summarySep} />}
+            <View style={styles.summaryItem}>
+              {/* Locale digits in one LTR-isolated token. */}
+              <Text style={styles.summaryValue}>
+                {isolateLtr(formatCount(value, currentLanguage))}
+              </Text>
+              <LocalizedText style={styles.summaryLabel}>{label}</LocalizedText>
+            </View>
+          </React.Fragment>
+        ))}
       </View>
     </View>
   );

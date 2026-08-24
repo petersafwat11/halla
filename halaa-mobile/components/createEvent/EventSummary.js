@@ -13,10 +13,15 @@ import { Ionicons } from "@expo/vector-icons";
 import {
   resolveTaqnyatPlaceholders,
   buildTaqnyatPreviewContext,
-  formatDate,
+  formatDate as formatLocaleDate,
+  formatTime as formatLocaleTime,
+  formatCount,
 } from "@halaa/shared/utils";
+import { isolateAuto } from "@halaa/shared/utils/bidi";
 import { useTranslation } from "../../localization";
 import { useAuthStore } from "../../stores/authStore";
+import AdaptiveText from "../commen/AdaptiveText";
+import LocalizedText from "../commen/LocalizedText";
 import Svg, { Path } from "react-native-svg";
 
 const StatStaffIcon = () => (
@@ -137,17 +142,31 @@ const EventSummary = () => {
     ? t(`event_types.${eventType}`, t(eventType) || eventType)
     : "";
 
-  const dateStr = formatDate(eventDate);
-  const dateTime = dateStr && eventTime ? `${dateStr} - ${eventTime}` : dateStr;
+  // Locale-formatted tokens only — the raw stored `h:mm AM` string is never
+  // rendered, and the pair joins through an interpolation key so the
+  // separator/punctuation is authored per locale (blueprint §6).
+  const dateStr = eventDate ? formatLocaleDate(eventDate, currentLanguage || "ar") : "";
+  const timeStr = eventTime
+    ? formatLocaleTime(eventTime, currentLanguage || "ar")
+    : "";
+  const dateTime =
+    dateStr && timeStr
+      ? t("summary_date_time", {
+          date: isolateAuto(dateStr),
+          time: isolateAuto(timeStr),
+        })
+      : dateStr;
 
   // Resolve the invitation template placeholders ({{1}}..{{5}}) so the summary
   // shows the real message — the same resolution StepFour/PreviewInvitation use.
   const resolvedInvitation = useMemo(() => {
     const bodyText = selectedTemplate?.bodyText;
     if (!bodyText) return "";
-    const dateFormatted = eventDate ? formatDate(eventDate, currentLanguage || "ar") : "";
+    const dateFormatted = eventDate
+      ? formatLocaleDate(eventDate, currentLanguage || "ar")
+      : "";
     const context = buildTaqnyatPreviewContext({
-      guestName: t("preview_guest_placeholder", "ضيفنا الكريم"),
+      guestName: t("preview_guest_placeholder"),
       eventTitle: eventName,
       dateFormatted,
       eventTime,
@@ -186,12 +205,12 @@ const EventSummary = () => {
         <View style={styles.statsCards}>
           <StatCard
             icon={<StatStaffIcon />}
-            value={String(staffList.length || 0)}
+            value={formatCount(staffList.length || 0, currentLanguage || "ar")}
             label={t("number_of_staff")}
           />
           <StatCard
             icon={<StatPeopleIcon />}
-            value={String(guestList.length || 0)}
+            value={formatCount(guestList.length || 0, currentLanguage || "ar")}
             label={t("number_of_invitees")}
           />
           <StatCard
@@ -208,17 +227,30 @@ const EventSummary = () => {
 
         {/* Event details panel — mirrors web EventDataDisplay */}
         <View style={styles.detailsSection}>
-          <Text style={styles.detailsHeader}>{t("event_details")}</Text>
+          <LocalizedText role="label" style={styles.detailsHeader}>
+            {t("event_details")}
+          </LocalizedText>
           <View style={styles.detailsContent}>
-            {!!eventName && <Text style={styles.eventTitle}>{eventName}</Text>}
+            {/* Event name / invitation body / address are arbitrary user or
+                backend content — adaptive first-strong rendering. */}
+            {!!eventName && (
+              <AdaptiveText style={styles.eventTitle}>{eventName}</AdaptiveText>
+            )}
             {!!resolvedInvitation && (
-              <Text style={styles.invitationText}>{resolvedInvitation}</Text>
+              <AdaptiveText style={styles.invitationText}>
+                {resolvedInvitation}
+              </AdaptiveText>
             )}
 
             <View style={styles.eventDetails}>
               <DetailRow icon={<RowPeopleIcon />}>
+                {/* Count + label live in one authored interpolation string so
+                    digit order/punctuation is per locale, never concatenated
+                    in JSX (blueprint §6). */}
                 <Text style={styles.detailValue}>
-                  {guestList.length} {t("invitees")}
+                  {t("invitees_count", {
+                    count: formatCount(guestList.length, currentLanguage || "ar"),
+                  })}
                 </Text>
               </DetailRow>
 
@@ -240,7 +272,9 @@ const EventSummary = () => {
 
               {!!address?.address && (
                 <DetailRow icon={<RowLocationIcon />}>
-                  <Text style={styles.detailValue}>{address.address}</Text>
+                  <AdaptiveText style={styles.detailValue}>
+                    {address.address}
+                  </AdaptiveText>
                 </DetailRow>
               )}
             </View>
@@ -260,7 +294,9 @@ const EventSummary = () => {
               <Ionicons name="checkmark" size={15} color="#FFF" />
             )}
           </View>
-          <Text style={styles.checkboxLabel}>{t("confirm_reviewed")}</Text>
+          <LocalizedText role="body" style={styles.checkboxLabel}>
+            {t("confirm_reviewed")}
+          </LocalizedText>
         </TouchableOpacity>
       </Animated.View>
     </ScrollView>

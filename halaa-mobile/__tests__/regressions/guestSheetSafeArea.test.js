@@ -14,7 +14,13 @@ test("SHEET-01: ListOfGuestsORModerators applies useSafeAreaInsets and replaces 
 
   assert.ok(content.includes("useSafeAreaInsets"), "ListOfGuestsORModerators must import/use useSafeAreaInsets");
   assert.ok(content.includes("insets?.bottom"), "ListOfGuestsORModerators must use insets.bottom on modalContainer");
-  assert.ok(content.includes('t("total_label"'), "ListOfGuestsORModerators must use t('total_label')");
+  // Total is one authored interpolation key per list type (count inside the
+  // translation string) after the direction remediation.
+  assert.ok(
+    content.includes('t("total_guests_count"') &&
+      content.includes('t("total_moderators_count"'),
+    "ListOfGuestsORModerators must use the total_*_count interpolation keys"
+  );
   assert.ok(content.includes('t("no_guests_yet"'), "ListOfGuestsORModerators must use t('no_guests_yet')");
   assert.ok(!content.includes('إجمالي: {list.length}'), "ListOfGuestsORModerators must not contain raw hardcoded header text");
 });

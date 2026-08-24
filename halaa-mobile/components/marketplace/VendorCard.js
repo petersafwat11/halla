@@ -9,11 +9,16 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
+import LocalizedText from "../commen/LocalizedText";
+import AdaptiveText from "../commen/AdaptiveText";
+import { countToken, priceToken } from "@halaa/shared/utils/displayTokens";
+import { formatNumber } from "@halaa/shared/utils/locale";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
 
 const MAX_VISIBLE_TAGS = 3;
 
 const VendorCard = ({ vendor, onPress, index = 0 }) => {
-  const { t } = useTranslation("marketplace");
+  const { t, currentLanguage } = useTranslation("marketplace");
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(12)).current;
   const [imageError, setImageError] = useState(false);
@@ -70,6 +75,7 @@ const VendorCard = ({ vendor, onPress, index = 0 }) => {
           />
         ) : (
           <View style={styles.imageFallback}>
+            {/* Brand initial is decorative artwork — physical by design. */}
             <Text style={styles.imageFallbackInitial}>{initial}</Text>
           </View>
         )}
@@ -92,23 +98,41 @@ const VendorCard = ({ vendor, onPress, index = 0 }) => {
 
       {/* ────── Content ────── */}
       <View style={styles.content}>
-        <TouchableOpacity onPress={handlePress}><Text style={styles.title} numberOfLines={1}>{vendor.brandName}</Text></TouchableOpacity>
+        <TouchableOpacity onPress={handlePress}>
+          {/* Brand name is backend content → adaptive first-strong direction. */}
+          <AdaptiveText numberOfLines={1} style={styles.title}>
+            {vendor.brandName}
+          </AdaptiveText>
+        </TouchableOpacity>
 
         {vendor.description ? (
-          <Text style={styles.description} numberOfLines={2}>{vendor.description}</Text>
+          <AdaptiveText numberOfLines={2} style={styles.description}>
+            {vendor.description}
+          </AdaptiveText>
         ) : null}
 
         <View style={styles.meta}>
           {hasRating ? (
             <View style={styles.rating}>
+              {/* Star glyph is semantic, never mirrored. The numeric rating
+                  is one LTR-isolated locale-formatted token. */}
               <Ionicons name="star" size={14} color="#F5B342" />
-              <Text style={styles.ratingValue}>{Number(vendor.rating).toFixed(1)}</Text>
+              <LocalizedText style={styles.ratingValue}>
+                {isolateLtr(
+                  formatNumber(vendor.rating, currentLanguage, {
+                    minimumFractionDigits: 1,
+                    maximumFractionDigits: 1,
+                  })
+                )}
+              </LocalizedText>
             </View>
           ) : null}
           {vendor.location ? (
             <View style={styles.locationRow}>
               <Ionicons name="location-outline" size={14} color="#C0A483" />
-              <Text style={styles.location} numberOfLines={1}>{vendor.location}</Text>
+              <AdaptiveText numberOfLines={1} style={styles.location}>
+                {vendor.location}
+              </AdaptiveText>
             </View>
           ) : null}
         </View>
@@ -117,12 +141,18 @@ const VendorCard = ({ vendor, onPress, index = 0 }) => {
           <View style={styles.tagsContainer}>
             {translatedTags.map((tag, idx) => (
               <View key={idx} style={styles.tag}>
-                <Text style={styles.tagText}>{tag}</Text>
+                <LocalizedText style={styles.tagText}>{tag}</LocalizedText>
               </View>
             ))}
             {extraTagsCount > 0 && (
               <View style={styles.tagMore}>
-                <Text style={styles.tagMoreText}>+{extraTagsCount}</Text>
+                <LocalizedText style={styles.tagMoreText}>
+                  {/* "+N" is ONE atomic LTR-isolated token (blueprint §6):
+                      the plus stays welded to the digits and cannot
+                      BiDi-detach or flip position inside Arabic copy —
+                      same contract as the plans add-ons quantity badge. */}
+                  {isolateLtr(`+${countToken(extraTagsCount, currentLanguage)}`)}
+                </LocalizedText>
               </View>
             )}
           </View>
@@ -130,13 +160,22 @@ const VendorCard = ({ vendor, onPress, index = 0 }) => {
 
         <View style={styles.footer}>
           {hasPrice ? (
-            <Text style={styles.price}>
-              {t("vendor.startsFrom")} {vendor.minPrice} {vendor.currency || t("vendor.sar")}
-            </Text>
+            <LocalizedText style={styles.price} numberOfLines={1}>
+              {/* Structured nested runs: localized label + ONE atomic
+                  isolated price token (number + currency cannot split or
+                  BiDi-reorder). No JSX string concatenation. */}
+              {t("vendor.startsFrom")}
+              {" "}
+              <Text style={styles.priceValue}>
+                {priceToken(vendor.minPrice, vendor.currency || t("vendor.sar"), {
+                  locale: currentLanguage,
+                })}
+              </Text>
+            </LocalizedText>
           ) : (
-            <Text style={styles.priceOnRequest}>
-              {t("vendor.priceOnRequest", "السعر عند الطلب")}
-            </Text>
+            <LocalizedText style={styles.priceOnRequest}>
+              {t("vendor.priceOnRequest")}
+            </LocalizedText>
           )}
 
           <TouchableOpacity
@@ -144,7 +183,9 @@ const VendorCard = ({ vendor, onPress, index = 0 }) => {
             onPress={handlePress}
             activeOpacity={0.85}
           >
-            <Text style={styles.callButtonText}>{t("vendor.viewProfile")}</Text>
+            <LocalizedText style={styles.callButtonText}>
+              {t("vendor.viewProfile")}
+            </LocalizedText>
           </TouchableOpacity>
         </View>
       </View>
@@ -197,6 +238,7 @@ const styles = StyleSheet.create({
   },
 
   /* ────── LOGO BADGE ────── */
+  // `start` keeps the medallion at the logical reading start in both locales.
   logoBadge: {
     position: "absolute",
     bottom: 12,
@@ -332,6 +374,11 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     flex: 1,
   },
+  priceValue: {
+    fontFamily: "Cairo_700Bold",
+    fontSize: 16,
+    color: "#1A1A1A",
+  },
   priceOnRequest: {
     fontFamily: "Cairo_600SemiBold",
     fontSize: 13,
@@ -345,6 +392,7 @@ const styles = StyleSheet.create({
     paddingVertical: 9,
     alignItems: "center",
     justifyContent: "center",
+    minHeight: 44,
     shadowColor: "#C28E5C",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,

@@ -1,9 +1,14 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
-import { formatNumber, formatPercent } from "@halaa/shared/utils/locale";
-import { isolateLtr, isolateRtl } from "@halaa/shared/utils/bidi";
+import LocalizedText from "../commen/LocalizedText";
+import {
+  formatNumber,
+  formatPercent,
+} from "@halaa/shared/utils/locale";
+import { countToken } from "@halaa/shared/utils/displayTokens";
+import { isolateRtl, isolateLtr } from "@halaa/shared/utils/bidi";
 import {
   COMPENSATION_PERCENTAGE,
   isPoolPlan,
@@ -23,6 +28,10 @@ import { colors } from "../../styles/tokens";
  *   inlineExtras — when true, fold duration + compensation into the bullet
  *                  list (with checkmark icons) instead of rendering them as
  *                  standalone rows. Matches the landing pricing card.
+ *
+ * Text contract: every visible line is app-authored copy that follows the UI
+ * locale (LocalizedText); interpolated numbers/percentages are formatted and
+ * BiDi-isolated tokens so parentheses/digits never reorder (blueprint §6).
  */
 const PlanDescription = ({
   plan,
@@ -65,7 +74,8 @@ const PlanDescription = ({
     if (billingType === "monthly") return t("duration.monthly");
     if (billingType === "quarterly") return t("duration.quarterly");
     if (billingType === "annual") return t("duration.annual");
-    if (durationDays) return t("duration.event", { days: durationDays });
+    if (durationDays)
+      return t("duration.event", { days: countToken(durationDays, activeLang) });
     return null;
   })();
 
@@ -80,7 +90,7 @@ const PlanDescription = ({
   const compensationLine =
     compensationCount > 0
       ? t("compensationRow", {
-          count: formatNumber(compensationCount, activeLang),
+          count: countToken(compensationCount, activeLang),
           percent: isolate(formatPercent(COMPENSATION_PERCENTAGE, activeLang)),
           base: isolate(formatNumber(compensationBase, activeLang)),
         })
@@ -97,15 +107,17 @@ const PlanDescription = ({
   return (
     <View style={styles.container}>
       {showTagline && tagline ? (
-        <Text style={styles.tagline}>{tagline}</Text>
+        <LocalizedText style={styles.tagline}>{tagline}</LocalizedText>
       ) : null}
 
       {showDuration && !inlineExtras && durationLine ? (
-        <Text style={styles.duration}>{durationLine}</Text>
+        <LocalizedText style={styles.duration}>{durationLine}</LocalizedText>
       ) : null}
 
       {includesBasic ? (
-        <Text style={styles.includesHeading}>{t("includes.basic")}</Text>
+        <LocalizedText style={styles.includesHeading}>
+          {t("includes.basic")}
+        </LocalizedText>
       ) : null}
 
       {mergedBullets.length > 0 ? (
@@ -117,7 +129,7 @@ const PlanDescription = ({
                 size={16}
                 color="#2A8C5B"
               />
-              <Text style={styles.bulletText}>{line}</Text>
+              <LocalizedText style={styles.bulletText}>{line}</LocalizedText>
             </View>
           ))}
         </View>
@@ -128,38 +140,42 @@ const PlanDescription = ({
           {compensationCount > 0 ? (
             <View style={styles.metaRow}>
               <Ionicons name="gift-outline" size={16} color="#C28E5C" />
-              <Text style={styles.metaText}>{compensationLine}</Text>
+              <LocalizedText style={styles.metaText}>
+                {compensationLine}
+              </LocalizedText>
             </View>
           ) : null}
 
           {setupFee > 0 ? (
             <View style={styles.metaRow}>
               <Ionicons name="briefcase-outline" size={16} color="#C28E5C" />
-              <Text style={styles.metaText}>
+              <LocalizedText style={styles.metaText}>
                 {t("setupFeeRow", {
-                  amount: formatNumber(setupFee, activeLang),
+                  amount: countToken(setupFee, activeLang),
                 })}
-              </Text>
+              </LocalizedText>
             </View>
           ) : null}
 
           {isPool && invitePool > 0 ? (
             <View style={styles.metaRow}>
               <Ionicons name="mail-outline" size={16} color="#C28E5C" />
-              <Text style={styles.metaText}>
+              <LocalizedText style={styles.metaText}>
                 {t("freeInvitesRow", {
-                  count: formatNumber(invitePool, activeLang),
+                  count: countToken(invitePool, activeLang),
                 })}
-              </Text>
+              </LocalizedText>
             </View>
           ) : null}
 
           {whatsappCount > 0 ? (
             <View style={styles.metaRow}>
               <Ionicons name="logo-whatsapp" size={16} color="#2A8C5B" />
-              <Text style={styles.metaText}>
-                {t("whatsappTemplates", { count: whatsappCount })}
-              </Text>
+              <LocalizedText style={styles.metaText}>
+                {t("whatsappTemplates", {
+                  count: countToken(whatsappCount, activeLang),
+                })}
+              </LocalizedText>
             </View>
           ) : null}
         </View>

@@ -10,8 +10,11 @@ import {
  *
  * Form-bound fields should normally use TextInput/TextAreaInput/etc. This
  * lower-level primitive exists for controlled search boxes, modal fields and
- * other inputs that cannot use react-hook-form. Direction can be explicit, or
- * is inferred for common intrinsically-LTR keyboard/token classes.
+ * other inputs that cannot use react-hook-form. Direction can be explicit,
+ * or is inferred for common intrinsically-LTR keyboard/token classes. Pass
+ * contentDirection="adaptive" for arbitrary user text (names, titles,
+ * categories, addresses, search): the empty placeholder follows the UI locale
+ * while a filled value follows its first strong character.
  */
 const inferContentDirection = ({
   contentDirection,
@@ -58,8 +61,11 @@ const DirectionalTextInput = React.forwardRef(
       secureTextEntry,
       autoCapitalize,
     });
+    const currentValue = String(value ?? defaultValue ?? "");
     const fieldDirection = useFieldDirection(resolvedDirection, {
-      hasValue: String(value ?? defaultValue ?? "").length > 0,
+      hasValue: currentValue.length > 0,
+      // Adaptive mode resolves the first-strong direction from the raw value.
+      value: value ?? defaultValue,
     });
 
     return (

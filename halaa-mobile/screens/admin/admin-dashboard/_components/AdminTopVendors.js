@@ -1,9 +1,14 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import AdaptiveText from "../../../components/commen/AdaptiveText";
+import LocalizedText from "../../../components/commen/LocalizedText";
+import { formatCount, localizeDigits } from "@halaa/shared/utils/locale";
+import { useTranslation } from "../../../../localization";
 import { colors, spacing, borderRadius, typography, textStyles, backgrounds } from "../../../../styles/tokens";
 
 const AdminTopVendors = ({ vendors, t, onViewAll }) => {
+  const { currentLanguage } = useTranslation("admin");
   if (!vendors.length) return null;
 
   return (
@@ -11,11 +16,11 @@ const AdminTopVendors = ({ vendors, t, onViewAll }) => {
       <View style={styles.sectionHeader}>
         <View style={styles.sectionHeaderLeft}>
           <Ionicons name="storefront-outline" size={18} color={colors.primary[500]} />
-          <Text style={styles.sectionTitle}>{t("dashboard.topVendors.title")}</Text>
+          <LocalizedText style={styles.sectionTitle}>{t("dashboard.topVendors.title")}</LocalizedText>
         </View>
         {onViewAll && (
           <TouchableOpacity onPress={onViewAll}>
-            <Text style={styles.viewAllText}>{t("common.viewAll")}</Text>
+            <LocalizedText style={styles.viewAllText}>{t("common.viewAll")}</LocalizedText>
           </TouchableOpacity>
         )}
       </View>
@@ -23,12 +28,16 @@ const AdminTopVendors = ({ vendors, t, onViewAll }) => {
         <React.Fragment key={vendor.name ?? idx}>
           {idx > 0 && <View style={styles.divider} />}
           <View style={styles.listRow}>
-            <Text style={styles.rankNumber}>{idx + 1}</Text>
-            <Text style={styles.vendorName} numberOfLines={1}>{vendor.name}</Text>
-            <Text style={styles.clicksCount}>
-              {vendor.numberOfClicks}{" "}
-              <Text style={styles.clicksLabel}>{t("dashboard.topVendors.clicks")}</Text>
-            </Text>
+            <Text style={styles.rankNumber}>{localizeDigits(idx + 1, currentLanguage)}</Text>
+            {/* Vendor/store names are backend content — first-strong. */}
+            <AdaptiveText style={styles.vendorName} numberOfLines={1}>
+              {vendor.name}
+            </AdaptiveText>
+            <LocalizedText style={styles.clicksCount}>
+              {t("dashboard.topVendors.clicksCount", {
+                count: formatCount(vendor.numberOfClicks ?? 0, currentLanguage),
+              })}
+            </LocalizedText>
           </View>
         </React.Fragment>
       ))}
@@ -91,11 +100,6 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.label.large,
     fontWeight: typography.fontWeight.semibold,
     color: colors.natural[500],
-  },
-  clicksLabel: {
-    fontSize: typography.fontSize.label.small,
-    fontWeight: typography.fontWeight.regular,
-    color: colors.natural[400],
   },
 });
 

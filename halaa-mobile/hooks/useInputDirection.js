@@ -1,11 +1,15 @@
 import { useTranslation } from "../localization";
 
 /**
- * Shared direction-aware input contract (remediation plan §3A).
+ * Shared direction-aware input contract (remediation plan §3A / blueprint §5).
  *
  * Content-direction policies for native text inputs:
  *  - "localized" (default): placeholder and value follow the current locale
- *    (RTL in Arabic, LTR in English). Used for prose/search/name fields.
+ *    (RTL in Arabic, LTR in English). Used for app-authored localized copy.
+ *  - "adaptive": arbitrary user/backend content — placeholder follows the
+ *    locale while empty; a filled value follows its first strong Arabic or
+ *    Latin character (fallback: app locale). Person/business names, event
+ *    titles, addresses, search queries, free descriptions.
  *  - "ltr": intrinsically LTR content — email, URL, IDs, card data, OTP,
  *    raw time/amount, stored canonical strings.
  *  - "rtl": explicitly Arabic-only content.
@@ -19,21 +23,52 @@ import { useTranslation } from "../localization";
 
 export const CONTENT_DIRECTIONS = {
   LOCALIZED: "localized",
+  ADAPTIVE: "adaptive",
   LTR: "ltr",
   RTL: "rtl",
   PHONE: "phone",
 };
 
 /**
+ * Unicode ranges that count as "strong" for first-strong detection.
+ * Arabic script blocks plus Latin basic/extended; everything else — digits,
+ * punctuation, symbols, emoji, whitespace — is neutral and skipped.
+ */
+const STRONG_RTL_PATTERN = new RegExp(
+  "[\\u0600-\\u06FF\\u0750-\\u077F\\u08A0-\\u08FF\\uFB50-\\uFDFF\\uFE70-\\uFEFF]"
+);
+const STRONG_LTR_PATTERN = new RegExp("[A-Za-z\\u00C0-\\u024F\\u1E00-\\u1EFF]");
+
+/**
+ * Pure first-strong resolver (blueprint §5.1) — kept local and dependency-free
+ * so it stays importable under plain Node (see the input-direction test
+ * harness). Scans for the first strong Arabic or Latin character, ignoring
+ * whitespace, digits, punctuation, emoji and symbols. Falls back to the
+ * selected locale (`fallbackIsRTL`) when there is no strong character at all.
+ *
+ * @param {string} [value]
+ * @param {boolean} [fallbackIsRTL]
+ * @returns {"ltr" | "rtl"}
+ */
+export const resolveStrongDirection = (value, fallbackIsRTL = false) => {
+  const source = String(value ?? "");
+  for (const character of source) {
+    if (STRONG_RTL_PATTERN.test(character)) return "rtl";
+    if (STRONG_LTR_PATTERN.test(character)) return "ltr";
+  }
+  return fallbackIsRTL ? "rtl" : "ltr";
+};
+
+/**
  * Pure resolver — node-testable, no React/RN imports.
  *
  * @param {string} contentDirection - one of CONTENT_DIRECTIONS (default "localized")
- * @param {{ isRTL?: boolean, hasValue?: boolean }} [state]
+ * @param {{ isRTL?: boolean, hasValue?: boolean, value?: string }} [state]
  * @returns {{ textAlign: "auto", writingDirection: "ltr" | "rtl" }}
  */
 export const resolveInputDirection = (
   contentDirection = CONTENT_DIRECTIONS.LOCALIZED,
-  { isRTL = false, hasValue = false } = {}
+  { isRTL = false, hasValue = false, value = "" } = {}
 ) => {
   let writingDirection;
 
@@ -43,6 +78,16 @@ export const resolveInputDirection = (
       break;
     case CONTENT_DIRECTIONS.RTL:
       writingDirection = "rtl";
+      break;
+    case CONTENT_DIRECTIONS.ADAPTIVE:
+      // Empty → placeholder follows the UI locale; filled → the value's first
+      // strong character, falling back to the UI locale when neutral-only.
+      writingDirection =
+        hasValue || value
+          ? resolveStrongDirection(value, isRTL)
+          : isRTL
+            ? "rtl"
+            : "ltr";
       break;
     case CONTENT_DIRECTIONS.PHONE:
       // Localized placeholder while empty; stable LTR digits once typing.
@@ -61,14 +106,14 @@ export const resolveInputDirection = (
  * React hook flavour — resolves the direction style for the active locale.
  *
  * @param {string} contentDirection - one of CONTENT_DIRECTIONS
- * @param {{ hasValue?: boolean }} [state]
+ * @param {{ hasValue?: boolean, value?: string }} [state]
  */
 export const useInputDirection = (
   contentDirection = CONTENT_DIRECTIONS.LOCALIZED,
-  { hasValue = false } = {}
+  { hasValue = false, value = "" } = {}
 ) => {
   const { isRTL } = useTranslation();
-  return resolveInputDirection(contentDirection, { isRTL, hasValue });
+  return resolveInputDirection(contentDirection, { isRTL, hasValue, value });
 };
 
 /**
@@ -79,6 +124,9 @@ export const useInputDirection = (
  * end. Therefore localized UI chrome must use `left` in both locales. Returning
  * `right` for Arabic double-mirrors it to the left on Android, which is the
  * regression that made Step 1 disagree with the untouched Step 2 fields.
+ *
+ * Labels/helpers/errors ALWAYS follow the UI locale — they never inherit the
+ * direction of an adaptive/LTR/phone value (blueprint §5.1).
  *
  * @param {string} contentDirection - one of CONTENT_DIRECTIONS (default "localized")
  * @param {{ isRTL?: boolean }} [state]
@@ -103,6 +151,7 @@ export const resolveLabelDirection = (
     case CONTENT_DIRECTIONS.LOCALIZED:
     case CONTENT_DIRECTIONS.PHONE:
     default:
+      // ADAPTIVE intentionally resolves here too: field chrome stays localized.
       writingDirection = isRTL ? "rtl" : "ltr";
       textAlign = "left";
       break;
@@ -134,9 +183,9 @@ export const useLabelDirection = (
  */
 export const resolveFieldDirection = (
   contentDirection = CONTENT_DIRECTIONS.LOCALIZED,
-  { isRTL = false, hasValue = false } = {}
+  { isRTL = false, hasValue = false, value = "" } = {}
 ) => ({
-  input: resolveInputDirection(contentDirection, { isRTL, hasValue }),
+  input: resolveInputDirection(contentDirection, { isRTL, hasValue, value }),
   // UI chrome always follows the selected locale even when the value itself
   // is an LTR token such as an email, phone number or password.
   text: resolveLabelDirection(CONTENT_DIRECTIONS.LOCALIZED, { isRTL }),
@@ -149,9 +198,8 @@ export const resolveFieldDirection = (
 
 export const useFieldDirection = (
   contentDirection = CONTENT_DIRECTIONS.LOCALIZED,
-  { hasValue = false } = {}
+  { hasValue = false, value = "" } = {}
 ) => {
   const { isRTL } = useTranslation();
-  return resolveFieldDirection(contentDirection, { isRTL, hasValue });
+  return resolveFieldDirection(contentDirection, { isRTL, hasValue, value });
 };
-

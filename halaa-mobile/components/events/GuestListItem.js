@@ -4,13 +4,23 @@ import { Ionicons } from "@expo/vector-icons";
 import { isolateLtr } from "@halaa/shared/utils/bidi";
 import { getStatusVisual } from "../../constants/statusColors";
 import { useTranslation } from "../../localization";
+import AdaptiveText from "../commen/AdaptiveText";
 
 const OBJECT_ID_PATTERN = /^[a-f\d]{24}$/i;
 
-const DetailRow = ({ label, value }) => (
+/**
+ * Label follows the UI locale; `adaptive` marks values that are arbitrary
+ * backend/user content (names, usernames) rendered with first-strong
+ * direction instead of inheriting the page locale.
+ */
+const DetailRow = ({ label, value, adaptive = false }) => (
   <View style={styles.detailRow}>
     <Text style={styles.detailLabel}>{label}</Text>
-    <Text style={styles.detailValue}>{value}</Text>
+    {adaptive ? (
+      <AdaptiveText style={styles.detailValue}>{value}</AdaptiveText>
+    ) : (
+      <Text style={styles.detailValue}>{value}</Text>
+    )}
   </View>
 );
 
@@ -82,7 +92,7 @@ const GuestListItem = ({
     : t("guestTableExtras.notAvailable", "—");
   const autoReminderValue = invitation.autoReminderSent
     ? guest.autoReminderDate
-      ? `${t("guestTableExtras.sent", "Sent")} · ${guest.autoReminderDate}`
+      ? t("guestTableExtras.sentOn", { date: guest.autoReminderDate })
       : t("guestTableExtras.sent", "Sent")
     : t("guestTableExtras.notSent", "Not sent");
   const responseTimeValue =
@@ -91,11 +101,16 @@ const GuestListItem = ({
   const handleRotateQr = () => {
     if (!onRotateQr) return;
     Alert.alert(
-      "تحديث رمز الدخول",
-      `سيتم إنشاء رمز QR جديد لـ ${guest.name || "الضيف"}. الرمز القديم سيتوقف عن العمل فوراً.`,
+      t("guestList.rotateQrTitle"),
+      t("guestList.rotateQrBody", { name: guest.name || t("guestList.guestFallback"),
+      }),
       [
-        { text: "إلغاء", style: "cancel" },
-        { text: "تحديث", style: "destructive", onPress: () => onRotateQr(guest) },
+        { text: t("guest.alerts.cancel"), style: "cancel" },
+        {
+          text: t("guestList.rotateQrAction"),
+          style: "destructive",
+          onPress: () => onRotateQr(guest),
+        },
       ]
     );
   };
@@ -103,12 +118,14 @@ const GuestListItem = ({
   const handleRevokeAccess = () => {
     if (!onRevokeAccess) return;
     Alert.alert(
-      "إلغاء صلاحية الوصول لمحتوى ما بعد المناسبة",
-      `سيتم إلغاء صلاحية ${guest.name || "الضيف"} لعرض الصور والتعليقات بعد المناسبة. لإعادة منح صلاحية الدخول، استخدم "تحديث رمز الدخول" بدلاً من ذلك.`,
+      t("guestList.revokeAccessTitle"),
+      t("guestList.revokeAccessBody", {
+        name: guest.name || t("guestList.guestFallback"),
+      }),
       [
-        { text: "إلغاء", style: "cancel" },
+        { text: t("guest.alerts.cancel"), style: "cancel" },
         {
-          text: "إلغاء الصلاحية",
+          text: t("guestList.revokeAccessAction"),
           style: "destructive",
           onPress: () => onRevokeAccess(guest),
         },
@@ -118,15 +135,38 @@ const GuestListItem = ({
 
   const handleLongPress = () => {
     const options = [];
-    if (onEdit) options.push({ text: "تعديل بيانات الضيف", onPress: () => onEdit(guest) });
-    if (onRotateQr) options.push({ text: "تحديث رمز QR", style: "destructive", onPress: handleRotateQr });
-    if (onRevokeAccess) options.push({ text: "إلغاء صلاحية محتوى ما بعد المناسبة", style: "destructive", onPress: handleRevokeAccess });
-    if (onDelete) options.push({ text: "حذف الضيف", style: "destructive", onPress: () => onDelete(guest) });
+    if (onEdit)
+      options.push({
+        text: t("guestList.editGuestAction"),
+        onPress: () => onEdit(guest),
+      });
+    if (onRotateQr)
+      options.push({
+        text: t("guestList.rotateQrShort"),
+        style: "destructive",
+        onPress: handleRotateQr,
+      });
+    if (onRevokeAccess)
+      options.push({
+        text: t("guestList.revokeContentAccess"),
+        style: "destructive",
+        onPress: handleRevokeAccess,
+      });
+    if (onDelete)
+      options.push({
+        text: t("guestList.deleteGuestAction"),
+        style: "destructive",
+        onPress: () => onDelete(guest),
+      });
     if (options.length === 0) return;
-    Alert.alert(guest?.name || "الضيف", "اختر إجراء", [
-      ...options,
-      { text: "إغلاق", style: "cancel" },
-    ]);
+    Alert.alert(
+      guest?.name || t("guestList.guestFallback"),
+      t("guestList.chooseAction"),
+      [
+        ...options,
+        { text: t("guestList.close"), style: "cancel" },
+      ]
+    );
   };
 
   return (
@@ -141,14 +181,21 @@ const GuestListItem = ({
       <View style={styles.header}>
         <View style={styles.guestInfo}>
           <View style={styles.nameRow}>
-            <Text style={styles.name}>{guest.name || "ضيف"}</Text>
+            {/* Guest names are arbitrary user content — first-strong direction. */}
+            <AdaptiveText style={styles.name} numberOfLines={1}>
+              {guest.name || t("guestList.guestFallback")}
+            </AdaptiveText>
             {guest?.accessRevoked ? (
               <View style={[styles.guestBadge, styles.guestBadgeMuted]}>
-                <Text style={styles.guestBadgeText}>صلاحية مُلغاة</Text>
+                <Text style={styles.guestBadgeText}>
+                  {t("guestList.accessRevokedBadge")}
+                </Text>
               </View>
             ) : guest?.qrRotated ? (
               <View style={[styles.guestBadge, styles.guestBadgeHighlight]}>
-                <Text style={styles.guestBadgeText}>QR محدّث</Text>
+                <Text style={styles.guestBadgeText}>
+                  {t("guestList.qrUpdatedBadge")}
+                </Text>
               </View>
             ) : null}
           </View>
@@ -208,6 +255,7 @@ const GuestListItem = ({
         <DetailRow
           label={t("guestTableExtras.addedBy", "Added by")}
           value={addedByValue}
+          adaptive
         />
         <DetailRow
           label={t("guestTableExtras.sentVia", "Sent via")}

@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const { EVENT_CATEGORY_VALUES } = require("../src/shared/constants");
 const { EVENT_STATUS, SUPERVISOR_STATUS, INVITATION_TYPE } = require("../src/shared/constants");
 const { isPerEventPlan } = require("../src/shared/constants/plans");
+const { mongoosePhoneValidator } = require("../src/shared/utils/phone");
 
 // Statuses that FREE the per-event single-active-event slot (the event no
 // longer counts as "active" for re-creation purposes).
@@ -23,7 +24,10 @@ const staffSchema = new mongoose.Schema(
       type: String,
       required: [true, "Supervisor phone number is required"],
       trim: true,
-      length: [9, "Phone number must be 9 digits"],
+      validate: {
+        validator: mongoosePhoneValidator,
+        message: "Invalid supervisor phone number format",
+      },
     },
     status: {
       type: String,

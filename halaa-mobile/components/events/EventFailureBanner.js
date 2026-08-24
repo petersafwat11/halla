@@ -12,6 +12,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Alert, Animated, Easing } fro
 import { Ionicons } from '@expo/vector-icons';
 import WhatsAppContactButton from '../shared/WhatsAppContactButton';
 import { EVENT_STATUS } from '@halaa/shared/constants/eventStatus';
+import { isolateAuto, isolateLtr } from '@halaa/shared/utils/bidi';
 import { useTranslation } from '../../localization/hooks/useTranslation';
 
 const MAX_VISIBLE_ATTEMPTS = 5;
@@ -131,7 +132,9 @@ export default function EventFailureBanner({ event, currentUser, onRetry }) {
           <View style={styles.countdownPill}>
             <View style={styles.countdownDot} />
             <Text style={styles.countdownText}>
-              {t('failureBanner.retrying.nextAttempt', { countdown: countdownStr })}
+              {t('failureBanner.retrying.nextAttempt', {
+                countdown: isolateLtr(countdownStr),
+              })}
             </Text>
           </View>
         ) : null}
@@ -162,16 +165,28 @@ export default function EventFailureBanner({ event, currentUser, onRetry }) {
       const msg =
         err?.response?.data?.message ||
         err?.message ||
-        'تعذّر إطلاق المناسبة. حاول مرة أخرى.';
-      setError(msg);
+        t('failureBanner.failed.retryError');
+      // Backend failure text is arbitrary content — first-strong isolate so
+      // it cannot reorder the localized banner copy around it.
+      setError(msg ? isolateAuto(String(msg)) : msg);
     } finally {
       setRetrying(false);
     }
   };
 
-  const contextMessage =
-    `أحتاج للمساعدة في مناسبتي "${eventTitle}" (Event ID: ${eventId})` +
-    (failureReason ? ` — السبب: ${failureReason}` : '');
+  // Support message is one authored translation string; embedded backend
+  // tokens (title, event ID, reason) are pre-isolated BiDi runs so the
+  // parentheses/quotes cannot spill across scripts (blueprint §6).
+  const supportContext = t(
+    failureReason
+      ? 'failureBanner.failed.supportContextWithReason'
+      : 'failureBanner.failed.supportContext',
+    {
+      title: isolateAuto(eventTitle),
+      eventId: isolateLtr(eventId ?? ''),
+      reason: isolateAuto(failureReason || ''),
+    }
+  );
 
   return (
     <View style={[styles.banner, styles.failed]}>
@@ -190,7 +205,10 @@ export default function EventFailureBanner({ event, currentUser, onRetry }) {
       {failureReason ? (
         <View style={styles.reason}>
           <Text style={styles.reasonText}>
-            {t('failureBanner.failed.reason')}{failureReason}
+            {t('failureBanner.failed.reason')}
+            {/* Backend reason is arbitrary content — first-strong isolate so
+                it cannot reorder the localized "Reason: " prefix. */}
+            {isolateAuto(failureReason)}
           </Text>
         </View>
       ) : null}
@@ -211,7 +229,7 @@ export default function EventFailureBanner({ event, currentUser, onRetry }) {
             </Text>
           </TouchableOpacity>
         ) : null}
-        <WhatsAppContactButton contextMessage={contextMessage} />
+        <WhatsAppContactButton contextMessage={supportContext} />
       </View>
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -238,10 +256,9 @@ const styles = StyleSheet.create({
   topStripe: {
     position: 'absolute',
     top: 0,
-    insetInlineStart: 0,
-    insetInlineEnd: 0,
-    left: 0,
-    right: 0,
+    // Logical start/end anchors — full-width stripe in both directions.
+    start: 0,
+    end: 0,
     height: 4,
     backgroundColor: '#dc9b33',
   },

@@ -17,7 +17,6 @@ import EventListItem from "./EventListItem";
 import { useExportEvents } from "../../hooks/events/mutations/useEventMutation";
 import { saveBlobAndShare } from "../../utils/download";
 import { useTranslation } from "../../localization";
-import { useInputDirection } from "../../hooks/useInputDirection";
 
 // Same SVG icons as home StatsCards
 const PeopleIcon = ({ color }) => (
@@ -81,8 +80,6 @@ const EventList = ({
   const [statusFilter, setStatusFilter] = useState("all");
   const [exporting, setExporting] = useState(false);
   const exportEventsMutation = useExportEvents();
-  // Explicit localized direction for the iOS search placeholder.
-  const searchDirectionStyle = useInputDirection("localized");
 
   const handleExport = async () => {
     if (exporting) return;
@@ -202,7 +199,8 @@ const EventList = ({
         <View style={styles.searchContainer}>
           <Ionicons name="search" size={16} color="#9CA3AF" />
           <TextInput
-            style={[styles.searchInput, searchDirectionStyle]}
+            contentDirection="adaptive"
+            style={styles.searchInput}
             placeholder={t("list.searchPlaceholder", { defaultValue: "ابحث عن مناسبة..." })}
             placeholderTextColor="#9CA3AF"
             value={searchQuery}

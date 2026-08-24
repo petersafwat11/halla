@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   View,
-  Text,
   StyleSheet,
   Modal,
   ScrollView,
@@ -12,6 +11,9 @@ import TextInput from "../../commen/DirectionalTextInput";
 import PropTypes from "prop-types";
 import { ActionButton } from "../common";
 import ModeratorList from "./ModeratorList";
+import LocalizedText from "../../commen/LocalizedText";
+import { CONTENT_DIRECTIONS } from "../../../hooks/useInputDirection";
+import { isolateAuto, isolateLtr } from "@halaa/shared/utils/bidi";
 import {
   colors,
   spacing,
@@ -25,6 +27,12 @@ import { useTranslation } from "../../../localization";
 /**
  * Modal for assigning a ticket. Fetches assignees (admins + moderators with
  * `manage_tickets`) via useTicketAssignees and submits via useAssignTicket.
+ *
+ * Field contract (blueprint §5): the optional note is arbitrary user content
+ * → `adaptive`. Labels/helpers stay app copy through the localized role and
+ * never follow the note's direction. The `#id` header token is intrinsically
+ * LTR and the subject is adaptive content — both isolated inside the
+ * interpolated translation string.
  */
 const AssignTicketModal = ({ visible, onClose, ticket, onSave }) => {
   const { t } = useTranslation("admin");
@@ -98,10 +106,13 @@ const AssignTicketModal = ({ visible, onClose, ticket, onSave }) => {
         <View style={styles.modalContent}>
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>{t("tickets.assign.title")}</Text>
-            <Text style={styles.subtitle}>
-              Ticket #{ticket?.id || ticket?._id} - {ticket?.subject}
-            </Text>
+            <LocalizedText style={styles.title}>{t("tickets.assign.title")}</LocalizedText>
+            <LocalizedText style={styles.subtitle}>
+              {t("tickets.assign.subtitle", {
+                ticketId: isolateLtr(`#${ticket?.id || ticket?._id || "—"}`),
+                subject: isolateAuto(ticket?.subject || t("tickets.noSubject")),
+              })}
+            </LocalizedText>
           </View>
 
           {/* Content */}
@@ -112,13 +123,13 @@ const AssignTicketModal = ({ visible, onClose, ticket, onSave }) => {
             {fetchingModerators ? (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color={colors.primary[500]} />
-                <Text style={styles.loadingText}>{t("common.loading")}</Text>
+                <LocalizedText style={styles.loadingText}>{t("common.loading")}</LocalizedText>
               </View>
             ) : (
               <>
                 {/* Moderator Selection - Radio list */}
                 <View style={styles.fieldContainer}>
-                  <Text style={styles.label}>{t("tickets.assign.selectModerator")} *</Text>
+                  <LocalizedText style={styles.label}>{t("tickets.assign.selectModeratorLabel")}</LocalizedText>
                   <ModeratorList
                     moderators={moderators}
                     selectedModeratorId={selectedModeratorId}
@@ -128,9 +139,10 @@ const AssignTicketModal = ({ visible, onClose, ticket, onSave }) => {
 
                 {/* Optional Note */}
                 <View style={styles.fieldContainer}>
-                  <Text style={styles.label}>{t("tickets.assign.notes")}</Text>
+                  <LocalizedText style={styles.label}>{t("tickets.assign.notes")}</LocalizedText>
                   <View style={styles.textAreaContainer}>
                     <TextInput
+                      contentDirection={CONTENT_DIRECTIONS.ADAPTIVE}
                       style={styles.textArea}
                       onChangeText={setNote}
                       value={note}
@@ -142,9 +154,9 @@ const AssignTicketModal = ({ visible, onClose, ticket, onSave }) => {
                       textAlignVertical="top"
                     />
                   </View>
-                  <Text style={styles.helperText}>
+                  <LocalizedText style={styles.helperText}>
                     {t("tickets.assign.notesHelper")}
-                  </Text>
+                  </LocalizedText>
                 </View>
               </>
             )}

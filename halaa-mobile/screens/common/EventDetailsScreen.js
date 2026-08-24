@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
-import TextInput from "../../components/commen/DirectionalTextInput";
+import DirectionalTextInput from "../../components/commen/DirectionalTextInput";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
@@ -56,7 +56,6 @@ import {
 } from "../../utils/adminPermissions";
 import { saveBlobAndShare } from "../../utils/download";
 import { getStatusVisual } from "../../constants/statusColors";
-import { useInputDirection } from "../../hooks/useInputDirection";
 
 import TopBar from "../../components/plans/TopBar";
 import {
@@ -73,6 +72,7 @@ import EventFailureBanner from "../../components/events/EventFailureBanner";
 import AutoReminderInfoText from "../../components/admin-dashboard/events/AutoReminderInfoText";
 import SendActionsSheet from "../../components/events/SendActionsSheet";
 import SendActionModal from "../../components/events/SendActionModal";
+import AdaptiveText from "../../components/commen/AdaptiveText";
 import { hasSendStarted, isTerminalEvent } from "../../components/events/sendAudiences";
 
 import {
@@ -202,11 +202,6 @@ const EventDetailsScreen = () => {
   const scrollViewRef = useRef(null);
   const tabsRef = useRef(null);
   const tabsYRef = useRef(null);
-  // Explicit localized direction for the iOS search placeholder.
-  const searchDirectionStyle = useInputDirection("localized");
-  // Intrinsically LTR values (email/phone) are isolated inside Arabic copy.
-  const isolateIfRtl = (value) =>
-    currentLanguage === "ar" ? isolateLtr(value) : value;
 
   const stats = useMemo(
     () => ({
@@ -278,19 +273,19 @@ const EventDetailsScreen = () => {
   const handleDeleteGuest = (guest) => {
     const guestId = guest._id || guest.guestId || guest.id;
     Alert.alert(
-      t("guest.alerts.deleteConfirmTitle", "تأكيد الحذف"),
-      t("guest.alerts.deleteConfirmBody", "هل أنت متأكد من حذف هذا الضيف؟"),
+      t("guest.alerts.deleteConfirmTitle"),
+      t("guest.alerts.deleteConfirmBody"),
       [
-        { text: t("guest.alerts.cancel", "إلغاء"), style: "cancel" },
+        { text: t("guest.alerts.cancel"), style: "cancel" },
         {
-          text: t("guest.alerts.delete", "حذف"),
+          text: t("guest.alerts.delete"),
           style: "destructive",
           onPress: async () => {
             try {
               await deleteGuestMutation.mutateAsync({ eventId, guestId });
-              toast.success(t("guest.alerts.deleteSuccess", "تم حذف الضيف بنجاح"));
+              toast.success(t("guest.alerts.deleteSuccess"));
             } catch (e) {
-              toast.error(e?.message || t("guest.alerts.deleteError", "حدث خطأ أثناء الحذف"));
+              toast.error(e?.message || t("guest.alerts.deleteError"));
             }
           },
         },
@@ -302,9 +297,9 @@ const EventDetailsScreen = () => {
     const guestId = guest._id || guest.guestId || guest.id;
     try {
       await rotateGuestQrMutation.mutateAsync({ eventId, guestId });
-      toast.success(t("guest.alerts.qrUpdated", "تم تحديث رمز الدخول."));
+      toast.success(t("guest.alerts.qrUpdated"));
     } catch (e) {
-      toast.error(e?.message || t("guest.alerts.qrRotateError", "تعذر تحديث رمز QR"));
+      toast.error(e?.message || t("guest.alerts.qrRotateError"));
     }
   };
 
@@ -313,10 +308,10 @@ const EventDetailsScreen = () => {
     try {
       await revokeGuestAccessMutation.mutateAsync({ eventId, guestId });
       toast.success(
-        t("guest.alerts.accessRevokedSuccess", "تم إلغاء صلاحية الضيف لمحتوى ما بعد المناسبة.")
+        t("guest.alerts.accessRevokedSuccess")
       );
     } catch (e) {
-      toast.error(e?.message || t("guest.alerts.accessRevokeError", "تعذر إلغاء الصلاحية"));
+      toast.error(e?.message || t("guest.alerts.accessRevokeError"));
     }
   };
 
@@ -329,10 +324,10 @@ const EventDetailsScreen = () => {
             guestId: popup.initialData._id,
             data: { name, phone },
           });
-          toast.success(t("guest.alerts.updateSuccess", "تم تعديل الضيف بنجاح"));
+          toast.success(t("guest.alerts.updateSuccess"));
         } else {
           await addGuestMutation.mutateAsync({ eventId, data: { name, phone } });
-          toast.success(t("guest.alerts.addSuccess", "تم إضافة الضيف بنجاح"));
+          toast.success(t("guest.alerts.addSuccess"));
         }
       } else {
         if (popup.initialData?._id) {
@@ -341,15 +336,15 @@ const EventDetailsScreen = () => {
             staffId: popup.initialData._id,
             data: { name, phone },
           });
-          toast.success(t("guest.alerts.staffUpdateSuccess", "تم تعديل المشرف بنجاح"));
+          toast.success(t("guest.alerts.staffUpdateSuccess"));
         } else {
           await addStaffMutation.mutateAsync({ eventId, data: { name, phone } });
-          toast.success(t("guest.alerts.staffAddSuccess", "تم إضافة المشرف بنجاح"));
+          toast.success(t("guest.alerts.staffAddSuccess"));
         }
       }
       setPopup({ open: false, type: popup.type, initialData: null });
     } catch (e) {
-      toast.error(e?.message || t("guest.alerts.saveError", "حدث خطأ أثناء الحفظ"));
+      toast.error(e?.message || t("guest.alerts.saveError"));
     }
   };
 
@@ -369,19 +364,19 @@ const EventDetailsScreen = () => {
   const handleDeleteModerator = (m) => {
     const staffId = m._id || m.id;
     Alert.alert(
-      t("guest.alerts.deleteConfirmTitle", "تأكيد الحذف"),
-      t("guest.alerts.staffDeleteConfirmBody", "هل أنت متأكد من حذف هذا المشرف؟"),
+      t("guest.alerts.deleteConfirmTitle"),
+      t("guest.alerts.staffDeleteConfirmBody"),
       [
-        { text: t("guest.alerts.cancel", "إلغاء"), style: "cancel" },
+        { text: t("guest.alerts.cancel"), style: "cancel" },
         {
-          text: t("guest.alerts.delete", "حذف"),
+          text: t("guest.alerts.delete"),
           style: "destructive",
           onPress: async () => {
             try {
               await deleteStaffMutation.mutateAsync({ eventId, staffId });
-              toast.success(t("guest.alerts.staffDeleteSuccess", "تم حذف المشرف بنجاح"));
+              toast.success(t("guest.alerts.staffDeleteSuccess"));
             } catch (e) {
-              toast.error(e?.message || t("guest.alerts.staffDeleteError", "حدث خطأ أثناء حذف المشرف"));
+              toast.error(e?.message || t("guest.alerts.staffDeleteError"));
             }
           },
         },
@@ -393,9 +388,9 @@ const EventDetailsScreen = () => {
     const staffId = m._id || m.id;
     try {
       await revokeStaffMutation.mutateAsync({ eventId, staffId });
-      toast.success(t("guest.alerts.staffRevokeSuccess", "تم إلغاء صلاحية وصول المشرف."));
+      toast.success(t("guest.alerts.staffRevokeSuccess"));
     } catch (e) {
-      toast.error(e?.message || t("guest.alerts.staffRevokeError", "حدث خطأ أثناء إلغاء الصلاحية"));
+      toast.error(e?.message || t("guest.alerts.staffRevokeError"));
     }
   };
 
@@ -406,12 +401,12 @@ const EventDetailsScreen = () => {
       // sheet).
       const result = await exportGuestsMutation.mutateAsync({ eventId });
       if (!result?.blob) {
-        throw new Error(t("guest.alerts.exportError", "تعذر تصدير قائمة الضيوف"));
+        throw new Error(t("guest.alerts.exportError"));
       }
       const share = await saveBlobAndShare(
         result.blob,
         result.filename || `event-${eventId}-guests.xlsx`,
-        { dialogTitle: t("guest.alerts.exportTitle", "تصدير") }
+        { dialogTitle: t("guest.alerts.exportTitle") }
       );
       // The share sheet opening IS the success signal — stay silent on
       // success and on user-cancel; surface only real failures.
@@ -419,25 +414,25 @@ const EventDetailsScreen = () => {
         toast.error(share.message);
       }
     } catch (e) {
-      toast.error(e?.message || t("guest.alerts.exportError", "تعذر تصدير قائمة الضيوف"));
+      toast.error(e?.message || t("guest.alerts.exportError"));
     }
   };
 
   const handleSendReminder = useCallback(async () => {
     Alert.alert(
-      t("events:reminder.confirmTitle", "إرسال تذكير"),
+      t("events:reminder.confirmTitle"),
       // The normal reminder is now free and targets CONFIRMED guests only.
-      t("events:reminder.confirmBody", "إرسال تذكير مجاني للضيوف الذين أكدوا الحضور؟"),
+      t("events:reminder.confirmBody"),
       [
-        { text: t("guest.alerts.cancel", "إلغاء"), style: "cancel" },
+        { text: t("guest.alerts.cancel"), style: "cancel" },
         {
-          text: t("events:reminder.send", "إرسال"),
+          text: t("events:reminder.send"),
           onPress: async () => {
             try {
               await sendReminderMutation.mutateAsync({ eventId, channel: "sms" });
-              toast.success(t("events:reminder.success", "تم إرسال التذكير"));
+              toast.success(t("events:reminder.success"));
             } catch (e) {
-              toast.error(e?.message || t("events:reminder.error", "تعذر إرسال التذكير"));
+              toast.error(e?.message || t("events:reminder.error"));
             }
           },
         },
@@ -453,7 +448,7 @@ const EventDetailsScreen = () => {
   const handleStatusChange = (newStatus, titleKey, messageKey, btnLabelKey, destructive = false) => {
     if (!event) return;
     Alert.alert(t(titleKey, ""), t(messageKey, ""), [
-      { text: t("common.cancel", "إلغاء"), style: "cancel" },
+      { text: t("common.cancel"), style: "cancel" },
       {
         text: t(btnLabelKey, ""),
         style: destructive ? "destructive" : "default",
@@ -463,10 +458,10 @@ const EventDetailsScreen = () => {
               eventId: event.id || event._id,
               status: newStatus,
             });
-            toast.success(t("eventDetails.updated", "تم التحديث"));
+            toast.success(t("eventDetails.updated"));
             refetch();
           } catch (e) {
-            toast.error(e?.message || t("eventDetails.updateStatusFailed", "تعذر تحديث الحالة"));
+            toast.error(e?.message || t("eventDetails.updateStatusFailed"));
           }
         },
       },
@@ -476,20 +471,20 @@ const EventDetailsScreen = () => {
   const handleAdminDelete = () => {
     if (!event) return;
     Alert.alert(
-      t("eventDetails.deleteConfirmTitle", "حذف المناسبة"),
-      t("eventDetails.deleteConfirmMessage", "هل أنت متأكد من حذف هذه المناسبة؟"),
+      t("eventDetails.deleteConfirmTitle"),
+      t("eventDetails.deleteConfirmMessage"),
       [
-        { text: t("common.cancel", "إلغاء"), style: "cancel" },
+        { text: t("common.cancel"), style: "cancel" },
         {
-          text: t("common.delete", "حذف"),
+          text: t("common.delete"),
           style: "destructive",
           onPress: async () => {
             try {
               await deleteEvent.mutateAsync(event.id || event._id);
-              toast.success(t("eventDetails.deleted", "تم حذف المناسبة"));
+              toast.success(t("eventDetails.deleted"));
               navigation.goBack();
             } catch (e) {
-              toast.error(e?.message || t("eventDetails.deleteFailed", "تعذر حذف المناسبة"));
+              toast.error(e?.message || t("eventDetails.deleteFailed"));
             }
           },
         },
@@ -500,10 +495,10 @@ const EventDetailsScreen = () => {
   if (isLoading && !event) {
     return (
       <SafeAreaView style={styles.safeArea} edges={["top"]}>
-        <TopBar title={t("eventDetails.title", "تفاصيل المناسبة")} showBack onBack={() => navigation.goBack()} />
+        <TopBar title={t("eventDetails.title")} showBack onBack={() => navigation.goBack()} />
         <View style={styles.centerState}>
           <ActivityIndicator size="large" color={colors.primary[500]} />
-          <Text style={styles.centerText}>{t("eventDetails.loading", "جار التحميل...")}</Text>
+          <Text style={styles.centerText}>{t("eventDetails.loading")}</Text>
         </View>
       </SafeAreaView>
     );
@@ -512,12 +507,12 @@ const EventDetailsScreen = () => {
   if (error && !event) {
     return (
       <SafeAreaView style={styles.safeArea} edges={["top"]}>
-        <TopBar title={t("eventDetails.title", "تفاصيل المناسبة")} showBack onBack={() => navigation.goBack()} />
+        <TopBar title={t("eventDetails.title")} showBack onBack={() => navigation.goBack()} />
         <View style={styles.centerState}>
           <Ionicons name="alert-circle-outline" size={48} color={colors.danger?.[500] || "#C0392B"} />
-          <Text style={styles.centerText}>{t("eventDetails.loadFailed", "تعذر تحميل المناسبة")}</Text>
+          <Text style={styles.centerText}>{t("eventDetails.loadFailed")}</Text>
           <TouchableOpacity style={styles.retryBtn} onPress={() => refetch()}>
-            <Text style={styles.retryBtnText}>{t("common.retry", "إعادة المحاولة")}</Text>
+            <Text style={styles.retryBtnText}>{t("common.retry")}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -527,10 +522,10 @@ const EventDetailsScreen = () => {
   if (!event) {
     return (
       <SafeAreaView style={styles.safeArea} edges={["top"]}>
-        <TopBar title={t("eventDetails.title", "تفاصيل المناسبة")} showBack onBack={() => navigation.goBack()} />
+        <TopBar title={t("eventDetails.title")} showBack onBack={() => navigation.goBack()} />
         <View style={styles.centerState}>
           <Ionicons name="calendar-outline" size={48} color={colors.natural[400]} />
-          <Text style={styles.centerText}>{t("eventDetails.notFound", "لم يتم العثور على المناسبة")}</Text>
+          <Text style={styles.centerText}>{t("eventDetails.notFound")}</Text>
         </View>
       </SafeAreaView>
     );
@@ -549,7 +544,7 @@ const EventDetailsScreen = () => {
     event?.eventDetails?.title ||
     event?.title ||
     event?.name ||
-    t("eventDetails.title", "تفاصيل المناسبة");
+    t("eventDetails.title");
   const hostName =
     event?.host?.name || event?.host?.username || event?.hostName || null;
   const hostEmail = event?.host?.email || event?.hostEmail || null;
@@ -613,9 +608,11 @@ const EventDetailsScreen = () => {
             the status pill when the event status is a real value (skip
             the noisy "unknown" fallback). */}
         <View style={styles.titleBlock}>
-          <Text style={styles.titleHeading} numberOfLines={2}>
+          {/* Event titles are arbitrary backend content — first-strong
+              direction with isolation (blueprint §6), never page-locale. */}
+          <AdaptiveText style={styles.titleHeading} numberOfLines={2}>
             {eventTitle}
-          </Text>
+          </AdaptiveText>
           {STATUS_CONFIG[event?.status] && (
             <View style={[styles.statusChip, { backgroundColor: statusCfg.bg }]}>
               <Text style={[styles.statusChipText, { color: statusCfg.color }]}>
@@ -630,7 +627,9 @@ const EventDetailsScreen = () => {
             {isAdmin && hostName && (
               <View style={styles.titleMetaRow}>
                 <Ionicons name="person-outline" size={13} color={colors.natural[450]} />
-                <Text style={styles.titleMetaText}>{hostName}</Text>
+                <AdaptiveText style={styles.titleMetaText} numberOfLines={1}>
+                  {hostName}
+                </AdaptiveText>
               </View>
             )}
             {(eventDate || eventTime) && (
@@ -689,7 +688,7 @@ const EventDetailsScreen = () => {
             >
               <Ionicons name="qr-code-outline" size={14} color="#64748B" />
               <Text style={styles.checkedInLabel}>
-                {t("eventDetails.checkedIn", "تم تسجيل دخولهم")}
+                {t("eventDetails.checkedIn")}
               </Text>
               <Text style={styles.checkedInValue}>{formatLocaleCount(stats.checkedIn, currentLanguage)}</Text>
             </TouchableOpacity>
@@ -704,7 +703,7 @@ const EventDetailsScreen = () => {
           >
             <Ionicons name="people-outline" size={14} color="#6B4E33" />
             <Text style={styles.checkedInLabel}>
-              {t("eventDetails.totalGuests", "إجمالي الضيوف")}
+              {t("eventDetails.totalGuests")}
             </Text>
             <Text style={styles.checkedInValue}>{formatLocaleCount(stats.totalGuests, currentLanguage)}</Text>
           </TouchableOpacity>
@@ -713,13 +712,13 @@ const EventDetailsScreen = () => {
         {/* Admin-only: host info section */}
         {isAdmin && (hostName || hostEmail || hostPhone) && (
           <SectionCard
-            title={t("eventDetails.host", "المضيف")}
+            title={t("eventDetails.host")}
             icon="person-circle-outline"
           >
             {hostName && (
               <InfoRow
                 icon="person-outline"
-                label={t("eventDetails.name", "الاسم")}
+                label={t("eventDetails.name")}
                 value={hostName}
                 last={!hostEmail && !hostPhone}
               />
@@ -727,16 +726,16 @@ const EventDetailsScreen = () => {
             {hostEmail && (
               <InfoRow
                 icon="mail-outline"
-                label={t("eventDetails.email", "البريد")}
-                value={isolateIfRtl(hostEmail)}
+                label={t("eventDetails.email")}
+                value={isolateLtr(hostEmail)}
                 last={!hostPhone}
               />
             )}
             {hostPhone && (
               <InfoRow
                 icon="call-outline"
-                label={t("eventDetails.phone", "الجوال")}
-                value={isolateIfRtl(hostPhone)}
+                label={t("eventDetails.phone")}
+                value={isolateLtr(hostPhone)}
                 last
               />
             )}
@@ -746,13 +745,13 @@ const EventDetailsScreen = () => {
         {/* Admin-only: subscription quota */}
         {isAdmin && event?.subscription && (
           <SectionCard
-            title={t("eventDetails.subscription", "الباقة")}
+            title={t("eventDetails.subscription")}
             icon="card-outline"
           >
             {event.subscription.planType && (
               <InfoRow
                 icon="ribbon-outline"
-                label={t("eventDetails.plan", "الباقة")}
+                label={t("eventDetails.plan")}
                 value={t(
                   `discounts.planTypes.${event.subscription.planType}`,
                   event.subscription.planType
@@ -761,10 +760,10 @@ const EventDetailsScreen = () => {
             )}
             <InfoRow
               icon="people-outline"
-              label={t("eventDetails.guestsRemaining", "ضيوف متبقون")}
+              label={t("eventDetails.guestsRemaining")}
               value={
                 event.subscription.invitesRemaining == null
-                  ? t("events:remainingInvites.unlimited", "غير محدود")
+                  ? t("events:remainingInvites.unlimited")
                   : formatLocaleCount(event.subscription.invitesRemaining, currentLanguage)
               }
               last
@@ -778,19 +777,16 @@ const EventDetailsScreen = () => {
             <View style={styles.invitesBadgeRow}>
               <Ionicons name="paper-plane-outline" size={16} color="#6B4E33" />
               <Text style={styles.invitesBadgeLabel}>
-                {t("events:remainingInvites.label", "الدعوات المتبقية")}
+                {t("events:remainingInvites.label")}
               </Text>
               <Text style={styles.invitesBadgeValue}>
                 {invitesRemaining == null
-                  ? t("events:remainingInvites.unlimited", "غير محدود")
+                  ? t("events:remainingInvites.unlimited")
                   : formatLocaleCount(invitesRemaining, currentLanguage)}
               </Text>
             </View>
             <Text style={styles.invitesBadgeHelp}>
-              {t(
-                "events:remainingInvites.helper",
-                "إضافة الضيوف مجانية؛ يتم خصم الرصيد فقط عند إرسال دعوة أو تذكير."
-              )}
+              {t("events:remainingInvites.helper")}
             </Text>
           </View>
         )}
@@ -837,7 +833,11 @@ const EventDetailsScreen = () => {
                   activeTab === "guests" && styles.tabTextActive,
                 ]}
               >
-                {t("eventDetails.guestsTab", "المدعوون")} ({formatLocaleCount(guests.length, currentLanguage)})
+                {t("eventDetails.guestsTabCount", {
+                  // Locale digits (٠١٢ / 0-9) keep the parenthesised count
+                  // from mixing digit systems inside Arabic copy.
+                  count: formatLocaleCount(guests.length, currentLanguage),
+                })}
               </Text>
             </TouchableOpacity>
 
@@ -857,7 +857,9 @@ const EventDetailsScreen = () => {
                   activeTab === "moderators" && styles.tabTextActive,
                 ]}
               >
-                {t("eventDetails.moderatorsTab", "المشرفون")} ({formatLocaleCount(staffFromStats.length, currentLanguage)})
+                {t("eventDetails.moderatorsTabCount", {
+                  count: formatLocaleCount(staffFromStats.length, currentLanguage),
+                })}
               </Text>
             </TouchableOpacity>
           </View>
@@ -865,16 +867,17 @@ const EventDetailsScreen = () => {
           <View style={styles.searchRow}>
             <View style={styles.searchBox}>
               <Ionicons name="search-outline" size={16} color="#767676" />
-              <TextInput
+              <DirectionalTextInput
+                contentDirection="adaptive"
                 placeholder={
                   activeTab === "guests"
-                    ? t("eventDetails.searchGuests", "اسم الضيف")
-                    : t("eventDetails.searchModerators", "اسم المشرف")
+                    ? t("eventDetails.searchGuests")
+                    : t("eventDetails.searchModerators")
                 }
                 placeholderTextColor="#656565"
                 value={search}
                 onChangeText={setSearch}
-                style={[styles.searchInput, searchDirectionStyle]}
+                style={styles.searchInput}
               />
             </View>
             {!isTerminal && (
@@ -892,8 +895,8 @@ const EventDetailsScreen = () => {
                 <Ionicons name="add" size={16} color="#FFF" />
                 <Text style={styles.addBtnText}>
                   {activeTab === "guests"
-                    ? t("guestList.addGuest", "إضافة ضيف")
-                    : t("eventDetails.addModerator", "إضافة مشرف")}
+                    ? t("guestList.addGuest")
+                    : t("eventDetails.addModerator")}
                 </Text>
               </TouchableOpacity>
             )}
@@ -913,8 +916,8 @@ const EventDetailsScreen = () => {
                   <Ionicons name="notifications-outline" size={14} color="#6B4E33" />
                   <Text style={styles.outlineActionText}>
                     {sendReminderMutation.isPending
-                      ? t("events:reminder.sending", "جاري الإرسال...")
-                      : t("events:reminder.sendAll", "تذكير الضيوف")}
+                      ? t("events:reminder.sending")
+                      : t("events:reminder.sendAll")}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -926,7 +929,7 @@ const EventDetailsScreen = () => {
                 >
                   <Ionicons name="paper-plane-outline" size={14} color="#6B4E33" />
                   <Text style={styles.outlineActionText}>
-                    {t("events:sendActions.menu", "إرسال الرسائل")}
+                    {t("events:sendActions.menu")}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -938,7 +941,7 @@ const EventDetailsScreen = () => {
               >
                 <Ionicons name="download-outline" size={14} color="#6B4E33" />
                 <Text style={styles.outlineActionText}>
-                  {t("guest.alerts.exportTitle", "تصدير")}
+                  {t("guest.alerts.exportTitle")}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -950,7 +953,7 @@ const EventDetailsScreen = () => {
                 <View style={styles.emptyState}>
                   <Ionicons name="people-outline" size={32} color={colors.natural[400]} />
                   <Text style={styles.emptyStateText}>
-                    {t("eventDetails.noGuests", "لا يوجد ضيوف")}
+                    {t("eventDetails.noGuests")}
                   </Text>
                 </View>
               ) : (
@@ -979,7 +982,7 @@ const EventDetailsScreen = () => {
               <View style={styles.emptyState}>
                 <Ionicons name="shield-outline" size={32} color={colors.natural[400]} />
                 <Text style={styles.emptyStateText}>
-                  {t("eventDetails.noModerators", "لا يوجد مشرفون")}
+                  {t("eventDetails.noModerators")}
                 </Text>
               </View>
             ) : (

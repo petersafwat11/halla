@@ -33,6 +33,8 @@ import { getPurchaseReadiness, READINESS_STATES, readinessReasonKey } from "../.
 import { classifyChange, selectReplacementMode, isDeferredChange } from "../../services/billing/changeMode";
 import { subscriptionCode } from "../../services/billing/currentPlan";
 import { isRestorable, showsManageSubscription } from "../../services/billing/disclosures";
+import LocalizedText from "../../components/commen/LocalizedText";
+import { priceToken } from "@halaa/shared/utils/displayTokens";
 import TopBar from "../../components/plans/TopBar";
 import PlanSummaryCard from "../../components/plans/PlanSummaryCard";
 import DiscountCodeCard from "../../components/plans/DiscountCodeCard";
@@ -43,7 +45,7 @@ import PurchaseStatusModal from "../../components/plans/PurchaseStatusModal";
 import DisclosureList from "../../components/plans/DisclosureList";
 import PurchaseLegalLinks from "../../components/plans/PurchaseLegalLinks";
 import DirectionalIonicon from "../../components/common/DirectionalIonicon";
-import { formatSar, round2, validateCardExpiry, checkLuhn, buildCreditCardSource } from "@halaa/shared/utils";
+import { round2, validateCardExpiry, checkLuhn, buildCreditCardSource } from "@halaa/shared/utils";
 import { isolateLtr } from "@halaa/shared/utils/bidi";
 import { colors, spacing, borderRadius, typography } from "../../styles/tokens";
 
@@ -249,38 +251,38 @@ const PlansSummaryScreen = () => {
       const cvc = (cardData?.cvc || "").trim();
 
       if (!name) {
-        newErrors.name = t("checkout.errors.nameRequired", "Cardholder name is required");
+        newErrors.name = t("checkout.errors.nameRequired");
       } else if (name.length < 3) {
-        newErrors.name = t("checkout.errors.nameTooShort", "Please enter full cardholder name");
+        newErrors.name = t("checkout.errors.nameTooShort");
       }
 
       if (!number) {
-        newErrors.number = t("checkout.errors.numberRequired", "Card number is required");
+        newErrors.number = t("checkout.errors.numberRequired");
       } else if (number.length < 15 || number.length > 16) {
-        newErrors.number = t("checkout.errors.numberLength", "Card number must be 15 or 16 digits");
+        newErrors.number = t("checkout.errors.numberLength");
       } else if (!checkLuhn(number)) {
-        newErrors.number = t("checkout.errors.numberInvalid", "Invalid card number");
+        newErrors.number = t("checkout.errors.numberInvalid");
       }
 
       const expiryCheck = validateCardExpiry(month, year);
       if (!expiryCheck.valid) {
-        newErrors.expiry = t(expiryCheck.errorKey, "Invalid expiry date");
+        newErrors.expiry = t(expiryCheck.errorKey);
       }
 
       if (!cvc) {
-        newErrors.cvc = t("checkout.errors.cvcRequired", "CVC is required");
+        newErrors.cvc = t("checkout.errors.cvcRequired");
       } else if (cvc.length < 3 || cvc.length > 4) {
-        newErrors.cvc = t("checkout.errors.cvcLength", "CVC must be 3 or 4 digits");
+        newErrors.cvc = t("checkout.errors.cvcLength");
       }
     } else if (paymentMethod === "stcpay") {
       const mobile = (stcMobile || "").replace(/\D/g, "");
       if (!mobile) {
-        newErrors.stcMobile = t("checkout.errors.mobileRequired", "Mobile number is required");
+        newErrors.stcMobile = t("checkout.errors.mobileRequired");
       } else if (!/^(05|5)\d{8}$/.test(mobile)) {
-        newErrors.stcMobile = t("checkout.errors.mobileFormat", "Must be a valid Saudi number (e.g. 05xxxxxxxx)");
+        newErrors.stcMobile = t("checkout.errors.mobileFormat");
       }
     } else if (paymentMethod === "applepay") {
-      newErrors.applepay = t("checkout.errors.applepayUnavailable", "Apple Pay is currently unavailable");
+      newErrors.applepay = t("checkout.errors.applepayUnavailable");
       toast.error(t("checkout.errors.applepayUnavailable"));
     }
 
@@ -421,7 +423,7 @@ const PlansSummaryScreen = () => {
       toast.error(
         reasonKey
           ? t(reasonKey)
-          : t("checkout.errors.planUnavailable", "This plan isn't available for purchase right now.")
+          : t("checkout.errors.planUnavailable")
       );
       return;
     }
@@ -452,9 +454,9 @@ const PlansSummaryScreen = () => {
       // Subscriptions restore via the store; consumables are NOT restorable —
       // reconcile the authoritative backend ledger after (§9).
       await reconcileGeneric();
-      toast.success(t("checkout.iap.restored", "Purchases restored"));
+      toast.success(t("checkout.iap.restored"));
     } catch (error) {
-      toast.error(error?.message || t("checkout.iap.restoreFailed", "Could not restore purchases"));
+      toast.error(error?.message || t("checkout.iap.restoreFailed"));
     }
   };
 
@@ -474,7 +476,9 @@ const PlansSummaryScreen = () => {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.subtitleWrap}>
-            <Text style={styles.subtitle}>{t("summary.subtitle")}</Text>
+            <LocalizedText center style={styles.subtitle}>
+              {t("summary.subtitle")}
+            </LocalizedText>
           </View>
 
           <PlanSummaryCard
@@ -516,9 +520,9 @@ const PlansSummaryScreen = () => {
                   size={16}
                   color={colors.primary[500]}
                 />
-                <Text style={styles.methodCardTitle}>
+                <LocalizedText style={styles.methodCardTitle}>
                   {t("summary.payment.method")}
-                </Text>
+                </LocalizedText>
               </View>
               <View style={styles.methodCardBody}>
                 <PaymentMethodSelector
@@ -544,14 +548,9 @@ const PlansSummaryScreen = () => {
                     size={16}
                     color={colors.primary[500]}
                   />
-                  <Text style={styles.iapNoteText}>
-                    {t(
-                      "checkout.iap.note",
-                      Platform.OS === "ios"
-                        ? "Billed securely through the App Store."
-                        : "Billed securely through Google Play."
-                    )}
-                  </Text>
+                  <LocalizedText style={styles.iapNoteText}>
+                    {t("checkout.iap.note")}
+                    </LocalizedText>
                 </View>
                 {/* Restore is for subscriptions only — consumables/add-ons are
                     not restorable durable entitlements (§9). */}
@@ -563,11 +562,11 @@ const PlansSummaryScreen = () => {
                     activeOpacity={0.7}
                   >
                     <Ionicons name="refresh" size={15} color={colors.primary[600]} />
-                    <Text style={styles.restoreButtonText}>
+                    <LocalizedText style={styles.restoreButtonText}>
                       {restoreMutation.isPending
-                        ? t("checkout.iap.restoring", "Restoring...")
-                        : t("checkout.iap.restore", "Restore Purchases")}
-                    </Text>
+                        ? t("checkout.iap.restoring")
+                        : t("checkout.iap.restore")}
+                    </LocalizedText>
                   </TouchableOpacity>
                 )}
                 {/* Manage Subscription only for recurring products (§5.4). */}
@@ -578,9 +577,9 @@ const PlansSummaryScreen = () => {
                     activeOpacity={0.7}
                   >
                     <Ionicons name="settings-outline" size={15} color={colors.primary[600]} />
-                    <Text style={styles.restoreButtonText}>
-                      {t("checkout.iap.manage", "Manage subscription")}
-                    </Text>
+                    <LocalizedText style={styles.restoreButtonText}>
+                      {t("checkout.iap.manage")}
+                    </LocalizedText>
                   </TouchableOpacity>
                 )}
               </View>
@@ -608,7 +607,9 @@ const PlansSummaryScreen = () => {
               size={14}
               color={colors.primary[500]}
             />
-            <Text style={styles.termsNotice}>{t("summary.termsNotice")}</Text>
+            <LocalizedText center style={styles.termsNotice}>
+              {t("summary.termsNotice")}
+            </LocalizedText>
           </View>
 
           {!isWeb && <PurchaseLegalLinks t={t} lang={currentLanguage} />}
@@ -617,9 +618,9 @@ const PlansSummaryScreen = () => {
         <SafeAreaView edges={["bottom"]} style={styles.footerSafe}>
           <View style={styles.footer}>
             <View style={styles.footerTotal}>
-              <Text style={styles.footerTotalLabel}>
+              <LocalizedText style={styles.footerTotalLabel}>
                 {t("summary.paymentSummary.total")}
-              </Text>
+              </LocalizedText>
               <View style={styles.footerTotalAmountRow}>
                 {!isWeb ? (
                   // Native: the store's actual charged price (priceString). If the
@@ -629,9 +630,9 @@ const PlansSummaryScreen = () => {
                   ) : nativeRetryable ? (
                     <View style={styles.footerUnavailableWrap}>
                       {retryReasonKey ? (
-                        <Text style={styles.footerUnavailableReason}>
+                        <LocalizedText style={styles.footerUnavailableReason}>
                           {t(retryReasonKey)}
-                        </Text>
+                        </LocalizedText>
                       ) : null}
                       <TouchableOpacity
                         onPress={() => {
@@ -639,34 +640,29 @@ const PlansSummaryScreen = () => {
                           refetchOfferings();
                         }}
                       >
-                        <Text style={styles.footerRetryText}>
-                          {t("common.retry", "إعادة المحاولة")}
-                        </Text>
+                        <LocalizedText style={styles.footerRetryText}>
+                          {t("common.retry")}
+                        </LocalizedText>
                       </TouchableOpacity>
                     </View>
                   ) : storePriceString ? (
                     <Text style={styles.footerTotalAmount}>{isolateLtr(storePriceString)}</Text>
                   ) : (
                     <View style={styles.footerUnavailableWrap}>
-                      <Text style={styles.footerUnavailable}>
+                      <LocalizedText style={styles.footerUnavailable}>
                         {t("checkout.iap.unavailable", "Unavailable")}
-                      </Text>
+                      </LocalizedText>
                       {terminalReasonKey && (
-                        <Text style={styles.footerUnavailableReason}>
+                        <LocalizedText style={styles.footerUnavailableReason}>
                           {t(terminalReasonKey)}
-                        </Text>
+                        </LocalizedText>
                       )}
                     </View>
                   )
                 ) : (
-                  <>
-                    <Text style={styles.footerTotalAmount}>
-                      {isolateLtr(formatSar(finalTotal, { trimTrailingZeros: true }))}
-                    </Text>
-                    <Text style={styles.footerTotalCurrency}>
-                      {t("summary.currency")}
-                    </Text>
-                  </>
+                  <Text style={styles.footerTotalAmount}>
+                    {priceToken(finalTotal, t("summary.currency"))}
+                  </Text>
                 )}
               </View>
             </View>
@@ -683,15 +679,15 @@ const PlansSummaryScreen = () => {
               {isProcessing ? (
                 <>
                   <ActivityIndicator size="small" color={colors.natural[50]} />
-                  <Text style={styles.proceedButtonText}>
+                  <LocalizedText style={styles.proceedButtonText}>
                     {t("summary.activating")}
-                  </Text>
+                  </LocalizedText>
                 </>
               ) : (
                 <>
-                  <Text style={styles.proceedButtonText}>
+                  <LocalizedText style={styles.proceedButtonText}>
                     {t("summary.activateButton")}
-                  </Text>
+                  </LocalizedText>
                   <DirectionalIonicon
                     name="chevron-forward"
                     size={18}

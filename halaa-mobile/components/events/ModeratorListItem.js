@@ -1,7 +1,10 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
 import { getStatusVisual } from "../../constants/statusColors";
+import { useTranslation } from "../../localization";
+import AdaptiveText from "../commen/AdaptiveText";
 
 // Revoked = neutral/inactive status — route badge colors through the shared helper.
 const revokedVisual = getStatusVisual("inactive");
@@ -10,27 +13,38 @@ const revokedVisual = getStatusVisual("inactive");
  * Long-press menu offers "Revoke access" in addition to edit / delete.
  * The host can revoke a moderator's QR scanner token without removing
  * the moderator from the event roster (delete still removes them entirely).
+ *
+ * All visible copy is localized; moderator names are adaptive user content
+ * and phone digits stay LTR-isolated.
  */
 const ModeratorListItem = ({ moderator, onEdit, onDelete, onRevoke }) => {
+  const { t } = useTranslation("events");
+  const displayName = moderator.name || t("moderatorList.fallback");
+
   const handleDelete = () => {
-    Alert.alert("تأكيد الحذف", "هل أنت متأكد من حذف هذا المشرف؟", [
-      { text: "إلغاء", style: "cancel" },
-      {
-        text: "حذف",
-        style: "destructive",
-        onPress: () => onDelete && onDelete(moderator),
-      },
-    ]);
+    Alert.alert(
+      t("moderatorList.deleteConfirmTitle"),
+      t("moderatorList.deleteConfirmBody"),
+      [
+        { text: t("actions.cancel"), style: "cancel" },
+        {
+          text: t("actions.delete"),
+          style: "destructive",
+          onPress: () => onDelete && onDelete(moderator),
+        },
+      ]
+    );
   };
 
   const handleRevoke = () => {
     Alert.alert(
-      "إلغاء صلاحية الوصول",
-      `سيتم إلغاء صلاحية وصول ${moderator.name || "المشرف"} إلى ماسح QR. لن يتمكن من تسجيل دخول الضيوف بعد ذلك.`,
+      t("moderatorList.revokeConfirmTitle"),
+      t("moderatorList.revokeConfirmBody", { name: displayName,
+      }),
       [
-        { text: "إلغاء", style: "cancel" },
+        { text: t("actions.cancel"), style: "cancel" },
         {
-          text: "إلغاء الصلاحية",
+          text: t("guestList.revokeAccessAction"),
           style: "destructive",
           onPress: () => onRevoke && onRevoke(moderator),
         },
@@ -41,17 +55,34 @@ const ModeratorListItem = ({ moderator, onEdit, onDelete, onRevoke }) => {
   const handleLongPress = () => {
     if (!onRevoke) return;
     if (moderator?.isRevoked) {
-      Alert.alert("المشرف", "تم إلغاء صلاحية هذا المشرف بالفعل.");
+      Alert.alert(
+        t("moderatorList.title"),
+        t("moderatorList.alreadyRevoked")
+      );
       return;
     }
     Alert.alert(
-      moderator?.name || "المشرف",
-      "اختر إجراء",
+      displayName,
+      t("guestList.chooseAction"),
       [
-        ...(onEdit ? [{ text: "تعديل", onPress: () => onEdit(moderator) }] : []),
-        { text: "إلغاء صلاحية الوصول", style: "destructive", onPress: handleRevoke },
-        ...(onDelete ? [{ text: "حذف من المناسبة", style: "destructive", onPress: handleDelete }] : []),
-        { text: "إغلاق", style: "cancel" },
+        ...(onEdit
+          ? [{ text: t("actions.edit"), onPress: () => onEdit(moderator) }]
+          : []),
+        {
+          text: t("moderatorList.revokeAction"),
+          style: "destructive",
+          onPress: handleRevoke,
+        },
+        ...(onDelete
+          ? [
+              {
+                text: t("moderatorList.deleteAction"),
+                style: "destructive",
+                onPress: handleDelete,
+              },
+            ]
+          : []),
+        { text: t("guestList.close"), style: "cancel" },
       ],
       { cancelable: true }
     );
@@ -72,18 +103,24 @@ const ModeratorListItem = ({ moderator, onEdit, onDelete, onRevoke }) => {
           color={moderator?.isRevoked ? "#9CA3AF" : "#C28E5C"}
         />
       </View>
-      {/* Left Content */}
-      <View style={styles.leftContent}>
+      {/* Name/phone cluster at the logical start */}
+      <View style={styles.startContent}>
         <View style={styles.nameSection}>
           <View style={styles.nameRow}>
-            <Text style={styles.name}>{moderator.name || "مشرف"}</Text>
+            <AdaptiveText style={styles.name} numberOfLines={1}>
+              {displayName}
+            </AdaptiveText>
             {moderator?.isRevoked ? (
               <View style={[styles.revokedBadge, { backgroundColor: revokedVisual.bg }]}>
-                <Text style={[styles.revokedBadgeText, { color: revokedVisual.fg }]}>مُلغى</Text>
+                <Text style={[styles.revokedBadgeText, { color: revokedVisual.fg }]}>
+                  {t("moderatorList.revokedBadge")}
+                </Text>
               </View>
             ) : null}
           </View>
-          <Text style={styles.phone}>{moderator.phone || ""}</Text>
+          {!!moderator.phone && (
+            <Text style={styles.phone}>{isolateLtr(moderator.phone)}</Text>
+          )}
         </View>
       </View>
 
@@ -130,7 +167,7 @@ const styles = StyleSheet.create({
     elevation: 2,
     gap: 8,
   },
-  leftContent: {
+  startContent: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,

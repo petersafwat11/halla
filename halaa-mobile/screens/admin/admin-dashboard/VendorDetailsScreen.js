@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity, Alert, StyleSheet, Image, Modal, Pressable, Linking } from "react-native";
+import { View, ScrollView, ActivityIndicator, TouchableOpacity, Alert, StyleSheet, Image, Modal, Pressable, Linking } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRoute, useNavigation } from "@react-navigation/native";
@@ -7,10 +7,12 @@ import { useAdminVendorById, useUpdateVendorStatus } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 import { useAuthStore } from "../../../stores/authStore";
 import { useTranslation } from "../../../localization";
-import { formatDate } from "@halaa/shared/utils/locale";
+import { formatDate, formatNumber } from "@halaa/shared/utils/locale";
 import { canEditPage, PAGES } from "../../../utils/adminPermissions";
 import TopBar from "../../../components/plans/TopBar";
 import DirectionalIonicon from "../../../components/common/DirectionalIonicon";
+import LocalizedText from "../../../components/commen/LocalizedText";
+import AdaptiveText from "../../../components/commen/AdaptiveText";
 import { SectionCard, InfoRow } from "../../../components/admin-dashboard/hosts/HostSectionCard";
 import VendorHeroCard from "../../../components/admin-dashboard/vendors/VendorHeroCard";
 import { colors, spacing, borderRadius, typography, backgrounds, textStyles } from "../../../styles/tokens";
@@ -25,12 +27,14 @@ const getImageUrl = (path) => {
 const fmtDate = (d, locale) => (d ? formatDate(d, locale) : "—");
 
 const IdentitySection = ({ vendor, roleData, t, currentLanguage }) => (
-  <SectionCard title={t("vendorDetails.identity", "Identity")} icon="person-outline">
+  <SectionCard title={t("vendorDetails.identity")} icon="person-outline">
     <InfoRow icon="business-outline" label={t("vendorDetails.brandName")} value={roleData?.brandName || vendor.brandName} />
     <InfoRow icon="person-outline" label={t("vendorDetails.ownerName")} value={roleData?.ownerFullName || roleData?.ownerName || vendor.name} />
-    <InfoRow icon="mail-outline" label={t("common.email")} value={vendor.email || roleData?.email} />
-    <InfoRow icon="call-outline" label={t("common.phone")} value={vendor.phoneNumber || roleData?.phone} />
-    <InfoRow icon="calendar-outline" label={t("vendorDetails.registrationDate")} value={fmtDate(vendor.createdAt, currentLanguage)} last />
+    {/* Email/phone are intrinsic tokens (blueprint §5.3): stable LTR glyph
+        order; labels stay localized either way. */}
+    <InfoRow icon="mail-outline" label={t("common.email")} value={vendor.email || roleData?.email} mode="ltr" />
+    <InfoRow icon="call-outline" label={t("common.phone")} value={vendor.phoneNumber || roleData?.phone} mode="phone" />
+    <InfoRow icon="calendar-outline" label={t("vendorDetails.registrationDate")} value={fmtDate(vendor.createdAt, currentLanguage)} mode="localized" last />
   </SectionCard>
 );
 
@@ -40,12 +44,17 @@ const DescriptionSection = ({ roleData, t }) => {
   return (
     <SectionCard title={t("vendorDetails.serviceDescription")} icon="document-text-outline">
       <View style={descStyles.block}>
-        <Text style={descStyles.text}>{desc || t("vendorDetails.noDescription")}</Text>
+        {/* Free-text vendor copy — first-strong direction. */}
+        <AdaptiveText style={descStyles.text}>
+          {desc || t("vendorDetails.noDescription")}
+        </AdaptiveText>
       </View>
       {other ? (
         <View style={[descStyles.block, descStyles.blockBorder]}>
-          <Text style={descStyles.label}>{t("vendorDetails.additionalInfo")}</Text>
-          <Text style={descStyles.text}>{other}</Text>
+          <LocalizedText style={descStyles.label}>
+            {t("vendorDetails.additionalInfo")}
+          </LocalizedText>
+          <AdaptiveText style={descStyles.text}>{other}</AdaptiveText>
         </View>
       ) : null}
     </SectionCard>
@@ -62,16 +71,23 @@ const LocationSection = ({ roleData, t }) => {
   const sl = roleData?.serviceLocation;
   const region = sl?.regionNameAr || sl?.regionNameEn || sl?.region;
   const city = sl?.cityNameAr || sl?.cityNameEn || sl?.city;
+  // `coverageType` is an app-owned enum (region | city | districts), so its
+  // label follows the UI locale through translation keys; unknown backend
+  // values fall back to the raw token instead of rendering a key path.
   const coverage = sl?.coverageType;
+  const coverageLabel =
+    coverage && ["region", "city", "districts"].includes(coverage)
+      ? t(`vendorDetails.coverage.${coverage}`)
+      : coverage;
   return (
     <SectionCard title={t("vendorDetails.serviceLocation")} icon="location-outline">
       {!sl ? (
-        <View style={emptyStyles.row}><Text style={emptyStyles.text}>{t("vendorDetails.noLocation")}</Text></View>
+        <View style={emptyStyles.row}><LocalizedText style={emptyStyles.text}>{t("vendorDetails.noLocation")}</LocalizedText></View>
       ) : (
         <>
           <InfoRow icon="map-outline" label={t("vendorDetails.region")} value={region} />
           <InfoRow icon="business-outline" label={t("vendorDetails.city")} value={city} />
-          <InfoRow icon="navigate-outline" label={t("vendorDetails.coverageType")} value={coverage} last />
+          <InfoRow icon="navigate-outline" label={t("vendorDetails.coverageType")} value={coverageLabel} mode="localized" last />
         </>
       )}
     </SectionCard>
@@ -79,9 +95,10 @@ const LocationSection = ({ roleData, t }) => {
 };
 
 const CommercialSection = ({ roleData, t }) => (
-  <SectionCard title={t("vendorDetails.commercialVerification", "Commercial Verification")} icon="shield-checkmark-outline">
-    <InfoRow icon="document-text-outline" label={t("vendorDetails.commercialRecordNumber")} value={roleData?.commercialRecordNumber || roleData?.commercialRecord} />
-    <InfoRow icon="card-outline" label={t("vendorDetails.nationalIdNumber")} value={roleData?.nationalId} last />
+  <SectionCard title={t("vendorDetails.commercialVerification")} icon="shield-checkmark-outline">
+    {/* Record/ID numbers are canonical LTR tokens (blueprint §5.3). */}
+    <InfoRow icon="document-text-outline" label={t("vendorDetails.commercialRecordNumber")} value={roleData?.commercialRecordNumber || roleData?.commercialRecord} mode="ltr" />
+    <InfoRow icon="card-outline" label={t("vendorDetails.nationalIdNumber")} value={roleData?.nationalId} mode="ltr" last />
   </SectionCard>
 );
 
@@ -98,10 +115,11 @@ const SocialLinksSection = ({ roleData, t }) => {
   return (
     <SectionCard title={t("vendorDetails.socialLinks")} icon="share-social-outline">
       {!entries.length ? (
-        <View style={emptyStyles.row}><Text style={emptyStyles.text}>{t("vendorDetails.noLinks")}</Text></View>
+        <View style={emptyStyles.row}><LocalizedText style={emptyStyles.text}>{t("vendorDetails.noLinks")}</LocalizedText></View>
       ) : entries.map((e, i) => (
         <TouchableOpacity key={e.key} onPress={() => Linking.openURL(links[e.key]).catch(() => {})} activeOpacity={0.7}>
-          <InfoRow icon={e.icon} label={e.label} value={links[e.key]} last={i === entries.length - 1} />
+          {/* Social targets are URLs — intrinsic LTR tokens. */}
+          <InfoRow icon={e.icon} label={e.label} value={links[e.key]} mode="ltr" last={i === entries.length - 1} />
         </TouchableOpacity>
       ))}
     </SectionCard>
@@ -114,14 +132,14 @@ const CategoriesSection = ({ vendor, roleData, t }) => {
   return (
     <SectionCard title={t("vendorDetails.serviceCategories")} icon="grid-outline">
       {!entries.length ? (
-        <View style={emptyStyles.row}><Text style={emptyStyles.text}>{t("vendorDetails.noServices")}</Text></View>
+        <View style={emptyStyles.row}><LocalizedText style={emptyStyles.text}>{t("vendorDetails.noServices")}</LocalizedText></View>
       ) : entries.map(([cat, vals], idx) => (
         <View key={cat} style={[catStyles.group, idx < entries.length - 1 && catStyles.groupBorder]}>
-          <Text style={catStyles.groupTitle}>{t(`vendorDetails.categoryLabels.${cat}`, cat)}</Text>
+          <LocalizedText style={catStyles.groupTitle}>{t(`vendorDetails.categoryLabels.${cat}`, cat)}</LocalizedText>
           <View style={catStyles.wrap}>
             {vals.map((v, i) => (
               <View key={i} style={catStyles.chip}>
-                <Text style={catStyles.chipText}>{t(`vendorDetails.serviceLabels.${v}`, v)}</Text>
+                <LocalizedText style={catStyles.chipText}>{t(`vendorDetails.serviceLabels.${v}`, v)}</LocalizedText>
               </View>
             ))}
           </View>
@@ -139,15 +157,23 @@ const catStyles = StyleSheet.create({
   chipText: { fontSize: typography.fontSize.label.large, color: colors.primary[500], fontWeight: typography.fontWeight.medium },
 });
 
-const GallerySection = ({ roleData, t }) => {
+const GallerySection = ({ roleData, t, currentLanguage }) => {
   const [previewUrl, setPreviewUrl] = useState(null);
+  // Numbered captions are ONE composed translation (blueprint §6): an
+  // i18next interpolation key owns the token order and the index is
+  // locale-formatted — never JSX/string concatenation.
+  const numbered = (label, n) =>
+    t("vendorDetails.galleryIndexed", {
+      label,
+      index: formatNumber(n, currentLanguage),
+    });
   const items = [
     ...(roleData.businessLogo ? [{ url: getImageUrl(roleData.businessLogo), title: t("vendorDetails.businessLogo") }] : []),
     ...((Array.isArray(roleData.portfolioImages) ? roleData.portfolioImages : []).map((img, i) => ({
-      url: getImageUrl(img), title: `${t("vendorDetails.portfolio")} ${i + 1}`,
+      url: getImageUrl(img), title: numbered(t("vendorDetails.portfolio"), i + 1),
     }))),
     ...((Array.isArray(roleData.pricePackages) ? roleData.pricePackages : []).map((pkg, i) => ({
-      url: getImageUrl(pkg), title: `${t("vendorDetails.pricePackage")} ${i + 1}`,
+      url: getImageUrl(pkg), title: numbered(t("vendorDetails.pricePackage"), i + 1),
     }))),
     ...(roleData.commercialRecordImage ? [{ url: getImageUrl(roleData.commercialRecordImage), title: t("vendorDetails.commercialRecord") }] : []),
     ...(roleData.nationalIdImage ? [{ url: getImageUrl(roleData.nationalIdImage), title: t("vendorDetails.nationalId") }] : []),
@@ -157,13 +183,13 @@ const GallerySection = ({ roleData, t }) => {
   return (
     <SectionCard title={t("vendorDetails.galleryFiles")} icon="images-outline">
       {!items.length ? (
-        <View style={emptyStyles.row}><Text style={emptyStyles.text}>{t("vendorDetails.noFiles")}</Text></View>
+        <View style={emptyStyles.row}><LocalizedText style={emptyStyles.text}>{t("vendorDetails.noFiles")}</LocalizedText></View>
       ) : (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={gallStyles.row}>
           {items.map((item, idx) => (
             <TouchableOpacity key={idx} style={gallStyles.thumb} onPress={() => setPreviewUrl(item.url)} activeOpacity={0.8}>
               <Image source={{ uri: item.url }} style={gallStyles.thumbImg} resizeMode="cover" />
-              <Text style={gallStyles.thumbTitle} numberOfLines={1}>{item.title}</Text>
+              <LocalizedText style={gallStyles.thumbTitle} numberOfLines={1}>{item.title}</LocalizedText>
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -172,7 +198,12 @@ const GallerySection = ({ roleData, t }) => {
       <Modal visible={!!previewUrl} transparent animationType="fade" onRequestClose={() => setPreviewUrl(null)}>
         <Pressable style={gallStyles.overlay} onPress={() => setPreviewUrl(null)}>
           <View style={gallStyles.modalContent}>
-            <TouchableOpacity style={gallStyles.closeBtn} onPress={() => setPreviewUrl(null)}>
+            <TouchableOpacity
+              style={gallStyles.closeBtn}
+              onPress={() => setPreviewUrl(null)}
+              accessibilityRole="button"
+              accessibilityLabel={t("common.cancel")}
+            >
               <Ionicons name="close-circle" size={32} color="#fff" />
             </TouchableOpacity>
             <Image source={{ uri: previewUrl }} style={gallStyles.fullImg} resizeMode="contain" />
@@ -189,7 +220,13 @@ const gallStyles = StyleSheet.create({
   thumbTitle: { marginTop: spacing[4], fontSize: typography.fontSize.label.small, color: colors.natural[500], textAlign: "center", width: 120 },
   overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.92)", alignItems: "center", justifyContent: "center" },
   modalContent: { width: "100%", height: "100%", alignItems: "center", justifyContent: "center" },
-  closeBtn: { position: "absolute", top: spacing[48], right: spacing[16], zIndex: 10 },
+  closeBtn: {
+    position: "absolute",
+    top: spacing[48],
+    // Logical end: full-screen preview close hugs the reading end edge.
+    end: spacing[16],
+    zIndex: 10,
+  },
   fullImg: { width: "92%", height: "72%" },
 });
 
@@ -201,8 +238,9 @@ const ActionRow = ({ icon, iconBg, iconColor, label, sublabel, onPress, loading,
         {loading ? <ActivityIndicator size="small" color={iconColor} /> : <Ionicons name={icon} size={16} color={iconColor} />}
       </View>
       <View style={{ flex: 1 }}>
-        <Text style={actionStyles.label}>{label}</Text>
-        <Text style={actionStyles.sublabel}>{sublabel}</Text>
+        {/* Action copy is app-authored — always the UI locale. */}
+        <LocalizedText style={actionStyles.label}>{label}</LocalizedText>
+        <LocalizedText style={actionStyles.sublabel}>{sublabel}</LocalizedText>
       </View>
     </View>
     <DirectionalIonicon name="chevron-forward" size={16} color={colors.natural[300]} />
@@ -235,7 +273,7 @@ const VendorDetailsScreen = () => {
   const canEdit = canEditPage(role, PAGES.VENDORS);
 
   useEffect(() => {
-    if (error) toast.error(t("vendorDetails.loadFailed", "Failed to load vendor details"));
+    if (error) toast.error(t("vendorDetails.loadFailed"));
   }, [error, t, toast]);
 
   const vendor = data?.data?.vendor || data?.data || null;
@@ -274,7 +312,13 @@ const VendorDetailsScreen = () => {
         <TopBar title={t("vendorDetails.title")} showBack={true} />
         {isLoading || !vendor ? (
           <View style={styles.center}>
-            {isLoading ? <ActivityIndicator size="large" color={colors.primary[500]} /> : <Text style={styles.notFound}>{t("vendorDetails.notFound")}</Text>}
+            {isLoading ? (
+              <ActivityIndicator size="large" color={colors.primary[500]} />
+            ) : (
+              <LocalizedText style={styles.notFound}>
+                {t("vendorDetails.notFound")}
+              </LocalizedText>
+            )}
           </View>
         ) : (
           <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -287,7 +331,7 @@ const VendorDetailsScreen = () => {
               <CommercialSection roleData={roleData} t={t} />
               <SocialLinksSection roleData={roleData} t={t} />
               <CategoriesSection vendor={vendor} roleData={roleData} t={t} />
-              <GallerySection roleData={roleData} t={t} />
+              <GallerySection roleData={roleData} t={t} currentLanguage={currentLanguage} />
 
               {canEdit && (() => {
                 const isPendingOrRejected = status === "pending" || status === "rejected";

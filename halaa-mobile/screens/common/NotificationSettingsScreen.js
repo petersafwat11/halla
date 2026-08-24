@@ -19,7 +19,7 @@ export default function NotificationSettingsScreen({ navigation }) {
 
   React.useEffect(() => {
     if (error) {
-      toast.error(t("notifications.loadError", "Failed to load preferences"));
+      toast.error(t("notifications.loadError"));
     }
   }, [error, toast, t]);
 

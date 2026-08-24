@@ -7,6 +7,11 @@ import MobileInputGroup from "@/ui/commen/inputs/mobileInputGroup/MobileInputGro
 import CategorySelect from "@/ui/commen/inputs/CategorySelect/CategorySelect";
 import ActionButtons from "./actionButtons/ActionButtons";
 import { exportToXLSX, importFromXLSX } from "@/utils/xlsxUtils";
+import {
+  isValidPhone,
+  normalizePhoneNumber,
+  DEFAULT_PHONE_PLACEHOLDER,
+} from "@halaa/shared/utils/phone";
 
 const GuestImporter = ({
   guestList,
@@ -49,11 +54,15 @@ const GuestImporter = ({
     if (!name) newErrors.name = t("validation.guest_name_required");
     if (!mobile) {
       newErrors.mobile = t("validation.mobile_required");
-    } else if (!/^5[0-9]{8}$/.test(mobile)) {
+    } else if (!isValidPhone(mobile)) {
       newErrors.mobile = t("validation.mobile_format");
     }
     if (mobile && !currentItem.id) {
-      const mobileExists = guestList.some((item) => item.mobile === mobile);
+      const normInput = normalizePhoneNumber(mobile);
+      const mobileExists = guestList.some((item) => {
+        const itemNorm = normalizePhoneNumber(item.mobile);
+        return (normInput && itemNorm && normInput === itemNorm) || item.mobile === mobile;
+      });
       if (mobileExists) newErrors.mobile = t("validation.mobile_duplicate");
     }
     setLocalErrors(newErrors);
@@ -75,10 +84,6 @@ const GuestImporter = ({
         name: currentItem.name?.trim() || "",
         mobile: currentItem.mobile?.trim() || "",
         category: currentItem.category?.trim() || "",
-        // `Date.now()` alone collides if the user double-taps Add on a
-        // slow mobile (two adds in the same millisecond → same id →
-        // React row key collision). Matches transformGuestList's
-        // fallback shape in useEventForm.js.
         id: Date.now() + Math.random(),
       };
       setValue("guestList", [...guestList, newItem], { shouldValidate: true });
@@ -118,7 +123,7 @@ const GuestImporter = ({
     const sampleData = [
       {
         name: t("excel_sample_name"),
-        mobile: "512345678",
+        mobile: "0512345678",
         ...(showCategory ? { category: t("excel_sample_category") } : {}),
       },
     ];
@@ -150,32 +155,33 @@ const GuestImporter = ({
         const validateRow = (row) => {
           const errors = [];
           if (!row.name || !row.name.trim()) errors.push(t("validation.name_required"));
-          if (!row.mobile || !row.mobile.trim()) {
+          const rowMobile = String(row.mobile || "").trim();
+          if (!rowMobile) {
             errors.push(t("validation.mobile_required"));
-          } else if (!/^5[0-9]{8}$/.test(row.mobile)) {
+          } else if (!isValidPhone(rowMobile)) {
             errors.push(t("validation.mobile_format_import"));
           }
-          // category is optional and free-text — no validation.
           return { isValid: errors.length === 0, errors };
         };
         const result = await importFromXLSX(file, headers, validateRow);
         if (result.success) {
-          const existingMobiles = guestList.map((item) => item.mobile);
+          const existingMobiles = guestList.map(
+            (item) => normalizePhoneNumber(item.mobile) || item.mobile
+          );
           const duplicates = [];
           const validData = result.data
             .filter((item, index) => {
-              if (existingMobiles.includes(item.mobile)) {
+              const itemNorm = normalizePhoneNumber(item.mobile) || item.mobile;
+              if (existingMobiles.includes(itemNorm)) {
                 duplicates.push({
                   row: index + 2,
                   errors: [t("validation.mobile_duplicate_import")],
                 });
                 return false;
               }
-              existingMobiles.push(item.mobile);
+              existingMobiles.push(itemNorm);
               return true;
             })
-            // Normalize to the form-guest shape (with an id + category) so
-            // imported rows are editable/removable like manually-added ones.
             .map((item) => ({
               name: (item.name || "").trim(),
               mobile: (item.mobile || "").trim(),
@@ -216,8 +222,6 @@ const GuestImporter = ({
 
   const isEditing = currentItem.id !== undefined;
 
-  // Datalist options: the host's saved category labels merged with any
-  // already present on the current guest list.
   const categoryOptions = Array.from(
     new Set([
       ...(categories || []),
@@ -248,7 +252,7 @@ const GuestImporter = ({
           />
           <MobileInputGroup
             label={t("phone_number")}
-            placeholder="5xxxxxxxx"
+            placeholder={DEFAULT_PHONE_PLACEHOLDER}
             type="tel"
             required
             value={currentItem.mobile || ""}

@@ -1,16 +1,19 @@
 import React, { useState } from "react";
 import {
   View,
-  Text,
   Modal,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
 } from "react-native";
 import TextInput from "../../commen/DirectionalTextInput";
+import LocalizedText from "../../commen/LocalizedText";
+import AdaptiveText from "../../commen/AdaptiveText";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../../localization";
 import ActionButton from "../common/ActionButton";
+import { CONTENT_DIRECTIONS } from "../../../hooks/useInputDirection";
+import { formatCount } from "@halaa/shared/utils/locale";
 import {
   colors,
   spacing,
@@ -21,7 +24,7 @@ import {
 } from "../../../styles/tokens";
 
 const RatingModal = ({ visible, onClose, vendor, onSave, loading }) => {
-  const { t } = useTranslation("admin");
+  const { t, currentLanguage } = useTranslation("admin");
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [ratingError, setRatingError] = useState("");
@@ -61,6 +64,10 @@ const RatingModal = ({ visible, onClose, vendor, onSave, loading }) => {
           }}
           style={styles.starButton}
           disabled={loading}
+          accessibilityRole="button"
+          accessibilityLabel={t("vendors.rating.summary", {
+            rating: formatCount(i, currentLanguage),
+          })}
         >
           <Ionicons
             name={i <= rating ? "star" : "star-outline"}
@@ -83,33 +90,62 @@ const RatingModal = ({ visible, onClose, vendor, onSave, loading }) => {
       <View style={styles.overlay}>
         <View style={styles.modalContainer}>
           <View style={styles.header}>
-            <Text style={styles.title}>{t("vendors.rating.title")}</Text>
-            <TouchableOpacity onPress={handleClose} style={styles.closeButton} disabled={loading}>
+            <LocalizedText role="sectionTitle" style={styles.title}>
+              {t("vendors.rating.title")}
+            </LocalizedText>
+            <TouchableOpacity
+              onPress={handleClose}
+              style={styles.closeButton}
+              disabled={loading}
+              accessibilityRole="button"
+              accessibilityLabel={t("vendors.rating.cancel")}
+            >
+              {/* Close is semantic — never mirrored. */}
               <Ionicons name="close" size={24} color={colors.natural[900]} />
             </TouchableOpacity>
           </View>
 
           <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
             <View style={styles.vendorInfo}>
-              <Text style={styles.vendorName}>{displayName}</Text>
-              {!!ownerName && <Text style={styles.vendorOwner}>{ownerName}</Text>}
+              {/* Store/brand and owner are backend content — first-strong. */}
+              <AdaptiveText style={styles.vendorName}>
+                {displayName}
+              </AdaptiveText>
+              {!!ownerName && (
+                <AdaptiveText style={styles.vendorOwner}>
+                  {ownerName}
+                </AdaptiveText>
+              )}
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.label}>{t("vendors.rating.newRating")}</Text>
+              <LocalizedText role="label" style={styles.label}>
+                {t("vendors.rating.newRating")}
+              </LocalizedText>
+              {/* A 1→5 numeric scale is intentionally physical: pinned LTR
+                  so the star order never mirrors by accident (blueprint §7). */}
               <View style={styles.starsContainer}>{renderStars()}</View>
               {rating > 0 && (
-                <Text style={styles.ratingText}>
-                  {t("vendors.rating.summary", { rating })}
-                </Text>
+                <LocalizedText role="body" center style={styles.ratingText}>
+                  {t("vendors.rating.summary", {
+                    rating: formatCount(rating, currentLanguage),
+                  })}
+                </LocalizedText>
               )}
               {!!ratingError && (
-                <Text style={styles.errorText}>{ratingError}</Text>
+                <LocalizedText role="error" center style={styles.errorText}>
+                  {ratingError}
+                </LocalizedText>
               )}
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.label}>{t("vendors.rating.review")}</Text>
+              <LocalizedText role="label" style={styles.label}>
+                {t("vendors.rating.review")}
+              </LocalizedText>
+              {/* Free-text review is arbitrary user content (blueprint §5.3):
+                  localized placeholder while empty, first-strong when filled.
+                  The label above stays localized either way. */}
               <TextInput
                 style={styles.textArea}
                 value={comment}
@@ -120,6 +156,7 @@ const RatingModal = ({ visible, onClose, vendor, onSave, loading }) => {
                 numberOfLines={4}
                 textAlignVertical="top"
                 editable={!loading}
+                contentDirection={CONTENT_DIRECTIONS.ADAPTIVE}
               />
             </View>
           </ScrollView>
@@ -127,7 +164,7 @@ const RatingModal = ({ visible, onClose, vendor, onSave, loading }) => {
           <View style={styles.footer}>
             <View style={styles.buttonWrapper}>
               <ActionButton
-                label={t("common.cancel", "إلغاء")}
+                label={t("vendors.rating.cancel")}
                 onPress={handleClose}
                 variant="secondary"
                 disabled={loading}
@@ -135,7 +172,7 @@ const RatingModal = ({ visible, onClose, vendor, onSave, loading }) => {
             </View>
             <View style={styles.buttonWrapper}>
               <ActionButton
-                label={t("common.save", "حفظ")}
+                label={t("vendors.rating.save")}
                 onPress={handleSave}
                 variant="primary"
                 loading={loading}
@@ -174,7 +211,12 @@ const styles = StyleSheet.create({
     color: colors.natural[900],
   },
   closeButton: {
-    padding: spacing[4],
+    width: 44,
+    height: 44,
+    borderRadius: borderRadius[8],
+    alignItems: "center",
+    justifyContent: "center",
+    marginEnd: -spacing[8],
   },
   content: {
     padding: spacing[20],
@@ -204,6 +246,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing[12],
   },
   starsContainer: {
+    // Physical LTR: the 1→5 rating scale must not mirror in Arabic.
+    direction: "ltr",
     flexDirection: "row",
     justifyContent: "center",
     gap: spacing[8],

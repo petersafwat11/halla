@@ -1,30 +1,12 @@
 import { z } from "zod";
+import { saudiPhone, optionalSaudiPhone } from "@halaa/shared/schemas/_shared";
+import { clampPhoneInput, SAUDI_PHONE_REGEX } from "@halaa/shared/utils/phone";
 
 // Helper function to create schemas with localized messages
 export const createEventAdditionSchemas = (t) => {
   // Helper schemas with localized messages
-  const phoneSchema = z
-    .string()
-    .optional()
-    .refine((val) => !val || /^5[0-9]{8}$/.test(val), {
-      message: t
-        ? t("singleEvent.addGuest.invalidPhone")
-        : "Phone number must be 9 digits starting with 5",
-    });
-
-  const requiredPhoneSchema = z
-    .string()
-    .min(
-      1,
-      t
-        ? t("singleEvent.addStaff.phoneRequired")
-        : "Phone number is required"
-    )
-    .refine((val) => /^5[0-9]{8}$/.test(val), {
-      message: t
-        ? t("singleEvent.addStaff.invalidPhone")
-        : "Phone number must be 9 digits starting with 5",
-    });
+  const phoneSchema = optionalSaudiPhone(t);
+  const requiredPhoneSchema = saudiPhone(t);
 
   const emailSchema = z
     .string()
@@ -85,8 +67,9 @@ export const guestSchema = z.object({
   phone: z
     .string()
     .min(1, "Phone number is required")
-    .refine((val) => /^5[0-9]{8}$/.test(val), {
-      message: "Phone number must be 9 digits starting with 5",
+    .transform((val) => clampPhoneInput(val))
+    .refine((val) => SAUDI_PHONE_REGEX.test(val), {
+      message: "Phone number must be 10 digits starting with 05 or 9 digits starting with 5",
     }),
 });
 
@@ -99,7 +82,8 @@ export const staffSchema = z.object({
   phone: z
     .string()
     .min(1, "Phone number is required")
-    .regex(/^[0-9]{7,15}$/, {
-      message: "Phone number must be 7-15 digits",
+    .transform((val) => clampPhoneInput(val))
+    .refine((val) => SAUDI_PHONE_REGEX.test(val), {
+      message: "Phone number must be 10 digits starting with 05 or 9 digits starting with 5",
     }),
 });

@@ -1,11 +1,14 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useTranslation } from "../../localization";
+import { useTranslation, useLanguage } from "../../localization";
 import DirectionalIonicon from "../common/DirectionalIonicon";
+import LocalizedText from "../commen/LocalizedText";
+import { colors } from "../../styles/tokens";
 
 const SettingsTabs = ({ activeTab, onTabChange, onLogout }) => {
   const { t } = useTranslation("settings");
+  const { isRTL } = useLanguage();
   const tabs = [
     {
       id: "account",
@@ -62,22 +65,23 @@ const SettingsTabs = ({ activeTab, onTabChange, onLogout }) => {
             <Ionicons
               name={tab.icon}
               size={22}
-              color={activeTab === tab.id ? "#c28e5c" : "#666"}
+              color={activeTab === tab.id ? colors.primary[500] : colors.natural[500]}
             />
 
-            <Text
+            <LocalizedText
+              role="label"
               style={[
                 styles.tabLabel,
                 activeTab === tab.id && styles.tabLabelActive,
               ]}
             >
               {tab.label}
-            </Text>
+            </LocalizedText>
           </View>
           <DirectionalIonicon
             name="chevron-forward-outline"
             size={20}
-            color={activeTab === tab.id ? "#c28e5c" : "#999"}
+            color={activeTab === tab.id ? colors.primary[500] : colors.natural[350]}
           />
         </TouchableOpacity>
       ))}
@@ -89,15 +93,17 @@ const SettingsTabs = ({ activeTab, onTabChange, onLogout }) => {
         activeOpacity={0.7}
       >
         <View style={styles.tabContent}>
+          {/* The logout glyph points "out" toward the reading end, so it
+              flips with the locale like other directional glyphs. */}
           <Ionicons
             name="log-out-outline"
             size={22}
             color="#e74c3c"
-            style={{ transform: [{ rotate: "180deg" }] }}
+            style={isRTL ? styles.logoutIconRTL : null}
           />
-          <Text style={[styles.tabLabel, styles.logoutLabel]}>
+          <LocalizedText role="label" style={[styles.tabLabel, styles.logoutLabel]}>
             {t("tabs.logout")}
-          </Text>
+          </LocalizedText>
         </View>
       </TouchableOpacity>
     </View>
@@ -146,6 +152,10 @@ const styles = StyleSheet.create({
   },
   logoutLabel: {
     color: "#e74c3c",
+  },
+  logoutIconRTL: {
+    // RTL only: mirror the "exit" arrow toward the logical end.
+    transform: [{ rotate: "180deg" }],
   },
 });
 

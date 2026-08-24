@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { forgotPasswordSchema } from "../../utils/schemas/authSchemas";
 import { EmailInput, Button } from "../commen";
 import { useTranslation } from "../../localization";
+import LocalizedText from "../commen/LocalizedText";
 
 const ForgetPasswordForm = ({ onSubmit, loading = false }) => {
   const { t } = useTranslation("auth");
@@ -51,10 +52,15 @@ const ForgetPasswordForm = ({ onSubmit, loading = false }) => {
         <View style={styles.iconContainer}>
           <Text style={styles.iconText}>🔒</Text>
         </View>
-        <Text style={styles.title}>{t("forgetPassword.title")}</Text>
+        <LocalizedText role="pageTitle" center style={styles.title}>
+          {t("forgetPassword.title")}
+        </LocalizedText>
       </View>
 
-      <Text style={styles.description}>{t("forgetPassword.subtitle")}</Text>
+      {/* Helper copy follows the UI locale, never the email's script. */}
+      <LocalizedText role="description" center style={styles.description}>
+        {t("forgetPassword.subtitle")}
+      </LocalizedText>
 
       <View style={styles.form}>
         <Controller
@@ -106,15 +112,10 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontFamily: "Cairo_700Bold",
     color: "#2c2c2c",
-    textAlign: "center",
   },
   description: {
-    fontSize: 14,
-    fontFamily: "Cairo_400Regular",
     color: "#666",
-    textAlign: "center",
     lineHeight: 22,
     marginBottom: 32,
     paddingHorizontal: 20,

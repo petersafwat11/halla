@@ -1,6 +1,13 @@
 import React from "react";
-import { View, Text, StyleSheet, Animated } from "react-native";
+import { View, StyleSheet, Animated } from "react-native";
+import LocalizedText from "../commen/LocalizedText";
 
+/**
+ * Shared auth-form header. Title/subtitle are app-authored copy, so they
+ * render through the localized text-role contract: the writing direction
+ * follows the UI locale and centered alignment keeps terminal punctuation at
+ * the sentence end — never a value's script, never physical alignment.
+ */
 const FormHeader = ({ title, subtitle }) => {
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
   const slideAnim = React.useRef(new Animated.Value(-20)).current;
@@ -31,8 +38,14 @@ const FormHeader = ({ title, subtitle }) => {
         },
       ]}
     >
-      <Text style={styles.title}>{title}</Text>
-      {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
+      <LocalizedText role="pageTitle" center style={styles.title}>
+        {title}
+      </LocalizedText>
+      {subtitle && (
+        <LocalizedText role="description" center style={styles.subtitle}>
+          {subtitle}
+        </LocalizedText>
+      )}
     </Animated.View>
   );
 };
@@ -46,14 +59,11 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_700Bold",
     color: "#2c2c2c",
     marginBottom: 8,
-    textAlign: "center",
+    lineHeight: 38,
   },
   subtitle: {
     fontSize: 15,
-    fontFamily: "Cairo_400Regular",
     color: "#666",
-    textAlign: "center",
-    lineHeight: 24,
   },
 });
 

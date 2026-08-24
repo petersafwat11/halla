@@ -1,6 +1,7 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { useTranslation } from "../../../localization";
+import { formatNumber } from "@halaa/shared/utils/locale";
 import { colors, spacing, borderRadius, typography } from "../../../styles/tokens";
 
 const getInviteValue = (plan, billingType) => {
@@ -9,7 +10,8 @@ const getInviteValue = (plan, billingType) => {
 };
 
 const InviteSelector = ({ plans, billingType, selectedInvites, onInviteChange }) => {
-  const { t } = useTranslation("plans");
+  const { t, i18n } = useTranslation("plans");
+  const lang = i18n.language || "ar";
 
   if (!plans || plans.length <= 1) return null;
 
@@ -25,8 +27,9 @@ const InviteSelector = ({ plans, billingType, selectedInvites, onInviteChange })
             onPress={() => onInviteChange?.(value)}
             activeOpacity={0.7}
           >
+            {/* Count follows the UI locale's digit system. */}
             <Text style={[styles.guestNum, active && styles.guestNumActive]}>
-              {value}
+              {formatNumber(value, lang)}
             </Text>
             <Text style={[styles.guestUnit, active && styles.guestUnitActive]}>
               {t("inviteSelector.invites")}

@@ -1,6 +1,12 @@
 import React from "react";
-import { ScrollView, TouchableOpacity, Text, StyleSheet } from "react-native";
+import { ScrollView, TouchableOpacity, StyleSheet } from "react-native";
+import LocalizedText from "../../commen/LocalizedText";
 
+/**
+ * Category chips are app-owned taxonomy: the visible label is picked by the
+ * UI locale (nameAr/nameEn), so it renders through the localized text role
+ * and follows the UI direction — never the raw backend script.
+ */
 export default function TemplateCategoryChips({
   categories,
   selectedCategory,
@@ -22,15 +28,14 @@ export default function TemplateCategoryChips({
         ]}
         onPress={() => onSelect(null)}
         activeOpacity={0.7}
+        accessibilityRole="button"
       >
-        <Text
-          style={[
-            styles.text,
-            selectedCategory === null && styles.textActive,
-          ]}
+        <LocalizedText
+          role="label"
+          style={[styles.text, selectedCategory === null && styles.textActive]}
         >
           {allLabel}
-        </Text>
+        </LocalizedText>
       </TouchableOpacity>
 
       {categories.map((cat) => {
@@ -46,10 +51,15 @@ export default function TemplateCategoryChips({
             style={[styles.button, isActive && styles.buttonActive]}
             onPress={() => onSelect(code)}
             activeOpacity={0.7}
+            accessibilityRole="button"
           >
-            <Text style={[styles.text, isActive && styles.textActive]}>
+            <LocalizedText
+              role="label"
+              style={[styles.text, isActive && styles.textActive]}
+              numberOfLines={1}
+            >
               {label}
-            </Text>
+            </LocalizedText>
           </TouchableOpacity>
         );
       })}

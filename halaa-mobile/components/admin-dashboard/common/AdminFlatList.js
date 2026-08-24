@@ -1,13 +1,13 @@
 import React from "react";
 import {
   View,
-  Text,
   FlatList,
   ActivityIndicator,
   RefreshControl,
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import LocalizedText from "../../commen/LocalizedText";
 import { colors, spacing, textStyles, backgrounds } from "../../../styles/tokens";
 
 /**
@@ -93,10 +93,10 @@ const AdminFlatList = ({
         <View style={styles.emptyWrap}>
           <Ionicons name={emptyIcon} size={48} color={colors.natural[300]} />
           {!!emptyTitle && (
-            <Text style={styles.emptyTitle}>{emptyTitle}</Text>
+            <LocalizedText style={styles.emptyTitle}>{emptyTitle}</LocalizedText>
           )}
           {!!emptyMessage && (
-            <Text style={styles.emptyMsg}>{emptyMessage}</Text>
+            <LocalizedText style={styles.emptyMsg}>{emptyMessage}</LocalizedText>
           )}
         </View>
       }

@@ -54,6 +54,15 @@
     "button": "حذف الحساب",
     "title": "هل تريد حذف حسابك؟",
     "warning": "سيؤدي هذا إلى حذف حسابك وبياناتك الشخصية نهائياً، بما في ذلك مناسباتك وضيوفك ودعواتك. لا يمكن التراجع عن هذا الإجراء.",
+    "storeWarnTitle": "اشتراكك في المتجر سيبقى فعّالاً",
+    "storeWarnBody": "حذف حسابك في هلا لا يلغي اشتراكك في ⁦App Store / Google Play⁩. ألغِ الاشتراك من المتجر لإيقاف الخصم.",
+    "manageSubscription": "إدارة الاشتراك",
+    "passwordLabel": "أدخل كلمة المرور للتأكيد",
+    "passwordPlaceholder": "كلمة المرور",
+    "otpLabel": "أدخل رمز التحقق",
+    "otpPlaceholder": "الرمز",
+    "sendCode": "إرسال رمز التحقق",
+    "codeSent": "تم إرسال الرمز إلى هاتفك",
     "confirmLabel": "اكتب \"{{keyword}}\" للتأكيد",
     "confirmKeyword": "حذف",
     "cancel": "إلغاء",
@@ -92,7 +101,8 @@
     "saveChanges": "حفظ التعديلات",
     "saving": "جاري الحفظ...",
     "updateSuccess": "تم تحديث إعدادات الإشعارات بنجاح",
-    "updateError": "فشل تحديث إعدادات الإشعارات"
+    "updateError": "فشل تحديث إعدادات الإشعارات",
+    "loadError": "فشل تحميل تفضيلات الإشعارات"
   },
   "errors": {
     "usernameMinLength": "اسم المستخدم يجب أن يكون 3 أحرف على الأقل",
@@ -108,7 +118,7 @@
     "passwordsDoNotMatch": "كلمات المرور غير متطابقة",
     "passwordRequired": "كلمة المرور مطلوبة للتأكيد",
     "confirmDeletion": "يرجى كتابة DELETE للتأكيد",
-    "invalidSaudiPhone": "رقم الهاتف يجب أن يبدأ بـ 5 ويتكون من 9 أرقام"
+    "invalidSaudiPhone": "رقم الهاتف يجب أن يتكون من 10 أرقام (يبدأ بـ 05) أو 9 أرقام (يبدأ بـ 5)"
   },
   "language": {
     "title": "اللغة",
@@ -121,7 +131,7 @@
     "termsOfService": "شروط الخدمة"
   },
   "legal": {
-    "lastUpdated": "آخر تحديث",
+    "lastUpdated": "آخر تحديث: {{date}}",
     "ugcAcceptNotice": "بنشر المحتوى فإنك توافق على:"
   }
 }

@@ -52,32 +52,32 @@
   "stats": {
     "totalEvents": "إجمالي المناسبات",
     "activeEvents": "المناسبات النشطة",
-    "completedEvents": "المناسبات المكتملة",
+    "completedEvents": "المناسبات المنتهية",
     "allEvents": "جميع المناسبات",
-    "avgAttendance": "متوسط الاستجابة",
+    "avgAttendance": "متوسط الرد",
     "liveEvents": "المناسبات النشطة",
     "endedEvents": "المناسبات المنتهية",
-    "pendingSchedulingEvents": "في انتظار الجدولة",
-    "attendanceRate": "معدل الحضور"
+    "pendingSchedulingEvents": "المناسبات بانتظار الجدولة",
+    "attendanceRate": "نسبة الحضور"
   },
   "lastEvent": {
     "scheduleEvent": "جدولة الارسال",
     "viewStats": "عرض الإحصائيات",
     "editEvent": "تعديل المناسبة",
-    "responseStatus": "حالة الردود",
-    "approved": "موافق",
-    "declined": "معتذر",
+    "responseStatus": "حالة الرد",
+    "approved": "تم التأكيد",
+    "declined": "اعتذر",
     "noResponse": "لم يرد",
     "remainingEvents": "المناسبات المتبقية",
-    "plan": "الباقة",
+    "plan": "الخطة",
     "status": {
-      "pending_scheduling": "في انتظار الجدولة",
+      "pending_scheduling": "بانتظار الجدولة",
       "scheduled": "مجدول",
-      "published": "منشور",
-      "pending": "معلق للموافقة",
-      "suspended": "موقوفة بواسطة المدراء",
-      "active": "نشطة",
-      "completed": "انتهى",
+      "published": "تم النشر",
+      "pending": "بانتظار الموافقة",
+      "suspended": "معلق من الإدارة",
+      "active": "نشط",
+      "completed": "منتهي",
       "templatePending": "قيد المراجعة",
       "templateRejected": "مرفوض",
       "templateNotSubmitted": "غير مرسل"
@@ -86,12 +86,12 @@
       "eventDetails": "تفاصيل المناسبة",
       "guestList": "قائمة الضيوف",
       "invitationDesign": "تصميم الدعوة",
-      "invitationCustomization": "تخصيص الرسالة"
+      "invitationCustomization": "تخصيص الدعوة"
     },
     "buttons": {
       "scheduleEvent": "جدولة الارسال",
       "testMessage": "رسالة تجريبية",
-      "guests": "ضيف",
+      "guests": "الضيوف",
       "sharePostEvent": "مشاركة صفحة ما بعد المناسبة"
     },
     "quota": {
@@ -100,76 +100,76 @@
     }
   },
   "errors": {
-    "loadFailed": "تعذّر تحميل لوحة التحكم"
+    "loadFailed": "فشل في تحميل لوحة التحكم"
   },
   "staff": {
     "notifyStaff": "إشعار مشرفين البوابة",
-    "notifying": "جارٍ الإرسال...",
-    "notifySuccess": "تم الإرسال إلى {{sent}} من {{total}} من مشرفين البوابة",
-    "notifyPartial": "تم الإرسال إلى {{sent}} من {{total}}. السبب: {{error}}",
-    "notifyError": "فشل إشعار مشرفين البوابة"
+    "notifying": "جاري الإرسال...",
+    "notifySuccess": "تم الإرسال إلى {{sent}} من أصل {{total}} من مشرفين البوابة",
+    "notifyPartial": "تم الإرسال إلى {{sent}} من أصل {{total}}. السبب: {{error}}",
+    "notifyError": "فشل في إشعار مشرفين البوابة"
   },
   "subscription": {
-    "eventLimitReached": "تم الوصول للحد الأقصى من المناسبات",
-    "eventLimitDescription": "لقد استخدمت جميع المناسبات المتاحة في باقتك ({{eventsUsed}}/{{eventsLimit}}). قم بترقية باقتك للاستمتاع بمزايا أكثر وإنشاء مناسبات إضافية.",
+    "eventLimitReached": "تم الوصول لحد المناسبات",
+    "eventLimitDescription": "لقد استنفدت جميع المناسبات المتاحة في باقتك ({{eventsUsed}}/{{eventsLimit}}). قم بترقية باقتك للاستمتاع بمزيد من المزايا وإنشاء مناسبات إضافية.",
     "eventsUsage": "استخدام المناسبات",
     "currentPlan": "الباقة الحالية:",
     "upgradePlan": "ترقية الباقة",
     "backToHome": "العودة للرئيسية",
-    "upgradeFeatures": "مميزات الترقية:",
-    "moreEventsPerMonth": "مناسبات أكثر شهرياً",
-    "moreGuestsPerEvent": "ضيوف أكثر لكل مناسبة",
+    "upgradeFeatures": "مزايا الترقية:",
+    "moreEventsPerMonth": "عدد مناسبات أكثر شهرياً",
+    "moreGuestsPerEvent": "عدد ضيوف أكبر لكل مناسبة",
     "additionalFollowUp": "رسائل متابعة إضافية",
-    "customBranding": "تخصيص العلامة التجارية",
-    "guestQuota": "حصة الضيوف",
+    "customBranding": "خيارات تخصيص متقدمة",
+    "guestQuota": "حد الضيوف",
     "unlimitedGuests": "ضيوف غير محدودين",
     "guestsRemaining": "{{count}} ضيف متبقي",
-    "overLimitBy": "تجاوزت الحد بـ",
-    "guests": "ضيف",
+    "overLimitBy": "تجاوزت الحد بمقدار",
+    "guests": "ضيوف",
     "planLite": "لايت",
     "planPro": "برو",
     "planElite": "إيليت",
     "subscribeToAdd": "يرجى الاشتراك لإضافة ضيوف"
   },
   "hero": {
-    "welcome": "مرحباً بك",
-    "readyToOrganize": "جاهز لتنظيم مناسبتك الأولى؟",
-    "createEvent": "إنشاء مناسبتك",
-    "freeTrial": "لديك تجربة مجانية لدعوة 5 أفراد"
+    "welcome": "أهلاً بك",
+    "readyToOrganize": "مستعد لتنظيم أول مناسبة لك؟",
+    "createEvent": "أنشئ مناسبتك",
+    "freeTrial": "لديك تجربة مجانية لدعوة 5 أشخاص"
   },
   "dashboard": {
-    "welcome": "مرحباً! 👋",
-    "subtitle": "أدر مناسباتك وتابع تقدمك"
+    "welcome": "أهلاً بك! 👋",
+    "subtitle": "أدِر مناسباتك وتابع تقدمك بكل سهولة"
   },
   "overview": {
     "title": "نظرة عامة"
   },
   "templates": {
     "title": "قوالب المناسبات",
-    "subtitle": "اختر القالب المناسب الذى تراه يعبر عن المناسبة",
+    "subtitle": "اختر القالب المناسب الذي تراه معبراً عن المناسبة",
     "all": "كل الفئات",
     "empty": "لا توجد قوالب متاحة بعد.",
     "preview": "معاينة الدعوة",
     "cardAlt": "قالب دعوة",
-    "wedding": "حفلات زفاف",
-    "graduation": "حفلات تخرج",
-    "birthday": "حفلات عيد ميلاد",
-    "diplomatic": "مناسبات دبلوماسية",
-    "corporate": "مناسبات شركات",
-    "religious": "مناسبات دينية",
-    "anniversary": "حفلات ذكرى",
-    "baby": "حفلات مواليد"
+    "wedding": "أعراس",
+    "graduation": "تخرج",
+    "birthday": "أعياد ميلاد",
+    "diplomatic": "دبلوماسية",
+    "corporate": "شركات",
+    "religious": "دينية",
+    "anniversary": "ذكرى سنوية",
+    "baby": "مواليد"
   },
   "table": {
-    "eventName": "اسم الحفل",
-    "eventType": "نوع الحفل",
-    "totalInvites": "إجمالي المدعوين",
-    "confirmed": "الحضور",
-    "declined": "الاعتذار",
+    "eventName": "اسم المناسبة",
+    "eventType": "نوع المناسبة",
+    "totalInvites": "إجمالي الدعوات",
+    "confirmed": "تم التأكيد",
+    "declined": "اعتذر",
     "noResponse": "لم يرد",
-    "status": "حالة المناسبة",
+    "status": "الحالة",
     "actions": "الإجراءات",
-    "view": "معاينة",
+    "view": "عرض",
     "delete": "حذف",
     "noEvents": "لا توجد مناسبات متاحة",
     "eventsList": "قائمة المناسبات",
@@ -177,9 +177,9 @@
     "exportSuccess": "تم تصدير المناسبات بنجاح",
     "exportError": "فشل في تصدير المناسبات",
     "columns": {
-      "addedBy": "إضافة بواسطة",
+      "addedBy": "أضيف بواسطة",
       "name": "الاسم",
-      "phone": "الهاتف",
+      "phone": "رقم الهاتف",
       "status": "الحالة",
       "respondAt": "تاريخ الرد",
       "actions": "الإجراءات",
@@ -191,8 +191,8 @@
     },
     "channel": {
       "whatsapp": "واتساب",
-      "sms": "SMS",
-      "smsFallback": "SMS (بديل)"
+      "sms": "رسالة نصية",
+      "smsFallback": "رسالة نصية (احتياطي)"
     },
     "confirmDelete": "حذف",
     "cancelDelete": "إلغاء"
@@ -203,7 +203,7 @@
     "noEventId": "معرف المناسبة غير موجود",
     "noToken": "رمز المصادقة غير موجود",
     "eventNotFound": "المناسبة غير موجودة أو ليس لديك صلاحية لحذفها",
-    "unauthorized": "ليس لديك صلاحية لتنفيذ هذا الإجراء",
+    "unauthorized": "ليس لديك الصلاحية لتنفيذ هذا الإجراء",
     "deleteError": "فشل في حذف المناسبة. يرجى المحاولة مرة أخرى.",
     "noGuestId": "معرف الضيف غير موجود"
   },
@@ -211,32 +211,32 @@
     "title": "المناسبات",
     "stats": {
       "totalGuests": "إجمالي الضيوف",
-      "confirmed": "مؤكد",
-      "guestAcceptance": "عدد القبول",
-      "declined": "معتذر",
+      "confirmed": "تم التأكيد",
+      "guestAcceptance": "عدد المقبولين",
+      "declined": "اعتذر",
       "responseRate": "معدل الاستجابة",
       "noResponse": "لم يرد"
     }
   },
   "singleEvent": {
-    "autoReminderInfo": "نرسل تذكيراً مجانياً لضيوفك المؤكدين قبل المناسبة.",
-    "autoReminderInfoCustom": "نرسل تذكيراً مجانياً لضيوفك المؤكدين في {{date}} الساعة {{time}}.",
+    "autoReminderInfo": "نرسل تذكيرًا مجانيًا لضيوفك المؤكدين قبل موعد الحفل.",
+    "autoReminderInfoCustom": "نرسل تذكيرًا مجانيًا لضيوفك المؤكدين في {{date}} الساعة {{time}}.",
     "customizeReminder": "تخصيص",
     "customizeReminderModalTitle": "تخصيص التذكير التلقائي",
-    "customReminderCheckbox": "تخصيص وقت التذكير",
+    "customReminderCheckbox": "تخصيص موعد التذكير",
     "saveSuccess": "تم حفظ إعدادات التذكير بنجاح",
     "save": "حفظ",
     "reminderCustomize": {
-      "description": "نرسل تذكيراً مجانياً لضيوفك المؤكدين قبل المناسبة.",
-      "trialInfo": "في الباقة التجريبية، يُرسل التذكير تلقائياً بعد 10 دقائق من بدء إرسال الدعوات ولا يمكن تخصيصه.",
+      "description": "نرسل تذكيرًا مجانيًا لضيوفك المؤكدين قبل موعد الحفل.",
+      "trialInfo": "في الباقة التجريبية يُرسل التذكير تلقائيًا بعد 10 دقائق من إطلاق الدعوات ولا يمكن تخصيصه.",
       "dateLabel": "التاريخ",
       "timeLabel": "الوقت",
       "selectDate": "اختر التاريخ",
-      "windowHint": "اختر وقتاً بعد بدء الإرسال وقبل المناسبة بـ 24 ساعة على الأقل.",
+      "windowHint": "اختر موعدًا بعد بدء الإرسال وقبل الحفل بـ 24 ساعة على الأقل.",
       "cancel": "إلغاء",
       "errors": {
-        "dateTimeRequired": "التاريخ والوقت مطلوبان للتذكير المخصص",
-        "outOfRange": "يجب أن يكون وقت التذكير بعد بدء الإرسال وقبل المناسبة بـ 24 ساعة على الأقل.",
+        "dateTimeRequired": "التاريخ والوقت مطلوبان لتخصيص التذكير",
+        "outOfRange": "يجب أن يكون موعد التذكير بعد بدء الإرسال وقبل الحفل بـ 24 ساعة على الأقل.",
         "generic": "تعذّر حفظ إعدادات التذكير"
       }
     },
@@ -245,13 +245,13 @@
       "extraReminder": "تذكير إضافي",
       "resendTitle": "إعادة إرسال الدعوة",
       "extraReminderTitle": "تذكير إضافي",
-      "costSummary": "سيُرسل إلى {{count}} · يكلّف {{count}} دعوة · المتبقّي {{remaining}}",
-      "sentResult": "تم إرسال {{successful}}/{{total}}",
-      "insufficientInvites": "الدعوات غير كافية — اشترِ المزيد من الباقات.",
+      "costSummary": "سيُرسل إلى {{count}} · يستهلك {{count}} دعوة · المتبقي {{remaining}}",
+      "sentResult": "تم إرسال {{successful}} من أصل {{total}}",
+      "insufficientInvites": "رصيد الدعوات غير كافٍ — اشترِ المزيد من صفحة الباقات.",
       "noReminderTemplate": "لا يوجد قالب تذكير مهيأ لهذه الفئة. تواصل مع الدعم.",
-      "noEligibleResend": "لا يمكن إعادة دعوة أي من الضيوف المحددين (فقط من لم يردّ).",
-      "noEligibleReminder": "لا يوجد ضيوف مؤكدون ضمن المحددين.",
-      "sendInvitesFirst": "أرسِل الدعوات الأولية أولًا، ثم استخدم إعادة الإرسال لمن لم يردّ.",
+      "noEligibleResend": "لا يوجد من بين المحددين من يمكن إعادة دعوته (فقط من لم يردّوا).",
+      "noEligibleReminder": "لا يوجد من بين المحددين ضيوف مؤكدون.",
+      "sendInvitesFirst": "أرسِل الدعوات الأولية أولًا ثم استخدم إعادة الإرسال لمن لم يرد.",
       "noEligibleNow": "لقد ردّ الجميع — لا يوجد من يمكن إعادة دعوته.",
       "noConfirmedNow": "لا يوجد ضيوف مؤكدون للتذكير بعد.",
       "error": "تعذّر إكمال الإجراء"
@@ -286,10 +286,10 @@
     "header": {
       "eventDetails": "تفاصيل المناسبة",
       "editGuests": "تعديل الضيوف",
-      "staffDetails": "تفاصيل مشرفين البوابة",
       "ourInvitation": "دعوتك علينا",
       "ourInvitationTitle": "خدمة مميزة",
       "ourInvitationDesc": "دعنا نهتم بكل تفاصيل مناسبتك",
+      "staffDetails": "تفاصيل مشرفين البوابة",
       "sendReminder": "إرسال تذكير",
       "addGuest": "إضافة ضيف"
     },
@@ -333,7 +333,7 @@
       "namePlaceholder": "أدخل اسم الضيف",
       "phone": "رقم الهاتف",
       "phonePlaceholder": "أدخل رقم الهاتف",
-      "invalidPhone": "رقم الهاتف يجب أن يكون 9 أرقام تبدأ بـ 5",
+      "invalidPhone": "رقم الهاتف يجب أن يكون 10 أرقام ويبدأ بـ 05 أو 9 أرقام ويبدأ بـ 5",
       "invalidEmail": "يرجى إدخال بريد إلكتروني صحيح",
       "success": "تم إضافة الضيف بنجاح",
       "error": "فشل في إضافة الضيف"
@@ -354,7 +354,7 @@
       "emailPlaceholder": "أدخل البريد الإلكتروني",
       "mainStaff": "الموظف الرئيسي",
       "phoneRequired": "رقم الهاتف مطلوب",
-      "invalidPhone": "رقم الهاتف يجب أن يكون 9 أرقام تبدأ بـ 5",
+      "invalidPhone": "رقم الهاتف يجب أن يكون 10 أرقام ويبدأ بـ 05 أو 9 أرقام ويبدأ بـ 5",
       "nameRequired": "الاسم يجب أن يكون حرفين على الأقل",
       "nameMaxLength": "الاسم لا يمكن أن يتجاوز 100 حرف",
       "success": "تم إضافة الموظف بنجاح",
@@ -436,7 +436,7 @@
     "error": "فشل في إرسال الرسالة التجريبية",
     "validation": {
       "phoneRequired": "رقم الجوال مطلوب",
-      "phoneFormat": "رقم الجوال يجب أن يكون 9 أرقام ويبدأ بـ 5"
+      "phoneFormat": "رقم الجوال يجب أن يكون 10 أرقام ويبدأ بـ 05 أو 9 أرقام ويبدأ بـ 5"
     }
   },
   "scheduleEvent": {

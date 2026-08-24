@@ -2,7 +2,13 @@ import React from "react";
 import { View, Text, StyleSheet, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../../localization";
-import { formatDate, formatTime } from "@halaa/shared/utils/locale";
+import AdaptiveText from "../../commen/AdaptiveText";
+import {
+  formatDate,
+  formatTime,
+  formatGuestCount,
+} from "@halaa/shared/utils/locale";
+import { isolateAuto } from "@halaa/shared/utils/bidi";
 import { getStatusVisual } from "../../../constants/statusColors";
 
 const STATUS_STYLE = {
@@ -19,30 +25,48 @@ const DEFAULT_STATUS = {
 };
 
 function formatDateTime(event, locale) {
-  if (!event.date) return event.dateTime || "";
+  // Returns the two locale-formatted tokens separately so the renderer can
+  // emit them as isolated nested runs — the neutral "•" separator can never
+  // BiDi-spill between a Latin date and an Arabic time (blueprint §6).
+  if (!event.date) return { fallback: event.dateTime || "" };
   const dateStr = formatDate(event.date, locale);
   const timeStr = event.time ? formatTime(event.time, locale) : "";
-  return `${dateStr}${timeStr ? "  •  " + timeStr : ""}`;
+  return { dateStr, timeStr };
 }
 
 export default function LastEventHeader({ event }) {
   const { t, currentLanguage } = useTranslation("home");
   const locale = currentLanguage || "ar";
+  // Event title/location are arbitrary backend content → adaptive.
   const title = event.title || t("lastEvent.untitled");
   const guestCount = event.guestCount || 0;
+  // One authored interpolation per locale: the count is pre-formatted with
+  // localized digits and never concatenated in JSX (blueprint §6).
+  const guestCountText = formatGuestCount(guestCount, locale);
   const location = event.locationName || "";
   const status = STATUS_STYLE[event.status] || DEFAULT_STATUS;
   // Step-3 invitation image, signed by the dashboard endpoint. Fall back to the
   // legacy `image` field for any older payload shape.
   const image = event.templateImage || event.image;
+  const dateTime = formatDateTime(event, locale);
 
   return (
     <View style={styles.contentRow}>
       <View style={styles.textContent}>
         <View style={styles.titleRow}>
-          <Text style={styles.title}>{title}</Text>
+          <AdaptiveText style={styles.title} numberOfLines={2}>
+            {title}
+          </AdaptiveText>
           <View style={[styles.statusBadge, { backgroundColor: status.bg }]}>
-            <Text style={[styles.statusText, { color: status.fg }]}>
+            <Text
+              style={[
+                styles.statusText,
+                {
+                  color: status.fg,
+                  writingDirection: locale === "ar" ? "rtl" : "ltr",
+                },
+              ]}
+            >
               {t(status.textKey)}
             </Text>
           </View>
@@ -51,18 +75,35 @@ export default function LastEventHeader({ event }) {
         <View style={styles.details}>
           <View style={styles.detailItem}>
             <Ionicons name="people-outline" size={12} color="#C28E5C" />
-            <Text style={styles.detailText}>
-              {guestCount} {t("lastEvent.guests")}
-            </Text>
+            <Text style={styles.detailText}>{guestCountText}</Text>
           </View>
           <View style={styles.detailItem}>
             <Ionicons name="calendar-outline" size={12} color="#C28E5C" />
-            <Text style={styles.detailText}>{formatDateTime(event, locale)}</Text>
+            {dateTime.fallback !== undefined ? (
+              // Legacy raw stored datetime is backend content → adaptive.
+              <AdaptiveText style={styles.detailText}>
+                {dateTime.fallback}
+              </AdaptiveText>
+            ) : (
+              <Text style={styles.detailText}>
+                {/* Each formatted token is isolated so mixed Arabic/Latin
+                    dates cannot reorder against the separator. */}
+                {isolateAuto(dateTime.dateStr)}
+                {!!dateTime.timeStr && (
+                  <>
+                    {"  •  "}
+                    {isolateAuto(dateTime.timeStr)}
+                  </>
+                )}
+              </Text>
+            )}
           </View>
           {!!location && (
             <View style={styles.detailItem}>
               <Ionicons name="location-outline" size={12} color="#C28E5C" />
-              <Text style={styles.detailText}>{location}</Text>
+              <AdaptiveText style={styles.detailText} numberOfLines={1}>
+                {location}
+              </AdaptiveText>
             </View>
           )}
         </View>
@@ -112,6 +153,9 @@ const styles = StyleSheet.create({
     color: "#2C2C2C",
     lineHeight: 24,
     letterSpacing: 0.024,
+    // The adaptive title shrinks so the trailing status badge keeps its
+    // logical-end slot at every text scale.
+    flexShrink: 1,
   },
   details: {
     gap: 8,

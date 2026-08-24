@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   View,
-  Text,
   StyleSheet,
   FlatList,
   TouchableOpacity,
@@ -17,6 +16,7 @@ import { useLanguage, useTranslation } from "../../localization";
 import { useAuthStore } from "../../stores/authStore";
 import { useToast } from "../../contexts/ToastContext";
 import { TicketCard, TicketModal, TicketRatingModal } from "../../components/tickets";
+import LocalizedText from "../../components/commen/LocalizedText";
 import {
   useTickets,
   useCreateTicket,
@@ -161,14 +161,16 @@ export default function TicketsScreen() {
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
       <Ionicons name="ticket-outline" size={80} color="#e0e0e0" />
-      <Text style={styles.emptyTitle}>
+      <LocalizedText style={styles.emptyTitle} center>
         {t("noTickets.title")}
-      </Text>
-      <Text
+      </LocalizedText>
+      <LocalizedText
         style={styles.emptyDescription}
+        center
+        numberOfLines={0}
       >
         {t("noTickets.message")}
-      </Text>
+      </LocalizedText>
     </View>
   );
 
@@ -226,7 +228,10 @@ export default function TicketsScreen() {
             style={styles.fab}
             onPress={() => setModalVisible(true)}
             activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel={t("createTicket")}
           >
+            {/* "add" is a semantic create glyph — never direction-flipped. */}
             <Ionicons name="add" size={28} color="#fff" />
           </TouchableOpacity>
         </Animated.View>

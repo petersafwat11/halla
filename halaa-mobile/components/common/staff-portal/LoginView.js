@@ -13,6 +13,12 @@ import {
 import TextInput from "../../commen/DirectionalTextInput";
 import { Ionicons } from "@expo/vector-icons";
 import { useVerifyStaffAccess } from "../../../hooks/staff";
+import {
+  clampPhoneInput,
+  isValidPhone,
+  getPhoneMaxLength,
+  DEFAULT_PHONE_PLACEHOLDER,
+} from "@halaa/shared/utils/phone";
 
 const LoginView = ({ onVerified, t }) => {
   const [phone, setPhone] = useState("");
@@ -22,7 +28,11 @@ const LoginView = ({ onVerified, t }) => {
 
   const validate = () => {
     const newErrors = {};
-    if (!phone.trim()) newErrors.phone = t("login.errors.phoneRequired");
+    if (!phone.trim()) {
+      newErrors.phone = t("login.errors.phoneRequired");
+    } else if (!isValidPhone(phone)) {
+      newErrors.phone = t("login.errors.phoneInvalid", "رقم الجوال غير صحيح");
+    }
     if (!eventId.trim()) newErrors.eventId = t("login.errors.eventIdRequired");
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -78,10 +88,15 @@ const LoginView = ({ onVerified, t }) => {
             <Ionicons name="call-outline" size={18} color="#9CA3AF" style={styles.inputIcon} />
             <TextInput
               style={styles.input}
-              placeholder={t("login.phonePlaceholder")}
+              placeholder={t("login.phonePlaceholder", DEFAULT_PHONE_PLACEHOLDER)}
               placeholderTextColor="#9CA3AF"
               value={phone}
-              onChangeText={(v) => { setPhone(v); setErrors((e) => ({ ...e, phone: undefined })); }}
+              maxLength={getPhoneMaxLength(phone)}
+              onChangeText={(v) => {
+                const clamped = clampPhoneInput(v);
+                setPhone(clamped);
+                setErrors((e) => ({ ...e, phone: undefined }));
+              }}
               keyboardType="phone-pad"
             />
           </View>

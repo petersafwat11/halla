@@ -3,6 +3,7 @@ import { useAuthStore } from "../../../stores/authStore";
 import { canEditPage, PAGES } from "../../../utils/adminPermissions";
 import { useTranslation } from "../../../localization";
 import { formatDate } from "@halaa/shared/utils/locale";
+import { isolateAuto, isolateLtr } from "@halaa/shared/utils/bidi";
 import { colors } from "../../../styles/tokens";
 import { getStatusVisual } from "../../../constants/statusColors";
 import AdminListItem from "../common/AdminListItem";
@@ -52,17 +53,19 @@ const TicketListItem = ({ ticket, onPress, onResolve, onAssign, selected = false
       bg: priorityVisual.bg,
     },
     assignedTo && {
+      // Assignee name is backend content — first-strong, not the UI locale.
       label: assignedTo,
       color: colors.primary[600],
       bg: colors.primary[50],
       icon: "person-circle-outline",
+      adaptive: true,
     },
   ].filter(Boolean);
 
   const details = [
-    ticketNum && { icon: "receipt-outline", text: `#${ticketNum}` },
-    ticket.category && { icon: "folder-outline", text: ticket.category },
-    { icon: "calendar-outline", text: formatDate(ticket.createdAt, currentLanguage) },
+    ticketNum && { icon: "receipt-outline", text: isolateLtr(`#${ticketNum}`), ltr: true },
+    ticket.category && { icon: "folder-outline", text: ticket.category, adaptive: true },
+    { icon: "calendar-outline", text: isolateAuto(formatDate(ticket.createdAt, currentLanguage)) },
   ].filter(Boolean);
 
   const actions = canEdit

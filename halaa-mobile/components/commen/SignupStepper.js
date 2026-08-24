@@ -1,7 +1,17 @@
 import React from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { View, StyleSheet, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import LocalizedText from "./LocalizedText";
 
+/**
+ * Vendor-signup progress stepper.
+ *
+ * The horizontal row follows the inherited logical layout direction (no
+ * row-reverse), so steps read start→end in both locales. Step labels are app
+ * copy rendered through the localized text-role contract; step-number glyphs
+ * stay pinned LTR so multi-digit indexes cannot split under RTL (blueprint
+ * §4.1 StepHeader pattern).
+ */
 const SignupStepper = ({ steps, currentStep }) => {
   return (
     <View style={styles.wrapper}>
@@ -37,19 +47,21 @@ const SignupStepper = ({ steps, currentStep }) => {
                   ]}
                 >
                   {isCompleted ? (
+                    /* Check is a semantic glyph — never mirrored. */
                     <Ionicons name="checkmark" size={16} color="#fff" />
                   ) : (
-                    <Text
+                    <LocalizedText
                       style={[
                         styles.circleText,
                         (isActive || isCompleted) && styles.circleTextActive,
                       ]}
                     >
                       {stepNum}
-                    </Text>
+                    </LocalizedText>
                   )}
                 </View>
-                <Text
+                <LocalizedText
+                  center
                   style={[
                     styles.stepLabel,
                     isActive && styles.stepLabelActive,
@@ -58,7 +70,7 @@ const SignupStepper = ({ steps, currentStep }) => {
                   numberOfLines={2}
                 >
                   {step.desc}
-                </Text>
+                </LocalizedText>
               </View>
             </View>
           );
@@ -130,6 +142,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "Cairo_700Bold",
     color: "#999",
+    writingDirection: "ltr",
   },
   circleTextActive: {
     color: "#fff",
@@ -138,7 +151,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontFamily: "Cairo_400Regular",
     color: "#aaa",
-    textAlign: "center",
     lineHeight: 14,
   },
   stepLabelActive: {

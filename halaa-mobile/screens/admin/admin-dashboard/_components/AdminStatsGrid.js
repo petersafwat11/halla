@@ -1,7 +1,10 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { colors, spacing, borderRadius, typography, textStyles, backgrounds } from "../../../../styles/tokens";
+import LocalizedText from "../../../components/commen/LocalizedText";
+import { formatCount } from "@halaa/shared/utils/locale";
+import { useTranslation } from "../../../../localization";
+import { colors, spacing, borderRadius, typography, backgrounds } from "../../../../styles/tokens";
 
 const ICON_MAP = {
   users: { name: "people-outline", color: colors.primary[500] },
@@ -25,23 +28,34 @@ const StatChip = ({ item }) => {
         <Ionicons name={iconConfig.name} size={20} color={iconConfig.color} />
       </View>
       <View style={styles.statTextCol}>
-        <Text style={styles.statValue}>{item.value ?? "—"}</Text>
-        <Text style={styles.statLabel} numberOfLines={2}>{item.title}</Text>
+        {/* Stat values are counts — formatted per the UI locale's digit system. */}
+        <LocalizedText style={styles.statValue}>{item.value ?? "—"}</LocalizedText>
+        <LocalizedText style={styles.statLabel} numberOfLines={2}>{item.title}</LocalizedText>
         {item.subtitle ? (
-          <Text style={styles.statSubtitle} numberOfLines={2}>{item.subtitle}</Text>
+          <LocalizedText style={styles.statSubtitle} numberOfLines={2}>{item.subtitle}</LocalizedText>
         ) : null}
       </View>
     </View>
   );
 };
 
-const AdminStatsGrid = ({ statsCards }) => (
-  <View style={styles.statsGrid}>
-    {statsCards.map((item) => (
-      <StatChip key={item.id ?? item.title} item={item} />
-    ))}
-  </View>
-);
+const AdminStatsGrid = ({ statsCards }) => {
+  const { currentLanguage } = useTranslation("admin");
+  const localizedCards = statsCards.map((card) => ({
+    ...card,
+    value:
+      typeof card.value === "number"
+        ? formatCount(card.value, currentLanguage)
+        : card.value,
+  }));
+  return (
+    <View style={styles.statsGrid}>
+      {localizedCards.map((item) => (
+        <StatChip key={item.id ?? item.title} item={item} />
+      ))}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   statsGrid: {

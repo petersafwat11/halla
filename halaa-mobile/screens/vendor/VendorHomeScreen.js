@@ -11,9 +11,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { TopBar } from "../../components/plans";
 import Services from "../../components/vendor/home/Services";
 import AddServicePopup from "../../components/vendor/home/AddServicePopup";
+import LocalizedText from "../../components/commen/LocalizedText";
+import AdaptiveText from "../../components/commen/AdaptiveText";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
 import { useAuthStore } from "../../stores/authStore";
 import { useTranslation } from "../../localization/hooks/useTranslation";
-import { formatNumber } from "@halaa/shared/utils/locale";
+import { formatCount, formatNumber } from "@halaa/shared/utils/locale";
 import { useVendorStats, useVendorServices } from "../../hooks";
 import {
   useDeleteVendorService,
@@ -48,6 +51,16 @@ const VendorHomeScreen = ({ navigation }) => {
   const activeServices = statsData?.activeServices || 0;
   const totalServices = statsData?.totalServices || 0;
   const rating = statsData?.avgRating?.toFixed(1) || "0";
+  // Counts and rating are locale-formatted display tokens (blueprint §6):
+  // Arabic UI renders Arabic-Indic digits, English keeps Latin digits.
+  const formattedActiveServices = formatCount(activeServices, currentLanguage);
+  const formattedTotalServices = formatCount(totalServices, currentLanguage);
+  const formattedRating = isolateLtr(
+    formatNumber(rating, currentLanguage, {
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1,
+    }),
+  );
 
   const mappedServices = useMemo(() => {
     if (!services || !Array.isArray(services)) return [];
@@ -151,7 +164,11 @@ const VendorHomeScreen = ({ navigation }) => {
     return (
       <SafeAreaView style={styles.safeArea} edges={["top"]}>
         <StatusBar barStyle="light-content" backgroundColor="#C28E5C" />
-        <View style={styles.errorContainer}><Text style={styles.errorText}>{t("errors.fetchFailed")}</Text></View>
+        <View style={styles.errorContainer}>
+          <LocalizedText role="body" style={styles.errorText}>
+            {t("errors.fetchFailed")}
+          </LocalizedText>
+        </View>
       </SafeAreaView>
     );
   }
@@ -168,8 +185,11 @@ const VendorHomeScreen = ({ navigation }) => {
 
   const greetingContent = (
     <View style={styles.greetingContainer}>
-      <Text style={styles.greetingText}>{t("greeting")}</Text>
-      <Text style={styles.organizationName}>{vendorName}</Text>
+      <LocalizedText style={styles.greetingText}>{t("greeting")}</LocalizedText>
+      {/* Vendor brand / account name is backend content: first-strong
+          direction + isolation so a Latin brand name stays LTR inside the
+          Arabic chrome and vice versa (blueprint §6 AdaptiveText). */}
+      <AdaptiveText style={styles.organizationName}>{vendorName}</AdaptiveText>
     </View>
   );
 
@@ -185,25 +205,33 @@ const VendorHomeScreen = ({ navigation }) => {
       </View>
 
       <View style={styles.headerContent}>
-        <Text style={styles.headerTitle}>{t("dashboard.title")}</Text>
-        <Text style={styles.headerSubtitle}>
-          {t("dashboard.subtitle", { count: totalServices })}
-        </Text>
+        <LocalizedText role="pageTitle" style={styles.headerTitle}>
+          {t("dashboard.title")}
+        </LocalizedText>
+        <LocalizedText role="description" style={styles.headerSubtitle}>
+          {t("dashboard.subtitle", { count: formattedTotalServices })}
+        </LocalizedText>
       </View>
 
       {/* Stats Cards */}
       <View style={styles.quickActions}>
         <View style={styles.quickActionButton}>
-          <Text style={styles.statValue}>{activeServices}</Text>
-          <Text style={styles.quickActionText}>{t("stats.activeServices")}</Text>
+          <Text style={styles.statValue}>{formattedActiveServices}</Text>
+          <LocalizedText center style={styles.quickActionText}>
+            {t("stats.activeServices")}
+          </LocalizedText>
         </View>
         <View style={styles.quickActionButton}>
-          <Text style={styles.statValue}>{totalServices}</Text>
-          <Text style={styles.quickActionText}>{t("stats.totalServices")}</Text>
+          <Text style={styles.statValue}>{formattedTotalServices}</Text>
+          <LocalizedText center style={styles.quickActionText}>
+            {t("stats.totalServices")}
+          </LocalizedText>
         </View>
         <View style={styles.quickActionButton}>
-          <Text style={styles.statValue}>{rating}</Text>
-          <Text style={styles.quickActionText}>{t("stats.rating")}</Text>
+          <Text style={styles.statValue}>{formattedRating}</Text>
+          <LocalizedText center style={styles.quickActionText}>
+            {t("stats.rating")}
+          </LocalizedText>
         </View>
       </View>
     </View>
@@ -278,6 +306,10 @@ const styles = StyleSheet.create({
     position: "relative",
     overflow: "hidden",
   },
+  // Decorative background texture artwork (blueprint §2): the mirrored
+  // diagonal stripes are intentionally physical full-bleed overlays, not
+  // semantic content — `left`/`right` here is a documented physical-artwork
+  // exception and must not be migrated to start/end.
   textureLeft: {
     position: "absolute",
     left: -190,

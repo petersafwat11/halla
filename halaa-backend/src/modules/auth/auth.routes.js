@@ -62,12 +62,15 @@ const { AppError } = require("../../shared/errors");
 const catchAsync = require("../../shared/utils/catchAsync");
 const User = require("../../../models/UserModel");
 
+const { normalizePhoneNumber } = require("../../shared/utils/phone");
+
 /**
  * Check for duplicate email/phone during signup
  */
 const checkDuplicates = catchAsync(async (req, res, next) => {
   const { email, phoneNumber, mobile } = req.body;
-  const mobileToCheck = (mobile || phoneNumber || "").replace(/[^\d+]/g, "");
+  const rawMobile = mobile || phoneNumber || "";
+  const normalizedPhone = rawMobile ? normalizePhoneNumber(rawMobile) : "";
   const normalizedEmail = email?.toLowerCase().trim();
 
   if (normalizedEmail) {
@@ -76,9 +79,15 @@ const checkDuplicates = catchAsync(async (req, res, next) => {
     if (existing) return next(new AppError("This email address is already registered. Please use a different email or try logging in.", 409));
   }
 
-  if (mobileToCheck) {
-    const query = { mobile: mobileToCheck };
-    const existing = await User.findOne(query).select("mobile").lean();
+  if (normalizedPhone || rawMobile) {
+    const phoneConditions = [];
+    if (normalizedPhone) {
+      phoneConditions.push({ mobile: normalizedPhone }, { phoneNumber: normalizedPhone });
+    }
+    if (rawMobile && rawMobile !== normalizedPhone) {
+      phoneConditions.push({ mobile: rawMobile }, { phoneNumber: rawMobile });
+    }
+    const existing = await User.findOne({ $or: phoneConditions }).select("mobile phoneNumber").lean();
     if (existing) return next(new AppError("This mobile number is already registered. Please use a different number or try logging in.", 409));
   }
 

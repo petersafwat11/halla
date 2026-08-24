@@ -12,6 +12,7 @@
  * only the contacts the host explicitly selects become guests.
  */
 import * as Contacts from "expo-contacts";
+import { normalizePhoneNumber } from "@halaa/shared/utils/phone";
 
 /**
  * Normalize an arbitrary phone string to the app's canonical Saudi mobile
@@ -20,12 +21,9 @@ import * as Contacts from "expo-contacts";
  */
 export const normalizeSaudiMobile = (raw) => {
   if (!raw) return null;
-  let d = String(raw).replace(/[^\d+]/g, "");
-  d = d.replace(/^\+/, "");
-  if (d.startsWith("00966")) d = d.slice(5);
-  else if (d.startsWith("966")) d = d.slice(3);
-  if (d.startsWith("0")) d = d.slice(1);
-  return /^5\d{8}$/.test(d) ? d : null;
+  const normalized = normalizePhoneNumber(raw);
+  if (!normalized) return null;
+  return normalized.startsWith("966") ? normalized.slice(3) : normalized;
 };
 
 export const isContactsAvailable = () =>

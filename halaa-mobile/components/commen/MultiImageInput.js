@@ -1,7 +1,6 @@
 import React from "react";
 import {
   View,
-  Text,
   TouchableOpacity,
   Image,
   StyleSheet,
@@ -10,7 +9,19 @@ import {
 import { useFormContext, Controller } from "react-hook-form";
 import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import LocalizedText from "./LocalizedText";
+import { useTranslation } from "../../localization";
 
+/**
+ * Shared multi-image-picker form field (blueprint §5.2 field anatomy).
+ *
+ * The picker trigger is physical artwork (camera glyph over a dashed canvas),
+ * so nothing here is mirrored; the preview strip and its remove buttons are
+ * equal hit-targets in a logical row. All chrome — label, placeholder, hint,
+ * add-more caption and validation error — is application copy rendered
+ * through the localized text-role contract: it follows the UI locale in both
+ * languages and never embeds language literals.
+ */
 const MultiImageInput = ({
   name,
   label,
@@ -19,6 +30,7 @@ const MultiImageInput = ({
   rules,
 }) => {
   const { control } = useFormContext();
+  const { t } = useTranslation("common");
 
   const pickImages = async (onChange, currentValues) => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -54,7 +66,11 @@ const MultiImageInput = ({
 
         return (
           <View style={styles.container}>
-            {label && <Text style={styles.label}>{label}</Text>}
+            {label && (
+              <LocalizedText role="label" style={styles.label}>
+                {label}
+              </LocalizedText>
+            )}
 
             {/* Image Previews */}
             {images.length > 0 && (
@@ -72,7 +88,10 @@ const MultiImageInput = ({
                     <TouchableOpacity
                       style={styles.removeButton}
                       onPress={() => removeImage(onChange, images, index)}
+                      accessibilityRole="button"
+                      accessibilityLabel={t("buttons.delete")}
                     >
+                      {/* Close is a semantic glyph — never mirrored. */}
                       <Ionicons name="close" size={14} color="#fff" />
                     </TouchableOpacity>
                   </View>
@@ -84,12 +103,15 @@ const MultiImageInput = ({
                     onPress={() => pickImages(onChange, images)}
                     activeOpacity={0.7}
                   >
+                    {/* Plus is a semantic glyph — never mirrored. */}
                     <MaterialCommunityIcons
                       name="plus"
                       size={28}
                       color="#C28E5C"
                     />
-                    <Text style={styles.addMoreText}>إضافة</Text>
+                    <LocalizedText style={styles.addMoreText}>
+                      {t("imagePicker.add")}
+                    </LocalizedText>
                   </TouchableOpacity>
                 )}
               </ScrollView>
@@ -101,23 +123,30 @@ const MultiImageInput = ({
                 style={[styles.picker, error && styles.pickerError]}
                 onPress={() => pickImages(onChange, images)}
                 activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel={placeholder || label}
               >
                 <MaterialCommunityIcons
                   name="camera-plus-outline"
                   size={36}
                   color="#C28E5C"
                 />
-                <Text style={styles.placeholderText}>
-                  {placeholder || (multiple ? "اختر صور" : "اختر صورة")}
-                </Text>
+                <LocalizedText style={styles.placeholderText}>
+                  {placeholder || t(multiple ? "imagePicker.chooseImages" : "imagePicker.chooseImage")}
+                </LocalizedText>
                 {multiple && (
-                  <Text style={styles.subText}>يمكن اختيار أكثر من صورة</Text>
+                  <LocalizedText role="hint" style={styles.subText}>
+                    {t("imagePicker.multipleHint")}
+                  </LocalizedText>
                 )}
               </TouchableOpacity>
             )}
 
             {error && (
-              <Text style={styles.errorText}>{error.message}</Text>
+              // Validation copy follows the UI locale (blueprint §5.3).
+              <LocalizedText role="error" style={styles.errorText}>
+                {error.message}
+              </LocalizedText>
             )}
           </View>
         );

@@ -1,9 +1,10 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import TopBar from "../plans/TopBar";
 import DirectionalIonicon from "../common/DirectionalIonicon";
+import LocalizedText from "../commen/LocalizedText";
 
 export default function LimitReachedView({ tEvents, title, leftContent, navigation }) {
   return (
@@ -11,12 +12,14 @@ export default function LimitReachedView({ tEvents, title, leftContent, navigati
       <TopBar title={title} leftContent={leftContent} />
       <View style={styles.content}>
         <Ionicons name="alert-circle-outline" size={64} color="#C28E5C" />
-        <Text style={styles.heading}>
-          {tEvents?.("limitReached.title") || "Event Limit Reached"}
-        </Text>
-        <Text style={styles.message}>
-          {tEvents?.("limitReached.message") || "You have reached the maximum number of events allowed by your plan. Please upgrade your plan to create more events."}
-        </Text>
+        {/* App-authored copy → LocalizedText so the heading/message follow
+            the UI locale even when the plan name inside is Latin. */}
+        <LocalizedText role="sectionTitle" style={styles.heading} center>
+          {tEvents?.("limitReachedView.title")}
+        </LocalizedText>
+        <LocalizedText role="body" style={styles.message} center>
+          {tEvents?.("limitReachedView.message")}
+        </LocalizedText>
         {navigation && (
           <TouchableOpacity
             style={styles.backButton}
@@ -24,9 +27,9 @@ export default function LimitReachedView({ tEvents, title, leftContent, navigati
             activeOpacity={0.7}
           >
             <DirectionalIonicon name="arrow-back" size={18} color="#FFF" />
-            <Text style={styles.backButtonText}>
-              {tEvents?.("limitReached.goBack") || "Go Back"}
-            </Text>
+            <LocalizedText style={styles.backButtonText}>
+              {tEvents?.("limitReachedView.goBack")}
+            </LocalizedText>
           </TouchableOpacity>
         )}
       </View>

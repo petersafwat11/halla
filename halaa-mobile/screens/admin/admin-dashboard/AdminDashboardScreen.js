@@ -13,6 +13,7 @@ import { useAuthStore } from "../../../stores/authStore";
 import { useTranslation } from "../../../localization";
 import { useToast } from "../../../contexts/ToastContext";
 import TopBar from "../../../components/plans/TopBar";
+import { isolateAuto } from "@halaa/shared/utils/bidi";
 import AdminStatsGrid from "./_components/AdminStatsGrid";
 import AdminSubscriptionsChart from "./_components/AdminSubscriptionsChart";
 import AdminGuestStatsChart from "./_components/AdminGuestStatsChart";
@@ -81,7 +82,13 @@ const AdminDashboardScreen = () => {
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <View style={styles.container}>
-        <TopBar title={`${t("dashboard.welcome")}, ${user?.name || t("common.admin")}`} />
+        {/* One translated sentence with the (first-strong isolated) admin
+            name interpolated — never JSX string concatenation. */}
+        <TopBar
+          title={t("dashboard.welcomeUser", {
+            name: isolateAuto(user?.name || t("common.admin")),
+          })}
+        />
         <ScrollView
           refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} />}
           contentContainerStyle={styles.scrollContent}

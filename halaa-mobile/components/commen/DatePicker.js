@@ -10,6 +10,7 @@ import { useFormContext, Controller } from "react-hook-form";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
+import { useFieldDirection } from "../../hooks/useInputDirection";
 import { formatDate as formatLocaleDate } from "@halaa/shared/utils/locale";
 
 /**
@@ -29,6 +30,12 @@ const DatePickerField = ({
   extraProps,
 }) => {
   const [show, setShow] = useState(false);
+  // Field-direction contract (blueprint §5): label/helper/error always follow
+  // the UI locale; the formatted date value is a localized token so it uses
+  // the same locale direction — never a physical alignment patch.
+  const fieldDirection = useFieldDirection("localized", {
+    hasValue: !!value,
+  });
   const selectedDate = value ? new Date(value) : null;
 
   const handleDateChange = (event, date) => {
@@ -44,7 +51,7 @@ const DatePickerField = ({
 
   return (
     <View style={styles.container}>
-      {label && <Text style={styles.label}>{label}</Text>}
+      {label && <Text style={[styles.label, fieldDirection.text]}>{label}</Text>}
       <TouchableOpacity
         style={[
           styles.inputContainer,
@@ -54,15 +61,26 @@ const DatePickerField = ({
         onPress={() => !disabled && setShow(true)}
         disabled={disabled}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={typeof label === "string" ? label : undefined}
       >
+        {/* Calendar glyph is semantic-leading and never mirrored (§7). */}
         <Ionicons name="calendar-outline" size={20} color="#C28E5C" />
         <Text
-          style={[styles.inputText, !displayValue && styles.placeholderText]}
+          style={[
+            styles.inputText,
+            fieldDirection.input,
+            !displayValue && styles.placeholderText,
+          ]}
         >
           {displayValue || placeholder}
         </Text>
       </TouchableOpacity>
-      {error && <Text style={styles.errorText}>{error.message}</Text>}
+      {error && (
+        <Text style={[styles.errorText, fieldDirection.text]}>
+          {error.message}
+        </Text>
+      )}
 
       {show && (
         <DateTimePicker

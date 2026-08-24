@@ -4,7 +4,6 @@ import {
   View,
   ScrollView,
   TouchableOpacity,
-  Text,
   KeyboardAvoidingView,
   Platform,
   Dimensions,
@@ -23,6 +22,7 @@ import RoleSelectionView from "../../components/auth/RoleSelectionView";
 import TopBar from "../../components/plans/TopBar";
 import LegalLinks from "../../components/legal/LegalLinks";
 import DirectionalIonicon from "../../components/common/DirectionalIonicon";
+import LocalizedText from "../../components/commen/LocalizedText";
 
 const { width } = Dimensions.get("window");
 
@@ -153,14 +153,21 @@ export default function SignupScreen({ navigation }) {
               style={styles.backButton}
             >
               <DirectionalIonicon name="arrow-back" size={18} color="#c28e5c" />
-              <Text style={styles.backButtonText}>{t("common.back")}</Text>
+              <LocalizedText style={styles.backButtonText}>
+                {t("common.back")}
+              </LocalizedText>
             </TouchableOpacity>
             <SignupMobileForm onSubmit={handleMobileSubmit} loading={loading} />
-            {/* Login Link */}
+            {/* Login link — two adjacent runs in one logical row, never a
+                concatenated string, so each run keeps its own direction. */}
             <View style={styles.loginContainer}>
-              <Text style={styles.loginText}>{t("signup.hasAccount")} </Text>
+              <LocalizedText style={styles.loginText}>
+                {t("signup.hasAccount")}
+              </LocalizedText>
               <TouchableOpacity onPress={handleLogin}>
-                <Text style={styles.loginLink}>{t("signup.signIn")}</Text>
+                <LocalizedText style={styles.loginLink}>
+                  {t("signup.signIn")}
+                </LocalizedText>
               </TouchableOpacity>
             </View>
           </>
@@ -266,6 +273,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginTop: 24,
+    gap: 6,
   },
   loginText: {
     fontSize: 14,

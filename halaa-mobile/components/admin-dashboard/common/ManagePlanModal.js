@@ -10,6 +10,8 @@ import {
   Share,
 } from "react-native";
 import TextInput from "../../commen/DirectionalTextInput";
+import AdaptiveText from "../../commen/AdaptiveText";
+import LocalizedText from "../../commen/LocalizedText";
 import { Ionicons } from "@expo/vector-icons";
 import PropTypes from "prop-types";
 import { Button } from "../../commen";
@@ -30,7 +32,8 @@ import {
 } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
-import { getLocalized } from "@halaa/shared/utils/locale";
+import { getLocalized, formatCount, localizeDigits } from "@halaa/shared/utils/locale";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
 
 const INVITE_PRESETS = [10, 25, 50, 100, 250, 500];
 
@@ -122,14 +125,24 @@ const ManagePlanModal = ({ visible, onClose, entity, entityType = "host", onSave
     }
   }, [visible, entity]);
 
-  const formatPlanMeta = (plan) => {
+  // Plan meta is a mixed-script row (blueprint §6): the price is ONE atomic
+  // LTR-isolated token ("1200 SAR") that can never split or reverse, while
+  // the invite count is formatted per the UI locale and ordered by the
+  // translated planMeta sentence.
+  const getPlanMetaParts = (plan) => {
     const price = plan?.price ?? plan?.pricing?.oneTime ?? 0;
     const currency = plan?.currency || "SAR";
     const totalInvites =
       plan?.invitePool === null || plan?.invitePool === undefined
-        ? mp("unlimited", "Unlimited")
+        ? null
         : (plan.invitePool || 0) + (plan.compensationPool || 0);
-    return `${price} ${currency} · ${totalInvites} ${mp("invites", "invites")}`;
+    return {
+      priceToken: isolateLtr(`${price} ${currency}`),
+      count:
+        totalInvites == null
+          ? mp("unlimited", "Unlimited")
+          : formatCount(totalInvites, locale),
+    };
   };
 
   const grantExtraInvites = async () => {
@@ -253,13 +266,14 @@ const ManagePlanModal = ({ visible, onClose, entity, entityType = "host", onSave
         <View style={styles.modalContainer}>
           <View style={styles.header}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.kicker}>
+              <LocalizedText style={styles.kicker}>
                 {isBusiness ? mp("business", "Business") : mp("host", "Host")}
-              </Text>
-              <Text style={styles.title}>{mp("title", "Manage Plan")}</Text>
-              <Text style={styles.entityName} numberOfLines={1}>
+              </LocalizedText>
+              <LocalizedText style={styles.title}>{mp("title", "Manage Plan")}</LocalizedText>
+              {/* Entity name is backend content — first-strong + isolation. */}
+              <AdaptiveText style={styles.entityName} numberOfLines={1}>
                 {entityName}
-              </Text>
+              </AdaptiveText>
             </View>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
               <Ionicons name="close" size={24} color={colors.natural[900]} />
@@ -274,10 +288,11 @@ const ManagePlanModal = ({ visible, onClose, entity, entityType = "host", onSave
             <View style={styles.summaryGrid}>
               {summaryRows.map((row) => (
                 <View style={styles.summaryItem} key={row.label}>
-                  <Text style={styles.summaryLabel}>{row.label}</Text>
-                  <Text style={styles.summaryValue} numberOfLines={1}>
+                  <LocalizedText style={styles.summaryLabel}>{row.label}</LocalizedText>
+                  {/* Values mix plan names, statuses and counts — adaptive. */}
+                  <AdaptiveText style={styles.summaryValue} numberOfLines={1}>
                     {row.value}
-                  </Text>
+                  </AdaptiveText>
                 </View>
               ))}
             </View>
@@ -293,9 +308,9 @@ const ManagePlanModal = ({ visible, onClose, entity, entityType = "host", onSave
                   size={16}
                   color={tab === "change" ? colors.primary[600] : colors.natural[600]}
                 />
-                <Text style={[styles.tabText, tab === "change" && styles.tabTextActive]}>
+                <LocalizedText style={[styles.tabText, tab === "change" && styles.tabTextActive]}>
                   {mp("changePlan", "Change plan")}
-                </Text>
+                </LocalizedText>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.tab, tab === "extra" && styles.tabActive]}
@@ -306,21 +321,26 @@ const ManagePlanModal = ({ visible, onClose, entity, entityType = "host", onSave
                   size={16}
                   color={tab === "extra" ? colors.primary[600] : colors.natural[600]}
                 />
-                <Text style={[styles.tabText, tab === "extra" && styles.tabTextActive]}>
+                <LocalizedText style={[styles.tabText, tab === "extra" && styles.tabTextActive]}>
                   {mp("extraInvites", "Extra invites")}
-                </Text>
+                </LocalizedText>
               </TouchableOpacity>
             </View>
 
             {checkoutLink ? (
               <View style={styles.checkoutBox}>
-                <Text style={styles.label}>{mp("checkoutLink", "Checkout link")}</Text>
-                <Text style={styles.checkoutLinkText} selectable numberOfLines={3}>
-                  {checkoutLink}
+                <LocalizedText style={styles.label}>{mp("checkoutLink", "Checkout link")}</LocalizedText>
+                {/* URL — intrinsically LTR token. */}
+                <Text
+                  style={[styles.checkoutLinkText, styles.ltrToken]}
+                  selectable
+                  numberOfLines={3}
+                >
+                  {isolateLtr(checkoutLink)}
                 </Text>
                 <TouchableOpacity style={styles.copyBtn} onPress={shareCheckoutLink}>
                   <Ionicons name="share-outline" size={16} color={colors.primary[600]} />
-                  <Text style={styles.copyBtnText}>{mp("copy", "Copy")}</Text>
+                  <LocalizedText style={styles.copyBtnText}>{mp("copy", "Copy")}</LocalizedText>
                 </TouchableOpacity>
               </View>
             ) : (
@@ -336,14 +356,14 @@ const ManagePlanModal = ({ visible, onClose, entity, entityType = "host", onSave
                           ]}
                           onPress={() => setBusinessMode("grant")}
                         >
-                          <Text
+                          <LocalizedText
                             style={[
                               styles.segmentText,
                               businessMode === "grant" && styles.segmentTextActive,
                             ]}
                           >
                             {mp("grant", "Grant")}
-                          </Text>
+                          </LocalizedText>
                         </TouchableOpacity>
                         <TouchableOpacity
                           style={[
@@ -352,39 +372,40 @@ const ManagePlanModal = ({ visible, onClose, entity, entityType = "host", onSave
                           ]}
                           onPress={() => setBusinessMode("checkout")}
                         >
-                          <Text
+                          <LocalizedText
                             style={[
                               styles.segmentText,
                               businessMode === "checkout" && styles.segmentTextActive,
                             ]}
                           >
                             {mp("checkout", "Checkout")}
-                          </Text>
+                          </LocalizedText>
                         </TouchableOpacity>
                       </View>
                     )}
 
-                    <Text style={styles.label}>{mp("plan", "Plan")}</Text>
+                    <LocalizedText style={styles.label}>{mp("plan", "Plan")}</LocalizedText>
                     {plansLoading ? (
                       <View style={styles.inlineState}>
                         <ActivityIndicator size="small" color={colors.primary[500]} />
-                        <Text style={styles.inlineStateText}>
+                        <LocalizedText style={styles.inlineStateText}>
                           {mp("loadingPlans", "Loading plans...")}
-                        </Text>
+                        </LocalizedText>
                       </View>
                     ) : plansError ? (
                       <View style={styles.inlineError}>
-                        <Text style={styles.errorText}>
+                        <LocalizedText style={styles.errorText}>
                           {mp("planLoadError", "Could not load plans.")}
-                        </Text>
+                        </LocalizedText>
                         <TouchableOpacity onPress={() => refetchPlans()} style={styles.retryBtn}>
-                          <Text style={styles.retryBtnText}>{mp("retry", "Retry")}</Text>
+                          <LocalizedText style={styles.retryBtnText}>{mp("retry", "Retry")}</LocalizedText>
                         </TouchableOpacity>
                       </View>
                     ) : (
                       <View style={styles.planList}>
                         {plans.map((plan) => {
                           const active = plan.code === planCode;
+                          const metaParts = getPlanMetaParts(plan);
                           return (
                             <TouchableOpacity
                               key={plan.code}
@@ -392,15 +413,22 @@ const ManagePlanModal = ({ visible, onClose, entity, entityType = "host", onSave
                               onPress={() => setPlanCode(plan.code)}
                             >
                               <View style={{ flex: 1 }}>
-                                <Text
+                                {/* Plan display names are backend bilingual content. */}
+                                <AdaptiveText
                                   style={[
                                     styles.planName,
                                     active && styles.planNameActive,
                                   ]}
                                 >
                                   {getLocalized(plan, "name", locale) || plan.code}
-                                </Text>
-                                <Text style={styles.planMeta}>{formatPlanMeta(plan)}</Text>
+                                </AdaptiveText>
+                                <LocalizedText style={styles.planMeta}>
+                                  {t(
+                                    "managePlan.planMeta",
+                                    { price: metaParts.priceToken, count: metaParts.count },
+                                    { defaultValue: "{{price}} · {{count}} invites" }
+                                  )}
+                                </LocalizedText>
                               </View>
                               {active && (
                                 <Ionicons
@@ -417,9 +445,10 @@ const ManagePlanModal = ({ visible, onClose, entity, entityType = "host", onSave
 
                     {isCheckout ? (
                       <View style={styles.field}>
-                        <Text style={styles.label}>{mp("discountCode", "Discount code")}</Text>
+                        <LocalizedText style={styles.label}>{mp("discountCode", "Discount code")}</LocalizedText>
                         <TextInput
                           style={styles.input}
+                          contentDirection="ltr"
                           value={discountCode}
                           onChangeText={setDiscountCode}
                           placeholder={mp("discountPlaceholder", "Optional")}
@@ -429,9 +458,10 @@ const ManagePlanModal = ({ visible, onClose, entity, entityType = "host", onSave
                       </View>
                     ) : (
                       <View style={styles.field}>
-                        <Text style={styles.label}>{mp("reason", "Reason")}</Text>
+                        <LocalizedText style={styles.label}>{mp("reason", "Reason")}</LocalizedText>
                         <TextInput
                           style={styles.input}
+                          contentDirection="adaptive"
                           value={reason}
                           onChangeText={setReason}
                           placeholder={mp("reasonPlaceholder", "Optional")}
@@ -451,9 +481,9 @@ const ManagePlanModal = ({ visible, onClose, entity, entityType = "host", onSave
                           size={20}
                           color={addAfterChange ? colors.primary[500] : colors.natural[400]}
                         />
-                        <Text style={styles.checkRowText}>
+                        <LocalizedText style={styles.checkRowText}>
                           {mp("addExtraAfterChange", "Add extra invites after update")}
-                        </Text>
+                        </LocalizedText>
                       </TouchableOpacity>
                     )}
                   </View>
@@ -461,7 +491,7 @@ const ManagePlanModal = ({ visible, onClose, entity, entityType = "host", onSave
 
                 {showExtraSection && (
                   <View style={styles.section}>
-                    <Text style={styles.label}>{mp("quantity", "Quantity")}</Text>
+                    <LocalizedText style={styles.label}>{mp("quantity", "Quantity")}</LocalizedText>
                     <View style={styles.presetRow}>
                       {INVITE_PRESETS.map((preset) => {
                         const active = Number(quantity) === preset;
@@ -471,17 +501,18 @@ const ManagePlanModal = ({ visible, onClose, entity, entityType = "host", onSave
                             style={[styles.preset, active && styles.presetActive]}
                             onPress={() => setQuantity(String(preset))}
                           >
-                            <Text
+                            <LocalizedText
                               style={[styles.presetText, active && styles.presetTextActive]}
                             >
-                              {preset}
-                            </Text>
+                              {localizeDigits(preset, locale)}
+                            </LocalizedText>
                           </TouchableOpacity>
                         );
                       })}
                     </View>
                     <TextInput
                       style={styles.input}
+                      contentDirection="ltr"
                       value={quantity}
                       onChangeText={setQuantity}
                       keyboardType="number-pad"
@@ -489,9 +520,10 @@ const ManagePlanModal = ({ visible, onClose, entity, entityType = "host", onSave
                     />
                     {tab === "extra" && (
                       <View style={styles.field}>
-                        <Text style={styles.label}>{mp("reason", "Reason")}</Text>
+                        <LocalizedText style={styles.label}>{mp("reason", "Reason")}</LocalizedText>
                         <TextInput
                           style={styles.input}
+                          contentDirection="adaptive"
                           value={reason}
                           onChangeText={setReason}
                           placeholder={mp("reasonPlaceholder", "Optional")}
@@ -796,6 +828,9 @@ const styles = StyleSheet.create({
   checkoutLinkText: {
     fontSize: typography.fontSize.body.medium,
     color: colors.natural[800],
+  },
+  ltrToken: {
+    writingDirection: "ltr",
   },
   copyBtn: {
     flexDirection: "row",

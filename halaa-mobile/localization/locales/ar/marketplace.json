@@ -1,5 +1,6 @@
 {
   "title": "سوق هلا",
+  "titleWithCount": "سوق هلا ({{count}})",
   "search": {
     "placeholder": "ابحث عن أي شيء...",
     "filter": "تصفية"
@@ -45,6 +46,7 @@
       "locationLoadFailed": "تعذر تحميل المواقع"
     },
     "actions": {
+      "close": "إغلاق",
       "retry": "إعادة المحاولة"
     }
   },
@@ -110,6 +112,7 @@
   },
   "loading": "جاري التحميل...",
   "errors": {
+    "generic": "حدث خطأ ما",
     "loadFailed": "فشل تحميل المزودين",
     "profileNotFoundTitle": "مزود الخدمة غير موجود",
     "profileLoadFailed": "ملف هذا المزود غير متاح",

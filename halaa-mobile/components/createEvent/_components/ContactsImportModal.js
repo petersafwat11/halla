@@ -6,23 +6,29 @@
  *
  * Privacy: name + phone only; never the full phonebook; only selected
  * contacts leave the device (and only into the local guest list).
+ *
+ * Keyboard contract (blueprint §6.4/§6.5): presented through the shared
+ * KeyboardSafeModalSheet — fixed header, virtualized FlatList body that
+ * shrinks with the keyboard, and an editable category/Add footer slot that
+ * remains attached above the keyboard while typing.
  */
 import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  Modal,
-  Pressable,
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
+  Keyboard,
 } from "react-native";
 import TextInput from "../../commen/DirectionalTextInput";
+import AdaptiveText from "../../commen/AdaptiveText";
 import Svg, { Path } from "react-native-svg";
 import { isolateLtr } from "@halaa/shared/utils/bidi";
 import { useTranslation } from "../../../localization";
 import Button from "../../commen/Button";
+import KeyboardSafeModalSheet from "../../commen/keyboard/KeyboardSafeModalSheet";
 import {
   requestContactsPermission,
   loadDeviceContacts,
@@ -86,6 +92,9 @@ const ContactsImportModal = ({ visible, onClose, onAdd }) => {
   };
 
   const handleAdd = () => {
+    // Dismissing first prevents the keyboard animation tearing across the
+    // close/navigation transition (blueprint §10).
+    Keyboard.dismiss();
     const cat = category.trim();
     const list = Object.values(selected).map((c) => ({ ...c, category: cat }));
     if (list.length > 0) onAdd(list);
@@ -102,97 +111,120 @@ const ContactsImportModal = ({ visible, onClose, onAdd }) => {
           {isSelected && <Text style={styles.checkmark}>✓</Text>}
         </View>
         <View style={styles.rowInfo}>
-          <Text style={styles.rowName}>{item.name}</Text>
+          {/* Device contact names are arbitrary user content — first-strong
+              direction with isolation; the phone stays an LTR token. */}
+          <AdaptiveText style={styles.rowName} numberOfLines={1}>
+            {item.name}
+          </AdaptiveText>
           <Text style={styles.rowPhone}>{isolateLtr(item.phones[0])}</Text>
         </View>
       </TouchableOpacity>
     );
   };
 
+  const header = (
+    <View style={styles.header}>
+      <Text style={styles.headerTitle}>{t("import_from_phone")}</Text>
+      <TouchableOpacity
+        style={styles.closeButton}
+        onPress={onClose}
+        activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={t("close")}
+      >
+        <CloseIcon />
+      </TouchableOpacity>
+    </View>
+  );
+
+  const footer =
+    phase === "list" ? (
+      <View style={styles.footer}>
+        {/* Deliberately sticky editable/action footer (§6.5): must stay
+            operable while the keyboard is open; the shared sheet keeps it
+            attached above the keyboard. */}
+        <TextInput
+          contentDirection="adaptive"
+          style={styles.categoryInput}
+          placeholder={t("contacts_category_placeholder")}
+          placeholderTextColor="#999"
+          value={category}
+          onChangeText={setCategory}
+          maxLength={60}
+        />
+        <Button
+          text={t("reuse_guests_add", { count: selectedCount })}
+          onPress={handleAdd}
+          disabled={selectedCount === 0}
+        />
+      </View>
+    ) : null;
+
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={styles.overlay} onPress={onClose}>
-        <Pressable style={styles.modalContainer} onPress={(e) => e.stopPropagation()}>
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}>{t("import_from_phone")}</Text>
-            <TouchableOpacity style={styles.closeButton} onPress={onClose} activeOpacity={0.7}>
-              <CloseIcon />
-            </TouchableOpacity>
+    <KeyboardSafeModalSheet
+      visible={visible}
+      onClose={onClose}
+      header={header}
+      footer={footer}
+      scrollBody={phase !== "list"}
+      accessibilityLabel={t("import_from_phone")}
+    >
+      {phase === "intro" && (
+        <View style={styles.introBox}>
+          <Text style={styles.introText}>{t("contacts_permission_explanation")}</Text>
+          <Button text={t("continue")} onPress={handleContinue} />
+        </View>
+      )}
+
+      {phase === "loading" && (
+        <View style={styles.state}>
+          <ActivityIndicator size="small" color="#C28E5C" />
+        </View>
+      )}
+
+      {phase === "denied" && (
+        <View style={styles.introBox}>
+          <Text style={styles.introText}>{t("contacts_permission_denied")}</Text>
+          <Button text={t("close")} onPress={onClose} />
+        </View>
+      )}
+
+      {phase === "list" && (
+        <>
+          <View style={styles.filters}>
+            <TextInput
+              contentDirection="adaptive"
+              style={styles.search}
+              placeholder={t("reuse_guests_search_placeholder")}
+              placeholderTextColor="#999"
+              value={search}
+              onChangeText={setSearch}
+              returnKeyType="search"
+            />
           </View>
 
-          {phase === "intro" && (
-            <View style={styles.introBox}>
-              <Text style={styles.introText}>{t("contacts_permission_explanation")}</Text>
-              <Button text={t("continue")} onPress={handleContinue} />
-            </View>
-          )}
-
-          {phase === "loading" && (
+          {filtered.length === 0 ? (
             <View style={styles.state}>
-              <ActivityIndicator size="small" color="#C28E5C" />
+              <Text style={styles.stateText}>{t("contacts_empty")}</Text>
             </View>
+          ) : (
+            <FlatList
+              style={styles.list}
+              data={filtered}
+              renderItem={renderItem}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={styles.listContent}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+            />
           )}
-
-          {phase === "denied" && (
-            <View style={styles.introBox}>
-              <Text style={styles.introText}>{t("contacts_permission_denied")}</Text>
-              <Button text={t("close")} onPress={onClose} />
-            </View>
-          )}
-
-          {phase === "list" && (
-            <>
-              <View style={styles.filters}>
-                <TextInput
-                  style={styles.search}
-                  placeholder={t("reuse_guests_search_placeholder")}
-                  placeholderTextColor="#999"
-                  value={search}
-                  onChangeText={setSearch}
-                />
-              </View>
-
-              {filtered.length === 0 ? (
-                <View style={styles.state}>
-                  <Text style={styles.stateText}>{t("contacts_empty")}</Text>
-                </View>
-              ) : (
-                <FlatList
-                  data={filtered}
-                  renderItem={renderItem}
-                  keyExtractor={(item) => item.id}
-                  contentContainerStyle={styles.listContent}
-                  showsVerticalScrollIndicator={false}
-                  keyboardShouldPersistTaps="handled"
-                />
-              )}
-
-              <View style={styles.footer}>
-                <TextInput
-                  style={styles.categoryInput}
-                  placeholder={t("contacts_category_placeholder")}
-                  placeholderTextColor="#999"
-                  value={category}
-                  onChangeText={setCategory}
-                  maxLength={60}
-                />
-                <Button
-                  text={t("reuse_guests_add", { count: selectedCount })}
-                  onPress={handleAdd}
-                  disabled={selectedCount === 0}
-                />
-              </View>
-            </>
-          )}
-        </Pressable>
-      </Pressable>
-    </Modal>
+        </>
+      )}
+    </KeyboardSafeModalSheet>
   );
 };
 
 const styles = StyleSheet.create({
-  overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" },
-  modalContainer: { width: "100%", backgroundColor: "#FFF", borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: "90%" },
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -220,6 +252,7 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_400Regular",
     color: "#2C2C2C",
   },
+  list: { flexShrink: 1 },
   listContent: { paddingHorizontal: 24, paddingTop: 12 },
   row: {
     flexDirection: "row",
@@ -237,7 +270,7 @@ const styles = StyleSheet.create({
   rowInfo: { flex: 1 },
   rowName: { fontSize: 15, fontFamily: "Cairo_600SemiBold", color: "#2C2C2C" },
   rowPhone: { fontSize: 13, fontFamily: "Cairo_400Regular", color: "#656565", writingDirection: "ltr" },
-  footer: { paddingHorizontal: 24, paddingVertical: 16, borderTopWidth: 1, borderTopColor: "#F0F0F0", gap: 12 },
+  footer: { paddingHorizontal: 24, paddingBottom: 16, paddingTop: 12, borderTopWidth: 1, borderTopColor: "#F0F0F0", gap: 12 },
   categoryInput: {
     borderWidth: 1,
     borderColor: "#E0E0E0",

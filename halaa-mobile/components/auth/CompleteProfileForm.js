@@ -45,11 +45,16 @@ const CompleteProfileForm = ({ onSubmit, loading = false }) => {
         />
 
         <View style={styles.form}>
+          {/* Full name is arbitrary user content: the empty placeholder
+              follows the UI locale while a filled value follows its first
+              strong Arabic or Latin character (blueprint §5.3). */}
           <TextInput
             name="fullName"
             label={t("signup.fullName")}
             placeholder={t("signup.fullNamePlaceholder")}
             disabled={loading}
+            contentDirection="adaptive"
+            autoCapitalize="words"
           />
 
           <EmailInput

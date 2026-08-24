@@ -2,13 +2,13 @@ import React from "react";
 import {
   TouchableOpacity,
   View,
-  Text,
   ActivityIndicator,
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, spacing, borderRadius, textStyles, typography } from "../../../styles/tokens";
 import { useTranslation } from "../../../localization";
+import LocalizedText from "../../commen/LocalizedText";
 
 const ExportButton = ({ onPress, loading = false, label, style }) => {
   const { t } = useTranslation("admin");
@@ -24,10 +24,10 @@ const ExportButton = ({ onPress, loading = false, label, style }) => {
       {loading ? (
         <ActivityIndicator size="small" color={colors.success[600]} />
       ) : (
-        <View style={styles.content}>
-          <Ionicons name="share-outline" size={16} color={colors.success[600]} />
-          <Text style={styles.label}>{displayLabel}</Text>
-        </View>
+          <View style={styles.content}>
+            <Ionicons name="share-outline" size={16} color={colors.success[600]} />
+            <LocalizedText style={styles.label}>{displayLabel}</LocalizedText>
+          </View>
       )}
     </TouchableOpacity>
   );

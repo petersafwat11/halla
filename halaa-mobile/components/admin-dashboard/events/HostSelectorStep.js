@@ -11,11 +11,15 @@ import TextInput from '../../commen/DirectionalTextInput';
 import { useAdminEventTargets, useVerifyHostPhone } from '../../../hooks/admin';
 import { useTranslation } from '../../../localization';
 import { useAuthStore } from '../../../stores/authStore';
+import { formatCount } from '@halaa/shared/utils/locale';
+import { isolateLtr } from '@halaa/shared/utils/bidi';
 import ActionButton from '../common/ActionButton';
 import SectionCard from '../../commen/SectionCard';
+import AdaptiveText from '../../commen/AdaptiveText';
+import LocalizedText from '../../commen/LocalizedText';
 
 const HostSelectorStep = ({ value = {}, onChange }) => {
-  const { t } = useTranslation('admin');
+  const { t, currentLanguage } = useTranslation('admin');
   const user = useAuthStore((state) => state.user);
   const TABS = ['self', 'host'];
   const [activeTab, setActiveTab] = useState('self');
@@ -73,21 +77,36 @@ const HostSelectorStep = ({ value = {}, onChange }) => {
       <SectionCard key={id} style={[styles.hostCard, isEventsExhausted && styles.hostCardExhausted]}>
         <View style={styles.hostCardRow}>
           <View style={styles.hostInfo}>
-            <Text style={styles.hostName}>{item.name || item.fullName || '—'}</Text>
-            <Text style={styles.hostPhone}>{item.phone || item.phoneNumber || '—'}</Text>
+            {/* Host names are arbitrary backend content — first-strong. */}
+            <AdaptiveText style={styles.hostName} numberOfLines={1}>
+              {item.name || item.fullName || '—'}
+            </AdaptiveText>
+            {/* Phones are intrinsically LTR tokens, always isolated. */}
+            <Text style={[styles.hostPhone, styles.ltrValue]} numberOfLines={1}>
+              {isolateLtr(item.phone || item.phoneNumber || '—')}
+            </Text>
             {subscription?.planName && (
               <View style={styles.badge}>
-                <Text style={styles.badgeText}>{subscription.planName}</Text>
+                <AdaptiveText style={styles.badgeText} numberOfLines={1}>
+                  {subscription.planName}
+                </AdaptiveText>
               </View>
             )}
             {eventsRemaining !== undefined && (
-              <Text style={[styles.eventsRemaining, isEventsExhausted && styles.eventsRemainingExhausted]}>
+              <LocalizedText
+                style={[
+                  styles.eventsRemaining,
+                  isEventsExhausted && styles.eventsRemainingExhausted,
+                ]}
+              >
                 {isEventsExhausted
                   ? t('events.hostSelector.noEventsRemaining')
                   : eventsRemaining === -1
                     ? t('events.hostSelector.unlimited')
-                    : t('events.hostSelector.eventsRemaining', { count: eventsRemaining })}
-              </Text>
+                    : t('events.hostSelector.eventsRemaining', {
+                        count: formatCount(eventsRemaining, currentLanguage),
+                      })}
+              </LocalizedText>
             )}
           </View>
           <ActionButton
@@ -111,14 +130,16 @@ const HostSelectorStep = ({ value = {}, onChange }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{t('events.hostSelector.title')}</Text>
-      <Text style={styles.subtitle}>{t('events.hostSelector.subtitle')}</Text>
+      <LocalizedText style={styles.title}>{t('events.hostSelector.title')}</LocalizedText>
+      <LocalizedText style={styles.subtitle}>{t('events.hostSelector.subtitle')}</LocalizedText>
       <View style={styles.tabs}>
         {TABS.map((tab) => (
           <TouchableOpacity
             key={tab}
             style={[styles.tab, activeTab === tab && styles.tabActive]}
             onPress={() => setActiveTab(tab)}
+            accessibilityRole="button"
+            accessibilityState={{ selected: activeTab === tab }}
           >
             <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive]}>
               {t('events.hostSelector.tabs.' + tab)}
@@ -130,8 +151,14 @@ const HostSelectorStep = ({ value = {}, onChange }) => {
         <SectionCard style={styles.selfCard}>
           <View style={styles.hostCardRow}>
             <View style={styles.hostInfo}>
-              <Text style={styles.hostName}>{user?.name || user?.fullName || 'Admin'}</Text>
-              <Text style={styles.hostPhone}>{user?.phone || '—'}</Text>
+              {/* Admin's own name is user content; fallback is a keyed
+                  localized label — never an English literal. */}
+              <AdaptiveText style={styles.hostName} numberOfLines={1}>
+                {user?.name || user?.fullName || t('events.hostSelector.selfAccount')}
+              </AdaptiveText>
+              <Text style={[styles.hostPhone, styles.ltrValue]} numberOfLines={1}>
+                {isolateLtr(user?.phone || '—')}
+              </Text>
             </View>
             <ActionButton
               label={value.createForSelf ? t('events.hostSelector.selected') : t('events.hostSelector.selectHost')}
@@ -158,14 +185,18 @@ const HostSelectorStep = ({ value = {}, onChange }) => {
               loading={searching}
             />
           </View>
-          {searchError && <Text style={styles.searchError}>{searchError}</Text>}
+          {searchError && (
+            <LocalizedText role="error" style={styles.searchError}>
+              {searchError}
+            </LocalizedText>
+          )}
           {searchResult && (
             <View style={styles.searchResultSection}>
-              <Text style={styles.sectionLabel}>{t('events.hostSelector.searchResult')}</Text>
+              <LocalizedText style={styles.sectionLabel}>{t('events.hostSelector.searchResult')}</LocalizedText>
               {renderHostCard(searchResult, handleSelectHost, 'host')}
             </View>
           )}
-          <Text style={styles.sectionLabel}>{t('events.hostSelector.hostList')}</Text>
+          <LocalizedText style={styles.sectionLabel}>{t('events.hostSelector.hostList')}</LocalizedText>
           {hostsLoading ? (
             <ActivityIndicator color="#C28E5C" style={{ margin: 16 }} />
           ) : (
@@ -197,6 +228,8 @@ const styles = StyleSheet.create({
   hostInfo: { flex: 1, marginEnd: 8 },
   hostName: { fontSize: 15, fontFamily: 'Cairo_600SemiBold', color: '#1a1a1a' },
   hostPhone: { fontSize: 13, fontFamily: 'Cairo_400Regular', color: '#666', marginTop: 2 },
+  // Phone digits keep a stable LTR glyph order in both locales.
+  ltrValue: { writingDirection: 'ltr' },
   badge: { backgroundColor: '#fef3e7', borderRadius: 4, paddingHorizontal: 8, paddingVertical: 2, alignSelf: 'flex-start', marginTop: 4 },
   badgeText: { fontSize: 11, fontFamily: 'Cairo_600SemiBold', color: '#C28E5C' },
   eventsRemaining: { fontSize: 12, fontFamily: 'Cairo_400Regular', color: '#999', marginTop: 2 },

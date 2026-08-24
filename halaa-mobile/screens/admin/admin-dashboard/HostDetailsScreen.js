@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ScrollView, RefreshControl, ActivityIndicator, Alert, TouchableOpacity } from "react-native";
+import { View, StyleSheet, ScrollView, RefreshControl, ActivityIndicator, Alert, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
@@ -7,10 +7,12 @@ import { useAdminHostById, useUpdateHostStatus } from "../../../hooks";
 import { useAuthStore } from "../../../stores/authStore";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
-import { formatDate } from "@halaa/shared/utils/locale";
+import { formatDate, formatCount } from "@halaa/shared/utils/locale";
 import { canEditPage, PAGES } from "../../../utils/adminPermissions";
 import TopBar from "../../../components/plans/TopBar";
 import DirectionalIonicon from "../../../components/common/DirectionalIonicon";
+import AdaptiveText from "../../../components/commen/AdaptiveText";
+import LocalizedText from "../../../components/commen/LocalizedText";
 import { SectionCard, InfoRow } from "../../../components/admin-dashboard/hosts/HostSectionCard";
 import StatusBadge from "../../../components/admin-dashboard/common/StatusBadge";
 import HostHeroCard from "../../../components/admin-dashboard/hosts/HostHeroCard";
@@ -20,8 +22,9 @@ import { backgrounds, spacing, colors, borderRadius, typography, textStyles } fr
 
 const fmtDate = (d, locale) => (d ? formatDate(d, locale) : "—");
 
-const capitalize = (s) => (typeof s === "string" && s.length ? s[0].toUpperCase() + s.slice(1) : s);
-
+// Plan badges are brand/family tokens (Trial/Lite/Pro/Elite/single_*) with a
+// translated Trial label; they render adaptively so an Arabic plan name from
+// the backend also reads correctly.
 const planMeta = (planType, t) => {
   if (!planType || planType === "trial") return { label: t("hostDetails.trial", "Trial"), color: colors.natural[450], bg: colors.natural[150] };
   if (planType.startsWith("single_")) {
@@ -45,19 +48,38 @@ const subStatusMeta = (status) => {
   return map[status] || { color: colors.natural[450], bg: colors.natural[150] };
 };
 
+// Subscription statuses are app-localized copy — never raw backend enums and
+// never re-derived by capitalizing the value.
+const subStatusLabel = (status, t) => {
+  switch (status) {
+    case "active":
+      return t("hosts.subscription.statusActive");
+    case "expired":
+      return t("hosts.subscription.statusExpired");
+    case "cancelled":
+      return t("hosts.subscription.statusCancelled");
+    case "trial":
+      return t("hosts.subscription.trialPlan");
+    default:
+      return status ? String(status) : "—";
+  }
+};
+
 const StatCard = ({ icon, label, value, badge }) => (
   <View style={statStyles.card}>
     <View style={statStyles.iconWrap}>
       <Ionicons name={icon} size={16} color={colors.primary[500]} />
     </View>
     <View style={{ flex: 1, minWidth: 0 }}>
-      <Text style={statStyles.label} numberOfLines={1}>{label}</Text>
+      <LocalizedText style={statStyles.label} numberOfLines={1}>{label}</LocalizedText>
       {badge ? (
         <View style={[statStyles.badge, { backgroundColor: badge.bg }]}>
-          <Text style={[statStyles.badgeText, { color: badge.color }]} numberOfLines={1}>{badge.label}</Text>
+          <AdaptiveText style={[statStyles.badgeText, { color: badge.color }]} numberOfLines={1}>
+            {badge.label}
+          </AdaptiveText>
         </View>
       ) : (
-        <Text style={statStyles.value} numberOfLines={1}>{value ?? "—"}</Text>
+        <LocalizedText style={statStyles.value} numberOfLines={1}>{value ?? "—"}</LocalizedText>
       )}
     </View>
   </View>
@@ -98,8 +120,8 @@ const ActionRow = ({ icon, iconBg, iconColor, label, sublabel, onPress, loading,
         {loading ? <ActivityIndicator size="small" color={iconColor} /> : <Ionicons name={icon} size={16} color={iconColor} />}
       </View>
       <View style={{ flex: 1 }}>
-        <Text style={actionStyles.label}>{label}</Text>
-        <Text style={actionStyles.sublabel}>{sublabel}</Text>
+        <LocalizedText style={actionStyles.label}>{label}</LocalizedText>
+        <LocalizedText style={actionStyles.sublabel}>{sublabel}</LocalizedText>
       </View>
     </View>
     <DirectionalIonicon name="chevron-forward" size={16} color={colors.natural[300]} />
@@ -143,7 +165,7 @@ const HostDetailsScreen = () => {
           {isLoading ? (
             <ActivityIndicator size="large" color={colors.primary[500]} />
           ) : (
-            <Text style={styles.centerText}>{t("hostDetails.notFound")}</Text>
+            <LocalizedText style={styles.centerText}>{t("hostDetails.notFound")}</LocalizedText>
           )}
         </View>
       </SafeAreaView>
@@ -157,7 +179,9 @@ const HostDetailsScreen = () => {
   const subStatus = sub?.status || null;
   const guestsLimit = sub?.limits?.maxInvitesPerEvent ?? sub?.limits?.invitePool ?? null;
   const rawEventsLimit = sub?.limits?.maxEvents;
-  const eventsLimit = rawEventsLimit === -1 ? "∞" : rawEventsLimit ?? null;
+  // Counts are locale-formatted; the unlimited sentinel stays a bare glyph.
+  const eventsLimit =
+    rawEventsLimit === -1 ? "∞" : rawEventsLimit != null ? formatCount(rawEventsLimit, currentLanguage) : null;
 
   const handleToggleStatus = () => {
     Alert.alert(
@@ -198,20 +222,21 @@ const HostDetailsScreen = () => {
         <HostHeroCard host={host} />
 
         <View style={styles.statsRow}>
-          <StatCard icon="calendar-outline" label={t("hostDetails.eventsCount")} value={events.length} />
+          <StatCard icon="calendar-outline" label={t("hostDetails.eventsCount")} value={formatCount(events.length, currentLanguage)} />
           <StatCard icon="card-outline" label={t("hostDetails.plan")} badge={{ label: plan.label, color: plan.color, bg: plan.bg }} />
-          <StatCard icon="people-outline" label={t("hostDetails.guestsLimit")} value={guestsLimit ?? "—"} />
+          <StatCard icon="people-outline" label={t("hostDetails.guestsLimit")} value={guestsLimit != null ? formatCount(guestsLimit, currentLanguage) : "—"} />
           <StatCard
             icon="shield-checkmark-outline"
             label={t("hostDetails.subStatus")}
-            badge={subStatus ? { label: capitalize(subStatus), ...subStatusMeta(subStatus) } : { label: "—", color: colors.natural[450], bg: colors.natural[150] }}
+            badge={subStatus ? { label: subStatusLabel(subStatus, t), ...subStatusMeta(subStatus) } : { label: "—", color: colors.natural[450], bg: colors.natural[150] }}
           />
         </View>
 
         <SectionCard title={t("hostDetails.contactInfo")} icon="person-outline">
-          <InfoRow icon="call-outline" label={t("hostDetails.phone")} value={host.phoneNumber} />
-          <InfoRow icon="mail-outline" label={t("hostDetails.email")} value={host.email} />
-          <InfoRow icon="time-outline" label={t("hostDetails.joinDate")} value={fmtDate(host.createdAt, currentLanguage)} last />
+          {/* Email and phone keep stable LTR glyph order; dates follow the UI locale. */}
+          <InfoRow icon="call-outline" label={t("hostDetails.phone")} value={host.phoneNumber} mode="phone" />
+          <InfoRow icon="mail-outline" label={t("hostDetails.email")} value={host.email} mode="ltr" />
+          <InfoRow icon="time-outline" label={t("hostDetails.joinDate")} value={fmtDate(host.createdAt, currentLanguage)} mode="localized" last />
         </SectionCard>
 
         <SectionCard title={t("hostDetails.subscriptionInfo")} icon="card-outline">
@@ -222,7 +247,9 @@ const HostDetailsScreen = () => {
                 label={t("hostDetails.plan")}
                 badge={
                   <View style={[styles.chip, { backgroundColor: plan.bg }]}>
-                    <Text style={[styles.chipText, { color: plan.color }]}>{plan.label}</Text>
+                    <AdaptiveText style={[styles.chipText, { color: plan.color }]}>
+                      {plan.label}
+                    </AdaptiveText>
                   </View>
                 }
               />
@@ -231,16 +258,27 @@ const HostDetailsScreen = () => {
                 label={t("hostDetails.status")}
                 badge={subStatus ? <StatusBadge status={subStatus} size="small" /> : null}
               />
-              <InfoRow icon="calendar-number-outline" label={t("hostDetails.eventsLimit")} value={eventsLimit ?? "—"} />
-              <InfoRow icon="people-outline" label={t("hostDetails.guestsLimit")} value={guestsLimit ?? "—"} last={!sub.currentPeriodEnd} />
+              <InfoRow
+                icon="calendar-number-outline"
+                label={t("hostDetails.eventsLimit")}
+                value={eventsLimit ?? "—"}
+                mode="localized"
+              />
+              <InfoRow
+                icon="people-outline"
+                label={t("hostDetails.guestsLimit")}
+                value={guestsLimit != null ? formatCount(guestsLimit, currentLanguage) : "—"}
+                mode="localized"
+                last={!sub.currentPeriodEnd}
+              />
               {sub.currentPeriodEnd && (
-                <InfoRow icon="time-outline" label={t("hostDetails.expiresAt")} value={fmtDate(sub.currentPeriodEnd, currentLanguage)} last />
+                <InfoRow icon="time-outline" label={t("hostDetails.expiresAt")} value={fmtDate(sub.currentPeriodEnd, currentLanguage)} mode="localized" last />
               )}
             </>
           ) : (
             <View style={styles.empty}>
               <Ionicons name="card-outline" size={28} color={colors.natural[300]} />
-              <Text style={styles.emptyText}>{t("hostDetails.noPlan")}</Text>
+              <LocalizedText style={styles.emptyText}>{t("hostDetails.noPlan")}</LocalizedText>
             </View>
           )}
         </SectionCard>

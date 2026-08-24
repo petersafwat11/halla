@@ -4,6 +4,11 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { FaLock, FaApple } from "react-icons/fa";
 import { formatExpiryInput, detectCardBrand as sharedDetectCardBrand } from "@halaa/shared/utils";
+import {
+  clampPhoneInput,
+  getPhoneMaxLength,
+  DEFAULT_PHONE_PLACEHOLDER,
+} from "@halaa/shared/utils/phone";
 import styles from "./PaymentMethodSelector.module.css";
 
 // --- Card brand logos (official SVGs served from /public/svg/payment) ---
@@ -138,7 +143,7 @@ export default function PaymentMethodSelector({
   };
 
   const handleMobileChange = (e) => {
-    const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+    const val = clampPhoneInput(e.target.value);
     setMobileText(val);
     onMobileChange?.(val);
   };
@@ -277,7 +282,8 @@ export default function PaymentMethodSelector({
             </label>
             <input
               className={`${styles.input} ${errors.stcMobile ? styles.inputError : ""}`}
-              placeholder="05XXXXXXXX"
+              placeholder={DEFAULT_PHONE_PLACEHOLDER}
+              maxLength={getPhoneMaxLength(mobileText)}
               inputMode="tel"
               value={mobileText}
               onChange={handleMobileChange}

@@ -11,6 +11,12 @@ const {
   mobileAccountSettingsSchema,
 } = require("../../../shared/src/schemas/settings.js");
 
+// Resolve either export shape (zod object or factory returning one).
+const schema =
+  typeof mobileAccountSettingsSchema === "function"
+    ? mobileAccountSettingsSchema()
+    : mobileAccountSettingsSchema;
+
 // ============================================================
 // SET-01 — Mobile identity fields: full name binds to `name`,
 // username keeps its own field and label, payload sends both.
@@ -52,7 +58,7 @@ test("SET-01: mobile AccountSettings submits name alongside username and email",
 });
 
 test("SET-01: mobile schema accepts the full settings form with name", () => {
-  const result = mobileAccountSettingsSchema.safeParse({
+  const result = schema.safeParse({
     name: "Ahmed Al-Saud",
     username: "ahmed_s",
     email: "ahmed@example.com",

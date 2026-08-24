@@ -8,7 +8,14 @@ import {
 import TextInput from "../commen/DirectionalTextInput";
 import { Ionicons } from "@expo/vector-icons";
 import { formatExpiryInput, detectCardBrand as sharedDetectCardBrand } from "@halaa/shared/utils";
+import {
+  clampPhoneInput,
+  getPhoneMaxLength,
+  DEFAULT_PHONE_PLACEHOLDER,
+} from "@halaa/shared/utils/phone";
 import { useTranslation } from "../../localization";
+import { useFieldDirection } from "../../hooks/useInputDirection";
+import LocalizedText from "../commen/LocalizedText";
 import { colors, spacing, borderRadius, typography } from "../../styles/tokens";
 
 // --- High-Quality Native Brand Badges ---
@@ -101,6 +108,9 @@ const PaymentMethodSelector = ({
   errors = {},
 }) => {
   const { t } = useTranslation("plans");
+  // Field-direction contract: labels/helpers/errors always follow the UI
+  // locale, even when the value they describe is an LTR card token.
+  const fieldChrome = useFieldDirection("ltr");
   const [card, setCard] = useState({
     name: "",
     number: "",
@@ -155,7 +165,7 @@ const PaymentMethodSelector = ({
   };
 
   const handleMobileChange = (text) => {
-    const val = text.replace(/\D/g, "").slice(0, 10);
+    const val = clampPhoneInput(text);
     setMobileText(val);
     onMobileChange?.(val);
   };
@@ -206,7 +216,7 @@ const PaymentMethodSelector = ({
       {value === "creditcard" && (
         <View style={styles.fields}>
           <View style={styles.field}>
-            <Text style={styles.label}>{t("checkout.card.name")}</Text>
+            <Text style={[fieldChrome.text, styles.label]}>{t("checkout.card.name")}</Text>
             <TextInput
               style={[styles.input, styles.ltrInput, errors.name && styles.inputError]}
               placeholder={t("checkout.card.name")}
@@ -216,16 +226,17 @@ const PaymentMethodSelector = ({
               autoComplete="cc-name"
               textContentType="name"
             />
-            {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
+            {errors.name && <Text style={[fieldChrome.text, styles.errorText]}>{errors.name}</Text>}
           </View>
 
           <View style={styles.field}>
-            <Text style={styles.label}>{t("checkout.card.number")}</Text>
+            <Text style={[fieldChrome.text, styles.label]}>{t("checkout.card.number")}</Text>
             <View style={styles.inputWithIcon}>
               <View style={styles.brandIconWrapper}>
                 {renderCardInputBrandIcon()}
               </View>
               <TextInput
+                contentDirection="ltr"
                 style={[
                   styles.input,
                   styles.inputWithIconField,
@@ -242,12 +253,12 @@ const PaymentMethodSelector = ({
                 textContentType="creditCardNumber"
               />
             </View>
-            {errors.number && <Text style={styles.errorText}>{errors.number}</Text>}
+            {errors.number && <Text style={[fieldChrome.text, styles.errorText]}>{errors.number}</Text>}
           </View>
 
           <View style={styles.row}>
             <View style={[styles.field, styles.fieldExpiry]}>
-              <Text style={styles.label}>{t("checkout.card.expiry", "Expiry date")}</Text>
+              <Text style={[fieldChrome.text, styles.label]}>{t("checkout.card.expiry")}</Text>
               <TextInput
                 style={[styles.input, styles.ltrInput, errors.expiry && styles.inputError]}
                 placeholder="MM/YY"
@@ -257,10 +268,10 @@ const PaymentMethodSelector = ({
                 value={expiryText}
                 onChangeText={handleExpiryChange}
               />
-              {errors.expiry && <Text style={styles.errorText}>{errors.expiry}</Text>}
+              {errors.expiry && <Text style={[fieldChrome.text, styles.errorText]}>{errors.expiry}</Text>}
             </View>
             <View style={[styles.field, styles.fieldCvc]}>
-              <Text style={styles.label}>{t("checkout.card.cvc")}</Text>
+              <Text style={[fieldChrome.text, styles.label]}>{t("checkout.card.cvc")}</Text>
               <TextInput
                 style={[styles.input, styles.ltrInput, errors.cvc && styles.inputError]}
                 placeholder="•••"
@@ -270,7 +281,7 @@ const PaymentMethodSelector = ({
                 value={card.cvc || ""}
                 onChangeText={(v) => updateCardField("cvc", v.replace(/\D/g, ""))}
               />
-              {errors.cvc && <Text style={styles.errorText}>{errors.cvc}</Text>}
+              {errors.cvc && <Text style={[fieldChrome.text, styles.errorText]}>{errors.cvc}</Text>}
             </View>
           </View>
 
@@ -280,7 +291,7 @@ const PaymentMethodSelector = ({
               size={14}
               color={colors.primary[500]}
             />
-            <Text style={styles.noteText}>{t("checkout.card.secureNote")}</Text>
+            <LocalizedText style={styles.noteText}>{t("checkout.card.secureNote")}</LocalizedText>
           </View>
         </View>
       )}
@@ -288,18 +299,19 @@ const PaymentMethodSelector = ({
       {value === "stcpay" && (
         <View style={styles.fields}>
           <View style={styles.field}>
-            <Text style={styles.label}>{t("checkout.stcpay.mobile")}</Text>
+            <Text style={[fieldChrome.text, styles.label]}>{t("checkout.stcpay.mobile")}</Text>
             <TextInput
               style={[styles.input, styles.ltrInput, errors.stcMobile && styles.inputError]}
-              placeholder="05XXXXXXXX"
+              placeholder={t("checkout.stcpay.mobilePlaceholder", DEFAULT_PHONE_PLACEHOLDER)}
               placeholderTextColor={colors.natural[350]}
               keyboardType="phone-pad"
               value={mobileText}
+              maxLength={getPhoneMaxLength(mobileText)}
               onChangeText={handleMobileChange}
               autoComplete="tel"
               textContentType="telephoneNumber"
             />
-            {errors.stcMobile && <Text style={styles.errorText}>{errors.stcMobile}</Text>}
+            {errors.stcMobile && <Text style={[fieldChrome.text, styles.errorText]}>{errors.stcMobile}</Text>}
           </View>
           <View style={styles.note}>
             <Ionicons
@@ -307,7 +319,7 @@ const PaymentMethodSelector = ({
               size={14}
               color={colors.primary[500]}
             />
-            <Text style={styles.noteText}>{t("checkout.stcpay.note")}</Text>
+            <LocalizedText style={styles.noteText}>{t("checkout.stcpay.note")}</LocalizedText>
           </View>
         </View>
       )}
@@ -315,7 +327,7 @@ const PaymentMethodSelector = ({
       {value === "applepay" && (
         <View style={[styles.note, styles.noteStandalone]}>
           <Ionicons name="logo-apple" size={16} color={colors.primary[500]} />
-          <Text style={styles.noteText}>{t("checkout.applepay.note")}</Text>
+          <LocalizedText style={styles.noteText}>{t("checkout.applepay.note")}</LocalizedText>
         </View>
       )}
     </View>
@@ -493,6 +505,9 @@ const styles = StyleSheet.create({
     position: "relative",
     justifyContent: "center",
   },
+  // Intentionally PHYSICAL (LTR card geometry, blueprint §8 checkout row):
+  // card data is intrinsically LTR, so the brand badge anchors to the visual
+  // left of the field in both locales. Covered by physicalDirection allowlist.
   brandIconWrapper: {
     position: "absolute",
     left: spacing[12],

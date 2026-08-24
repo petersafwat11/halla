@@ -1,8 +1,10 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
 import DirectionalIonicon from "../common/DirectionalIonicon";
+import LocalizedText from "../commen/LocalizedText";
+import AdaptiveText from "../commen/AdaptiveText";
 import {
   colors,
   spacing,
@@ -10,10 +12,12 @@ import {
   typography,
 } from "../../styles/tokens";
 import { getLocalized } from "@halaa/shared/utils/locale";
+import { countRatioToken, countToken } from "@halaa/shared/utils/displayTokens";
 import { isPoolPlan } from "@halaa/shared/constants/plans";
 
 const CurrentPlanCard = ({ subscription, usage, onBuyAddons }) => {
   const { t, i18n } = useTranslation("plans");
+  const lang = i18n.language || "ar";
 
   if (!subscription) {
     return (
@@ -27,12 +31,12 @@ const CurrentPlanCard = ({ subscription, usage, onBuyAddons }) => {
           />
         </View>
         <View style={styles.noSubTextWrap}>
-          <Text style={styles.noSubTitle}>
+          <LocalizedText style={styles.noSubTitle}>
             {t("noActiveSubscription.title")}
-          </Text>
-          <Text style={styles.noSubSubtitle}>
+          </LocalizedText>
+          <LocalizedText style={styles.noSubSubtitle}>
             {t("noActiveSubscription.subtitle")}
-          </Text>
+          </LocalizedText>
         </View>
       </View>
     );
@@ -78,8 +82,15 @@ const CurrentPlanCard = ({ subscription, usage, onBuyAddons }) => {
       <View style={styles.accent} />
       <View style={styles.header}>
         <View style={styles.headerTitleWrap}>
-          <Text style={styles.title}>{t("currentPlan.title")}</Text>
-          {planName ? <Text style={styles.planName}>{planName}</Text> : null}
+          <LocalizedText style={styles.title}>
+            {t("currentPlan.title")}
+          </LocalizedText>
+          {planName ? (
+            // Backend bilingual/mixed value → follows its own script.
+            <AdaptiveText style={styles.planName} numberOfLines={1}>
+              {planName}
+            </AdaptiveText>
+          ) : null}
         </View>
         {onBuyAddons ? (
           <TouchableOpacity
@@ -92,7 +103,9 @@ const CurrentPlanCard = ({ subscription, usage, onBuyAddons }) => {
               size={16}
               color={colors.primary[600]}
             />
-            <Text style={styles.buyAddonsBtnText}>{t("addons.manageEntry")}</Text>
+            <LocalizedText style={styles.buyAddonsBtnText}>
+              {t("addons.manageEntry")}
+            </LocalizedText>
             <DirectionalIonicon
               name="chevron-forward"
               size={14}
@@ -104,6 +117,7 @@ const CurrentPlanCard = ({ subscription, usage, onBuyAddons }) => {
 
       <View style={styles.statsContainer}>
         <StatItem
+          lang={lang}
           icon="calendar-outline"
           label={t("currentPlan.events")}
           used={eventsUsed}
@@ -113,6 +127,7 @@ const CurrentPlanCard = ({ subscription, usage, onBuyAddons }) => {
           showProgress
         />
         <StatItem
+          lang={lang}
           icon="people-outline"
           label={t("currentPlan.invites")}
           used={guestsUsed}
@@ -121,6 +136,7 @@ const CurrentPlanCard = ({ subscription, usage, onBuyAddons }) => {
           showProgress
         />
         <StatItem
+          lang={lang}
           icon="time-outline"
           label={t("currentPlan.daysRemaining")}
           singleValue={daysRemaining}
@@ -130,7 +146,17 @@ const CurrentPlanCard = ({ subscription, usage, onBuyAddons }) => {
   );
 };
 
-const StatItem = ({ icon, label, used, limit, percent, singleValue, showProgress, isUnlimited = false }) => {
+const StatItem = ({
+  lang,
+  icon,
+  label,
+  used,
+  limit,
+  percent,
+  singleValue,
+  showProgress,
+  isUnlimited = false,
+}) => {
   const isNearLimit = !isUnlimited && percent >= 80;
   const isAtLimit = !isUnlimited && percent >= 100;
   const valueColor = isAtLimit
@@ -144,11 +170,16 @@ const StatItem = ({ icon, label, used, limit, percent, singleValue, showProgress
       ? colors.warning[500]
       : colors.primary[500];
 
-  const valueText = singleValue !== undefined
-    ? singleValue
-    : isUnlimited
-      ? `${used} / ∞`
-      : `${used} / ${limit}`;
+  // Counts are ONE locale-formatted, BiDi-isolated token so the slash and
+  // digits can never mix digit policies or reorder (blueprint §6).
+  const valueText =
+    singleValue !== undefined
+      ? typeof singleValue === "number"
+        ? countToken(singleValue, lang)
+        : singleValue // localized copy such as "لا تنتهي" / "No expiry"
+      : isUnlimited
+        ? countRatioToken(used, null, lang)
+        : countRatioToken(used, limit, lang);
 
   return (
     <View style={styles.statRow}>
@@ -157,12 +188,12 @@ const StatItem = ({ icon, label, used, limit, percent, singleValue, showProgress
       </View>
       <View style={styles.statContent}>
         <View style={styles.statInfo}>
-          <Text style={styles.statLabel} numberOfLines={1}>
+          <LocalizedText style={styles.statLabel} numberOfLines={1}>
             {label}
-          </Text>
-          <Text style={[styles.statValue, { color: valueColor }]}>
+          </LocalizedText>
+          <LocalizedText style={[styles.statValue, { color: valueColor }]}>
             {valueText}
-          </Text>
+          </LocalizedText>
         </View>
         {showProgress && !isUnlimited ? (
           <View style={styles.progressBar}>
@@ -296,6 +327,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary[100],
     borderRadius: borderRadius[4],
     overflow: "hidden",
+    // Fill grows from the logical start edge in both directions.
+    alignItems: "flex-start",
   },
   progressFill: {
     height: "100%",

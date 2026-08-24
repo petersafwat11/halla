@@ -1,7 +1,10 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import PropTypes from "prop-types";
+import { formatPercent } from "@halaa/shared/utils/locale";
+import { useTranslation } from "../../../localization";
+import LocalizedText from "../../commen/LocalizedText";
 import {
   colors,
   spacing,
@@ -13,6 +16,10 @@ import {
 
 /**
  * StatCard - Display statistics with icon and value
+ *
+ * The label is app copy and always follows the UI locale; the value is an
+ * app-formatted token (counts/prices are formatted + isolated by the caller)
+ * rendered through the localized role so its writing direction is explicit.
  *
  * @param {Object} props
  * @param {string} props.icon - Ionicons icon name
@@ -30,6 +37,8 @@ const StatCard = ({
   trendValue,
   color = colors.primary[500],
 }) => {
+  const { currentLanguage } = useTranslation("admin");
+
   const getTrendIcon = () => {
     if (!trend) return null;
     return trend === "up" ? "trending-up" : "trending-down";
@@ -46,17 +55,18 @@ const StatCard = ({
         <View style={[styles.iconContainer, { backgroundColor: `${color}15` }]}>
           <Ionicons name={icon} size={iconSizes.medium} color={color} />
         </View>
-        {trend && trendValue && (
+        {trend && trendValue != null && (
           <View style={styles.trendContainer}>
             <Ionicons name={getTrendIcon()} size={16} color={getTrendColor()} />
-            <Text style={[styles.trendText, { color: getTrendColor() }]}>
-              {trendValue}%
-            </Text>
+            {/* Percent sign + digits are one locale-formatted atomic token. */}
+            <LocalizedText style={[styles.trendText, { color: getTrendColor() }]}>
+              {formatPercent(trendValue, currentLanguage)}
+            </LocalizedText>
           </View>
         )}
       </View>
-      <Text style={styles.value}>{value}</Text>
-      <Text style={styles.label}>{label}</Text>
+      <LocalizedText style={styles.value}>{value}</LocalizedText>
+      <LocalizedText style={styles.label}>{label}</LocalizedText>
     </View>
   );
 };

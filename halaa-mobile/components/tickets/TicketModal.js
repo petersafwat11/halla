@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   View,
-  Text,
   StyleSheet,
   Modal,
   TouchableOpacity,
@@ -24,14 +23,18 @@ import {
 } from "@halaa/shared/schemas/tickets";
 import { useLanguage, useTranslation } from "../../localization";
 import DirectionalTextInput from "../commen/DirectionalTextInput";
-import { isolateAuto } from "@halaa/shared/utils/bidi";
-import { useFieldDirection } from "../../hooks/useInputDirection";
+import AdaptiveText from "../commen/AdaptiveText";
+import LocalizedText from "../commen/LocalizedText";
+import { CONTENT_DIRECTIONS, useFieldDirection } from "../../hooks/useInputDirection";
 
 const MAX_ATTACHMENT_BYTES = 50 * 1024 * 1024; // 50 MB (matches backend cap)
 
 const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
   const { t } = useTranslation("tickets");
-  const fieldDirection = useFieldDirection("localized");
+  // Modal chrome (title, labels, errors) always follows the UI locale. The
+  // subject/message values themselves are adaptive user content resolved
+  // per-field below.
+  const fieldDirection = useFieldDirection(CONTENT_DIRECTIONS.LOCALIZED);
 
   const slideAnim = React.useRef(new Animated.Value(300)).current;
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
@@ -170,13 +173,18 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
         >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={[styles.title, fieldDirection.text]}>
+            <LocalizedText style={[styles.title, fieldDirection.text]}>
               {isEditMode ? t("popup.editTitle") : t("popup.createTitle")}
-            </Text>
+            </LocalizedText>
             <TouchableOpacity
               style={styles.closeButton}
               onPress={handleClose}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={t("popup.cancel")}
+              /* 40 px box + 2 px slop per side reaches the ≥44 px target
+                 (blueprint §7) without changing the header geometry. */
+              hitSlop={{ top: 2, bottom: 2, start: 2, end: 2 }}
             >
               <Ionicons name="close" size={24} color="#666" />
             </TouchableOpacity>
@@ -190,9 +198,11 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
           >
             {/* Subject Input */}
             <View style={styles.section}>
-              <Text style={[styles.label, fieldDirection.text]}>
+              {/* Labels/errors are app-authored chrome: always LocalizedText
+                  and always the UI locale — never the value's script. */}
+              <LocalizedText style={[styles.label, fieldDirection.text]}>
                 {t("popup.subjectLabel")}
-              </Text>
+              </LocalizedText>
               <Controller
                 control={control}
                 name="subject"
@@ -202,6 +212,7 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
                       styles.textInput,
                       errors.subject && styles.textInputError
                     ]}
+                    contentDirection={CONTENT_DIRECTIONS.ADAPTIVE}
                     placeholder={t("popup.subjectPlaceholder")}
                     placeholderTextColor="#999"
                     value={value}
@@ -212,17 +223,17 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
                 )}
               />
               {errors.subject && (
-                <Text style={[styles.errorText, fieldDirection.text]}>
+                <LocalizedText style={[styles.errorText, fieldDirection.text]}>
                   {t(errors.subject.message)}
-                </Text>
+                </LocalizedText>
               )}
             </View>
 
             {/* Type Selection */}
             <View style={styles.section}>
-              <Text style={[styles.label, fieldDirection.text]}>
-                  {t("popup.typeLabel")}
-              </Text>
+              <LocalizedText style={[styles.label, fieldDirection.text]}>
+                {t("popup.typeLabel")}
+              </LocalizedText>
               <Controller
                 control={control}
                 name="type"
@@ -240,31 +251,31 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
                         onPress={() => onChange(type)}
                         activeOpacity={0.7}
                       >
-                        <Text
+                        <LocalizedText
                           style={[
                             styles.typeButtonText,
                             fieldDirection.text,
                             value === type && styles.typeButtonTextActive]}
                         >
                           {t(`types.${type}`)}
-                        </Text>
+                        </LocalizedText>
                       </TouchableOpacity>
                     ))}
                   </View>
                 )}
               />
               {errors.type && (
-                <Text style={[styles.errorText, fieldDirection.text]}>
+                <LocalizedText style={[styles.errorText, fieldDirection.text]}>
                   {t(errors.type.message)}
-                </Text>
+                </LocalizedText>
               )}
             </View>
 
             {/* Message Input */}
             <View style={styles.section}>
-              <Text style={[styles.label, fieldDirection.text]}>
-                  {t("popup.messageLabel")}
-              </Text>
+              <LocalizedText style={[styles.label, fieldDirection.text]}>
+                {t("popup.messageLabel")}
+              </LocalizedText>
               <Controller
                 control={control}
                 name="message"
@@ -273,6 +284,7 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
                     style={[
                       styles.textArea,
                       errors.message && styles.textAreaError]}
+                      contentDirection={CONTENT_DIRECTIONS.ADAPTIVE}
                       placeholder={t("popup.messagePlaceholder")}
                     placeholderTextColor="#999"
                     value={value}
@@ -285,18 +297,18 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
                 )}
               />
               {errors.message && (
-                <Text style={[styles.errorText, fieldDirection.text]}>
+                <LocalizedText style={[styles.errorText, fieldDirection.text]}>
                   {t(errors.message.message)}
-                </Text>
+                </LocalizedText>
               )}
             </View>
 
             {/* Attachment (create mode only — edit path doesn't accept files) */}
             {!isEditMode && (
               <View style={styles.section}>
-                <Text style={[styles.label, fieldDirection.text]}>
+                <LocalizedText style={[styles.label, fieldDirection.text]}>
                   {t("popup.attachmentLabel")}
-                </Text>
+                </LocalizedText>
 
                 {attachment ? (
                   <View style={styles.attachmentPreview}>
@@ -310,9 +322,9 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
                         style={styles.attachmentPreviewImage}
                       />
                     )}
-                    <Text style={styles.attachmentName} numberOfLines={1}>
-                      {isolateAuto(attachment.name)}
-                    </Text>
+                    <AdaptiveText style={styles.attachmentName} numberOfLines={1}>
+                      {attachment.name}
+                    </AdaptiveText>
                     <TouchableOpacity
                       style={styles.attachmentRemove}
                       onPress={() => setAttachment(null)}
@@ -331,9 +343,9 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
                       activeOpacity={0.7}
                     >
                       <Ionicons name="image-outline" size={18} color="#c28e5c" />
-                      <Text style={styles.attachmentButtonText}>
+                      <LocalizedText style={styles.attachmentButtonText}>
                         {t("popup.addImage")}
-                      </Text>
+                      </LocalizedText>
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={styles.attachmentButton}
@@ -341,9 +353,9 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
                       activeOpacity={0.7}
                     >
                       <Ionicons name="videocam-outline" size={18} color="#c28e5c" />
-                      <Text style={styles.attachmentButtonText}>
+                      <LocalizedText style={styles.attachmentButtonText}>
                         {t("popup.addVideo")}
-                      </Text>
+                      </LocalizedText>
                     </TouchableOpacity>
                   </View>
                 )}
@@ -359,7 +371,9 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
               disabled={loading}
               activeOpacity={0.7}
             >
-              <Text style={styles.cancelButtonText}>{t("popup.cancel")}</Text>
+              <LocalizedText style={styles.cancelButtonText} center>
+                {t("popup.cancel")}
+              </LocalizedText>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -370,7 +384,7 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
               disabled={loading}
               activeOpacity={0.7}
             >
-              <Text style={styles.submitButtonText}>
+              <LocalizedText style={styles.submitButtonText} center>
                 {loading
                   ? isEditMode
                     ? t("popup.updating")
@@ -378,7 +392,7 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
                   : isEditMode
                   ? t("popup.submitEdit")
                   : t("popup.submitCreate")}
-              </Text>
+              </LocalizedText>
             </TouchableOpacity>
           </View>
         </Animated.View>

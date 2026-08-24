@@ -1,18 +1,29 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { useFormContext } from 'react-hook-form';
 import SectionCard from '../../commen/SectionCard';
+import LocalizedText from '../../commen/LocalizedText';
+import AdaptiveText from '../../commen/AdaptiveText';
 import { useTranslation } from '../../../localization';
 
+/**
+ * Vendor signup — application summary.
+ *
+ * Row labels are app copy → localized; row values are arbitrary user/backend
+ * content (names, categories, emails, URLs, ID digits, mixed location names)
+ * → adaptive with first-strong direction and isolation. Alignment stays
+ * logical — never a physical `isRTL ? left : right` branch.
+ */
 const SummaryRow = ({ label, value }) => {
-  const { isRTL } = useTranslation();
   const displayValue = typeof value === 'object' ? JSON.stringify(value) : value;
   if (displayValue === undefined || displayValue === null || displayValue === '') return null;
   if (Array.isArray(value) && value.length === 0) return null;
   return (
     <View style={summaryStyles.row}>
-      <Text style={summaryStyles.label}>{label}</Text>
-      <Text style={[summaryStyles.value, { textAlign: isRTL ? 'left' : 'right' }]}>{displayValue}</Text>
+      <LocalizedText style={summaryStyles.label}>{label}</LocalizedText>
+      <AdaptiveText numberOfLines={2} style={summaryStyles.value}>
+        {displayValue}
+      </AdaptiveText>
     </View>
   );
 };
@@ -25,6 +36,8 @@ const CATEGORY_KEYS = [
 
 const summaryStyles = StyleSheet.create({
   row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
+  // Values are adaptive content: each run starts at its own reading edge
+  // (first-strong) and wraps from there — no physical end/start alignment.
   label: { fontSize: 13, fontFamily: 'Cairo_400Regular', color: '#888', flex: 1 },
   value: { fontSize: 13, fontFamily: 'Cairo_600SemiBold', color: '#2c2c2c', flex: 2 },
 });
@@ -59,13 +72,18 @@ const VendorStep6Summary = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.stepTitle}>{t('signupForm.vendor.summary.title')}</Text>
-      <Text style={styles.stepDesc}>{t('signupForm.vendor.summary.description')}</Text>
+      <LocalizedText center style={styles.stepTitle}>
+        {t('signupForm.vendor.summary.title')}
+      </LocalizedText>
+      <LocalizedText role="hint" center style={styles.stepDesc}>
+        {t('signupForm.vendor.summary.description')}
+      </LocalizedText>
 
       <SectionCard title={t('signupForm.vendor.summary.sections.identity')} icon="person-outline">
-        <SummaryRow label={t('signupForm.vendor.identity.brandName')} value={identity.brandName} />
-        <SummaryRow label={t('signupForm.vendor.identity.ownerFullName')} value={identity.ownerFullName} />
-        <SummaryRow label={t('signupForm.vendor.identity.email')} value={identity.email} />
+        {/* Summary values are the user's own entries → adaptive. */}
+        <SummaryRow label={t('signupForm.vendor.identity.brandName.label')} value={identity.brandName} />
+        <SummaryRow label={t('signupForm.vendor.identity.ownerFullName.label')} value={identity.ownerFullName} />
+        <SummaryRow label={t('signupForm.vendor.identity.email.label')} value={identity.email} />
         <SummaryRow label={t('signupForm.vendor.identity.phone')} value={identity.phoneNumber} />
       </SectionCard>
 
@@ -87,7 +105,7 @@ const VendorStep6Summary = () => {
 
       <SectionCard title={t('signupForm.vendor.summary.sections.commercialVerification')} icon="shield-checkmark-outline">
         <SummaryRow label={t('signupForm.vendor.commercialVerification.commercialRecordNumber')} value={commercial.commercialRecordNumber} />
-        <SummaryRow label={t('signupForm.vendor.commercialVerification.nationalId')} value={commercial.nationalId} />
+        <SummaryRow label={t('signupForm.vendor.commercialVerification.nationalId.label')} value={commercial.nationalId} />
       </SectionCard>
 
       <SectionCard title={t('signupForm.vendor.summary.sections.socialLinks')} icon="share-social-outline">
@@ -103,8 +121,8 @@ const VendorStep6Summary = () => {
 
 const styles = StyleSheet.create({
   container: { width: '100%' },
-  stepTitle: { fontSize: 20, fontFamily: 'Cairo_700Bold', color: '#2c2c2c', marginBottom: 6, textAlign: 'center' },
-  stepDesc: { fontSize: 13, fontFamily: 'Cairo_400Regular', color: '#888', textAlign: 'center', marginBottom: 20, lineHeight: 20 },
+  stepTitle: { fontSize: 20, fontFamily: 'Cairo_700Bold', color: '#2c2c2c', marginBottom: 6, lineHeight: 28 },
+  stepDesc: { fontSize: 13, color: '#888', marginBottom: 20, lineHeight: 20 },
 });
 
 export default VendorStep6Summary;

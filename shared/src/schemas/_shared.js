@@ -13,10 +13,11 @@
  * so client-side validation never accepts what the backend rejects.
  */
 import { z } from "zod";
+import { SAUDI_PHONE_REGEX, clampPhoneInput } from "../utils/phone.js";
 
 // Backend canonical Saudi phone pattern (auth.validation.js#phonePattern).
-// Accepts: 5XXXXXXXX, 05XXXXXXXX, 9665XXXXXXXX, +9665XXXXXXXX.
-export const SAUDI_PHONE_REGEX = /^(\+966|966|0)?5\d{8}$/;
+// Accepts: 5XXXXXXXX (9 digits), 05XXXXXXXX (10 digits), 9665XXXXXXXX, +9665XXXXXXXX.
+export { SAUDI_PHONE_REGEX };
 
 // Canonical password policy (mirrors auth.validation.js): 8-128 ASCII
 // letters/digits, with at least one letter and one digit. Uppercase and
@@ -39,7 +40,10 @@ export const saudiPhone = (t = idT) =>
   z
     .string()
     .trim()
-    .regex(SAUDI_PHONE_REGEX, t("validation.invalidSaudiPhone"));
+    .transform((val) => clampPhoneInput(val))
+    .refine((val) => SAUDI_PHONE_REGEX.test(val), {
+      message: t("validation.invalidSaudiPhone"),
+    });
 
 export const email = (t = idT) =>
   z

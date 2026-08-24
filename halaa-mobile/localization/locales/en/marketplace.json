@@ -1,5 +1,6 @@
 {
   "title": "Halaa Marketplace",
+  "titleWithCount": "Halaa Marketplace ({{count}})",
   "search": {
     "placeholder": "Search for anything...",
     "filter": "Filter"
@@ -45,7 +46,8 @@
       "locationLoadFailed": "Could not load locations"
     },
     "actions": {
-      "retry": "Retry"
+      "retry": "Retry",
+      "close": "Close"
     }
   },
   "vendor": {
@@ -110,6 +112,7 @@
   },
   "loading": "Loading...",
   "errors": {
+    "generic": "Something went wrong",
     "loadFailed": "Failed to load vendors",
     "profileNotFoundTitle": "Vendor not found",
     "profileLoadFailed": "This vendor profile is unavailable",

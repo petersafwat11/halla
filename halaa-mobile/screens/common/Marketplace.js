@@ -1,12 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import TopBar from "../../components/plans/TopBar";
 import { FilterPopup, SearchAndFilter, VendorCards } from "../../components/marketplace";
+import LocalizedText from "../../components/commen/LocalizedText";
 import { useTranslation } from "../../localization";
 import { useToast } from "../../contexts/ToastContext";
 import { useMarketplaceVendors, useVendorCategories } from "../../hooks/marketplace";
+import { countToken } from "@halaa/shared/utils/displayTokens";
 import { backgrounds, colors, spacing } from "../../styles/tokens";
 
 const EMPTY_FILTERS = { serviceType: "all", regionId: "", cityId: "", districtIds: [], minPrice: "", maxPrice: "", minRating: "" };
@@ -28,7 +30,7 @@ const CATEGORY_ICONS = {
 };
 
 export default function Marketplace({ navigation }) {
-  const { t, i18n } = useTranslation("marketplace");
+  const { t, i18n, currentLanguage } = useTranslation("marketplace");
   const toast = useToast();
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
@@ -89,6 +91,9 @@ export default function Marketplace({ navigation }) {
 
   const categories = categoriesQuery.data?.data?.categories || [];
   const total = data?.pages?.[0]?.pagination?.total || vendors.length;
+  // Counts are locale-formatted, LTR-isolated atomic tokens (blueprint §6):
+  // they can never BiDi-reorder against the surrounding localized copy.
+  const totalToken = countToken(total, currentLanguage);
   const activeFilterCount = [
     filters.serviceType !== "all",
     filters.regionId,
@@ -101,10 +106,16 @@ export default function Marketplace({ navigation }) {
 
   const chooseCategory = (value) => setFilters((current) => ({ ...current, serviceType: value }));
 
+  const handleRefresh = useCallback(() => refetch(), [refetch]);
+
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <StatusBar barStyle="light-content" backgroundColor={colors.primary[500]} />
-      <TopBar title={`${t("title")}${total ? ` (${total})` : ""}`} onBack={() => navigation?.goBack()} showBack={false} />
+      <TopBar
+        title={total ? t("titleWithCount", { count: totalToken }) : t("title")}
+        onBack={() => navigation?.goBack()}
+        showBack={false}
+      />
       <View style={styles.content}>
         <SearchAndFilter
           searchQuery={searchInput}
@@ -112,6 +123,8 @@ export default function Marketplace({ navigation }) {
           onFilterPress={() => setFiltersOpen(true)}
           activeFiltersCount={activeFilterCount}
         />
+        {/* Horizontal category rail: the ScrollView inherits the logical
+            direction, so Arabic starts/scrolls from the end edge natively. */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -125,20 +138,30 @@ export default function Marketplace({ navigation }) {
                 key={item.key}
                 style={[styles.category, active && styles.categoryActive]}
                 onPress={() => chooseCategory(item.key)}
+                accessibilityRole="button"
+                accessibilityState={{ selected: active }}
               >
                 <Ionicons
                   name={CATEGORY_ICONS[item.key] || "grid-outline"}
                   size={15}
                   color={active ? colors.natural[50] : colors.primary[500]}
                 />
-                <Text style={[styles.categoryText, active && styles.categoryTextActive]}>{item.label}</Text>
+                <LocalizedText role="caption" style={[styles.categoryText, active && styles.categoryTextActive]} numberOfLines={1}>
+                  {item.label}
+                </LocalizedText>
               </TouchableOpacity>
             );
           })}
         </ScrollView>
         <View style={styles.resultRow}>
-          <Text style={styles.resultTitle}>{t("results.title", { count: total })}</Text>
-          <Text style={styles.resultHint}>{t("results.subtitle")}</Text>
+          {/* Punctuation stays inside the translation string; only the
+              pre-isolated count token is interpolated. */}
+          <LocalizedText style={styles.resultTitle} numberOfLines={1}>
+            {t("results.title", { count: totalToken })}
+          </LocalizedText>
+          <LocalizedText style={styles.resultHint} numberOfLines={1}>
+            {t("results.subtitle")}
+          </LocalizedText>
         </View>
         <VendorCards
           vendors={vendors}
@@ -152,7 +175,7 @@ export default function Marketplace({ navigation }) {
             setSearch("");
           }}
           refreshing={isRefetching}
-          onRefresh={refetch}
+          onRefresh={handleRefresh}
           onEndReached={() => hasNextPage && !isFetchingNextPage && fetchNextPage()}
           isFetchingNextPage={isFetchingNextPage}
         />

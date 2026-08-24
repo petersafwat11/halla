@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect, useCallback } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
+import { View, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useAdminBusinessesInfinite } from "../../../hooks";
@@ -8,6 +8,7 @@ import { canEditPage, PAGES } from "../../../utils/adminPermissions";
 import { useTranslation } from "../../../localization";
 import { useToast } from "../../../contexts/ToastContext";
 import TopBar from "../../../components/plans/TopBar";
+import LocalizedText from "../../../components/commen/LocalizedText";
 import {
   AdminFlatList,
   SearchBar,
@@ -119,9 +120,9 @@ const AdminBusinessesScreen = ({ navigation }) => {
                   onPress={() => setActiveFilter(f)}
                   activeOpacity={0.7}
                 >
-                  <Text style={[styles.chipText, active && styles.chipTextActive]}>
+                  <LocalizedText style={[styles.chipText, active && styles.chipTextActive]}>
                     {t(`businesses.filter.${f}`)}
-                  </Text>
+                  </LocalizedText>
                 </TouchableOpacity>
               );
             })}

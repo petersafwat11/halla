@@ -2,6 +2,7 @@
   "dashboard": {
     "title": "لوحة تحكم المسؤول",
     "welcome": "مرحباً بعودتك",
+    "welcomeUser": "مرحباً بعودتك، {{name}}",
     "overview": "نظرة عامة",
     "quickActions": "الإجراءات السريعة",
     "recentActivity": "النشاط الأخير",
@@ -68,8 +69,20 @@
     },
     "topVendors": {
       "title": "أفضل الموردين",
-      "clicks": "نقرة"
+      "clicks": "نقرة",
+      "clicksCount": "{{count}} نقرة"
     }
+  },
+  "screenTitles": {
+    "hosts": "المضيفون",
+    "hostDetails": "تفاصيل المضيف",
+    "events": "المناسبات",
+    "eventDetails": "تفاصيل المناسبة",
+    "createEvent": "إنشاء مناسبة",
+    "updateEvent": "تعديل مناسبة",
+    "managePostEvent": "إدارة ما بعد المناسبة",
+    "tickets": "التذاكر",
+    "ticketDetails": "تفاصيل التذكرة"
   },
   "stats": {
     "hosts": {
@@ -153,6 +166,7 @@
     "labels": {
       "noPlan": "لا توجد خطة",
       "joined": "انضم",
+      "joinedDate": "انضم في {{date}}",
       "unnamed": "مضيف بلا اسم"
     },
     "actions": {
@@ -160,16 +174,20 @@
       "statusUpdateFailed": "فشل تحديث الحالة",
       "deleted": "تم الحذف",
       "deleteFailed": "فشل حذف المضيف",
-      "managePlan": "الخطة"
+      "managePlan": "الخطة",
+      "statusConfirmMessage": "{{action}} \"{{name}}\"؟"
     },
     "add": {
       "title": "إضافة مضيف جديد",
-      "name": "الاسم",
+      "name": "الاسم *",
       "namePlaceholder": "أدخل اسم المضيف",
-      "email": "البريد الإلكتروني",
+      "nameRequired": "الاسم مطلوب",
+      "email": "البريد الإلكتروني *",
       "emailPlaceholder": "example@email.com",
-      "phone": "رقم الهاتف",
+      "emailRequired": "البريد الإلكتروني مطلوب",
+      "phone": "رقم الهاتف *",
       "phonePlaceholder": "رقم الهاتف",
+      "phoneRequired": "رقم الهاتف مطلوب",
       "password": "كلمة المرور (اختياري)",
       "passwordPlaceholder": "اتركه فارغاً للتوليد التلقائي",
       "create": "إنشاء",
@@ -179,6 +197,7 @@
     },
     "deleteConfirm": {
       "title": "حذف المضيف",
+      "bulkTitle": "حذف المضيفين ({{count}})",
       "message": "هل أنت متأكد من حذف هذا المضيف؟",
       "bulkMessage": "هل أنت متأكد من حذف المضيفين المحددين؟"
     },
@@ -303,7 +322,12 @@
       "title": "حذف مشرف",
       "message": "هل أنت متأكد من حذف",
       "confirm": "حذف",
-      "cancel": "إلغاء"
+      "cancel": "إلغاء",
+      "confirmMessage": "هل أنت متأكد من حذف المشرف \"{{name}}\"؟ لا يمكن التراجع عن هذا الإجراء."
+    },
+    "confirm": {
+      "suspend": "هل تريد إيقاف المشرف \"{{name}}\"؟",
+      "activate": "هل تريد تفعيل المشرف \"{{name}}\"؟"
     },
     "empty": {
       "title": "لا يوجد مشرفون",
@@ -321,6 +345,12 @@
     "region": "المنطقة",
     "city": "المدينة",
     "coverageType": "نوع التغطية",
+    "coverage": {
+      "region": "تغطية شاملة للمنطقة",
+      "city": "تغطية شاملة للمدينة",
+      "districts": "تغطية أحياء محددة"
+    },
+    "galleryIndexed": "{{label}} {{index}}",
     "serviceCategories": "فئات الخدمات",
     "categories": "الفئات",
     "socialLinks": "روابط التواصل الاجتماعي",
@@ -394,7 +424,7 @@
       "corporateEventPlanning": "تخطيط المناسبات المؤسسية",
       "birthdayPartyPlanning": "تخطيط حفلات أعياد الميلاد",
       "hallAndLoungeRentals": "تأجير القاعات والصالات",
-      "outdoorEventSetup": "ت_setup المناسبات الخارجية",
+      "outdoorEventSetup": "إعداد المناسبات الخارجية",
       "photography": "التصوير",
       "videography": "تصوير الفيديو",
       "liveStreaming": "البث المباشر",
@@ -424,12 +454,7 @@
       "rejected": "مرفوض"
     },
     "categories": {
-      "catering": "تقديم الطعام",
-      "photography": "التصوير",
-      "decoration": "الديكور",
-      "entertainment": "الترفيه",
-      "venue": "المكان",
-      "other": "أخرى"
+      "more": "{{name}} و{{count}} أخرى"
     },
     "details": {
       "title": "تفاصيل المورد",
@@ -461,6 +486,18 @@
       "summary": "{{rating}} من 5",
       "save": "إرسال",
       "cancel": "إلغاء"
+    },
+    "confirm": {
+      "approve": "هل تريد الموافقة على المورد \"{{name}}\"؟",
+      "reject": "هل تريد رفض المورد \"{{name}}\"؟",
+      "suspend": "هل تريد إيقاف المورد \"{{name}}\"؟",
+      "activate": "هل تريد تفعيل المورد \"{{name}}\"؟",
+      "delete": "هل تريد حذف المورد \"{{name}}\"؟ لا يمكن التراجع عن هذا الإجراء."
+    },
+    "bulk": {
+      "approveConfirm": "هل تريد الموافقة على {{count}} مورد؟",
+      "suspendConfirm": "هل تريد إيقاف {{count}} مورد؟",
+      "deleteConfirm": "هل تريد حذف {{count}} مورد؟ لا يمكن التراجع عن هذا الإجراء."
     },
     "empty": {
       "title": "لا يوجد موردون",
@@ -589,7 +626,14 @@
       "suspend": "إيقاف المناسبة",
       "activate": "تفعيل المناسبة",
       "viewHost": "عرض المضيف",
-      "cancelConfirm": "هل أنت متأكد من إلغاء هذه المناسبة؟"
+      "cancelConfirm": "هل أنت متأكد من إلغاء هذه المناسبة؟",
+      "activateConfirmMessage": "هل تريد تفعيل المناسبة \"{{title}}\"؟",
+      "suspendConfirmMessage": "هل تريد إيقاف المناسبة \"{{title}}\"؟",
+      "deleteConfirmBody": "سيتم حذف المناسبة \"{{title}}\". لا يمكن التراجع عن هذا الإجراء.",
+      "guestsCount": "{{count}} ضيف",
+      "confirmedCount": "{{count}} مؤكد",
+      "bulkCancelConfirmBody": "سيتم إلغاء {{count}} مناسبة.",
+      "bulkDeleteConfirmBody": "سيتم حذف {{count}} مناسبة. لا يمكن التراجع عن هذا الإجراء."
     },
     "guests": {
       "title": "قائمة الضيوف",
@@ -623,6 +667,7 @@
         "self": "لنفسي",
         "host": "لمضيف"
       },
+      "selfAccount": "حسابي",
       "searchPlaceholder": "البحث برقم الهاتف",
       "verify": "تحقق",
       "searchResult": "نتيجة البحث",
@@ -713,6 +758,8 @@
     "deleteConfirmTitle": "حذف التذكرة",
     "deleteConfirmMessage": "لا يمكن التراجع عن هذا. حذف هذه التذكرة نهائياً؟",
     "resolvedBy": "حلها",
+    "resolvedByMeta": "تم الحل بواسطة {{name}} · {{date}}",
+    "resolvedByMetaNoDate": "تم الحل بواسطة {{name}}",
     "unknown": "غير معروف",
     "admin": "مسؤول",
     "ticketResolved": "تم حل التذكرة",
@@ -784,7 +831,9 @@
     },
     "assign": {
       "title": "إسناد التذكرة",
+      "subtitle": "التذكرة {{ticketId}} · {{subject}}",
       "selectModerator": "اختر مشرف",
+      "selectModeratorLabel": "اختر مشرف *",
       "notes": "ملاحظات",
       "assign": "إسناد",
       "cancel": "إلغاء",
@@ -795,7 +844,9 @@
     },
     "resolve": {
       "title": "حل التذكرة",
+      "subtitle": "التذكرة {{ticketId}} · {{subject}}",
       "resolution": "الحل",
+      "resolutionLabel": "الحل *",
       "resolutionPlaceholder": "اكتب ملخصاً واضحاً لكيفية حل التذكرة...",
       "resolutionHelper": "10 أحرف على الأقل. سيتم إرسال هذه الرسالة للمستخدم.",
       "characterCount": "{{count}} حرف",
@@ -827,7 +878,12 @@
       "completed": "مكتملة",
       "pending": "قيد الانتظار",
       "failed": "فاشلة",
-      "refunded": "مستردة"
+      "refunded": "مستردة",
+      "authorized": "مُصرَّح به",
+      "captured": "تم التحصيل",
+      "paid": "مدفوعة",
+      "partially_refunded": "مستردة جزئياً",
+      "voided": "ملغاة"
     },
     "details": {
       "paymentId": "رقم الدفعة",
@@ -891,7 +947,10 @@
     },
     "void": {
       "success": "تم إلغاء الدفعة"
-    }
+    },
+    "amountWithCurrency": "المبلغ ({{currency}})",
+    "refundedTagWithAmount": "مسترد {{amount}}",
+    "refundEntry": "{{amount}} — {{reason}}"
   },
   "paymentReturn": {
     "title": "حالة الدفع",
@@ -981,6 +1040,18 @@
       "events": "فعاليات",
       "oneEvent": "فعالية واحدة",
       "perQuarter": "/ربع سنة"
+    },
+    "limits": {
+      "unlimitedEvents": "مناسبات غير محدودة",
+      "eventsMax": "{{count}} مناسبة كحد أقصى",
+      "eventsMax_zero": "لا مناسبات",
+      "eventsMax_one": "مناسبة واحدة كحد أقصى",
+      "eventsMax_two": "مناسبتان كحد أقصى",
+      "eventsMax_few": "{{count}} مناسبات كحد أقصى",
+      "eventsMax_many": "{{count}} مناسبة كحد أقصى",
+      "eventsMax_other": "{{count}} مناسبة كحد أقصى",
+      "invitePoolValue": "رصيد الدعوات: {{count}}",
+      "invitePoolUnlimited": "رصيد الدعوات: غير محدود"
     },
     "details": {
       "name": "اسم الخطة",
@@ -1084,16 +1155,19 @@
     "managePlan": "إدارة الخطة",
     "guests": "الضيوف",
     "confirmed": "مؤكد",
+    "close": "إغلاق",
     "deleteConfirmTitle": "تأكيد الحذف",
     "deleteConfirmMessage": "لا يمكن التراجع عن هذا الإجراء.",
     "suspendConfirmTitle": "تأكيد الإيقاف",
     "activateConfirmTitle": "تأكيد التفعيل",
     "noSearchResults": "حاول تعديل البحث أو الفلتر",
     "joined": "انضم في",
+    "joinedDate": "انضم في {{date}}",
     "viewAll": "عرض الكل",
     "admin": "مسؤول",
     "bulkSuspendModerators": "هل أنت متأكد من إيقاف {{count}} مشرف؟",
-    "bulkDeleteModerators": "هل أنت متأكد من حذف {{count}} مشرف؟"
+    "bulkDeleteModerators": "هل أنت متأكد من حذف {{count}} مشرف؟",
+    "selectedCount": "تم تحديد {{count}}"
   },
   "discounts": {
     "title": "أكواد الخصم",
@@ -1170,9 +1244,14 @@
       "edit": "تعديل",
       "delete": "حذف"
     },
+    "confirm": {
+      "activate": "هل تريد تفعيل الكود \"{{code}}\"؟",
+      "deactivate": "هل تريد تعطيل الكود \"{{code}}\"؟"
+    },
     "delete": {
       "title": "حذف الخصم",
-      "message": "هل تريد حذف الكود"
+      "message": "هل تريد حذف الكود",
+      "confirmMessage": "هل تريد حذف الكود \"{{code}}\"؟ لا يمكن التراجع عن هذا الإجراء."
     },
     "empty": {
       "title": "لا توجد أكواد خصم",
@@ -1241,6 +1320,7 @@
   },
   "validation": {
     "nameRequired": "الاسم مطلوب",
+    "namesRequired": "الاسم بالعربية والإنجليزية مطلوب",
     "invalidEmail": "يرجى إدخال بريد إلكتروني صحيح",
     "phoneRequired": "رقم الهاتف مطلوب",
     "phoneFormat": "رقم الهاتف يجب أن يكون بين 7 و 15 رقم",
@@ -1269,7 +1349,8 @@
     "codeFormat": "الكود يجب أن يحتوي فقط على أحرف إنجليزية وأرقام و _ و -",
     "valueMin": "القيمة يجب أن تكون أكبر من 0",
     "percentageMax": "النسبة لا تتجاوز 100%",
-    "dateOrderInvalid": "تاريخ الانتهاء يجب أن يكون بعد تاريخ البدء"
+    "dateOrderInvalid": "تاريخ الانتهاء يجب أن يكون بعد تاريخ البدء",
+    "invalidSaudiPhone": "رقم الهاتف يجب أن يتكون من 10 أرقام (يبدأ بـ 05) أو 9 أرقام (يبدأ بـ 5)"
   },
   "sendNotification": {
     "sendTitle": "إرسال إشعار",
@@ -1336,6 +1417,8 @@
     "guests": "{{count}} ضيف",
     "confirmed": "{{count}} مؤكد",
     "declined": "{{count}} رفض",
+    "dateOnly": "{{date}}",
+    "dateWithTime": "{{date}} • {{time}}",
     "statuses": {
       "published": "منشورة",
       "scheduled": "مجدولة",
@@ -1372,9 +1455,9 @@
       "deleted": "تم حذف الحساب",
       "deleteFailed": "فشل حذف الحساب",
       "statusConfirmTitle": "تغيير الحالة",
-      "statusConfirmBody": "هل أنت متأكد من تغيير حالة هذا الحساب؟",
+      "statusConfirmBody": "هل أنت متأكد من رغبتك في {{action}} \"{{name}}\"؟",
       "deleteConfirmTitle": "حذف الحساب",
-      "deleteConfirmBody": "هل أنت متأكد من حذف هذا الحساب؟"
+      "deleteConfirmBody": "هل أنت متأكد من حذف \"{{name}}\"؟"
     },
     "deleteConfirm": {
       "title": "حذف حساب الأعمال",
@@ -1475,7 +1558,9 @@
         "cancelled": "ملغى",
         "superseded": "مُستبدل",
         "refunded": "مسترد"
-      }
+      },
+      "meta": "{{mode}} · {{amount}} · {{date}}",
+      "metaNoAmount": "{{mode}} · {{date}}"
     }
   },
   "managePlan": {
@@ -1490,6 +1575,7 @@
     "invites": "دعوة",
     "changePlan": "تغيير الباقة",
     "extraInvites": "دعوات إضافية",
+    "planMeta": "{{price}} · {{count}} دعوة",
     "plan": "الباقة",
     "selectPlan": "اختر باقة",
     "loadingPlans": "جارٍ تحميل الباقات...",

@@ -1,11 +1,12 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
     View,
-    Text,
     Modal,
     StyleSheet,
     ScrollView,
     TouchableOpacity,
+    KeyboardAvoidingView,
+    Platform,
     Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -14,7 +15,14 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
-import { TextInput, MobileInput, PasswordInput, Button } from "../../../components/commen";
+import {
+    TextInput,
+    MobileInput,
+    PasswordInput,
+    EmailInput,
+    Button,
+    LocalizedText,
+} from "../../../components/commen";
 import {
     colors,
     spacing,
@@ -27,20 +35,38 @@ import { useCreateHost } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
 
-const schema = z.object({
-    name: z.string().min(1, "Name is required"),
-    email: z.string().email("Invalid email").min(1, "Email is required"),
-    phoneNumber: z.string().min(1, "Phone number is required"),
-    password: z.string().optional(),
-});
-
 /**
  * AddHostModal - Modal for creating a new host
+ *
+ * Field-direction contract (blueprint §5):
+ *   - name  → adaptive (placeholder follows the UI locale, a filled value
+ *     follows its first strong Arabic/Latin character);
+ *   - email → ltr via the shared EmailInput;
+ *   - phone → phone mode inside the shared MobileInput (localized placeholder,
+ *     LTR digits);
+ *   - password → ltr secret value inside the shared PasswordInput.
+ * Labels, helper and error text always follow the UI locale.
  */
 const AddHostModal = ({ visible, onClose, onSuccess }) => {
     const { t } = useTranslation("admin");
     const toast = useToast();
     const createHost = useCreateHost();
+
+    // Validation copy is app-authored and must follow the UI locale — the
+    // schema is rebuilt per language instead of hardcoding English strings.
+    const schema = useMemo(
+        () =>
+            z.object({
+                name: z.string().min(1, t("hosts.add.nameRequired")),
+                email: z
+                    .string()
+                    .min(1, t("hosts.add.emailRequired"))
+                    .email(t("validation.invalidEmail")),
+                phoneNumber: z.string().min(1, t("hosts.add.phoneRequired")),
+                password: z.string().optional(),
+            }),
+        [t]
+    );
 
     const methods = useForm({
         resolver: zodResolver(schema),
@@ -86,39 +112,48 @@ const AddHostModal = ({ visible, onClose, onSuccess }) => {
             transparent={true}
             onRequestClose={handleClose}
         >
-            <View style={styles.overlay}>
+            {/* Keeps the header/footer reachable while the iOS keyboard is open. */}
+            <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : undefined}
+                style={styles.overlay}
+            >
                 <View style={styles.modalContainer}>
-                    {/* Header */}
+                    {/* Header: title at logical start, close at logical end
+                        (close icons are never direction-mirrored). */}
                     <View style={styles.header}>
-                        <Text style={styles.title}>{t("hosts.add.title")}</Text>
+                        <LocalizedText style={styles.title}>{t("hosts.add.title")}</LocalizedText>
                         <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
                             <Ionicons name="close" size={24} color={colors.natural[900]} />
                         </TouchableOpacity>
                     </View>
 
                     <FormProvider {...methods}>
-                        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+                        <ScrollView
+                            style={styles.content}
+                            showsVerticalScrollIndicator={false}
+                            keyboardShouldPersistTaps="handled"
+                        >
                             <View style={styles.formGroup}>
                                 <TextInput
                                     name="name"
-                                    label={`${t("hosts.add.name")} *`}
+                                    label={t("hosts.add.name")}
                                     placeholder={t("hosts.add.namePlaceholder")}
+                                    contentDirection="adaptive"
                                 />
                             </View>
 
                             <View style={styles.formGroup}>
-                                <TextInput
+                                <EmailInput
                                     name="email"
-                                    label={`${t("hosts.add.email")} *`}
+                                    label={t("hosts.add.email")}
                                     placeholder={t("hosts.add.emailPlaceholder")}
-                                    keyboardType="email-address"
                                 />
                             </View>
 
                             <View style={styles.formGroup}>
                                 <MobileInput
                                     name="phoneNumber"
-                                    label={`${t("hosts.add.phone")} *`}
+                                    label={t("hosts.add.phone")}
                                     placeholder={t("hosts.add.phonePlaceholder")}
                                 />
                             </View>
@@ -155,7 +190,7 @@ const AddHostModal = ({ visible, onClose, onSuccess }) => {
                         </View>
                     </View>
                 </View>
-            </View>
+            </KeyboardAvoidingView>
         </Modal>
     );
 };

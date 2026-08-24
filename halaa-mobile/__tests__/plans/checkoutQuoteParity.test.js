@@ -43,12 +43,12 @@ test("Mobile Checkout UI: Eliminates .toFixed(0) decimal truncation in PaymentSu
   );
 
   assert.ok(
-    summaryContent.includes("formatSar"),
-    "PaymentSummaryCard must use formatSar"
+    summaryContent.includes("formatSar") || summaryContent.includes("priceToken("),
+    "PaymentSummaryCard must use formatSar (directly or via the shared priceToken)"
   );
   assert.ok(
-    screenContent.includes("formatSar"),
-    "PlansSummaryScreen must use formatSar"
+    screenContent.includes("priceToken(finalTotal"),
+    "PlansSummaryScreen must format the footer total via the shared priceToken (formatSar-based)"
   );
 });
 

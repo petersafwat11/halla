@@ -1,16 +1,21 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { ImageInput } from '../../commen';
 import SectionCard from '../../commen/SectionCard';
 import MultiImageInput from '../../commen/MultiImageInput';
+import LocalizedText from '../../commen/LocalizedText';
 import { useTranslation } from '../../../localization';
 
 const VendorStep3SamplesPackages = () => {
   const { t } = useTranslation('auth');
   return (
     <View style={styles.container}>
-      <Text style={styles.stepTitle}>{t('signupForm.vendor.samplesAndPackages.title')}</Text>
-      <Text style={styles.stepDesc}>{t('signupForm.vendor.samplesAndPackages.description')}</Text>
+      <LocalizedText center style={styles.stepTitle}>
+        {t('signupForm.vendor.samplesAndPackages.title')}
+      </LocalizedText>
+      <LocalizedText role="hint" center style={styles.stepDesc}>
+        {t('signupForm.vendor.samplesAndPackages.description')}
+      </LocalizedText>
 
       <SectionCard title={t('signupForm.vendor.samplesAndPackages.portfolioSection')} icon="images-outline">
         <MultiImageInput
@@ -51,8 +56,8 @@ const VendorStep3SamplesPackages = () => {
 
 const styles = StyleSheet.create({
   container: { width: '100%' },
-  stepTitle: { fontSize: 20, fontFamily: 'Cairo_700Bold', color: '#2c2c2c', marginBottom: 6, textAlign: 'center' },
-  stepDesc: { fontSize: 13, fontFamily: 'Cairo_400Regular', color: '#888', textAlign: 'center', marginBottom: 20, lineHeight: 20 },
+  stepTitle: { fontSize: 20, fontFamily: 'Cairo_700Bold', color: '#2c2c2c', marginBottom: 6, lineHeight: 28 },
+  stepDesc: { fontSize: 13, color: '#888', marginBottom: 20, lineHeight: 20 },
 });
 
 export default VendorStep3SamplesPackages;

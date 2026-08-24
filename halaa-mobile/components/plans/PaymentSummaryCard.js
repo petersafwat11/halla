@@ -1,64 +1,83 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import LocalizedText from "../commen/LocalizedText";
 import { formatSar } from "@halaa/shared/utils";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
+import { priceToken } from "@halaa/shared/utils/displayTokens";
 import { colors, spacing, borderRadius, typography } from "../../styles/tokens";
 
+/**
+ * Web/Moyasar payment breakdown.
+ *
+ * Every amount renders as ONE atomic LTR-isolated token (amount + currency)
+ * so minus signs, digits and the currency label can never BiDi-reorder or
+ * split (blueprint §6). Labels follow the UI locale.
+ */
 const PaymentSummaryCard = ({
   planPrice,
   addonTotal = 0,
   discountAmount,
   finalTotal,
   t,
-}) => (
-  <View style={styles.card}>
-    <View style={styles.cardHeader}>
-      <Text style={styles.cardTitle}>{t("summary.paymentSummary.title")}</Text>
-    </View>
+}) => {
+  const sar = t("summary.currency");
 
-    <View style={styles.cardContent}>
-      <Row
-        label={t("summary.paymentSummary.planPrice")}
-        value={`${formatSar(planPrice, { trimTrailingZeros: true })} ${t("summary.currency")}`}
-      />
+  return (
+    <View style={styles.card}>
+      <View style={styles.cardHeader}>
+        <LocalizedText style={styles.cardTitle}>
+          {t("summary.paymentSummary.title")}
+        </LocalizedText>
+      </View>
 
-      {addonTotal > 0 && (
+      <View style={styles.cardContent}>
         <Row
-          label={t("summary.paymentSummary.addons")}
-          value={`${formatSar(addonTotal, { trimTrailingZeros: true })} ${t("summary.currency")}`}
+          label={t("summary.paymentSummary.planPrice")}
+          value={priceToken(planPrice, sar)}
         />
-      )}
 
-      {discountAmount > 0 && (
-        <View style={styles.discountRow}>
-          <Text style={styles.summaryLabel}>
-            {t("summary.paymentSummary.discount")}
-          </Text>
-          <Text style={styles.summaryValueDiscount}>
-            -{formatSar(discountAmount, { trimTrailingZeros: true })} {t("summary.currency")}
-          </Text>
-        </View>
-      )}
+        {addonTotal > 0 && (
+          <Row
+            label={t("summary.paymentSummary.addons")}
+            value={priceToken(addonTotal, sar)}
+          />
+        )}
 
-      <View style={styles.summaryDivider} />
+        {discountAmount > 0 && (
+          <View style={styles.discountRow}>
+            <LocalizedText style={styles.summaryLabel}>
+              {t("summary.paymentSummary.discount")}
+            </LocalizedText>
+            {/* Minus sign stays glued inside the isolated token. */}
+            <Text style={styles.summaryValueDiscount}>
+              {isolateLtr(
+                `-${formatSar(discountAmount, { trimTrailingZeros: true })} ${sar}`
+              )}
+            </Text>
+          </View>
+        )}
 
-      <View style={styles.totalRow}>
-        <Text style={styles.totalLabel}>
-          {t("summary.paymentSummary.total")}
-        </Text>
-        <View style={styles.totalValueWrap}>
-          <Text style={styles.totalValue}>
-            {formatSar(finalTotal, { trimTrailingZeros: true })}
-          </Text>
-          <Text style={styles.totalCurrency}>{t("summary.currency")}</Text>
+        <View style={styles.summaryDivider} />
+
+        <View style={styles.totalRow}>
+          <LocalizedText style={styles.totalLabel}>
+            {t("summary.paymentSummary.total")}
+          </LocalizedText>
+          <View style={styles.totalValueWrap}>
+            <Text style={styles.totalValue}>
+              {isolateLtr(formatSar(finalTotal, { trimTrailingZeros: true }))}
+            </Text>
+            <Text style={styles.totalCurrency}>{sar}</Text>
+          </View>
         </View>
       </View>
     </View>
-  </View>
-);
+  );
+};
 
 const Row = ({ label, value }) => (
   <View style={styles.summaryRow}>
-    <Text style={styles.summaryLabel}>{label}</Text>
+    <LocalizedText style={styles.summaryLabel}>{label}</LocalizedText>
     <Text style={styles.summaryValue}>{value}</Text>
   </View>
 );

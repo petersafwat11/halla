@@ -1,8 +1,9 @@
 import React from "react";
-import { View, Text, FlatList, ActivityIndicator, StyleSheet } from "react-native";
+import { View, FlatList, ActivityIndicator, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import PlanListItem from "./PlanListItem";
 import { useTranslation } from "../../../localization";
+import LocalizedText from "../../commen/LocalizedText";
 import {
   colors,
   spacing,
@@ -17,7 +18,7 @@ const PlanList = ({ plans, loading, canEdit, onEdit }) => {
     return (
       <View style={styles.loadingWrap}>
         <ActivityIndicator size="large" color={colors.primary[500]} />
-        <Text style={styles.loadingText}>{t("common.loading")}</Text>
+        <LocalizedText style={styles.loadingText}>{t("common.loading")}</LocalizedText>
       </View>
     );
   }
@@ -26,8 +27,10 @@ const PlanList = ({ plans, loading, canEdit, onEdit }) => {
     return (
       <View style={styles.emptyWrap}>
         <Ionicons name="layers-outline" size={48} color={colors.natural[300]} />
-        <Text style={styles.emptyTitle}>{t("plans.empty.title")}</Text>
-        <Text style={styles.emptyMsg}>{t("plans.empty.message")}</Text>
+        <LocalizedText style={styles.emptyTitle}>{t("plans.empty.title")}</LocalizedText>
+        <LocalizedText center style={styles.emptyMsg}>
+          {t("plans.empty.message")}
+        </LocalizedText>
       </View>
     );
   }

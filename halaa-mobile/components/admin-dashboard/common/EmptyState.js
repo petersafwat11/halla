@@ -1,9 +1,10 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import PropTypes from "prop-types";
 import { colors, spacing, typography, iconSizes } from "../../../styles/tokens";
 import ActionButton from "./ActionButton";
+import LocalizedText from "../../commen/LocalizedText";
 
 /**
  * EmptyState - No data placeholder
@@ -28,9 +29,9 @@ const EmptyState = ({ icon, title, message, actionLabel, onAction }) => {
         </View>
       )}
 
-      <Text style={styles.title}>{title}</Text>
+      <LocalizedText style={styles.title}>{title}</LocalizedText>
 
-      {message && <Text style={styles.message}>{message}</Text>}
+      {message && <LocalizedText style={styles.message}>{message}</LocalizedText>}
 
       {actionLabel && onAction && (
         <View style={styles.actionContainer}>

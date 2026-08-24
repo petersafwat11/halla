@@ -17,7 +17,7 @@ const phoneSchema = z
   .string()
   .min(1, "رقم الهاتف مطلوب")
   .refine((val) => isValidPhone(val), {
-    message: "رقم الهاتف غير صحيح (المدعوم: السعودية +966 أو مصر +20)",
+    message: "رقم الهاتف يجب أن يتكون من 10 أرقام (يبدأ بـ 05) أو 9 أرقام (يبدأ بـ 5)",
   })
   .transform((val) => normalizePhoneNumber(val));
 

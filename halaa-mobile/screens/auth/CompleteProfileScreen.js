@@ -16,6 +16,7 @@ import { useToast } from "../../contexts/ToastContext";
 import { authErrorMessage } from "../../services/authErrors";
 import CompleteProfileForm from "../../components/auth/CompleteProfileForm";
 import TopBar from "../../components/plans/TopBar";
+import LocalizedText from "../../components/commen/LocalizedText";
 import { colors } from "../../styles/tokens";
 
 export default function CompleteProfileScreen() {
@@ -56,23 +57,25 @@ export default function CompleteProfileScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
-      <TopBar
-        title={t("signup.completeProfileTitle")}
-        showBack={false}
-        rightContent={
-          <TouchableOpacity
-            style={styles.logoutButton}
-            onPress={logout}
-            activeOpacity={0.7}
-            accessibilityLabel={t("logout", { defaultValue: "Log out" })}
-          >
-            <Ionicons name="log-out-outline" size={20} color={colors.secondary[700]} />
-            <Text style={styles.logoutText}>
-              {t("logout", { defaultValue: "خروج" })}
-            </Text>
-          </TouchableOpacity>
-        }
-      />
+        <TopBar
+          title={t("signup.completeProfileTitle")}
+          showBack={false}
+          rightContent={
+            <TouchableOpacity
+              style={styles.logoutButton}
+              onPress={logout}
+              activeOpacity={0.7}
+              accessibilityLabel={t("logout", { defaultValue: "Log out" })}
+            >
+              {/* Log-out is a semantic action glyph — not direction-flipped. */}
+              <Ionicons name="log-out-outline" size={20} color={colors.secondary[700]} />
+              {/* App copy — always the UI locale (blueprint §5.1). */}
+              <LocalizedText style={styles.logoutText}>
+                {t("logout", { defaultValue: "Log out" })}
+              </LocalizedText>
+            </TouchableOpacity>
+          }
+        />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardView}

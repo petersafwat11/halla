@@ -86,7 +86,12 @@ const AdminDiscountsScreen = () => {
     const isActivating = !discount.isActive;
     Alert.alert(
       isActivating ? t("discounts.actions.activate") : t("discounts.actions.deactivate"),
-      `"${discount.code}"?`,
+      t(
+        isActivating
+          ? "discounts.confirm.activate"
+          : "discounts.confirm.deactivate",
+        { code: discount.code }
+      ),
       [
         { text: t("common.cancel"), style: "cancel" },
         {
@@ -108,7 +113,7 @@ const AdminDiscountsScreen = () => {
   const handleDelete = (discount) => {
     Alert.alert(
       t("discounts.delete.title"),
-      `${t("discounts.delete.message")} "${discount.code}"? ${t("common.deleteConfirmMessage")}`,
+      t("discounts.delete.confirmMessage", { code: discount.code }),
       [
         { text: t("common.cancel"), style: "cancel" },
         {

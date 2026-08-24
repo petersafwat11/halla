@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
 import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
+import MobileInputGroup from "@/ui/commen/inputs/mobileInputGroup/MobileInputGroup";
 import UploadFileStandalone from "@/ui/commen/inputs/uploadFile/UploadFileStandalone";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import Button from "@/ui/commen/button/Button";
@@ -71,7 +72,7 @@ export default function AddBusinessPopup({ onClose }) {
               name="email"
               required
             />
-            <InputGroup
+            <MobileInputGroup
               label={t("form.phone")}
               placeholder={t("form.phonePlaceholder")}
               type="text"

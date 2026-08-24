@@ -898,7 +898,7 @@
   "validation": {
     "required": "This field is required",
     "invalidEmail": "Please enter a valid email",
-    "invalidSaudiPhone": "Please enter a valid Saudi phone number",
+    "invalidSaudiPhone": "Phone number must be 10 digits (starting with 05) or 9 digits (starting with 5)",
     "passwordMinLength": "Password must be at least 8 characters",
     "passwordMaxLength": "Password must be less than 128 characters",
     "passwordComplexity": "Use letters and numbers only, with at least one of each",

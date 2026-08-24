@@ -10,8 +10,9 @@
  */
 
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 import CreateStepTwo from "../../../components/createEvent/StepTwo";
+import LocalizedText from "../../../components/commen/LocalizedText";
 import { useTranslation } from "../../../localization";
 
 const StepTwo = ({ guestList, staffList, subscription, allowAddOnly = false }) => {
@@ -20,7 +21,11 @@ const StepTwo = ({ guestList, staffList, subscription, allowAddOnly = false }) =
     <View style={styles.container}>
       {allowAddOnly && (
         <View style={styles.banner} accessibilityRole="alert">
-          <Text style={styles.bannerText}>{t("events.update.liveAddOnly")}</Text>
+          {/* Lockout copy is app-authored → LocalizedText keeps it written
+              and aligned in the UI locale regardless of any Latin tokens. */}
+          <LocalizedText role="hint" style={styles.bannerText}>
+            {t("events.update.liveAddOnly")}
+          </LocalizedText>
         </View>
       )}
       <CreateStepTwo

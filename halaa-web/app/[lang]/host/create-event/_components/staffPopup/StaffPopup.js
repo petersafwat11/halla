@@ -8,6 +8,11 @@ import MobileInputGroup from "@/ui/commen/inputs/mobileInputGroup/MobileInputGro
 import Button from "@/ui/commen/button/Button";
 import Table from "@/ui/commen/new-table/Table";
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
+import {
+  isValidPhone,
+  normalizePhoneNumber,
+  DEFAULT_PHONE_PLACEHOLDER,
+} from "@halaa/shared/utils/phone";
 
 const StaffPopup = ({
   staffList = [],
@@ -52,17 +57,29 @@ const StaffPopup = ({
 
     if (!phone) {
       newErrors.phone = t("staff_phone_required", "رقم الجوال مطلوب");
-    } else if (!/^5[0-9]{8}$/.test(phone)) {
-      newErrors.phone = t("staff_phone_invalid_pattern", "رقم الجوال يجب أن يكون 9 أرقام ويبدأ بـ 5");
+    } else if (!isValidPhone(phone)) {
+      newErrors.phone = t(
+        "staff_phone_invalid_pattern",
+        "رقم الجوال يجب أن يكون 10 أرقام ويبدأ بـ 05 أو 9 أرقام ويبدأ بـ 5"
+      );
     }
 
     // Check for duplicate phone (exclude current item when editing)
     if (phone) {
-      const phoneExists = staffList.some(
-        (item) => item.phone === phone && item.id !== currentItem.id
-      );
+      const normInput = normalizePhoneNumber(phone);
+      const phoneExists = staffList.some((item) => {
+        const itemNorm = normalizePhoneNumber(item.phone);
+        return (
+          ((normInput && itemNorm && normInput === itemNorm) ||
+            item.phone === phone) &&
+          item.id !== currentItem.id
+        );
+      });
       if (phoneExists) {
-        newErrors.phone = t("staff_phone_duplicate", "هذا الرقم موجود بالفعل في القائمة");
+        newErrors.phone = t(
+          "staff_phone_duplicate",
+          "هذا الرقم موجود بالفعل في القائمة"
+        );
       }
     }
 
@@ -135,14 +152,17 @@ const StaffPopup = ({
 
         <div className={styles.content}>
           <p className={styles.description}>
-            {t("staff_popup_desc", "أضف مشرفين البوابة المسؤولين عن تسجيل حضور الضيوف. سيتمكنون من الوصول لصفحة تسجيل الحضور عبر رابط خاص.")}
+            {t(
+              "staff_popup_desc",
+              "أضف مشرفين البوابة المسؤولين عن تسجيل حضور الضيوف. سيتمكنون من الوصول لصفحة تسجيل الحضور عبر رابط خاص."
+            )}
           </p>
 
           <div className={styles.formSection}>
             <div className={styles.formGrid}>
               <MobileInputGroup
                 label={t("staff_phone", "رقم الجوال")}
-                placeholder={t("staff_phone_placeholder", "5xxxxxxxx")}
+                placeholder={t("staff_phone_placeholder", DEFAULT_PHONE_PLACEHOLDER)}
                 type="tel"
                 required
                 value={currentItem.phone || ""}

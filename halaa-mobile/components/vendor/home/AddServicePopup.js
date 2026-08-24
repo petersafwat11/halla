@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import {
   View,
-  Text,
   TouchableOpacity,
   StyleSheet,
   Modal,
@@ -14,7 +13,14 @@ import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
-import { TextInput, DropdownInput, ImageInput } from "../../commen";
+import {
+  TextInput,
+  DropdownInput,
+  ImageInput,
+  LocalizedText,
+  AdaptiveText,
+} from "../../commen";
+import { CONTENT_DIRECTIONS } from "../../../hooks/useInputDirection";
 import {
   addServiceSchema,
   SERVICE_TYPES,
@@ -169,18 +175,21 @@ const AddServicePopup = ({
             { transform: [{ translateY: slideAnim }] },
           ]}
         >
-          {/* Header */}
+          {/* Header — close sits at the logical start of the sheet row and
+              is a semantic glyph (never mirrored). */}
           <View style={styles.header}>
             <TouchableOpacity
               onPress={handleClose}
               disabled={isLoading}
               hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel={t("services.cancel")}
             >
               <MaterialCommunityIcons name="close" size={24} color="#2C2C2C" />
             </TouchableOpacity>
-            <Text style={styles.title}>
+            <LocalizedText role="pageTitle" style={styles.title}>
               {isEditing ? t("services.editTitle") : t("services.title")}
-            </Text>
+            </LocalizedText>
             <View style={{ width: 24 }} />
           </View>
 
@@ -200,18 +209,23 @@ const AddServicePopup = ({
                 placeholder={t("services.imagePlaceholder")}
               />
 
+              {/* Default-locale service name: arbitrary user text. */}
               <TextInput
                 name="serviceName"
                 label={t("services.nameLabel")}
                 placeholder={t("services.namePlaceholder")}
+                contentDirection={CONTENT_DIRECTIONS.ADAPTIVE}
               />
 
+              {/* Explicitly Arabic-restricted backend field. */}
               <TextInput
                 name="serviceNameAr"
                 label={t("services.nameArLabel")}
                 placeholder={t("services.nameArPlaceholder")}
+                contentDirection={CONTENT_DIRECTIONS.RTL}
               />
 
+              {/* App-owned localized options (blueprint §5.3 dropdown rule). */}
               <DropdownInput
                 name="serviceType"
                 label={t("services.typeLabel")}
@@ -226,6 +240,7 @@ const AddServicePopup = ({
                 placeholder={t("services.descPlaceholder")}
                 multiline
                 numberOfLines={4}
+                contentDirection={CONTENT_DIRECTIONS.ADAPTIVE}
               />
 
               <TextInput
@@ -234,28 +249,33 @@ const AddServicePopup = ({
                 placeholder={t("services.descArPlaceholder")}
                 multiline
                 numberOfLines={4}
+                contentDirection={CONTENT_DIRECTIONS.RTL}
               />
 
+              {/* Raw numeric token: stable LTR digits/cursor in both locales. */}
               <TextInput
                 name="price"
                 label={t("services.priceLabel")}
                 placeholder={t("services.pricePlaceholder")}
                 keyboardType="decimal-pad"
+                contentDirection={CONTENT_DIRECTIONS.LTR}
               />
 
 
               {/* Included */}
               <View style={styles.includedSection}>
-                <Text style={styles.includedLabel}>
+                <LocalizedText role="label" style={styles.includedLabel}>
                   {t("services.includedLabel")}
-                </Text>
+                </LocalizedText>
                 <View style={styles.includedRow}>
+                  {/* Included items are arbitrary user/backend text. */}
                   <RNTextInput
                     value={includedInput}
                     onChangeText={setIncludedInput}
                     onSubmitEditing={handleAddIncluded}
                     placeholder={t("services.includedPlaceholder")}
                     placeholderTextColor="#9CA3AF"
+                    contentDirection={CONTENT_DIRECTIONS.ADAPTIVE}
                     style={styles.includedInput}
                     returnKeyType="done"
                   />
@@ -263,6 +283,8 @@ const AddServicePopup = ({
                     onPress={handleAddIncluded}
                     style={styles.includedAddButton}
                     activeOpacity={0.7}
+                    accessibilityRole="button"
+                    accessibilityLabel={t("services.includedAdd")}
                   >
                     <MaterialCommunityIcons name="plus" size={20} color="#FFF" />
                   </TouchableOpacity>
@@ -276,7 +298,9 @@ const AddServicePopup = ({
                         onPress={() => handleRemoveIncluded(item)}
                         activeOpacity={0.7}
                       >
-                        <Text style={styles.includedChipText}>{item}</Text>
+                        <AdaptiveText style={styles.includedChipText}>
+                          {item}
+                        </AdaptiveText>
                         <MaterialCommunityIcons name="close" size={14} color="#6B4E33" />
                       </TouchableOpacity>
                     ))}
@@ -297,7 +321,9 @@ const AddServicePopup = ({
               disabled={isLoading}
               activeOpacity={0.7}
             >
-              <Text style={styles.cancelButtonText}>{t("services.cancel")}</Text>
+              <LocalizedText style={styles.cancelButtonText}>
+                {t("services.cancel")}
+              </LocalizedText>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -312,9 +338,9 @@ const AddServicePopup = ({
               {isLoading ? (
                 <ActivityIndicator size="small" color="#FFF" />
               ) : (
-                <Text style={styles.submitButtonText}>
+                <LocalizedText style={styles.submitButtonText}>
                   {isEditing ? t("services.update") : t("services.create")}
-                </Text>
+                </LocalizedText>
               )}
             </TouchableOpacity>
           </View>

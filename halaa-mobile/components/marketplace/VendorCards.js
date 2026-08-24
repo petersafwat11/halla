@@ -3,12 +3,12 @@ import {
   View,
   StyleSheet,
   FlatList,
-  Text,
   ActivityIndicator
   ,TouchableOpacity
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import VendorCard from "./VendorCard";
+import LocalizedText from "../commen/LocalizedText";
 import { useTranslation } from "../../localization";
 import { colors } from "../../styles/tokens";
 
@@ -34,17 +34,24 @@ const VendorCards = ({ vendors, onVendorPress, loading, error, onRetry, onReset,
     if (error) return (
       <View style={styles.emptyContainer}>
         <View style={styles.emptyIcon}><Ionicons name="cloud-offline-outline" size={30} color={colors.primary[500]} /></View>
-        <Text style={styles.emptyTitle}>{t("errors.loadFailed")}</Text>
-        <TouchableOpacity style={styles.retryButton} onPress={onRetry}><Text style={styles.retryText}>{t("errors.retry")}</Text></TouchableOpacity>
+        {/* Empty/error copy is app-authored → always the UI locale. Centering
+            is a design choice; writing direction still follows the locale so
+            punctuation stays at the sentence end. */}
+        <LocalizedText center style={styles.emptyTitle}>{t("errors.loadFailed")}</LocalizedText>
+        <TouchableOpacity style={styles.retryButton} onPress={onRetry} accessibilityRole="button">
+          <LocalizedText style={styles.retryText}>{t("errors.retry")}</LocalizedText>
+        </TouchableOpacity>
       </View>
     );
     return (
       <View style={styles.emptyContainer}>
         <View style={styles.emptyIcon}><Ionicons name="search-outline" size={30} color={colors.primary[500]} /></View>
-        <Text style={styles.emptyTitle}>{t("noResults.title")}</Text>
-        <Text style={styles.emptyText}>{t("noResults.description")}</Text>
+        <LocalizedText center style={styles.emptyTitle}>{t("noResults.title")}</LocalizedText>
+        <LocalizedText center style={styles.emptyText}>{t("noResults.description")}</LocalizedText>
         {onReset ? (
-          <TouchableOpacity style={styles.retryButton} onPress={onReset}><Text style={styles.retryText}>{t("filters.reset")}</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.retryButton} onPress={onReset} accessibilityRole="button">
+            <LocalizedText style={styles.retryText}>{t("filters.reset")}</LocalizedText>
+          </TouchableOpacity>
         ) : null}
       </View>
     );
@@ -101,22 +108,20 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_700Bold",
     fontSize: 18,
     color: colors.natural[900],
-    textAlign: "center",
     marginBottom: 6
   },
   emptyText: {
     fontFamily: "Cairo_400Regular",
     fontSize: 14,
     lineHeight: 22,
-    color: colors.natural[450],
-    textAlign: "center"
+    color: colors.natural[450]
   },
   footerLoader: {
     paddingVertical: 16,
     alignItems: "center",
   },
-  retryButton: { marginTop: 12, paddingHorizontal: 18, paddingVertical: 10, borderRadius: 10, backgroundColor: colors.primary[500] },
-  retryText: { fontFamily: "Cairo_600SemiBold", color: colors.natural[50] },
+  retryButton: { marginTop: 12, paddingHorizontal: 18, paddingVertical: 10, borderRadius: 10, backgroundColor: colors.primary[500], minHeight: 44, justifyContent: "center" },
+  retryText: { fontFamily: "Cairo_600SemiBold", color: colors.natural[50], fontSize: 14 },
 });
 
 export default VendorCards;

@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const { GUEST_STATUS, RSVP_STATUS } = require("../src/shared/constants");
+const { mongoosePhoneValidator, normalizePhoneNumber } = require("../src/shared/utils/phone");
 
 const guestSchema = new mongoose.Schema(
   {
@@ -21,7 +22,10 @@ const guestSchema = new mongoose.Schema(
       type: String,
       required: [true, "Phone number is required"],
       trim: true,
-      length: [9, "Phone number must be 9 digits"],
+      validate: {
+        validator: mongoosePhoneValidator,
+        message: "Invalid phone number format",
+      },
     },
 
     // Optional free-text grouping label (e.g. "Family", "Work", "VIP").
@@ -209,6 +213,17 @@ const guestSchema = new mongoose.Schema(
     collection: "guests",
   }
 );
+
+// Normalize phone before saving
+guestSchema.pre("save", function (next) {
+  if (this.phone && this.isModified("phone")) {
+    const normalized = normalizePhoneNumber(this.phone);
+    if (normalized) {
+      this.phone = normalized;
+    }
+  }
+  next();
+});
 
 // Generate QR code before saving if not provided
 guestSchema.pre("save", function (next) {

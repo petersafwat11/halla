@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { formatDate } from "@halaa/shared/utils/locale";
 import { useTranslation } from "../../../../localization";
+import AdaptiveText from "../../../components/commen/AdaptiveText";
+import LocalizedText from "../../../components/commen/LocalizedText";
 import { colors, spacing, borderRadius, typography, textStyles, backgrounds } from "../../../../styles/tokens";
 
 const EVENT_STATUS_COLORS = {
@@ -25,11 +27,11 @@ const AdminRecentEvents = ({ events, t, onViewAll }) => {
       <View style={styles.sectionHeader}>
         <View style={styles.sectionHeaderLeft}>
           <Ionicons name="calendar-outline" size={18} color={colors.primary[500]} />
-          <Text style={styles.sectionTitle}>{t("dashboard.recentEvents.title")}</Text>
+          <LocalizedText style={styles.sectionTitle}>{t("dashboard.recentEvents.title")}</LocalizedText>
         </View>
         {onViewAll && (
           <TouchableOpacity onPress={onViewAll}>
-            <Text style={styles.viewAllText}>{t("common.viewAll")}</Text>
+            <LocalizedText style={styles.viewAllText}>{t("common.viewAll")}</LocalizedText>
           </TouchableOpacity>
         )}
       </View>
@@ -42,15 +44,22 @@ const AdminRecentEvents = ({ events, t, onViewAll }) => {
             <View style={styles.eventRow}>
               <View style={[styles.eventStrip, { backgroundColor: statusColor }]} />
               <View style={styles.listRowContent}>
-                <Text style={styles.listRowName} numberOfLines={1}>{event.title}</Text>
-                <Text style={styles.listRowSub} numberOfLines={1}>
-                  {event.host} · {dateStr}
+                {/* Event title is backend content — first-strong + isolation. */}
+                <AdaptiveText style={styles.listRowName} numberOfLines={1}>
+                  {event.title}
+                </AdaptiveText>
+                {/* Structured nested runs: adaptive host name and a
+                    locale-formatted date stay isolated from each other. */}
+                <Text style={styles.listRowSub} numberOfLines={1} writingDirection={currentLanguage === "ar" ? "rtl" : "ltr"}>
+                  <AdaptiveText>{event.host}</AdaptiveText>
+                  {" · "}
+                  <LocalizedText>{dateStr}</LocalizedText>
                 </Text>
               </View>
               <View style={[styles.statusBadge, { backgroundColor: `${statusColor}18` }]}>
-                <Text style={[styles.statusText, { color: statusColor }]}>
+                <LocalizedText style={[styles.statusText, { color: statusColor }]}>
                   {t(`events.status.${event.status}`) || event.status}
-                </Text>
+                </LocalizedText>
               </View>
             </View>
           </React.Fragment>

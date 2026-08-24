@@ -5,16 +5,16 @@
 
 const { z } = require('zod');
 const { GUEST_STATUS, RSVP_STATUS } = require('../../shared/constants');
+const { clampPhoneInput, SAUDI_PHONE_REGEX } = require('../../shared/utils/phone');
 
-// Saudi mobile: 9 digits starting with 5 (E.164 minus the +966).
-// Allow optional +966/966 prefix and strip non-digits before checking.
+// Saudi mobile: 10 digits starting with 05 or 9 digits starting with 5.
 const saudiPhone = z
   .string()
   .min(1, 'phone is required')
-  .transform((v) => v.replace(/[\s\-\(\)\.]/g, ''))
+  .transform((v) => clampPhoneInput(v))
   .refine(
-    (v) => /^(\+?966)?5\d{8}$/.test(v) || /^05\d{8}$/.test(v),
-    { message: 'phone must be a Saudi mobile number (5xxxxxxxx)' }
+    (v) => SAUDI_PHONE_REGEX.test(v),
+    { message: 'phone must be a valid Saudi mobile number (10 digits starting with 05 or 9 digits starting with 5)' }
   );
 
 const addGuestSchema = z

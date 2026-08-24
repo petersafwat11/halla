@@ -1,12 +1,11 @@
 import React, { useState } from "react";
 import {
   View,
-  Text,
   StyleSheet,
   TouchableOpacity,
   Image,
 } from "react-native";
-import TextInput from "../commen/DirectionalTextInput";
+import { FormField, LocalizedText } from "../commen";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useTranslation } from "../../localization";
@@ -87,10 +86,16 @@ const BusinessSettings = ({ user = {}, onProfileUpdate }) => {
 
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{t("business.title")}</Text>
-      <Text style={styles.sectionDescription}>{t("business.subtitle")}</Text>
+      <LocalizedText role="sectionTitle" style={styles.sectionTitle}>
+        {t("business.title")}
+      </LocalizedText>
+      <LocalizedText role="description" style={styles.sectionDescription}>
+        {t("business.subtitle")}
+      </LocalizedText>
 
-      <Text style={styles.label}>{t("business.logo")}</Text>
+      <LocalizedText role="label" style={styles.label}>
+        {t("business.logo")}
+      </LocalizedText>
       <View style={styles.logoRow}>
         <View style={styles.logoPreview}>
           {logoPreview ? (
@@ -105,25 +110,29 @@ const BusinessSettings = ({ user = {}, onProfileUpdate }) => {
           disabled={saving}
           activeOpacity={0.7}
         >
+          {/* Camera-plus is semantic — never mirrored. */}
           <MaterialCommunityIcons name="camera-plus-outline" size={18} color="#c28e5c" />
-          <Text style={styles.changeLogoText}>{t("business.changeLogo")}</Text>
+          <LocalizedText role="label" style={styles.changeLogoText}>
+            {t("business.changeLogo")}
+          </LocalizedText>
         </TouchableOpacity>
       </View>
 
-      <Text style={[styles.label, { marginTop: 16 }]}>
-        {t("business.description")}
-      </Text>
-      <TextInput
-        style={styles.textArea}
+      {/* Business description is arbitrary user/backend content → the shared
+          shell with adaptive direction: empty placeholder follows the UI
+          locale, a filled value follows its first strong character. The
+          counter is LTR-isolated at the logical end. */}
+      <FormField
+        label={t("business.description")}
         value={description}
         onChangeText={setDescription}
         placeholder={t("business.descriptionPlaceholder")}
-        placeholderTextColor="#999"
+        contentDirection="adaptive"
         multiline
         numberOfLines={6}
         maxLength={2000}
+        showCounter
         editable={!saving}
-        textAlignVertical="top"
       />
 
       <View style={styles.buttonContainer}>
@@ -133,7 +142,9 @@ const BusinessSettings = ({ user = {}, onProfileUpdate }) => {
           disabled={saving || !isDirty}
           activeOpacity={0.7}
         >
-          <Text style={styles.cancelButtonText}>{t("account.cancel")}</Text>
+          <LocalizedText role="label" style={styles.cancelButtonText}>
+            {t("account.cancel")}
+          </LocalizedText>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -145,9 +156,9 @@ const BusinessSettings = ({ user = {}, onProfileUpdate }) => {
           disabled={!isDirty || saving}
           activeOpacity={0.7}
         >
-          <Text style={styles.saveButtonText}>
+          <LocalizedText role="label" style={styles.saveButtonText}>
             {saving ? t("account.saving") : t("account.saveChanges")}
-          </Text>
+          </LocalizedText>
         </TouchableOpacity>
       </View>
     </View>
@@ -215,17 +226,6 @@ const styles = StyleSheet.create({
     color: "#c28e5c",
     fontSize: 14,
     fontFamily: "Cairo_600SemiBold",
-  },
-  textArea: {
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-    borderRadius: 12,
-    padding: 12,
-    minHeight: 120,
-    fontSize: 14,
-    fontFamily: "Cairo_400Regular",
-    color: "#2c2c2c",
-    backgroundColor: "#fff",
   },
   buttonContainer: {
     flexDirection: "row",

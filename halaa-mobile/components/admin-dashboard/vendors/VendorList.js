@@ -114,7 +114,7 @@ const VendorList = ({
   const handleBulkApprove = (ids) => {
     Alert.alert(
       t("common.approve"),
-      `${t("common.approve")} ${ids.length} vendor(s)?`,
+      t("vendors.bulk.approveConfirm", { count: ids.length }),
       [
         { text: t("common.cancel"), style: "cancel" },
         {
@@ -136,7 +136,7 @@ const VendorList = ({
   const handleBulkSuspend = (ids) => {
     Alert.alert(
       t("vendors.details.suspend"),
-      `Suspend ${ids.length} vendor(s)?`,
+      t("vendors.bulk.suspendConfirm", { count: ids.length }),
       [
         { text: t("common.cancel"), style: "cancel" },
         {
@@ -159,7 +159,7 @@ const VendorList = ({
   const handleBulkDelete = (ids) => {
     Alert.alert(
       t("common.deleteConfirmTitle"),
-      `${t("common.delete")} ${ids.length} vendor(s)? ${t("common.deleteConfirmMessage")}`,
+      t("vendors.bulk.deleteConfirm", { count: ids.length }),
       [
         { text: t("common.cancel"), style: "cancel" },
         {

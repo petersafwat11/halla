@@ -1,20 +1,80 @@
 /**
  * Phone Number Utilities
- * Pure helper functions for phone number normalization and E.164 formatting
+ * Backend Single Source of Truth helper functions for phone number normalization,
+ * validation, clamping, and lookup variants.
  * @module shared/utils/phone
  */
+
+const EASTERN_ARABIC_DIGITS = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+const PERSIAN_DIGITS = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+
+const normalizeDigits = (str) => {
+  if (typeof str !== 'string' && typeof str !== 'number') return '';
+  let result = String(str);
+  for (let i = 0; i < 10; i++) {
+    result = result.replace(new RegExp(EASTERN_ARABIC_DIGITS[i], 'g'), String(i));
+    result = result.replace(new RegExp(PERSIAN_DIGITS[i], 'g'), String(i));
+  }
+  return result;
+};
+
+/**
+ * Standard Saudi phone number placeholder.
+ */
+const DEFAULT_PHONE_PLACEHOLDER = '05xxxxxxxx';
+
+/**
+ * Unified Saudi phone regex.
+ * Matches: 05XXXXXXXX (10 digits), 5XXXXXXXX (9 digits), 9665XXXXXXXX (12 digits), +9665XXXXXXXX (13 digits).
+ */
+const SAUDI_PHONE_REGEX = /^(\+966|966|0)?5\d{8}$/;
+
+/**
+ * Dynamic input clamp for real-time typing / pasting in UI components.
+ *
+ * @param {string|number} value - Raw input value
+ * @returns {string} Cleaned and clamped digit string
+ */
+const clampPhoneInput = (value) => {
+  if (value === null || value === undefined) return '';
+  const normalized = normalizeDigits(String(value));
+  const digits = normalized.replace(/\D/g, '');
+
+  if (digits.startsWith('05') || digits.startsWith('0')) {
+    return digits.slice(0, 10);
+  }
+  if (digits.startsWith('5')) {
+    return digits.slice(0, 9);
+  }
+  return digits.slice(0, 10);
+};
+
+/**
+ * Dynamic maximum length for phone input elements.
+ * @param {string|number} value - Current input value
+ * @returns {number} 9 or 10
+ */
+const getPhoneMaxLength = (value) => {
+  if (!value) return 10;
+  const digits = normalizeDigits(String(value)).replace(/\D/g, '');
+  if (digits.startsWith('5') && !digits.startsWith('05')) {
+    return 9;
+  }
+  return 10;
+};
 
 /**
  * Normalize phone number to international digit string (without leading +)
  * Supports Saudi Arabia (+966) and Egypt (+20)
  *
- * @param {string} phoneNumber - Raw phone number input
+ * @param {string|number} phoneNumber - Raw phone number input
  * @returns {string} Normalized phone number with country code
  */
 const normalizePhoneNumber = (phoneNumber) => {
   if (!phoneNumber) return '';
 
-  let cleaned = String(phoneNumber).replace(/\s+/g, '').replace(/[-()]/g, '');
+  const withDigits = normalizeDigits(String(phoneNumber));
+  let cleaned = withDigits.replace(/\s+/g, '').replace(/[-()]/g, '');
 
   // Remove leading 00 international prefix if present
   if (cleaned.startsWith('00')) {
@@ -64,7 +124,7 @@ const normalizePhoneNumber = (phoneNumber) => {
  * Format phone number into canonical E.164 string with leading '+'.
  * e.g. "+966501234567", "+201012345678"
  *
- * @param {string} phoneNumber - Raw or normalized phone number
+ * @param {string|number} phoneNumber - Raw or normalized phone number
  * @returns {string} E.164 formatted string or empty string
  */
 const toE164 = (phoneNumber) => {
@@ -76,7 +136,7 @@ const toE164 = (phoneNumber) => {
 
 /**
  * Validate and format phone number
- * @param {string} phoneNumber - Raw phone number input
+ * @param {string|number} phoneNumber - Raw phone number input
  * @returns {Object} { isValid, formatted, e164, countryCode, country, error }
  */
 const validateAndFormatPhone = (phoneNumber) => {
@@ -100,7 +160,7 @@ const validateAndFormatPhone = (phoneNumber) => {
     }
     return {
       isValid: false,
-      error: 'Saudi numbers must be +966 followed by 9 digits starting with 5',
+      error: 'Saudi numbers must be 10 digits starting with 05 or 9 digits starting with 5',
     };
   }
 
@@ -124,17 +184,69 @@ const validateAndFormatPhone = (phoneNumber) => {
 
   return {
     isValid: false,
-    error: 'Unsupported country code. Supported: +966 (Saudi), +20 (Egypt)',
+    error: 'Unsupported phone number format',
   };
 };
 
 /**
  * Check if phone number is valid
- * @param {string} phoneNumber
+ * @param {string|number} phoneNumber
  * @returns {boolean}
  */
 const isValidPhone = (phoneNumber) => {
   return validateAndFormatPhone(phoneNumber).isValid;
+};
+
+/**
+ * Format phone for human display (e.g. "+966 50 123 4567")
+ * @param {string|number} phoneNumber
+ * @returns {string} Formatted display string
+ */
+const formatPhoneDisplay = (phoneNumber) => {
+  const result = validateAndFormatPhone(phoneNumber);
+  if (!result.isValid) return String(phoneNumber || '');
+
+  if (result.country === 'SA') {
+    // 966 5X XXX XXXX
+    const nat = result.formatted.slice(3);
+    return `+966 ${nat.slice(0, 2)} ${nat.slice(2, 5)} ${nat.slice(5)}`;
+  }
+
+  if (result.country === 'EG') {
+    // 20 1X XXXX XXXX
+    const nat = result.formatted.slice(2);
+    return `+20 ${nat.slice(0, 2)} ${nat.slice(2, 6)} ${nat.slice(6)}`;
+  }
+
+  return result.e164 || String(phoneNumber || '');
+};
+
+/**
+ * Generates all valid query lookup variants for database queries.
+ * Given '0501234567' or '501234567', returns:
+ * ['966501234567', '501234567', '0501234567', '+966501234567', rawValue]
+ *
+ * @param {string|number} phoneNumber
+ * @returns {string[]} Array of unique lookup variants
+ */
+const getPhoneLookupVariants = (phoneNumber) => {
+  if (!phoneNumber) return [];
+  const raw = String(phoneNumber).trim();
+  const normalized = normalizePhoneNumber(phoneNumber);
+  const variants = new Set();
+
+  if (raw) variants.add(raw);
+  if (normalized) {
+    variants.add(normalized);
+    variants.add(`+${normalized}`);
+    if (normalized.startsWith('966') && normalized.length === 12) {
+      const nat9 = normalized.slice(3);
+      variants.add(nat9);
+      variants.add(`0${nat9}`);
+    }
+  }
+
+  return Array.from(variants);
 };
 
 /**
@@ -148,10 +260,17 @@ const mongoosePhoneValidator = (value) => {
 };
 
 module.exports = {
+  DEFAULT_PHONE_PLACEHOLDER,
+  SAUDI_PHONE_REGEX,
+  clampPhoneInput,
+  getPhoneMaxLength,
+  normalizeDigits,
   normalizePhoneNumber,
   toE164,
   validateAndFormatPhone,
   isValidPhone,
+  formatPhoneDisplay,
+  getPhoneLookupVariants,
   mongoosePhoneValidator,
 };
 

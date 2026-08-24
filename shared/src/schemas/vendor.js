@@ -5,6 +5,7 @@
  * Field shapes mirror backend `users.validation.js#vendorData`.
  */
 import { z } from "zod";
+import { saudiPhone } from "./_shared.js";
 
 const idT = (k) => k;
 
@@ -38,11 +39,7 @@ const emailField = (t = idT) =>
     .min(1, t("validation.emailRequired"))
     .email(t("validation.emailInvalid"));
 
-const phoneField = (t = idT) =>
-  z
-    .string({ required_error: t("validation.phoneRequired") })
-    .trim()
-    .regex(/^[+]?[0-9]{7,15}$/, t("validation.phoneInvalid"));
+const phoneField = (t = idT) => saudiPhone(t);
 
 // ============================================================
 // WEB — VENDOR SETTINGS ZOD SCHEMAS (consumed by DynamicForm wrappers)
@@ -63,13 +60,7 @@ export const personalInfoZodSchema = (t = idT) =>
         .min(2, t("validation.brandNameMinLength"))
         .max(100, t("validation.brandNameMaxLength")),
       email: emailField(t),
-      phoneNumber: z
-        .string()
-        .trim()
-        .optional()
-        .refine((v) => !v || /^[+]?[0-9]{7,15}$/.test(v), {
-          message: t("validation.phoneInvalid"),
-        }),
+      phoneNumber: saudiPhone(t).optional().or(z.literal("")),
       currentPassword: z.string().optional(),
       newPassword: z
         .string()
@@ -127,7 +118,7 @@ export const socialLinksZodSchema = (t = idT) =>
     facebook: optionalUrl(t).optional(),
     twitter: optionalUrl(t).optional(),
     tiktok: optionalUrl(t).optional(),
-    whatsapp: z.string().trim().max(20).optional(),
+    whatsapp: saudiPhone(t).optional().or(z.literal("")),
   });
 
 export const imagesAndPricingZodSchema = z.object({
@@ -152,13 +143,7 @@ export const mobilePersonalInfoSchema = (t = idT) =>
       .min(2, t("validation.brandNameMinLength"))
       .max(100, t("validation.brandNameMaxLength")),
     email: emailField(t),
-    phoneNumber: z
-      .string()
-      .trim()
-      .optional()
-      .refine((v) => !v || /^[+]?[0-9]{7,15}$/.test(v), {
-        message: t("validation.phoneInvalid"),
-      }),
+    phoneNumber: saudiPhone(t).optional().or(z.literal("")),
   });
 
 export const mobileServiceDetailsSchema = (t = idT) =>
@@ -188,7 +173,7 @@ export const mobileSocialLinksSchema = (t = idT) =>
     facebook: optionalUrlEn(t),
     twitter: optionalUrlEn(t),
     tiktok: optionalUrlEn(t),
-    whatsapp: z.string().trim().max(20).optional(),
+    whatsapp: saudiPhone(t).optional().or(z.literal("")),
   });
 
 export const phoneChangeSchema = (t = idT) =>

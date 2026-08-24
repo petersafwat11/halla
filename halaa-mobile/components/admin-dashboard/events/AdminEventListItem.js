@@ -5,7 +5,8 @@ import { canEditPage, canDeleteOnPage, PAGES } from "../../../utils/adminPermiss
 import { useUpdateAdminEventStatus, useDeleteAdminEvent } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
-import { formatDate } from "@halaa/shared/utils/locale";
+import { formatDate, formatCount } from "@halaa/shared/utils/locale";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
 import { colors } from "../../../styles/tokens";
 import { getStatusVisual } from "../../../constants/statusColors";
 import AdminListItem from "../common/AdminListItem";
@@ -22,11 +23,13 @@ const AdminEventListItem = ({ event, onPress, selected = false, onSelect }) => {
   const eventId = event.id || event._id;
   const statusKey = (event.status || "").toLowerCase();
 
+  // Host names and event titles are arbitrary backend content.
   const hostName =
     event.host?.name ||
     event.host?.username ||
     event.hostName ||
     t("common.unknown");
+  const eventTitle = event.title || "—";
   const totalGuests = event.guestCount ?? event.guestListLength ?? event.totalGuests ?? 0;
   const confirmedGuests = event.confirmedCount ?? event.confirmedGuests ?? 0;
 
@@ -38,9 +41,16 @@ const AdminEventListItem = ({ event, onPress, selected = false, onSelect }) => {
   const handleToggleStatus = () => {
     const newStatus = isCancelled ? "scheduled" : "cancelled";
     const actionLabel = isCancelled
-      ? t("events.details.activate", "تفعيل")
-      : t("events.details.suspend", "إيقاف");
-    Alert.alert(actionLabel, `${actionLabel} "${event.title || "—"}"?`, [
+      ? t("events.details.activate")
+      : t("events.details.suspend");
+    const confirmMessage = isCancelled
+      ? t("events.details.activateConfirmMessage", {
+          title: eventTitle,
+        })
+      : t("events.details.suspendConfirmMessage", {
+          title: eventTitle,
+        });
+    Alert.alert(actionLabel, confirmMessage, [
       { text: t("common.cancel"), style: "cancel" },
       {
         text: actionLabel,
@@ -60,7 +70,9 @@ const AdminEventListItem = ({ event, onPress, selected = false, onSelect }) => {
   const handleDelete = () => {
     Alert.alert(
       t("common.deleteConfirmTitle"),
-      `${t("common.delete")} "${event.title || "—"}"? ${t("common.deleteConfirmMessage")}`,
+      t("events.details.deleteConfirmBody", {
+        title: eventTitle,
+      }),
       [
         { text: t("common.cancel"), style: "cancel" },
         {
@@ -83,8 +95,8 @@ const AdminEventListItem = ({ event, onPress, selected = false, onSelect }) => {
     isActionable && {
       key: "status",
       label: isCancelled
-        ? t("events.details.activate", "تفعيل")
-        : t("events.details.suspend", "إيقاف"),
+        ? t("events.details.activate")
+        : t("events.details.suspend"),
       icon: isCancelled ? "checkmark-circle-outline" : "pause-circle-outline",
       color: isCancelled ? colors.success[500] : colors.warning[600],
       onPress: handleToggleStatus,
@@ -102,20 +114,29 @@ const AdminEventListItem = ({ event, onPress, selected = false, onSelect }) => {
 
   return (
     <AdminListItem
-      title={event.title || "—"}
+      title={eventTitle}
       subtitle={hostName}
       avatarColor={avatarColor}
       status={event.status}
       details={[
-        { icon: "calendar-outline", text: formatDate(event.date, currentLanguage) },
+        // Locale-formatted date token inside a logical icon+text row.
+        {
+          icon: "calendar-outline",
+          text: isolateLtr(formatDate(event.date, currentLanguage)),
+          adaptive: true,
+        },
         {
           icon: "people-outline",
-          text: `${totalGuests} ${t("common.guests")}`,
+          text: t("events.details.guestsCount", {
+            count: formatCount(totalGuests, currentLanguage),
+          }),
           color: colors.primary[500],
         },
         {
           icon: "checkmark-circle-outline",
-          text: `${confirmedGuests} ${t("common.confirmed")}`,
+          text: t("events.details.confirmedCount", {
+            count: formatCount(confirmedGuests, currentLanguage),
+          }),
           color: colors.success[500],
         },
       ]}

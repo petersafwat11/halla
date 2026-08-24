@@ -1,14 +1,19 @@
 import React from "react";
 import {
   View,
-  Text,
   TouchableOpacity,
   ActivityIndicator,
   StyleSheet,
 } from "react-native";
 import TextInput from "../../commen/DirectionalTextInput";
+import LocalizedText from "../../commen/LocalizedText";
 import { Ionicons } from "@expo/vector-icons";
 
+/**
+ * Thank-you note is arbitrary host content (blueprint §5.3): adaptive mode
+ * keeps the localized placeholder while a filled value follows its first
+ * strong character, so Arabic and Latin messages both read naturally.
+ */
 const ThankYouMessageSection = ({
   message,
   onChangeMessage,
@@ -18,9 +23,12 @@ const ThankYouMessageSection = ({
   t,
 }) => (
   <View style={styles.section}>
-    <Text style={styles.sectionTitle}>{t("host.thankYouMessage.title")}</Text>
+    <LocalizedText style={styles.sectionTitle}>
+      {t("host.thankYouMessage.title")}
+    </LocalizedText>
     <TextInput
       style={styles.messageInput}
+      contentDirection="adaptive"
       value={message}
       onChangeText={onChangeMessage}
       multiline
@@ -44,7 +52,9 @@ const ThankYouMessageSection = ({
           color="#FFF"
         />
       )}
-      <Text style={styles.saveButtonText}>{t("host.thankYouMessage.save")}</Text>
+      <LocalizedText style={styles.saveButtonText}>
+        {t("host.thankYouMessage.save")}
+      </LocalizedText>
     </TouchableOpacity>
   </View>
 );

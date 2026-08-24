@@ -1,7 +1,10 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { isolateLtr } from "@halaa/shared/utils/bidi";
+import { formatNumber } from "@halaa/shared/utils/locale";
+import LocalizedText from "../../commen/LocalizedText";
+import AdaptiveText from "../../commen/AdaptiveText";
 import { useTranslation } from "../../../localization";
 import { colors, spacing, borderRadius, typography, backgrounds } from "../../../styles/tokens";
 import { getStatusVisual } from "../../../constants/statusColors";
@@ -17,7 +20,7 @@ const STATUS_LABEL_KEY = {
 };
 
 const VendorHeroCard = ({ vendor }) => {
-  const { t } = useTranslation("admin");
+  const { t, currentLanguage } = useTranslation("admin");
   const status = vendor?.status || "pending";
   const statusVisual = getStatusVisual(status);
   const labelKey = STATUS_LABEL_KEY[status] || STATUS_LABEL_KEY.pending;
@@ -35,31 +38,47 @@ const VendorHeroCard = ({ vendor }) => {
         <Ionicons name="storefront-outline" size={32} color={colors.primary[500]} />
       </View>
 
-      <Text style={styles.brandName}>{displayName}</Text>
-      <Text style={styles.ownerName}>{ownerName}</Text>
+      <AdaptiveText style={styles.brandName} numberOfLines={1}>
+        {displayName}
+      </AdaptiveText>
+      <AdaptiveText style={styles.ownerName} numberOfLines={1}>
+        {ownerName}
+      </AdaptiveText>
 
       <View style={styles.contactRow}>
         <Ionicons name="mail-outline" size={13} color={colors.natural[400]} />
-        <Text style={styles.contactText}>{isolateLtr(email)}</Text>
+        <LocalizedText style={[styles.contactText, styles.ltrValue]}>
+          {isolateLtr(email)}
+        </LocalizedText>
       </View>
       {phone !== "—" && (
         <View style={styles.contactRow}>
           <Ionicons name="call-outline" size={13} color={colors.natural[400]} />
-          <Text style={styles.contactText}>{isolateLtr(phone)}</Text>
+          <LocalizedText style={[styles.contactText, styles.ltrValue]}>
+            {isolateLtr(phone)}
+          </LocalizedText>
         </View>
       )}
 
       <View style={styles.badgeRow}>
         <View style={[styles.statusChip, { backgroundColor: statusVisual.bg }]}>
           <View style={[styles.statusDot, { backgroundColor: statusVisual.fg }]} />
-          <Text style={[styles.statusLabel, { color: statusVisual.fg }]}>
+          {/* Status label is app copy — always the UI locale. */}
+          <LocalizedText style={[styles.statusLabel, { color: statusVisual.fg }]}>
             {statusLabel}
-          </Text>
+          </LocalizedText>
         </View>
         {rating != null && (
           <View style={styles.ratingPill}>
             <Ionicons name="star" size={13} color={colors.warning[500]} />
-            <Text style={styles.ratingText}>{Number(rating).toFixed(1)}</Text>
+            <LocalizedText style={[styles.ratingText, styles.ltrValue]}>
+              {/* Numeric ratings share the app digit policy (blueprint §6):
+                  locale-formatted, never a raw toFixed() token. */}
+              {formatNumber(Number(rating), currentLanguage, {
+                minimumFractionDigits: 1,
+                maximumFractionDigits: 1,
+              })}
+            </LocalizedText>
           </View>
         )}
       </View>
@@ -152,6 +171,10 @@ const styles = StyleSheet.create({
     fontWeight: typography.fontWeight.semibold,
     color: colors.warning[500],
     marginStart: spacing[4],
+  },
+  // Contact tokens and numeric ratings keep stable LTR glyph order.
+  ltrValue: {
+    writingDirection: "ltr",
   },
 });
 

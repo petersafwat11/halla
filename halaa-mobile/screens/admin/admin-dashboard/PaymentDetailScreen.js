@@ -10,7 +10,6 @@
 import React, { useMemo, useState } from "react";
 import {
   View,
-  Text,
   StyleSheet,
   ScrollView,
   ActivityIndicator,
@@ -18,6 +17,7 @@ import {
   Modal,
 } from "react-native";
 import TextInput from "../../../components/commen/DirectionalTextInput";
+import LocalizedText from "../../../components/commen/LocalizedText";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
@@ -30,7 +30,11 @@ import {
 import { useAuthStore } from "../../../stores/authStore";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
-import { formatDateTime as formatLocaleDateTime } from "@halaa/shared/utils/locale";
+import {
+  formatDateTime as formatLocaleDateTime,
+  formatCurrency,
+} from "@halaa/shared/utils/locale";
+import { CONTENT_DIRECTIONS } from "../../../hooks/useInputDirection";
 import TopBar from "../../../components/plans/TopBar";
 import DirectionalIonicon from "../../../components/common/DirectionalIonicon";
 import { isolateAuto, isolateLtr } from "@halaa/shared/utils/bidi";
@@ -62,15 +66,33 @@ const newIdempotencyKey = () => {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 };
 
-const formatAmount = (amount, currency = "SAR") =>
-  amount === undefined || amount === null ? "—" : `${amount} ${currency}`;
+// A payment amount is ONE atomic locale currency token (blueprint §6):
+// locale digits + currency, first-strong isolated so it cannot reorder.
+const formatAmount = (amount, language, currency = "SAR") =>
+  amount === undefined || amount === null
+    ? "—"
+    : isolateAuto(formatCurrency(Number(amount), language, currency));
+
+// Readable fallback when a status has no translation yet — never render the
+// raw snake_case enum.
+const titleCase = (value) =>
+  String(value || "")
+    .replace(/[_-]/g, " ")
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 
 const Row = ({ label, value, mono = false }) => (
   <View style={styles.row}>
-    <Text style={styles.rowLabel}>{label}</Text>
-    <Text style={[styles.rowValue, mono && styles.mono]} numberOfLines={2}>
+    {/* Row labels are app copy — always the UI locale. */}
+    <LocalizedText style={styles.rowLabel}>{label}</LocalizedText>
+    <LocalizedText
+      style={[styles.rowValue, mono && styles.mono]}
+      numberOfLines={2}
+    >
       {mono ? isolateLtr(value || "—") : isolateAuto(value || "—")}
-    </Text>
+    </LocalizedText>
   </View>
 );
 
@@ -186,7 +208,9 @@ const PaymentDetailScreen = () => {
         <TopBar title={t("paymentDetail.title")} showBack={true} />
         <View style={styles.center}>
           <Ionicons name="card-outline" size={48} color={colors.natural[400]} />
-          <Text style={styles.notFound}>{t("paymentDetail.notFound")}</Text>
+          <LocalizedText style={styles.notFound}>
+            {t("paymentDetail.notFound")}
+          </LocalizedText>
         </View>
       </SafeAreaView>
     );
@@ -195,9 +219,15 @@ const PaymentDetailScreen = () => {
   const currency = payment.currency || "SAR";
   const methodType = payment.paymentMethod?.type || payment.paymentMethod;
   const last4 = payment.paymentMethodLast4 || payment.paymentMethod?.last4;
+  // Masked card data is one intrinsically LTR token.
   const methodLabel = methodType
     ? `${methodType}${last4 ? ` •••• ${last4}` : ""}`
     : null;
+  // Status labels are app copy (blueprint §5.3): they follow the UI locale
+  // even though the underlying enum is a canonical Latin token.
+  const statusLabel = status
+    ? t(`payments.status.${status}`, { defaultValue: titleCase(status) })
+    : "—";
 
   const refunds = Array.isArray(payment.refunds) ? payment.refunds : [];
   const subscription = payment.subscription;
@@ -211,11 +241,17 @@ const PaymentDetailScreen = () => {
       <ScrollView contentContainerStyle={styles.scroll}>
         {/* Header card with status badge */}
         <View style={styles.heroCard}>
-          <Text style={styles.heroAmount}>{formatAmount(payment.amount, currency)}</Text>
+          <LocalizedText style={styles.heroAmount}>
+            {formatAmount(payment.amount, currentLanguage, currency)}
+          </LocalizedText>
           {payment.refundedAmount > 0 ? (
-            <Text style={styles.refundedTag}>
-              {t("paymentDetail.refundedTag")} {formatAmount(payment.refundedAmount, currency)}
-            </Text>
+            // One interpolated key so the space/word order is authored per
+            // locale; the amount itself stays an atomic isolated token.
+            <LocalizedText style={styles.refundedTag}>
+              {t("paymentDetail.refundedTagWithAmount", {
+                amount: formatAmount(payment.refundedAmount, currentLanguage, currency),
+              })}
+            </LocalizedText>
           ) : null}
           {status ? <StatusBadge status={status} size="medium" /> : null}
         </View>
@@ -223,8 +259,8 @@ const PaymentDetailScreen = () => {
         {/* Canonical fields */}
         <View style={styles.card}>
           <Row label={t("paymentDetail.id")} value={payment._id || payment.id} mono />
-          <Row label={t("paymentDetail.status")} value={status} />
-          <Row label={t("paymentDetail.method")} value={methodLabel} />
+          <Row label={t("paymentDetail.status")} value={statusLabel} />
+          <Row label={t("paymentDetail.method")} value={methodLabel} mono />
           <Row label={t("paymentDetail.moyasarId")} value={payment.moyasarPaymentId} mono />
           <Row label={t("paymentDetail.createdAt")} value={formatDateTime(payment.createdAt)} />
           {payment.capturedAt ? (
@@ -244,6 +280,8 @@ const PaymentDetailScreen = () => {
                   ? subscription.planCode || subscription._id
                   : subscription) || "",
               )}
+              /* Canonical plan codes/IDs are intrinsically LTR tokens. */
+              mono
             />
           ) : null}
           {addon ? (
@@ -252,6 +290,7 @@ const PaymentDetailScreen = () => {
               value={String(
                 (typeof addon === "object" ? addon.code || addon._id : addon) || "",
               )}
+              mono
             />
           ) : null}
         </View>
@@ -259,23 +298,41 @@ const PaymentDetailScreen = () => {
         {/* Refunds list */}
         {refunds.length > 0 ? (
           <View style={styles.card}>
-            <Text style={styles.sectionTitle}>{t("paymentDetail.refunds")}</Text>
-            {refunds.map((r, i) => (
-              <View key={r._id || `${r.createdAt || ""}-${i}`} style={styles.refundRow}>
-                <Text style={styles.refundAmount}>
-                  {formatAmount(r.amount, currency)}
-                  {r.reason ? ` — ${r.reason}` : ""}
-                </Text>
-                <Text style={styles.refundDate}>{formatDateTime(r.createdAt)}</Text>
-              </View>
-            ))}
+            <LocalizedText style={styles.sectionTitle}>
+              {t("paymentDetail.refunds")}
+            </LocalizedText>
+            {refunds.map((r, i) => {
+              const amountToken = formatAmount(r.amount, currentLanguage, currency);
+              return (
+                <View
+                  key={r._id || `${r.createdAt || ""}-${i}`}
+                  style={styles.refundRow}
+                >
+                  <LocalizedText style={styles.refundAmount}>
+                    {/* One interpolated key per locale; the reason is a
+                        first-strong isolated run so it cannot BiDi-spill. */}
+                    {r.reason
+                      ? t("paymentDetail.refundEntry", {
+                          amount: amountToken,
+                          reason: isolateAuto(r.reason),
+                        })
+                      : amountToken}
+                  </LocalizedText>
+                  <LocalizedText style={styles.refundDate}>
+                    {formatDateTime(r.createdAt)}
+                  </LocalizedText>
+                </View>
+              );
+            })}
           </View>
         ) : null}
 
         {/* Admin write actions — gated by role + payment status */}
         {(showRefund || showCapture || showVoid) && (
           <View style={styles.actionsCard}>
-            <Text style={styles.sectionTitle}>{t("paymentDetail.actions.title")}</Text>
+            <LocalizedText style={styles.sectionTitle}>
+              {t("paymentDetail.actions.title")}
+            </LocalizedText>
             {showRefund ? (
               <TouchableOpacity
                 style={[styles.actionBtn, styles.actionBtnDanger]}
@@ -284,9 +341,9 @@ const PaymentDetailScreen = () => {
                 disabled={busy}
               >
                 <DirectionalIonicon name="return-up-back-outline" size={18} color={colors.error[500]} />
-                <Text style={[styles.actionLabel, { color: colors.error[500] }]}>
+                <LocalizedText style={[styles.actionLabel, { color: colors.error[500] }]}>
                   {t("paymentDetail.actions.refund")}
-                </Text>
+                </LocalizedText>
               </TouchableOpacity>
             ) : null}
             {showCapture ? (
@@ -297,9 +354,9 @@ const PaymentDetailScreen = () => {
                 disabled={busy}
               >
                 <Ionicons name="checkmark-circle-outline" size={18} color={colors.success[500]} />
-                <Text style={[styles.actionLabel, { color: colors.success[500] }]}>
+                <LocalizedText style={[styles.actionLabel, { color: colors.success[500] }]}>
                   {t("paymentDetail.actions.capture")}
-                </Text>
+                </LocalizedText>
               </TouchableOpacity>
             ) : null}
             {showVoid ? (
@@ -310,9 +367,9 @@ const PaymentDetailScreen = () => {
                 disabled={busy}
               >
                 <Ionicons name="close-circle-outline" size={18} color={colors.error[500]} />
-                <Text style={[styles.actionLabel, { color: colors.error[500] }]}>
+                <LocalizedText style={[styles.actionLabel, { color: colors.error[500] }]}>
                   {t("paymentDetail.actions.void")}
-                </Text>
+                </LocalizedText>
               </TouchableOpacity>
             ) : null}
           </View>
@@ -328,21 +385,26 @@ const PaymentDetailScreen = () => {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>
+            <LocalizedText style={styles.modalTitle}>
               {actionType ? t(`paymentDetail.actions.${actionType}`) : ""}
-            </Text>
+            </LocalizedText>
 
             {actionType === "void" ? (
-              <Text style={styles.fieldLabel}>
+              <LocalizedText style={styles.fieldLabel}>
                 {t("paymentDetail.voidConfirmMessage")}
-              </Text>
+              </LocalizedText>
             ) : null}
 
             {actionType === "refund" || actionType === "capture" ? (
               <>
-                <Text style={styles.fieldLabel}>
-                  {t("paymentDetail.amountLabel")} ({currency})
-                </Text>
+                {/* The currency token is authored inside the translation
+                    string (blueprint §6) — never concatenated in JSX, where
+                    parentheses would BiDi-scramble around the LTR code. */}
+                <LocalizedText style={styles.fieldLabel}>
+                  {t("paymentDetail.amountWithCurrency", {
+                    currency: isolateLtr(currency),
+                  })}
+                </LocalizedText>
                 <TextInput
                   style={styles.input}
                   keyboardType="numeric"
@@ -350,13 +412,16 @@ const PaymentDetailScreen = () => {
                   onChangeText={setAmount}
                   placeholder={t("paymentDetail.amountPlaceholder")}
                   placeholderTextColor={colors.natural[400]}
+                  contentDirection={CONTENT_DIRECTIONS.LTR}
                 />
               </>
             ) : null}
 
             {actionType === "refund" ? (
               <>
-                <Text style={styles.fieldLabel}>{t("paymentDetail.reasonLabel")}</Text>
+                <LocalizedText style={styles.fieldLabel}>
+                  {t("paymentDetail.reasonLabel")}
+                </LocalizedText>
                 <TextInput
                   style={[styles.input, styles.inputMultiline]}
                   multiline
@@ -364,15 +429,16 @@ const PaymentDetailScreen = () => {
                   onChangeText={setReason}
                   placeholder={t("paymentDetail.reasonPlaceholder")}
                   placeholderTextColor={colors.natural[400]}
+                  contentDirection={CONTENT_DIRECTIONS.ADAPTIVE}
                 />
               </>
             ) : null}
 
             {isPartialRefund ? (
               <>
-                <Text style={styles.fieldLabel}>
+                <LocalizedText style={styles.fieldLabel}>
                   {t("paymentDetail.deductInvitesLabel")}
-                </Text>
+                </LocalizedText>
                 <TextInput
                   style={styles.input}
                   keyboardType="numeric"
@@ -380,16 +446,19 @@ const PaymentDetailScreen = () => {
                   onChangeText={setDeductInvites}
                   placeholder={t("paymentDetail.deductInvitesPlaceholder")}
                   placeholderTextColor={colors.natural[400]}
+                  contentDirection={CONTENT_DIRECTIONS.LTR}
                 />
-                <Text style={styles.fieldHint}>
+                <LocalizedText style={styles.fieldHint}>
                   {t("paymentDetail.deductInvitesHint")}
-                </Text>
+                </LocalizedText>
               </>
             ) : null}
 
             <View style={styles.modalButtons}>
               <TouchableOpacity style={[styles.modalBtn, styles.modalCancel]} onPress={closeModal} disabled={busy}>
-                <Text style={styles.modalCancelText}>{t("common.cancel")}</Text>
+                <LocalizedText style={styles.modalCancelText}>
+                  {t("common.cancel")}
+                </LocalizedText>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalBtn, styles.modalConfirm]}
@@ -399,7 +468,9 @@ const PaymentDetailScreen = () => {
                 {busy ? (
                   <ActivityIndicator size="small" color={colors.natural[50]} />
                 ) : (
-                  <Text style={styles.modalConfirmText}>{t("common.confirm")}</Text>
+                  <LocalizedText style={styles.modalConfirmText}>
+                    {t("common.confirm")}
+                  </LocalizedText>
                 )}
               </TouchableOpacity>
             </View>

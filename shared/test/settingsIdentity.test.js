@@ -73,7 +73,7 @@ test("SET-01: web accountSettingsSchema rejects too-short/too-long name", () => 
 });
 
 test("SET-01: mobile accountSettingsSchema accepts distinct name and username", () => {
-  const result = mobileAccountSettingsSchema.safeParse({
+  const result = mobileAccountSettingsSchema().safeParse({
     name: "Ahmed Al-Saud",
     username: "ahmed_s",
     email: "ahmed@example.com",
@@ -89,7 +89,7 @@ test("SET-01: mobile accountSettingsSchema accepts distinct name and username", 
 });
 
 test("SET-01: mobile accountSettingsSchema rejects invalid name lengths", () => {
-  const short = mobileAccountSettingsSchema.safeParse({
+  const short = mobileAccountSettingsSchema().safeParse({
     name: "A",
     username: "ahmed_s",
     email: "a@example.com",
@@ -100,7 +100,7 @@ test("SET-01: mobile accountSettingsSchema rejects invalid name lengths", () => 
     "short name must error on the name path"
   );
 
-  const long = mobileAccountSettingsSchema.safeParse({
+  const long = mobileAccountSettingsSchema().safeParse({
     name: "x".repeat(101),
     username: "ahmed_s",
     email: "a@example.com",

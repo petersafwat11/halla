@@ -1,4 +1,5 @@
 const { z } = require("zod");
+const { clampPhoneInput, SAUDI_PHONE_REGEX } = require("../../shared/utils/phone");
 
 const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+$/;
 const newPassword = z
@@ -182,8 +183,10 @@ const updateNotificationPreferencesSchema = z
 const phoneNumberField = z
   .string()
   .trim()
-  .min(7, "Phone number is too short")
-  .max(20, "Phone number is too long");
+  .transform((val) => clampPhoneInput(val))
+  .refine((val) => SAUDI_PHONE_REGEX.test(val), {
+    message: "Invalid Saudi phone number format. Must be 10 digits starting with 05 or 9 digits starting with 5",
+  });
 
 const sendPhoneOtpSchema = z.object({ phoneNumber: phoneNumberField }).strict();
 

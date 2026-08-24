@@ -29,7 +29,26 @@
     "empty": "No comments yet. Be the first!",
     "success": "Comment added",
     "error": "Failed to add comment",
-    "guestFallback": "Guest"
+    "guestFallback": "Guest",
+    "legalPrefix": "By posting, you accept"
+  },
+  "moderation": {
+    "menuReport": "Report comment",
+    "reportPost": "Report this post",
+    "report": "Report",
+    "menuBlock": "Block user",
+    "cancel": "Cancel",
+    "reportTitle": "Report this comment?",
+    "reportMsg": "Pick a reason",
+    "reasonSpam": "Spam",
+    "reasonHarassment": "Harassment",
+    "reasonOther": "Other",
+    "reported": "Reported. Thank you.",
+    "blockTitle": "Block this user?",
+    "blockMsg": "You won't see their content anymore.",
+    "block": "Block",
+    "blocked": "Blocked.",
+    "failed": "Something went wrong."
   },
   "like": {
     "error": "Failed to update like"

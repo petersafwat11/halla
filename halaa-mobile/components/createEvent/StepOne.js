@@ -212,9 +212,12 @@ const StepOne = () => {
 
   return (
     <View style={styles.container}>
-      {/* Event Name */}
+      {/* Event Name — arbitrary host content: the empty placeholder follows
+          the UI locale while a filled value follows its first strong Arabic
+          or Latin character (blueprint §5.3). */}
       <TextInput
         name="eventName"
+        contentDirection="adaptive"
         label={t("event_name_label")}
         placeholder={t("event_name_placeholder")}
         rules={{ required: t("event_name_required") }}
@@ -268,14 +271,8 @@ const StepOne = () => {
 
       <Text style={[styles.dateHint, fieldDirection.text]}>
         {isTrial
-          ? t(
-              "event_date_hint_trial",
-              "التواريخ الأقرب معطّلة — يجب أن تكون مناسبتك بعد 3 أيام على الأقل ليتسنى إرسال الدعوات والتذكير."
-            )
-          : t(
-              "event_date_hint",
-              "التواريخ الأقرب معطّلة — يجب أن تكون مناسبتك بعد 4 أيام على الأقل ليتسنى إرسال الدعوات والتذكير."
-            )}
+          ? t("event_date_hint_trial")
+          : t("event_date_hint")}
       </Text>
 
       {/* Event Time */}
@@ -352,9 +349,10 @@ const StepOne = () => {
         </>
       )}
 
-      {/* Location */}
+      {/* Location — mixed Arabic/Latin address text renders adaptively. */}
       <MapPicker
         name="address"
+        contentDirection="adaptive"
         label={t("address_label")}
         placeholder={t("address_placeholder")}
         rules={{

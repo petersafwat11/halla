@@ -1,10 +1,8 @@
 import React, { useState, useCallback, useMemo } from "react";
 import {
   View,
-  ScrollView,
   Alert,
   StyleSheet,
-  Text,
   TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -30,6 +28,7 @@ import YourEventManagedByUsPopup from "../../createEvent/yourEventManagedByUsPop
 import HostSelectorStep from "./HostSelectorStep";
 import LimitReachedView from "../../createEvent/LimitReachedView";
 import TopBar from "../../plans/TopBar";
+import KeyboardAwareFormScrollView from "../../commen/keyboard/KeyboardAwareFormScrollView";
 import { spacing } from "../../../styles/tokens";
 
 // Both subscription sources we accept already deliver the canonical normalized shape:
@@ -328,10 +327,10 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
 
   const formBody = (
     <FormProvider {...methods}>
-      <ScrollView
+      {/* Single keyboard-aware scroll owner for every wizard step (§6.2). */}
+      <KeyboardAwareFormScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
       >
         <StepHeader
           currentStep={currentStep}
@@ -350,7 +349,7 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
           nextButtonText={nextLabel}
           isLoading={isLoading}
         />
-      </ScrollView>
+      </KeyboardAwareFormScrollView>
 
       {/* Host-mode extras: live preview button + onboarding popup. The
           preview only makes sense on the template/customisation step. */}
@@ -361,9 +360,9 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
           activeOpacity={0.8}
         >
           <Ionicons name="eye-outline" size={24} color="#FFF" />
-          <Text style={styles.floatingPreviewText}>
+          <LocalizedText style={styles.floatingPreviewText}>
             {tCreate("preview_template")}
-          </Text>
+          </LocalizedText>
         </TouchableOpacity>
       )}
 
@@ -444,7 +443,9 @@ const styles = StyleSheet.create({
   floatingPreviewButton: {
     position: "absolute",
     bottom: 100,
-    right: 20,
+    // Semantic end anchor — logical trailing edge (left in Arabic, right in
+    // English) under the app's forced-RTL root; never a physical `right`.
+    end: 20,
     backgroundColor: "#C28E5C",
     flexDirection: "row",
     alignItems: "center",

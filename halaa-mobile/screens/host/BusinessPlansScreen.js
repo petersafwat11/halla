@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from "react";
 import {
   View,
-  Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
@@ -12,6 +11,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "../../localization";
+import LocalizedText from "../../components/commen/LocalizedText";
 
 import TopBar from "../../components/plans/TopBar";
 import CurrentPlanCard from "../../components/plans/CurrentPlanCard";
@@ -110,7 +110,7 @@ const BusinessPlansScreen = () => {
         <TopBar title={t("business.pageTitle")} showBack={true} />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary[500]} />
-          <Text style={styles.loadingText}>{t("loading")}</Text>
+          <LocalizedText style={styles.loadingText}>{t("loading")}</LocalizedText>
         </View>
       </SafeAreaView>
     );
@@ -122,13 +122,17 @@ const BusinessPlansScreen = () => {
         <TopBar title={t("business.pageTitle")} showBack={true} />
         <View style={styles.errorContainer}>
           <Ionicons name="alert-circle-outline" size={48} color={colors.error[500]} />
-          <Text style={styles.errorText}>{t("errors.loadFailed")}</Text>
+          <LocalizedText style={styles.errorText} center>
+            {t("errors.loadFailed")}
+          </LocalizedText>
           <TouchableOpacity
             style={styles.retryButton}
             onPress={handleRetry}
             activeOpacity={0.85}
           >
-            <Text style={styles.retryButtonText}>{t("errors.retry")}</Text>
+            <LocalizedText style={styles.retryButtonText}>
+              {t("errors.retry")}
+            </LocalizedText>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -154,12 +158,12 @@ const BusinessPlansScreen = () => {
               <Ionicons name="sparkles-outline" size={22} color={colors.primary[500]} />
             </View>
             <View style={styles.pendingTextWrap}>
-              <Text style={styles.pendingTitle}>
+              <LocalizedText style={styles.pendingTitle}>
                 {t("business.getStarted.title")}
-              </Text>
-              <Text style={styles.pendingSubtitle}>
+              </LocalizedText>
+              <LocalizedText style={styles.pendingSubtitle}>
                 {t("business.getStarted.subtitle")}
-              </Text>
+              </LocalizedText>
             </View>
           </View>
         ) : null}
@@ -175,14 +179,14 @@ const BusinessPlansScreen = () => {
                 onPress={() => setBillingTier(tier)}
                 activeOpacity={0.7}
               >
-                <Text
+                <LocalizedText
                   style={[
                     styles.tierPillText,
                     active && styles.tierPillTextActive,
                   ]}
                 >
                   {t(`tabs.${tier}`)}
-                </Text>
+                </LocalizedText>
               </TouchableOpacity>
             );
           })}
@@ -191,7 +195,9 @@ const BusinessPlansScreen = () => {
         {/* Plan cards */}
         {tierPlans.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>{t(`${billingTier}Tab.noPlans`)}</Text>
+            <LocalizedText style={styles.emptyText} center>
+              {t(`${billingTier}Tab.noPlans`)}
+            </LocalizedText>
           </View>
         ) : (
           tierPlans.map((plan) => (

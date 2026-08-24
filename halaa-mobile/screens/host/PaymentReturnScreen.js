@@ -16,13 +16,14 @@
  */
 
 import React, { useEffect } from "react";
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from "react-native";
+import { View, StyleSheet, ActivityIndicator, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRoute, useNavigation, CommonActions } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { usePaymentPoll } from "../../hooks";
 import { useTranslation } from "../../localization";
 import { clearPendingCheckoutCart } from "../../hooks/checkout";
+import LocalizedText from "../../components/commen/LocalizedText";
 import { colors, spacing, borderRadius, typography, textStyles, backgrounds } from "../../styles/tokens";
 
 const TERMINAL_OK = new Set(["paid", "captured"]);
@@ -95,10 +96,16 @@ const PaymentReturnScreen = () => {
       <SafeAreaView style={styles.safe}>
         <View style={styles.center}>
           <Ionicons name="alert-circle-outline" size={48} color={colors.error[500]} />
-          <Text style={styles.title}>{t("paymentReturn.title")}</Text>
-          <Text style={styles.body}>{t(labelKey)}</Text>
+          <LocalizedText center style={styles.title}>
+            {t("paymentReturn.title")}
+          </LocalizedText>
+          <LocalizedText center style={styles.body}>
+            {t(labelKey)}
+          </LocalizedText>
           <TouchableOpacity style={styles.btn} onPress={goHome}>
-            <Text style={styles.btnText}>{t("paymentReturn.backHome")}</Text>
+            <LocalizedText center style={styles.btnText}>
+              {t("paymentReturn.backHome")}
+            </LocalizedText>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -109,11 +116,17 @@ const PaymentReturnScreen = () => {
     <SafeAreaView style={styles.safe}>
       <View style={styles.center}>
         <ActivityIndicator size="large" color={colors.primary[500]} />
-        <Text style={styles.title}>{t("paymentReturn.title")}</Text>
-        <Text style={styles.body}>{t("paymentReturn.confirming")}</Text>
-        <Text style={styles.statusText}>
+        <LocalizedText center style={styles.title}>
+          {t("paymentReturn.title")}
+        </LocalizedText>
+        <LocalizedText center style={styles.body}>
+          {t("paymentReturn.confirming")}
+        </LocalizedText>
+        {/* Known statuses are localized; unknown enum codes fall back to the
+            canonical Latin token, which stays readable in either direction. */}
+        <LocalizedText center style={styles.statusText}>
           {t(`paymentReturn.status.${status}`, status)}
-        </Text>
+        </LocalizedText>
       </View>
     </SafeAreaView>
   );

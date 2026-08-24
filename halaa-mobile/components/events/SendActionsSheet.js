@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { formatCount } from "@halaa/shared/utils/locale";
 import { useTranslation } from "../../localization";
 import {
   SEND_ACTIONS,
@@ -17,22 +18,22 @@ import {
 const ITEM = {
   newGuests: {
     icon: "person-add-outline",
-    labelKey: ["events:sendActions.items.newGuests", "إرسال دعوة للضيوف الجدد"],
+    labelKey: "events:sendActions.items.newGuests",
   },
   resend: {
     icon: "paper-plane-outline",
-    labelKey: ["events:sendActions.items.resend", "إعادة إرسال الدعوة"],
+    labelKey: "events:sendActions.items.resend",
   },
   extraReminder: {
     icon: "notifications-outline",
-    labelKey: ["events:sendActions.items.extraReminder", "تذكير إضافي"],
+    labelKey: "events:sendActions.items.extraReminder",
   },
 };
 const DISABLED_KEYS = {
-  sendFirst: ["events:sendActions.disabled.sendFirst", "أرسِل الدعوات الأولية أولًا"],
-  noNewGuests: ["events:sendActions.disabled.noNewGuests", "لا يوجد ضيوف جدد للإرسال إليهم"],
-  noResend: ["events:sendActions.disabled.noResend", "ردّ الجميع بالفعل"],
-  noConfirmed: ["events:sendActions.disabled.noConfirmed", "لا يوجد ضيوف مؤكدون بعد"],
+  sendFirst: "events:sendActions.disabled.sendFirst",
+  noNewGuests: "events:sendActions.disabled.noNewGuests",
+  noResend: "events:sendActions.disabled.noResend",
+  noConfirmed: "events:sendActions.disabled.noConfirmed",
 };
 
 /**
@@ -41,7 +42,7 @@ const DISABLED_KEYS = {
  * `onPick(action)` (which opens the shared SendActionModal).
  */
 export default function SendActionsSheet({ visible, event, guests, onPick, onClose }) {
-  const { t } = useTranslation(["events"]);
+  const { t, currentLanguage } = useTranslation(["events"]);
 
   const states = useMemo(
     () => buildSendActionStates(event, computeSendAudiences(guests)),
@@ -52,12 +53,12 @@ export default function SendActionsSheet({ visible, event, guests, onPick, onClo
     <Modal visible={!!visible} transparent animationType="slide" onRequestClose={onClose}>
       <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={onClose}>
         <TouchableOpacity style={styles.card} activeOpacity={1} onPress={() => {}}>
-          <Text style={styles.title}>{t("events:sendActions.menu", "إرسال الرسائل")}</Text>
+          <Text style={styles.title}>{t("events:sendActions.menu")}</Text>
 
           {SEND_ACTIONS.map((action) => {
             const state = states[action];
             const meta = ITEM[action];
-            const reason = state.reasonKey ? t(...DISABLED_KEYS[state.reasonKey]) : null;
+            const reason = state.reasonKey ? t(DISABLED_KEYS[state.reasonKey]) : null;
             return (
               <TouchableOpacity
                 key={action}
@@ -75,11 +76,14 @@ export default function SendActionsSheet({ visible, event, guests, onPick, onClo
                   style={[styles.itemText, !state.enabled && styles.itemTextDisabled]}
                   numberOfLines={1}
                 >
-                  {t(...meta.labelKey)}
+                  {t(meta.labelKey)}
                 </Text>
                 {state.enabled ? (
                   <View style={styles.countBadge}>
-                    <Text style={styles.countText}>{state.audience.length}</Text>
+                    {/* Locale-formatted digits (٠١٢ / 0-9) in an LTR-isolated token. */}
+                    <Text style={styles.countText}>
+                      {formatCount(state.audience.length, currentLanguage)}
+                    </Text>
                   </View>
                 ) : (
                   <Text style={styles.reason} numberOfLines={1}>
@@ -91,7 +95,7 @@ export default function SendActionsSheet({ visible, event, guests, onPick, onClo
           })}
 
           <TouchableOpacity style={styles.cancelBtn} onPress={onClose} activeOpacity={0.7}>
-            <Text style={styles.cancelText}>{t("events:bulkActions.cancel", "إلغاء")}</Text>
+            <Text style={styles.cancelText}>{t("events:bulkActions.cancel")}</Text>
           </TouchableOpacity>
         </TouchableOpacity>
       </TouchableOpacity>

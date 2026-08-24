@@ -286,9 +286,18 @@ class AuthService {
     }
 
     // Find user
+    const normalizedPhone = phoneNumber ? normalizePhoneNumber(phoneNumber) : null;
     const query = email
       ? { email: email.toLowerCase() }
-      : { phoneNumber };
+      : {
+          $or: [
+            ...(normalizedPhone
+              ? [{ phoneNumber: normalizedPhone }, { mobile: normalizedPhone }]
+              : []),
+            { phoneNumber },
+            { mobile: phoneNumber },
+          ],
+        };
 
     const user = await User.findOne(query).select('+password +loginAttempts +lockUntil');
 
@@ -391,10 +400,19 @@ class AuthService {
    * @private
    */
   async _checkDuplicates(email, phoneNumber, excludeUserId = null) {
+    const normalizedPhone = phoneNumber ? normalizePhoneNumber(phoneNumber) : null;
+    const phoneConditions = [];
+    if (phoneNumber) {
+      phoneConditions.push({ phoneNumber }, { mobile: phoneNumber });
+    }
+    if (normalizedPhone && normalizedPhone !== phoneNumber) {
+      phoneConditions.push({ phoneNumber: normalizedPhone }, { mobile: normalizedPhone });
+    }
+
     const query = {
       $or: [
         ...(email ? [{ email: email.toLowerCase() }] : []),
-        ...(phoneNumber ? [{ phoneNumber }] : []),
+        ...phoneConditions,
       ],
     };
 
@@ -407,7 +425,11 @@ class AuthService {
     if (existingUsers.length === 0) return;
 
     const emailDup = email && existingUsers.some(u => u.email === email.toLowerCase());
-    const phoneDup = phoneNumber && existingUsers.some(u => u.phoneNumber === phoneNumber);
+    const phoneDup = phoneNumber && existingUsers.some(u =>
+      u.phoneNumber === phoneNumber ||
+      u.mobile === phoneNumber ||
+      (normalizedPhone && (u.phoneNumber === normalizedPhone || u.mobile === normalizedPhone))
+    );
 
     if (emailDup && phoneDup) {
       throw new ConflictError('This email and phone number are already registered', 'email_and_phone');
@@ -954,7 +976,9 @@ class AuthService {
       throw new OTPError(verifyResult.errorType || 'invalid', null, verifyResult.meta);
     }
 
-    const user = await User.findOne({ phoneNumber: normalizedPhone }).populate({
+    const user = await User.findOne({
+      $or: [{ phoneNumber: normalizedPhone }, { mobile: normalizedPhone }],
+    }).populate({
       path: 'subscription',
       populate: { path: 'planId' },
     });
@@ -966,7 +990,7 @@ class AuthService {
     this._validateUserStatus(user);
 
     const tokens = await this.issueTokenPair(user, context);
-    const profileCompleted = user.profile?.hostData?.profileCompleted ?? false; // missing hostData ≠ complete
+    const profileCompleted = user.profile?.hostData?.profileCompleted ?? false;
     const subscriptionInfo = user.subscription?.getSummary
       ? user.subscription.getSummary()
       : user.subscription;
@@ -985,20 +1009,24 @@ class AuthService {
    * Resend OTP
    * @param {string} phoneNumber
    * @param {string} type - 'signup' or 'login'
-   * @returns {Promise<{phoneNumber: string, expiresIn: number}>}
+   * @returns {Promise<{phoneNumber: string, expiresIn: number, cooldownSeconds: number}>}
    */
   async resendOTP(phoneNumber, type) {
     const normalizedPhone = normalizePhoneNumber(phoneNumber);
 
     if (type === 'login') {
-      const user = await User.findOne({ phoneNumber: normalizedPhone });
+      const user = await User.findOne({
+        $or: [{ phoneNumber: normalizedPhone }, { mobile: normalizedPhone }],
+      });
       if (!user) {
         throw new NotFoundError('No account found with this phone number');
       }
     }
 
     if (type === 'signup') {
-      const existingUser = await User.findOne({ phoneNumber: normalizedPhone });
+      const existingUser = await User.findOne({
+        $or: [{ phoneNumber: normalizedPhone }, { mobile: normalizedPhone }],
+      });
       if (existingUser) {
         throw new ConflictError('An account with this phone number already exists', 'phone');
       }
@@ -1037,12 +1065,6 @@ class AuthService {
     await user.save({ validateBeforeSave: false });
 
     const lang = user.preferredLanguage || language;
-    // Canonical reset URL (§5.1): /<lang>/change-password?token=<token>. This is
-    // the ONE shape shared by the web form, the mobile universal/app link, the
-    // AASA + Android intent filters, and React Navigation's linking config. Do
-    // NOT reintroduce a second `/reset-password` shape — a partial change
-    // breaks reset for everyone. (A /reset-password→/change-password redirect is
-    // kept on web only as a safety net for already-sent emails.)
     const resetURL = `${config.frontend.url}/${lang}/change-password?token=${resetToken}`;
 
     await emailModule.send.passwordReset(
@@ -1092,12 +1114,10 @@ class AuthService {
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
     user.passwordChangedAt = Date.now() - 1000;
-    // a successful password reset proves identity, so unlock the account.
     user.loginAttempts = 0;
     user.lockUntil = undefined;
     await user.save();
 
-    // invalidate every existing session before issuing a new pair.
     await this.revokeAllForUser(user._id);
     const tokens = await this.issueTokenPair(user, context);
 

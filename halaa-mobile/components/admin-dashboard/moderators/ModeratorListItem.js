@@ -1,6 +1,7 @@
 import React from "react";
 import { useTranslation } from "../../../localization";
 import { formatDate } from "@halaa/shared/utils/locale";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
 import { colors, backgrounds } from "../../../styles/tokens";
 import AdminListItem from "../common/AdminListItem";
 
@@ -54,10 +55,11 @@ const ModeratorListItem = ({
   ];
 
   const details = [
-    phone && { icon: "call-outline", text: phone },
+    // Phone digits are intrinsically LTR — isolated, never re-ordered.
+    phone && { icon: "call-outline", text: isolateLtr(phone), ltr: true },
     joinedDate && {
       icon: "calendar-outline",
-      text: `${t("common.joined")}: ${joinedDate}`,
+      text: t("common.joinedDate", { date: joinedDate }),
     },
   ].filter(Boolean);
 

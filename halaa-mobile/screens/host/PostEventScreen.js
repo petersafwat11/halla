@@ -20,6 +20,7 @@ import {
 import PostCard from "../../components/host/post-event/post-card/PostCard";
 import GuestEventHeader from "../../components/host/post-event/GuestEventHeader";
 import DirectionalIonicon from "../../components/common/DirectionalIonicon";
+import AdaptiveText from "../../components/commen/AdaptiveText";
 
 const _resolveQrErrorKey = (error) => {
   const reason = error?.data?.body?.reason || error?.data?.reason;
@@ -147,9 +148,11 @@ export default function PostEventScreen({ navigation, route }) {
               <DirectionalIonicon name="arrow-back" size={24} color="#fff" />
             </TouchableOpacity>
           )}
-          <Text style={styles.topBarTitle}>
+          {/* Backend event title is arbitrary content — first-strong base
+              direction, centred per the bar design. */}
+          <AdaptiveText style={styles.topBarTitle} numberOfLines={1}>
             {eventInfo?.title || t("postEventFallback")}
-          </Text>
+          </AdaptiveText>
           <View style={{ width: 44 }} />
         </View>
 

@@ -1,35 +1,50 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { useTranslation } from "../../localization";
+import LocalizedText from "../commen/LocalizedText";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
+import { countToken, priceToken } from "@halaa/shared/utils/displayTokens";
 import { colors, spacing, borderRadius, typography } from "../../styles/tokens";
 
-const labelFor = (item, t) => {
+const labelFor = (item, t, lang) => {
   const type = item.addonType || item.type;
   if (type === "extra_invites") {
-    return t("summary.addonItems.extra_invites", { quantity: item.quantity });
+    return t("summary.addonItems.extra_invites", {
+      quantity: countToken(item.quantity, lang),
+    });
   }
   if (type === "design_template") {
     return t("summary.addonItems.design_template");
   }
-  return type;
+  // Unknown backend type — canonical Latin token, kept isolated.
+  return isolateLtr(type);
 };
 
+/**
+ * Selected add-ons breakdown. Prices are atomic LTR-isolated tokens; labels
+ * follow the UI locale (blueprint §6).
+ */
 const AddonsSummaryCard = ({ addonItems = [], t }) => {
+  const { i18n } = useTranslation("plans");
+  const lang = i18n.language || "ar";
   if (!addonItems.length) return null;
+
+  const sarLabel = t("common.currency.sar");
 
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
-        <Text style={styles.cardTitle}>{t("summary.addonsTitle")}</Text>
+        <LocalizedText style={styles.cardTitle}>
+          {t("summary.addonsTitle")}
+        </LocalizedText>
       </View>
       <View style={styles.cardContent}>
         {addonItems.map((item, idx) => (
           <View key={idx} style={styles.row}>
-            <Text style={styles.label} numberOfLines={2}>
-              {labelFor(item, t)}
-            </Text>
-            <Text style={styles.value}>
-              {item.price} {t("common.currency.sar")}
-            </Text>
+            <LocalizedText style={styles.label} numberOfLines={2}>
+              {labelFor(item, t, lang)}
+            </LocalizedText>
+            <Text style={styles.value}>{priceToken(item.price, sarLabel)}</Text>
           </View>
         ))}
       </View>

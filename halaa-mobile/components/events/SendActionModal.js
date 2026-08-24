@@ -10,8 +10,10 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { isolateLtr } from "@halaa/shared/utils/bidi";
+import { formatNumber as formatLocaleCount } from "@halaa/shared/utils/locale";
 import { useTranslation } from "../../localization";
 import { useToast } from "../../contexts/ToastContext";
+import AdaptiveText from "../commen/AdaptiveText";
 import {
   useResendInvite,
   useExtraReminder,
@@ -20,9 +22,9 @@ import {
 import { computeSendAudiences, guestKey } from "./sendAudiences";
 
 const TITLE_KEYS = {
-  newGuests: ["events:sendActions.items.newGuests", "إرسال دعوة للضيوف الجدد"],
-  resend: ["events:bulkActions.resendTitle", "إعادة إرسال الدعوة"],
-  extraReminder: ["events:bulkActions.extraReminderTitle", "تذكير إضافي"],
+  newGuests: "events:sendActions.items.newGuests",
+  resend: "events:bulkActions.resendTitle",
+  extraReminder: "events:bulkActions.extraReminderTitle",
 };
 
 /**
@@ -40,7 +42,7 @@ export default function SendActionModal({
   invitesRemaining,
   onClose,
 }) {
-  const { t } = useTranslation(["events"]);
+  const { t, currentLanguage } = useTranslation(["events"]);
   const toast = useToast();
 
   const resendMut = useResendInvite();
@@ -74,7 +76,7 @@ export default function SendActionModal({
   const canSend = selectedCount > 0 && !overQuota && !isPending;
   const allSelected = audience.length > 0 && selectedCount === audience.length;
 
-  const [titleKey, titleFallback] = TITLE_KEYS[action] || TITLE_KEYS.newGuests;
+  const titleKey = TITLE_KEYS[action] || TITLE_KEYS.newGuests;
 
   const toggleAll = () =>
     setSelectedIds(allSelected ? new Set() : new Set(audience.map(guestKey)));
@@ -87,25 +89,23 @@ export default function SendActionModal({
       return next;
     });
 
+  // All counts are locale digits (٠١٢ / 0-9); the "sent/total" ratio is one
+  // LTR-isolated token so the slash cannot BiDi-reorder inside Arabic.
   const counterText = isUnlimited
     ? t("events:sendActions.popup.counterUnlimited", {
-        defaultValue: "{{count}} محدد",
-        count: selectedCount,
+        count: formatLocaleCount(selectedCount, currentLanguage),
       })
     : t("events:sendActions.popup.counter", {
-        defaultValue: "{{count}} محدد · {{remaining}} دعوة متبقية",
-        count: selectedCount,
-        remaining: invitesRemaining,
+        count: formatLocaleCount(selectedCount, currentLanguage),
+        remaining: formatLocaleCount(invitesRemaining, currentLanguage),
       });
 
   const costText = isUnlimited
     ? t("events:sendActions.popup.costUnlimited", {
-        defaultValue: "سيُرسل هذا {{count}} رسالة.",
-        count: selectedCount,
+        count: formatLocaleCount(selectedCount, currentLanguage),
       })
     : t("events:sendActions.popup.cost", {
-        defaultValue: "سيُرسل هذا {{count}} رسالة ويستهلك {{count}} دعوة.",
-        count: selectedCount,
+        count: formatLocaleCount(selectedCount, currentLanguage),
       });
 
   const handleSend = async () => {
@@ -119,24 +119,18 @@ export default function SendActionModal({
       if (total === 0) {
         if (data.code === "SEND_INVITES_FIRST") {
           toast.error(
-            t(
-              "events:bulkActions.sendInvitesFirst",
-              "أرسِل الدعوات الأولية أولًا، ثم استخدم إعادة الإرسال لمن لم يردّ."
-            )
+            t("events:bulkActions.sendInvitesFirst")
           );
         } else if (data.code === "NO_NEW_GUESTS") {
           toast.info(
-            t("events:sendActions.noNewGuestsToast", "لا يوجد ضيوف جدد لإرسال الدعوات إليهم.")
+            t("events:sendActions.noNewGuestsToast")
           );
         } else {
           toast.info(
             t(
               action === "extraReminder"
                 ? "events:bulkActions.noConfirmedNow"
-                : "events:bulkActions.noEligibleNow",
-              action === "extraReminder"
-                ? "لا يوجد ضيوف مؤكدون للتذكير بعد."
-                : "لقد ردّ الجميع — لا يوجد من يمكن إعادة دعوته."
+                : "events:bulkActions.noEligibleNow"
             )
           );
         }
@@ -147,36 +141,28 @@ export default function SendActionModal({
       const successful = data.successful ?? guestIds.length;
       toast.success(
         t("events:bulkActions.sentResult", {
-          defaultValue: "{{successful}}/{{total}} تم الإرسال",
-          successful,
-          total,
+          // One atomic LTR token — the slash must not split/reverse in Arabic.
+          successful: isolateLtr(
+            `${formatLocaleCount(successful, currentLanguage)}/${formatLocaleCount(total, currentLanguage)}`
+          ),
         })
       );
       onClose();
     } catch (error) {
       if (error?.code === "INSUFFICIENT_INVITES" || error?.status === 402) {
         toast.error(
-          t(
-            "events:bulkActions.insufficientInvites",
-            "لا يوجد رصيد كافٍ من الدعوات — اشترِ المزيد من الباقات."
-          )
+          t("events:bulkActions.insufficientInvites")
         );
       } else if (error?.code === "NO_REMINDER_TEMPLATE") {
         toast.error(
-          t(
-            "events:bulkActions.noReminderTemplate",
-            "لا يوجد قالب تذكير مُعد لهذه الفئة. تواصل مع الدعم."
-          )
+          t("events:bulkActions.noReminderTemplate")
         );
       } else if (error?.status === 403) {
         toast.error(
-          t(
-            "events:sendActions.expired",
-            "انتهت صلاحية باقة هذه المناسبة أو لم يعد الإرسال متاحًا."
-          )
+          t("events:sendActions.expired")
         );
       } else {
-        toast.error(error?.message || t("events:bulkActions.error", "تعذّر إتمام العملية"));
+        toast.error(error?.message || t("events:bulkActions.error"));
       }
     }
   };
@@ -196,9 +182,10 @@ export default function SendActionModal({
           color={checked ? "#C28E5C" : "#9CA3AF"}
         />
         <View style={styles.rowText}>
-          <Text style={styles.rowName} numberOfLines={1}>
+          {/* Guest names are adaptive user content; phones stay LTR-isolated. */}
+          <AdaptiveText style={styles.rowName} numberOfLines={1}>
             {item.name || "-"}
-          </Text>
+          </AdaptiveText>
           <Text style={styles.rowPhone} numberOfLines={1}>
             {isolateLtr(item.phone || "-")}
           </Text>
@@ -216,11 +203,11 @@ export default function SendActionModal({
     >
       <View style={styles.overlay}>
         <View style={styles.card}>
-          <Text style={styles.title}>{t(titleKey, titleFallback)}</Text>
+          <Text style={styles.title}>{t(titleKey)}</Text>
 
           {audience.length === 0 ? (
             <Text style={styles.empty}>
-              {t("events:sendActions.popup.empty", "لا يوجد ضيوف مطابقون لهذا الإجراء.")}
+              {t("events:sendActions.popup.empty")}
             </Text>
           ) : (
             <>
@@ -235,7 +222,7 @@ export default function SendActionModal({
                   color={allSelected ? "#C28E5C" : "#9CA3AF"}
                 />
                 <Text style={styles.selectAllText}>
-                  {t("events:sendActions.popup.selectAll", "تحديد الكل")}
+                  {t("events:sendActions.popup.selectAll")}
                 </Text>
               </TouchableOpacity>
 
@@ -251,10 +238,7 @@ export default function SendActionModal({
               <Text style={styles.cost}>{costText}</Text>
               {overQuota ? (
                 <Text style={styles.warning}>
-                  {t(
-                    "events:bulkActions.insufficientInvites",
-                    "لا يوجد رصيد كافٍ من الدعوات — اشترِ المزيد من الباقات."
-                  )}
+                  {t("events:bulkActions.insufficientInvites")}
                 </Text>
               ) : null}
             </>
@@ -268,7 +252,7 @@ export default function SendActionModal({
               activeOpacity={0.8}
             >
               <Text style={styles.cancelText}>
-                {t("events:bulkActions.cancel", "إلغاء")}
+                {t("events:bulkActions.cancel")}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -281,7 +265,7 @@ export default function SendActionModal({
                 <ActivityIndicator size="small" color="#FFF" />
               ) : (
                 <Text style={styles.confirmText}>
-                  {t("events:bulkActions.send", "إرسال")}
+                  {t("events:bulkActions.send")}
                 </Text>
               )}
             </TouchableOpacity>

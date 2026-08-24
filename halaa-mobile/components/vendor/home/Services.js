@@ -1,12 +1,12 @@
 import React, { useState, useCallback, useMemo } from "react";
 import {
   View,
-  Text,
   TouchableOpacity,
   StyleSheet,
   FlatList,
 } from "react-native";
 import RNTextInput from "../../commen/DirectionalTextInput";
+import LocalizedText from "../../commen/LocalizedText";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import ServiceCard from "./Service";
@@ -14,11 +14,23 @@ import ServiceCard from "./Service";
 const EmptyServiceState = React.memo(({ onAddService, t }) => (
   <View style={styles.emptyStateContainer}>
     <MaterialCommunityIcons name="briefcase-outline" size={48} color="#CCC" />
-    <Text style={styles.emptyStateTitle}>{t("services.noServices")}</Text>
-    <Text style={styles.emptyStateSubtitle}>{t("services.noServicesHint")}</Text>
-    <TouchableOpacity style={styles.addButton} onPress={onAddService} activeOpacity={0.7}>
+    <LocalizedText role="sectionTitle" center style={styles.emptyStateTitle}>
+      {t("services.noServices")}
+    </LocalizedText>
+    <LocalizedText role="description" center style={styles.emptyStateSubtitle}>
+      {t("services.noServicesHint")}
+    </LocalizedText>
+    <TouchableOpacity
+      style={styles.addButton}
+      onPress={onAddService}
+      activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={t("services.addService")}
+    >
       <MaterialCommunityIcons name="plus" size={20} color="#FFF" />
-      <Text style={styles.addButtonText}>{t("services.addService")}</Text>
+      <LocalizedText style={styles.addButtonText}>
+        {t("services.addService")}
+      </LocalizedText>
     </TouchableOpacity>
   </View>
 ));
@@ -94,19 +106,25 @@ const Services = ({
               style={styles.addServiceButton}
               onPress={onAddService}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={t("services.addService")}
             >
               <MaterialCommunityIcons name="plus" size={24} color="#FFF" />
             </TouchableOpacity>
 
             <View style={styles.searchInputContainer}>
+              {/* Search glyph is a semantic leading icon — never mirrored. */}
               <MaterialCommunityIcons name="magnify" size={16} color="#767676" />
+              {/* Search queries are arbitrary user text (blueprint §5.3):
+                  empty placeholder follows the UI locale, a filled value
+                  follows its first strong character. */}
               <RNTextInput
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 placeholder={t("services.searchPlaceholder")}
                 placeholderTextColor="#767676"
+                contentDirection="adaptive"
                 style={styles.searchInput}
-                textAlign="auto"
               />
             </View>
           </View>
@@ -123,20 +141,23 @@ const Services = ({
               ]}
               onPress={() => handleFilterChange(filter.id)}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityState={{ selected: selectedFilter === filter.id }}
             >
               <MaterialCommunityIcons
                 name={filter.icon}
                 size={14}
                 color={selectedFilter === filter.id ? "#C28E5C" : "#656565"}
               />
-              <Text
+              <LocalizedText
+                role="label"
                 style={[
                   styles.filterText,
                   selectedFilter === filter.id && styles.filterTextActive,
                 ]}
               >
                 {filter.label}
-              </Text>
+              </LocalizedText>
             </TouchableOpacity>
           ))}
         </View>

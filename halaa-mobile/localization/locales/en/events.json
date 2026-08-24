@@ -29,7 +29,10 @@
     "stats": {
       "confirmed": "Accepted",
       "declined": "Declined",
-      "noResponse": "No Response"
+      "noResponse": "No Response",
+      "confirmedCount": "Accepted {{count}}",
+      "declinedCount": "Declined {{count}}",
+      "noResponseCount": "No response {{count}}"
     },
     "untitled": "Untitled Event",
     "unspecified": "Unspecified"
@@ -76,14 +79,31 @@
     "searchModerators": "Search moderators...",
     "addModerator": "Add Moderator",
     "noGuests": "No guests yet",
-    "noModerators": "No moderators"
+    "noModerators": "No moderators",
+    "guestsTabCount": "Guests ({{count}})",
+    "moderatorsTabCount": "Moderators ({{count}})"
   },
   "guestList": {
     "title": "Guest List",
     "addGuest": "Add Guest",
     "name": "Name",
     "phone": "Phone",
-    "status": "Status"
+    "status": "Status",
+    "rotateQrTitle": "Update access code",
+    "rotateQrBody": "A new QR code will be generated for {{name}}. The old code stops working immediately.",
+    "rotateQrAction": "Update",
+    "rotateQrShort": "Update QR code",
+    "revokeAccessTitle": "Revoke post-event access",
+    "revokeAccessBody": "{{name}} will no longer be able to view post-event photos and comments. To grant access again, use \"Update access code\" instead.",
+    "revokeAccessAction": "Revoke access",
+    "revokeContentAccess": "Revoke post-event content access",
+    "editGuestAction": "Edit guest details",
+    "deleteGuestAction": "Delete guest",
+    "chooseAction": "Choose an action",
+    "close": "Close",
+    "guestFallback": "Guest",
+    "accessRevokedBadge": "Access revoked",
+    "qrUpdatedBadge": "QR updated"
   },
   "home": {
     "welcome": "Welcome",
@@ -151,6 +171,9 @@
     "share": "Share Post-Event"
   },
   "manageEvent": "Manage Event",
+  "alerts": {
+    "errorTitle": "Error"
+  },
   "testMessage": {
     "title": "Test Message",
     "description": "Send a test message to verify the invitation before launch",
@@ -163,7 +186,7 @@
     "infoText": "A test version of your invitation will be sent to this number",
     "validation": {
       "phoneRequired": "Mobile number is required",
-      "phoneFormat": "Must start with 5 and be 9 digits"
+      "phoneFormat": "Mobile number must be 10 digits starting with 05 or 9 digits starting with 5"
     }
   },
   "partialFailure": {
@@ -196,7 +219,7 @@
     "staffNameRequired": "Staff name is required",
     "nameRequired": "Name is required",
     "phoneRequired": "Mobile number is required",
-    "phoneInvalid": "Mobile number must be 9 digits starting with 5",
+    "phoneInvalid": "Mobile number must be 10 digits starting with 05 or 9 digits starting with 5",
     "phoneDuplicate": "This number is already in the list"
   },
   "csv": {
@@ -359,7 +382,10 @@
     "failed": {
       "title": "We're sorry — your event couldn't launch",
       "message": "We couldn't send your invitations. We'll do our best to help you launch.",
-      "reason": "Reason: "
+      "reason": "Reason: ",
+      "retryError": "Couldn't launch your event. Please try again.",
+      "supportContext": "I need help with my event \"{{title}}\" (Event ID: {{eventId}})",
+      "supportContextWithReason": "I need help with my event \"{{title}}\" (Event ID: {{eventId}}) — Reason: {{reason}}"
     },
     "retryButton": {
       "retrying": "Retrying...",
@@ -385,6 +411,39 @@
       "checkedIn": "Checked in",
       "declined": "Declined",
       "invited": "Invited"
-    }
+    },
+    "sentOn": "Sent · {{date}}"
+  },
+  "statsCards": {
+    "confirmed": "Attending",
+    "declined": "Declined",
+    "pending": "Pending"
+  },
+  "actions": {
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit"
+  },
+  "makeYourFirst": {
+    "title": "Start by creating your first event for free",
+    "subtitle": "You have a free trial to invite 5 guests",
+    "createButton": "Create your event"
+  },
+  "limitReachedView": {
+    "title": "Event Limit Reached",
+    "message": "You have reached the maximum number of events allowed by your plan. Please upgrade your plan to create more events.",
+    "goBack": "Go Back"
+  },
+  "moderatorList": {
+    "title": "Moderator",
+    "fallback": "Moderator",
+    "revokedBadge": "Revoked",
+    "alreadyRevoked": "This moderator's access has already been revoked.",
+    "deleteConfirmTitle": "Confirm Deletion",
+    "deleteConfirmBody": "Are you sure you want to delete this moderator?",
+    "deleteAction": "Remove from event",
+    "revokeConfirmTitle": "Revoke access",
+    "revokeConfirmBody": "{{name}} will lose access to the QR scanner and will no longer be able to check in guests.",
+    "revokeAction": "Revoke access"
   }
 }

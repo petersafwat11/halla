@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, TouchableOpacity, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
+import LocalizedText from "../../commen/LocalizedText";
 import { PREDEFINED_TAGS } from "../../../utils/schemas/vendorServiceSchema";
 
 const TagsSelector = ({ selectedTags, onTagPress }) => {
@@ -17,7 +18,9 @@ const TagsSelector = ({ selectedTags, onTagPress }) => {
 
   return (
     <View style={styles.tagsSection}>
-      <Text style={styles.tagsLabel}>{t("services.tagsLabel")}</Text>
+      <LocalizedText role="label" style={styles.tagsLabel}>
+        {t("services.tagsLabel")}
+      </LocalizedText>
       <View style={styles.tagsContainer}>
         {localizedTags.map((tag) => (
           <TouchableOpacity
@@ -28,15 +31,18 @@ const TagsSelector = ({ selectedTags, onTagPress }) => {
             ]}
             onPress={() => onTagPress(tag)}
             activeOpacity={0.7}
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: selectedTags.includes(tag.value) }}
           >
-            <Text
+            <LocalizedText
+              role="label"
               style={[
                 styles.tagText,
                 selectedTags.includes(tag.value) && styles.tagTextSelected,
               ]}
             >
               {tag.label}
-            </Text>
+            </LocalizedText>
           </TouchableOpacity>
         ))}
       </View>

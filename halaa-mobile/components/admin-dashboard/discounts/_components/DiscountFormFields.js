@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { useFormContext } from "react-hook-form";
 import { useTranslation } from "../../../../localization";
 import {
@@ -11,6 +11,8 @@ import { PLAN_TYPES } from "../discountsFormUtils";
 import { TextInput, DropdownInput, ToggleInput } from "../../../../components/commen";
 import DatePicker from "../../../../components/commen/DatePicker";
 import CheckboxGroup from "../../../../components/commen/CheckboxGroup";
+import LocalizedText from "../../../../components/commen/LocalizedText";
+import { CONTENT_DIRECTIONS } from "../../../../hooks/useInputDirection";
 
 const DiscountFormFields = ({ isEdit }) => {
   const { t } = useTranslation("admin");
@@ -30,31 +32,38 @@ const DiscountFormFields = ({ isEdit }) => {
 
   return (
     <>
+      {/* Voucher codes are canonical LTR tokens (blueprint §5.3). */}
       <TextInput
         name="code"
-        label={`${t("discounts.form.code")} *`}
+        label={t("discounts.form.code")}
+        required
         placeholder={t("discounts.form.codePlaceholder")}
         autoCapitalize="characters"
+        contentDirection={CONTENT_DIRECTIONS.LTR}
         editable={!isEdit}
         disabled={isEdit}
       />
 
       <DropdownInput
         name="discountType"
-        label={`${t("discounts.form.discountType")} *`}
+        label={t("discounts.form.discountType")}
+        required
         placeholder={t("discounts.form.discountType")}
         options={discountTypeOptions}
       />
 
+      {/* Numeric amount: stable LTR digits, localized label/error chrome. */}
       <TextInput
         name="value"
         label={
           discountType === "percentage"
-            ? `${t("discounts.form.percent")} *`
-            : `${t("discounts.form.amount")} *`
+            ? t("discounts.form.percent")
+            : t("discounts.form.amount")
         }
+        required
         placeholder={t("discounts.form.valuePlaceholder")}
         keyboardType="decimal-pad"
+        contentDirection={CONTENT_DIRECTIONS.LTR}
       />
 
       <TextInput
@@ -62,6 +71,7 @@ const DiscountFormFields = ({ isEdit }) => {
         label={t("discounts.form.maxUses")}
         placeholder={t("discounts.form.maxUsesPlaceholder")}
         keyboardType="number-pad"
+        contentDirection={CONTENT_DIRECTIONS.LTR}
       />
 
       <TextInput
@@ -69,6 +79,7 @@ const DiscountFormFields = ({ isEdit }) => {
         label={t("discounts.form.minimumAmount")}
         placeholder={t("discounts.form.minimumAmountPlaceholder")}
         keyboardType="decimal-pad"
+        contentDirection={CONTENT_DIRECTIONS.LTR}
       />
 
       <DatePicker
@@ -90,6 +101,7 @@ const DiscountFormFields = ({ isEdit }) => {
         placeholder={t("discounts.form.descriptionEnPlaceholder")}
         multiline
         numberOfLines={2}
+        contentDirection={CONTENT_DIRECTIONS.LTR}
       />
 
       <TextInput
@@ -98,10 +110,13 @@ const DiscountFormFields = ({ isEdit }) => {
         placeholder={t("discounts.form.descriptionArPlaceholder")}
         multiline
         numberOfLines={2}
+        contentDirection={CONTENT_DIRECTIONS.RTL}
       />
 
       <View style={styles.field}>
-        <Text style={styles.label}>{t("discounts.form.planTypes")}</Text>
+        <LocalizedText role="label" style={styles.label}>
+          {t("discounts.form.planTypes")}
+        </LocalizedText>
         <CheckboxGroup
           name="applicablePlanTypes"
           items={planTypeOptions}

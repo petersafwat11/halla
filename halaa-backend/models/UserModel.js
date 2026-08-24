@@ -17,7 +17,11 @@ const {
   ACCOUNT_TYPES,
   ACCOUNT_TYPE_VALUES,
 } = require("../src/shared/constants");
-const { mongoosePhoneValidator } = require("../src/shared/utils/phone");
+const {
+  mongoosePhoneValidator,
+  getPhoneLookupVariants,
+  normalizePhoneNumber,
+} = require("../src/shared/utils/phone");
 const { signStoredImage, signStoredImages } = require("../src/shared/utils/s3Upload");
 
 // ============================================
@@ -207,11 +211,9 @@ const userSchema = new mongoose.Schema(
       },
     },
 
-    // Mobile/Phone - normalized format, unique across all users
+    // Mobile/Phone - normalized format, unique across active users (via partial index)
     mobile: {
       type: String,
-      unique: true,
-      sparse: true,
       trim: true,
       validate: {
         validator: mongoosePhoneValidator,
@@ -421,10 +423,28 @@ userSchema.index({ email: 1, role: 1 });
 userSchema.index({ mobile: 1, role: 1 });
 userSchema.index({ phoneNumber: 1, role: 1 }); // Legacy support
 
-// Unique compound indexes for better duplicate detection
+// Unique indexes with partial filter so soft-deleted users don't block re-registration
+userSchema.index(
+  { mobile: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      mobile: { $type: "string" },
+      deletedAt: null,
+    },
+  }
+);
+
 userSchema.index(
   { email: 1 },
-  { unique: true, sparse: true, collation: { locale: "en", strength: 2 } }
+  {
+    unique: true,
+    collation: { locale: "en", strength: 2 },
+    partialFilterExpression: {
+      email: { $type: "string" },
+      deletedAt: null,
+    },
+  }
 );
 
 // Text index for search
@@ -795,14 +815,15 @@ userSchema.methods.toPublicJSON = async function () {
  * @returns {Promise<User>}
  */
 userSchema.statics.findByIdentifier = async function (identifier) {
+  if (!identifier) return null;
   const cleanIdentifier = identifier.trim().toLowerCase();
-  const cleanPhone = identifier.replace(/[\s\-\(\)]/g, "");
+  const phoneVariants = getPhoneLookupVariants(identifier);
 
   return this.findOne({
     $or: [
       { email: cleanIdentifier },
-      { mobile: cleanPhone },
-      { phoneNumber: cleanPhone }, // Legacy support
+      { mobile: { $in: phoneVariants } },
+      { phoneNumber: { $in: phoneVariants } }, // Legacy support
     ],
   }).select("+password");
 };
@@ -837,11 +858,11 @@ userSchema.statics.mobileExists = async function (
 ) {
   if (!mobile) return false;
 
-  const cleanMobile = mobile.replace(/[\s\-\(\)]/g, "");
+  const phoneVariants = getPhoneLookupVariants(mobile);
   const query = {
     $or: [
-      { mobile: cleanMobile },
-      { phoneNumber: cleanMobile }, // Legacy support
+      { mobile: { $in: phoneVariants } },
+      { phoneNumber: { $in: phoneVariants } }, // Legacy support
     ],
   };
 

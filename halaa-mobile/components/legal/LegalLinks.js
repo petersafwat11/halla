@@ -9,11 +9,12 @@
  */
 
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, TouchableOpacity, StyleSheet } from "react-native";
 import * as WebBrowser from "expo-web-browser";
 import { LEGAL_ROUTES } from "@halaa/shared/legal";
 import { useTranslation } from "../../localization";
 import { WEB_BASE_URL } from "../../config/api";
+import LocalizedText from "../commen/LocalizedText";
 import { colors, spacing, typography } from "../../styles/tokens";
 
 // documentType -> i18n key (settings namespace `tabs.*` or fallback).
@@ -27,6 +28,8 @@ const LABEL_KEYS = {
 };
 
 const DEFAULT_LABELS = {
+  // Last-resort bilingual fallback data (never rendered while the settings
+  // `tabs.*` keys exist) — mirrors the reviewed legal document fixtures.
   terms: "الشروط والأحكام",
   privacy: "سياسة الخصوصية",
   "community-rules": "قواعد المجتمع",
@@ -60,19 +63,19 @@ const LegalLinks = ({
 
   return (
     <View style={[styles.wrap, style]}>
-      {!!prefixText && <Text style={styles.prefix}>{prefixText}</Text>}
+      {!!prefixText && <LocalizedText style={styles.prefix}>{prefixText}</LocalizedText>}
       {docTypes.map((documentType, i) => {
         const label = getLabel(documentType);
         return (
           <React.Fragment key={documentType}>
-            {i > 0 && <Text style={styles.sep}>·</Text>}
+            {i > 0 && <LocalizedText style={styles.sep}>·</LocalizedText>}
             <TouchableOpacity
               onPress={() => open(documentType)}
               activeOpacity={0.7}
               accessibilityRole="link"
               accessibilityLabel={label}
             >
-              <Text style={styles.link}>{label}</Text>
+              <LocalizedText style={styles.link}>{label}</LocalizedText>
             </TouchableOpacity>
           </React.Fragment>
         );

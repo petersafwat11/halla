@@ -1,7 +1,11 @@
 import React from "react";
 import { View, Text, StyleSheet, Image } from "react-native";
 import StatusBadge from "../common/StatusBadge";
+import AdaptiveText from "../../commen/AdaptiveText";
 import { getStatusVisual } from "../../../constants/statusColors";
+import { getLocalized } from "@halaa/shared/utils/locale";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
+import { useTranslation } from "../../../localization";
 import {
   colors,
   spacing,
@@ -23,12 +27,16 @@ const getPlanStyle = (planType) => {
 };
 
 const HostHeroCard = ({ host }) => {
+  const { t, currentLanguage } = useTranslation("admin");
   if (!host) return null;
 
-  const initial = (host.name || host.username || "?")[0].toUpperCase();
+  const displayName = host.name || host.username || "";
+  const initial = (displayName || host.email || "?").charAt(0).toUpperCase();
   const subscription = host.subscription;
+  // Plan display names are bilingual backend content — pick the locale
+  // variant, then fall back to the canonical plan type token.
   const planName =
-    subscription?.planId?.nameEn ||
+    getLocalized(subscription?.planId || {}, "name", currentLanguage) ||
     subscription?.planId?.name ||
     subscription?.planType ||
     null;
@@ -50,22 +58,28 @@ const HostHeroCard = ({ host }) => {
       </View>
 
       <View style={styles.info}>
-        <Text style={styles.name} numberOfLines={1}>
-          {host.name || host.username || "Unnamed Host"}
-        </Text>
+        {/* Host name is arbitrary user/backend content — first-strong. */}
+        <AdaptiveText style={styles.name} numberOfLines={1}>
+          {displayName || t("hosts.labels.unnamed")}
+        </AdaptiveText>
+        {/* Email and phone are intrinsically LTR tokens. */}
         {host.email && (
-          <Text style={styles.sub} numberOfLines={1}>{host.email}</Text>
+          <AdaptiveText style={[styles.sub, styles.ltrToken]} isolate={false} numberOfLines={1}>
+            {isolateLtr(host.email)}
+          </AdaptiveText>
         )}
         {host.phoneNumber && (
-          <Text style={styles.sub}>{host.phoneNumber}</Text>
+          <AdaptiveText style={[styles.sub, styles.ltrToken]} isolate={false} numberOfLines={1}>
+            {isolateLtr(host.phoneNumber)}
+          </AdaptiveText>
         )}
         <View style={styles.badges}>
           <StatusBadge status={host.status} size="small" />
           {planName && (
             <View style={[styles.planChip, { backgroundColor: planStyle.bg }]}>
-              <Text style={[styles.planChipText, { color: planStyle.color }]}>
+              <AdaptiveText style={[styles.planChipText, { color: planStyle.color }]}>
                 {planName}
-              </Text>
+              </AdaptiveText>
             </View>
           )}
         </View>
@@ -122,6 +136,9 @@ const styles = StyleSheet.create({
   sub: {
     fontSize: typography.fontSize.body.small,
     color: colors.natural[450],
+  },
+  ltrToken: {
+    writingDirection: "ltr",
   },
   badges: {
     flexDirection: "row",

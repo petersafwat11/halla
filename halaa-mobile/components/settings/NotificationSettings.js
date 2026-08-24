@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   View,
-  Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
@@ -10,7 +9,7 @@ import {
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { mobileNotificationSettingsSchema as notificationSettingsSchema } from "@halaa/shared/schemas/settings";
-import { ToggleInput } from "../commen";
+import { ToggleInput, LocalizedText } from "../commen";
 import { useTranslation } from "../../localization";
 import { useToast } from "../../contexts/ToastContext";
 
@@ -88,12 +87,15 @@ const NotificationSettings = ({ initialData, onUpdate }) => {
         >
           {/* App Notifications Section */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
+            <LocalizedText role="sectionTitle" style={styles.sectionTitle}>
               {t("notifications.appNotifications")}
-            </Text>
-            <Text style={[styles.sectionDescription]}>
+            </LocalizedText>
+            <LocalizedText
+              role="description"
+              style={styles.sectionDescription}
+            >
               {t("notifications.appNotificationsDescription")}
-            </Text>
+            </LocalizedText>
 
             <View style={styles.togglesGroup}>
               <ToggleInput
@@ -142,9 +144,9 @@ const NotificationSettings = ({ initialData, onUpdate }) => {
               disabled={loading || !isDirty}
               activeOpacity={0.7}
             >
-              <Text style={styles.cancelButtonText}>
+              <LocalizedText role="label" style={styles.cancelButtonText}>
                 {t("notifications.cancel")}
-              </Text>
+              </LocalizedText>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -156,11 +158,11 @@ const NotificationSettings = ({ initialData, onUpdate }) => {
               disabled={!isDirty || loading}
               activeOpacity={0.7}
             >
-              <Text style={styles.saveButtonText}>
+              <LocalizedText role="label" style={styles.saveButtonText}>
                 {loading
                   ? t("notifications.saving")
                   : t("notifications.saveChanges")}
-              </Text>
+              </LocalizedText>
             </TouchableOpacity>
           </View>
         </ScrollView>

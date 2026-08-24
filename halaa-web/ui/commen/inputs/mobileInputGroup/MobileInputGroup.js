@@ -2,6 +2,11 @@ import React from "react";
 import styles from "./inputGroup.module.css";
 import Image from "next/image";
 import { get, useFormContext } from "react-hook-form";
+import {
+  clampPhoneInput,
+  getPhoneMaxLength,
+  DEFAULT_PHONE_PLACEHOLDER,
+} from "@halaa/shared/utils/phone";
 
 const MobileInputGroup = ({
   label,
@@ -14,17 +19,27 @@ const MobileInputGroup = ({
   error: externalError,
   hintMessage,
 }) => {
+  const formContext = useFormContext();
   const {
     register,
-    formState: { errors },
+    formState: { errors } = {},
     watch,
-  } = useFormContext() || {};
+    setValue,
+  } = formContext || {};
 
   const formValue = watch?.(name);
-  const formError = get(errors, name)?.message;
+  const formError = errors ? get(errors, name)?.message : undefined;
   const isControlled = inputValue !== undefined && onChange !== undefined;
 
+  const resolvedPlaceholder = placeholder || DEFAULT_PHONE_PLACEHOLDER;
+
   if (isControlled) {
+    const handleControlledChange = (e) => {
+      const clamped = clampPhoneInput(e.target.value);
+      e.target.value = clamped;
+      onChange(e);
+    };
+
     return (
       <div className={styles.input_group}>
         <label className={styles.label}>
@@ -34,11 +49,12 @@ const MobileInputGroup = ({
         <div className={styles.input_container}>
           <input
             className={externalError ? styles.input_error : styles.input}
-            type={type}
-            placeholder={placeholder}
+            type={type || "tel"}
+            placeholder={resolvedPlaceholder}
             name={name}
             value={inputValue}
-            onChange={onChange}
+            maxLength={getPhoneMaxLength(inputValue)}
+            onChange={handleControlledChange}
           />
           <Image
             src={"/svg/auth/country-code.svg"}
@@ -57,6 +73,20 @@ const MobileInputGroup = ({
     );
   }
 
+  const currentVal = formValue || "";
+  const regProps = register
+    ? register(name, {
+        required: required && "This field is required",
+        onChange: (e) => {
+          const clamped = clampPhoneInput(e.target.value);
+          e.target.value = clamped;
+          if (setValue) {
+            setValue(name, clamped, { shouldValidate: true });
+          }
+        },
+      })
+    : {};
+
   return (
     <div className={styles.input_group}>
       <label className={styles.label}>
@@ -68,17 +98,11 @@ const MobileInputGroup = ({
           className={
             formError || externalError ? styles.input_error : styles.input
           }
-          type={type}
-          placeholder={placeholder}
+          type={type || "tel"}
+          placeholder={resolvedPlaceholder}
           name={name}
-          {...(register &&
-            register(name, {
-              required: required && "This field is required",
-              minLength: {
-                value: 9,
-                message: "Phone number must be 9 digits",
-              },
-            }))}
+          maxLength={getPhoneMaxLength(currentVal)}
+          {...regProps}
         />
         <Image
           src={"/svg/auth/country-code.svg"}

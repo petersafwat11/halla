@@ -1,11 +1,22 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization/hooks/useTranslation";
 import DirectionalIonicon from "../common/DirectionalIonicon";
+import LocalizedText from "../commen/LocalizedText";
 
+/**
+ * Vendor settings navigation list.
+ *
+ * Row anatomy is a logical row: [ semantic leading icon + localized label ]
+ * ......... [ directional chevron at the reading end ]. The chevron flips
+ * with the locale through DirectionalIonicon; every other icon (person,
+ * shield, document, card, help) is semantic and never mirrored. The logout
+ * arrow points toward the logical end of reading, so it is mirrored only
+ * under RTL instead of being hard-rotated in both locales.
+ */
 const VendorSettingsTabs = ({ activeTab, onTabChange, onLogout }) => {
-  const { t } = useTranslation("settings");
+  const { t, isRTL } = useTranslation("settings");
   const tabs = [
     { id: "accountSetup", label: t("tabs.account"), icon: "person-outline" },
     { id: "privacy", label: t("tabs.privacy"), icon: "shield-checkmark-outline" },
@@ -24,6 +35,7 @@ const VendorSettingsTabs = ({ activeTab, onTabChange, onLogout }) => {
           style={[styles.tab, activeTab === tab.id && styles.tabActive]}
           onPress={() => onTabChange(tab.id)}
           activeOpacity={0.7}
+          accessibilityRole="button"
         >
           <View style={styles.tabContent}>
             <Ionicons
@@ -31,11 +43,12 @@ const VendorSettingsTabs = ({ activeTab, onTabChange, onLogout }) => {
               size={22}
               color={activeTab === tab.id ? "#c28e5c" : "#666"}
             />
-            <Text
+            <LocalizedText
+              role="label"
               style={[styles.tabLabel, activeTab === tab.id && styles.tabLabelActive]}
             >
               {tab.label}
-            </Text>
+            </LocalizedText>
           </View>
           <DirectionalIonicon
             name="chevron-forward-outline"
@@ -49,17 +62,20 @@ const VendorSettingsTabs = ({ activeTab, onTabChange, onLogout }) => {
         style={[styles.tab, styles.logoutTab]}
         onPress={onLogout}
         activeOpacity={0.7}
+        accessibilityRole="button"
       >
         <View style={styles.tabContent}>
+          {/* Base Ionicons glyph points LTR; mirror only for Arabic so the
+              exit arrow always points to the logical end. */}
           <Ionicons
             name="log-out-outline"
             size={22}
             color="#e74c3c"
-            style={{ transform: [{ rotate: "180deg" }] }}
+            style={isRTL ? styles.logoutIconRTL : null}
           />
-          <Text style={[styles.tabLabel, styles.logoutLabel]}>
+          <LocalizedText role="label" style={[styles.tabLabel, styles.logoutLabel]}>
             {t("tabs.logout")}
-          </Text>
+          </LocalizedText>
         </View>
       </TouchableOpacity>
     </View>
@@ -99,6 +115,9 @@ const styles = StyleSheet.create({
   },
   tabLabelActive: {
     color: "#c28e5c",
+  },
+  logoutIconRTL: {
+    transform: [{ rotate: "180deg" }],
   },
   logoutTab: {
     marginTop: 16,

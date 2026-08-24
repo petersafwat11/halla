@@ -1,9 +1,20 @@
 import React from "react";
-import { View, Text, TouchableOpacity, Image, StyleSheet } from "react-native";
+import { View, TouchableOpacity, Image, StyleSheet } from "react-native";
 import { useFormContext, Controller } from "react-hook-form";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import LocalizedText from "./LocalizedText";
 
+/**
+ * Shared image-picker form field (blueprint §5.2 field anatomy).
+ *
+ * The picker trigger itself is physical artwork (camera glyph over a dashed
+ * canvas) so nothing here is mirrored. Its chrome — label, placeholder and
+ * validation error — is application copy and therefore always rendered
+ * through the localized text-role contract: it follows the UI locale in both
+ * locales and never inherits a value's script. Callers pass translated
+ * `label`/`placeholder` strings; no language literal is hardcoded here.
+ */
 const ImageInput = ({ name, label, placeholder, rules }) => {
   const { control } = useFormContext();
 
@@ -32,11 +43,17 @@ const ImageInput = ({ name, label, placeholder, rules }) => {
       rules={rules}
       render={({ field: { onChange, value }, fieldState: { error } }) => (
         <View style={styles.container}>
-          {label && <Text style={styles.label}>{label}</Text>}
+          {label && (
+            <LocalizedText role="label" style={styles.label}>
+              {label}
+            </LocalizedText>
+          )}
           <TouchableOpacity
             style={[styles.picker, error && styles.pickerError]}
             onPress={() => pickImage(onChange)}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={placeholder || label}
           >
             {value?.uri ? (
               <Image source={{ uri: value.uri }} style={styles.preview} />
@@ -47,13 +64,19 @@ const ImageInput = ({ name, label, placeholder, rules }) => {
                   size={32}
                   color="#C28E5C"
                 />
-                <Text style={styles.placeholderText}>
-                  {placeholder || "اختر صورة"}
-                </Text>
+                {placeholder ? (
+                  <LocalizedText style={styles.placeholderText}>
+                    {placeholder}
+                  </LocalizedText>
+                ) : null}
               </View>
             )}
           </TouchableOpacity>
-          {error && <Text style={styles.errorText}>{error.message}</Text>}
+          {error && (
+            <LocalizedText role="error" style={styles.errorText}>
+              {error.message}
+            </LocalizedText>
+          )}
         </View>
       )}
     />

@@ -6,6 +6,7 @@ import {
   createNavigationContainerRef,
 } from "@react-navigation/native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { KeyboardProvider } from "react-native-keyboard-controller";
 import * as Font from "expo-font";
 import * as Notifications from "expo-notifications";
 import Constants from "expo-constants";
@@ -368,13 +369,19 @@ function App() {
   return (
     <ErrorBoundary>
       <SafeAreaProvider>
-        <QueryProvider>
-          <LanguageProvider>
-            <ToastProvider>
-              <AppRoot />
-            </ToastProvider>
-          </LanguageProvider>
-        </QueryProvider>
+        {/* One keyboard controller for authenticated, unauthenticated, and
+            natively-presented modal content alike (blueprint §6.1). It sits
+            inside SafeAreaProvider and OUTSIDE the navigation tree; no global
+            KeyboardAvoidingView is rendered around NavigationContainer. */}
+        <KeyboardProvider>
+          <QueryProvider>
+            <LanguageProvider>
+              <ToastProvider>
+                <AppRoot />
+              </ToastProvider>
+            </LanguageProvider>
+          </QueryProvider>
+        </KeyboardProvider>
       </SafeAreaProvider>
     </ErrorBoundary>
   );

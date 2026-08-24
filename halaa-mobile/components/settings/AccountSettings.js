@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   View,
-  Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
@@ -9,7 +8,7 @@ import {
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { mobileAccountSettingsSchema as accountSettingsSchema } from "@halaa/shared/schemas/settings";
-import { TextInput, PasswordInput } from "../commen";
+import { TextInput, PasswordInput, LocalizedText } from "../commen";
 import { useTranslation } from "../../localization";
 import { useAuthStore } from "../../stores/authStore";
 import { useToast } from "../../contexts/ToastContext";
@@ -28,8 +27,10 @@ const AccountSettings = ({
 
   const [loading, setLoading] = useState(false);
 
+  // Schema factory resolves the opaque `validation.*` keys through the
+  // active locale so field errors always follow the UI language.
   const methods = useForm({
-    resolver: zodResolver(accountSettingsSchema),
+    resolver: zodResolver(accountSettingsSchema(t)),
     mode: "onChange",
     defaultValues: {
       name: user?.name || "",
@@ -106,15 +107,11 @@ const AccountSettings = ({
     } else if (profileSuccess && !passwordError) {
       toast.success(t("account.updateSuccess"));
     } else if (passwordSuccess && !profileError) {
-      toast.success(t("account.passwordUpdateSuccess", t("account.updateSuccess")));
+      toast.success(t("account.passwordUpdateSuccess"));
     } else if (profileSuccess && passwordError) {
-      toast.error(
-        t("account.profileSavedPasswordFailed", "تم حفظ البيانات، ولكن فشل تحديث كلمة المرور")
-      );
+      toast.error(t("account.profileSavedPasswordFailed"));
     } else if (passwordSuccess && profileError) {
-      toast.error(
-        t("account.passwordSavedProfileFailed", "تم تحديث كلمة المرور، ولكن فشل حفظ البيانات")
-      );
+      toast.error(t("account.passwordSavedProfileFailed"));
     } else if (passwordError || profileError) {
       const error = passwordError || profileError;
       if (
@@ -123,9 +120,7 @@ const AccountSettings = ({
         error?.response?.data?.code === "CURRENT_PASSWORD_INVALID" ||
         error?.message?.includes("Current password is incorrect")
       ) {
-        toast.error(
-          t("account.wrongCurrentPassword", "كلمة المرور الحالية غير صحيحة")
-        );
+        toast.error(t("account.wrongCurrentPassword"));
       } else {
         toast.error(error.message || t("account.updateError"));
       }
@@ -154,13 +149,19 @@ const AccountSettings = ({
           contentContainerStyle={styles.scrollContent}
         >
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t("account.personalInfo")}</Text>
+            <LocalizedText role="sectionTitle" style={styles.sectionTitle}>
+              {t("account.personalInfo")}
+            </LocalizedText>
 
             <View style={styles.inputsGroup}>
+              {/* Full name is arbitrary user content: empty placeholder
+                  follows the UI locale; a filled value follows its first
+                  strong character so "Ali" stays LTR and "علي" stays RTL. */}
               <TextInput
                 name="name"
                 label={t("account.fullName")}
                 placeholder={t("account.fullNamePlaceholder")}
+                contentDirection="adaptive"
                 disabled={loading}
               />
 
@@ -177,12 +178,15 @@ const AccountSettings = ({
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
+            <LocalizedText role="sectionTitle" style={styles.sectionTitle}>
               {t("account.changePassword")}
-            </Text>
-            <Text style={styles.sectionDescription}>
+            </LocalizedText>
+            <LocalizedText
+              role="description"
+              style={styles.sectionDescription}
+            >
               {t("account.changePasswordDescription")}
-            </Text>
+            </LocalizedText>
 
             <View style={styles.inputsGroup}>
               <PasswordInput
@@ -215,7 +219,9 @@ const AccountSettings = ({
               disabled={loading || !isDirty}
               activeOpacity={0.7}
             >
-              <Text style={styles.cancelButtonText}>{t("account.cancel")}</Text>
+              <LocalizedText role="label" style={styles.cancelButtonText}>
+                {t("account.cancel")}
+              </LocalizedText>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -227,9 +233,9 @@ const AccountSettings = ({
               disabled={!isDirty || loading}
               activeOpacity={0.7}
             >
-              <Text style={styles.saveButtonText}>
+              <LocalizedText role="label" style={styles.saveButtonText}>
                 {loading ? t("account.saving") : t("account.saveChanges")}
-              </Text>
+              </LocalizedText>
             </TouchableOpacity>
           </View>
 

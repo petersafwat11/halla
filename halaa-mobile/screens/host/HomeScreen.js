@@ -22,6 +22,7 @@ import { useHostDashboard, useBusinessCreateEventGate } from "../../hooks";
 import { useAuthStore } from "../../stores/authStore";
 import { useToast } from "../../contexts/ToastContext";
 import { useTranslation } from "../../localization";
+import AdaptiveText from "../../components/commen/AdaptiveText";
 import NotificationBell from "../../components/notifications/NotificationBell";
 import HomeHeaderContent from "../../components/home/HomeHeaderContent";
 
@@ -71,7 +72,7 @@ const HomeScreen = ({ navigation }) => {
     // No active subscription (business) → route to the business plans screen
     // for activation instead of opening a wizard that would 403 on submit.
     if (createEventBlocked) {
-      toast.info(t("createEvent.businessActivationRequired", "فعّل اشتراكك لإنشاء مناسبة"));
+      toast.info(t("createEvent.businessActivationRequired"));
       navigation.navigate("MainTabs", { screen: "Plans" });
       return;
     }
@@ -101,10 +102,12 @@ const HomeScreen = ({ navigation }) => {
 
   const greetingContent = (
     <View style={styles.greetingContainer}>
-      <Text style={styles.greetingText}>{t("welcome", "مرحبا")}</Text>
-      <Text style={styles.organizationName}>
-        {user?.name || user?.username || t("guest", "ضيف")}
-      </Text>
+      <Text style={styles.greetingText}>{t("welcome")}</Text>
+      {/* The account/organization name is backend content: its direction
+          follows the first strong character, never the UI locale (§6). */}
+      <AdaptiveText style={styles.organizationName} numberOfLines={1}>
+        {user?.name || user?.username || t("guest")}
+      </AdaptiveText>
     </View>
   );
 
@@ -161,9 +164,11 @@ const HomeScreen = ({ navigation }) => {
             style={styles.createEventFab}
             onPress={handleCreateEvent}
             activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel={t("quickActions.createEvent")}
           >
             <Ionicons name="add" size={20} color="#FFF" />
-            <Text style={styles.createEventFabText}>{t("quickActions.createEvent", "إنشاء مناسبة")}</Text>
+            <Text style={styles.createEventFabText}>{t("quickActions.createEvent")}</Text>
           </TouchableOpacity>
         )}
 
@@ -214,7 +219,10 @@ const styles = StyleSheet.create({
   templatesSection: { paddingHorizontal: 24, marginBottom: 16 },
   bottomSpacing: { height: 100 },
   createEventFab: {
-    position: "absolute", bottom: 20, left: 24,
+    // Semantic floating action anchored at the logical START edge (§7):
+    // `start` mirrors under the root RTL so the pill sits on the right in
+    // Arabic and the left in English — never a physical `left`.
+    position: "absolute", bottom: 20, start: 24,
     flexDirection: "row", alignItems: "center", gap: 6,
     backgroundColor: "#C28E5C", paddingVertical: 10, paddingHorizontal: 16,
     borderRadius: 24, shadowColor: "#000", shadowOffset: { width: 0, height: 4 },

@@ -7,9 +7,12 @@ import {
 } from "react-native";
 import { useFormContext, Controller } from "react-hook-form";
 import { Ionicons } from "@expo/vector-icons";
+import { useLabelDirection } from "../../hooks/useInputDirection";
 
 const CheckboxGroup = ({ name, items, columns = 2, rules }) => {
   const { control } = useFormContext();
+  // Item labels and validation errors are app copy — always the UI locale.
+  const labelDirection = useLabelDirection("localized");
 
   return (
     <Controller
@@ -55,6 +58,7 @@ const CheckboxGroup = ({ name, items, columns = 2, rules }) => {
                     <Text
                       style={[
                         styles.itemText,
+                        labelDirection,
                         isSelected && styles.itemTextSelected,
                       ]}
                       numberOfLines={2}
@@ -66,7 +70,9 @@ const CheckboxGroup = ({ name, items, columns = 2, rules }) => {
               })}
             </View>
             {error && (
-              <Text style={styles.errorText}>{error.message}</Text>
+              <Text style={[styles.errorText, labelDirection]}>
+                {error.message}
+              </Text>
             )}
           </View>
         );

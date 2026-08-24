@@ -6,6 +6,7 @@ import {
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { Controller, useFormContext } from "react-hook-form";
 import { Ionicons } from "@expo/vector-icons";
+import { SafeAreaView } from "react-native-safe-area-context";
 import Constants from "expo-constants";
 import * as Location from "expo-location";
 import { isolateAuto } from "@halaa/shared/utils/bidi";
@@ -28,9 +29,23 @@ const normalizeLocation = (value, coordinate = DEFAULT_COORDINATE) => ({
   provider: value?.provider || "google",
 });
 
-function MapPickerInner({ onChange, value, error, label, placeholder, disabled }) {
+function MapPickerInner({
+  onChange,
+  value,
+  error,
+  label,
+  placeholder,
+  disabled,
+  contentDirection = "localized",
+}) {
   const { t, currentLanguage } = useTranslation("createEvent");
-  const direction = useFieldDirection("localized", { hasValue: !!value?.address });
+  // Addresses are arbitrary user/backend text (blueprint §5.3): callers pass
+  // "adaptive" so a filled value follows its first strong Arabic or Latin
+  // character while the empty placeholder follows the UI locale.
+  const direction = useFieldDirection(contentDirection, {
+    hasValue: !!value?.address,
+    value: value?.address,
+  });
   const mapRef = useRef(null);
   const searchTimer = useRef(null);
   const sessionToken = useRef(newSessionToken());
@@ -172,8 +187,8 @@ function MapPickerInner({ onChange, value, error, label, placeholder, disabled }
       </TouchableOpacity>
       {error ? <Text style={[styles.errorText, direction.text]}>{error.message}</Text> : null}
 
-      <Modal visible={open} animationType="slide" onRequestClose={closePicker}>
-        <View style={styles.modal}>
+      <Modal visible={open} animationType="slide" onRequestClose={closePicker} statusBarTranslucent>
+        <SafeAreaView style={styles.modal} edges={["top", "bottom"]}>
           <View style={styles.header}>
             <TouchableOpacity onPress={closePicker} style={styles.iconButton}><Ionicons name="close" size={28} color="#292929" /></TouchableOpacity>
             <Text style={[styles.title, direction.text]}>{t("map_picker_title")}</Text>
@@ -246,7 +261,7 @@ function MapPickerInner({ onChange, value, error, label, placeholder, disabled }
               <Text style={styles.confirmText}>{t("map_picker_confirm")}</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </SafeAreaView>
       </Modal>
     </View>
   );
@@ -275,7 +290,7 @@ const styles = StyleSheet.create({
   placeholderText: { color: "#999" },
   errorText: { marginTop: 6, fontFamily: "Cairo_400Regular", fontSize: 12, color: "#D84A3F" },
   modal: { flex: 1, backgroundColor: "#FCF9F5" },
-  header: { minHeight: 76, paddingTop: Platform.OS === "ios" ? 22 : 8, paddingHorizontal: 18, flexDirection: "row", alignItems: "center", backgroundColor: "#FFF", borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#E6E0DA" },
+  header: { minHeight: 70, paddingTop: Platform.OS === "ios" ? 18 : 16, paddingBottom: 16, paddingHorizontal: 18, flexDirection: "row", alignItems: "center", backgroundColor: "#FFF", borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#E6E0DA" },
   iconButton: { width: 42, height: 42, alignItems: "center", justifyContent: "center" },
   title: { flex: 1, fontFamily: "Cairo_700Bold", fontSize: 18, color: "#242424", textAlign: "center" },
   searchWrap: { padding: 14, zIndex: 4, backgroundColor: "#FFF" },
@@ -306,3 +321,4 @@ const styles = StyleSheet.create({
   confirmDisabled: { backgroundColor: "#CFCBC6" },
   confirmText: { fontFamily: "Cairo_600SemiBold", color: "#FFF", fontSize: 14 },
 });
+

@@ -1,7 +1,6 @@
 import React, { useRef, useState } from "react";
 import {
   View,
-  Text,
   StyleSheet,
   Animated,
   Platform,
@@ -16,6 +15,7 @@ import { useTranslation } from "../../localization";
 import { ENDPOINTS, resolveApiUrl } from "../../config/api";
 import { useAuthStore } from "../../stores/authStore";
 import DirectionalIonicon from "../common/DirectionalIonicon";
+import LocalizedText from "../commen/LocalizedText";
 import TemplateCategoryChips from "./_components/TemplateCategoryChips";
 import TemplateCard from "./_components/TemplateCard";
 import { useHostTemplates, useTemplateCategories } from "../../hooks/templates";
@@ -248,15 +248,18 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>{t("templates", "قوالب المناسبات")}</Text>
+        {/* Section heading: localized role, key only (no inline literals). */}
+        <LocalizedText role="sectionTitle" style={styles.title}>
+          {t("templates")}
+        </LocalizedText>
       </View>
 
       {loadingCats ? (
         <ActivityIndicator size="small" color="#C28E5C" />
       ) : catsError ? (
-        <Text style={styles.errorText}>
-          {t("templates_categories_error", "تعذر تحميل الفئات")}
-        </Text>
+        <LocalizedText role="hint" style={styles.errorText}>
+          {t("templates_categories_error")}
+        </LocalizedText>
       ) : (
         <TemplateCategoryChips
           categories={categories}
@@ -267,7 +270,7 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
             scrollRef.current?.scrollTo({ x: 0, animated: false });
           }}
           locale={locale}
-          allLabel={t("common.all", "الكل")}
+          allLabel={t("common.all")}
         />
       )}
 
@@ -275,13 +278,13 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
         {loadingTemplates ? (
           <ActivityIndicator size="small" color="#C28E5C" />
         ) : tplError ? (
-          <Text style={styles.errorText}>
-            {t("templates_load_error", "تعذر تحميل القوالب")}
-          </Text>
+          <LocalizedText role="hint" style={styles.errorText}>
+            {t("templates_load_error")}
+          </LocalizedText>
         ) : templates.length === 0 ? (
-          <Text style={styles.emptyText}>
-            {t("no_templates_available", "لا توجد قوالب متاحة")}
-          </Text>
+          <LocalizedText role="hint" style={styles.emptyText}>
+            {t("no_templates_available")}
+          </LocalizedText>
         ) : (
           <>
             <Animated.ScrollView
@@ -325,6 +328,8 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
                   onPress={goPrev}
                   disabled={activeIdx <= 0}
                   activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("templates_previous")}
                 >
                   <DirectionalIonicon
                     name="chevron-back"
@@ -342,6 +347,8 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
                         i === activeIdx && styles.dotActive,
                       ]}
                       onPress={() => scrollToIdx(i)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${i + 1}`}
                     />
                   ))}
                 </View>
@@ -354,6 +361,8 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
                   onPress={goNext}
                   disabled={activeIdx >= maxIdx}
                   activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("templates_next")}
                 >
                   <DirectionalIonicon
                     name="chevron-forward"
@@ -382,7 +391,10 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
                     onPress={() => setPreviewTemplate(null)}
                     style={styles.modalCloseButton}
                     hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                    accessibilityRole="button"
+                    accessibilityLabel={t("buttons.close")}
                   >
+                    {/* Close glyph: never mirrored; sits at logical end. */}
                     <Ionicons name="close" size={20} color="#656565" />
                   </TouchableOpacity>
                 </View>

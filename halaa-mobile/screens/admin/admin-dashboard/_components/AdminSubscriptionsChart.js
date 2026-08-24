@@ -1,6 +1,9 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import LocalizedText from "../../../components/commen/LocalizedText";
+import { formatCount } from "@halaa/shared/utils/locale";
+import { useTranslation } from "../../../../localization";
 import { colors, spacing, borderRadius, typography, textStyles, backgrounds } from "../../../../styles/tokens";
 
 const PLAN_COLORS = [
@@ -12,6 +15,7 @@ const PLAN_COLORS = [
 ];
 
 const AdminSubscriptionsChart = ({ subscriptionsByPlan, t }) => {
+  const { currentLanguage } = useTranslation("admin");
   const planEntries = Object.entries(subscriptionsByPlan);
   const totalSubs = planEntries.reduce((sum, [, count]) => sum + count, 0);
 
@@ -29,11 +33,11 @@ const AdminSubscriptionsChart = ({ subscriptionsByPlan, t }) => {
       <View style={styles.sectionHeader}>
         <View style={styles.sectionHeaderLeft}>
           <Ionicons name="pie-chart-outline" size={18} color={colors.primary[500]} />
-          <Text style={styles.sectionTitle}>{t("dashboard.charts.subscriptions")}</Text>
+          <LocalizedText style={styles.sectionTitle}>{t("dashboard.charts.subscriptions")}</LocalizedText>
         </View>
       </View>
       {planEntries.length === 0 ? (
-        <Text style={styles.emptyText}>{t("dashboard.charts.noData")}</Text>
+        <LocalizedText center style={styles.emptyText}>{t("dashboard.charts.noData")}</LocalizedText>
       ) : (
         <>
           <View style={styles.segmentedBar}>
@@ -52,8 +56,8 @@ const AdminSubscriptionsChart = ({ subscriptionsByPlan, t }) => {
           {planEntries.map(([plan, count], idx) => (
             <View key={plan} style={styles.legendRow}>
               <View style={[styles.legendDot, { backgroundColor: PLAN_COLORS[idx % PLAN_COLORS.length] }]} />
-              <Text style={styles.legendName}>{planLabel(plan)}</Text>
-              <Text style={styles.legendCount}>{count}</Text>
+              <LocalizedText style={styles.legendName}>{planLabel(plan)}</LocalizedText>
+              <LocalizedText style={styles.legendCount}>{formatCount(count, currentLanguage)}</LocalizedText>
             </View>
           ))}
         </>

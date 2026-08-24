@@ -1,9 +1,11 @@
 import React from "react";
-import { View, Text, Modal, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Modal, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import PropTypes from "prop-types";
 import { useForm, FormProvider } from "react-hook-form";
 import { Button, ImageInput } from "../../commen";
+import LocalizedText from "../../commen/LocalizedText";
+import AdaptiveText from "../../commen/AdaptiveText";
 import { useUpdateBusinessLogo } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
@@ -67,12 +69,12 @@ const ReplaceLogoModal = ({ visible, onClose, businessId, businessName, onSaved 
         <View style={styles.modalContainer}>
           <View style={styles.header}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.kicker}>{el("kicker", "Logo")}</Text>
-              <Text style={styles.title}>{el("title", "Change logo")}</Text>
+              <LocalizedText style={styles.kicker}>{el("kicker", "Logo")}</LocalizedText>
+              <LocalizedText style={styles.title}>{el("title", "Change logo")}</LocalizedText>
               {!!businessName && (
-                <Text style={styles.entityName} numberOfLines={1}>
+                <AdaptiveText style={styles.entityName} numberOfLines={1}>
                   {businessName}
-                </Text>
+                </AdaptiveText>
               )}
             </View>
             <TouchableOpacity onPress={close} style={styles.closeButton}>

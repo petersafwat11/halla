@@ -1,6 +1,33 @@
 {
   "welcome": "Welcome",
   "guest": "Guest",
+  "errors": {
+    "load": "Failed to load data",
+    "retry": "Retry"
+  },
+  "editSteps": {
+    "title": "Choose a step",
+    "cancel": "Cancel",
+    "go": "Confirm",
+    "steps": {
+      "1": {
+        "title": "Event details",
+        "description": "Add your event details the way you like."
+      },
+      "2": {
+        "title": "Guest list",
+        "description": "Enter every guest invited to attend."
+      },
+      "3": {
+        "title": "Invitation design & customization",
+        "description": "Pick a template and customize your invitation easily."
+      },
+      "4": {
+        "title": "Review & launch",
+        "description": "Review all the details carefully."
+      }
+    }
+  },
   "createEvent": {
     "businessActivationRequired": "Activate your subscription to create an event"
   },
@@ -40,6 +67,9 @@
     "noResponse": "No response",
     "declined": "Declined",
     "approved": "Approved",
+    "noResponseCount": "No response {{count}}",
+    "declinedCount": "Declined {{count}}",
+    "approvedCount": "Accepted {{count}}",
     "quota": {
       "remainingInvites": "Remaining invites",
       "unlimited": "Unlimited"

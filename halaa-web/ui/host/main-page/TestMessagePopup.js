@@ -9,13 +9,12 @@ import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
 import Button from "@/ui/commen/button/Button";
 import { useSendTestMessage } from "@/hooks/messaging";
 import { toast } from "react-toastify";
+import { saudiPhone } from "@halaa/shared/schemas/_shared";
+import { DEFAULT_PHONE_PLACEHOLDER } from "@halaa/shared/utils/phone";
 
 const testMessageSchema = (t) =>
   z.object({
-    phoneNumber: z
-      .string()
-      .min(1, t("testMessage.validation.phoneRequired"))
-      .regex(/^5[0-9]{8}$/, t("testMessage.validation.phoneFormat")),
+    phoneNumber: saudiPhone(t),
   });
 
 const TestMessagePopup = ({ onConfirm, onCancel, eventId }) => {
@@ -66,7 +65,7 @@ const TestMessagePopup = ({ onConfirm, onCancel, eventId }) => {
           <InputGroup
             name="phoneNumber"
             label={t("testMessage.phoneLabel")}
-            placeholder="5xxxxxxxx"
+            placeholder={DEFAULT_PHONE_PLACEHOLDER}
             type="tel"
             required
             prefixText="+966"

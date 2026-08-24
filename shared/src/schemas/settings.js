@@ -17,7 +17,7 @@
  * Both are exported; consumers stay on the variant they already used.
  */
 import { z } from "zod";
-import { SAUDI_PHONE_REGEX, PASSWORD_COMPLEXITY_REGEX } from "./_shared.js";
+import { saudiPhone, PASSWORD_COMPLEXITY_REGEX } from "./_shared.js";
 
 const idT = (k) => k;
 
@@ -57,14 +57,7 @@ export const profileUpdateSchema = (t = idT) =>
       .email(t("settings.errors.invalidEmail") || "البريد الإلكتروني غير صالح")
       .optional()
       .or(z.literal("")),
-    phoneNumber: z
-      .string()
-      .regex(
-        SAUDI_PHONE_REGEX,
-        t("settings.errors.invalidPhone") || "رقم الهاتف غير صالح"
-      )
-      .optional()
-      .or(z.literal("")),
+    phoneNumber: saudiPhone(t).optional().or(z.literal("")),
   });
 
 export const passwordUpdateSchema = (t = idT) =>
@@ -181,98 +174,98 @@ export const accountSettingsSchema = (t = idT) =>
     );
 
 // ============================================================
-// ACCOUNT SETTINGS — mobile variant (plain schema, opaque i18n keys)
+// ACCOUNT SETTINGS - mobile variant (schema factory over opaque
+// i18n keys, resolved through the caller's `t`)
 //
-// Used by `halaa-mobile/components/settings/AccountSettings.js`. The
-// field name is `newPassword` (mobile) vs `password` (web). The
-// rename is intentional UI naming, not a divergent backend shape, so
-// both forms POST the same payload after mapping in the screen.
-// ============================================================
-
-export const mobileAccountSettingsSchema = z
-  .object({
-    name: z
-      .string()
-      .trim()
-      .min(2, "validation.nameMin")
-      .max(100, "validation.nameMax"),
-    username: z
-      .string()
-      .min(2, "validation.usernameMin")
-      .max(50, "validation.usernameMax"),
-    email: z.string().email("validation.emailInvalid"),
-    currentPassword: z.string().optional(),
-    newPassword: z
-      .string()
-      .optional()
-      .refine(
-        (val) =>
-          !val ||
-          (val.length >= 8 &&
-            val.length <= 128 &&
-            PASSWORD_COMPLEXITY_REGEX.test(val)),
-        "validation.passwordComplexity"
-      ),
-    confirmPassword: z.string().optional(),
-  })
-  .refine(
-    (data) => {
-      const hasCurrent =
-        !!data.currentPassword && data.currentPassword.trim().length > 0;
-      const hasNew = !!data.newPassword && data.newPassword.length > 0;
-      if (hasCurrent) {
-        return hasNew;
+// Used by `halaa-mobile/components/settings/AccountSettings.js` as
+// `zodResolver(mobileAccountSettingsSchema(t))`, so validation
+// errors follow the UI locale at render time. Called without `t`
+// (e.g. in Node tests) messages stay the raw `validation.*` keys.
+export const mobileAccountSettingsSchema = (t = idT) =>
+  z
+    .object({
+      name: z
+        .string()
+        .trim()
+        .min(2, t("validation.nameMin"))
+        .max(100, t("validation.nameMax")),
+      username: z
+        .string()
+        .min(2, t("validation.usernameMin"))
+        .max(50, t("validation.usernameMax")),
+      email: z.string().email(t("validation.emailInvalid")),
+      currentPassword: z.string().optional(),
+      newPassword: z
+        .string()
+        .optional()
+        .refine(
+          (val) =>
+            !val ||
+            (val.length >= 8 &&
+              val.length <= 128 &&
+              PASSWORD_COMPLEXITY_REGEX.test(val)),
+          t("validation.passwordComplexity")
+        ),
+      confirmPassword: z.string().optional(),
+    })
+    .refine(
+      (data) => {
+        const hasCurrent =
+          !!data.currentPassword && data.currentPassword.trim().length > 0;
+        const hasNew = !!data.newPassword && data.newPassword.length > 0;
+        if (hasCurrent) {
+          return hasNew;
+        }
+        return true;
+      },
+      {
+        message: t("validation.newPasswordRequired"),
+        path: ["newPassword"],
       }
-      return true;
-    },
-    {
-      message: "validation.newPasswordRequired",
-      path: ["newPassword"],
-    }
-  )
-  .refine(
-    (data) => {
-      const hasCurrent =
-        !!data.currentPassword && data.currentPassword.trim().length > 0;
-      const hasNew = !!data.newPassword && data.newPassword.length > 0;
-      if (hasNew) {
-        return hasCurrent;
+    )
+    .refine(
+      (data) => {
+        const hasCurrent =
+          !!data.currentPassword && data.currentPassword.trim().length > 0;
+        const hasNew = !!data.newPassword && data.newPassword.length > 0;
+        if (hasNew) {
+          return hasCurrent;
+        }
+        return true;
+      },
+      {
+        message: t("validation.currentPasswordRequired"),
+        path: ["currentPassword"],
       }
-      return true;
-    },
-    {
-      message: "validation.currentPasswordRequired",
-      path: ["currentPassword"],
-    }
-  )
-  .refine(
-    (data) => {
-      const hasConfirm =
-        !!data.confirmPassword && data.confirmPassword.trim().length > 0;
-      const hasNew = !!data.newPassword && data.newPassword.length > 0;
-      if (hasConfirm) {
-        return hasNew;
+    )
+    .refine(
+      (data) => {
+        const hasConfirm =
+          !!data.confirmPassword && data.confirmPassword.trim().length > 0;
+        const hasNew = !!data.newPassword && data.newPassword.length > 0;
+        if (hasConfirm) {
+          return hasNew;
+        }
+        return true;
+      },
+      {
+        message: t("validation.newPasswordRequired"),
+        path: ["newPassword"],
       }
-      return true;
-    },
-    {
-      message: "validation.newPasswordRequired",
-      path: ["newPassword"],
-    }
-  )
-  .refine(
-    (data) => {
-      const hasNew = !!data.newPassword && data.newPassword.length > 0;
-      if (hasNew) {
-        return data.confirmPassword === data.newPassword;
+    )
+    .refine(
+      (data) => {
+        const hasNew = !!data.newPassword && data.newPassword.length > 0;
+        if (hasNew) {
+          return data.confirmPassword === data.newPassword;
+        }
+        return true;
+      },
+      {
+        message: t("validation.passwordsDoNotMatch"),
+        path: ["confirmPassword"],
       }
-      return true;
-    },
-    {
-      message: "validation.passwordsDoNotMatch",
-      path: ["confirmPassword"],
-    }
-  );
+    );
 
 export const accountDeletionSchema = (t = idT) =>
   z.object({

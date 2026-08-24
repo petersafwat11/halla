@@ -1,10 +1,14 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
+import LocalizedText from "../../../components/commen/LocalizedText";
+import { formatCount } from "@halaa/shared/utils/locale";
+import { useTranslation } from "../../../../localization";
 import { colors, spacing, borderRadius, typography, textStyles, backgrounds } from "../../../../styles/tokens";
 
 const TICKET_COLORS = ["#2A8C5B", "#D38200"];
 
 const AdminTicketsChart = ({ tickets, t }) => {
+  const { currentLanguage } = useTranslation("admin");
   const resolved = tickets?.resolved || 0;
   const pending = tickets?.totalPending || 0;
   const total = tickets?.allTickets || 0;
@@ -17,8 +21,8 @@ const AdminTicketsChart = ({ tickets, t }) => {
   return (
     <View style={styles.card}>
       <View style={styles.header}>
-        <Text style={styles.sectionTitle}>{t("dashboard.charts.tickets")}</Text>
-        <Text style={styles.total}>{total}</Text>
+        <LocalizedText style={styles.sectionTitle}>{t("dashboard.charts.tickets")}</LocalizedText>
+        <LocalizedText style={styles.total}>{formatCount(total, currentLanguage)}</LocalizedText>
       </View>
       {total > 0 && (
         <View style={styles.segmentedBar}>
@@ -40,8 +44,8 @@ const AdminTicketsChart = ({ tickets, t }) => {
       {items.map((item, idx) => (
         <View key={idx} style={styles.legendRow}>
           <View style={[styles.legendDot, { backgroundColor: item.color }]} />
-          <Text style={styles.legendName}>{item.label}</Text>
-          <Text style={styles.legendCount}>{item.value}</Text>
+          <LocalizedText style={styles.legendName}>{item.label}</LocalizedText>
+          <LocalizedText style={styles.legendCount}>{formatCount(item.value, currentLanguage)}</LocalizedText>
         </View>
       ))}
     </View>

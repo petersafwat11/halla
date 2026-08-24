@@ -11,6 +11,7 @@
 import React from "react";
 import { Modal, View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import LocalizedText from "../commen/LocalizedText";
 import { STATUS_TONES } from "../../constants/statusColors";
 import { mapReconcileState, needsSupportAttention } from "../../services/billing/reconcileState";
 import { colors, spacing, borderRadius, typography } from "../../styles/tokens";
@@ -52,13 +53,24 @@ function bodyFor(status, t) {
   const state = status.state || "pending";
   const m = mapReconcileState(state);
   if (phase === "reconciling" && !m.terminal) {
-    return { tone: "warning", busy: true, title: t("iapStates.pending.title"), body: t("iapStates.pending.body") };
+    return {
+      tone: "warning",
+      busy: true,
+      title: t("iapStates.pending.title"),
+      body:
+        status.reason === "reconcile_unavailable"
+          ? t("iapFlow.reconcileUnavailable")
+          : t("iapStates.pending.body"),
+    };
   }
   return {
     tone: m.tone,
     busy: false,
     title: t(`iapStates.${m.category}.title`),
-    body: t(`iapStates.${m.category}.body`),
+    body:
+      !m.terminal && status.reason === "reconcile_unavailable"
+        ? t("iapFlow.reconcileUnavailable")
+        : t(`iapStates.${m.category}.body`),
     success: m.success,
     pending: !m.terminal,
     support: needsSupportAttention(state),
@@ -87,12 +99,12 @@ const PurchaseStatusModal = ({ status, t, onClose, onRefresh, onSuccessContinue 
             )}
           </View>
 
-          <Text style={styles.title}>{info.title}</Text>
-          {!!info.body && <Text style={styles.body}>{info.body}</Text>}
-          {!!info.action && <Text style={[styles.body, styles.action]}>{info.action}</Text>}
+          <LocalizedText center style={styles.title}>{info.title}</LocalizedText>
+          {!!info.body && <LocalizedText center style={styles.body}>{info.body}</LocalizedText>}
+          {!!info.action && <LocalizedText center style={[styles.body, styles.action]}>{info.action}</LocalizedText>}
 
           {status.phase === "reconciling" && !!status.attempt && (
-            <Text style={styles.hint}>{t("iapFlow.pendingHint")}</Text>
+            <LocalizedText center style={styles.hint}>{t("iapFlow.pendingHint")}</LocalizedText>
           )}
 
           <View style={styles.actions}>

@@ -1,6 +1,33 @@
 {
   "welcome": "مرحباً",
   "guest": "ضيف",
+  "errors": {
+    "load": "خطأ في تحميل البيانات",
+    "retry": "إعادة المحاولة"
+  },
+  "editSteps": {
+    "title": "اختر الخطوة",
+    "cancel": "إلغاء",
+    "go": "تأكيد",
+    "steps": {
+      "1": {
+        "title": "تفاصيل المناسبة",
+        "description": "أضف تفاصيل المناسبة كما تحب."
+      },
+      "2": {
+        "title": "قائمة المدعوين",
+        "description": "أدخل جميع المدعوين لحضور المناسبة."
+      },
+      "3": {
+        "title": "تصميم الدعوة وتخصيصها",
+        "description": "اختر القالب وخصص دعوتك بسهولة."
+      },
+      "4": {
+        "title": "مراجعة وإطلاق المناسبة",
+        "description": "راجع كل التفاصيل بتركيز."
+      }
+    }
+  },
   "createEvent": {
     "businessActivationRequired": "فعّل اشتراكك لإنشاء مناسبة"
   },
@@ -40,6 +67,9 @@
     "noResponse": "لم يرد",
     "declined": "معتذر",
     "approved": "موافق",
+    "noResponseCount": "لم يرد {{count}}",
+    "declinedCount": "معتذر {{count}}",
+    "approvedCount": "موافق {{count}}",
     "quota": {
       "remainingInvites": "الدعوات المتبقية",
       "unlimited": "غير محدود"

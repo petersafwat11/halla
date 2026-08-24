@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { useTranslation } from "../../localization";
+import { formatCount } from "@halaa/shared/utils/locale";
 import { Svg, Path } from "react-native-svg";
 
 const CalendarIcon = ({ color }) => (
@@ -232,7 +233,8 @@ const CalendarRemoveIcon = ({ color }) => (
 );
 
 const StatsCards = ({ totalEvents = 0, activeEvents = 0, endedEvents = 0, draftEvents = 0 }) => {
-  const { t } = useTranslation("home");
+  const { t, currentLanguage } = useTranslation("home");
+  const locale = currentLanguage || "ar";
   const cards = [
     {
       label: t("dashboard.stats.all"),
@@ -267,7 +269,9 @@ const StatsCards = ({ totalEvents = 0, activeEvents = 0, endedEvents = 0, draftE
           <View style={[styles.iconContainer, { backgroundColor: card.tint }]}>
             {card.icon}
           </View>
-          <Text style={styles.value}>{card.value}</Text>
+          {/* Counts are locale-formatted atomic tokens (Arabic digits in
+              ar, Latin digits in en) — never raw stored numbers. */}
+          <Text style={styles.value}>{formatCount(card.value, locale)}</Text>
           <Text style={styles.label} numberOfLines={1} adjustsFontSizeToFit>
             {card.label}
           </Text>

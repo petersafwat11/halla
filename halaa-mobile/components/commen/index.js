@@ -1,5 +1,8 @@
 export { default as TextInput } from "./TextInput";
 export { default as DirectionalTextInput } from "./DirectionalTextInput";
+export { default as FormField } from "./FormField";
+export { default as LocalizedText } from "./LocalizedText";
+export { default as AdaptiveText } from "./AdaptiveText";
 export { default as EmailInput } from "./EmailInput";
 export { default as PasswordInput } from "./PasswordInput";
 export { default as MobileInput } from "./MobileInput";

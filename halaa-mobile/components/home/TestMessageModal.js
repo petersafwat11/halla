@@ -1,7 +1,6 @@
 import React from "react";
 import {
   View,
-  Text,
   StyleSheet,
   Modal,
   TouchableOpacity,
@@ -13,9 +12,10 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Ionicons } from "@expo/vector-icons";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../../localization";
 import MobileInput from "../commen/MobileInput";
 import Button from "../commen/Button";
+import LocalizedText from "../commen/LocalizedText";
 import { useSendTestMessage } from "../../hooks/messaging";
 
 const buildSchema = (t) =>
@@ -57,7 +57,9 @@ const TestMessageModal = ({ visible, onClose, onSuccess, eventId }) => {
       onClose();
       Alert.alert(t("testMessage.title"), t("testMessage.success"));
     } catch (error) {
-      Alert.alert(t("common.error", "خطأ"), error?.message || t("testMessage.error"));
+      // Localized chrome: the alert title/message follow the UI locale even
+      // when the failure payload is an LTR backend token.
+      Alert.alert(t("alerts.errorTitle"), error?.message || t("testMessage.error"));
     }
   };
 
@@ -80,13 +82,25 @@ const TestMessageModal = ({ visible, onClose, onSuccess, eventId }) => {
           {/* Handle bar */}
           <View style={styles.handleBar} />
 
-          {/* Header */}
+          {/* Header: title/description at the logical start, close at the
+              logical end. */}
           <View style={styles.header}>
             <View style={styles.titleWrapper}>
-              <Text style={styles.title}>{t("testMessage.title")}</Text>
-              <Text style={styles.description}>{t("testMessage.description")}</Text>
+              <LocalizedText role="pageTitle" style={styles.title}>
+                {t("testMessage.title")}
+              </LocalizedText>
+              <LocalizedText role="description" style={styles.description}>
+                {t("testMessage.description")}
+              </LocalizedText>
             </View>
-            <TouchableOpacity onPress={handleClose} hitSlop={8} disabled={isPending}>
+            <TouchableOpacity
+              onPress={handleClose}
+              hitSlop={8}
+              disabled={isPending}
+              accessibilityRole="button"
+              accessibilityLabel={t("testMessage.cancel")}
+            >
+              {/* Close glyph is not direction-mirrored (§7). */}
               <Ionicons name="close" size={24} color="#2C2C2C" />
             </TouchableOpacity>
           </View>
@@ -97,7 +111,8 @@ const TestMessageModal = ({ visible, onClose, onSuccess, eventId }) => {
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.contentInner}
             >
-              {/* Phone Number Input */}
+              {/* Phone Number Input — shared phone-contract primitive:
+                  localized placeholder, LTR digits when filled. */}
               <MobileInput
                 name="phoneNumber"
                 label={t("testMessage.phoneLabel")}
@@ -107,7 +122,9 @@ const TestMessageModal = ({ visible, onClose, onSuccess, eventId }) => {
               {/* Info note */}
               <View style={styles.infoBox}>
                 <Ionicons name="information-circle-outline" size={16} color="#C28E5C" />
-                <Text style={styles.infoText}>{t("testMessage.infoText")}</Text>
+                <LocalizedText role="hint" style={styles.infoText}>
+                  {t("testMessage.infoText")}
+                </LocalizedText>
               </View>
             </ScrollView>
 

@@ -37,10 +37,9 @@ import {
 } from "../../components/notifications/NotificationItem";
 
 export default function NotificationsScreen() {
-  const { t, currentLanguage } = useTranslation("common");
+  const { t } = useTranslation("common");
   const navigation = useNavigation();
   const toast = useToast();
-  const isArabic = currentLanguage === "ar";
 
   const {
     data: notifData,
@@ -158,6 +157,7 @@ export default function NotificationsScreen() {
         disabled={markAllAsReadMutation.isPending}
         accessibilityLabel={t("notifications.markAllRead")}
       >
+        {/* Semantic action glyphs — never direction-mirrored (§7). */}
         <Ionicons
           name="checkmark-done-outline"
           size={20}
@@ -178,20 +178,18 @@ export default function NotificationsScreen() {
   const renderNotification = ({ item }) => (
     <NotificationItem
       item={item}
-      isArabic={isArabic}
       onPress={handleNotificationPress}
       onDelete={handleDelete}
     />
   );
 
-  const renderEmpty = () => <EmptyState t={t} />;
+  const renderEmpty = () => <EmptyState />;
 
   const renderFooter = () => (
     <LoadMoreFooter
       hasNextPage={hasNextPage}
       isFetchingNextPage={isFetchingNextPage}
       onLoadMore={handleLoadMore}
-      t={t}
     />
   );
 
@@ -268,8 +266,9 @@ const styles = StyleSheet.create({
     gap: spacing[12],
   },
   headerActionBtn: {
-    width: 32,
-    height: 32,
+    // Blueprint §7: icon-only actions need a ≥44×44 logical target.
+    width: 44,
+    height: 44,
     justifyContent: "center",
     alignItems: "center",
   },

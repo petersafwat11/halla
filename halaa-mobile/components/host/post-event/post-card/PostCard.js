@@ -1,15 +1,18 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 import PostMedia from "./PostMedia";
 import PostInteractions from "./PostInteractions";
+import AdaptiveText from "../../../commen/AdaptiveText";
 
 const PostCard = ({ post, eventId, sessionToken, t, toast }) => {
   return (
     <View style={styles.postCard}>
       <PostMedia post={post} t={t} />
 
+      {/* Guest captions are arbitrary content — first-strong direction with
+          isolation, not the page locale. */}
       {post.content?.text ? (
-        <Text style={styles.postText}>{post.content.text}</Text>
+        <AdaptiveText style={styles.postText}>{post.content.text}</AdaptiveText>
       ) : null}
 
       <PostInteractions

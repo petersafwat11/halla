@@ -95,8 +95,8 @@ test("Mobile PlanSummaryCard: Source verification for canonical classification a
     "PlanSummaryCard must render priceUnavailable when native and priceDisplay is not loaded"
   );
   assert.ok(
-    content.includes("السعر غير متاح"),
-    "PlanSummaryCard must use localized fallback 'السعر غير متاح'"
+    content.includes('t("summary.priceUnavailable")'),
+    "PlanSummaryCard must use the localized 'summary.priceUnavailable' key (no inline Arabic/English literal fallbacks)"
   );
 });
 

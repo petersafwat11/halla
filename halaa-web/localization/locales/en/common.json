@@ -1,7 +1,7 @@
 {
   "test": "test",
   "phone_required": "Phone number is required",
-  "phone_invalid": "Phone number must be at least 9 digits",
+  "phone_invalid": "Phone number must be 10 digits starting with 05 or 9 digits starting with 5",
   "phone_number": "Phone Number",
   "enter_phone_number": "Enter phone number",
   "test_sending": "Test Sending",
@@ -201,14 +201,14 @@
     "resendSentSubtitle": "If that email needs verification, we've sent a new link."
   },
   "validation": {
-    "invalidSaudiPhone": "Phone must start with 5 and be 9 digits",
+    "invalidSaudiPhone": "Phone number must be 10 digits (starting with 05) or 9 digits (starting with 5)",
     "invalidEmail": "Please enter a valid email address",
     "required": "This field is required",
     "passwordMinLength": "Password must be at least 8 characters",
     "passwordMaxLength": "Password must not exceed 128 characters",
     "passwordComplexity": "Use letters and numbers only, with at least one of each",
-    "otpLength": "Verification code must be 6 digits",
-    "otpInvalid": "Verification code must contain only digits"
+    "otpInvalid": "Verification code must contain only digits",
+    "otpLength": "Verification code must be 6 digits"
   },
   "date": {
     "months": {

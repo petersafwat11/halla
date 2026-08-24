@@ -19,6 +19,7 @@ import { useFieldDirection } from "../../hooks/useInputDirection";
  */
 const DropdownInputField = ({
   label,
+  required,
   placeholder,
   options,
   disabled,
@@ -43,7 +44,14 @@ const DropdownInputField = ({
 
   return (
     <View style={styles.container}>
-      {label && <Text style={[styles.label, fieldDirection.text]}>{label}</Text>}
+      {/* Required marker as a nested run — punctuation stays inside the
+          localized label direction instead of being concatenated. */}
+      {label && (
+        <Text style={[styles.label, fieldDirection.text]}>
+          {label}
+          {required ? <Text> *</Text> : null}
+        </Text>
+      )}
       <TouchableOpacity
         style={[
           styles.inputContainer,
@@ -169,6 +177,7 @@ const DropdownInputField = ({
 const DropdownInput = ({
   name,
   label,
+  required = false,
   placeholder,
   options = [],
   disabled = false,
@@ -186,6 +195,7 @@ const DropdownInput = ({
       render={({ field: { onChange, value }, fieldState: { error } }) => (
         <DropdownInputField
           label={label}
+          required={required}
           placeholder={placeholder}
           options={options}
           disabled={disabled}

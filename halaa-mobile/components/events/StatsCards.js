@@ -2,16 +2,16 @@ import React, { useMemo } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { formatCount } from "@halaa/shared/utils/locale";
-import { useLanguage } from "../../localization";
+import { useTranslation } from "../../localization";
 import { EVENT_STATUS, EVENT_STATUS_GROUPS } from "@halaa/shared/constants/eventStatus";
 
 const StatsCards = ({ stats, eventStatus, activeFilter, onFilterPress }) => {
-  const { currentLanguage } = useLanguage();
+  const { t, currentLanguage } = useTranslation("events");
 
   const allCards = useMemo(() => ({
     confirmed: {
       key: "confirmed",
-      label: "حضور",
+      label: t("statsCards.confirmed"),
       value: stats?.confirmed ?? 0,
       icon: "checkmark-circle-outline",
       bgColor: "#EAF4EF",
@@ -19,7 +19,7 @@ const StatsCards = ({ stats, eventStatus, activeFilter, onFilterPress }) => {
     },
     declined: {
       key: "declined",
-      label: "اعتذر",
+      label: t("statsCards.declined"),
       value: stats?.declined ?? 0,
       icon: "close-circle-outline",
       bgColor: "#F9EBEA",
@@ -27,13 +27,13 @@ const StatsCards = ({ stats, eventStatus, activeFilter, onFilterPress }) => {
     },
     pending: {
       key: "noResponse",
-      label: "في الانتظار",
+      label: t("statsCards.pending"),
       value: stats?.pending ?? 0,
       icon: "time-outline",
       bgColor: "#F9FAFB",
       textColor: "#4B5563"
     },
-  }), [stats]);
+  }), [stats, t]);
 
   const cards = useMemo(() => {
     if (!eventStatus) {

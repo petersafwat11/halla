@@ -29,7 +29,10 @@
     "stats": {
       "confirmed": "موافق",
       "declined": "معتذر",
-      "noResponse": "لم يرد"
+      "noResponse": "لم يرد",
+      "confirmedCount": "موافق {{count}}",
+      "declinedCount": "معتذر {{count}}",
+      "noResponseCount": "لم يرد {{count}}"
     },
     "untitled": "مناسبة بدون عنوان",
     "unspecified": "غير محدد"
@@ -76,14 +79,31 @@
     "searchModerators": "بحث في المشرفين...",
     "addModerator": "إضافة مشرف",
     "noGuests": "لا يوجد مدعوون بعد",
-    "noModerators": "لا يوجد مشرفون"
+    "noModerators": "لا يوجد مشرفون",
+    "guestsTabCount": "المدعوون ({{count}})",
+    "moderatorsTabCount": "المشرفون ({{count}})"
   },
   "guestList": {
     "title": "قائمة الضيوف",
     "addGuest": "إضافة ضيف",
     "name": "الاسم",
     "phone": "الهاتف",
-    "status": "الحالة"
+    "status": "الحالة",
+    "rotateQrTitle": "تحديث رمز الدخول",
+    "rotateQrBody": "سيتم إنشاء رمز QR جديد للضيف {{name}}. الرمز القديم سيتوقف عن العمل فوراً.",
+    "rotateQrAction": "تحديث",
+    "rotateQrShort": "تحديث رمز QR",
+    "revokeAccessTitle": "إلغاء صلاحية الوصول لمحتوى ما بعد المناسبة",
+    "revokeAccessBody": "سيتم إلغاء صلاحية {{name}} لعرض الصور والتعليقات بعد المناسبة. لإعادة منح صلاحية الدخول، استخدم \"تحديث رمز الدخول\" بدلاً من ذلك.",
+    "revokeAccessAction": "إلغاء الصلاحية",
+    "revokeContentAccess": "إلغاء صلاحية محتوى ما بعد المناسبة",
+    "editGuestAction": "تعديل بيانات الضيف",
+    "deleteGuestAction": "حذف الضيف",
+    "chooseAction": "اختر إجراء",
+    "close": "إغلاق",
+    "guestFallback": "الضيف",
+    "accessRevokedBadge": "صلاحية مُلغاة",
+    "qrUpdatedBadge": "QR محدّث"
   },
   "home": {
     "welcome": "مرحبا",
@@ -151,6 +171,9 @@
     "share": "مشاركة ما بعد المناسبة"
   },
   "manageEvent": "إدارة المناسبة",
+  "alerts": {
+    "errorTitle": "خطأ"
+  },
   "testMessage": {
     "title": "رسالة تجريبية",
     "description": "أرسل رسالة تجريبية للتحقق من محتوى الدعوة قبل الإطلاق",
@@ -163,7 +186,7 @@
     "infoText": "سيتم إرسال نسخة تجريبية من دعوتك إلى هذا الرقم",
     "validation": {
       "phoneRequired": "رقم الجوال مطلوب",
-      "phoneFormat": "يجب أن يبدأ بـ 5 ويتكون من 9 أرقام"
+      "phoneFormat": "رقم الجوال يجب أن يكون 10 أرقام ويبدأ بـ 05 أو 9 أرقام ويبدأ بـ 5"
     }
   },
   "partialFailure": {
@@ -196,7 +219,7 @@
     "staffNameRequired": "اسم المشرف مطلوب",
     "nameRequired": "الاسم مطلوب",
     "phoneRequired": "رقم الجوال مطلوب",
-    "phoneInvalid": "رقم الجوال يجب أن يكون 9 أرقام ويبدأ بـ 5",
+    "phoneInvalid": "رقم الجوال يجب أن يكون 10 أرقام ويبدأ بـ 05 أو 9 أرقام ويبدأ بـ 5",
     "phoneDuplicate": "هذا الرقم موجود بالفعل في القائمة"
   },
   "csv": {
@@ -359,7 +382,10 @@
     "failed": {
       "title": "نعتذر — تعذّر إطلاق مناسبتك",
       "message": "لم نتمكن من إرسال الدعوات لمناسبتك. سنبذل كل جهد لمساعدتك على إطلاقها.",
-      "reason": "سبب الفشل: "
+      "reason": "سبب الفشل: ",
+      "retryError": "تعذّر إطلاق المناسبة. حاول مرة أخرى.",
+      "supportContext": "أحتاج للمساعدة في مناسبتي \"{{title}}\" (معرّف المناسبة: {{eventId}})",
+      "supportContextWithReason": "أحتاج للمساعدة في مناسبتي \"{{title}}\" (معرّف المناسبة: {{eventId}}) — السبب: {{reason}}"
     },
     "retryButton": {
       "retrying": "جارٍ إعادة المحاولة...",
@@ -385,6 +411,39 @@
       "checkedIn": "حضر",
       "declined": "معتذر",
       "invited": "مدعو"
-    }
+    },
+    "sentOn": "أُرسل · {{date}}"
+  },
+  "statsCards": {
+    "confirmed": "حضور",
+    "declined": "اعتذر",
+    "pending": "في الانتظار"
+  },
+  "actions": {
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل"
+  },
+  "makeYourFirst": {
+    "title": "ابدأ بإنشاء أول مناسبة لك مجانا",
+    "subtitle": "لديك تجربة مجانية لدعوة 5 أفراد",
+    "createButton": "إنشاء مناسبتك"
+  },
+  "limitReachedView": {
+    "title": "تم الوصول للحد الأقصى من المناسبات",
+    "message": "لقد وصلت إلى الحد الأقصى لعدد المناسبات المسموح به في باقتك. قم بترقية باقتك لإنشاء مناسبات إضافية.",
+    "goBack": "رجوع"
+  },
+  "moderatorList": {
+    "title": "المشرف",
+    "fallback": "المشرف",
+    "revokedBadge": "مُلغى",
+    "alreadyRevoked": "تم إلغاء صلاحية هذا المشرف بالفعل.",
+    "deleteConfirmTitle": "تأكيد الحذف",
+    "deleteConfirmBody": "هل أنت متأكد من حذف هذا المشرف؟",
+    "deleteAction": "حذف من المناسبة",
+    "revokeConfirmTitle": "إلغاء صلاحية الوصول",
+    "revokeConfirmBody": "سيتم إلغاء صلاحية وصول {{name}} إلى ماسح QR. لن يتمكن من تسجيل دخول الضيوف بعد ذلك.",
+    "revokeAction": "إلغاء صلاحية الوصول"
   }
 }

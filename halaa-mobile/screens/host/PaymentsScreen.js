@@ -11,28 +11,16 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "../../localization";
 import { formatDateTime } from "@halaa/shared/utils/locale";
+import { formatSar } from "@halaa/shared/utils";
 import { isolateLtr } from "@halaa/shared/utils/bidi";
+import { countRatioToken, priceToken } from "@halaa/shared/utils/displayTokens";
 import { useMyPayments } from "../../hooks";
+import LocalizedText from "../../components/commen/LocalizedText";
+import AdaptiveText from "../../components/commen/AdaptiveText";
+import StatusBadge from "../../components/admin-dashboard/common/StatusBadge";
 import TopBar from "../../components/plans/TopBar";
 
 const STATUS_FILTERS = ["all", "completed", "pending", "failed"];
-
-const STATUS_COLORS = {
-  completed: { bg: "#EAF4EF", fg: "#2A8C5B" },
-  pending: { bg: "#FBF3E6", fg: "#D38200" },
-  failed: { bg: "#F9EBEA", fg: "#C0392B" },
-  refunded: { bg: "#E3F2FD", fg: "#1565C0" },
-  cancelled: { bg: "#F9EBEA", fg: "#C0392B" },
-};
-
-const StatusBadge = ({ status, label }) => {
-  const cfg = STATUS_COLORS[status] || STATUS_COLORS.pending;
-  return (
-    <View style={[styles.badge, { backgroundColor: cfg.bg }]}>
-      <Text style={[styles.badgeText, { color: cfg.fg }]}>{label}</Text>
-    </View>
-  );
-};
 
 const PaymentsScreen = () => {
   const { t, currentLanguage } = useTranslation("payments");
@@ -54,10 +42,18 @@ const PaymentsScreen = () => {
     setPage(1);
   };
 
+  // Amounts are atomic isolated tokens: [amount currency], and a refunded
+  // part keeps its parentheses/minus glued inside one LTR isolate so nothing
+  // BiDi-reorders inside Arabic copy (blueprint §6/§9).
   const formatAmount = (item) => {
-    const base = `${item.amount} ${item.currency}`;
+    const base = priceToken(item.amount, item.currency);
     if (item.refundedAmount && item.refundedAmount > 0) {
-      return `${base} (- ${item.refundedAmount})`;
+      const refunded = isolateLtr(
+        `(- ${formatSar(item.refundedAmount, {
+          trimTrailingZeros: true,
+        })} ${item.currency})`
+      );
+      return `${base} ${refunded}`;
     }
     return base;
   };
@@ -67,21 +63,24 @@ const PaymentsScreen = () => {
   const renderRow = (item) => (
     <View key={item.id} style={styles.row}>
       <View style={styles.rowHeader}>
-        <Text style={styles.service} numberOfLines={1}>
+        {/* Backend service name — follows its own script (adaptive). */}
+        <AdaptiveText style={styles.service} numberOfLines={1}>
           {item.service}
-        </Text>
+        </AdaptiveText>
         <StatusBadge
           status={item.status}
+          domain="payment"
           label={t(`table.status.${item.status}`, item.status)}
+          size="small"
         />
       </View>
       <View style={styles.rowMeta}>
         <Text style={styles.amount}>{formatAmount(item)}</Text>
-        <Text style={styles.date}>{formatDate(item.createdAt)}</Text>
+        <LocalizedText style={styles.date}>{formatDate(item.createdAt)}</LocalizedText>
       </View>
       {item.transactionId ? (
-        <Text style={styles.transactionId} numberOfLines={1}>
-          {item.transactionId}
+        <Text style={[styles.transactionId, styles.ltrToken]} numberOfLines={1}>
+          {isolateLtr(item.transactionId)}
         </Text>
       ) : null}
     </View>
@@ -90,7 +89,7 @@ const PaymentsScreen = () => {
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <View style={styles.container}>
-        <TopBar title={t("title", "Payment History")} showBack />
+        <TopBar title={t("title")} showBack />
 
         <View style={styles.filterBar}>
           {STATUS_FILTERS.map((key) => {
@@ -101,14 +100,14 @@ const PaymentsScreen = () => {
                 onPress={() => setFilterAndReset(key)}
                 style={[styles.filterChip, active && styles.filterChipActive]}
               >
-                <Text
+                <LocalizedText
                   style={[
                     styles.filterChipText,
                     active && styles.filterChipTextActive,
                   ]}
                 >
-                  {t(`table.filter.${key === "completed" ? "success" : key === "failed" ? "cancelled" : key}`, key)}
-                </Text>
+                  {t(`table.filter.${key === "completed" ? "success" : key === "failed" ? "cancelled" : key}`)}
+                </LocalizedText>
               </TouchableOpacity>
             );
           })}
@@ -120,13 +119,15 @@ const PaymentsScreen = () => {
           </View>
         ) : error ? (
           <View style={styles.center}>
-            <Text style={styles.errorText}>
-              {error?.message || t("errors.loadFailed", "Failed to load your payments")}
-            </Text>
+            <LocalizedText style={styles.errorText} center>
+              {error?.message || t("errors.loadFailed")}
+            </LocalizedText>
           </View>
         ) : payments.length === 0 ? (
           <View style={styles.center}>
-            <Text style={styles.emptyText}>{t("empty", "No payments yet")}</Text>
+            <LocalizedText style={styles.emptyText} center>
+              {t("empty")}
+            </LocalizedText>
           </View>
         ) : (
           <ScrollView
@@ -143,10 +144,13 @@ const PaymentsScreen = () => {
                   onPress={() => setPage((p) => Math.max(1, p - 1))}
                   style={[styles.pagerBtn, page <= 1 && styles.pagerBtnDisabled]}
                 >
-                  <Text style={styles.pagerBtnText}>{t("pager.prev", "Prev")}</Text>
+                  <LocalizedText style={styles.pagerBtnText}>
+                    {t("pager.prev")}
+                  </LocalizedText>
                 </TouchableOpacity>
+                {/* "page / pages" is one locale-formatted, isolated ratio token. */}
                 <Text style={styles.pagerLabel}>
-                  {isolateLtr(`${pagination.page} / ${pagination.pages}`)}
+                  {countRatioToken(pagination.page, pagination.pages, currentLanguage)}
                 </Text>
                 <TouchableOpacity
                   disabled={page >= pagination.pages}
@@ -156,7 +160,9 @@ const PaymentsScreen = () => {
                     page >= pagination.pages && styles.pagerBtnDisabled,
                   ]}
                 >
-                  <Text style={styles.pagerBtnText}>{t("pager.next", "Next")}</Text>
+                  <LocalizedText style={styles.pagerBtnText}>
+                    {t("pager.next")}
+                  </LocalizedText>
                 </TouchableOpacity>
               </View>
             ) : null}
@@ -225,12 +231,10 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: "#999",
   },
-  badge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+  ltrToken: {
+    writingDirection: "ltr",
+    textAlign: "left",
   },
-  badgeText: { fontFamily: "Cairo_600SemiBold", fontSize: 11 },
   center: {
     flex: 1,
     justifyContent: "center",

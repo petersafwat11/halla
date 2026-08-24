@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
-  Text,
   TouchableOpacity,
   StyleSheet,
   Modal,
@@ -12,10 +11,15 @@ import {
   Platform,
 } from "react-native";
 import TextInput from "../../commen/DirectionalTextInput";
+import LocalizedText from "../../commen/LocalizedText";
+import AdaptiveText from "../../commen/AdaptiveText";
 import { Ionicons } from "@expo/vector-icons";
 import { useUpdatePlan } from "../../../hooks/admin";
 import { useTranslation } from "../../../localization";
 import { useToast } from "../../../contexts/ToastContext";
+import {
+  CONTENT_DIRECTIONS,
+} from "../../../hooks/useInputDirection";
 import {
   colors,
   spacing,
@@ -68,10 +72,20 @@ const toNum = (txt) => {
   return Number.isFinite(n) ? n : null;
 };
 
+/**
+ * Field chrome (label/hint) always follows the UI locale via the shared
+ * field-direction contract, while the value declares its own content mode:
+ *  - Arabic-authored fields → `rtl` (contractually Arabic-only columns);
+ *  - English-authored fields and numeric/ID tokens → `ltr`.
+ */
 const NumberField = ({ label, value, onChangeText, placeholder, hint }) => (
   <View style={styles.fieldWrap}>
-    <Text style={styles.fieldLabel}>{label}</Text>
-    {hint ? <Text style={styles.fieldHint}>{hint}</Text> : null}
+    <FieldLabel>{label}</FieldLabel>
+    {hint ? (
+      <LocalizedText role="hint" style={styles.fieldHint}>
+        {hint}
+      </LocalizedText>
+    ) : null}
     <TextInput
       style={styles.input}
       value={value == null ? "" : String(value)}
@@ -79,13 +93,21 @@ const NumberField = ({ label, value, onChangeText, placeholder, hint }) => (
       keyboardType="numeric"
       placeholder={placeholder}
       placeholderTextColor={colors.natural[350]}
+      contentDirection={CONTENT_DIRECTIONS.LTR}
     />
   </View>
 );
 
-const TextField = ({ label, value, onChangeText, placeholder, multiline }) => (
+const TextField = ({
+  label,
+  value,
+  onChangeText,
+  placeholder,
+  multiline,
+  contentDirection = CONTENT_DIRECTIONS.LOCALIZED,
+}) => (
   <View style={styles.fieldWrap}>
-    <Text style={styles.fieldLabel}>{label}</Text>
+    <FieldLabel>{label}</FieldLabel>
     <TextInput
       style={[styles.input, multiline && styles.textArea]}
       value={value}
@@ -94,13 +116,20 @@ const TextField = ({ label, value, onChangeText, placeholder, multiline }) => (
       placeholderTextColor={colors.natural[350]}
       multiline={multiline}
       numberOfLines={multiline ? 3 : 1}
+      contentDirection={contentDirection}
     />
   </View>
 );
 
+const FieldLabel = ({ children, style }) => (
+  <LocalizedText role="label" style={[styles.fieldLabel, style]}>
+    {children}
+  </LocalizedText>
+);
+
 const SwitchRow = ({ label, value, onValueChange }) => (
   <View style={styles.switchRow}>
-    <Text style={styles.switchLabel}>{label}</Text>
+    <FieldLabel style={styles.switchLabel}>{label}</FieldLabel>
     <Switch
       value={!!value}
       onValueChange={onValueChange}
@@ -128,7 +157,8 @@ const EditPlanModal = ({ visible, onClose, plan, onSave }) => {
   const handleSave = async () => {
     if (!plan?.code) return;
     if (!form.nameAr.trim() || !form.nameEn.trim()) {
-      toast.warning(t("plans.fields.nameAr") + " / " + t("plans.fields.nameEn"));
+      // Single localized validation key — no translated-sentence assembly.
+      toast.warning(t("validation.namesRequired"));
       return;
     }
     const isUnlimitedPlan = plan.planType === "unlimited";
@@ -206,18 +236,24 @@ const EditPlanModal = ({ visible, onClose, plan, onSave }) => {
             {/* Header */}
             <View style={styles.header}>
               <View style={styles.headerText}>
-                <Text style={styles.headerTitle}>{t("plans.editPlan")}</Text>
+                <LocalizedText role="sectionTitle" style={styles.headerTitle}>
+                  {t("plans.editPlan")}
+                </LocalizedText>
                 {plan ? (
-                  <Text style={styles.headerSubtitle} numberOfLines={1}>
-                    {plan.nameEn}
-                  </Text>
+                  // Plan display name is backend content — first-strong.
+                  <AdaptiveText style={styles.headerSubtitle} numberOfLines={1}>
+                    {plan.nameEn || plan.nameAr}
+                  </AdaptiveText>
                 ) : null}
               </View>
               <TouchableOpacity
                 style={styles.closeButton}
                 onPress={handleClose}
                 disabled={updatePlan.isPending}
+                accessibilityRole="button"
+                accessibilityLabel={t("common.cancel")}
               >
+                {/* Close is semantic — never mirrored. */}
                 <Ionicons name="close" size={20} color={colors.natural[500]} />
               </TouchableOpacity>
             </View>
@@ -230,48 +266,75 @@ const EditPlanModal = ({ visible, onClose, plan, onSave }) => {
               showsVerticalScrollIndicator={false}
             >
               {/* ── Identity (read-only chips) ── */}
-              <Text style={styles.sectionLabel}>{t("plans.sections.identity")}</Text>
+              <LocalizedText role="label" style={styles.sectionLabel}>
+                {t("plans.sections.identity")}
+              </LocalizedText>
               <View style={styles.identityRow}>
                 <View style={styles.chip}>
-                  <Text style={styles.chipLabel}>{t("plans.fields.code")}</Text>
-                  <Text style={styles.chipValue}>{plan?.code || "—"}</Text>
+                  <LocalizedText role="caption" style={styles.chipLabel}>
+                    {t("plans.fields.code")}
+                  </LocalizedText>
+                  {/* Canonical plan code — intrinsically LTR token. */}
+                  <LocalizedText
+                    style={[styles.chipValue, styles.ltrValue]}
+                    numberOfLines={1}
+                  >
+                    {plan?.code || "—"}
+                  </LocalizedText>
                 </View>
                 <View style={styles.chip}>
-                  <Text style={styles.chipLabel}>{t("plans.fields.planType")}</Text>
-                  <Text style={styles.chipValue}>{plan?.planType || "—"}</Text>
+                  <LocalizedText role="caption" style={styles.chipLabel}>
+                    {t("plans.fields.planType")}
+                  </LocalizedText>
+                  <LocalizedText
+                    style={[styles.chipValue, styles.ltrValue]}
+                    numberOfLines={1}
+                  >
+                    {plan?.planType || "—"}
+                  </LocalizedText>
                 </View>
               </View>
 
               {/* ── Naming ── */}
-              <Text style={styles.sectionLabel}>{t("plans.sections.naming")}</Text>
+              <LocalizedText role="label" style={styles.sectionLabel}>
+                {t("plans.sections.naming")}
+              </LocalizedText>
               <TextField
                 label={t("plans.fields.nameAr")}
                 value={form.nameAr}
                 onChangeText={(v) => setField("nameAr", v)}
+                contentDirection={CONTENT_DIRECTIONS.RTL}
               />
               <TextField
                 label={t("plans.fields.nameEn")}
                 value={form.nameEn}
                 onChangeText={(v) => setField("nameEn", v)}
+                contentDirection={CONTENT_DIRECTIONS.LTR}
               />
 
               {/* ── Description ── */}
-              <Text style={styles.sectionLabel}>{t("plans.sections.description")}</Text>
+              <LocalizedText role="label" style={styles.sectionLabel}>
+                {t("plans.sections.description")}
+              </LocalizedText>
               <TextField
                 label={t("plans.fields.descriptionAr")}
                 value={form.descriptionAr}
                 onChangeText={(v) => setField("descriptionAr", v)}
                 multiline
+                contentDirection={CONTENT_DIRECTIONS.RTL}
               />
               <TextField
                 label={t("plans.fields.descriptionEn")}
                 value={form.descriptionEn}
                 onChangeText={(v) => setField("descriptionEn", v)}
                 multiline
+                contentDirection={CONTENT_DIRECTIONS.LTR}
               />
 
               {/* ── Pricing ── */}
-              <Text style={styles.sectionLabel}>{t("plans.sections.pricing")}</Text>
+              <LocalizedText role="label" style={styles.sectionLabel}>
+                {t("plans.sections.pricing")}
+              </LocalizedText>
               <NumberField
                 label={t("plans.fields.oneTimePrice")}
                 value={form.oneTime}
@@ -281,7 +344,9 @@ const EditPlanModal = ({ visible, onClose, plan, onSave }) => {
               />
 
               {/* ── Limits ── */}
-              <Text style={styles.sectionLabel}>{t("plans.sections.limits")}</Text>
+              <LocalizedText role="label" style={styles.sectionLabel}>
+                {t("plans.sections.limits")}
+              </LocalizedText>
               <NumberField
                 label={t("plans.fields.maxEvents")}
                 value={form.maxEvents}
@@ -310,7 +375,9 @@ const EditPlanModal = ({ visible, onClose, plan, onSave }) => {
               />
 
               {/* ── Feature numerics ── */}
-              <Text style={styles.sectionLabel}>{t("plans.sections.featureNumerics")}</Text>
+              <LocalizedText role="label" style={styles.sectionLabel}>
+                {t("plans.sections.featureNumerics")}
+              </LocalizedText>
               <NumberField
                 label={t("plans.fields.whatsAppTemplates")}
                 value={form.whatsAppTemplates}
@@ -327,22 +394,28 @@ const EditPlanModal = ({ visible, onClose, plan, onSave }) => {
               />
 
               {/* ── Feature bullets ── */}
-              <Text style={styles.sectionLabel}>{t("plans.sections.featureBullets")}</Text>
+              <LocalizedText role="label" style={styles.sectionLabel}>
+                {t("plans.sections.featureBullets")}
+              </LocalizedText>
               <TextField
                 label={t("plans.fields.featureBulletsAr")}
                 value={form.featureBulletsAr}
                 onChangeText={(v) => setField("featureBulletsAr", v)}
                 multiline
+                contentDirection={CONTENT_DIRECTIONS.RTL}
               />
               <TextField
                 label={t("plans.fields.featureBulletsEn")}
                 value={form.featureBulletsEn}
                 onChangeText={(v) => setField("featureBulletsEn", v)}
                 multiline
+                contentDirection={CONTENT_DIRECTIONS.LTR}
               />
 
               {/* ── Display ── */}
-              <Text style={styles.sectionLabel}>{t("plans.sections.display")}</Text>
+              <LocalizedText role="label" style={styles.sectionLabel}>
+                {t("plans.sections.display")}
+              </LocalizedText>
               <SwitchRow
                 label={t("plans.fields.isPopular")}
                 value={form.isPopular}
@@ -356,7 +429,9 @@ const EditPlanModal = ({ visible, onClose, plan, onSave }) => {
               />
 
               {/* ── Visibility ── */}
-              <Text style={styles.sectionLabel}>{t("plans.sections.visibility")}</Text>
+              <LocalizedText role="label" style={styles.sectionLabel}>
+                {t("plans.sections.visibility")}
+              </LocalizedText>
               <SwitchRow
                 label={t("plans.fields.isActive")}
                 value={form.isActive}
@@ -376,7 +451,9 @@ const EditPlanModal = ({ visible, onClose, plan, onSave }) => {
                 onPress={handleClose}
                 disabled={updatePlan.isPending}
               >
-                <Text style={styles.cancelButtonText}>{t("common.cancel")}</Text>
+                <LocalizedText role="label" style={styles.cancelButtonText}>
+                  {t("common.cancel")}
+                </LocalizedText>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.saveButton, updatePlan.isPending && styles.saveButtonDisabled]}
@@ -386,7 +463,9 @@ const EditPlanModal = ({ visible, onClose, plan, onSave }) => {
                 {updatePlan.isPending ? (
                   <ActivityIndicator size="small" color={colors.natural[50]} />
                 ) : (
-                  <Text style={styles.saveButtonText}>{t("plans.fields.saveChanges")}</Text>
+                  <LocalizedText role="label" style={styles.saveButtonText}>
+                    {t("plans.fields.saveChanges")}
+                  </LocalizedText>
                 )}
               </TouchableOpacity>
             </View>
@@ -493,6 +572,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: typography.fontWeight.semibold,
     color: colors.natural[800],
+  },
+  // Canonical codes/plan types are intrinsically LTR tokens.
+  ltrValue: {
+    writingDirection: "ltr",
   },
 
   // Field

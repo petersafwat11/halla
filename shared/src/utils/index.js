@@ -25,7 +25,15 @@ export {
   isolateLtr,
   isolateRtl,
   isolateAuto,
+  resolveStrongDirection,
+  isolateLtrTokens,
 } from "./bidi.js";
+export {
+  countToken,
+  countRatioToken,
+  priceToken,
+  percentToken,
+} from "./displayTokens.js";
 export {
   formatNumber,
   formatCount,
@@ -78,11 +86,16 @@ export {
   buildMarketplaceVendorUrl,
 } from "./routes.js";
 export {
+  DEFAULT_PHONE_PLACEHOLDER,
+  SAUDI_PHONE_REGEX,
+  clampPhoneInput,
+  getPhoneMaxLength,
   normalizePhoneNumber,
   toE164,
   validateAndFormatPhone,
   isValidPhone,
   formatPhoneDisplay,
+  getPhoneLookupVariants,
 } from "./phone.js";
 export {
   round2,

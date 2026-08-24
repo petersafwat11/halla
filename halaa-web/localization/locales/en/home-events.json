@@ -333,7 +333,7 @@
       "namePlaceholder": "Enter guest name",
       "phone": "Phone",
       "phonePlaceholder": "Enter phone number",
-      "invalidPhone": "Phone number must be 9 digits starting with 5",
+      "invalidPhone": "Phone number must be 10 digits starting with 05 or 9 digits starting with 5",
       "invalidEmail": "Please enter a valid email address",
       "success": "Guest added successfully",
       "error": "Failed to add guest"
@@ -354,7 +354,7 @@
       "emailPlaceholder": "Enter email address",
       "mainStaff": "Main Staff",
       "phoneRequired": "Phone number is required",
-      "invalidPhone": "Phone number must be 9 digits starting with 5",
+      "invalidPhone": "Phone number must be 10 digits starting with 05 or 9 digits starting with 5",
       "nameRequired": "Name must be at least 2 characters",
       "nameMaxLength": "Name cannot exceed 100 characters",
       "success": "Staff added successfully",
@@ -436,7 +436,7 @@
     "error": "Failed to send test message",
     "validation": {
       "phoneRequired": "Phone number is required",
-      "phoneFormat": "Phone number must be 9 digits starting with 5"
+      "phoneFormat": "Phone number must be 10 digits starting with 05 or 9 digits starting with 5"
     }
   },
   "scheduleEvent": {

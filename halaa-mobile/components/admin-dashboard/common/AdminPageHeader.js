@@ -1,13 +1,16 @@
 import React from "react";
 import {
   View,
-  Text,
   TouchableOpacity,
   ScrollView,
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import SearchBar from "./SearchBar";
+import LocalizedText from "../../commen/LocalizedText";
+import { formatCount } from "@halaa/shared/utils/locale";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
+import { useTranslation } from "../../../localization";
 import {
   colors,
   spacing,
@@ -45,6 +48,7 @@ const AdminPageHeader = ({
   activeFilter,
   onFilterChange,
 }) => {
+  const { t, currentLanguage } = useTranslation("admin");
   const hasAdd = typeof onAdd === "function";
   const hasExport = !!exportButton;
   const hasSearch = typeof onSearchChange === "function";
@@ -55,17 +59,18 @@ const AdminPageHeader = ({
 
   return (
     <View style={styles.container}>
-      {/* Action row: export button (left) + add button (right) */}
+      {/* Action row: export at logical start + add at logical end.
+          A plain row mirrors under RTL — the names are logical slots. */}
       {hasActionRow && (
         <View style={styles.actionRow}>
-          <View style={styles.actionRowLeft}>
+          <View style={styles.actionRowStart}>
             {hasExport && exportButton}
           </View>
-          <View style={styles.actionRowRight}>
+          <View style={styles.actionRowEnd}>
             {hasAdd && (
               <TouchableOpacity style={styles.addBtn} onPress={onAdd} activeOpacity={0.8}>
                 <Ionicons name={addIcon} size={18} color={colors.natural[50]} />
-                <Text style={styles.addBtnText}>{addLabel}</Text>
+                <LocalizedText style={styles.addBtnText}>{addLabel}</LocalizedText>
               </TouchableOpacity>
             )}
           </View>
@@ -100,17 +105,19 @@ const AdminPageHeader = ({
                 onPress={() => onFilterChange?.(opt.id)}
                 activeOpacity={0.7}
               >
-                <Text
+                <LocalizedText
                   style={[styles.chipText, active && styles.chipTextActive]}
                   numberOfLines={1}
                 >
                   {opt.label}
-                </Text>
+                </LocalizedText>
                 {opt.count !== undefined && (
                   <View style={[styles.badge, active && styles.badgeActive]}>
-                    <Text style={[styles.badgeText, active && styles.badgeTextActive]}>
-                      {opt.count}
-                    </Text>
+                    {/* Locale digits (٠١٢ / 0-9) in one LTR-isolated token so
+                        the count cannot BiDi-scramble inside the chip. */}
+                    <LocalizedText style={[styles.badgeText, active && styles.badgeTextActive]}>
+                      {isolateLtr(formatCount(opt.count, currentLanguage))}
+                    </LocalizedText>
                   </View>
                 )}
               </TouchableOpacity>
@@ -127,7 +134,7 @@ const styles = StyleSheet.create({
     backgroundColor: backgrounds.artboard,
   },
 
-  /* Action row: export (left) + add (right) */
+  /* Action row: export at logical start + add at logical end */
   actionRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -136,12 +143,12 @@ const styles = StyleSheet.create({
     paddingTop: spacing[8],
     paddingBottom: spacing[4],
   },
-  actionRowLeft: {
+  actionRowStart: {
     flexDirection: "row",
     alignItems: "center",
     gap: spacing[8],
   },
-  actionRowRight: {
+  actionRowEnd: {
     flexDirection: "row",
     alignItems: "center",
     gap: spacing[8],

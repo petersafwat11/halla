@@ -1,10 +1,15 @@
-const test = require("node:test");
+﻿const test = require("node:test");
 const assert = require("node:assert/strict");
 
-const { mobileAccountSettingsSchema } = require("../../../shared/src/schemas/settings.js");
+// The shared schema may be a zod object or a factory returning one (the
+// settings workstream is migrating its signature); resolve either shape and
+// keep messages as opaque `validation.*` keys.
+const exported = require("../../../shared/src/schemas/settings.js")
+  .mobileAccountSettingsSchema;
+const schema = typeof exported === "function" ? exported() : exported;
 
 test("mobileAccountSettingsSchema accepts valid profile without password changes", () => {
-  const result = mobileAccountSettingsSchema.safeParse({
+  const result = schema.safeParse({
     username: "ahmed123",
     name: "Ahmed Al-Saud",
     email: "ahmed@example.com",
@@ -16,7 +21,7 @@ test("mobileAccountSettingsSchema accepts valid profile without password changes
 });
 
 test("mobileAccountSettingsSchema accepts valid password change", () => {
-  const result = mobileAccountSettingsSchema.safeParse({
+  const result = schema.safeParse({
     username: "ahmed123",
     name: "Ahmed Al-Saud",
     email: "ahmed@example.com",
@@ -28,7 +33,7 @@ test("mobileAccountSettingsSchema accepts valid password change", () => {
 });
 
 test("mobileAccountSettingsSchema rejects currentPassword when newPassword is missing", () => {
-  const result = mobileAccountSettingsSchema.safeParse({
+  const result = schema.safeParse({
     username: "ahmed123",
     name: "Ahmed Al-Saud",
     email: "ahmed@example.com",
@@ -43,7 +48,7 @@ test("mobileAccountSettingsSchema rejects currentPassword when newPassword is mi
 });
 
 test("mobileAccountSettingsSchema rejects newPassword when currentPassword is missing", () => {
-  const result = mobileAccountSettingsSchema.safeParse({
+  const result = schema.safeParse({
     username: "ahmed123",
     name: "Ahmed Al-Saud",
     email: "ahmed@example.com",
@@ -58,7 +63,7 @@ test("mobileAccountSettingsSchema rejects newPassword when currentPassword is mi
 });
 
 test("mobileAccountSettingsSchema rejects mismatched new and confirm passwords", () => {
-  const result = mobileAccountSettingsSchema.safeParse({
+  const result = schema.safeParse({
     username: "ahmed123",
     name: "Ahmed Al-Saud",
     email: "ahmed@example.com",
@@ -73,7 +78,7 @@ test("mobileAccountSettingsSchema rejects mismatched new and confirm passwords",
 });
 
 test("mobileAccountSettingsSchema rejects password not meeting complexity policy", () => {
-  const result = mobileAccountSettingsSchema.safeParse({
+  const result = schema.safeParse({
     username: "ahmed123",
     name: "Ahmed Al-Saud",
     email: "ahmed@example.com",
@@ -85,7 +90,7 @@ test("mobileAccountSettingsSchema rejects password not meeting complexity policy
 });
 
 test("mobileAccountSettingsSchema rejects confirmPassword when newPassword is missing", () => {
-  const result = mobileAccountSettingsSchema.safeParse({
+  const result = schema.safeParse({
     username: "ahmed123",
     name: "Ahmed Al-Saud",
     email: "ahmed@example.com",

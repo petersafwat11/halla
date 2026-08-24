@@ -31,5 +31,7 @@ export {
 
 export { LEGAL_CONTACT } from "./contact.js";
 
+export { LEGAL_LTR_TOKEN_REGEX, isolateLegalLtrTokens } from "./tokens.js";
+
 import { LEGAL_DOCUMENTS as _docs } from "./documents.js";
 export default _docs;

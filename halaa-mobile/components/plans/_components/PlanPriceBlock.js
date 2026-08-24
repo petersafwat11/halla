@@ -3,9 +3,18 @@ import { View, Text, StyleSheet } from "react-native";
 import { useTranslation } from "../../../localization";
 import { formatNumber } from "@halaa/shared/utils/locale";
 import { isolateLtr } from "@halaa/shared/utils/bidi";
+import AdaptiveText from "../../commen/AdaptiveText";
 import { colors, spacing, typography } from "../../../styles/tokens";
 import SarIcon from "../../commen/SarIcon";
 
+/**
+ * Plan price header.
+ *
+ * Price contract (blueprint §6): a price is ONE atomic token. The number is
+ * locale-formatted and LTR-isolated, the row keeps [number, SAR glyph] in
+ * stable logical order with no shrink/wrap so digits and glyph can never
+ * split across lines or BiDi-reorder against the plan name.
+ */
 const PlanPriceBlock = ({ planFamily, price, planName }) => {
   const { t, currentLanguage } = useTranslation("plans");
   const name =
@@ -18,7 +27,9 @@ const PlanPriceBlock = ({ planFamily, price, planName }) => {
   return (
     <View style={styles.cardTop}>
       <View style={styles.cardTopRow}>
-        <Text style={styles.cardName}>{name}</Text>
+        <AdaptiveText style={styles.cardName} numberOfLines={2}>
+          {name}
+        </AdaptiveText>
         <View style={styles.priceRow}>
           <Text style={styles.priceNum}>
             {isolateLtr(formatNumber(price || 0, currentLanguage))}
@@ -54,10 +65,12 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: 0,
   },
+  // Atomic price token: number + SAR glyph stay glued in logical order.
   priceRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
+    flexShrink: 0,
   },
   priceNum: {
     fontFamily: "Cairo_700Bold",

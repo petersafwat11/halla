@@ -29,7 +29,26 @@
     "empty": "لا توجد تعليقات بعد. كن الأول!",
     "success": "تم إضافة التعليق",
     "error": "فشل إضافة التعليق",
-    "guestFallback": "ضيف"
+    "guestFallback": "ضيف",
+    "legalPrefix": "بالنشر فإنك تقبل"
+  },
+  "moderation": {
+    "menuReport": "الإبلاغ عن التعليق",
+    "reportPost": "الإبلاغ عن هذا المنشور",
+    "report": "إبلاغ",
+    "menuBlock": "حظر المستخدم",
+    "cancel": "إلغاء",
+    "reportTitle": "الإبلاغ عن هذا التعليق؟",
+    "reportMsg": "اختر السبب",
+    "reasonSpam": "محتوى مزعج",
+    "reasonHarassment": "تحرّش / إساءة",
+    "reasonOther": "أخرى",
+    "reported": "تم الإبلاغ. شكرًا لك.",
+    "blockTitle": "حظر هذا المستخدم؟",
+    "blockMsg": "لن ترى محتواهم بعد الآن.",
+    "block": "حظر",
+    "blocked": "تم الحظر.",
+    "failed": "حدث خطأ ما."
   },
   "like": {
     "error": "فشل تحديث الإعجاب"

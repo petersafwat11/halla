@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   View,
-  Text,
   Modal,
   StyleSheet,
   ScrollView,
@@ -9,6 +8,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import TextInput from "../../commen/DirectionalTextInput";
+import LocalizedText from "../../commen/LocalizedText";
 import { Ionicons } from "@expo/vector-icons";
 import {
   colors,
@@ -21,8 +21,26 @@ import {
 import { useCreateModerator, useUpdateModerator } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
+import { CONTENT_DIRECTIONS } from "../../../hooks/useInputDirection";
+import {
+  clampPhoneInput,
+  getPhoneMaxLength,
+  isValidPhone,
+  DEFAULT_PHONE_PLACEHOLDER,
+} from "@halaa/shared/utils/phone";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/**
+ * Localized field label. The required marker is a nested run — never
+ * string-concatenated onto the translated copy (blueprint §6).
+ */
+const FieldLabel = ({ children, required, style }) => (
+  <LocalizedText style={[styles.label, style]}>
+    {children}
+    {required ? <LocalizedText> *</LocalizedText> : null}
+  </LocalizedText>
+);
 
 const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
   const { t } = useTranslation("admin");
@@ -88,10 +106,12 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
       e.email = t("moderators.add.invalidEmail");
     }
     if (!isEdit && formData.password.trim() && formData.password.trim().length < 8) {
-      e.password = t("moderators.add.passwordMin", "Password must be at least 8 characters");
+      e.password = t("moderators.add.passwordMin");
     }
     if (!isEdit && !formData.phoneNumber.trim()) {
       e.phoneNumber = t("moderators.add.phoneRequired");
+    } else if (formData.phoneNumber.trim() && !isValidPhone(formData.phoneNumber.trim())) {
+      e.phoneNumber = t("validation.invalidSaudiPhone");
     }
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -142,10 +162,11 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
           <View style={styles.handle} />
 
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>
+            <LocalizedText style={styles.headerTitle}>
               {isEdit ? t("moderators.add.editTitle") : t("moderators.add.title")}
-            </Text>
+            </LocalizedText>
             <TouchableOpacity style={styles.closeBtn} onPress={handleClose}>
+              {/* Close is semantic — never mirrored. */}
               <Ionicons name="close" size={24} color={colors.natural[900]} />
             </TouchableOpacity>
           </View>
@@ -156,7 +177,7 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
             keyboardShouldPersistTaps="handled"
           >
             <View style={styles.field}>
-              <Text style={styles.label}>{t("moderators.add.name")} *</Text>
+              <FieldLabel required>{t("moderators.add.name")}</FieldLabel>
               <View
                 style={[styles.inputRow, errors.name && styles.inputRowError]}
               >
@@ -166,6 +187,7 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
                   color={colors.primary[500]}
                   style={styles.inputIcon}
                 />
+                {/* Person names are arbitrary user content (blueprint §5.3). */}
                 <TextInput
                   style={styles.input}
                   placeholder={t("moderators.add.name")}
@@ -173,15 +195,16 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
                   value={formData.name}
                   onChangeText={(v) => updateField("name", v)}
                   editable={!saving}
+                  contentDirection={CONTENT_DIRECTIONS.ADAPTIVE}
                 />
               </View>
               {errors.name ? (
-                <Text style={styles.errorText}>{errors.name}</Text>
+                <LocalizedText style={styles.errorText}>{errors.name}</LocalizedText>
               ) : null}
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.label}>{t("moderators.add.email")} *</Text>
+              <FieldLabel required>{t("moderators.add.email")}</FieldLabel>
               <View
                 style={[styles.inputRow, errors.email && styles.inputRowError]}
               >
@@ -203,13 +226,13 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
                 />
               </View>
               {errors.email ? (
-                <Text style={styles.errorText}>{errors.email}</Text>
+                <LocalizedText style={styles.errorText}>{errors.email}</LocalizedText>
               ) : null}
             </View>
 
             {!isEdit ? (
               <View style={styles.field}>
-                <Text style={styles.label}>{t("moderators.add.password")}</Text>
+                <FieldLabel>{t("moderators.add.password")}</FieldLabel>
                 <View
                   style={[
                     styles.inputRow,
@@ -224,7 +247,7 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
                   />
                   <TextInput
                     style={styles.input}
-                    placeholder={t("moderators.add.passwordPlaceholder", "Leave blank to auto-generate")}
+                    placeholder={t("moderators.add.passwordPlaceholder")}
                     placeholderTextColor={colors.natural[350]}
                     value={formData.password}
                     onChangeText={(v) => updateField("password", v)}
@@ -233,15 +256,15 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
                   />
                 </View>
                 {errors.password ? (
-                  <Text style={styles.errorText}>{errors.password}</Text>
+                  <LocalizedText style={styles.errorText}>{errors.password}</LocalizedText>
                 ) : null}
               </View>
             ) : null}
 
             <View style={styles.field}>
-              <Text style={styles.label}>
-                {isEdit ? t("moderators.add.phone") : t("moderators.add.phoneRequired") + " *"}
-              </Text>
+              <FieldLabel required>
+                {isEdit ? t("moderators.add.phone") : t("moderators.add.phoneRequired")}
+              </FieldLabel>
               <View style={[styles.inputRow, errors.phoneNumber && styles.inputRowError]}>
                 <Ionicons
                   name="call-outline"
@@ -251,21 +274,22 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
                 />
                 <TextInput
                   style={styles.input}
-                  placeholder={t("moderators.add.phoneRequired")}
+                  placeholder={DEFAULT_PHONE_PLACEHOLDER}
                   placeholderTextColor={colors.natural[350]}
                   value={formData.phoneNumber}
-                  onChangeText={(v) => updateField("phoneNumber", v)}
+                  maxLength={getPhoneMaxLength(formData.phoneNumber)}
+                  onChangeText={(v) => updateField("phoneNumber", clampPhoneInput(v))}
                   keyboardType="phone-pad"
                   editable={!saving}
                 />
               </View>
               {errors.phoneNumber ? (
-                <Text style={styles.errorText}>{errors.phoneNumber}</Text>
+                <LocalizedText style={styles.errorText}>{errors.phoneNumber}</LocalizedText>
               ) : null}
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.label}>{t("moderators.add.role")} *</Text>
+              <FieldLabel required>{t("moderators.add.role")}</FieldLabel>
               <View style={styles.roleList}>
                 {ROLE_OPTIONS.map((opt) => {
                   const selected = formData.role === opt.id;
@@ -280,15 +304,17 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
                       disabled={saving}
                     >
                       <View style={styles.roleInfo}>
-                        <Text
+                        <LocalizedText
                           style={[
                             styles.roleName,
                             selected && styles.roleNameSelected,
                           ]}
                         >
                           {opt.label}
-                        </Text>
-                        <Text style={styles.roleDesc}>{opt.description}</Text>
+                        </LocalizedText>
+                        <LocalizedText style={styles.roleDesc}>
+                          {opt.description}
+                        </LocalizedText>
                       </View>
                       {selected ? (
                         <Ionicons
@@ -316,7 +342,9 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
               onPress={handleClose}
               disabled={saving}
             >
-              <Text style={styles.cancelBtnText}>{t("moderators.add.cancel")}</Text>
+              <LocalizedText style={styles.cancelBtnText}>
+                {t("moderators.add.cancel")}
+              </LocalizedText>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.footerBtn, styles.saveBtn]}
@@ -326,9 +354,9 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
               {saving ? (
                 <ActivityIndicator size="small" color={colors.natural[50]} />
               ) : (
-                <Text style={styles.saveBtnText}>
+                <LocalizedText style={styles.saveBtnText}>
                   {isEdit ? t("moderators.add.saveChanges") : t("moderators.addModerator")}
-                </Text>
+                </LocalizedText>
               )}
             </TouchableOpacity>
           </View>

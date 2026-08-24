@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { formatDate, formatTime, formatGuestCount, formatCount } from "@halaa/shared/utils/locale";
 import { getStatusVisual } from "../../constants/statusColors";
 import { useTranslation } from "../../localization";
+import AdaptiveText from "../commen/AdaptiveText";
 
 const EventListItem = ({ event, onPress }) => {
   const { t, currentLanguage } = useTranslation("events");
@@ -60,9 +61,11 @@ const EventListItem = ({ event, onPress }) => {
           </View>
 
           <View style={styles.info}>
-            <Text style={styles.title} numberOfLines={1}>
+            {/* Event titles are arbitrary backend content — first-strong
+                direction with isolation, not the page locale. */}
+            <AdaptiveText style={styles.title} numberOfLines={1}>
               {titleText}
-            </Text>
+            </AdaptiveText>
             <View style={styles.detailRow}>
               <Ionicons name="calendar-outline" size={12} color="#9CA3AF" />
               <Text style={styles.detailText}>{formatDateTimeStr()}</Text>
@@ -81,24 +84,35 @@ const EventListItem = ({ event, onPress }) => {
         </View>
       </View>
 
-      {/* Stats row — 3 equal-width flex columns */}
+      {/* Stats row — 3 equal-width flex columns. Label + count live in one
+          interpolated translation string so punctuation/digit order is
+          authored per locale, never concatenated in JSX. */}
       <View style={styles.statsRow}>
         <View style={styles.statItem}>
           <View style={[styles.statDot, { backgroundColor: confirmedDot }]} />
           <Text style={styles.statText} numberOfLines={1}>
-            {t("list.stats.confirmed", { defaultValue: "موافق" })} {formatCount(confirmed, currentLanguage)}
+            {t("list.stats.confirmedCount", {
+              defaultValue: "موافق {{count}}",
+              count: formatCount(confirmed, currentLanguage),
+            })}
           </Text>
         </View>
         <View style={styles.statItem}>
           <View style={[styles.statDot, { backgroundColor: declinedDot }]} />
           <Text style={styles.statText} numberOfLines={1}>
-            {t("list.stats.declined", { defaultValue: "معتذر" })} {formatCount(declined, currentLanguage)}
+            {t("list.stats.declinedCount", {
+              defaultValue: "معتذر {{count}}",
+              count: formatCount(declined, currentLanguage),
+            })}
           </Text>
         </View>
         <View style={styles.statItem}>
           <View style={[styles.statDot, { backgroundColor: noResponseDot }]} />
           <Text style={styles.statText} numberOfLines={1}>
-            {t("list.stats.noResponse", { defaultValue: "لم يرد" })} {formatCount(noResponse, currentLanguage)}
+            {t("list.stats.noResponseCount", {
+              defaultValue: "لم يرد {{count}}",
+              count: formatCount(noResponse, currentLanguage),
+            })}
           </Text>
         </View>
       </View>

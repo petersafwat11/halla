@@ -37,8 +37,11 @@ const TextAreaField = ({
   const [isFocused, setIsFocused] = React.useState(false);
   const inputRef = React.useRef(null);
   const formValue = value ?? "";
+  // The raw value is required so `adaptive` mode recomputes its first-strong
+  // writing direction on every controlled change (blueprint §5.1).
   const fieldDirection = useFieldDirection(contentDirection, {
     hasValue: formValue.length > 0,
+    value: formValue,
   });
 
   return (

@@ -1,9 +1,10 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 import PropTypes from "prop-types";
-import { borderRadius, typography, spacing } from "../../../styles/tokens";
+import { borderRadius, spacing, typography } from "../../../styles/tokens";
 import { getStatusVisual } from "../../../constants/statusColors";
 import { useTranslation } from "../../../localization";
+import LocalizedText from "../../commen/LocalizedText";
 
 // Status strings can arrive from several admin domains (events, vendors,
 // hosts, businesses). Their human labels live under those subtrees in the
@@ -16,6 +17,10 @@ const STATUS_LABEL_GROUPS = [
   "hosts.status",
   "businesses.status",
   "discounts.status",
+  // Last so domain groups keep winning overlapping enums; this entry only
+  // fills the payment-only statuses (authorized/captured/paid/
+  // partially_refunded/voided) on payment list/detail surfaces.
+  "payments.status",
 ];
 
 const titleCase = (status) =>
@@ -35,9 +40,12 @@ const titleCase = (status) =>
  * @param {Object} props
  * @param {string} props.status - Status value (active, suspended, pending, etc.)
  * @param {string} [props.domain] - Optional domain for overrides ("payment" | "subscription" | "delivery").
- * @param {string} props.size - Badge size: small or medium
+ * @param {string} [props.label] - Optional pre-translated label. When given it
+ *   wins over the admin-namespace probing, so domains that own their status
+ *   vocabulary (e.g. payments) keep localized labels in every UI language.
+ * @param {props.size} props.size - Badge size: small or medium
  */
-const StatusBadge = ({ status, domain, size = "medium" }) => {
+const StatusBadge = ({ status, domain, label, size = "medium" }) => {
   const { t } = useTranslation("admin");
 
   const getStatusColor = () => {
@@ -46,6 +54,7 @@ const StatusBadge = ({ status, domain, size = "medium" }) => {
   };
 
   const getStatusLabel = () => {
+    if (label) return label;
     const fallback = titleCase(status);
     for (const group of STATUS_LABEL_GROUPS) {
       const key = `${group}.${status}`;
@@ -67,7 +76,7 @@ const StatusBadge = ({ status, domain, size = "medium" }) => {
         isSmall && styles.badgeSmall,
       ]}
     >
-      <Text
+      <LocalizedText
         style={[
           styles.text,
           { color: statusColors.text },
@@ -75,7 +84,7 @@ const StatusBadge = ({ status, domain, size = "medium" }) => {
         ]}
       >
         {getStatusLabel()}
-      </Text>
+      </LocalizedText>
     </View>
   );
 };
@@ -83,6 +92,7 @@ const StatusBadge = ({ status, domain, size = "medium" }) => {
 StatusBadge.propTypes = {
   status: PropTypes.string.isRequired,
   domain: PropTypes.string,
+  label: PropTypes.string,
   size: PropTypes.oneOf(["small", "medium"]),
 };
 

@@ -1,8 +1,10 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../../localization";
-import { formatDate } from "@halaa/shared/utils/locale";
+import { formatDate, formatTime, formatCount, formatLocation } from "@halaa/shared/utils/locale";
+import AdaptiveText from "../../commen/AdaptiveText";
+import LocalizedText from "../../commen/LocalizedText";
 import {
   colors,
   spacing,
@@ -22,19 +24,33 @@ const EventCard = ({ event, onPress }) => {
     .replace(/[_-]/g, " ")
     .replace(/\b\w/g, (c) => c.toUpperCase());
 
+  // Date/time are always shown as locale-formatted values, never the raw
+  // stored "6:30 PM" string (blueprint §5.3).
+  const dateStr = formatDate(event.date, currentLanguage);
+  const timeStr = event.time ? formatTime(event.time, currentLanguage) : null;
+  const whenText = timeStr
+    ? t("hostEvents.dateWithTime", { date: dateStr, time: timeStr })
+    : t("hostEvents.dateOnly", { date: dateStr });
+
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.75}>
       <View style={[styles.strip, { backgroundColor: statusColor }]} />
       <View style={styles.cardContent}>
         {/* Title + status chip */}
         <View style={styles.topRow}>
-          <Text style={styles.eventTitle} numberOfLines={1}>
-            {event.title || t("hostEvents.untitled")}
-          </Text>
+          {event.title ? (
+            <AdaptiveText style={styles.eventTitle} numberOfLines={1}>
+              {event.title}
+            </AdaptiveText>
+          ) : (
+            <LocalizedText style={styles.eventTitle} numberOfLines={1}>
+              {t("hostEvents.untitled")}
+            </LocalizedText>
+          )}
           <View style={[styles.statusChip, { backgroundColor: statusVisual.bg }]}>
-            <Text style={[styles.statusText, { color: statusColor }]}>
+            <LocalizedText style={[styles.statusText, { color: statusColor }]}>
               {t(`hostEvents.statuses.${rawStatus}`, humanizedStatus)}
-            </Text>
+            </LocalizedText>
           </View>
         </View>
 
@@ -42,19 +58,22 @@ const EventCard = ({ event, onPress }) => {
         {event.date && (
           <View style={styles.meta}>
             <Ionicons name="calendar-outline" size={12} color={colors.natural[450]} />
-            <Text style={styles.metaText}>
-              {formatDate(event.date, currentLanguage)}{event.time ? `  •  ${event.time}` : ""}
-            </Text>
+            <LocalizedText style={styles.metaText} numberOfLines={1}>
+              {whenText}
+            </LocalizedText>
           </View>
         )}
 
         {/* Location */}
-        {event.location?.address && (
+        {(event.location?.address || event.location?.city) && (
           <View style={styles.meta}>
             <Ionicons name="location-outline" size={12} color={colors.natural[450]} />
-            <Text style={styles.metaText} numberOfLines={1}>
-              {[event.location.address, event.location.city].filter(Boolean).join(", ")}
-            </Text>
+            <AdaptiveText style={styles.metaText} numberOfLines={1}>
+              {formatLocation(
+                { address: event.location.address, city: event.location.city },
+                currentLanguage
+              )}
+            </AdaptiveText>
           </View>
         )}
 
@@ -62,19 +81,21 @@ const EventCard = ({ event, onPress }) => {
         <View style={styles.statsRow}>
           <View style={styles.stat}>
             <Ionicons name="people-outline" size={12} color={colors.primary[500]} />
-            <Text style={styles.statText}>{t("hostEvents.guests", { count: event.guestListLength ?? 0 })}</Text>
+            <LocalizedText style={styles.statText}>
+              {t("hostEvents.guests", { count: formatCount(event.guestListLength ?? 0, currentLanguage) })}
+            </LocalizedText>
           </View>
           <View style={styles.stat}>
             <Ionicons name="checkmark-circle-outline" size={12} color={colors.success[500]} />
-            <Text style={[styles.statText, { color: colors.success[500] }]}>
-              {t("hostEvents.confirmed", { count: event.totalConfirmed ?? 0 })}
-            </Text>
+            <LocalizedText style={[styles.statText, { color: colors.success[500] }]}>
+              {t("hostEvents.confirmed", { count: formatCount(event.totalConfirmed ?? 0, currentLanguage) })}
+            </LocalizedText>
           </View>
           <View style={styles.stat}>
             <Ionicons name="close-circle-outline" size={12} color={colors.error[500]} />
-            <Text style={[styles.statText, { color: colors.error[500] }]}>
-              {t("hostEvents.declined", { count: event.totalDeclined ?? 0 })}
-            </Text>
+            <LocalizedText style={[styles.statText, { color: colors.error[500] }]}>
+              {t("hostEvents.declined", { count: formatCount(event.totalDeclined ?? 0, currentLanguage) })}
+            </LocalizedText>
           </View>
         </View>
       </View>
@@ -83,14 +104,16 @@ const EventCard = ({ event, onPress }) => {
 };
 
 const HostEventsList = ({ events = [], onEventPress }) => {
-  const { t } = useTranslation("admin");
+  const { t, currentLanguage } = useTranslation("admin");
   return (
     <View style={styles.section}>
       {/* Section header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>{t("hostEvents.title")}</Text>
+        <LocalizedText style={styles.headerTitle}>{t("hostEvents.title")}</LocalizedText>
         <View style={styles.countBadge}>
-          <Text style={styles.countText}>{events.length}</Text>
+          <LocalizedText style={styles.countText}>
+            {formatCount(events.length, currentLanguage)}
+          </LocalizedText>
         </View>
       </View>
 
@@ -98,7 +121,7 @@ const HostEventsList = ({ events = [], onEventPress }) => {
       {events.length === 0 ? (
         <View style={styles.empty}>
           <Ionicons name="calendar-outline" size={36} color={colors.natural[300]} />
-          <Text style={styles.emptyText}>{t("hostEvents.empty")}</Text>
+          <LocalizedText style={styles.emptyText}>{t("hostEvents.empty")}</LocalizedText>
         </View>
       ) : (
         events.map((ev) => (

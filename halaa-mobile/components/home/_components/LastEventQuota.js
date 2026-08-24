@@ -1,16 +1,20 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { Text, StyleSheet } from "react-native";
 import { useTranslation } from "../../../localization";
+import { formatCount } from "@halaa/shared/utils/locale";
 
 export default function LastEventQuota({ quota }) {
-  const { t } = useTranslation("home");
+  const { t, currentLanguage } = useTranslation("home");
+  const locale = currentLanguage || "ar";
   if (!quota) return null;
 
   // Backend returns null for unlimited, a number (including 0) otherwise.
+  // The number is formatted with the locale's digit system as one atomic
+  // token; "unlimited" is authored copy.
   const remaining =
     quota.remainingInvites == null
       ? t("lastEvent.quota.unlimited")
-      : quota.remainingInvites;
+      : formatCount(quota.remainingInvites, locale);
 
   return (
     <View style={styles.quotaRow}>

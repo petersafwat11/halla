@@ -99,12 +99,14 @@ const AdminEventList = ({
 
   const handleBulkCancel = (ids) => {
     Alert.alert(
-      t("events.details.cancel", "Cancel Events"),
-      `${t("events.details.cancelConfirm", "Cancel")} ${ids.length} event(s)?`,
+      t("events.details.cancel"),
+      t("events.details.bulkCancelConfirmBody", {
+        count: ids.length,
+      }),
       [
         { text: t("common.cancel"), style: "cancel" },
         {
-          text: t("events.details.cancel", "Cancel Events"),
+          text: t("events.details.cancel"),
           style: "destructive",
           onPress: async () => {
             try {
@@ -123,7 +125,9 @@ const AdminEventList = ({
   const handleBulkDelete = (ids) => {
     Alert.alert(
       t("common.deleteConfirmTitle"),
-      `${t("common.delete")} ${ids.length} event(s)? ${t("common.deleteConfirmMessage")}`,
+      t("events.details.bulkDeleteConfirmBody", {
+        count: ids.length,
+      }),
       [
         { text: t("common.cancel"), style: "cancel" },
         {
@@ -146,7 +150,7 @@ const AdminEventList = ({
   const bulkActions = [
     canEdit && {
       icon: "close-circle-outline",
-      label: t("events.details.cancel", "Cancel"),
+      label: t("events.details.cancel"),
       color: colors.warning[600],
       bg: "#fff4e0",
       loading: bulkCancel.isPending,

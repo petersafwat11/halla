@@ -38,30 +38,18 @@ import {
   invitationAllowsReply,
 } from "../../utils/invitationTypes";
 
-const CATEGORY_LABELS_AR = {
-  wedding: "حفل زفاف",
-  birthday: "عيد ميلاد",
-  graduation: "حفل تخرج",
-  engagement: "خطوبة",
-  conference: "مؤتمر",
-  meeting: "اجتماع",
-  other: "أخرى",
-};
-
+// Category names resolve through the `event_types.*` translation keys —
+// no hardcoded Arabic label dictionary here.
 const REPLY_TABS = [
   {
     key: "onAttend",
     labelKey: "auto_replies_tab_attending",
-    fallback: "الحضور",
     defaultKey: "auto_replies_default_attending",
-    defaultText: "شكرًا لتأكيد حضورك! يسعدنا أن تكون معنا في هذه المناسبة. 🎉",
   },
   {
     key: "onAbsent",
     labelKey: "auto_replies_tab_absence",
-    fallback: "الاعتذار",
     defaultKey: "auto_replies_default_absence",
-    defaultText: "شكراً لإعلامنا. نتفهم ظروفك ونتمنى لك دوام الصحة والسعادة. 🌹",
   },
 ];
 
@@ -76,7 +64,7 @@ const StepFour = () => {
   const fieldDirection = useFieldDirection("localized");
 
   const categoryLabel = (cat) =>
-    cat ? t(`event_types.${cat}`, CATEGORY_LABELS_AR[cat] || cat) : "";
+    cat ? t(`event_types.${cat}`) : "";
 
   const visualTemplate = watch("visualTemplate");
   const selectedTemplate = watch("selectedTemplate");
@@ -101,7 +89,7 @@ const StepFour = () => {
       ? formatDate(eventDate, currentLanguage || "ar")
       : "";
     return buildTaqnyatPreviewContext({
-      guestName: t("preview_guest_placeholder", "ضيفنا الكريم"),
+      guestName: t("preview_guest_placeholder"),
       eventTitle: eventName,
       dateFormatted,
       eventTime,
@@ -128,7 +116,7 @@ const StepFour = () => {
   useEffect(() => {
     REPLY_TABS.forEach((tab) => {
       if (!guestReplies?.[tab.key]) {
-        setValue(`guestReplies.${tab.key}`, t(tab.defaultKey, tab.defaultText), { shouldDirty: false });
+        setValue(`guestReplies.${tab.key}`, t(tab.defaultKey), { shouldDirty: false });
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -182,12 +170,9 @@ const StepFour = () => {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* ── Invitation type ──────────────────────────────────── */}
         <View style={styles.inviteTypeSection}>
-          <Text style={[styles.sectionTitle, fieldDirection.text]}>{t("invitation_type", "نوع الدعوة")}</Text>
+          <Text style={[styles.sectionTitle, fieldDirection.text]}>{t("invitation_type")}</Text>
           <Text style={[styles.hint, fieldDirection.text]}>
-            {t(
-              "invitation_type_hint",
-              "حدّد الرسالة التي تصل بعد تأكيد الضيف، أو أرسل دعوة نصية فقط بدون أزرار."
-            )}
+            {t("invitation_type_hint")}
           </Text>
           <View style={styles.inviteTypeList}>
             {INVITATION_TYPE_OPTIONS.map((opt) => {
@@ -232,7 +217,7 @@ const StepFour = () => {
                         {opt.badgeKey && (
                           <View style={styles.featureBadge}>
                             <Text style={styles.featureBadgeText}>
-                              {t(opt.badgeKey, "شامل رمز الدخول")}
+                              {t(opt.badgeKey)}
                             </Text>
                           </View>
                         )}
@@ -291,7 +276,7 @@ const StepFour = () => {
                               !feat.included && styles.featureChipTextExcluded,
                             ]}
                           >
-                            {t(feat.labelKey, feat.fallback)}
+                            {t(feat.labelKey)}
                           </Text>
                         </View>
                       ))}
@@ -338,15 +323,15 @@ const StepFour = () => {
         ) : error ? (
           <View style={styles.emptyBox}>
             <Ionicons name="alert-circle-outline" size={36} color="#C0392B" />
-            <Text style={[styles.emptyTitle, fieldDirection.text]}>{t("taqnyat_load_failed", "تعذّر تحميل القوالب")}</Text>
-            <Text style={styles.emptyHint}>{t("try_again_later", "حاول مرة أخرى لاحقاً")}</Text>
+            <Text style={[styles.emptyTitle, fieldDirection.text]}>{t("taqnyat_load_failed")}</Text>
+            <Text style={styles.emptyHint}>{t("try_again_later")}</Text>
           </View>
         ) : templates.length === 0 ? (
           <View style={styles.emptyBox}>
             <Ionicons name="mail-outline" size={36} color="#999" />
-            <Text style={[styles.emptyTitle, fieldDirection.text]}>{t("no_taqnyat_templates", "لا توجد قوالب لهذه الفئة")}</Text>
+            <Text style={[styles.emptyTitle, fieldDirection.text]}>{t("no_taqnyat_templates")}</Text>
             <Text style={styles.emptyHint}>
-              {t("no_taqnyat_templates_hint", "تواصل مع الإدارة لتعيين قوالب لفئتك")}
+              {t("no_taqnyat_templates_hint")}
             </Text>
           </View>
         ) : (
@@ -420,7 +405,7 @@ const StepFour = () => {
                     activeOpacity={0.85}
                   >
                     <Text style={[styles.tabBtnText, activeTab === tab.key && styles.tabBtnTextActive]}>
-                      {t(tab.labelKey, tab.fallback)}
+                      {t(tab.labelKey)}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -440,10 +425,7 @@ const StepFour = () => {
           ) : (
             <View style={styles.repliesDisabledNote}>
               <Text style={[styles.repliesDisabledText, fieldDirection.text]}>
-                {t(
-                  "auto_replies_disabled_note",
-                  "لا تحتوي هذه الدعوة على إمكانية الرد، لذلك لن تُرسل ردود تلقائية."
-                )}
+                {t("auto_replies_disabled_note")}
               </Text>
             </View>
           )}

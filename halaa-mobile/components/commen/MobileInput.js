@@ -9,16 +9,21 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useFormContext, Controller } from "react-hook-form";
 import { isolateLtr } from "@halaa/shared/utils/bidi";
+import {
+  clampPhoneInput,
+  getPhoneMaxLength,
+  DEFAULT_PHONE_PLACEHOLDER,
+} from "@halaa/shared/utils/phone";
 import { useFieldDirection } from "../../hooks/useInputDirection";
 
 /**
  * Hoisted field renderer to satisfy Rules-of-Hooks and stabilize focus state.
  */
-const MobileInputField = ({
+export const MobileInputField = ({
   label,
   placeholder,
   disabled,
-  countryCode,
+  countryCode = "+966",
   value,
   error,
   helper,
@@ -32,6 +37,7 @@ const MobileInputField = ({
   const hasValue = !!value && String(value).length > 0;
   // "phone": localized (RTL) placeholder while empty, LTR digits once non-empty
   const fieldDirection = useFieldDirection("phone", { hasValue });
+  const resolvedPlaceholder = placeholder || DEFAULT_PHONE_PLACEHOLDER;
 
   return (
     <View style={styles.container}>
@@ -58,10 +64,11 @@ const MobileInputField = ({
           {...extraProps}
           ref={inputRef}
           style={[styles.input, fieldDirection.input]}
-          placeholder={placeholder}
+          placeholder={resolvedPlaceholder}
           placeholderTextColor="#999"
           value={value || ""}
-          onChangeText={onChange}
+          maxLength={getPhoneMaxLength(value)}
+          onChangeText={(text) => onChange?.(clampPhoneInput(text))}
           onBlur={() => {
             setIsFocused(false);
             onBlur?.();
@@ -91,7 +98,26 @@ const MobileInput = ({
   rules,
   ...props
 }) => {
-  const { control } = useFormContext();
+  const formContext = useFormContext();
+
+  if (!formContext) {
+    return (
+      <MobileInputField
+        label={label}
+        placeholder={placeholder}
+        disabled={disabled}
+        countryCode={countryCode}
+        value={props.value}
+        error={props.error}
+        helper={helper}
+        onChange={props.onChangeText || props.onChange}
+        onBlur={props.onBlur}
+        extraProps={props}
+      />
+    );
+  }
+
+  const { control } = formContext;
 
   return (
     <Controller

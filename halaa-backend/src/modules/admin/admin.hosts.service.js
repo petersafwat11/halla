@@ -21,7 +21,7 @@ const mongoose = require('mongoose');
 const notificationService = require('../notifications/notifications.service');
 const logger = require('../../shared/utils/logger');
 const { buildSearchQuery, buildDateRangeQuery, formatUserResponse } = require('./admin.shared.service');
-const { normalizePhoneNumber } = require('../../shared/utils/phone');
+const { normalizePhoneNumber, getPhoneLookupVariants } = require('../../shared/utils/phone');
 const { personalHostFilter } = require('../../shared/utils/accountScope');
 const subscriptionLifecycle = require('../subscriptions/subscriptionLifecycle.service');
 
@@ -422,9 +422,16 @@ async function bulkDeleteHosts(hostIds) {
  * Verify host by phone number
  */
 async function verifyHostByPhone(phoneNumber) {
-  const query = { phoneNumber, role: ROLES.HOST };
+  const variants = getPhoneLookupVariants(phoneNumber);
+  const query = {
+    $or: [
+      { phoneNumber: { $in: variants } },
+      { mobile: { $in: variants } },
+    ],
+    role: ROLES.HOST,
+  };
 
-  const host = await User.findOne(query).select('_id username name email phoneNumber status').lean();
+  const host = await User.findOne(query).select('_id username name email phoneNumber mobile status').lean();
 
   return {
     exists: !!host,
@@ -436,7 +443,14 @@ async function verifyHostByPhone(phoneNumber) {
  * Find or create host
  */
 async function findOrCreateHost({ phoneNumber, name, email }) {
-  const query = { phoneNumber, role: ROLES.HOST };
+  const variants = getPhoneLookupVariants(phoneNumber);
+  const query = {
+    $or: [
+      { phoneNumber: { $in: variants } },
+      { mobile: { $in: variants } },
+    ],
+    role: ROLES.HOST,
+  };
 
   let host = await User.findOne(query);
 

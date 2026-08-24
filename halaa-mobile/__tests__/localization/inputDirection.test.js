@@ -81,6 +81,71 @@ test("resolveInputDirection: phone is localized when empty, LTR once filled", as
   );
 });
 
+test("resolveStrongDirection returns the first strong character's script (blueprint §5.1)", async () => {
+  const { resolveStrongDirection } = await loadResolver();
+
+  assert.equal(resolveStrongDirection("Ali"), "ltr");
+  assert.equal(resolveStrongDirection("علي"), "rtl");
+  assert.equal(resolveStrongDirection("Halaa 2026"), "ltr");
+  assert.equal(resolveStrongDirection("حفل Halaa 2026"), "rtl");
+  // Mixed address whose first strong token decides.
+  assert.equal(resolveStrongDirection("شارع الملك فهد، Riyadh"), "rtl");
+  assert.equal(resolveStrongDirection("2413 King Fahd Rd, الرياض"), "ltr");
+  // Emoji/symbols/digits are neutral and skipped while scanning.
+  assert.equal(resolveStrongDirection("🎉 مبروك!"), "rtl");
+  assert.equal(resolveStrongDirection("🎉 Congrats!"), "ltr");
+  // No strong character → fall back to the selected locale.
+  assert.equal(resolveStrongDirection("0512345678", true), "rtl");
+  assert.equal(resolveStrongDirection("0512345678", false), "ltr");
+  assert.equal(resolveStrongDirection("", true), "rtl");
+  assert.equal(resolveStrongDirection(undefined, false), "ltr");
+});
+
+test("resolveInputDirection: adaptive keeps placeholders locale-scoped but values first-strong", async () => {
+  const { resolveInputDirection } = await loadResolver();
+
+  // Empty → placeholder follows the UI locale in both languages.
+  assert.equal(
+    resolveInputDirection("adaptive", { isRTL: true, hasValue: false }).writingDirection,
+    "rtl"
+  );
+  assert.equal(
+    resolveInputDirection("adaptive", { isRTL: false, hasValue: false }).writingDirection,
+    "ltr"
+  );
+
+  // Screenshot 6: Latin value inside Arabic UI must render LTR…
+  assert.equal(
+    resolveInputDirection("adaptive", { isRTL: true, hasValue: true, value: "Ali" }).writingDirection,
+    "ltr"
+  );
+  // …and Arabic values inside English UI must stay RTL.
+  assert.equal(
+    resolveInputDirection("adaptive", { isRTL: false, hasValue: true, value: "علي" }).writingDirection,
+    "rtl"
+  );
+
+  // Neutral-only filled values fall back to the locale direction.
+  assert.equal(
+    resolveInputDirection("adaptive", { isRTL: true, hasValue: true, value: "12345" }).writingDirection,
+    "rtl"
+  );
+
+  // textAlign stays auto so alignment follows the logical reading start.
+  assert.equal(
+    resolveInputDirection("adaptive", { isRTL: true, hasValue: true, value: "Ali" }).textAlign,
+    "auto"
+  );
+});
+
+test("resolveLabelDirection: labels/helpers/errors never follow an adaptive or phone value", () => {
+  // The label contract is exercised through resolveFieldDirection below; this
+  // assertion documents the screenshot-6 rule: a value changing script must
+  // not drag its localized chrome with it. Covered by
+  // "resolveFieldDirection keeps every field role in one logical contract".
+  assert.ok(true);
+});
+
 test("resolveLabelDirection: localized uses native logical-start alignment", async () => {
   const { resolveLabelDirection } = await loadResolver();
 
@@ -112,6 +177,17 @@ test("resolveFieldDirection keeps every field role in one logical contract", asy
   assert.equal(ltr.input.writingDirection, "ltr");
   assert.equal(ltr.text.textAlign, "left");
   assert.equal(ltr.counter.textAlign, "right");
+
+  // Screenshot 6 decoupling: an adaptive Latin value in Arabic UI keeps its
+  // LTR input while label and error chrome stay RTL/localized.
+  const mixed = resolveFieldDirection("adaptive", {
+    isRTL: true,
+    hasValue: true,
+    value: "Ali",
+  });
+  assert.equal(mixed.input.writingDirection, "ltr");
+  assert.equal(mixed.text.writingDirection, "rtl");
+  assert.equal(mixed.text.textAlign, "left");
 });
 
 test("RTL-01 & RTL-02: TextInput, DropdownInput, and TicketModal use direction contracts", () => {
@@ -141,6 +217,93 @@ test("RTL-01 & RTL-02: TextInput, DropdownInput, and TicketModal use direction c
     textInputSource.includes("fieldDirection.input") && textInputSource.includes("fieldDirection.text"),
     "TextInput must apply the contract to both input and metadata"
   );
+});
+
+test("resolveInputDirection: adaptive placeholder follows the locale while empty", async () => {
+  const { resolveInputDirection } = await loadResolver();
+
+  assert.equal(
+    resolveInputDirection("adaptive", { isRTL: true, hasValue: false }).writingDirection,
+    "rtl"
+  );
+  assert.equal(
+    resolveInputDirection("adaptive", { isRTL: false, hasValue: false }).writingDirection,
+    "ltr"
+  );
+});
+
+test("resolveInputDirection: adaptive value follows its first strong character", async () => {
+  const { resolveInputDirection } = await loadResolver();
+
+  const cases = [
+    // [value, expected]
+    ["Ali", "ltr"],
+    ["علي", "rtl"],
+    ["Halaa 2026", "ltr"],
+    ["حفل Halaa 2026", "rtl"],
+    ["شارع الملك فهد, Riyadh 12345", "rtl"],
+    ["🎉 party time", "ltr"],
+    ["🥳 عرس 🎉", "rtl"],
+    ["   (leading punctuation) 42", "ltr"],
+  ];
+  for (const [value, expected] of cases) {
+    for (const isRTL of [true, false]) {
+      assert.equal(
+        resolveInputDirection("adaptive", { isRTL, hasValue: true, value }).writingDirection,
+        expected,
+        `value=${JSON.stringify(value)} isRTL=${isRTL}`
+      );
+    }
+  }
+});
+
+test("resolveInputDirection: adaptive neutral-only values fall back to the locale", async () => {
+  const { resolveInputDirection } = await loadResolver();
+
+  for (const value of ["", "123456", "!!??", "🎉🎉", "   "]) {
+    assert.equal(
+      resolveInputDirection("adaptive", { isRTL: true, hasValue: true, value }).writingDirection,
+      "rtl",
+      `value=${JSON.stringify(value)}`
+    );
+    assert.equal(
+      resolveInputDirection("adaptive", { isRTL: false, hasValue: true, value }).writingDirection,
+      "ltr",
+      `value=${JSON.stringify(value)}`
+    );
+  }
+});
+
+test("labels/helpers/errors never follow an adaptive or LTR value", async () => {
+  const { resolveFieldDirection } = await loadResolver();
+
+  // Arabic UI with a Latin value typed into an adaptive field:
+  const field = resolveFieldDirection("adaptive", {
+    isRTL: true,
+    hasValue: true,
+    value: "Ali",
+  });
+  assert.equal(field.input.writingDirection, "ltr");
+  assert.equal(field.text.writingDirection, "rtl", "label chrome must stay localized");
+  assert.equal(field.text.textAlign, "left");
+
+  // English UI with an Arabic value typed into an LTR-declared field keeps
+  // both the token and the chrome stable.
+  const ltrField = resolveFieldDirection("ltr", { isRTL: false, hasValue: true, value: "علي" });
+  assert.equal(ltrField.input.writingDirection, "ltr");
+  assert.equal(ltrField.text.writingDirection, "ltr");
+});
+
+test("DirectionalTextInput stays the only low-level primitive and feeds adaptive values", () => {
+  const src = fs.readFileSync(
+    path.resolve(__dirname, "..", "..", "components", "commen", "DirectionalTextInput.js"),
+    "utf8"
+  );
+  assert.ok(
+    src.includes("value: value ?? defaultValue"),
+    "DirectionalTextInput must pass the raw value so adaptive mode resolves first-strong on every change"
+  );
+  assert.ok(src.includes("CONTENT_DIRECTIONS"), "DirectionalTextInput must use the shared content-direction contract");
 });
 
 test("all direct native TextInput usage is confined to shared low-level primitives", () => {

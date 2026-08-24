@@ -30,6 +30,7 @@ const handleDuplicateFieldsDB = (err) => {
   const fieldMessages = {
     email: 'This email is already registered',
     phoneNumber: 'This phone number is already registered',
+    mobile: 'This phone number is already registered',
     username: 'This username is already taken',
   };
 

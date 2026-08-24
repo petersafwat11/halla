@@ -15,7 +15,7 @@
     "comingSoon": "Coming soon"
   },
   "legal": {
-    "lastUpdated": "Last updated",
+    "lastUpdated": "Last updated: {{date}}",
     "ugcAcceptNotice": "By posting content, you agree to:"
   },
   "account": {
@@ -58,6 +58,15 @@
     "button": "Delete Account",
     "title": "Delete your account?",
     "warning": "This permanently deletes your account and personal data, including your events, guests, and invitations. This action cannot be undone.",
+    "storeWarnTitle": "Your store subscription stays active",
+    "storeWarnBody": "Deleting your Halaa account does NOT cancel your App Store / Google Play subscription. Cancel it in the store to stop being billed.",
+    "manageSubscription": "Manage subscription",
+    "passwordLabel": "Enter your password to confirm",
+    "passwordPlaceholder": "Password",
+    "otpLabel": "Enter the verification code",
+    "otpPlaceholder": "Code",
+    "sendCode": "Send verification code",
+    "codeSent": "Code sent to your phone",
     "confirmLabel": "Type \"{{keyword}}\" to confirm",
     "confirmKeyword": "DELETE",
     "cancel": "Cancel",
@@ -96,7 +105,8 @@
     "saveChanges": "Save Changes",
     "saving": "Saving...",
     "updateSuccess": "Preferences updated successfully",
-    "updateError": "Failed to update preferences"
+    "updateError": "Failed to update preferences",
+    "loadError": "Failed to load notification preferences"
   },
   "errors": {
     "usernameMinLength": "Username must be at least 3 characters",
@@ -112,7 +122,7 @@
     "passwordsDoNotMatch": "Passwords do not match",
     "passwordRequired": "Password is required for confirmation",
     "confirmDeletion": "Please type DELETE to confirm",
-    "invalidSaudiPhone": "Phone number must start with 5 and be 9 digits"
+    "invalidSaudiPhone": "Phone number must be 10 digits (starting with 05) or 9 digits (starting with 5)"
   },
   "language": {
     "title": "Language",

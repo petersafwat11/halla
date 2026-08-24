@@ -1,7 +1,12 @@
 import React from "react";
 import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from "react-native";
 import { LastEvent, MakeYourFirst } from "./";
+import LocalizedText from "../commen/LocalizedText";
 
+// Decorative header artwork: oversized rotated texture bands bleed off both
+// edges of the brand-colored hero. This is intentionally PHYSICAL artwork
+// geometry (blueprint §2 allows left/right for decorative full-bleed art);
+// it is not semantic layout and must not be mirrored.
 const HeaderTexture = () => (
   <>
     <View style={styles.textureLeft}>
@@ -31,9 +36,17 @@ const HomeHeaderContent = ({
   if (error) {
     return (
       <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>{t("common.loadError", "خطأ في تحميل البيانات")}</Text>
-        <TouchableOpacity onPress={onRetry} style={styles.retryButton}>
-          <Text style={styles.retryText}>{t("common.retry", "إعادة المحاولة")}</Text>
+        {/* Localized chrome: the error copy follows the UI locale and never
+            changes with any backend value. */}
+        <LocalizedText role="label" center style={styles.errorText}>
+          {t("errors.load")}
+        </LocalizedText>
+        <TouchableOpacity
+          onPress={onRetry}
+          style={styles.retryButton}
+          accessibilityRole="button"
+        >
+          <LocalizedText style={styles.retryText}>{t("errors.retry")}</LocalizedText>
         </TouchableOpacity>
       </View>
     );

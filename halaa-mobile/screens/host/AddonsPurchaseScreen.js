@@ -10,7 +10,7 @@
  */
 
 import React, { useMemo, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { View, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -29,15 +29,22 @@ import { canPurchase, isPurchasesAvailable } from "../../services/purchases";
 import { eligibleEntries } from "../../services/billing/catalog";
 import { getPurchaseReadiness, READINESS_STATES, readinessReasonKey } from "../../services/billing/purchaseReadiness";
 import { disclosuresFor } from "../../services/billing/disclosures";
+import AdaptiveText from "../../components/commen/AdaptiveText";
+import LocalizedText from "../../components/commen/LocalizedText";
+import { countToken } from "@halaa/shared/utils/displayTokens";
+import { isolateLtr, isolateLtrTokens } from "@halaa/shared/utils/bidi";
 import TopBar from "../../components/plans/TopBar";
 import PurchaseStatusModal from "../../components/plans/PurchaseStatusModal";
 import StatusBadge from "../../components/admin-dashboard/common/StatusBadge";
 import { colors, spacing, borderRadius, typography } from "../../styles/tokens";
 
+// Intrinsically LTR tokens inside disclosure copy (store names / URLs).
+const LTR_DISCLOSURE_TOKEN_REGEX =
+  /App Store|Google Play|https?:\/\/[^\s)]+|[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
 const FAMILY_ORDER = ["extra_invites", "design_template", "business_customization"];
 
 const AddonsPurchaseScreen = () => {
-  const { t, currentLanguage } = useTranslation("plans");
+  const { t, currentLanguage, isRTL } = useTranslation("plans");
   const navigation = useNavigation();
   const route = useRoute();
   const toast = useToast();
@@ -100,7 +107,7 @@ const AddonsPurchaseScreen = () => {
       toast.error(
         reasonKey
           ? t(reasonKey)
-          : t("checkout.errors.addonUnavailable", "This add-on isn't available right now.")
+          : t("checkout.errors.addonUnavailable")
       );
       return;
     }
@@ -142,7 +149,7 @@ const AddonsPurchaseScreen = () => {
         ? readinessReasonKey(readiness.state)
         : null;
     const priceText = isAvailable
-      ? readiness.priceString
+      ? isolateLtr(readiness.priceString)
       : isLoading
       ? "..."
       : t("checkout.iap.unavailable", "Unavailable");
@@ -150,14 +157,18 @@ const AddonsPurchaseScreen = () => {
     return (
       <View key={entry.internalCode} style={styles.addonRow}>
         <View style={styles.addonInfo}>
-          <Text style={styles.addonName} numberOfLines={2}>
+          <AdaptiveText style={styles.addonName} numberOfLines={2}>
             {localizedName(entry)}
-          </Text>
-          <Text style={styles.addonPrice}>{priceText}</Text>
+          </AdaptiveText>
+          {/* Mixed slot: LTR store price token, ellipsis, or localized
+              unavailable copy — each follows its own script. */}
+          <AdaptiveText style={styles.addonPrice}>
+            {priceText}
+          </AdaptiveText>
           {terminalReasonKey && (
-            <Text style={styles.addonUnavailableReason} numberOfLines={2}>
+            <LocalizedText style={styles.addonUnavailableReason} numberOfLines={2}>
               {t(terminalReasonKey)}
-            </Text>
+            </LocalizedText>
           )}
         </View>
         <TouchableOpacity
@@ -166,7 +177,7 @@ const AddonsPurchaseScreen = () => {
           disabled={!isAvailable || flow.isBusy}
           activeOpacity={0.85}
         >
-          <Text style={styles.buyBtnText}>{t("addons.buy", "Buy")}</Text>
+          <LocalizedText style={styles.buyBtnText}>{t("addons.buy")}</LocalizedText>
         </TouchableOpacity>
       </View>
     );
@@ -184,15 +195,27 @@ const AddonsPurchaseScreen = () => {
         {pendingAddons.length > 0 && (
           <View style={styles.pendingNote}>
             <Ionicons name="information-circle-outline" size={18} color={colors.primary[600]} />
-            <Text style={styles.pendingNoteText}>{t("addons.completePending")}</Text>
+            <LocalizedText style={styles.pendingNoteText}>
+              {t("addons.completePending")}
+            </LocalizedText>
           </View>
         )}
 
         {FAMILY_ORDER.map((family) =>
           byFamily[family].length > 0 ? (
             <View key={family} style={styles.section}>
-              <Text style={styles.sectionTitle}>{t(`addons.families.${family}`, family)}</Text>
-              <Text style={styles.sectionDisclosure}>{t(disclosuresFor(byFamily[family][0])[1] || "disclosures.oneTime")}</Text>
+              <LocalizedText style={styles.sectionTitle}>
+                {t(`addons.families.${family}`, family)}
+              </LocalizedText>
+              <LocalizedText style={styles.sectionDisclosure}>
+                {
+                  isolateLtrTokens(
+                    t(disclosuresFor(byFamily[family][0])[1] || "disclosures.oneTime"),
+                    LTR_DISCLOSURE_TOKEN_REGEX,
+                    isRTL
+                  )
+                }
+              </LocalizedText>
               {byFamily[family].map(renderEntry)}
             </View>
           ) : null
@@ -202,21 +225,29 @@ const AddonsPurchaseScreen = () => {
           byFamily.design_template.length === 0 &&
           byFamily.business_customization.length === 0 && (
             <View style={styles.empty}>
-              <Text style={styles.emptyText}>{t("addons.noneEligible", "No add-ons available for your plan.")}</Text>
+              <LocalizedText style={styles.emptyText} center>
+                {t("addons.noneEligible")}
+              </LocalizedText>
             </View>
           )}
 
         {/* Fulfillment status of the last purchase (exact transaction). */}
         {lastTxn && fulfillment ? (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t("addons.fulfillment.title", "Fulfillment status")}</Text>
+            <LocalizedText style={styles.sectionTitle}>
+              {t("addons.fulfillment.title")}
+            </LocalizedText>
             {fulfillment.addon ? (
               <View style={styles.fulfillRow}>
-                <Text style={styles.fulfillLabel}>{t(`addons.families.${fulfillment.addon.addonType}`, fulfillment.addon.addonType)}</Text>
+                <LocalizedText style={styles.fulfillLabel}>
+                  {t(`addons.families.${fulfillment.addon.addonType}`, fulfillment.addon.addonType)}
+                </LocalizedText>
                 <StatusBadge status={fulfillment.addon.status} size="small" />
               </View>
             ) : (
-              <Text style={styles.sectionDisclosure}>{t("addons.fulfillment.pending", "Processing — your add-on will be applied shortly.")}</Text>
+              <LocalizedText style={styles.sectionDisclosure}>
+                {t("addons.fulfillment.pending")}
+              </LocalizedText>
             )}
           </View>
         ) : null}
@@ -224,13 +255,19 @@ const AddonsPurchaseScreen = () => {
         {/* Recent add-on history. */}
         {Array.isArray(historyItems) && historyItems.length > 0 ? (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t("addons.history.title", "Your add-ons")}</Text>
+            <LocalizedText style={styles.sectionTitle}>
+              {t("addons.history.title")}
+            </LocalizedText>
             {historyItems.slice(0, 8).map((a) => (
               <View key={a._id || a.id} style={styles.fulfillRow}>
-                <Text style={styles.fulfillLabel} numberOfLines={1}>
-                  {t(`addons.families.${a.addonType}`, a.addonType)}
-                  {a.quantity ? ` · ${a.quantity}` : ""}
-                </Text>
+                <LocalizedText style={styles.fulfillLabel} numberOfLines={1}>
+                  {a.quantity
+                    ? t("addons.history.itemRow", {
+                        label: t(`addons.families.${a.addonType}`, a.addonType),
+                        count: countToken(a.quantity, currentLanguage),
+                      })
+                    : t(`addons.families.${a.addonType}`, a.addonType)}
+                </LocalizedText>
                 <StatusBadge status={a.status} size="small" />
               </View>
             ))}

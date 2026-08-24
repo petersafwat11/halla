@@ -1,7 +1,12 @@
 import React from "react";
 import { useTranslation } from "../../../localization";
 import { colors } from "../../../styles/tokens";
-import { getLocalized, formatNumber } from "@halaa/shared/utils/locale";
+import {
+  formatCurrency,
+  formatNumber,
+  getLocalized,
+} from "@halaa/shared/utils/locale";
+import { isolateAuto } from "@halaa/shared/utils/bidi";
 import { isPoolPlan } from "@halaa/shared/constants/plans";
 import AdminListItem from "../common/AdminListItem";
 
@@ -32,10 +37,18 @@ const PlanListItem = ({ plan, canEdit, onEdit }) => {
   const { t, i18n } = useTranslation("admin");
   if (!plan) return null;
 
+  const language = i18n.language || "ar";
+
+  // A price is ONE atomic token (blueprint §6): locale currency formatting
+  // plus a first-strong isolate so the amount/currency can never split or
+  // reverse under RTL.
   const formatPrice = (amount) => {
     if (amount === undefined || amount === null) return "—";
-    return `SAR ${formatNumber(Number(amount), i18n.language || "ar")}`;
+    return isolateAuto(formatCurrency(Number(amount), language));
   };
+  const hasOneTimePrice =
+    plan.pricing?.oneTime !== undefined && plan.pricing?.oneTime !== null;
+  const priceText = hasOneTimePrice ? formatPrice(plan.pricing.oneTime) : "—";
 
 
   const family = familyOf(plan.planType);
@@ -49,7 +62,7 @@ const PlanListItem = ({ plan, canEdit, onEdit }) => {
   const periodLabel = isMonthly
     ? t("plans.labels.perMonth")
     : isQuarterly
-    ? t("plans.labels.perQuarter", { defaultValue: "3mo" })
+    ? t("plans.labels.perQuarter")
     : isAnnual
     ? t("plans.labels.perYear")
     : null;
@@ -62,28 +75,40 @@ const PlanListItem = ({ plan, canEdit, onEdit }) => {
   // Events line — pool plans share an invite pool across unlimited
   // events; per-event plans use `maxEvents` (with `-1` rendered as
   // "unlimited"). The pool size itself is shown in the invites row.
+  // All count sentences are i18next interpolation/plural keys — never
+  // JSX concatenation (blueprint §6).
   const eventsLimitLabel =
     isPool || maxEvents === -1
-      ? `${t("plans.labels.unlimited")} ${t("plans.labels.events")}`
+      ? t("plans.limits.unlimitedEvents")
       : maxEvents != null
-      ? `${t("plans.labels.max")} ${maxEvents} ${maxEvents === 1 ? t("plans.labels.event") : t("plans.labels.events")}`
+      ? t("plans.limits.eventsMax", { count: maxEvents })
       : t("plans.labels.oneEvent");
 
   // All plan types (pool and per-event) carry an `invitePool` now.
-  const invitesLabel = `${t("plans.fields.invitePool")}: ${invitePool ?? t("plans.labels.unlimited")}`;
+  const invitesLabel =
+    invitePool != null && invitePool !== -1
+      ? t("plans.limits.invitePoolValue", {
+          count: formatNumber(invitePool, language),
+        })
+      : t("plans.limits.invitePoolUnlimited");
 
   // ── Chips: type tag + pricing ──
   const chips = [
     { label: typeLabel, color: typeConfig.color, bg: typeConfig.bg },
     {
-      label: oneTimePrice > 0 ? formatPrice(oneTimePrice) : t("plans.labels.free"),
+      label:
+        oneTimePrice > 0 ? priceText : t("plans.labels.free"),
       color: typeConfig.color,
       bg: colors.natural[150],
       icon: "pricetag-outline",
     },
     periodLabel
       ? {
-          label: `${formatPrice(oneTimePrice)} / ${periodLabel}`,
+          // "<amount> / <period>" is one atomic token: locale-formatted
+          // number + localized period inside a single first-strong isolate.
+          label: isolateAuto(
+            `${formatNumber(oneTimePrice, language)} ${periodLabel}`
+          ),
           color: colors.primary[500],
           bg: colors.primary[50],
           icon: "calendar-outline",

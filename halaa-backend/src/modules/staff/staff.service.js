@@ -24,6 +24,7 @@ const StaffAccessToken = require('../../../models/StaffAccessTokenModel');
 // Existing services
 const notificationService = require('../notifications/notifications.service');
 const { logAudit } = require('../../shared/utils/auditLog');
+const { normalizePhoneNumber, getPhoneLookupVariants } = require('../../shared/utils/phone');
 
 const STAFF_TOKEN_RBAC_ROLES = [
   ROLES.ADMIN,
@@ -98,10 +99,16 @@ class StaffService {
       throw new NotFoundError('Event');
     }
 
+    const normalizedInputPhone = normalizePhoneNumber(phone);
     const cleanPhone = phone.replace(/[\s\-\(\)]/g, '');
-    const staffMember = event.staffList?.find(
-      (s) => s.phone?.replace(/[\s\-\(\)]/g, '') === cleanPhone
-    );
+    const staffMember = event.staffList?.find((s) => {
+      const sNorm = normalizePhoneNumber(s.phone);
+      const sClean = s.phone?.replace(/[\s\-\(\)]/g, '');
+      return (
+        (normalizedInputPhone && sNorm && normalizedInputPhone === sNorm) ||
+        (cleanPhone && sClean && cleanPhone === sClean)
+      );
+    });
 
     if (!staffMember) {
       throw new ForbiddenError('You do not have staff access to this event');
@@ -109,7 +116,7 @@ class StaffService {
 
     const sessionToken = this._generateSessionToken({
       eventId: event._id,
-      phone: cleanPhone,
+      phone: normalizedInputPhone || cleanPhone,
       staffName: staffMember.name,
       staffId: staffMember._id,
     });
@@ -207,10 +214,10 @@ class StaffService {
     if (guestId) {
       guest = await Guest.findOne({ _id: guestId, event: eventId });
     } else if (phone) {
-      const cleanPhone = phone.replace(/[\s\-\(\)]/g, '');
+      const variants = getPhoneLookupVariants(phone);
       guest = await Guest.findOne({
         event: eventId,
-        $or: [{ phone: cleanPhone }, { phone: phone }],
+        phone: { $in: variants },
       });
     }
 

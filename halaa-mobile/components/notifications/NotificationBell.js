@@ -2,27 +2,52 @@ import React from "react";
 import { TouchableOpacity, View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useUnreadCount } from "../../hooks/notifications";
+import { useTranslation } from "../../localization";
+import { localizeDigits } from "@halaa/shared/utils/locale";
+
+/**
+ * Icon-only action (blueprint §7): semantic bell glyph is never mirrored,
+ * the badge is a full-width overlay anchored at the physical corner of the
+ * 32px control (equal hit slop geometry), and its count plus accessibility
+ * label are locale-formatted rather than raw Latin digits/English copy.
+ */
+const MAX_BADGE_COUNT = 99;
 
 const NotificationBell = ({ onPress, color = "#F9F4EF", size = 20 }) => {
+  const { t, currentLanguage } = useTranslation("common");
   const { data: unreadData } = useUnreadCount();
   const unreadCount = unreadData?.count || 0;
 
   const formatCount = (count) => {
-    if (count > 99) return "99+";
-    return count.toString();
+    if (count > MAX_BADGE_COUNT) {
+      return `${localizeDigits(MAX_BADGE_COUNT, currentLanguage)}+`;
+    }
+    return localizeDigits(count, currentLanguage);
   };
+
+  const accessibilityLabel =
+    unreadCount > 0
+      ? t("notifications.unreadBadge", {
+          count: formatCount(unreadCount),
+          defaultValue: t("notifications.title"),
+        })
+      : t("notifications.title");
 
   return (
     <TouchableOpacity
       style={styles.container}
       onPress={onPress}
-      accessibilityLabel={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
+      accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
     >
       <Ionicons name="notifications-outline" size={size} color={color} />
       {unreadCount > 0 && (
         <View style={styles.badge}>
-          <Text style={styles.badgeText}>{formatCount(unreadCount)}</Text>
+          {/* Standalone numeric token: pinned LTR so the "+" suffix cannot
+              reorder around digits inside RTL chrome. */}
+          <Text style={[styles.badgeText, { writingDirection: "ltr" }]}>
+            {formatCount(unreadCount)}
+          </Text>
         </View>
       )}
     </TouchableOpacity>

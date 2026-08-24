@@ -17,26 +17,30 @@
  * Unlike ResetPasswordScreen (token-based, public), this requires the current
  * (admin-issued) password — it routes through `useChangePassword`
  * (`PATCH /users/password`), which is on the password-change allowlist.
+ *
+ * Direction contract (blueprint §5): secret values are intrinsically LTR while
+ * labels and validation errors stay localized, so all three fields render
+ * through the shared PasswordInput shell — no local label/input/error markup.
  */
 
-import React, { useState, useCallback } from "react";
+import React, { useCallback } from "react";
 import {
   StyleSheet,
   View,
   ScrollView,
-  Text,
-  TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
   Dimensions,
 } from "react-native";
-import TextInput from "../../components/commen/DirectionalTextInput";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useForm, FormProvider } from "react-hook-form";
 import { useTranslation } from "../../localization";
 import { useAuthStore } from "../../stores/authStore";
 import { useToast } from "../../contexts/ToastContext";
 import { useChangePassword } from "../../hooks";
 import TopBar from "../../components/plans/TopBar";
+import LocalizedText from "../../components/commen/LocalizedText";
+import { Button, PasswordInput } from "../../components/commen";
 
 const { width } = Dimensions.get("window");
 
@@ -47,55 +51,73 @@ export default function ForcePasswordChangeScreen() {
   const changePasswordMutation = useChangePassword();
   const loading = changePasswordMutation.isPending;
 
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [errors, setErrors] = useState({});
+  const methods = useForm({
+    mode: "onSubmit",
+    defaultValues: {
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    },
+  });
+  const { handleSubmit, setError, clearErrors } = methods;
 
-  const submit = useCallback(async () => {
-    setErrors({});
-    const fieldErrors = {};
-    if (!currentPassword) {
-      fieldErrors.currentPassword = t("forceChangePassword.errors.currentRequired");
-    }
-    if (!newPassword) {
-      fieldErrors.newPassword = t("changePasswordForm.errors.newPasswordRequired");
-    } else if (newPassword.length < 8) {
-      fieldErrors.newPassword = t("forceChangePassword.errors.tooShort");
-    }
-    if (!confirmPassword) {
-      fieldErrors.confirmPassword = t("changePasswordForm.errors.confirmPasswordRequired");
-    } else if (newPassword !== confirmPassword) {
-      fieldErrors.confirmPassword = t("changePasswordForm.errors.passwordsNotMatch");
-    }
-    if (Object.keys(fieldErrors).length > 0) {
-      setErrors(fieldErrors);
-      return;
-    }
+  const onSubmit = useCallback(
+    async ({ currentPassword, newPassword, confirmPassword }) => {
+      clearErrors();
+      let invalid = false;
 
-    try {
-      await changePasswordMutation.mutateAsync({
-        currentPassword,
-        newPassword,
-        passwordConfirm: confirmPassword,
-      });
-      // Rotate the session so the fresh `user` snapshot clears
-      // `mustChangePassword` and the navigator falls through to the
-      // normal stack. `refreshTokens` persists the new shadow.
-      await refreshTokens();
-      toast.success(t("forceChangePassword.success"));
-    } catch (error) {
-      toast.error(error?.message || t("forceChangePassword.errors.failed"));
-    }
-  }, [
-    currentPassword,
-    newPassword,
-    confirmPassword,
-    changePasswordMutation,
-    refreshTokens,
-    t,
-    toast,
-  ]);
+      if (!currentPassword) {
+        setError("currentPassword", {
+          type: "manual",
+          message: t("forceChangePassword.errors.currentRequired"),
+        });
+        invalid = true;
+      }
+      if (!newPassword) {
+        setError("newPassword", {
+          type: "manual",
+          message: t("changePasswordForm.errors.newPasswordRequired"),
+        });
+        invalid = true;
+      } else if (newPassword.length < 8) {
+        setError("newPassword", {
+          type: "manual",
+          message: t("forceChangePassword.errors.tooShort"),
+        });
+        invalid = true;
+      }
+      if (!confirmPassword) {
+        setError("confirmPassword", {
+          type: "manual",
+          message: t("changePasswordForm.errors.confirmPasswordRequired"),
+        });
+        invalid = true;
+      } else if (newPassword !== confirmPassword) {
+        setError("confirmPassword", {
+          type: "manual",
+          message: t("changePasswordForm.errors.passwordsNotMatch"),
+        });
+        invalid = true;
+      }
+      if (invalid) return;
+
+      try {
+        await changePasswordMutation.mutateAsync({
+          currentPassword,
+          newPassword,
+          passwordConfirm: confirmPassword,
+        });
+        // Rotate the session so the fresh `user` snapshot clears
+        // `mustChangePassword` and the navigator falls through to the
+        // normal stack. `refreshTokens` persists the new shadow.
+        await refreshTokens();
+        toast.success(t("forceChangePassword.success"));
+      } catch (error) {
+        toast.error(error?.message || t("forceChangePassword.errors.failed"));
+      }
+    },
+    [changePasswordMutation, refreshTokens, toast, t, setError, clearErrors]
+  );
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
@@ -112,81 +134,57 @@ export default function ForcePasswordChangeScreen() {
             keyboardShouldPersistTaps="handled"
           >
             <View style={styles.content}>
-              <Text style={styles.heading}>
+              {/* Headings/body are app copy — always the UI locale. */}
+              <LocalizedText role="sectionTitle" center style={styles.heading}>
                 {t("forceChangePassword.heading")}
-              </Text>
-              <Text style={styles.body}>
+              </LocalizedText>
+              <LocalizedText role="description" center style={styles.body}>
                 {t("forceChangePassword.description")}
-              </Text>
+              </LocalizedText>
 
-              <View style={styles.fieldGroup}>
-                <Text style={styles.label}>
-                  {t("forceChangePassword.currentPasswordLabel")}
-                </Text>
-                <TextInput
-                  style={[styles.input, errors.currentPassword && styles.inputError]}
-                  secureTextEntry
-                  autoCapitalize="none"
-                  textContentType="password"
-                  value={currentPassword}
-                  onChangeText={setCurrentPassword}
-                  placeholder={t("forceChangePassword.currentPasswordPlaceholder")}
-                  placeholderTextColor="#999"
+              <FormProvider {...methods}>
+                {/* Secret values stay LTR; labels/errors stay localized. */}
+                <View style={styles.fieldGroup}>
+                  <PasswordInput
+                    name="currentPassword"
+                    label={t("forceChangePassword.currentPasswordLabel")}
+                    placeholder={t(
+                      "forceChangePassword.currentPasswordPlaceholder"
+                    )}
+                    textContentType="password"
+                  />
+                </View>
+
+                <View style={styles.fieldGroup}>
+                  <PasswordInput
+                    name="newPassword"
+                    label={t("forceChangePassword.newPasswordLabel")}
+                    placeholder={t("forceChangePassword.newPasswordPlaceholder")}
+                    textContentType="newPassword"
+                  />
+                </View>
+
+                <View style={styles.fieldGroup}>
+                  <PasswordInput
+                    name="confirmPassword"
+                    label={t("forceChangePassword.confirmPasswordLabel")}
+                    placeholder={t(
+                      "forceChangePassword.confirmPasswordPlaceholder"
+                    )}
+                    textContentType="newPassword"
+                  />
+                </View>
+
+                <Button
+                  text={
+                    loading ? t("forceChangePassword.submitting") : t("forceChangePassword.submit")
+                  }
+                  onPress={handleSubmit(onSubmit)}
+                  loading={loading}
+                  disabled={loading}
+                  style={styles.submit}
                 />
-                {errors.currentPassword ? (
-                  <Text style={styles.errorText}>{errors.currentPassword}</Text>
-                ) : null}
-              </View>
-
-              <View style={styles.fieldGroup}>
-                <Text style={styles.label}>
-                  {t("forceChangePassword.newPasswordLabel")}
-                </Text>
-                <TextInput
-                  style={[styles.input, errors.newPassword && styles.inputError]}
-                  secureTextEntry
-                  autoCapitalize="none"
-                  textContentType="newPassword"
-                  value={newPassword}
-                  onChangeText={setNewPassword}
-                  placeholder={t("forceChangePassword.newPasswordPlaceholder")}
-                  placeholderTextColor="#999"
-                />
-                {errors.newPassword ? (
-                  <Text style={styles.errorText}>{errors.newPassword}</Text>
-                ) : null}
-              </View>
-
-              <View style={styles.fieldGroup}>
-                <Text style={styles.label}>
-                  {t("forceChangePassword.confirmPasswordLabel")}
-                </Text>
-                <TextInput
-                  style={[styles.input, errors.confirmPassword && styles.inputError]}
-                  secureTextEntry
-                  autoCapitalize="none"
-                  textContentType="newPassword"
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                  placeholder={t("forceChangePassword.confirmPasswordPlaceholder")}
-                  placeholderTextColor="#999"
-                />
-                {errors.confirmPassword ? (
-                  <Text style={styles.errorText}>{errors.confirmPassword}</Text>
-                ) : null}
-              </View>
-
-              <TouchableOpacity
-                onPress={submit}
-                disabled={loading}
-                style={[styles.submit, loading && styles.submitDisabled]}
-              >
-                <Text style={styles.submitText}>
-                  {loading
-                    ? t("forceChangePassword.submitting")
-                    : t("forceChangePassword.submit")}
-                </Text>
-              </TouchableOpacity>
+              </FormProvider>
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
@@ -208,53 +206,14 @@ const styles = StyleSheet.create({
   },
   heading: {
     fontSize: 22,
-    fontFamily: "Cairo_700Bold",
+    lineHeight: 30,
     color: "#222",
     marginBottom: 8,
-    textAlign: "center",
   },
   body: {
-    fontSize: 14,
-    fontFamily: "Cairo_400Regular",
     color: "#555",
     marginBottom: 24,
-    textAlign: "center",
   },
   fieldGroup: { marginBottom: 16 },
-  label: {
-    fontSize: 14,
-    fontFamily: "Cairo_600SemiBold",
-    color: "#333",
-    marginBottom: 6,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    padding: 14,
-    fontSize: 16,
-    fontFamily: "Cairo_400Regular",
-    backgroundColor: "#fff",
-    color: "#222",
-  },
-  inputError: { borderColor: "#d32f2f" },
-  errorText: {
-    color: "#d32f2f",
-    fontSize: 12,
-    fontFamily: "Cairo_400Regular",
-    marginTop: 4,
-  },
-  submit: {
-    backgroundColor: "#c28e5c",
-    borderRadius: 8,
-    paddingVertical: 14,
-    alignItems: "center",
-    marginTop: 8,
-  },
-  submitDisabled: { opacity: 0.7 },
-  submitText: {
-    color: "#fff",
-    fontSize: 16,
-    fontFamily: "Cairo_600SemiBold",
-  },
+  submit: { marginTop: 8 },
 });

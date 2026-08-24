@@ -91,16 +91,11 @@ const AutoReminderInfoText = ({ event }) => {
 
   const isEditable = !["completed", "cancelled"].includes(event.status);
 
+  // Stored "HH:mm" strings are localized through the shared locale utility —
+  // never hand-assembled "6:30 PM" tokens that scramble inside Arabic copy.
   const formatTimeStr = (timeStr) => {
     if (!timeStr) return "";
-    const [hStr, mStr] = timeStr.split(":");
-    const hour = parseInt(hStr, 10);
-    const min = parseInt(mStr, 10);
-    const lang = i18n.language || "ar";
-    const ampm = hour >= 12 ? (lang === "ar" ? "م" : "PM") : (lang === "ar" ? "ص" : "AM");
-    const hour12 = hour % 12 || 12;
-    const minStr = String(min).padStart(2, "0");
-    return `${hour12}:${minStr} ${ampm}`;
+    return formatTime(timeStr, i18n.language || "ar");
   };
 
   const formatDateLabel = (d) => formatDate(d, i18n.language || "ar");
@@ -111,10 +106,7 @@ const AutoReminderInfoText = ({ event }) => {
   const customTime = event.reminderSettings?.scheduledTime;
 
   // Free reminder to CONFIRMED guests (no "48h" / pending wording anymore).
-  let infoText = t(
-    "autoReminderInfo",
-    "نرسل تذكيراً مجانياً لضيوفك الذين أكدوا الحضور قبل المناسبة."
-  );
+  let infoText = t("autoReminderInfo");
 
   if (hasCustom && customDate && customTime) {
     const formattedDate = formatDateLabel(new Date(customDate));
@@ -122,7 +114,6 @@ const AutoReminderInfoText = ({ event }) => {
     infoText = t(
       "autoReminderInfoCustom",
       {
-        defaultValue: "نرسل تذكيراً مجانياً لضيوفك الذين أكدوا الحضور في {{date}} الساعة {{time}}.",
         date: formattedDate,
         time: formattedTime,
       }
@@ -170,10 +161,7 @@ const AutoReminderInfoText = ({ event }) => {
     if (customReminderTime) {
       if (!date || !time) {
         toast.error(
-          t(
-            "reminderCustomize.errors.dateTimeRequired",
-            "التاريخ والوقت مطلوبان لتخصيص التذكير"
-          )
+          t("reminderCustomize.errors.dateTimeRequired")
         );
         return;
       }
@@ -193,10 +181,7 @@ const AutoReminderInfoText = ({ event }) => {
           (upperBound && chosenInstant.getTime() > upperBound.getTime()))
       ) {
         toast.error(
-          t(
-            "reminderCustomize.errors.outOfRange",
-            "يجب أن يكون وقت التذكير بعد بدء الإرسال وقبل المناسبة بـ 24 ساعة على الأقل."
-          )
+          t("reminderCustomize.errors.outOfRange")
         );
         return;
       }
@@ -218,20 +203,17 @@ const AutoReminderInfoText = ({ event }) => {
         eventId: event._id || event.id,
         data: payload,
       });
-      toast.success(t("saveSuccess", "تم حفظ إعدادات التذكير بنجاح"));
+      toast.success(t("saveSuccess"));
       setModalOpen(false);
     } catch (err) {
       if (err?.code === "REMINDER_OUT_OF_RANGE") {
         toast.error(
-          t(
-            "reminderCustomize.errors.outOfRange",
-            "يجب أن يكون وقت التذكير بعد بدء الإرسال وقبل المناسبة بـ 24 ساعة على الأقل."
-          )
+          t("reminderCustomize.errors.outOfRange")
         );
       } else {
         toast.error(
           err?.message ||
-            t("reminderCustomize.errors.generic", "تعذّر حفظ إعدادات التذكير")
+            t("reminderCustomize.errors.generic")
         );
       }
     }
@@ -251,7 +233,7 @@ const AutoReminderInfoText = ({ event }) => {
             activeOpacity={0.7}
           >
             <Text style={styles.customizeButtonText}>
-              {t("customizeReminder", "Customize")}
+              {t("customizeReminder")}
             </Text>
           </TouchableOpacity>
         )}
@@ -267,7 +249,7 @@ const AutoReminderInfoText = ({ event }) => {
           <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>
-                {t("customizeReminderModalTitle", "Customize automatic reminder")}
+                {t("customizeReminderModalTitle")}
               </Text>
               <TouchableOpacity
                 style={styles.closeBtn}
@@ -279,10 +261,7 @@ const AutoReminderInfoText = ({ event }) => {
 
             <ScrollView contentContainerStyle={styles.scrollContent}>
               <Text style={styles.modalDescription}>
-                {t(
-                  "reminderCustomize.description",
-                  "نرسل تذكيراً مجانياً لضيوفك الذين أكدوا الحضور قبل المناسبة."
-                )}
+                {t("reminderCustomize.description")}
               </Text>
 
               {isTrial && (
@@ -290,16 +269,13 @@ const AutoReminderInfoText = ({ event }) => {
                 // event's. Trial reminders are auto (send + 10min) and can't be
                 // customized; the backend is authoritative.
                 <Text style={styles.trialInfo}>
-                  {t(
-                    "reminderCustomize.trialInfo",
-                    "في الباقة التجريبية، يُرسل التذكير تلقائياً بعد 10 دقائق من إرسال الدعوات ولا يمكن تخصيصه."
-                  )}
+                  {t("reminderCustomize.trialInfo")}
                 </Text>
               )}
 
               <View style={styles.switchRow}>
                 <Text style={styles.switchLabel}>
-                  {t("customReminderCheckbox", "تخصيص وقت التذكير")}
+                  {t("customReminderCheckbox")}
                 </Text>
                 <Switch
                   value={customReminderTime}
@@ -318,7 +294,7 @@ const AutoReminderInfoText = ({ event }) => {
               {customReminderTime && (
                 <View style={styles.pickerSection}>
                   <Text style={styles.pickerLabel}>
-                    {t("reminderCustomize.dateLabel", "التاريخ")}
+                    {t("reminderCustomize.dateLabel")}
                   </Text>
                   <TouchableOpacity
                     style={styles.pickerButton}
@@ -344,7 +320,7 @@ const AutoReminderInfoText = ({ event }) => {
                   )}
 
                   <Text style={styles.pickerLabel}>
-                    {t("reminderCustomize.timeLabel", "الوقت")}
+                    {t("reminderCustomize.timeLabel")}
                   </Text>
                   <TouchableOpacity
                     style={styles.pickerButton}
@@ -368,10 +344,7 @@ const AutoReminderInfoText = ({ event }) => {
                   )}
 
                   <Text style={styles.windowHint}>
-                    {t(
-                      "reminderCustomize.windowHint",
-                      "اختر وقتاً بعد بدء الإرسال وقبل المناسبة بـ 24 ساعة على الأقل."
-                    )}
+                    {t("reminderCustomize.windowHint")}
                   </Text>
                 </View>
               )}
@@ -383,7 +356,7 @@ const AutoReminderInfoText = ({ event }) => {
                   disabled={updateReminderMutation.isPending}
                 >
                   <Text style={styles.secondaryBtnText}>
-                    {t("reminderCustomize.cancel", "إلغاء")}
+                    {t("reminderCustomize.cancel")}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -392,7 +365,7 @@ const AutoReminderInfoText = ({ event }) => {
                   disabled={updateReminderMutation.isPending}
                 >
                   <Text style={styles.primaryBtnText}>
-                    {t("save", "Save")}
+                    {t("save")}
                   </Text>
                 </TouchableOpacity>
               </View>

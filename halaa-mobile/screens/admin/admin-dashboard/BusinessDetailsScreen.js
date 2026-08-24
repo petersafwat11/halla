@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   View,
-  Text,
   StyleSheet,
   ScrollView,
   RefreshControl,
@@ -23,9 +22,17 @@ import { useAuthStore } from "../../../stores/authStore";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
 import { canEditPage, PAGES } from "../../../utils/adminPermissions";
-import { getLocalized, formatDate } from "@halaa/shared/utils/locale";
+import {
+  getLocalized,
+  formatDate,
+  formatCount,
+  formatNumber,
+} from "@halaa/shared/utils/locale";
+import { isolateAuto, isolateLtr } from "@halaa/shared/utils/bidi";
 import TopBar from "../../../components/plans/TopBar";
 import DirectionalIonicon from "../../../components/common/DirectionalIonicon";
+import LocalizedText from "../../../components/commen/LocalizedText";
+import AdaptiveText from "../../../components/commen/AdaptiveText";
 import { SectionCard, InfoRow } from "../../../components/admin-dashboard/hosts/HostSectionCard";
 import StatusBadge from "../../../components/admin-dashboard/common/StatusBadge";
 import ManagePlanModal from "../../../components/admin-dashboard/common/ManagePlanModal";
@@ -59,13 +66,14 @@ const fmtDate = (d, locale) => (d ? formatDate(d, locale) : "—");
 const capitalize = (s) =>
   typeof s === "string" && s.length ? s[0].toUpperCase() + s.slice(1) : s;
 
-const remainingInvites = (sub) => {
+/** Locale-formatted remaining-invite count ("∞" when the pool is open). */
+const remainingInvitesValue = (sub) => {
   if (!sub) return "—";
   if (sub.invitePool === null || sub.invitePool === undefined) return "∞";
   if (sub.invitesRemaining !== undefined && sub.invitesRemaining !== null) {
-    return String(sub.invitesRemaining);
+    return sub.invitesRemaining;
   }
-  return String(
+  return (
     (sub.invitePool || 0) + (sub.compensationPool || 0) - (sub.invitesConsumed || 0)
   );
 };
@@ -76,15 +84,15 @@ const StatCard = ({ icon, label, value, badge }) => (
       <Ionicons name={icon} size={16} color={colors.primary[500]} />
     </View>
     <View style={{ flex: 1, minWidth: 0 }}>
-      <Text style={statStyles.label} numberOfLines={1}>{label}</Text>
+      <LocalizedText style={statStyles.label} numberOfLines={1}>{label}</LocalizedText>
       {badge ? (
         <View style={[statStyles.badge, { backgroundColor: badge.bg }]}>
-          <Text style={[statStyles.badgeText, { color: badge.color }]} numberOfLines={1}>
+          <LocalizedText style={[statStyles.badgeText, { color: badge.color }]} numberOfLines={1}>
             {badge.label}
-          </Text>
+          </LocalizedText>
         </View>
       ) : (
-        <Text style={statStyles.value} numberOfLines={1}>{value ?? "—"}</Text>
+        <LocalizedText style={statStyles.value} numberOfLines={1}>{value ?? "—"}</LocalizedText>
       )}
     </View>
   </View>
@@ -137,8 +145,9 @@ const ActionRow = ({ icon, iconBg, iconColor, label, sublabel, onPress, loading,
         )}
       </View>
       <View style={{ flex: 1 }}>
-        <Text style={actionStyles.label}>{label}</Text>
-        {!!sublabel && <Text style={actionStyles.sublabel}>{sublabel}</Text>}
+        {/* Action copy is app-authored — always the UI locale. */}
+        <LocalizedText style={actionStyles.label}>{label}</LocalizedText>
+        {!!sublabel && <LocalizedText style={actionStyles.sublabel}>{sublabel}</LocalizedText>}
       </View>
     </View>
     <DirectionalIonicon name="chevron-forward" size={16} color={colors.natural[300]} />
@@ -185,7 +194,9 @@ const BusinessDetailsScreen = () => {
           {isLoading ? (
             <ActivityIndicator size="large" color={colors.primary[500]} />
           ) : (
-            <Text style={styles.centerText}>{t("businessDetails.notFound")}</Text>
+            <LocalizedText style={styles.centerText}>
+              {t("businessDetails.notFound")}
+            </LocalizedText>
           )}
         </View>
       </SafeAreaView>
@@ -291,12 +302,18 @@ const BusinessDetailsScreen = () => {
         {/* Hero */}
         <View style={styles.hero}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{initial}</Text>
+            {/* Single-letter avatar glyph — decorative, direction-neutral. */}
+            <LocalizedText style={styles.avatarText}>{initial}</LocalizedText>
           </View>
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Text style={styles.heroName} numberOfLines={1}>{business.name || "—"}</Text>
+            {/* Business name / email are backend content — first-strong. */}
+            <AdaptiveText style={styles.heroName} numberOfLines={1}>
+              {business.name || "—"}
+            </AdaptiveText>
             {!!business.email && (
-              <Text style={styles.heroSub} numberOfLines={1}>{business.email}</Text>
+              <AdaptiveText style={styles.heroSub} numberOfLines={1}>
+                {business.email}
+              </AdaptiveText>
             )}
           </View>
           {business.status ? <StatusBadge status={business.status} size="small" /> : null}
@@ -307,14 +324,22 @@ const BusinessDetailsScreen = () => {
           <StatCard
             icon="calendar-outline"
             label={t("businessDetails.totalEvents")}
-            value={business.statistics?.totalEvents ?? 0}
+            value={formatCount(business.statistics?.totalEvents ?? 0, currentLanguage)}
           />
           <StatCard
             icon="shield-checkmark-outline"
             label={t("businessDetails.subStatus")}
             badge={
               subStatus
-                ? { label: capitalize(subStatus), color: colors.primary[600], bg: colors.primary[50] }
+                ? {
+                    // Subscription statuses share the assignment vocabulary;
+                    // the raw enum must never surface untranslated.
+                    label: t(`businessDetails.assignments.status.${subStatus}`, {
+                      defaultValue: capitalize(subStatus),
+                    }),
+                    color: colors.primary[600],
+                    bg: colors.primary[50],
+                  }
                 : { label: "—", color: colors.natural[450], bg: colors.natural[150] }
             }
           />
@@ -332,41 +357,46 @@ const BusinessDetailsScreen = () => {
           <StatCard
             icon="people-outline"
             label={t("businessDetails.remaining")}
-            value={remainingInvites(sub)}
+            value={isolateAuto(formatNumber(remainingInvitesValue(sub), currentLanguage))}
           />
         </View>
 
         {/* Contact */}
         <SectionCard title={t("businessDetails.contactInfo")} icon="person-outline">
-          <InfoRow icon="call-outline" label={t("businessDetails.phone")} value={business.phoneNumber} />
-          <InfoRow icon="mail-outline" label={t("businessDetails.email")} value={business.email} />
+          {/* Phone digits are intrinsically LTR once filled; email is a
+              canonical token; description is arbitrary backend copy. */}
+          <InfoRow icon="call-outline" label={t("businessDetails.phone")} value={business.phoneNumber} mode="phone" />
+          <InfoRow icon="mail-outline" label={t("businessDetails.email")} value={business.email} mode="ltr" />
           <InfoRow
             icon="document-text-outline"
             label={t("businessDetails.description")}
             value={business.businessData?.description || t("businessDetails.noDescription")}
+            mode="adaptive"
           />
-          <InfoRow icon="time-outline" label={t("businessDetails.joinDate")} value={fmtDate(business.createdAt, currentLanguage)} last />
+          <InfoRow icon="time-outline" label={t("businessDetails.joinDate")} value={fmtDate(business.createdAt, currentLanguage)} mode="localized" last />
         </SectionCard>
 
         {/* Subscription */}
         <SectionCard title={t("businessDetails.subscriptionInfo")} icon="card-outline">
           {sub ? (
             <>
-              <InfoRow icon="star-outline" label={t("businessDetails.plan")} value={planName} />
+              <InfoRow icon="star-outline" label={t("businessDetails.plan")} value={planName} mode="adaptive" />
               <InfoRow
                 icon="checkmark-circle-outline"
                 label={t("businessDetails.status")}
                 badge={subStatus ? <StatusBadge status={subStatus} size="small" /> : null}
               />
-              <InfoRow icon="people-outline" label={t("businessDetails.remaining")} value={remainingInvites(sub)} last={!expiresAt} />
+              <InfoRow icon="people-outline" label={t("businessDetails.remaining")} value={isolateAuto(formatNumber(remainingInvitesValue(sub), currentLanguage))} mode="localized" last={!expiresAt} />
               {expiresAt && (
-                <InfoRow icon="time-outline" label={t("businessDetails.expiresAt")} value={fmtDate(expiresAt, currentLanguage)} last />
+                <InfoRow icon="time-outline" label={t("businessDetails.expiresAt")} value={fmtDate(expiresAt, currentLanguage)} mode="localized" last />
               )}
             </>
           ) : (
             <View style={styles.empty}>
               <Ionicons name="card-outline" size={28} color={colors.natural[300]} />
-              <Text style={styles.emptyText}>{t("businessDetails.noPlan")}</Text>
+              <LocalizedText style={styles.emptyText}>
+                {t("businessDetails.noPlan")}
+              </LocalizedText>
             </View>
           )}
         </SectionCard>
@@ -376,7 +406,9 @@ const BusinessDetailsScreen = () => {
           {assignments.length === 0 ? (
             <View style={styles.empty}>
               <Ionicons name="documents-outline" size={28} color={colors.natural[300]} />
-              <Text style={styles.emptyText}>{t("businessDetails.assignments.empty")}</Text>
+              <LocalizedText style={styles.emptyText}>
+                {t("businessDetails.assignments.empty")}
+              </LocalizedText>
             </View>
           ) : (
             assignments.map((a, idx) => {
@@ -386,26 +418,52 @@ const BusinessDetailsScreen = () => {
               };
               const actionable = ACTIONABLE_STATUSES.includes(a.status);
               const last = idx === assignments.length - 1;
+              // Amount is one atomic locale token; the meta line is ONE
+              // interpolated translation key so separators/punctuation live
+              // inside the string instead of being concatenated in JSX
+              // (blueprint §6). The amount stays LTR-isolated.
+              const amountToken = isolateLtr(
+                `${formatNumber(a.total, currentLanguage)} ${a.currency || "SAR"}`
+              );
+              const modeLabel = t(`businessDetails.assignments.mode.${a.mode}`, {
+                defaultValue: a.mode,
+              });
+              const dateToken = fmtDate(a.createdAt, currentLanguage);
+              const assignmentMeta =
+                a.total != null
+                  ? t("businessDetails.assignments.meta", {
+                      mode: modeLabel,
+                      amount: amountToken,
+                      date: dateToken,
+                    })
+                  : t("businessDetails.assignments.metaNoAmount", {
+                      mode: modeLabel,
+                      date: dateToken,
+                    });
               return (
                 <View
                   key={a.id || a._id || idx}
                   style={[styles.assignment, !last && styles.assignmentBorder]}
                 >
                   <View style={styles.assignmentTop}>
-                    <Text style={styles.assignmentPlan} numberOfLines={1}>
-                      {a.planCode || "—"}
-                    </Text>
+                    {/* Canonical plan code — intrinsically LTR. */}
+                    <LocalizedText
+                      style={[styles.assignmentPlan, styles.ltrValue]}
+                      numberOfLines={1}
+                    >
+                      {isolateLtr(a.planCode || "—")}
+                    </LocalizedText>
                     <View style={[styles.statusPill, { backgroundColor: sc.bg }]}>
-                      <Text style={[styles.statusPillText, { color: sc.color }]}>
-                        {t(`businessDetails.assignments.status.${a.status}`, capitalize(a.status))}
-                      </Text>
+                      <LocalizedText style={[styles.statusPillText, { color: sc.color }]}>
+                        {t(`businessDetails.assignments.status.${a.status}`, {
+                          defaultValue: capitalize(a.status),
+                        })}
+                      </LocalizedText>
                     </View>
                   </View>
-                  <Text style={styles.assignmentMeta}>
-                    {t(`businessDetails.assignments.mode.${a.mode}`, a.mode)}
-                    {a.total != null ? ` · ${a.total} ${a.currency || "SAR"}` : ""}
-                    {` · ${fmtDate(a.createdAt, currentLanguage)}`}
-                  </Text>
+                  <LocalizedText style={styles.assignmentMeta}>
+                    {assignmentMeta}
+                  </LocalizedText>
                   {canEdit && actionable && (
                     <View style={styles.assignmentActions}>
                       {!!a.link && (
@@ -414,9 +472,9 @@ const BusinessDetailsScreen = () => {
                           onPress={() => handleShareLink(a.link)}
                         >
                           <Ionicons name="share-outline" size={15} color={colors.primary[600]} />
-                          <Text style={styles.assignmentBtnText}>
+                          <LocalizedText style={styles.assignmentBtnText}>
                             {t("businessDetails.assignments.copyLink")}
-                          </Text>
+                          </LocalizedText>
                         </TouchableOpacity>
                       )}
                       <TouchableOpacity
@@ -425,9 +483,9 @@ const BusinessDetailsScreen = () => {
                         disabled={regenerateAssignment.isPending}
                       >
                         <Ionicons name="refresh-outline" size={15} color={colors.primary[600]} />
-                        <Text style={styles.assignmentBtnText}>
+                        <LocalizedText style={styles.assignmentBtnText}>
                           {t("businessDetails.assignments.regenerate")}
-                        </Text>
+                        </LocalizedText>
                       </TouchableOpacity>
                       <TouchableOpacity
                         style={[styles.assignmentBtn, styles.assignmentBtnDanger]}
@@ -435,9 +493,9 @@ const BusinessDetailsScreen = () => {
                         disabled={revokeAssignment.isPending}
                       >
                         <Ionicons name="close-circle-outline" size={15} color={colors.error[500]} />
-                        <Text style={[styles.assignmentBtnText, { color: colors.error[500] }]}>
+                        <LocalizedText style={[styles.assignmentBtnText, { color: colors.error[500] }]}>
                           {t("businessDetails.assignments.revoke")}
-                        </Text>
+                        </LocalizedText>
                       </TouchableOpacity>
                     </View>
                   )}
@@ -462,8 +520,8 @@ const BusinessDetailsScreen = () => {
               icon="image-outline"
               iconBg={`${colors.primary[500]}15`}
               iconColor={colors.primary[500]}
-              label={t("businessDetails.editLogo", "Change logo")}
-              sublabel={t("businessDetails.editLogoSublabel", "Upload a new business logo")}
+              label={t("businessDetails.editLogo")}
+              sublabel={t("businessDetails.editLogoSublabel")}
               onPress={() => setLogoModalVisible(true)}
             />
             <ActionRow
@@ -538,6 +596,8 @@ const styles = StyleSheet.create({
   assignmentBorder: { borderBottomWidth: 1, borderBottomColor: colors.natural[150] },
   assignmentTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: spacing[8] },
   assignmentPlan: { ...textStyles.bodyMedium, color: colors.natural[900], fontWeight: typography.fontWeight.semibold, flex: 1 },
+  // Canonical codes are intrinsically LTR tokens.
+  ltrValue: { writingDirection: "ltr" },
   assignmentMeta: { fontSize: typography.fontSize.body.small, color: colors.natural[450] },
   statusPill: { paddingHorizontal: spacing[8], paddingVertical: 2, borderRadius: borderRadius[20] },
   statusPillText: { fontSize: 11, fontWeight: typography.fontWeight.semibold },

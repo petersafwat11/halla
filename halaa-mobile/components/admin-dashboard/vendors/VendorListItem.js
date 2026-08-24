@@ -5,7 +5,8 @@ import { canEditPage, canDeleteOnPage, PAGES } from "../../../utils/adminPermiss
 import { useUpdateVendorStatus, useDeleteVendor } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
-import { formatDate } from "@halaa/shared/utils/locale";
+import { formatDate, formatNumber, getLocalized } from "@halaa/shared/utils/locale";
+import { isolateLtr, isolateAuto } from "@halaa/shared/utils/bidi";
 import { colors } from "../../../styles/tokens";
 import AdminListItem from "../common/AdminListItem";
 
@@ -37,10 +38,13 @@ const VendorListItem = ({ vendor, onPress, onRate, selected = false, onSelect })
 
   // Backend returns serviceCategories (not categories / vendorData.categories)
   const categories = vendor?.serviceCategories || [];
-  const firstCategory =
-    typeof categories[0] === "string"
+  const firstCategory = categories[0]
+    ? typeof categories[0] === "string"
       ? categories[0]
-      : categories[0]?.nameEn || categories[0]?.name || null;
+      : getLocalized(categories[0], "name", currentLanguage) ||
+        categories[0]?.name ||
+        null
+    : null;
   const extraCount = categories.length > 1 ? categories.length - 1 : 0;
 
   const createdAt = vendor?.createdAt || vendor?.created_at || null;
@@ -48,8 +52,17 @@ const VendorListItem = ({ vendor, onPress, onRate, selected = false, onSelect })
 
   // Backend returns rating (not averageRating)
   const rating = vendor?.rating;
-  const ratingStr =
-    rating != null ? `${Number(rating).toFixed(1)} / 5` : "0.0 / 5";
+  // "4.5 / 5" is one atomic numeric token: both numbers are locale-formatted
+  // and the whole ratio is LTR-isolated so the slash can never reorder it
+  // under RTL (blueprint §6/§8 — screenshot 8's `1 / 1` defect class).
+  const fmtNum = (n, digits = 1) =>
+    formatNumber(Number(n), currentLanguage, {
+      minimumFractionDigits: digits,
+      maximumFractionDigits: digits,
+    });
+  const ratingStr = isolateLtr(
+    `${fmtNum(rating ?? 0)} / ${fmtNum(5, 0)}`
+  );
 
   const isPending_status = vendorStatus === "pending";
   const isRejected = vendorStatus === "rejected";
@@ -57,44 +70,53 @@ const VendorListItem = ({ vendor, onPress, onRate, selected = false, onSelect })
   const isSuspended = vendorStatus === "suspended";
 
   const handleApprove = () => {
-    Alert.alert(t("vendors.details.approve"), `${t("vendors.details.approve")} "${displayName}"?`, [
-      { text: t("common.cancel"), style: "cancel" },
-      {
-        text: t("common.approve"),
-        onPress: async () => {
-          try {
-            await updateStatus.mutateAsync({ vendorId, status: "approved" });
-            toast.success(t("common.success"));
-          } catch {
-            toast.error(t("common.error"));
-          }
+    Alert.alert(
+      t("vendors.details.approve"),
+      t("vendors.confirm.approve", { name: isolateAuto(displayName) }),
+      [
+        { text: t("common.cancel"), style: "cancel" },
+        {
+          text: t("common.approve"),
+          onPress: async () => {
+            try {
+              await updateStatus.mutateAsync({ vendorId, status: "approved" });
+              toast.success(t("common.success"));
+            } catch {
+              toast.error(t("common.error"));
+            }
+          },
         },
-      },
-    ]);
+      ]
+    );
   };
 
   const handleReject = () => {
-    Alert.alert(t("vendors.details.reject"), `${t("vendors.details.reject")} "${displayName}"?`, [
-      { text: t("common.cancel"), style: "cancel" },
-      {
-        text: t("common.reject"),
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await updateStatus.mutateAsync({ vendorId, status: "rejected" });
-            toast.success(t("common.success"));
-          } catch {
-            toast.error(t("common.error"));
-          }
+    Alert.alert(
+      t("vendors.details.reject"),
+      t("vendors.confirm.reject", { name: isolateAuto(displayName) }),
+      [
+        { text: t("common.cancel"), style: "cancel" },
+        {
+          text: t("common.reject"),
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await updateStatus.mutateAsync({ vendorId, status: "rejected" });
+              toast.success(t("common.success"));
+            } catch {
+              toast.error(t("common.error"));
+            }
+          },
         },
-      },
-    ]);
+      ]
+    );
   };
 
   const handleToggleSuspend = () => {
     const newStatus = isSuspended ? "approved" : "suspended";
     const actionLabel = isSuspended ? t("vendors.details.activate") : t("vendors.details.suspend");
-    Alert.alert(actionLabel, `${actionLabel} "${displayName}"?`, [
+    const confirmKey = isSuspended ? "vendors.confirm.activate" : "vendors.confirm.suspend";
+    Alert.alert(actionLabel, t(confirmKey, { name: isolateAuto(displayName) }), [
       { text: t("common.cancel"), style: "cancel" },
       {
         text: actionLabel,
@@ -114,7 +136,7 @@ const VendorListItem = ({ vendor, onPress, onRate, selected = false, onSelect })
   const handleDelete = () => {
     Alert.alert(
       t("common.deleteConfirmTitle"),
-      `${t("common.delete")} "${displayName}"? ${t("common.deleteConfirmMessage")}`,
+      t("vendors.confirm.delete", { name: isolateAuto(displayName) }),
       [
         { text: t("common.cancel"), style: "cancel" },
         {
@@ -129,7 +151,7 @@ const VendorListItem = ({ vendor, onPress, onRate, selected = false, onSelect })
             }
           },
         },
-      ],
+      ]
     );
   };
 
@@ -181,22 +203,36 @@ const VendorListItem = ({ vendor, onPress, onRate, selected = false, onSelect })
 
   const chips = [
     firstCategory && {
-      label: extraCount > 0 ? `${firstCategory} +${extraCount}` : firstCategory,
+      // Category is backend/user content: the localized "+N more" suffix is
+      // interpolated as a translation, and the chip renders adaptively so
+      // the store name follows its own script.
+      label:
+        extraCount > 0
+          ? t("vendors.categories.more", {
+              name: isolateAuto(firstCategory),
+              count: formatNumber(extraCount, currentLanguage),
+            })
+          : firstCategory,
       color: colors.natural[500],
       bg: colors.natural[150],
+      adaptive: true,
     },
   ].filter(Boolean);
 
   const details = [
     { icon: "star", text: ratingStr, color: colors.warning[500] },
-    joinedDate && { icon: "calendar-outline", text: `${t("common.joined")}: ${joinedDate}` },
+    joinedDate
+      ? { icon: "calendar-outline", text: t("common.joinedDate", { date: joinedDate }) }
+      : null,
   ].filter(Boolean);
 
   return (
     <AdminListItem
       title={displayName}
       subtitle={email}
-      subtitleAlt={phone ? `‪${phone}‬` : null}
+      // Phone digits are intrinsically LTR — isolated via the shared BiDi
+      // helper (never ad-hoc embedding marks).
+      subtitleAlt={phone ? isolateLtr(phone) : null}
       avatarColor={colors.primary[500]}
       status={vendorStatus}
       chips={chips}

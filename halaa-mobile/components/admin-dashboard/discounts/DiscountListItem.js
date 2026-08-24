@@ -1,13 +1,16 @@
 import React from "react";
 import {
   View,
-  Text,
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../../localization";
-import { formatDate } from "@halaa/shared/utils/locale";
+import {
+  formatDate,
+  formatCurrency,
+  formatNumber,
+} from "@halaa/shared/utils/locale";
 import {
   colors,
   spacing,
@@ -17,7 +20,8 @@ import {
   backgrounds,
 } from "../../../styles/tokens";
 import { getStatusVisual } from "../../../constants/statusColors";
-import { isolateLtr } from "@halaa/shared/utils/bidi";
+import { isolateLtr, isolateAuto } from "@halaa/shared/utils/bidi";
+import LocalizedText from "../../commen/LocalizedText";
 
 function getDiscountStatus(discount) {
   if (discount.validUntil && new Date(discount.validUntil) < new Date())
@@ -42,14 +46,21 @@ const DiscountListItem = ({
   const statusLabel = t(`discounts.status.${status}`);
 
   const isPercentage = discount.discountType === "percentage";
-  const valueLabel = isPercentage
-    ? `${discount.value}%`
-    : `${discount.value} ${t("discounts.labels.sar")}`;
 
+  // The discount value (percent or SAR amount) is ONE atomic, isolated
+  // token — locale-formatted so it cannot split or reorder under RTL
+  // (blueprint §6).
+  const valueLabel = isPercentage
+    ? isolateAuto(formatNumber(discount.value, currentLanguage))
+    : isolateAuto(formatCurrency(discount.value, currentLanguage));
+
+  // "used / max" is one atomic LTR-isolated ratio with locale digits.
   const usageLabel =
     discount.maxUses > 0
-      ? isolateLtr(`${discount.usedCount} / ${discount.maxUses}`)
-      : String(discount.usedCount ?? 0);
+      ? isolateLtr(
+          `${formatNumber(discount.usedCount ?? 0, currentLanguage)} / ${formatNumber(discount.maxUses, currentLanguage)}`
+        )
+      : isolateLtr(formatNumber(discount.usedCount ?? 0, currentLanguage));
 
   const expiryLabel = discount.validUntil
     ? formatDate(discount.validUntil, currentLanguage)
@@ -61,22 +72,27 @@ const DiscountListItem = ({
       <View style={styles.topRow}>
         <View style={styles.codeBadge}>
           <Ionicons name="pricetag" size={15} color={colors.primary[600]} />
-          <Text style={styles.codeText} numberOfLines={1}>
-            {discount.code}
-          </Text>
+          {/* Codes are canonical LTR tokens. */}
+          <LocalizedText style={[styles.codeText, styles.ltrToken]} numberOfLines={1}>
+            {isolateLtr(discount.code)}
+          </LocalizedText>
         </View>
         <View style={[styles.statusBadge, { backgroundColor: statusVisual.bg }]}>
-          <Text style={[styles.statusText, { color: statusVisual.fg }]}>
+          <LocalizedText style={[styles.statusText, { color: statusVisual.fg }]}>
             {statusLabel}
-          </Text>
+          </LocalizedText>
         </View>
       </View>
 
       {/* ── Value & Type Hero Box ── */}
       <View style={styles.valueCard}>
         <View style={styles.valueLeft}>
-          <Text style={styles.valueLabelText}>{t("discounts.labels.value")}</Text>
-          <Text style={styles.valueHighlight}>{valueLabel}</Text>
+          <LocalizedText role="caption" style={styles.valueLabelText}>
+            {t("discounts.labels.value")}
+          </LocalizedText>
+          <LocalizedText style={styles.valueHighlight}>
+            {valueLabel}
+          </LocalizedText>
         </View>
         <View style={styles.typeBadge}>
           <Ionicons
@@ -84,9 +100,9 @@ const DiscountListItem = ({
             size={14}
             color={colors.primary[700]}
           />
-          <Text style={styles.typeBadgeText}>
+          <LocalizedText role="caption" style={styles.typeBadgeText}>
             {t(`discounts.type.${discount.discountType}`)}
-          </Text>
+          </LocalizedText>
         </View>
       </View>
 
@@ -95,17 +111,25 @@ const DiscountListItem = ({
         <View style={styles.detailBox}>
           <View style={styles.detailIconRow}>
             <Ionicons name="repeat-outline" size={14} color={colors.natural[450]} />
-            <Text style={styles.detailBoxLabel}>{t("discounts.labels.usage")}</Text>
+            <LocalizedText role="caption" style={styles.detailBoxLabel}>
+              {t("discounts.labels.usage")}
+            </LocalizedText>
           </View>
-          <Text style={styles.detailBoxValue}>{usageLabel}</Text>
+          <LocalizedText style={[styles.detailBoxValue, styles.ltrToken]}>
+            {usageLabel}
+          </LocalizedText>
         </View>
 
         <View style={styles.detailBox}>
           <View style={styles.detailIconRow}>
             <Ionicons name="calendar-outline" size={14} color={colors.natural[450]} />
-            <Text style={styles.detailBoxLabel}>{t("discounts.labels.expires")}</Text>
+            <LocalizedText role="caption" style={styles.detailBoxLabel}>
+              {t("discounts.labels.expires")}
+            </LocalizedText>
           </View>
-          <Text style={styles.detailBoxValue}>{expiryLabel}</Text>
+          <LocalizedText style={styles.detailBoxValue}>
+            {expiryLabel}
+          </LocalizedText>
         </View>
       </View>
 
@@ -126,7 +150,7 @@ const DiscountListItem = ({
                 size={16}
                 color={discount.isActive ? colors.warning[600] : colors.success[600]}
               />
-              <Text
+              <LocalizedText
                 style={[
                   styles.actionBtnText,
                   { color: discount.isActive ? colors.warning[600] : colors.success[600] },
@@ -135,7 +159,7 @@ const DiscountListItem = ({
                 {discount.isActive
                   ? t("discounts.actions.deactivate")
                   : t("discounts.actions.activate")}
-              </Text>
+              </LocalizedText>
             </TouchableOpacity>
           )}
 
@@ -146,9 +170,11 @@ const DiscountListItem = ({
               activeOpacity={0.75}
             >
               <Ionicons name="create-outline" size={16} color={colors.primary[600]} />
-              <Text style={[styles.actionBtnText, { color: colors.primary[600] }]}>
+              <LocalizedText
+                style={[styles.actionBtnText, { color: colors.primary[600] }]}
+              >
                 {t("discounts.actions.edit")}
-              </Text>
+              </LocalizedText>
             </TouchableOpacity>
           )}
 
@@ -159,9 +185,11 @@ const DiscountListItem = ({
               activeOpacity={0.75}
             >
               <Ionicons name="trash-outline" size={16} color={colors.error[500]} />
-              <Text style={[styles.actionBtnText, { color: colors.error[500] }]}>
+              <LocalizedText
+                style={[styles.actionBtnText, { color: colors.error[500] }]}
+              >
                 {t("discounts.actions.delete")}
-              </Text>
+              </LocalizedText>
             </TouchableOpacity>
           )}
         </View>
@@ -208,6 +236,10 @@ const styles = StyleSheet.create({
     fontWeight: typography.fontWeight.bold,
     color: colors.primary[700],
     letterSpacing: 0.5,
+  },
+  // Intrinsically LTR tokens (codes, numeric ratios) keep stable glyph order.
+  ltrToken: {
+    writingDirection: "ltr",
   },
   statusBadge: {
     paddingHorizontal: spacing[10],

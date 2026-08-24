@@ -20,6 +20,7 @@ import { useFieldDirection } from "../../hooks/useInputDirection";
  */
 const TextInputField = ({
   label,
+  required,
   placeholder,
   isDisabled,
   multiline,
@@ -41,13 +42,23 @@ const TextInputField = ({
 }) => {
   const [isFocused, setIsFocused] = React.useState(false);
   const inputRef = React.useRef(null);
+  // The raw value is required so `adaptive` mode recomputes its first-strong
+  // writing direction on every controlled change (blueprint §5.1).
   const fieldDirection = useFieldDirection(contentDirection, {
     hasValue: String(value ?? "").length > 0,
+    value,
   });
 
   return (
     <View style={styles.container}>
-      {!!label && <Text style={[styles.label, fieldDirection.text]}>{label}</Text>}
+      {/* The required marker is a nested run, never string-concatenated,
+          so punctuation stays inside the localized label's direction. */}
+      {!!label && (
+        <Text style={[styles.label, fieldDirection.text]}>
+          {label}
+          {required ? <Text> *</Text> : null}
+        </Text>
+      )}
       {/* The whole box is pressable so a tap anywhere inside (padding included,
           not just the text node) focuses the input. */}
       <Pressable
@@ -102,6 +113,7 @@ const TextInputField = ({
 const TextInput = ({
   name,
   label,
+  required = false,
   placeholder,
   secureTextEntry = false,
   keyboardType = "default",
@@ -133,6 +145,7 @@ const TextInput = ({
       }) => (
         <TextInputField
           label={label}
+          required={required}
           placeholder={placeholder}
           isDisabled={isDisabled}
           multiline={multiline}

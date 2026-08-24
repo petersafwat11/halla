@@ -1,16 +1,15 @@
 import React, { useState } from "react";
 import {
   View,
-  Text,
   StyleSheet,
   TouchableOpacity,
   Animated,
 } from "react-native";
 import TextInput from "../commen/DirectionalTextInput";
+import LocalizedText from "../commen/LocalizedText";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
-import { useInputDirection } from "../../hooks/useInputDirection";
-import { formatNumber } from "@halaa/shared/utils/locale";
+import { countToken } from "@halaa/shared/utils/displayTokens";
 
 const SearchAndFilter = ({
   onSearch,
@@ -21,8 +20,6 @@ const SearchAndFilter = ({
   const { t, currentLanguage } = useTranslation("marketplace");
   const [isFocused, setIsFocused] = useState(false);
   const scaleAnim = React.useRef(new Animated.Value(1)).current;
-  // Explicit localized direction for the iOS search placeholder.
-  const searchDirectionStyle = useInputDirection("localized");
 
   const handleFilterPress = () => {
     Animated.sequence([
@@ -42,7 +39,10 @@ const SearchAndFilter = ({
 
   return (
     <View style={styles.container}>
-      {/* Search Input */}
+      {/* Search Input — arbitrary user text, so the content mode is adaptive:
+          the empty placeholder follows the UI locale while a typed value
+          follows its own first strong character (blueprint §5.3). The search
+          glyph is a semantic leading icon; it is never mirrored. */}
       <View style={[styles.searchContainer, isFocused && styles.searchFocused]}>
         <Ionicons
           name="search-outline"
@@ -51,13 +51,16 @@ const SearchAndFilter = ({
           style={styles.searchIcon}
         />
         <TextInput
-          style={[styles.searchInput, searchDirectionStyle]}
+          style={styles.searchInput}
+          contentDirection="adaptive"
           placeholder={t("search.placeholder")}
           placeholderTextColor="#656565"
           value={searchQuery}
           onChangeText={onSearch}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
+          returnKeyType="search"
+          accessibilityRole="search"
         />
       </View>
 
@@ -67,14 +70,17 @@ const SearchAndFilter = ({
           style={styles.filterButton}
           onPress={handleFilterPress}
           activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel={t("search.filter")}
         >
           <Ionicons name="options-outline" size={20} color="#656565" />
-          <Text style={styles.filterText}>{t("search.filter")}</Text>
+          <LocalizedText style={styles.filterText}>{t("search.filter")}</LocalizedText>
           {activeFiltersCount > 0 && (
             <View style={styles.badge}>
-              <Text style={styles.badgeText}>
-                {formatNumber(activeFiltersCount, currentLanguage)}
-              </Text>
+              {/* Active-filter badge is an isolated locale-formatted count. */}
+              <LocalizedText style={styles.badgeText}>
+                {countToken(activeFiltersCount, currentLanguage)}
+              </LocalizedText>
             </View>
           )}
         </TouchableOpacity>
