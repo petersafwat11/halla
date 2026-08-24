@@ -106,16 +106,22 @@ test("KeyboardSafeModalSheet implements the shared sheet contract (§6.4)", () =
     "keyboard must be dismissed BEFORE completing the close transition (§10)"
   );
 
-  // One displacement owner: keyboard-controller avoiding view; iOS pads while
-  // Android relies on the explicit resize mode — never both at once.
+  // One displacement owner: keyboard-controller avoiding view pads on both
+  // platforms. Passing no behavior on Android is a no-op in the controller
+  // and leaves native Modal content underneath the keyboard.
   assert.match(
     source,
     /import\s*{\s*KeyboardAvoidingView\s*}\s*from\s*"react-native-keyboard-controller"/
   );
   assert.match(
     source,
-    /behavior=\{IS_IOS \? "padding" : undefined\}/,
-    "avoidance must be single-owner: iOS padding only; Android resize handles it"
+    /behavior="padding"/,
+    "the controller must actively avoid the keyboard on iOS and Android"
+  );
+  assert.doesNotMatch(
+    source,
+    /behavior=\{[^}]*undefined[^}]*\}/,
+    "never disable the shared modal's Android keyboard avoidance"
   );
 
   // Backdrop is a sibling hit region of the sheet, not a parent Pressable.

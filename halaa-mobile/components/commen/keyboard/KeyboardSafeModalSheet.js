@@ -7,8 +7,9 @@
  * - transparent overlay with sibling backdrop hit region (outside-tap close
  *   without stealing drags/taps aimed at the sheet);
  * - keyboard-controller KeyboardAvoidingView around the sheet presentation —
- *   the single displacement owner (iOS pads; Android relies on the explicit
- *   `resize` softwareKeyboardLayoutMode declared in app.json);
+ *   the single displacement owner on both iOS and Android. The controller's
+ *   padding behavior is required inside native Modal windows; Android's app
+ *   `resize` mode alone does not make this component react to the keyboard;
  * - closed-state safe-area bottom padding (kept OUTSIDE the avoiding view so
  *   keyboard height and home-indicator inset are never blindly summed);
  * - fixed header slot, flexible body slot (minHeight 0 / flexShrink 1),
@@ -32,7 +33,6 @@ import React, { useCallback } from "react";
 import {
   Keyboard,
   Modal,
-  Platform,
   Pressable,
   StyleSheet,
   View,
@@ -45,8 +45,6 @@ import {
   CENTERED_SHEET_MAX_HEIGHT_RATIO,
   SHEET_MAX_HEIGHT_RATIO,
 } from "./keyboardConstants";
-
-const IS_IOS = Platform.OS === "ios";
 
 const KeyboardSafeModalSheet = ({
   visible,
@@ -134,7 +132,7 @@ const KeyboardSafeModalSheet = ({
           pointerEvents="box-none"
         >
           <KeyboardAvoidingView
-            behavior={IS_IOS ? "padding" : undefined}
+            behavior="padding"
             keyboardVerticalOffset={keyboardVerticalOffset}
             style={styles.avoider}
             pointerEvents="box-none"
