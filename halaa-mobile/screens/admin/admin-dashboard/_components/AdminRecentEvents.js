@@ -3,8 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { formatDate } from "@halaa/shared/utils/locale";
 import { useTranslation } from "../../../../localization";
-import AdaptiveText from "../../../components/commen/AdaptiveText";
-import LocalizedText from "../../../components/commen/LocalizedText";
+import AdaptiveText from "../../../../components/commen/AdaptiveText";
+import LocalizedText from "../../../../components/commen/LocalizedText";
 import { colors, spacing, borderRadius, typography, textStyles, backgrounds } from "../../../../styles/tokens";
 
 const EVENT_STATUS_COLORS = {

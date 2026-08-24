@@ -1,7 +1,7 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import LocalizedText from "../../../components/commen/LocalizedText";
+import LocalizedText from "../../../../components/commen/LocalizedText";
 import { formatCount } from "@halaa/shared/utils/locale";
 import { useTranslation } from "../../../../localization";
 import { colors, spacing, borderRadius, typography, backgrounds } from "../../../../styles/tokens";

@@ -1,8 +1,8 @@
 import React from "react";
 import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import AdaptiveText from "../../../components/commen/AdaptiveText";
-import LocalizedText from "../../../components/commen/LocalizedText";
+import AdaptiveText from "../../../../components/commen/AdaptiveText";
+import LocalizedText from "../../../../components/commen/LocalizedText";
 import { formatCount, localizeDigits } from "@halaa/shared/utils/locale";
 import { useTranslation } from "../../../../localization";
 import { colors, spacing, borderRadius, typography, textStyles, backgrounds } from "../../../../styles/tokens";
