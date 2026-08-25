@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   RefreshControl,
   ActivityIndicator,
 } from "react-native";
@@ -23,6 +22,7 @@ import PersonalInfoForm from "../../components/vendor/PersonalInfoForm";
 import ServiceDetailsForm from "../../components/vendor/ServiceDetailsForm";
 import ImagesAndPricingForm from "../../components/vendor/ImagesAndPricingForm";
 import AdditionalLinksForm from "../../components/vendor/AdditionalLinksForm";
+import KeyboardAwareFormScrollView from "../../components/commen/keyboard/KeyboardAwareFormScrollView";
 
 const isFileObj = (v) => v && typeof v === "object" && v.uri;
 const hasAnyFile = (obj) =>
@@ -184,7 +184,7 @@ const VendorAccountSetupScreen = () => {
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <View style={styles.container}>
         <TopBar title={t("settings.tabs.accountSetup")} showBack={true} />
-        <ScrollView
+        <KeyboardAwareFormScrollView
           style={styles.content}
           showsVerticalScrollIndicator={false}
           refreshControl={
@@ -249,7 +249,7 @@ const VendorAccountSetupScreen = () => {
             onSave={(data) => saveVendorSection(data)}
             loading={isSaving}
           />
-        </ScrollView>
+        </KeyboardAwareFormScrollView>
       </View>
     </SafeAreaView>
   );

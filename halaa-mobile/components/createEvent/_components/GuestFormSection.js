@@ -14,7 +14,6 @@ import ModeratorForm from "./ModeratorForm";
 import ImportExportSection from "./ImportExportSection";
 import ViewListButton from "./ViewListButton";
 import ReuseGuestsModal from "../../guests/ReuseGuestsModal";
-import VCardImportModal from "../../guests/VCardImportModal";
 import ContactsImportModal from "./ContactsImportModal";
 import { useMyContacts } from "../../../hooks/guests";
 import { mergeIncomingGuests } from "../../../utils/guests/mergeIncomingGuests";
@@ -38,7 +37,6 @@ const GuestFormSection = ({
   const [showModeratorModal, setShowModeratorModal] = useState(false);
   const [showReuseModal, setShowReuseModal] = useState(false);
   const [showContactsModal, setShowContactsModal] = useState(false);
-  const [showVcardModal, setShowVcardModal] = useState(false);
 
   // Native contacts only where the module is installed + linked (graceful
   // when the dev client hasn't been rebuilt after `expo install`).
@@ -225,24 +223,6 @@ const GuestFormSection = ({
                 </Text>
               </TouchableOpacity>
             )}
-            <TouchableOpacity
-              style={[styles.sourceBtn, isLimitReached && styles.sourceBtnDisabled]}
-              onPress={() => setShowVcardModal(true)}
-              disabled={isLimitReached}
-              activeOpacity={0.7}
-            >
-              <Ionicons
-                name="document-text-outline"
-                size={18}
-                color={isLimitReached ? "#AAAAAA" : "#C28E5C"}
-              />
-              <Text
-                style={[styles.sourceBtnText, isLimitReached && styles.sourceBtnTextDisabled]}
-                numberOfLines={1}
-              >
-                {t("vcard_button")}
-              </Text>
-            </TouchableOpacity>
           </View>
         </View>
       ) : (
@@ -299,12 +279,6 @@ const GuestFormSection = ({
           onAdd={handleMergeIncoming}
         />
       )}
-
-      <VCardImportModal
-        visible={showVcardModal}
-        onClose={() => setShowVcardModal(false)}
-        onAdd={handleMergeIncoming}
-      />
     </View>
   );
 };

@@ -3,13 +3,10 @@ import {
   View,
   TouchableOpacity,
   StyleSheet,
-  Modal,
-  ScrollView,
   ActivityIndicator,
-  KeyboardAvoidingView,
   Switch,
-  Platform,
 } from "react-native";
+import KeyboardSafeModalSheet from "../../commen/keyboard/KeyboardSafeModalSheet";
 import TextInput from "../../commen/DirectionalTextInput";
 import LocalizedText from "../../commen/LocalizedText";
 import AdaptiveText from "../../commen/AdaptiveText";
@@ -216,55 +213,77 @@ const EditPlanModal = ({ visible, onClose, plan, onSave }) => {
     if (!updatePlan.isPending) onClose();
   };
 
-  return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="slide"
-      onRequestClose={handleClose}
-    >
-      <View style={styles.overlay}>
-        <TouchableOpacity style={styles.overlayTouchable} onPress={handleClose} activeOpacity={1} />
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          style={styles.sheetWrapper}
+  const header = (
+    <>
+      {/* Handle */}
+      <View style={styles.handleBar} />
+
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.headerText}>
+          <LocalizedText role="sectionTitle" style={styles.headerTitle}>
+            {t("plans.editPlan")}
+          </LocalizedText>
+          {plan ? (
+            // Plan display name is backend content — first-strong.
+            <AdaptiveText style={styles.headerSubtitle} numberOfLines={1}>
+              {plan.nameEn || plan.nameAr}
+            </AdaptiveText>
+          ) : null}
+        </View>
+        <TouchableOpacity
+          style={styles.closeButton}
+          onPress={handleClose}
+          disabled={updatePlan.isPending}
+          accessibilityRole="button"
+          accessibilityLabel={t("common.cancel")}
         >
-          <View style={styles.sheet}>
-            {/* Handle */}
-            <View style={styles.handleBar} />
+          {/* Close is semantic — never mirrored. */}
+          <Ionicons name="close" size={20} color={colors.natural[500]} />
+        </TouchableOpacity>
+      </View>
+    </>
+  );
 
-            {/* Header */}
-            <View style={styles.header}>
-              <View style={styles.headerText}>
-                <LocalizedText role="sectionTitle" style={styles.headerTitle}>
-                  {t("plans.editPlan")}
-                </LocalizedText>
-                {plan ? (
-                  // Plan display name is backend content — first-strong.
-                  <AdaptiveText style={styles.headerSubtitle} numberOfLines={1}>
-                    {plan.nameEn || plan.nameAr}
-                  </AdaptiveText>
-                ) : null}
-              </View>
-              <TouchableOpacity
-                style={styles.closeButton}
-                onPress={handleClose}
-                disabled={updatePlan.isPending}
-                accessibilityRole="button"
-                accessibilityLabel={t("common.cancel")}
-              >
-                {/* Close is semantic — never mirrored. */}
-                <Ionicons name="close" size={20} color={colors.natural[500]} />
-              </TouchableOpacity>
-            </View>
+  const footer = (
+    <View style={styles.footer}>
+      <TouchableOpacity
+        style={styles.cancelButton}
+        onPress={handleClose}
+        disabled={updatePlan.isPending}
+      >
+        <LocalizedText role="label" style={styles.cancelButtonText}>
+          {t("common.cancel")}
+        </LocalizedText>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.saveButton, updatePlan.isPending && styles.saveButtonDisabled]}
+        onPress={handleSave}
+        disabled={updatePlan.isPending}
+      >
+        {updatePlan.isPending ? (
+          <ActivityIndicator size="small" color={colors.natural[50]} />
+        ) : (
+          <LocalizedText role="label" style={styles.saveButtonText}>
+            {t("plans.fields.saveChanges")}
+          </LocalizedText>
+        )}
+      </TouchableOpacity>
+    </View>
+  );
 
-            {/* Form */}
-            <ScrollView
-              style={styles.formScroll}
-              contentContainerStyle={styles.formContent}
-              keyboardShouldPersistTaps="handled"
-              showsVerticalScrollIndicator={false}
-            >
+  return (
+    // Shared sheet (§8.2 admin row): the aware scroll body keeps the focused
+    // plan field above the keyboard; actions stay attached above it.
+    <KeyboardSafeModalSheet
+      visible={visible}
+      onClose={handleClose}
+      onRequestClose={handleClose}
+      header={header}
+      footer={footer}
+      maxHeightRatio={0.9}
+      contentContainerStyle={styles.formContent}
+    >
               {/* ── Identity (read-only chips) ── */}
               <LocalizedText role="label" style={styles.sectionLabel}>
                 {t("plans.sections.identity")}
@@ -442,55 +461,11 @@ const EditPlanModal = ({ visible, onClose, plan, onSave }) => {
                 value={form.isPublic}
                 onValueChange={(v) => setField("isPublic", v)}
               />
-            </ScrollView>
-
-            {/* Footer */}
-            <View style={styles.footer}>
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={handleClose}
-                disabled={updatePlan.isPending}
-              >
-                <LocalizedText role="label" style={styles.cancelButtonText}>
-                  {t("common.cancel")}
-                </LocalizedText>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.saveButton, updatePlan.isPending && styles.saveButtonDisabled]}
-                onPress={handleSave}
-                disabled={updatePlan.isPending}
-              >
-                {updatePlan.isPending ? (
-                  <ActivityIndicator size="small" color={colors.natural[50]} />
-                ) : (
-                  <LocalizedText role="label" style={styles.saveButtonText}>
-                    {t("plans.fields.saveChanges")}
-                  </LocalizedText>
-                )}
-              </TouchableOpacity>
-            </View>
-          </View>
-        </KeyboardAvoidingView>
-      </View>
-    </Modal>
+    </KeyboardSafeModalSheet>
   );
 };
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    justifyContent: "flex-end",
-  },
-  overlayTouchable: { flex: 1 },
-  sheetWrapper: { width: "100%" },
-  sheet: {
-    backgroundColor: backgrounds.card[1],
-    borderTopLeftRadius: borderRadius[20],
-    borderTopRightRadius: borderRadius[20],
-    maxHeight: "90%",
-  },
-
   handleBar: {
     width: 40,
     height: 4,

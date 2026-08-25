@@ -29,7 +29,7 @@ import * as LucideIcons from "lucide-react-native";
 import { useTranslation } from "../../localization";
 import { formatTemplateDate } from "@halaa/shared/utils/formatTemplateDate";
 import { resolveTemplateFont } from "../../utils/cairoFont";
-import { ENDPOINTS } from "../../config/api";
+import { ENDPOINTS, resolveApiUrl } from "../../config/api";
 import { resolveMediaUri } from "../../utils/resolveMediaUri";
 import { useAuthStore } from "../../stores/authStore";
 
@@ -78,6 +78,25 @@ function sourceWithAuth(uri, token) {
   };
 }
 
+/**
+ * Resolve a remote template image reference to a renderable URI.
+ *
+ * - Absolute URLs pass through.
+ * - API routes ("/api/v2/...", "/templates/:id/asset") must keep their
+ *   version prefix → resolveApiUrl joins them against the FULL API base.
+ *   (resolveMediaUri strips the /api/v2 suffix and produced
+ *   https://host/templates/:id/asset — a dead path.)
+ * - Bare media refs ("uploads/...", "/uploads/...") belong to the static
+ *   origin, so resolveMediaUri's version-stripping is correct for them.
+ */
+function resolveTemplateImageUri(raw) {
+  if (!raw) return null;
+  if (typeof raw !== "string") return null;
+  if (/^(https?:|file:|blob:|data:)/i.test(raw)) return raw;
+  if (/^\/?(api\/|templates\/)/i.test(raw)) return resolveApiUrl(raw);
+  return resolveMediaUri(raw);
+}
+
 function getBackgroundSource(template, token) {
   if (!template) return null;
   if (template.src) {
@@ -93,23 +112,9 @@ function getBackgroundSource(template, token) {
     template.thumbnailUrl ||
     (isDatabaseTemplate ? ENDPOINTS.TEMPLATES.ASSET(templateId) : null);
 
-  if (!raw) {
-    if (template.fallbackSource) return template.fallbackSource;
-    return null;
-  }
-
-  const uri = resolveMediaUri(raw);
-  return uri ? sourceWithAuth(uri, token) : (template.fallbackSource || null);
-}
-
-function getFallbackSource(template, token) {
-  if (!template) return null;
-  if (template.fallbackSource) return template.fallbackSource;
-  if (template.thumbnailUrl) {
-    const uri = resolveMediaUri(template.thumbnailUrl);
-    if (uri) return sourceWithAuth(uri, token);
-  }
-  return null;
+  // Backend-provided sources only — no bundled fallback image.
+  const uri = resolveTemplateImageUri(raw);
+  return uri ? sourceWithAuth(uri, token) : null;
 }
 
 function DecorationItem({ decoration, containerWidth, containerHeight, primaryColor, token }) {
@@ -213,7 +218,6 @@ export default function TemplatePreviewCanvas({
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
   const primarySource = useMemo(() => getBackgroundSource(template, token), [template, token]);
-  const fallbackSource = useMemo(() => getFallbackSource(template, token), [template, token]);
   const [currentSource, setCurrentSource] = useState(primarySource);
 
   useEffect(() => {
@@ -259,19 +263,18 @@ export default function TemplatePreviewCanvas({
           source={currentSource}
           style={styles.bgImage}
           resizeMode="cover"
-          onLoad={() => onBackgroundReady?.(true)}
+          onLoad={() => {
+            onBackgroundReady?.(currentSource === primarySource);
+          }}
           onError={(event) => {
-            if (fallbackSource && currentSource !== fallbackSource) {
-              onBackgroundReady?.(false);
-              setCurrentSource(fallbackSource);
-            } else {
-              onBackgroundReady?.(false);
-              onBackgroundError?.(
-                new Error(
-                  event?.nativeEvent?.error || "TEMPLATE_BACKGROUND_LOAD_FAILED"
-                )
-              );
-            }
+            // No fallback swap: only backend-sent artwork is rendered. A
+            // failed load keeps Save disabled via the error path below.
+            onBackgroundReady?.(false);
+            onBackgroundError?.(
+              new Error(
+                event?.nativeEvent?.error || "TEMPLATE_BACKGROUND_LOAD_FAILED"
+              )
+            );
           }}
         />
       ) : null}

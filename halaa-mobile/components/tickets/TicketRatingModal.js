@@ -1,18 +1,14 @@
 import React, { useState } from "react";
 import {
   View,
-  Modal,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
-  Animated,
-  KeyboardAvoidingView,
-  Platform,
 } from "react-native";
 import DirectionalTextInput from "../commen/DirectionalTextInput";
 import LocalizedText from "../commen/LocalizedText";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
+import KeyboardSafeModalSheet from "../commen/keyboard/KeyboardSafeModalSheet";
 import { useRateTicket } from "../../hooks";
 import { useToast } from "../../contexts/ToastContext";
 import { CONTENT_DIRECTIONS } from "../../hooks/useInputDirection";
@@ -27,24 +23,7 @@ const TicketRatingModal = ({ visible, onClose, ticket }) => {
   const [feedback, setFeedback] = useState("");
   const [ratingError, setRatingError] = useState("");
 
-  const slideAnim = React.useRef(new Animated.Value(300)).current;
-  const fadeAnim = React.useRef(new Animated.Value(0)).current;
-
   const rateTicketMutation = useRateTicket();
-
-  React.useEffect(() => {
-    if (visible) {
-      Animated.parallel([
-        Animated.timing(slideAnim, { toValue: 0, duration: 300, useNativeDriver: true }),
-        Animated.timing(fadeAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
-      ]).start();
-    } else {
-      Animated.parallel([
-        Animated.timing(slideAnim, { toValue: 300, duration: 250, useNativeDriver: true }),
-        Animated.timing(fadeAnim, { toValue: 0, duration: 250, useNativeDriver: true }),
-      ]).start();
-    }
-  }, [visible]);
 
   const handleClose = () => {
     setRating(0);
@@ -91,149 +70,122 @@ const TicketRatingModal = ({ visible, onClose, ticket }) => {
       </TouchableOpacity>
     ));
 
-  return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="none"
-      onRequestClose={handleClose}
-    >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.modalOverlay}
+  const header = (
+    <View style={styles.header}>
+      <LocalizedText style={styles.title}>
+        {t("title")}
+      </LocalizedText>
+      <TouchableOpacity
+        style={styles.closeButton}
+        onPress={handleClose}
+        disabled={rateTicketMutation.isPending}
+        activeOpacity={0.7}
+        accessibilityLabel={t("buttons.cancel")}
       >
-        <Animated.View
-          style={[styles.backdrop, { opacity: fadeAnim }]}
-          onTouchEnd={handleClose}
+        <Ionicons name="close" size={24} color="#666" />
+      </TouchableOpacity>
+    </View>
+  );
+
+  const footer = (
+    <View style={styles.actions}>
+      <TouchableOpacity
+        style={styles.cancelButton}
+        onPress={handleClose}
+        disabled={rateTicketMutation.isPending}
+        activeOpacity={0.7}
+      >
+        <LocalizedText style={styles.cancelButtonText} center>
+          {t("buttons.cancel")}
+        </LocalizedText>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[
+          styles.submitButton,
+          rateTicketMutation.isPending && styles.submitButtonDisabled,
+        ]}
+        onPress={handleSubmit}
+        disabled={rateTicketMutation.isPending}
+        activeOpacity={0.7}
+      >
+        <LocalizedText style={styles.submitButtonText} center>
+          {rateTicketMutation.isPending
+            ? t("buttons.submitting")
+            : t("buttons.submit")}
+        </LocalizedText>
+      </TouchableOpacity>
+    </View>
+  );
+
+  return (
+    // Shared sheet (§8.2 tickets row): aware scroll body keeps the growing
+    // feedback field visible; actions stay attached above the keyboard.
+    <KeyboardSafeModalSheet
+      visible={visible}
+      onClose={handleClose}
+      onRequestClose={handleClose}
+      header={header}
+      footer={footer}
+      maxHeightRatio={0.85}
+      contentContainerStyle={styles.body}
+      accessibilityLabel={t("title")}
+    >
+      {/* Ticket info */}
+      {ticket && (
+        <View style={styles.ticketInfo}>
+          <Ionicons name="ticket-outline" size={20} color="#c28e5c" />
+          <LocalizedText style={styles.ticketType} numberOfLines={1}>
+            {tTickets(`types.${ticket.type}`)}
+          </LocalizedText>
+        </View>
+      )}
+
+      {/* Star rating */}
+      <View style={styles.section}>
+        <LocalizedText style={styles.question} center>
+          {t("rating.question")}
+        </LocalizedText>
+        {/* Star order is intentionally physical: a 1→5 rating scale is
+            numeric geometry, not navigation, so it must not mirror with
+            the locale (blueprint §7). Pinned LTR in both languages. */}
+        <View style={[styles.starsContainer, styles.starsDirection]}>{renderStars()}</View>
+        {rating > 0 && (
+          <LocalizedText style={styles.ratingLabel} center>
+            {t(`rating.${RATING_LABEL_KEYS[rating - 1]}`)}
+          </LocalizedText>
+        )}
+        {!!ratingError && (
+          <LocalizedText style={styles.errorText} center>
+            {ratingError}
+          </LocalizedText>
+        )}
+      </View>
+
+      {/* Feedback */}
+      <View style={styles.section}>
+        <LocalizedText style={styles.label}>
+          {t("feedback.label")}
+        </LocalizedText>
+        <DirectionalTextInput
+          style={styles.textArea}
+          contentDirection={CONTENT_DIRECTIONS.ADAPTIVE}
+          value={feedback}
+          onChangeText={setFeedback}
+          placeholder={t("feedback.placeholder")}
+          placeholderTextColor="#a0a0a0"
+          multiline
+          numberOfLines={4}
+          textAlignVertical="top"
+          maxLength={1000}
+          editable={!rateTicketMutation.isPending}
         />
-
-        <Animated.View
-          style={[styles.modalContainer, { transform: [{ translateY: slideAnim }] }]}
-        >
-          {/* Header */}
-          <View style={styles.header}>
-            <LocalizedText style={styles.title}>
-              {t("title")}
-            </LocalizedText>
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={handleClose}
-              disabled={rateTicketMutation.isPending}
-              activeOpacity={0.7}
-              accessibilityLabel={t("buttons.cancel")}
-            >
-              <Ionicons name="close" size={24} color="#666" />
-            </TouchableOpacity>
-          </View>
-
-          <ScrollView
-            style={styles.body}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
-            {/* Ticket info */}
-            {ticket && (
-              <View style={styles.ticketInfo}>
-                <Ionicons name="ticket-outline" size={20} color="#c28e5c" />
-                <LocalizedText style={styles.ticketType} numberOfLines={1}>
-                  {tTickets(`types.${ticket.type}`)}
-                </LocalizedText>
-              </View>
-            )}
-
-            {/* Star rating */}
-            <View style={styles.section}>
-              <LocalizedText style={styles.question} center>
-                {t("rating.question")}
-              </LocalizedText>
-              {/* Star order is intentionally physical: a 1→5 rating scale is
-                  numeric geometry, not navigation, so it must not mirror with
-                  the locale (blueprint §7). Pinned LTR in both languages. */}
-              <View style={[styles.starsContainer, styles.starsDirection]}>{renderStars()}</View>
-              {rating > 0 && (
-                <LocalizedText style={styles.ratingLabel} center>
-                  {t(`rating.${RATING_LABEL_KEYS[rating - 1]}`)}
-                </LocalizedText>
-              )}
-              {!!ratingError && (
-                <LocalizedText style={styles.errorText} center>
-                  {ratingError}
-                </LocalizedText>
-              )}
-            </View>
-
-            {/* Feedback */}
-            <View style={styles.section}>
-              <LocalizedText style={styles.label}>
-                {t("feedback.label")}
-              </LocalizedText>
-              <DirectionalTextInput
-                style={styles.textArea}
-                contentDirection={CONTENT_DIRECTIONS.ADAPTIVE}
-                value={feedback}
-                onChangeText={setFeedback}
-                placeholder={t("feedback.placeholder")}
-                placeholderTextColor="#a0a0a0"
-                multiline
-                numberOfLines={4}
-                textAlignVertical="top"
-                maxLength={1000}
-                editable={!rateTicketMutation.isPending}
-              />
-            </View>
-          </ScrollView>
-
-          {/* Actions */}
-          <View style={styles.actions}>
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={handleClose}
-              disabled={rateTicketMutation.isPending}
-              activeOpacity={0.7}
-            >
-              <LocalizedText style={styles.cancelButtonText} center>
-                {t("buttons.cancel")}
-              </LocalizedText>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.submitButton,
-                rateTicketMutation.isPending && styles.submitButtonDisabled,
-              ]}
-              onPress={handleSubmit}
-              disabled={rateTicketMutation.isPending}
-              activeOpacity={0.7}
-            >
-              <LocalizedText style={styles.submitButtonText} center>
-                {rateTicketMutation.isPending
-                  ? t("buttons.submitting")
-                  : t("buttons.submit")}
-              </LocalizedText>
-            </TouchableOpacity>
-          </View>
-        </Animated.View>
-      </KeyboardAvoidingView>
-    </Modal>
+      </View>
+    </KeyboardSafeModalSheet>
   );
 };
 
 const styles = StyleSheet.create({
-  modalOverlay: {
-    flex: 1,
-    justifyContent: "flex-end",
-  },
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-  },
-  modalContainer: {
-    backgroundColor: "#fff",
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    maxHeight: "85%",
-    paddingBottom: 20,
-  },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",

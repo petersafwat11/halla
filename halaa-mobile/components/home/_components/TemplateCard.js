@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import {
   View,
   Image,
@@ -19,10 +19,8 @@ function TemplateCard({
   cardSpacing,
   isSelected,
   onPress,
-  fallbackSource,
 }) {
   const token = useAuthStore((state) => state.token);
-  const [remoteFailed, setRemoteFailed] = useState(false);
   const inputRange = [
     (index - 1) * (CARD_WIDTH + cardSpacing),
     index * (CARD_WIDTH + cardSpacing),
@@ -43,29 +41,28 @@ function TemplateCard({
 
   // Prefer the full rendered preview (with the invitation text baked in) over
   // the bare thumbnail/background — this is what web shows.
+  // Backend-provided sources only — no bundled fallback image; cards whose
+  // remote assets are unavailable render the empty placeholder instead.
   const templateId = String(template?._id || template?.id || "");
   const isDatabaseTemplate = /^[a-f\d]{24}$/i.test(templateId);
   const imgSource = useMemo(() => {
     if (template.src) return template.src;
-    if (remoteFailed && fallbackSource) return fallbackSource;
 
     const rawUri =
       template.thumbnailUrl ||
       template.imageUrl ||
       (isDatabaseTemplate ? ENDPOINTS.TEMPLATES.ASSET(templateId) : null);
-    if (!rawUri) return fallbackSource || null;
+    if (!rawUri) return null;
 
     const uri = resolveApiUrl(rawUri);
     return {
       uri,
       ...(token ? { headers: { Authorization: `Bearer ${token}`, "X-Client": "mobile" } } : {}),
     };
-  }, [fallbackSource, isDatabaseTemplate, remoteFailed, template, templateId, token]);
-
-  useEffect(() => setRemoteFailed(false), [templateId]);
+  }, [isDatabaseTemplate, template, templateId, token]);
 
   return (
-    <TouchableOpacity onPress={() => onPress(template, fallbackSource || template.src)} activeOpacity={0.8}>
+    <TouchableOpacity onPress={() => onPress(template)} activeOpacity={0.8}>
       <Animated.View
         style={[
           styles.card,
@@ -75,12 +72,7 @@ function TemplateCard({
       >
         <View style={styles.background}>
           {imgSource ? (
-            <Image
-              source={imgSource}
-              style={styles.image}
-              resizeMode="cover"
-              onError={() => setRemoteFailed(true)}
-            />
+            <Image source={imgSource} style={styles.image} resizeMode="cover" />
           ) : (
             <View style={[styles.image, styles.placeholder]} />
           )}

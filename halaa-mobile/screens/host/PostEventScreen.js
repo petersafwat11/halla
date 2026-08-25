@@ -6,11 +6,10 @@ import {
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import KeyboardAwareListScrollComponent from "../../components/commen/keyboard/KeyboardAwareListScrollComponent";
 import { useTranslation } from "../../localization";
 import { useToast } from "../../contexts/ToastContext";
 import {
@@ -156,36 +155,35 @@ export default function PostEventScreen({ navigation, route }) {
           <View style={{ width: 44 }} />
         </View>
 
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
-        >
-          <FlatList
-            data={posts}
-            keyExtractor={(item) => item._id?.toString()}
-            renderItem={({ item }) => (
-              <PostCard
-                post={item}
-                eventId={eventId}
-                sessionToken={sessionToken}
-                t={t}
-                toast={toast}
-              />
-            )}
-            ListHeaderComponent={
-              <GuestEventHeader
-                eventInfo={eventInfo}
-                guestInfo={guestInfo}
-                thankYouMessage={thankYouMessage}
-                postsCount={posts.length}
-                t={t}
-              />
-            }
-            contentContainerStyle={styles.listContent}
-            showsVerticalScrollIndicator={false}
-          />
-        </KeyboardAvoidingView>
+        {/* Aware-list adapter (§8.2 post-event row): the FlatList keeps its
+            virtualization while the keyboard-controller's aware scroll
+            component reveals whichever composer input gains focus. */}
+        <FlatList
+          data={posts}
+          keyExtractor={(item) => item._id?.toString()}
+          renderItem={({ item }) => (
+            <PostCard
+              post={item}
+              eventId={eventId}
+              sessionToken={sessionToken}
+              t={t}
+              toast={toast}
+            />
+          )}
+          ListHeaderComponent={
+            <GuestEventHeader
+              eventInfo={eventInfo}
+              guestInfo={guestInfo}
+              thankYouMessage={thankYouMessage}
+              postsCount={posts.length}
+              t={t}
+            />
+          }
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          renderScrollComponent={KeyboardAwareListScrollComponent}
+        />
       </View>
     </SafeAreaView>
   );

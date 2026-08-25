@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
   Image,
   Alert,
@@ -16,6 +15,7 @@ import { useTranslation } from "../../localization/hooks/useTranslation";
 import { useToast } from "../../contexts/ToastContext";
 import Button from "../commen/Button";
 import { usersApi } from "../../hooks/users/_api";
+import { getImageUrl } from "../../utils/imageUtils";
 
 /**
  * Extract the S3 key from a backend-signed URL.
@@ -62,11 +62,13 @@ const ImagesAndPricingForm = ({ data, onSave, onRefetch, loading }) => {
   const { t } = useTranslation("vendor");
   const toast = useToast();
 
+  // Backend refs are relative "/uploads/…" paths — absolutize so they render
+  // in RN Image AND parse in keyFromSignedUrl (new URL needs an absolute URL).
   const existingPortfolio = Array.isArray(data?.portfolioImages)
-    ? data.portfolioImages.filter(Boolean)
+    ? data.portfolioImages.map((u) => getImageUrl(u)).filter(Boolean)
     : [];
   const existingPricing = Array.isArray(data?.pricePackages)
-    ? data.pricePackages.filter(Boolean)
+    ? data.pricePackages.map((u) => getImageUrl(u)).filter(Boolean)
     : [];
 
   const [newPortfolioFiles, setNewPortfolioFiles] = useState([]);
@@ -193,7 +195,7 @@ const ImagesAndPricingForm = ({ data, onSave, onRefetch, loading }) => {
   );
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <View style={styles.container}>
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>
           {t("settings.imagesAndPricing.title")}
@@ -268,12 +270,12 @@ const ImagesAndPricingForm = ({ data, onSave, onRefetch, loading }) => {
           />
         </View>
       </View>
-    </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { width: "100%" },
   section: {
     backgroundColor: "#fff",
     borderRadius: 12,

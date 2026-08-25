@@ -1,10 +1,11 @@
 import React from "react";
 import { View, Text, StyleSheet, ScrollView, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { getImageUrl } from "../../../../utils/imageUtils";
 
 const PostMedia = ({ post, t }) => {
   if (post.type === "photo" && (post.url || post.content?.mediaUrl)) {
-    const uri = post.url || post.content?.mediaUrl;
+    const uri = getImageUrl(post.url || post.content?.mediaUrl);
     return (
       <Image
         source={{ uri }}
@@ -23,7 +24,7 @@ const PostMedia = ({ post, t }) => {
         {post.content.mediaUrls.map((url, idx) => (
           <Image
             key={idx}
-            source={{ uri: url }}
+            source={{ uri: getImageUrl(url) }}
             style={styles.galleryImage}
             resizeMode="cover"
           />

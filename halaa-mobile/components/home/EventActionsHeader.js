@@ -13,10 +13,10 @@ import { useEventActionGate } from "@halaa/shared/hooks/useEventActionGate";
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
 const EVENT_EDIT_STEPS = [
-  { step: 1, labelKey: "lastEvent.dropdown.eventDetails", fallback: "تفاصيل المناسبة" },
-  { step: 2, labelKey: "lastEvent.dropdown.guestList", fallback: "قائمة الضيوف" },
-  { step: 3, labelKey: "lastEvent.dropdown.invitationDesign", fallback: "تصميم الدعوة" },
-  { step: 4, labelKey: "lastEvent.dropdown.invitationCustomization", fallback: "تخصيص الدعوة" },
+  { step: 1, labelKey: "home:lastEvent.dropdown.eventDetails" },
+  { step: 2, labelKey: "home:lastEvent.dropdown.guestList" },
+  { step: 3, labelKey: "home:lastEvent.dropdown.invitationDesign" },
+  { step: 4, labelKey: "home:lastEvent.dropdown.invitationCustomization" },
 ];
 
 const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete = true }) => {
@@ -234,7 +234,7 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete
               >
                 <Ionicons name="create-outline" size={16} color="#6B4E33" />
                 <Text style={styles.menuItemText}>
-                  {t(item.labelKey, item.fallback)}
+                  {t(item.labelKey)}
                 </Text>
                 <DirectionalIonicon name="chevron-forward" size={14} color="#9CA3AF" />
               </TouchableOpacity>

@@ -4,12 +4,10 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Modal,
-  KeyboardAvoidingView,
-  Platform,
 } from "react-native";
-import TextInput from "../../commen/DirectionalTextInput";
 import { Ionicons } from "@expo/vector-icons";
+import KeyboardSafeModalSheet from "../../commen/keyboard/KeyboardSafeModalSheet";
+import TextInput from "../../commen/DirectionalTextInput";
 
 const QRModal = ({ visible, onClose, onSubmit, t }) => {
   const [code, setCode] = useState("");
@@ -22,62 +20,64 @@ const QRModal = ({ visible, onClose, onSubmit, t }) => {
   };
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <View style={styles.modalOverlay}>
-        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined}>
-          <View style={styles.modalCard}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>{t("checkIn.qrTitle")}</Text>
-              <TouchableOpacity onPress={onClose}>
-                <Ionicons name="close" size={22} color="#2C2C2C" />
-              </TouchableOpacity>
-            </View>
-            <Text style={styles.fieldLabel}>{t("checkIn.qrLabel")}</Text>
-            <View style={styles.inputRow}>
-              <Ionicons name="qr-code-outline" size={18} color="#9CA3AF" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                contentDirection="ltr"
-                placeholder={t("checkIn.qrPlaceholder")}
-                placeholderTextColor="#9CA3AF"
-                value={code}
-                onChangeText={setCode}
-                autoCapitalize="none"
-              />
-            </View>
-            <TouchableOpacity
-              style={[styles.verifyBtn, { marginTop: 16 }]}
-              onPress={handleSubmit}
-              disabled={!code.trim()}
-              activeOpacity={0.85}
-            >
-              <Text style={styles.verifyBtnText}>{t("checkIn.qrButton")}</Text>
-            </TouchableOpacity>
-          </View>
-        </KeyboardAvoidingView>
+    // Small bottom card (§6.4): the shared avoiding owner keeps the code
+    // input and verify action above the keyboard on both platforms.
+    <KeyboardSafeModalSheet
+      visible={visible}
+      onClose={onClose}
+      onRequestClose={onClose}
+      header={
+        <View style={styles.modalHeader}>
+          <Text style={styles.modalTitle}>{t("checkIn.qrTitle")}</Text>
+          <TouchableOpacity onPress={onClose}>
+            <Ionicons name="close" size={22} color="#2C2C2C" />
+          </TouchableOpacity>
+        </View>
+      }
+      footer={
+        <TouchableOpacity
+          style={styles.verifyBtn}
+          onPress={handleSubmit}
+          disabled={!code.trim()}
+          activeOpacity={0.85}
+        >
+          <Text style={styles.verifyBtnText}>{t("checkIn.qrButton")}</Text>
+        </TouchableOpacity>
+      }
+    >
+      <View style={styles.modalCard}>
+        <Text style={styles.fieldLabel}>{t("checkIn.qrLabel")}</Text>
+        <View style={styles.inputRow}>
+          <Ionicons name="qr-code-outline" size={18} color="#9CA3AF" style={styles.inputIcon} />
+          <TextInput
+            style={styles.input}
+            contentDirection="ltr"
+            placeholder={t("checkIn.qrPlaceholder")}
+            placeholderTextColor="#9CA3AF"
+            value={code}
+            onChangeText={setCode}
+            autoCapitalize="none"
+          />
+        </View>
       </View>
-    </Modal>
+    </KeyboardSafeModalSheet>
   );
 };
 
 const styles = StyleSheet.create({
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "flex-end",
-  },
   modalCard: {
-    backgroundColor: "#FFF",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 24,
-    paddingBottom: 40,
+    paddingHorizontal: 24,
+    paddingTop: 4,
+    paddingBottom: 8,
   },
   modalHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F0F0F0",
   },
   modalTitle: {
     fontSize: 18,
@@ -111,6 +111,9 @@ const styles = StyleSheet.create({
   verifyBtn: {
     backgroundColor: "#C28E5C",
     borderRadius: 12,
+    marginHorizontal: 24,
+    marginTop: 12,
+    marginBottom: 8,
     paddingVertical: 16,
     alignItems: "center",
     justifyContent: "center",

@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
-  Modal,
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
 } from "react-native";
+import KeyboardSafeModalSheet from "../commen/keyboard/KeyboardSafeModalSheet";
 import TextInput from "../commen/DirectionalTextInput";
 import { useTranslation } from "../../localization/hooks/useTranslation";
 import { useToast } from "../../contexts/ToastContext";
@@ -90,87 +90,80 @@ const PhoneChangeOtpModal = ({ visible, phoneNumber, onClose, onSuccess }) => {
   };
 
   return (
-    <Modal
+    // Small centered card (§6.4): the shared avoiding owner keeps the OTP
+    // field and verify action above the keyboard on both platforms.
+    <KeyboardSafeModalSheet
       visible={visible}
-      transparent
-      animationType="fade"
+      onClose={onClose}
       onRequestClose={onClose}
+      centered
+      animationType="fade"
+      contentContainerStyle={styles.modalPadding}
+      sheetStyle={styles.modal}
     >
-      <View style={styles.overlay}>
-        <View style={styles.modal}>
-          <Text style={styles.title}>
-            {t("settings.phoneOtp.title", "Verify your new phone number")}
+      <Text style={styles.title}>
+        {t("settings.phoneOtp.title", "Verify your new phone number")}
+      </Text>
+      <Text style={styles.subtitle}>
+        {t(
+          "settings.phoneOtp.subtitle",
+          "We sent a verification code to {{phone}}",
+          { phone: phoneNumber || "" }
+        )}
+      </Text>
+
+      <TextInput
+        style={styles.input}
+        keyboardType="number-pad"
+        placeholder="••••••"
+        placeholderTextColor="#bbb"
+        maxLength={8}
+        value={otp}
+        onChangeText={setOtp}
+        editable={!sending && !verifying}
+      />
+
+      <TouchableOpacity
+        style={[styles.primaryBtn, (!otp || verifying) && styles.disabledBtn]}
+        onPress={verify}
+        disabled={!otp || verifying}
+      >
+        {verifying ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.primaryBtnText}>
+            {t("settings.phoneOtp.verify", "Verify")}
           </Text>
-          <Text style={styles.subtitle}>
-            {t(
-              "settings.phoneOtp.subtitle",
-              "We sent a verification code to {{phone}}",
-              { phone: phoneNumber || "" }
-            )}
-          </Text>
+        )}
+      </TouchableOpacity>
 
-          <TextInput
-            style={styles.input}
-            keyboardType="number-pad"
-            placeholder="••••••"
-            placeholderTextColor="#bbb"
-            maxLength={8}
-            value={otp}
-            onChangeText={setOtp}
-            editable={!sending && !verifying}
-          />
+      <TouchableOpacity
+        onPress={() => sendOtp({ isResend: true })}
+        disabled={sending || verifying}
+        style={styles.linkBtn}
+      >
+        <Text style={styles.linkText}>
+          {sending
+            ? t("settings.phoneOtp.sending", "Sending…")
+            : t("settings.phoneOtp.resend", "Resend code")}
+        </Text>
+      </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[styles.primaryBtn, (!otp || verifying) && styles.disabledBtn]}
-            onPress={verify}
-            disabled={!otp || verifying}
-          >
-            {verifying ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.primaryBtnText}>
-                {t("settings.phoneOtp.verify", "Verify")}
-              </Text>
-            )}
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => sendOtp({ isResend: true })}
-            disabled={sending || verifying}
-            style={styles.linkBtn}
-          >
-            <Text style={styles.linkText}>
-              {sending
-                ? t("settings.phoneOtp.sending", "Sending…")
-                : t("settings.phoneOtp.resend", "Resend code")}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={onClose} disabled={verifying} style={styles.cancelBtn}>
-            <Text style={styles.cancelText}>
-              {t("common.cancel", "Cancel")}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </Modal>
+      <TouchableOpacity onPress={onClose} disabled={verifying} style={styles.cancelBtn}>
+        <Text style={styles.cancelText}>
+          {t("common.cancel", "Cancel")}
+        </Text>
+      </TouchableOpacity>
+    </KeyboardSafeModalSheet>
   );
 };
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
   modal: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 24,
-    width: "100%",
     maxWidth: 380,
+  },
+  modalPadding: {
+    padding: 24,
   },
   title: {
     fontSize: 18,

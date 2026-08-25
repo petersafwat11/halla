@@ -1,5 +1,5 @@
 import React from "react";
-import { View, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AdaptiveText from "../../../../components/commen/AdaptiveText";
 import LocalizedText from "../../../../components/commen/LocalizedText";

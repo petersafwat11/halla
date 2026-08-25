@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { formatDate, formatTime, formatGuestCount, formatCount } from "@halaa/shared/utils/locale";
 import { getStatusVisual } from "../../constants/statusColors";
 import { useTranslation } from "../../localization";
+import { getImageUrl } from "../../utils/imageUtils";
 import AdaptiveText from "../commen/AdaptiveText";
 
 const EventListItem = ({ event, onPress }) => {
@@ -52,7 +53,7 @@ const EventListItem = ({ event, onPress }) => {
         <View style={styles.mainGroup}>
           <View style={styles.imageContainer}>
             {event?.image ? (
-              <Image source={{ uri: event.image }} style={styles.image} />
+              <Image source={{ uri: getImageUrl(event.image) }} style={styles.image} />
             ) : (
               <View style={styles.placeholderImage}>
                 <Ionicons name="image-outline" size={22} color="#C28E5C" />

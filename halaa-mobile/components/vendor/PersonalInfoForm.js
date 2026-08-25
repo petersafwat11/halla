@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
   Image,
   Alert,
@@ -22,6 +21,7 @@ import Button from "../commen/Button";
 import { mobilePersonalInfoSchema as personalInfoSchema } from "@halaa/shared/schemas/vendor";
 import { usersApi } from "../../hooks/users/_api";
 import PhoneChangeOtpModal from "./PhoneChangeOtpModal";
+import { getImageUrl } from "../../utils/imageUtils";
 
 /**
  * Personal Info — single consolidated section.
@@ -46,7 +46,8 @@ const PersonalInfoForm = ({ data, onSave, onPhoneChanged, onRefetch, loading }) 
       phoneNumber: data?.phoneNumber || "",
     },
   });
-  const existingAvatar = data?.avatar || null;
+  // Absolutize the server's relative "/uploads/…" ref for RN Image.
+  const existingAvatar = getImageUrl(data?.avatar) || null;
   const [avatarFile, setAvatarFile] = useState(null);
   const [phoneNumber, setPhoneNumber] = useState(data?.phoneNumber || "");
   const [otpCandidate, setOtpCandidate] = useState(null);
@@ -155,7 +156,7 @@ const PersonalInfoForm = ({ data, onSave, onPhoneChanged, onRefetch, loading }) 
 
   return (
     <FormProvider {...methods}>
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <View style={styles.container}>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
             {t("settings.personalInfo.title")}
@@ -264,7 +265,7 @@ const PersonalInfoForm = ({ data, onSave, onPhoneChanged, onRefetch, loading }) 
             />
           </View>
         </View>
-      </ScrollView>
+      </View>
 
       <PhoneChangeOtpModal
         visible={!!otpCandidate}
@@ -280,7 +281,7 @@ const PersonalInfoForm = ({ data, onSave, onPhoneChanged, onRefetch, loading }) 
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { width: "100%" },
   section: {
     backgroundColor: "#fff",
     borderRadius: 12,

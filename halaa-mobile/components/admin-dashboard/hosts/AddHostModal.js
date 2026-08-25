@@ -1,12 +1,8 @@
 import React, { useMemo } from "react";
 import {
     View,
-    Modal,
     StyleSheet,
-    ScrollView,
     TouchableOpacity,
-    KeyboardAvoidingView,
-    Platform,
     Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -15,6 +11,7 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
+import KeyboardSafeModalSheet from "../../commen/keyboard/KeyboardSafeModalSheet";
 import {
     TextInput,
     MobileInput,
@@ -105,93 +102,86 @@ const AddHostModal = ({ visible, onClose, onSuccess }) => {
         onClose();
     };
 
+    const header = (
+        <View style={styles.header}>
+            <LocalizedText style={styles.title}>{t("hosts.add.title")}</LocalizedText>
+            <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+                <Ionicons name="close" size={24} color={colors.natural[900]} />
+            </TouchableOpacity>
+        </View>
+    );
+
+    const footer = (
+        <View style={styles.footer}>
+            <View style={styles.buttonWrapper}>
+                <Button
+                    text={t("common.cancel")}
+                    onPress={handleClose}
+                    variant="outline"
+                    size="small"
+                    disabled={createHost.isPending}
+                />
+            </View>
+            <View style={styles.buttonWrapper}>
+                <Button
+                    text={createHost.isPending ? t("hosts.add.creating") : t("hosts.add.create")}
+                    onPress={handleSubmit(handleSave)}
+                    variant="primary"
+                    size="small"
+                    loading={createHost.isPending}
+                />
+            </View>
+        </View>
+    );
+
     return (
-        <Modal
+        // Shared sheet (§8.2 admin row): aware scroll body owns focus
+        // scrolling; actions stay attached above the keyboard.
+        <KeyboardSafeModalSheet
             visible={visible}
-            animationType="slide"
-            transparent={true}
+            onClose={handleClose}
             onRequestClose={handleClose}
+            header={header}
+            footer={footer}
+            contentContainerStyle={styles.contentPadding}
+            sheetStyle={styles.modalSheetBg}
         >
-            {/* Keeps the header/footer reachable while the iOS keyboard is open. */}
-            <KeyboardAvoidingView
-                behavior={Platform.OS === "ios" ? "padding" : undefined}
-                style={styles.overlay}
-            >
-                <View style={styles.modalContainer}>
-                    {/* Header: title at logical start, close at logical end
-                        (close icons are never direction-mirrored). */}
-                    <View style={styles.header}>
-                        <LocalizedText style={styles.title}>{t("hosts.add.title")}</LocalizedText>
-                        <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-                            <Ionicons name="close" size={24} color={colors.natural[900]} />
-                        </TouchableOpacity>
-                    </View>
-
-                    <FormProvider {...methods}>
-                        <ScrollView
-                            style={styles.content}
-                            showsVerticalScrollIndicator={false}
-                            keyboardShouldPersistTaps="handled"
-                        >
-                            <View style={styles.formGroup}>
-                                <TextInput
-                                    name="name"
-                                    label={t("hosts.add.name")}
-                                    placeholder={t("hosts.add.namePlaceholder")}
-                                    contentDirection="adaptive"
-                                />
-                            </View>
-
-                            <View style={styles.formGroup}>
-                                <EmailInput
-                                    name="email"
-                                    label={t("hosts.add.email")}
-                                    placeholder={t("hosts.add.emailPlaceholder")}
-                                />
-                            </View>
-
-                            <View style={styles.formGroup}>
-                                <MobileInput
-                                    name="phoneNumber"
-                                    label={t("hosts.add.phone")}
-                                    placeholder={t("hosts.add.phonePlaceholder")}
-                                />
-                            </View>
-
-                            <View style={styles.formGroup}>
-                                <PasswordInput
-                                    name="password"
-                                    label={t("hosts.add.password")}
-                                    placeholder={t("hosts.add.passwordPlaceholder")}
-                                />
-                            </View>
-                            <View style={styles.spacingHelper} />
-                        </ScrollView>
-                    </FormProvider>
-
-                    <View style={styles.footer}>
-                        <View style={styles.buttonWrapper}>
-                            <Button
-                                text={t("common.cancel")}
-                                onPress={handleClose}
-                                variant="outline"
-                                size="small"
-                                disabled={createHost.isPending}
-                            />
-                        </View>
-                        <View style={styles.buttonWrapper}>
-                            <Button
-                                text={createHost.isPending ? t("hosts.add.creating") : t("hosts.add.create")}
-                                onPress={handleSubmit(handleSave)}
-                                variant="primary"
-                                size="small"
-                                loading={createHost.isPending}
-                            />
-                        </View>
-                    </View>
+            <FormProvider {...methods}>
+                <View style={styles.formGroup}>
+                    <TextInput
+                        name="name"
+                        label={t("hosts.add.name")}
+                        placeholder={t("hosts.add.namePlaceholder")}
+                        contentDirection="adaptive"
+                    />
                 </View>
-            </KeyboardAvoidingView>
-        </Modal>
+
+                <View style={styles.formGroup}>
+                    <EmailInput
+                        name="email"
+                        label={t("hosts.add.email")}
+                        placeholder={t("hosts.add.emailPlaceholder")}
+                    />
+                </View>
+
+                <View style={styles.formGroup}>
+                    <MobileInput
+                        name="phoneNumber"
+                        label={t("hosts.add.phone")}
+                        placeholder={t("hosts.add.phonePlaceholder")}
+                    />
+                </View>
+
+                <View style={styles.formGroup}>
+                    <PasswordInput
+                        name="password"
+                        label={t("hosts.add.password")}
+                        placeholder={t("hosts.add.passwordPlaceholder")}
+                    />
+                </View>
+                <View style={styles.spacingHelper} />
+            </FormProvider>
+        </KeyboardSafeModalSheet>
     );
 };
 
@@ -202,16 +192,11 @@ AddHostModal.propTypes = {
 };
 
 const styles = StyleSheet.create({
-    overlay: {
-        flex: 1,
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
-        justifyContent: "flex-end",
-    },
-    modalContainer: {
+    modalSheetBg: {
         backgroundColor: backgrounds.card[1],
-        borderTopLeftRadius: borderRadius[20],
-        borderTopRightRadius: borderRadius[20],
-        maxHeight: "90%",
+    },
+    contentPadding: {
+        padding: spacing[20],
     },
     header: {
         flexDirection: "row",
@@ -227,9 +212,6 @@ const styles = StyleSheet.create({
     },
     closeButton: {
         padding: spacing[4],
-    },
-    content: {
-        padding: spacing[20],
     },
     formGroup: {
         marginBottom: 8,

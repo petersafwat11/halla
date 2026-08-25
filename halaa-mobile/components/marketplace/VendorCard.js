@@ -14,6 +14,7 @@ import AdaptiveText from "../commen/AdaptiveText";
 import { countToken, priceToken } from "@halaa/shared/utils/displayTokens";
 import { formatNumber } from "@halaa/shared/utils/locale";
 import { isolateLtr } from "@halaa/shared/utils/bidi";
+import { getImageUrl } from "../../utils/imageUtils";
 
 const MAX_VISIBLE_TAGS = 3;
 
@@ -45,8 +46,11 @@ const VendorCard = ({ vendor, onPress, index = 0 }) => {
     onPress && onPress(vendor);
   };
 
-  const coverImage = vendor.presentationImage || vendor.coverImage;
-  const logo = vendor.logo;
+  // Backend refs are relative "/uploads/…" paths — absolutize for RN Image.
+  const coverImage = getImageUrl(
+    vendor.presentationImage || vendor.coverImage
+  );
+  const logo = getImageUrl(vendor.logo);
   const hasImage = !!coverImage && !imageError;
   const hasLogo = !!logo && !logoError;
   const hasRating = vendor.rating != null && Number(vendor.rating) > 0;

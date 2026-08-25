@@ -1,14 +1,13 @@
 import React from "react";
 import {
   View,
-  Modal,
-  ScrollView,
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import PropTypes from "prop-types";
 import { useForm, FormProvider } from "react-hook-form";
+import KeyboardSafeModalSheet from "../../commen/keyboard/KeyboardSafeModalSheet";
 import {
   Button,
   TextInput,
@@ -99,98 +98,100 @@ const AddBusinessModal = ({ visible, onClose, onSaved }) => {
 
   const isSubmitting = createBusiness.isPending;
 
-  return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={close}>
-      <View style={styles.overlay}>
-        <View style={styles.modalContainer}>
-          <View style={styles.header}>
-            <View style={{ flex: 1 }}>
-              <LocalizedText style={styles.kicker}>{cb("kicker", "Business")}</LocalizedText>
-              <LocalizedText style={styles.title}>{cb("title", "Add Business")}</LocalizedText>
-            </View>
-            <TouchableOpacity onPress={close} style={styles.closeButton}>
-              <Ionicons name="close" size={24} color={colors.natural[900]} />
-            </TouchableOpacity>
-          </View>
-
-          <FormProvider {...methods}>
-            <ScrollView
-              style={styles.scroll}
-              contentContainerStyle={styles.content}
-              keyboardShouldPersistTaps="handled"
-              showsVerticalScrollIndicator={false}
-            >
-              <TextInput
-                name="name"
-                label={cb("name", "Name")}
-                placeholder={cb("namePlaceholder", "Business name")}
-                contentDirection={CONTENT_DIRECTIONS.ADAPTIVE}
-                rules={{ required: cb("nameRequired", "Name is required") }}
-              />
-              <EmailInput
-                name="email"
-                label={cb("email", "Email")}
-                placeholder={cb("emailPlaceholder", "name@example.com")}
-                rules={{ required: cb("emailRequired", "Email is required") }}
-              />
-              <MobileInput
-                name="phoneNumber"
-                label={cb("phone", "Phone number")}
-                placeholder={cb("phonePlaceholder", "5xxxxxxxx")}
-                rules={{ required: cb("phoneRequired", "Phone is required") }}
-              />
-              <PasswordInput
-                name="password"
-                label={cb("password", "Password")}
-                placeholder={cb("passwordPlaceholder", "Leave blank to auto-generate")}
-                rules={{
-                  validate: (v) =>
-                    !v || v.length >= 8 || cb("passwordMin", "Password must be at least 8 characters"),
-                }}
-              />
-              <TextAreaInput
-                name="description"
-                label={cb("description", "Description")}
-                placeholder={cb("descriptionPlaceholder", "Optional")}
-                contentDirection={CONTENT_DIRECTIONS.ADAPTIVE}
-                maxLength={2000}
-              />
-              <ImageInput
-                name="logo"
-                label={cb("logo", "Logo")}
-                placeholder={cb("logoPlaceholder", "Choose an image")}
-              />
-            </ScrollView>
-          </FormProvider>
-
-          <View style={styles.footer}>
-            <View style={styles.buttonWrapper}>
-              <Button
-                text={t("common.cancel")}
-                onPress={close}
-                variant="outline"
-                size="small"
-                disabled={isSubmitting}
-              />
-            </View>
-            <View style={styles.buttonWrapper}>
-              <Button
-                text={
-                  isSubmitting
-                    ? cb("saving", "Saving...")
-                    : cb("submit", "Add business")
-                }
-                onPress={methods.handleSubmit(onSubmit)}
-                variant="primary"
-                size="small"
-                loading={isSubmitting}
-                disabled={isSubmitting}
-              />
-            </View>
-          </View>
-        </View>
+  const header = (
+    <View style={styles.header}>
+      <View style={{ flex: 1 }}>
+        <LocalizedText style={styles.kicker}>{cb("kicker", "Business")}</LocalizedText>
+        <LocalizedText style={styles.title}>{cb("title", "Add Business")}</LocalizedText>
       </View>
-    </Modal>
+      <TouchableOpacity onPress={close} style={styles.closeButton}>
+        <Ionicons name="close" size={24} color={colors.natural[900]} />
+      </TouchableOpacity>
+    </View>
+  );
+
+  const footer = (
+    <View style={styles.footer}>
+      <View style={styles.buttonWrapper}>
+        <Button
+          text={t("common.cancel")}
+          onPress={close}
+          variant="outline"
+          size="small"
+          disabled={isSubmitting}
+        />
+      </View>
+      <View style={styles.buttonWrapper}>
+        <Button
+          text={
+            isSubmitting
+              ? cb("saving", "Saving...")
+              : cb("submit", "Add business")
+          }
+          onPress={methods.handleSubmit(onSubmit)}
+          variant="primary"
+          size="small"
+          loading={isSubmitting}
+          disabled={isSubmitting}
+        />
+      </View>
+    </View>
+  );
+
+  return (
+    // Shared sheet (§8.2 admin row): aware scroll body owns focus scrolling;
+    // actions stay attached above the keyboard.
+    <KeyboardSafeModalSheet
+      visible={visible}
+      onClose={close}
+      onRequestClose={close}
+      header={header}
+      footer={footer}
+      contentContainerStyle={styles.contentPadding}
+    >
+      <FormProvider {...methods}>
+        <TextInput
+          name="name"
+          label={cb("name", "Name")}
+          placeholder={cb("namePlaceholder", "Business name")}
+          contentDirection={CONTENT_DIRECTIONS.ADAPTIVE}
+          rules={{ required: cb("nameRequired", "Name is required") }}
+        />
+        <EmailInput
+          name="email"
+          label={cb("email", "Email")}
+          placeholder={cb("emailPlaceholder", "name@example.com")}
+          rules={{ required: cb("emailRequired", "Email is required") }}
+        />
+        <MobileInput
+          name="phoneNumber"
+          label={cb("phone", "Phone number")}
+          placeholder={cb("phonePlaceholder", "5xxxxxxxx")}
+          rules={{ required: cb("phoneRequired", "Phone is required") }}
+        />
+        <PasswordInput
+          name="password"
+          label={cb("password", "Password")}
+          placeholder={cb("passwordPlaceholder", "Leave blank to auto-generate")}
+          rules={{
+            validate: (v) =>
+              !v || v.length >= 8 || cb("passwordMin", "Password must be at least 8 characters"),
+          }}
+        />
+        <TextAreaInput
+          name="description"
+          label={cb("description", "Description")}
+          placeholder={cb("descriptionPlaceholder", "Optional")}
+          contentDirection={CONTENT_DIRECTIONS.ADAPTIVE}
+          maxLength={2000}
+        />
+        <ImageInput
+          name="logo"
+          label={cb("logo", "Logo")}
+          placeholder={cb("logoPlaceholder", "Choose an image")}
+        />
+      </FormProvider>
+    </KeyboardSafeModalSheet>
   );
 };
 
@@ -201,16 +202,8 @@ AddBusinessModal.propTypes = {
 };
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "flex-end",
-  },
-  modalContainer: {
+  modalSheetBg: {
     backgroundColor: backgrounds.card[1],
-    borderTopLeftRadius: borderRadius[20],
-    borderTopRightRadius: borderRadius[20],
-    maxHeight: "92%",
   },
   header: {
     flexDirection: "row",
@@ -232,11 +225,9 @@ const styles = StyleSheet.create({
   closeButton: {
     padding: spacing[4],
   },
-  scroll: {
-    flexGrow: 0,
-  },
-  content: {
+  contentPadding: {
     padding: spacing[20],
+    gap: spacing[12],
   },
   footer: {
     flexDirection: "row",

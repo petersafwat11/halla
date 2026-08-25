@@ -10,6 +10,7 @@ import {
 } from "@halaa/shared/utils/locale";
 import { isolateAuto } from "@halaa/shared/utils/bidi";
 import { getStatusVisual } from "../../../constants/statusColors";
+import { getImageUrl } from "../../../utils/imageUtils";
 
 const STATUS_STYLE = {
   draft:     { ...getStatusVisual("draft"), textKey: "lastEvent.status.draft" },
@@ -46,8 +47,9 @@ export default function LastEventHeader({ event }) {
   const location = event.locationName || "";
   const status = STATUS_STYLE[event.status] || DEFAULT_STATUS;
   // Step-3 invitation image, signed by the dashboard endpoint. Fall back to the
-  // legacy `image` field for any older payload shape.
-  const image = event.templateImage || event.image;
+  // legacy `image` field for any older payload shape. Absolutize the stored
+  // "/uploads/…" ref for RN Image.
+  const image = getImageUrl(event.templateImage || event.image);
   const dateTime = formatDateTime(event, locale);
 
   return (

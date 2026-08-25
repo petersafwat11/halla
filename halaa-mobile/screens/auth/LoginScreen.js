@@ -2,13 +2,11 @@ import React, { useState, useCallback } from "react";
 import {
   StyleSheet,
   View,
-  ScrollView,
   TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
   Dimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import KeyboardAwareFormScrollView from "../../components/commen/keyboard/KeyboardAwareFormScrollView";
 import { useTranslation } from "../../localization";
 import { useAuthStore } from "../../stores/authStore";
 import { useToast } from "../../contexts/ToastContext";
@@ -97,85 +95,80 @@ export default function LoginScreen({ navigation }) {
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <View style={styles.container}>
         <TopBar title={t("login.title")} showBack={true} />
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
+        {/* One shared owner for the form region (§8.2 auth row). */}
+        <KeyboardAwareFormScrollView
           style={styles.keyboardView}
+          contentContainerStyle={styles.scrollContent}
         >
-          <ScrollView
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
-            <View style={styles.content}>
-              {step === "input" ? (
-                <>
-                  {loginMethod === "mobile" ? (
-                    <MobileLoginForm onSubmit={handleMobileLogin} loading={loading} />
-                  ) : (
-                    <>
-                      <EmailLoginForm onSubmit={handleEmailLogin} loading={loading} />
-                      <TouchableOpacity
-                        onPress={handleForgotPassword}
-                        style={styles.forgotPassword}
-                      >
-                        {/* App copy — always the UI locale (blueprint §5.1). */}
-                        <LocalizedText style={styles.forgotPasswordText}>
-                          {t("login.forgotPassword")}
-                        </LocalizedText>
-                      </TouchableOpacity>
-                    </>
-                  )}
-
-                  <TouchableOpacity onPress={switchMethod} style={styles.switchMethod}>
-                    <LocalizedText style={styles.switchMethodText}>
-                      {loginMethod === "mobile"
-                        ? t("login.loginWithEmail")
-                        : t("login.loginWithMobile")}
-                    </LocalizedText>
-                  </TouchableOpacity>
-
-                  {/* Two adjacent runs in one logical row — no string
-                      concatenation, so punctuation stays inside each run. */}
-                  <View style={styles.signupContainer}>
-                    <LocalizedText style={styles.signupText}>
-                      {t("login.noAccount")}
-                    </LocalizedText>
-                    <TouchableOpacity onPress={handleSignup}>
-                      <LocalizedText style={styles.signupLink}>
-                        {t("login.signUp")}
+          <View style={styles.content}>
+            {step === "input" ? (
+              <>
+                {loginMethod === "mobile" ? (
+                  <MobileLoginForm onSubmit={handleMobileLogin} loading={loading} />
+                ) : (
+                  <>
+                    <EmailLoginForm onSubmit={handleEmailLogin} loading={loading} />
+                    <TouchableOpacity
+                      onPress={handleForgotPassword}
+                      style={styles.forgotPassword}
+                    >
+                      {/* App copy — always the UI locale (blueprint §5.1). */}
+                      <LocalizedText style={styles.forgotPasswordText}>
+                        {t("login.forgotPassword")}
                       </LocalizedText>
                     </TouchableOpacity>
-                  </View>
+                  </>
+                )}
 
-                  <TouchableOpacity
-                    style={styles.guestMarketplaceContainer}
-                    onPress={() => navigation.navigate("Marketplace")}
-                  >
-                    <LocalizedText style={styles.guestMarketplaceLink}>
-                      {t("login.browseMarketplace")}
+                <TouchableOpacity onPress={switchMethod} style={styles.switchMethod}>
+                  <LocalizedText style={styles.switchMethodText}>
+                    {loginMethod === "mobile"
+                      ? t("login.loginWithEmail")
+                      : t("login.loginWithMobile")}
+                  </LocalizedText>
+                </TouchableOpacity>
+
+                {/* Two adjacent runs in one logical row — no string
+                    concatenation, so punctuation stays inside each run. */}
+                <View style={styles.signupContainer}>
+                  <LocalizedText style={styles.signupText}>
+                    {t("login.noAccount")}
+                  </LocalizedText>
+                  <TouchableOpacity onPress={handleSignup}>
+                    <LocalizedText style={styles.signupLink}>
+                      {t("login.signUp")}
                     </LocalizedText>
                   </TouchableOpacity>
-                </>
-              ) : (
-                <OTPVerificationForm
-                  onSubmit={handleOTPVerification}
-                  onEditPhone={handleEditPhone}
-                  onResend={async () => {
-                    const result = await resendOTP({ type: "login" });
-                    if (!result.success) {
-                      const msg = resolveError(result, "errors.otpFailed");
-                      toast.error(msg);
-                      throw new Error(msg);
-                    }
-                    return { cooldownSeconds: result.cooldownSeconds };
-                  }}
-                  phoneNumber={`+966${getTempMobile()}`}
-                  loading={loading}
-                />
-              )}
-            </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
+                </View>
+
+                <TouchableOpacity
+                  style={styles.guestMarketplaceContainer}
+                  onPress={() => navigation.navigate("Marketplace")}
+                >
+                  <LocalizedText style={styles.guestMarketplaceLink}>
+                    {t("login.browseMarketplace")}
+                  </LocalizedText>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <OTPVerificationForm
+                onSubmit={handleOTPVerification}
+                onEditPhone={handleEditPhone}
+                onResend={async () => {
+                  const result = await resendOTP({ type: "login" });
+                  if (!result.success) {
+                    const msg = resolveError(result, "errors.otpFailed");
+                    toast.error(msg);
+                    throw new Error(msg);
+                  }
+                  return { cooldownSeconds: result.cooldownSeconds };
+                }}
+                phoneNumber={`+966${getTempMobile()}`}
+                loading={loading}
+              />
+            )}
+          </View>
+        </KeyboardAwareFormScrollView>
       </View>
     </SafeAreaView>
   );

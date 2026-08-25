@@ -2,12 +2,7 @@ import React, { useState } from "react";
 import {
   View,
   StyleSheet,
-  Modal,
   TouchableOpacity,
-  ScrollView,
-  Animated,
-  KeyboardAvoidingView,
-  Platform,
   Image,
   Alert
 } from "react-native";
@@ -15,6 +10,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import KeyboardSafeModalSheet from "../commen/keyboard/KeyboardSafeModalSheet";
 import {
   createTicketSchema,
   updateTicketSchema,
@@ -36,9 +32,6 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
   // per-field below.
   const fieldDirection = useFieldDirection(CONTENT_DIRECTIONS.LOCALIZED);
 
-  const slideAnim = React.useRef(new Animated.Value(300)).current;
-  const fadeAnim = React.useRef(new Animated.Value(0)).current;
-
   const isEditMode = !!initialData;
   const schema = isEditMode ? updateTicketSchema(t) : createTicketSchema(t);
 
@@ -54,6 +47,20 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
   });
 
   const selectedType = watch("type");
+
+  // Re-apply values every time the modal OPENS. react-hook-form captures
+  // defaultValues once on first mount, and this component stays mounted
+  // (only the RN Modal's `visible` toggles) — so without this reset the
+  // edit form would open with stale/empty fields instead of the ticket
+  // being updated. Deps intentionally exclude `initialData`: the screen
+  // re-creates that object every render, and re-running reset mid-session
+  // would wipe the user's in-progress edits.
+  React.useEffect(() => {
+    if (visible) {
+      reset(initialData || getCreateTicketDefaults());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible]);
 
   // Single optional image/video attachment (create mode only). Kept in local
   // state, NOT react-hook-form, since it's uploaded as multipart, not JSON.
@@ -92,34 +99,11 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
   };
 
   React.useEffect(() => {
-    if (visible) {
-      Animated.parallel([
-        Animated.timing(slideAnim, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true
-        }),
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true
-        })]).start();
-    } else {
+    if (!visible) {
       // Runs on both cancel/close AND successful submit (the screen sets
       // visible=false directly), so clear the picked file here to avoid it
       // leaking into the next new ticket. No-op in edit mode.
       setAttachment(null);
-      Animated.parallel([
-        Animated.timing(slideAnim, {
-          toValue: 300,
-          duration: 250,
-          useNativeDriver: true
-        }),
-        Animated.timing(fadeAnim, {
-          toValue: 0,
-          duration: 250,
-          useNativeDriver: true
-        })]).start();
     }
   }, [visible]);
 
@@ -150,84 +134,107 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
     onSubmit(data);
   };
 
-  return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="none"
-      onRequestClose={handleClose}
-    >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.modalOverlay}
+  const header = (
+    <View style={styles.header}>
+      <LocalizedText style={[styles.title, fieldDirection.text]}>
+        {isEditMode ? t("popup.editTitle") : t("popup.createTitle")}
+      </LocalizedText>
+      <TouchableOpacity
+        style={styles.closeButton}
+        onPress={handleClose}
+        activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={t("popup.cancel")}
+        /* 40 px box + 2 px slop per side reaches the ≥44 px target
+           (blueprint §7) without changing the header geometry. */
+        hitSlop={{ top: 2, bottom: 2, start: 2, end: 2 }}
       >
-        <Animated.View
-          style={[styles.backdrop, { opacity: fadeAnim }]}
-          onTouchEnd={handleClose}
+        <Ionicons name="close" size={24} color="#666" />
+      </TouchableOpacity>
+    </View>
+  );
+
+  const footer = (
+    <View style={styles.actions}>
+      <TouchableOpacity
+        style={styles.cancelButton}
+        onPress={handleClose}
+        disabled={loading}
+        activeOpacity={0.7}
+      >
+        <LocalizedText style={styles.cancelButtonText} center>
+          {t("popup.cancel")}
+        </LocalizedText>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[
+          styles.submitButton,
+          loading && styles.submitButtonDisabled]}
+        onPress={handleSubmit(handleFormSubmit)}
+        disabled={loading}
+        activeOpacity={0.7}
+      >
+        <LocalizedText style={styles.submitButtonText} center>
+          {loading
+            ? isEditMode
+              ? t("popup.updating")
+              : t("popup.submitting")
+            : isEditMode
+            ? t("popup.submitEdit")
+            : t("popup.submitCreate")}
+        </LocalizedText>
+      </TouchableOpacity>
+    </View>
+  );
+
+  return (
+    // Shared sheet (§8.2 tickets row): aware scroll body keeps subject/
+    // message fields revealed; actions stay attached above the keyboard.
+    <KeyboardSafeModalSheet
+      visible={visible}
+      onClose={handleClose}
+      onRequestClose={handleClose}
+      header={header}
+      footer={footer}
+      maxHeightRatio={0.85}
+      contentContainerStyle={styles.body}
+      accessibilityLabel={isEditMode ? t("popup.editTitle") : t("popup.createTitle")}
+    >
+
+      {/* Body */}
+      {/* Subject Input */}
+      <View style={styles.section}>
+        {/* Labels/errors are app-authored chrome: always LocalizedText
+            and always the UI locale — never the value's script. */}
+        <LocalizedText style={[styles.label, fieldDirection.text]}>
+          {t("popup.subjectLabel")}
+        </LocalizedText>
+        <Controller
+          control={control}
+          name="subject"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <DirectionalTextInput
+              style={[
+                styles.textInput,
+                errors.subject && styles.textInputError
+              ]}
+              contentDirection={CONTENT_DIRECTIONS.ADAPTIVE}
+              placeholder={t("popup.subjectPlaceholder")}
+              placeholderTextColor="#999"
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              maxLength={200}
+            />
+          )}
         />
-
-        <Animated.View
-          style={[
-            styles.modalContainer,
-            { transform: [{ translateY: slideAnim }] }]}
-        >
-          {/* Header */}
-          <View style={styles.header}>
-            <LocalizedText style={[styles.title, fieldDirection.text]}>
-              {isEditMode ? t("popup.editTitle") : t("popup.createTitle")}
-            </LocalizedText>
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={handleClose}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel={t("popup.cancel")}
-              /* 40 px box + 2 px slop per side reaches the ≥44 px target
-                 (blueprint §7) without changing the header geometry. */
-              hitSlop={{ top: 2, bottom: 2, start: 2, end: 2 }}
-            >
-              <Ionicons name="close" size={24} color="#666" />
-            </TouchableOpacity>
-          </View>
-
-          {/* Body */}
-          <ScrollView
-            style={styles.body}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
-            {/* Subject Input */}
-            <View style={styles.section}>
-              {/* Labels/errors are app-authored chrome: always LocalizedText
-                  and always the UI locale — never the value's script. */}
-              <LocalizedText style={[styles.label, fieldDirection.text]}>
-                {t("popup.subjectLabel")}
-              </LocalizedText>
-              <Controller
-                control={control}
-                name="subject"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <DirectionalTextInput
-                    style={[
-                      styles.textInput,
-                      errors.subject && styles.textInputError
-                    ]}
-                    contentDirection={CONTENT_DIRECTIONS.ADAPTIVE}
-                    placeholder={t("popup.subjectPlaceholder")}
-                    placeholderTextColor="#999"
-                    value={value}
-                    onChangeText={onChange}
-                    onBlur={onBlur}
-                    maxLength={200}
-                  />
-                )}
-              />
-              {errors.subject && (
-                <LocalizedText style={[styles.errorText, fieldDirection.text]}>
-                  {t(errors.subject.message)}
-                </LocalizedText>
-              )}
-            </View>
+        {errors.subject && (
+          <LocalizedText style={[styles.errorText, fieldDirection.text]}>
+            {t(errors.subject.message)}
+          </LocalizedText>
+        )}
+      </View>
 
             {/* Type Selection */}
             <View style={styles.section}>
@@ -361,62 +368,12 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
                 )}
               </View>
             )}
-          </ScrollView>
-
-          {/* Actions */}
-          <View style={styles.actions}>
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={handleClose}
-              disabled={loading}
-              activeOpacity={0.7}
-            >
-              <LocalizedText style={styles.cancelButtonText} center>
-                {t("popup.cancel")}
-              </LocalizedText>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.submitButton,
-                loading && styles.submitButtonDisabled]}
-              onPress={handleSubmit(handleFormSubmit)}
-              disabled={loading}
-              activeOpacity={0.7}
-            >
-              <LocalizedText style={styles.submitButtonText} center>
-                {loading
-                  ? isEditMode
-                    ? t("popup.updating")
-                    : t("popup.submitting")
-                  : isEditMode
-                  ? t("popup.submitEdit")
-                  : t("popup.submitCreate")}
-              </LocalizedText>
-            </TouchableOpacity>
-          </View>
-        </Animated.View>
-      </KeyboardAvoidingView>
-    </Modal>
+    </KeyboardSafeModalSheet>
   );
 };
 
 const styles = StyleSheet.create({
-  modalOverlay: {
-    flex: 1,
-    justifyContent: "flex-end"
-  },
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0, 0, 0, 0.5)"
-  },
-  modalContainer: {
-    backgroundColor: "#fff",
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    maxHeight: "90%",
-    paddingBottom: 20
-  },  header: {
+  header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",

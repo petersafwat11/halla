@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import {
-  View, StyleSheet, Modal, TouchableOpacity,
-  ScrollView, Animated, Dimensions, ActivityIndicator,
+  View, StyleSheet, TouchableOpacity, Keyboard, ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
@@ -9,16 +8,15 @@ import LocalizedText from "../commen/LocalizedText";
 import { FilterDropdown } from "./_components/FilterDropdown";
 import { DistrictCheckboxes, PriceRangeInputs } from "./_components/FilterInputs";
 import { useFilterData } from "../../hooks/useFilterData";
+import KeyboardSafeModalSheet from "../commen/keyboard/KeyboardSafeModalSheet";
 
-const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 const COLORS = {
   primary: "#C28E5C", textDark: "#2C2C2C", bgLight: "#FFF",
-  borderLight: "#F2F2F2", overlay: "rgba(0, 0, 0, 0.5)",
+  borderLight: "#F2F2F2",
 };
 
 export default function FilterPopup({ visible, onClose, filters, onApplyFilters, onResetFilters }) {
   const { t, i18n } = useTranslation("marketplace");
-  const slideAnim = React.useRef(new Animated.Value(SCREEN_HEIGHT)).current;
   const {
     localFilters, setLocalFilters, regions, cities, districts,
     serviceTypes, loadingCities, loadingDistricts,
@@ -31,47 +29,53 @@ export default function FilterPopup({ visible, onClose, filters, onApplyFilters,
     if (filters) setLocalFilters(filters);
   }, [filters]);
 
-  useEffect(() => {
-    if (visible) {
-      Animated.spring(slideAnim, {
-        toValue: 0, tension: 50, friction: 8, useNativeDriver: true,
-      }).start();
-    } else {
-      Animated.timing(slideAnim, {
-        toValue: SCREEN_HEIGHT, duration: 300, useNativeDriver: true,
-      }).start();
-    }
-  }, [visible]);
-
-  const handleApply = () => { onApplyFilters?.(localFilters); onClose(); };
+  const handleClose = () => {
+    Keyboard.dismiss();
+    onClose?.();
+  };
+  const handleApply = () => { onApplyFilters?.(localFilters); handleClose(); };
   const handleReset = () => { resetFilters(); onResetFilters?.(); };
 
-  return (
-    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
-      <View style={styles.overlay}>
-        <TouchableOpacity style={styles.overlayTouchable} activeOpacity={1} onPress={onClose} />
-        <Animated.View style={[styles.popup, { transform: [{ translateY: slideAnim }] }]}>
-          {/* Sheet header anatomy (blueprint §7): localized title at the
-              reading start/center and the close affordance at the LOGICAL
-              END — plain JSX order under the inherited direction, no
-              physical anchoring. */}
-          <View style={styles.header}>
-            <View style={styles.headerBalance} />
-            <LocalizedText center style={styles.title} numberOfLines={1}>
-              {t("filters.title")}
-            </LocalizedText>
-            <TouchableOpacity
-              onPress={onClose}
-              activeOpacity={0.7}
-              hitSlop={{ top: 10, bottom: 10, start: 10, end: 10 }}
-              accessibilityRole="button"
-              accessibilityLabel={t("common.actions.close")}
-            >
-              <Ionicons name="close" size={24} color={COLORS.textDark} />
-            </TouchableOpacity>
-          </View>
+  const header = (
+    <View style={styles.header}>
+      <View style={styles.headerBalance} />
+      <LocalizedText center style={styles.title} numberOfLines={1}>
+        {t("filters.title")}
+      </LocalizedText>
+      <TouchableOpacity
+        onPress={handleClose}
+        activeOpacity={0.7}
+        hitSlop={{ top: 10, bottom: 10, start: 10, end: 10 }}
+        accessibilityRole="button"
+        accessibilityLabel={t("common.actions.close")}
+      >
+        <Ionicons name="close" size={24} color={COLORS.textDark} />
+      </TouchableOpacity>
+    </View>
+  );
 
-          <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+  const footer = (
+    <View style={styles.footer}>
+      <TouchableOpacity style={styles.resetButton} onPress={handleReset} activeOpacity={0.7} accessibilityRole="button">
+        <LocalizedText style={styles.resetButtonText}>{t("filters.reset")}</LocalizedText>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.applyButton} onPress={handleApply} activeOpacity={0.7} accessibilityRole="button">
+        <LocalizedText style={styles.applyButtonText}>{t("filters.apply")}</LocalizedText>
+      </TouchableOpacity>
+    </View>
+  );
+
+  return (
+    <KeyboardSafeModalSheet
+      visible={visible}
+      onClose={handleClose}
+      header={header}
+      footer={footer}
+      maxHeightRatio={0.8}
+      contentContainerStyle={styles.content}
+      sheetStyle={styles.popup}
+      accessibilityLabel={t("filters.title")}
+    >
             {hasError && (
               <View style={styles.errorBanner}>
                 <LocalizedText style={styles.errorText}>
@@ -170,20 +174,7 @@ export default function FilterPopup({ visible, onClose, filters, onApplyFilters,
               />
             </FilterField>
 
-          </ScrollView>
-
-          {/* Footer actions stay in logical source order: Reset → Apply. */}
-          <View style={styles.footer}>
-            <TouchableOpacity style={styles.resetButton} onPress={handleReset} activeOpacity={0.7} accessibilityRole="button">
-              <LocalizedText style={styles.resetButtonText}>{t("filters.reset")}</LocalizedText>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.applyButton} onPress={handleApply} activeOpacity={0.7} accessibilityRole="button">
-              <LocalizedText style={styles.applyButtonText}>{t("filters.apply")}</LocalizedText>
-            </TouchableOpacity>
-          </View>
-        </Animated.View>
-      </View>
-    </Modal>
+    </KeyboardSafeModalSheet>
   );
 }
 
@@ -201,11 +192,8 @@ const filterLabel = {
 };
 
 const styles = StyleSheet.create({
-  overlay: { flex: 1, backgroundColor: COLORS.overlay, justifyContent: "flex-end" },
-  overlayTouchable: { flex: 1 },
   popup: {
     backgroundColor: COLORS.bgLight, borderTopLeftRadius: 20, borderTopRightRadius: 20,
-    maxHeight: SCREEN_HEIGHT * 0.8, minHeight: SCREEN_HEIGHT * 0.5,
   },
   header: {
     flexDirection: "row", justifyContent: "space-between", alignItems: "center",
@@ -216,7 +204,7 @@ const styles = StyleSheet.create({
     fontSize: 18, fontFamily: "Cairo_700Bold", color: COLORS.textDark,
     flex: 1, marginHorizontal: 12,
   },
-  content: { flex: 1, padding: 20 },
+  content: { padding: 20 },
   dropdownTrigger: {
     flexDirection: "row", alignItems: "center", backgroundColor: COLORS.bgLight,
     borderRadius: 12, borderWidth: 1.5, borderColor: "#DFDFDF",

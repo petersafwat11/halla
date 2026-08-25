@@ -562,7 +562,10 @@ class PostEventService {
 
     const commentData = {
       text: body.text.trim(),
-      images: (files || []).map((f) => ({ url: f.location || f.path })),
+      // extractStoredRef persists the canonical ref (local "/uploads/…" path
+      // or S3 key). `f.location`/`f.path` would store a private bucket URL /
+      // absolute filesystem path no client can render.
+      images: (files || []).map((f) => ({ url: extractStoredRef(f) })),
       // When `requireApproval` is enabled, hide the comment until the host
       // reviews it.
       ...(content.settings?.requireApproval && { isHidden: true, pendingApproval: true }),
@@ -652,7 +655,8 @@ class PostEventService {
     if (!content) throw new NotFoundError('Content not found');
 
     const text = (body.text || '').trim();
-    const images = (files || []).map((f) => ({ url: f.location || f.path }));
+    // Same canonical-ref rule as addComment above.
+    const images = (files || []).map((f) => ({ url: extractStoredRef(f) }));
     // A comment must carry text and/or at least one image.
     if (!text && images.length === 0) {
       throw new ValidationError('Comment must include text or an image');

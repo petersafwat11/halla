@@ -150,6 +150,8 @@
   "actions": "Actions",
   "bulk_import": "Bulk Import",
   "download_template": "Download Template",
+  "import_from_excel": "Import from Excel/CSV",
+  "download_excel_template": "Download Excel/CSV template",
   "upload_csv": "Upload Xlsx",
   "importing": "Importing...",
   "import_errors": "Import Errors",

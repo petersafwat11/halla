@@ -26,12 +26,10 @@ import React, { useCallback } from "react";
 import {
   StyleSheet,
   View,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
   Dimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import KeyboardAwareFormScrollView from "../../components/commen/keyboard/KeyboardAwareFormScrollView";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "../../localization";
@@ -114,58 +112,53 @@ export default function ResetPasswordScreen({ route, navigation }) {
           onBack={back}
         />
 
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
+        {/* One shared owner for the form region (§8.2 auth row). */}
+        <KeyboardAwareFormScrollView
           style={styles.keyboardView}
+          contentContainerStyle={styles.scrollContent}
         >
-          <ScrollView
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
-            <View style={styles.content}>
-              {/* Headings/body are app copy — always the UI locale. */}
-              <LocalizedText role="sectionTitle" center style={styles.heading}>
-                {t("changePassword.heading")}
-              </LocalizedText>
-              <LocalizedText role="description" center style={styles.body}>
-                {t("changePassword.description")}
-              </LocalizedText>
+          <View style={styles.content}>
+            {/* Headings/body are app copy — always the UI locale. */}
+            <LocalizedText role="sectionTitle" center style={styles.heading}>
+              {t("changePassword.heading")}
+            </LocalizedText>
+            <LocalizedText role="description" center style={styles.body}>
+              {t("changePassword.description")}
+            </LocalizedText>
 
-              <FormProvider {...methods}>
-                <View style={styles.fieldGroup}>
-                  {/* Secret value stays LTR; chrome stays localized. */}
-                  <PasswordInput
-                    name="password"
-                    label={t("changePassword.newPasswordLabel")}
-                    placeholder={t("changePassword.newPasswordPlaceholder")}
-                    textContentType="newPassword"
-                  />
-                </View>
-
-                <View style={styles.fieldGroup}>
-                  <PasswordInput
-                    name="passwordConfirm"
-                    label={t("changePassword.confirmPasswordLabel")}
-                    placeholder={t("changePassword.confirmPasswordPlaceholder")}
-                    textContentType="newPassword"
-                  />
-                </View>
-
-                <Button
-                  text={
-                    loading
-                      ? t("changePassword.submitting")
-                      : t("changePassword.submit")
-                  }
-                  onPress={handleSubmit(onSubmit)}
-                  loading={loading}
-                  style={styles.submit}
+            <FormProvider {...methods}>
+              <View style={styles.fieldGroup}>
+                {/* Secret value stays LTR; chrome stays localized. */}
+                <PasswordInput
+                  name="password"
+                  label={t("changePassword.newPasswordLabel")}
+                  placeholder={t("changePassword.newPasswordPlaceholder")}
+                  textContentType="newPassword"
                 />
-              </FormProvider>
-            </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
+              </View>
+
+              <View style={styles.fieldGroup}>
+                <PasswordInput
+                  name="passwordConfirm"
+                  label={t("changePassword.confirmPasswordLabel")}
+                  placeholder={t("changePassword.confirmPasswordPlaceholder")}
+                  textContentType="newPassword"
+                />
+              </View>
+
+              <Button
+                text={
+                  loading
+                    ? t("changePassword.submitting")
+                    : t("changePassword.submit")
+                }
+                onPress={handleSubmit(onSubmit)}
+                loading={loading}
+                style={styles.submit}
+              />
+            </FormProvider>
+          </View>
+        </KeyboardAwareFormScrollView>
       </View>
     </SafeAreaView>
   );

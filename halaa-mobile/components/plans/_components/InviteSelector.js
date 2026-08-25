@@ -1,5 +1,5 @@
 import React from "react";
-import { View, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useTranslation } from "../../../localization";
 import { formatNumber } from "@halaa/shared/utils/locale";
 import { colors, spacing, borderRadius, typography } from "../../../styles/tokens";

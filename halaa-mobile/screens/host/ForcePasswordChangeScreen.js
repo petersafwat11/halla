@@ -27,12 +27,10 @@ import React, { useCallback } from "react";
 import {
   StyleSheet,
   View,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
   Dimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import KeyboardAwareFormScrollView from "../../components/commen/keyboard/KeyboardAwareFormScrollView";
 import { useForm, FormProvider } from "react-hook-form";
 import { useTranslation } from "../../localization";
 import { useAuthStore } from "../../stores/authStore";
@@ -124,70 +122,65 @@ export default function ForcePasswordChangeScreen() {
       <View style={styles.container}>
         <TopBar title={t("forceChangePassword.title")} showBack={false} />
 
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
+        {/* One shared owner for the form region (§8.2 auth row). */}
+        <KeyboardAwareFormScrollView
           style={styles.keyboardView}
+          contentContainerStyle={styles.scrollContent}
         >
-          <ScrollView
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
-            <View style={styles.content}>
-              {/* Headings/body are app copy — always the UI locale. */}
-              <LocalizedText role="sectionTitle" center style={styles.heading}>
-                {t("forceChangePassword.heading")}
-              </LocalizedText>
-              <LocalizedText role="description" center style={styles.body}>
-                {t("forceChangePassword.description")}
-              </LocalizedText>
+          <View style={styles.content}>
+            {/* Headings/body are app copy — always the UI locale. */}
+            <LocalizedText role="sectionTitle" center style={styles.heading}>
+              {t("forceChangePassword.heading")}
+            </LocalizedText>
+            <LocalizedText role="description" center style={styles.body}>
+              {t("forceChangePassword.description")}
+            </LocalizedText>
 
-              <FormProvider {...methods}>
-                {/* Secret values stay LTR; labels/errors stay localized. */}
-                <View style={styles.fieldGroup}>
-                  <PasswordInput
-                    name="currentPassword"
-                    label={t("forceChangePassword.currentPasswordLabel")}
-                    placeholder={t(
-                      "forceChangePassword.currentPasswordPlaceholder"
-                    )}
-                    textContentType="password"
-                  />
-                </View>
-
-                <View style={styles.fieldGroup}>
-                  <PasswordInput
-                    name="newPassword"
-                    label={t("forceChangePassword.newPasswordLabel")}
-                    placeholder={t("forceChangePassword.newPasswordPlaceholder")}
-                    textContentType="newPassword"
-                  />
-                </View>
-
-                <View style={styles.fieldGroup}>
-                  <PasswordInput
-                    name="confirmPassword"
-                    label={t("forceChangePassword.confirmPasswordLabel")}
-                    placeholder={t(
-                      "forceChangePassword.confirmPasswordPlaceholder"
-                    )}
-                    textContentType="newPassword"
-                  />
-                </View>
-
-                <Button
-                  text={
-                    loading ? t("forceChangePassword.submitting") : t("forceChangePassword.submit")
-                  }
-                  onPress={handleSubmit(onSubmit)}
-                  loading={loading}
-                  disabled={loading}
-                  style={styles.submit}
+            <FormProvider {...methods}>
+              {/* Secret values stay LTR; labels/errors stay localized. */}
+              <View style={styles.fieldGroup}>
+                <PasswordInput
+                  name="currentPassword"
+                  label={t("forceChangePassword.currentPasswordLabel")}
+                  placeholder={t(
+                    "forceChangePassword.currentPasswordPlaceholder"
+                  )}
+                  textContentType="password"
                 />
-              </FormProvider>
-            </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
+              </View>
+
+              <View style={styles.fieldGroup}>
+                <PasswordInput
+                  name="newPassword"
+                  label={t("forceChangePassword.newPasswordLabel")}
+                  placeholder={t("forceChangePassword.newPasswordPlaceholder")}
+                  textContentType="newPassword"
+                />
+              </View>
+
+              <View style={styles.fieldGroup}>
+                <PasswordInput
+                  name="confirmPassword"
+                  label={t("forceChangePassword.confirmPasswordLabel")}
+                  placeholder={t(
+                    "forceChangePassword.confirmPasswordPlaceholder"
+                  )}
+                  textContentType="newPassword"
+                />
+              </View>
+
+              <Button
+                text={
+                  loading ? t("forceChangePassword.submitting") : t("forceChangePassword.submit")
+                }
+                onPress={handleSubmit(onSubmit)}
+                loading={loading}
+                disabled={loading}
+                style={styles.submit}
+              />
+            </FormProvider>
+          </View>
+        </KeyboardAwareFormScrollView>
       </View>
     </SafeAreaView>
   );

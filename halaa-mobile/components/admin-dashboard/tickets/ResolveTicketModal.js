@@ -2,10 +2,9 @@ import React from "react";
 import {
   View,
   StyleSheet,
-  Modal,
-  ScrollView,
   Alert,
 } from "react-native";
+import KeyboardSafeModalSheet from "../../commen/keyboard/KeyboardSafeModalSheet";
 import TextInput from "../../commen/DirectionalTextInput";
 import PropTypes from "prop-types";
 import { useForm, Controller } from "react-hook-form";
@@ -79,96 +78,94 @@ const ResolveTicketModal = ({ visible, onClose, ticket, onSave }) => {
     }
   };
 
+  const header = (
+    <View style={styles.header}>
+      <LocalizedText style={styles.title}>{t("tickets.resolve.title")}</LocalizedText>
+      <LocalizedText style={styles.subtitle}>
+        {t("tickets.resolve.subtitle", {
+          ticketId: isolateLtr(`#${ticket?.id ?? ticket?._id ?? "—"}`),
+          subject: isolateAuto(ticket?.subject || t("tickets.noSubject")),
+        })}
+      </LocalizedText>
+    </View>
+  );
+
+  const footer = (
+    <View style={styles.actions}>
+      <ActionButton
+        label={t("common.cancel")}
+        onPress={handleClose}
+        variant="outline"
+        style={styles.actionButton}
+        disabled={resolveTicket.isPending}
+      />
+      <ActionButton
+        label={resolveTicket.isPending ? t("common.loading") : t("tickets.resolve.resolve")}
+        onPress={handleSubmit(onSubmit)}
+        variant="primary"
+        style={styles.actionButton}
+        disabled={resolveTicket.isPending || !isValid}
+        loading={resolveTicket.isPending}
+      />
+    </View>
+  );
+
   return (
-    <Modal
+    // Shared sheet (§8.2 admin row): aware scroll body keeps the resolution
+    // field above the keyboard; actions stay attached above it.
+    <KeyboardSafeModalSheet
       visible={visible}
-      animationType="slide"
-      transparent={true}
+      onClose={handleClose}
       onRequestClose={handleClose}
+      header={header}
+      footer={footer}
     >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-          <View style={styles.header}>
-            <LocalizedText style={styles.title}>{t("tickets.resolve.title")}</LocalizedText>
-            <LocalizedText style={styles.subtitle}>
-              {t("tickets.resolve.subtitle", {
-                ticketId: isolateLtr(`#${ticket?.id ?? ticket?._id ?? "—"}`),
-                subject: isolateAuto(ticket?.subject || t("tickets.noSubject")),
-              })}
-            </LocalizedText>
-          </View>
-
-          <ScrollView
-            style={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-          >
-            <View style={styles.fieldContainer}>
-              <LocalizedText style={styles.label}>{t("tickets.resolve.resolutionLabel")}</LocalizedText>
-              <Controller
-                control={control}
-                name="resolution"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <View
-                    style={[
-                      styles.textAreaContainer,
-                      errors.resolution && styles.textAreaContainerError,
-                    ]}
-                  >
-                    <TextInput
-                      contentDirection={CONTENT_DIRECTIONS.ADAPTIVE}
-                      style={styles.textArea}
-                      onChangeText={onChange}
-                      onBlur={onBlur}
-                      value={value}
-                      placeholder={t("tickets.resolve.resolutionPlaceholder")}
-                      placeholderTextColor={colors.natural[400]}
-                      multiline
-                      numberOfLines={6}
-                      maxLength={5000}
-                      textAlignVertical="top"
-                    />
-                  </View>
-                )}
+      <View style={styles.fieldContainer}>
+        <LocalizedText style={styles.label}>{t("tickets.resolve.resolutionLabel")}</LocalizedText>
+        <Controller
+          control={control}
+          name="resolution"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <View
+              style={[
+                styles.textAreaContainer,
+                errors.resolution && styles.textAreaContainerError,
+              ]}
+            >
+              <TextInput
+                contentDirection={CONTENT_DIRECTIONS.ADAPTIVE}
+                style={styles.textArea}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                value={value}
+                placeholder={t("tickets.resolve.resolutionPlaceholder")}
+                placeholderTextColor={colors.natural[400]}
+                multiline
+                numberOfLines={6}
+                maxLength={5000}
+                textAlignVertical="top"
               />
-              {/* Validation copy stays localized even when the value is not. */}
-              {errors.resolution && (
-                <LocalizedText style={styles.errorText}>{errors.resolution.message}</LocalizedText>
-              )}
-              <LocalizedText style={styles.helperText}>
-                {t("tickets.resolve.resolutionHelper")}
-              </LocalizedText>
-              <LocalizedText style={[styles.characterCount, fieldDirection.counter]}>
-                {isolateLtr(`${resolutionValue.length} / 5000`)}
-              </LocalizedText>
             </View>
-
-            <View style={styles.warningContainer}>
-              <LocalizedText style={styles.warningText}>
-                {t("tickets.resolve.warningText")}
-              </LocalizedText>
-            </View>
-          </ScrollView>
-
-          <View style={styles.actions}>
-            <ActionButton
-              label={t("common.cancel")}
-              onPress={handleClose}
-              variant="outline"
-              style={styles.actionButton}
-              disabled={resolveTicket.isPending}
-            />
-            <ActionButton
-              label={resolveTicket.isPending ? t("common.loading") : t("tickets.resolve.resolve")}
-              onPress={handleSubmit(onSubmit)}
-              variant="primary"
-              style={styles.actionButton}
-              disabled={resolveTicket.isPending || !isValid}
-              loading={resolveTicket.isPending}
-            />
-          </View>
-        </View>
+          )}
+        />
+        {/* Validation copy stays localized even when the value is not. */}
+        {errors.resolution && (
+          <LocalizedText style={styles.errorText}>{errors.resolution.message}</LocalizedText>
+        )}
+        <LocalizedText style={styles.helperText}>
+          {t("tickets.resolve.resolutionHelper")}
+        </LocalizedText>
+        <LocalizedText style={[styles.characterCount, fieldDirection.counter]}>
+          {isolateLtr(`${resolutionValue.length} / 5000`)}
+        </LocalizedText>
       </View>
-    </Modal>
+
+      <View style={styles.warningContainer}>
+        <LocalizedText style={styles.warningText}>
+          {t("tickets.resolve.warningText")}
+        </LocalizedText>
+      </View>
+    </KeyboardSafeModalSheet>
   );
 };
 

@@ -2,13 +2,11 @@ import React, { useState, useCallback } from "react";
 import {
   StyleSheet,
   View,
-  ScrollView,
   TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
   Dimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import KeyboardAwareFormScrollView from "../../components/commen/keyboard/KeyboardAwareFormScrollView";
 import { useTranslation } from "../../localization";
 import { useAuthStore } from "../../stores/authStore";
 import { useToast } from "../../contexts/ToastContext";
@@ -58,38 +56,34 @@ export default function ForgetPasswordScreen({ navigation }) {
       <View style={styles.container}>
         <TopBar title={t("forgetPassword.title")} showBack={true} onBack={handleBackToLogin} />
 
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
+        {/* One shared owner for the form region (§8.2 auth row): TopBar is a
+            sibling above it, so no header offset compensation is needed. */}
+        <KeyboardAwareFormScrollView
           style={styles.keyboardView}
+          contentContainerStyle={styles.scrollContent}
         >
-          <ScrollView
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
-            <View style={styles.content}>
-              {step === "input" ? (
-                <ForgetPasswordForm onSubmit={handleSubmit} loading={loading} />
-              ) : (
-                <EmailSentView
-                  onResend={handleResend}
-                  resendDisabled={resendDisabled}
-                />
-              )}
+          <View style={styles.content}>
+            {step === "input" ? (
+              <ForgetPasswordForm onSubmit={handleSubmit} loading={loading} />
+            ) : (
+              <EmailSentView
+                onResend={handleResend}
+                resendDisabled={resendDisabled}
+              />
+            )}
 
-              {step === "input" && (
-                <TouchableOpacity
-                  onPress={handleBackToLogin}
-                  style={styles.backToLoginButton}
-                >
-                  <LocalizedText style={styles.backToLoginText}>
-                    {t("forgetPassword.backToLogin")}
-                  </LocalizedText>
-                </TouchableOpacity>
-              )}
-            </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
+            {step === "input" && (
+              <TouchableOpacity
+                onPress={handleBackToLogin}
+                style={styles.backToLoginButton}
+              >
+                <LocalizedText style={styles.backToLoginText}>
+                  {t("forgetPassword.backToLogin")}
+                </LocalizedText>
+              </TouchableOpacity>
+            )}
+          </View>
+        </KeyboardAwareFormScrollView>
       </View>
     </SafeAreaView>
   );

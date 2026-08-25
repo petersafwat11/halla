@@ -3,13 +3,13 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   RefreshControl,
   Alert,
   ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
 import DirectionalTextInput from "../../components/commen/DirectionalTextInput";
+import KeyboardAwareFormScrollView from "../../components/commen/keyboard/KeyboardAwareFormScrollView";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
@@ -122,7 +122,12 @@ const EventDetailsScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const { eventId } = route.params || {};
-  const { t, currentLanguage } = useTranslation(["admin", "events", "home"]);
+  // NOTE on namespaces: unprefixed keys resolve against the FIRST namespace
+  // only (i18next has no cross-namespace fallback), so keys living in
+  // `events.json` MUST be prefixed with `events:` here. Unprefixed keys below
+  // are intentional and exist in `admin.json` (eventDetails admin actions,
+  // statuses, common.*, discounts.planTypes).
+  const { t, currentLanguage } = useTranslation(["admin", "events"]);
   const toast = useToast();
   const role = useAuthStore((s) => s.user?.role);
   const currentUser = useAuthStore((s) => s.user);
@@ -273,19 +278,19 @@ const EventDetailsScreen = () => {
   const handleDeleteGuest = (guest) => {
     const guestId = guest._id || guest.guestId || guest.id;
     Alert.alert(
-      t("guest.alerts.deleteConfirmTitle"),
-      t("guest.alerts.deleteConfirmBody"),
+      t("events:guest.alerts.deleteConfirmTitle"),
+      t("events:guest.alerts.deleteConfirmBody"),
       [
-        { text: t("guest.alerts.cancel"), style: "cancel" },
+        { text: t("events:guest.alerts.cancel"), style: "cancel" },
         {
-          text: t("guest.alerts.delete"),
+          text: t("events:guest.alerts.delete"),
           style: "destructive",
           onPress: async () => {
             try {
               await deleteGuestMutation.mutateAsync({ eventId, guestId });
-              toast.success(t("guest.alerts.deleteSuccess"));
+              toast.success(t("events:guest.alerts.deleteSuccess"));
             } catch (e) {
-              toast.error(e?.message || t("guest.alerts.deleteError"));
+              toast.error(e?.message || t("events:guest.alerts.deleteError"));
             }
           },
         },
@@ -297,9 +302,9 @@ const EventDetailsScreen = () => {
     const guestId = guest._id || guest.guestId || guest.id;
     try {
       await rotateGuestQrMutation.mutateAsync({ eventId, guestId });
-      toast.success(t("guest.alerts.qrUpdated"));
+      toast.success(t("events:guest.alerts.qrUpdated"));
     } catch (e) {
-      toast.error(e?.message || t("guest.alerts.qrRotateError"));
+      toast.error(e?.message || t("events:guest.alerts.qrRotateError"));
     }
   };
 
@@ -308,10 +313,10 @@ const EventDetailsScreen = () => {
     try {
       await revokeGuestAccessMutation.mutateAsync({ eventId, guestId });
       toast.success(
-        t("guest.alerts.accessRevokedSuccess")
+        t("events:guest.alerts.accessRevokedSuccess")
       );
     } catch (e) {
-      toast.error(e?.message || t("guest.alerts.accessRevokeError"));
+      toast.error(e?.message || t("events:guest.alerts.accessRevokeError"));
     }
   };
 
@@ -324,10 +329,10 @@ const EventDetailsScreen = () => {
             guestId: popup.initialData._id,
             data: { name, phone },
           });
-          toast.success(t("guest.alerts.updateSuccess"));
+          toast.success(t("events:guest.alerts.updateSuccess"));
         } else {
           await addGuestMutation.mutateAsync({ eventId, data: { name, phone } });
-          toast.success(t("guest.alerts.addSuccess"));
+          toast.success(t("events:guest.alerts.addSuccess"));
         }
       } else {
         if (popup.initialData?._id) {
@@ -336,15 +341,15 @@ const EventDetailsScreen = () => {
             staffId: popup.initialData._id,
             data: { name, phone },
           });
-          toast.success(t("guest.alerts.staffUpdateSuccess"));
+          toast.success(t("events:guest.alerts.staffUpdateSuccess"));
         } else {
           await addStaffMutation.mutateAsync({ eventId, data: { name, phone } });
-          toast.success(t("guest.alerts.staffAddSuccess"));
+          toast.success(t("events:guest.alerts.staffAddSuccess"));
         }
       }
       setPopup({ open: false, type: popup.type, initialData: null });
     } catch (e) {
-      toast.error(e?.message || t("guest.alerts.saveError"));
+      toast.error(e?.message || t("events:guest.alerts.saveError"));
     }
   };
 
@@ -364,19 +369,19 @@ const EventDetailsScreen = () => {
   const handleDeleteModerator = (m) => {
     const staffId = m._id || m.id;
     Alert.alert(
-      t("guest.alerts.deleteConfirmTitle"),
-      t("guest.alerts.staffDeleteConfirmBody"),
+      t("events:guest.alerts.deleteConfirmTitle"),
+      t("events:guest.alerts.staffDeleteConfirmBody"),
       [
-        { text: t("guest.alerts.cancel"), style: "cancel" },
+        { text: t("events:guest.alerts.cancel"), style: "cancel" },
         {
-          text: t("guest.alerts.delete"),
+          text: t("events:guest.alerts.delete"),
           style: "destructive",
           onPress: async () => {
             try {
               await deleteStaffMutation.mutateAsync({ eventId, staffId });
-              toast.success(t("guest.alerts.staffDeleteSuccess"));
+              toast.success(t("events:guest.alerts.staffDeleteSuccess"));
             } catch (e) {
-              toast.error(e?.message || t("guest.alerts.staffDeleteError"));
+              toast.error(e?.message || t("events:guest.alerts.staffDeleteError"));
             }
           },
         },
@@ -388,9 +393,9 @@ const EventDetailsScreen = () => {
     const staffId = m._id || m.id;
     try {
       await revokeStaffMutation.mutateAsync({ eventId, staffId });
-      toast.success(t("guest.alerts.staffRevokeSuccess"));
+      toast.success(t("events:guest.alerts.staffRevokeSuccess"));
     } catch (e) {
-      toast.error(e?.message || t("guest.alerts.staffRevokeError"));
+      toast.error(e?.message || t("events:guest.alerts.staffRevokeError"));
     }
   };
 
@@ -401,12 +406,12 @@ const EventDetailsScreen = () => {
       // sheet).
       const result = await exportGuestsMutation.mutateAsync({ eventId });
       if (!result?.blob) {
-        throw new Error(t("guest.alerts.exportError"));
+        throw new Error(t("events:guest.alerts.exportError"));
       }
       const share = await saveBlobAndShare(
         result.blob,
         result.filename || `event-${eventId}-guests.xlsx`,
-        { dialogTitle: t("guest.alerts.exportTitle") }
+        { dialogTitle: t("events:guest.alerts.exportTitle") }
       );
       // The share sheet opening IS the success signal — stay silent on
       // success and on user-cancel; surface only real failures.
@@ -414,7 +419,7 @@ const EventDetailsScreen = () => {
         toast.error(share.message);
       }
     } catch (e) {
-      toast.error(e?.message || t("guest.alerts.exportError"));
+      toast.error(e?.message || t("events:guest.alerts.exportError"));
     }
   };
 
@@ -424,7 +429,7 @@ const EventDetailsScreen = () => {
       // The normal reminder is now free and targets CONFIRMED guests only.
       t("events:reminder.confirmBody"),
       [
-        { text: t("guest.alerts.cancel"), style: "cancel" },
+        { text: t("events:guest.alerts.cancel"), style: "cancel" },
         {
           text: t("events:reminder.send"),
           onPress: async () => {
@@ -458,7 +463,7 @@ const EventDetailsScreen = () => {
               eventId: event.id || event._id,
               status: newStatus,
             });
-            toast.success(t("eventDetails.updated"));
+            toast.success(t("events:eventDetails.updated"));
             refetch();
           } catch (e) {
             toast.error(e?.message || t("eventDetails.updateStatusFailed"));
@@ -512,7 +517,7 @@ const EventDetailsScreen = () => {
           <Ionicons name="alert-circle-outline" size={48} color={colors.danger?.[500] || "#C0392B"} />
           <Text style={styles.centerText}>{t("eventDetails.loadFailed")}</Text>
           <TouchableOpacity style={styles.retryBtn} onPress={() => refetch()}>
-            <Text style={styles.retryBtnText}>{t("common.retry")}</Text>
+            <Text style={styles.retryBtnText}>{t("events:common.retry")}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -591,7 +596,7 @@ const EventDetailsScreen = () => {
         onBack={() => navigation.goBack()}
       />
 
-      <ScrollView
+      <KeyboardAwareFormScrollView
         ref={scrollViewRef}
         style={styles.scroll}
         contentContainerStyle={styles.content}
@@ -688,7 +693,7 @@ const EventDetailsScreen = () => {
             >
               <Ionicons name="qr-code-outline" size={14} color="#64748B" />
               <Text style={styles.checkedInLabel}>
-                {t("eventDetails.checkedIn")}
+                {t("events:eventDetails.checkedIn")}
               </Text>
               <Text style={styles.checkedInValue}>{formatLocaleCount(stats.checkedIn, currentLanguage)}</Text>
             </TouchableOpacity>
@@ -703,7 +708,7 @@ const EventDetailsScreen = () => {
           >
             <Ionicons name="people-outline" size={14} color="#6B4E33" />
             <Text style={styles.checkedInLabel}>
-              {t("eventDetails.totalGuests")}
+              {t("events:eventDetails.totalGuests")}
             </Text>
             <Text style={styles.checkedInValue}>{formatLocaleCount(stats.totalGuests, currentLanguage)}</Text>
           </TouchableOpacity>
@@ -734,7 +739,7 @@ const EventDetailsScreen = () => {
             {hostPhone && (
               <InfoRow
                 icon="call-outline"
-                label={t("eventDetails.phone")}
+                label={t("events:eventDetails.phone")}
                 value={isolateLtr(hostPhone)}
                 last
               />
@@ -745,13 +750,13 @@ const EventDetailsScreen = () => {
         {/* Admin-only: subscription quota */}
         {isAdmin && event?.subscription && (
           <SectionCard
-            title={t("eventDetails.subscription")}
+            title={t("events:eventDetails.subscription")}
             icon="card-outline"
           >
             {event.subscription.planType && (
               <InfoRow
                 icon="ribbon-outline"
-                label={t("eventDetails.plan")}
+                label={t("events:eventDetails.plan")}
                 value={t(
                   `discounts.planTypes.${event.subscription.planType}`,
                   event.subscription.planType
@@ -760,7 +765,7 @@ const EventDetailsScreen = () => {
             )}
             <InfoRow
               icon="people-outline"
-              label={t("eventDetails.guestsRemaining")}
+              label={t("events:eventDetails.guestsRemaining")}
               value={
                 event.subscription.invitesRemaining == null
                   ? t("events:remainingInvites.unlimited")
@@ -833,7 +838,7 @@ const EventDetailsScreen = () => {
                   activeTab === "guests" && styles.tabTextActive,
                 ]}
               >
-                {t("eventDetails.guestsTabCount", {
+                {t("events:eventDetails.guestsTabCount", {
                   // Locale digits (٠١٢ / 0-9) keep the parenthesised count
                   // from mixing digit systems inside Arabic copy.
                   count: formatLocaleCount(guests.length, currentLanguage),
@@ -857,7 +862,7 @@ const EventDetailsScreen = () => {
                   activeTab === "moderators" && styles.tabTextActive,
                 ]}
               >
-                {t("eventDetails.moderatorsTabCount", {
+                {t("events:eventDetails.moderatorsTabCount", {
                   count: formatLocaleCount(staffFromStats.length, currentLanguage),
                 })}
               </Text>
@@ -871,8 +876,8 @@ const EventDetailsScreen = () => {
                 contentDirection="adaptive"
                 placeholder={
                   activeTab === "guests"
-                    ? t("eventDetails.searchGuests")
-                    : t("eventDetails.searchModerators")
+                    ? t("events:eventDetails.searchGuests")
+                    : t("events:eventDetails.searchModerators")
                 }
                 placeholderTextColor="#656565"
                 value={search}
@@ -895,8 +900,8 @@ const EventDetailsScreen = () => {
                 <Ionicons name="add" size={16} color="#FFF" />
                 <Text style={styles.addBtnText}>
                   {activeTab === "guests"
-                    ? t("guestList.addGuest")
-                    : t("eventDetails.addModerator")}
+                    ? t("events:guestList.addGuest")
+                    : t("events:eventDetails.addModerator")}
                 </Text>
               </TouchableOpacity>
             )}
@@ -941,7 +946,7 @@ const EventDetailsScreen = () => {
               >
                 <Ionicons name="download-outline" size={14} color="#6B4E33" />
                 <Text style={styles.outlineActionText}>
-                  {t("guest.alerts.exportTitle")}
+                  {t("events:guest.alerts.exportTitle")}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -981,9 +986,9 @@ const EventDetailsScreen = () => {
             ) : filteredStaff.length === 0 ? (
               <View style={styles.emptyState}>
                 <Ionicons name="shield-outline" size={32} color={colors.natural[400]} />
-                <Text style={styles.emptyStateText}>
-                  {t("eventDetails.noModerators")}
-                </Text>
+                  <Text style={styles.emptyStateText}>
+                    {t("events:eventDetails.noModerators")}
+                  </Text>
               </View>
             ) : (
               filteredStaff.map((m, idx) => (
@@ -1000,7 +1005,7 @@ const EventDetailsScreen = () => {
         </View>
 
         <View style={{ height: spacing[32] }} />
-      </ScrollView>
+      </KeyboardAwareFormScrollView>
 
       <SendActionsSheet
         visible={showSendSheet}

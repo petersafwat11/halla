@@ -2,14 +2,12 @@ import React, { useCallback } from "react";
 import {
   StyleSheet,
   View,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
   TouchableOpacity,
   Text,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import KeyboardAwareFormScrollView from "../../components/commen/keyboard/KeyboardAwareFormScrollView";
 import { useTranslation } from "../../localization";
 import { useAuthStore } from "../../stores/authStore";
 import { useToast } from "../../contexts/ToastContext";
@@ -76,20 +74,15 @@ export default function CompleteProfileScreen() {
             </TouchableOpacity>
           }
         />
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      {/* One shared owner for the form region (§8.2 auth row). */}
+      <KeyboardAwareFormScrollView
         style={styles.keyboardView}
+        contentContainerStyle={styles.scrollContent}
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View style={styles.formCard}>
-            <CompleteProfileForm onSubmit={handleSubmit} loading={loading} />
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        <View style={styles.formCard}>
+          <CompleteProfileForm onSubmit={handleSubmit} loading={loading} />
+        </View>
+      </KeyboardAwareFormScrollView>
     </SafeAreaView>
   );
 }

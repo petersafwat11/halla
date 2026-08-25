@@ -2,15 +2,14 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   StyleSheet,
-  Modal,
   TouchableOpacity,
-  Pressable,
 } from "react-native";
 import { useTranslation } from "../../localization";
 import Button from "../commen/Button";
 import FormField from "../commen/FormField";
 import LocalizedText from "../commen/LocalizedText";
 import CategorySelect from "../commen/CategorySelect";
+import KeyboardSafeModalSheet from "../commen/keyboard/KeyboardSafeModalSheet";
 import Svg, { Path } from "react-native-svg";
 import {
   clampPhoneInput,
@@ -67,131 +66,122 @@ const EditGuestOrModeratorsModal = ({
     onClose();
   };
 
+  const header = (
+    <View style={styles.header}>
+      <LocalizedText role="sectionTitle" style={styles.headerTitle}>
+        {type === "guest"
+          ? tCreate("edit_guest")
+          : tCreate("edit_moderator")}
+      </LocalizedText>
+      <TouchableOpacity
+        style={styles.closeButton}
+        onPress={handleClose}
+        activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={tCreate("close")}
+      >
+        <CloseIcon />
+      </TouchableOpacity>
+    </View>
+  );
+
+  const footer = (
+    <View style={styles.actions}>
+      <Button
+        text={tCreate("save_changes")}
+        onPress={handleSave}
+        disabled={!name.trim() || !phone.trim()}
+      />
+      <TouchableOpacity
+        style={styles.cancelButton}
+        onPress={handleClose}
+        activeOpacity={0.7}
+      >
+        <LocalizedText style={styles.cancelButtonText}>
+          {tCreate("cancel")}
+        </LocalizedText>
+      </TouchableOpacity>
+    </View>
+  );
+
   return (
-    <Modal
+    // Small centered card (§6.4): the shared avoiding owner lifts the card
+    // above the keyboard; the compact form body scrolls only if font scaling
+    // requires it.
+    <KeyboardSafeModalSheet
       visible={visible}
-      transparent
-      animationType="fade"
+      onClose={handleClose}
       onRequestClose={handleClose}
+      header={header}
+      footer={footer}
+      centered
+      animationType="fade"
+      sheetStyle={styles.modalContainer}
     >
-      <Pressable style={styles.overlay} onPress={handleClose}>
-        <Pressable
-          style={styles.modalContainer}
-          onPress={(e) => e.stopPropagation()}
-        >
-          {/* Header — localized title at logical start, close action at end */}
-          <View style={styles.header}>
-            <LocalizedText role="sectionTitle" style={styles.headerTitle}>
-              {type === "guest"
-                ? tCreate("edit_guest")
-                : tCreate("edit_moderator")}
-            </LocalizedText>
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={handleClose}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel={tCreate("close")}
-            >
-              <CloseIcon />
-            </TouchableOpacity>
-          </View>
+      {/* Form */}
+      <View style={styles.form}>
+        {/* Arbitrary user text → adaptive through the shared field shell:
+            label/error stay in the UI locale while Latin names render LTR
+            and Arabic names RTL. */}
+        <FormField
+          label={
+            type === "guest"
+              ? tCreate("guest_name")
+              : tCreate("moderator_name")
+          }
+          placeholder={
+            type === "guest"
+              ? tCreate("guest_name_placeholder")
+              : tCreate("moderator_name_placeholder")
+          }
+          value={name}
+          onChangeText={(text) => {
+            setName(text);
+            setErrors((prev) => ({ ...prev, name: null }));
+          }}
+          contentDirection="adaptive"
+          error={errors.name ? t(errors.name, { defaultValue: errors.name }) : null}
+        />
 
-          {/* Form */}
-          <View style={styles.form}>
-            {/* Arbitrary user text → adaptive through the shared field shell:
-                label/error stay in the UI locale while Latin names render LTR
-                and Arabic names RTL. */}
-            <FormField
-              label={
-                type === "guest"
-                  ? tCreate("guest_name")
-                  : tCreate("moderator_name")
-              }
-              placeholder={
-                type === "guest"
-                  ? tCreate("guest_name_placeholder")
-                  : tCreate("moderator_name_placeholder")
-              }
-              value={name}
-              onChangeText={(text) => {
-                setName(text);
-                setErrors((prev) => ({ ...prev, name: null }));
-              }}
-              contentDirection="adaptive"
-              error={errors.name ? t(errors.name, { defaultValue: errors.name }) : null}
+        {/* Phone digits remain LTR once filled. */}
+        <FormField
+          label={
+            type === "guest"
+              ? tCreate("guest_phone")
+              : tCreate("moderator_phone")
+          }
+          placeholder={tCreate("guest_phone_placeholder", DEFAULT_PHONE_PLACEHOLDER)}
+          value={phone}
+          onChangeText={(text) => {
+            const clamped = clampPhoneInput(text);
+            setPhone(clamped);
+            setErrors((prev) => ({ ...prev, phone: null }));
+          }}
+          contentDirection="phone"
+          keyboardType="phone-pad"
+          maxLength={getPhoneMaxLength(phone)}
+          error={errors.phone ? t(errors.phone, { defaultValue: errors.phone }) : null}
+        />
+
+        {type === "guest" && (
+          <View style={styles.inputWrapper}>
+            <CategorySelect
+              label={tCreate("category")}
+              placeholder={tCreate("category_placeholder")}
+              value={category}
+              onChange={setCategory}
+              options={categories}
             />
-
-            {/* Phone digits remain LTR once filled. */}
-            <FormField
-              label={
-                type === "guest"
-                  ? tCreate("guest_phone")
-                  : tCreate("moderator_phone")
-              }
-              placeholder={tCreate("guest_phone_placeholder", DEFAULT_PHONE_PLACEHOLDER)}
-              value={phone}
-              onChangeText={(text) => {
-                const clamped = clampPhoneInput(text);
-                setPhone(clamped);
-                setErrors((prev) => ({ ...prev, phone: null }));
-              }}
-              contentDirection="phone"
-              keyboardType="phone-pad"
-              maxLength={getPhoneMaxLength(phone)}
-              error={errors.phone ? t(errors.phone, { defaultValue: errors.phone }) : null}
-            />
-
-            {type === "guest" && (
-              <View style={styles.inputWrapper}>
-                <CategorySelect
-                  label={tCreate("category")}
-                  placeholder={tCreate("category_placeholder")}
-                  value={category}
-                  onChange={setCategory}
-                  options={categories}
-                />
-              </View>
-            )}
           </View>
-
-          {/* Actions */}
-          <View style={styles.actions}>
-            <Button
-              text={tCreate("save_changes")}
-              onPress={handleSave}
-              disabled={!name.trim() || !phone.trim()}
-            />
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={handleClose}
-              activeOpacity={0.7}
-            >
-              <LocalizedText style={styles.cancelButtonText}>
-                {tCreate("cancel")}
-              </LocalizedText>
-            </TouchableOpacity>
-          </View>
-        </Pressable>
-      </Pressable>
-    </Modal>
+        )}
+      </View>
+    </KeyboardSafeModalSheet>
   );
 };
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 24,
-  },
   modalContainer: {
-    width: "100%",
     maxWidth: 400,
-    backgroundColor: "#FFF",
-    borderRadius: 16,
-    overflow: "hidden",
   },
   header: {
     flexDirection: "row",

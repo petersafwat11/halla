@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
 import {
   View,
-  Modal,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
+import KeyboardSafeModalSheet from "../../commen/keyboard/KeyboardSafeModalSheet";
 import TextInput from "../../commen/DirectionalTextInput";
 import LocalizedText from "../../commen/LocalizedText";
 import { Ionicons } from "@expo/vector-icons";
@@ -150,32 +149,60 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
     onClose();
   };
 
+  const header = (
+    <>
+      <View style={styles.handle} />
+      <View style={styles.header}>
+        <LocalizedText style={styles.headerTitle}>
+          {isEdit ? t("moderators.add.editTitle") : t("moderators.add.title")}
+        </LocalizedText>
+        <TouchableOpacity style={styles.closeBtn} onPress={handleClose}>
+          {/* Close is semantic — never mirrored. */}
+          <Ionicons name="close" size={24} color={colors.natural[900]} />
+        </TouchableOpacity>
+      </View>
+    </>
+  );
+
+  const footer = (
+    <View style={styles.footer}>
+      <TouchableOpacity
+        style={[styles.footerBtn, styles.cancelBtn]}
+        onPress={handleClose}
+        disabled={saving}
+      >
+        <LocalizedText style={styles.cancelBtnText}>
+          {t("moderators.add.cancel")}
+        </LocalizedText>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.footerBtn, styles.saveBtn]}
+        onPress={handleSave}
+        disabled={saving}
+      >
+        {saving ? (
+          <ActivityIndicator size="small" color={colors.natural[50]} />
+        ) : (
+          <LocalizedText style={styles.saveBtnText}>
+            {isEdit ? t("moderators.add.saveChanges") : t("moderators.addModerator")}
+          </LocalizedText>
+        )}
+      </TouchableOpacity>
+    </View>
+  );
+
   return (
-    <Modal
+    // Shared sheet (§8.2 admin row): aware scroll body owns focus scrolling;
+    // actions stay attached above the keyboard.
+    <KeyboardSafeModalSheet
       visible={visible}
-      animationType="slide"
-      transparent
+      onClose={handleClose}
       onRequestClose={handleClose}
+      header={header}
+      footer={footer}
+      contentContainerStyle={styles.body}
+      sheetStyle={styles.sheetBg}
     >
-      <View style={styles.overlay}>
-        <View style={styles.sheet}>
-          <View style={styles.handle} />
-
-          <View style={styles.header}>
-            <LocalizedText style={styles.headerTitle}>
-              {isEdit ? t("moderators.add.editTitle") : t("moderators.add.title")}
-            </LocalizedText>
-            <TouchableOpacity style={styles.closeBtn} onPress={handleClose}>
-              {/* Close is semantic — never mirrored. */}
-              <Ionicons name="close" size={24} color={colors.natural[900]} />
-            </TouchableOpacity>
-          </View>
-
-          <ScrollView
-            style={styles.body}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
             <View style={styles.field}>
               <FieldLabel required>{t("moderators.add.name")}</FieldLabel>
               <View
@@ -334,49 +361,13 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
                 })}
               </View>
             </View>
-          </ScrollView>
-
-          <View style={styles.footer}>
-            <TouchableOpacity
-              style={[styles.footerBtn, styles.cancelBtn]}
-              onPress={handleClose}
-              disabled={saving}
-            >
-              <LocalizedText style={styles.cancelBtnText}>
-                {t("moderators.add.cancel")}
-              </LocalizedText>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.footerBtn, styles.saveBtn]}
-              onPress={handleSave}
-              disabled={saving}
-            >
-              {saving ? (
-                <ActivityIndicator size="small" color={colors.natural[50]} />
-              ) : (
-                <LocalizedText style={styles.saveBtnText}>
-                  {isEdit ? t("moderators.add.saveChanges") : t("moderators.addModerator")}
-                </LocalizedText>
-              )}
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-    </Modal>
+    </KeyboardSafeModalSheet>
   );
 };
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "flex-end",
-  },
-  sheet: {
+  sheetBg: {
     backgroundColor: backgrounds.card[1],
-    borderTopLeftRadius: borderRadius[20],
-    borderTopRightRadius: borderRadius[20],
-    maxHeight: "92%",
   },
   handle: {
     width: 40,

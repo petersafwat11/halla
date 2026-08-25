@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import KeyboardAwareFormScrollView from '../../components/commen/keyboard/KeyboardAwareFormScrollView';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from '../../localization';
@@ -200,29 +201,29 @@ export default function VendorSignupScreen({ navigation }) {
       <View style={styles.container}>
         <TopBar title={t('signupForm.vendor.title')} showBack={true} />
         <FormProvider {...methods}>
-          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.flex}>
-            <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps='handled'>
-              <View style={styles.content}>
-                <SignupStepper steps={STEPS} currentStep={currentStep} />
-                {renderStep()}
-              </View>
-            </ScrollView>
-            <View style={styles.footer}>
-              <View style={styles.footerButtons}>
-                {currentStep > 1 && (
-                  <Button text={t('signupForm.buttons.back')} onPress={handleBack} variant='outline' fullWidth={false} style={styles.backBtn} />
-                )}
-                <View style={styles.nextBtnWrap}>
-                  <Button
-                    text={isLastStep ? (isPending ? t('signupForm.buttons.submitting') : t('signupForm.buttons.submit')) : t('signupForm.buttons.next')}
-                    onPress={isLastStep ? handleSubmit(onSubmit) : handleNext}
-                    loading={isPending}
-                    disabled={isPending}
-                  />
-                </View>
+          {/* One shared owner for the wizard body (§8.2 auth row); the fixed
+              action footer stays below it, outside the scroll region. */}
+          <KeyboardAwareFormScrollView style={styles.flex} contentContainerStyle={styles.scrollContent}>
+            <View style={styles.content}>
+              <SignupStepper steps={STEPS} currentStep={currentStep} />
+              {renderStep()}
+            </View>
+          </KeyboardAwareFormScrollView>
+          <View style={styles.footer}>
+            <View style={styles.footerButtons}>
+              {currentStep > 1 && (
+                <Button text={t('signupForm.buttons.back')} onPress={handleBack} variant='outline' fullWidth={false} style={styles.backBtn} />
+              )}
+              <View style={styles.nextBtnWrap}>
+                <Button
+                  text={isLastStep ? (isPending ? t('signupForm.buttons.submitting') : t('signupForm.buttons.submit')) : t('signupForm.buttons.next')}
+                  onPress={isLastStep ? handleSubmit(onSubmit) : handleNext}
+                  loading={isPending}
+                  disabled={isPending}
+                />
               </View>
             </View>
-          </KeyboardAvoidingView>
+          </View>
         </FormProvider>
       </View>
     </SafeAreaView>

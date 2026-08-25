@@ -10,8 +10,9 @@
  *   the single displacement owner on both iOS and Android. The controller's
  *   padding behavior is required inside native Modal windows; Android's app
  *   `resize` mode alone does not make this component react to the keyboard;
- * - closed-state safe-area bottom padding (kept OUTSIDE the avoiding view so
- *   keyboard height and home-indicator inset are never blindly summed);
+ * - a full-viewport avoiding frame. The closed-state safe-area bottom padding
+ *   lives on its outer frame, so the avoider measures the usable viewport and
+ *   subtracts the inset from keyboard overlap instead of double-counting it;
  * - fixed header slot, flexible body slot (minHeight 0 / flexShrink 1),
  *   optional footer slot that stays attached above the keyboard;
  * - max sheet height from live useWindowDimensions(), not a stale capture;
@@ -114,7 +115,7 @@ const KeyboardSafeModalSheet = ({
       onRequestClose={handleRequestClose}
       onShow={onShow}
     >
-      <View style={[styles.overlay, centered && styles.overlayCentered]}>
+      <View style={styles.overlay}>
         {/* Backdrop and sheet are SIBLING hit regions: taps outside close the
             sheet; taps/drag gestures inside never reach the backdrop. */}
         <Pressable
@@ -123,12 +124,16 @@ const KeyboardSafeModalSheet = ({
           accessible={false}
           importantForAccessibility="no-hide-descendants"
         />
-        {/* Closed-state safe-area padding lives OUTSIDE the avoiding view so
-            keyboard displacement and home-indicator inset are not summed. */}
+        {/* This frame fills the native modal window. Keeping the safe-area
+            inset outside the full-height avoider makes its measured bottom
+            equal to the usable viewport bottom, preventing a keyboard + home
+            indicator double gap. */}
         <View
-          style={
-            centered ? styles.cardSafeArea : { paddingBottom: insets.bottom }
-          }
+          style={[
+            styles.safeAreaFrame,
+            centered && styles.safeAreaFrameCentered,
+            { paddingBottom: insets.bottom },
+          ]}
           pointerEvents="box-none"
         >
           <KeyboardAvoidingView
@@ -138,21 +143,31 @@ const KeyboardSafeModalSheet = ({
             pointerEvents="box-none"
           >
             <View
-              accessibilityViewIsModal
-              accessibilityLabel={accessibilityLabel}
-              testID={testID}
               style={[
-                styles.sheet,
-                centered && styles.sheetCentered,
-                { maxHeight: maxSheetHeight },
-                sheetStyle,
+                styles.presentation,
+                centered
+                  ? styles.presentationCentered
+                  : styles.presentationBottom,
               ]}
+              pointerEvents="box-none"
             >
-              {header}
-              <View style={[styles.body, bodyStyle]}>{bodyContent}</View>
-              {footer ? (
-                <View style={styles.footerSlot}>{footer}</View>
-              ) : null}
+              <View
+                accessibilityViewIsModal
+                accessibilityLabel={accessibilityLabel}
+                testID={testID}
+                style={[
+                  styles.sheet,
+                  centered && styles.sheetCentered,
+                  { maxHeight: maxSheetHeight },
+                  sheetStyle,
+                ]}
+              >
+                {header}
+                <View style={[styles.body, bodyStyle]}>{bodyContent}</View>
+                {footer ? (
+                  <View style={styles.footerSlot}>{footer}</View>
+                ) : null}
+              </View>
             </View>
           </KeyboardAvoidingView>
         </View>
@@ -164,11 +179,12 @@ const KeyboardSafeModalSheet = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    justifyContent: "flex-end",
     backgroundColor: "rgba(0,0,0,0.5)",
   },
-  overlayCentered: {
-    justifyContent: "center",
+  safeAreaFrame: {
+    flex: 1,
+  },
+  safeAreaFrameCentered: {
     paddingHorizontal: 24,
   },
   backdrop: {
@@ -176,9 +192,17 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
   avoider: {
-    flexShrink: 1,
+    flex: 1,
   },
-  cardSafeArea: {},
+  presentation: {
+    flex: 1,
+  },
+  presentationBottom: {
+    justifyContent: "flex-end",
+  },
+  presentationCentered: {
+    justifyContent: "center",
+  },
   sheet: {
     backgroundColor: "#FFF",
     borderTopLeftRadius: 24,

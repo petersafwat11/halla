@@ -150,6 +150,8 @@
   "actions": "الإجراءات",
   "bulk_import": "استيراد مجمع",
   "download_template": "تحميل القالب",
+  "import_from_excel": "استيراد من Excel/CSV",
+  "download_excel_template": "تحميل قالب Excel/CSV",
   "upload_csv": "رفع ملف الاكسيل",
   "importing": "جاري الاستيراد...",
   "import_errors": "أخطاء الاستيراد",

@@ -9,8 +9,6 @@ import {
   View,
   Text,
   StyleSheet,
-  Modal,
-  Pressable,
   TouchableOpacity,
   ScrollView,
   FlatList,
@@ -23,6 +21,7 @@ import { isolateLtr } from "@halaa/shared/utils/bidi";
 import { useTranslation } from "../../localization";
 import Button from "../commen/Button";
 import CategoryPickerSheet from "../commen/CategoryPickerSheet";
+import KeyboardSafeModalSheet from "../commen/keyboard/KeyboardSafeModalSheet";
 import { useMyContacts } from "../../hooks/guests/queries";
 
 const CloseIcon = () => (
@@ -141,105 +140,121 @@ const ReuseGuestsModal = ({
     );
   };
 
-  return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={styles.overlay} onPress={onClose}>
-        <Pressable style={styles.modalContainer} onPress={(e) => e.stopPropagation()}>
-          <View style={styles.header}>
-            <View style={styles.headerTop}>
-              <Text style={styles.headerTitle}>{t("reuse_guests_title")}</Text>
-              <TouchableOpacity style={styles.closeButton} onPress={onClose} activeOpacity={0.7}>
-                <CloseIcon />
+  const header = (
+    <>
+      <View style={styles.header}>
+        <View style={styles.headerTop}>
+          <Text style={styles.headerTitle}>{t("reuse_guests_title")}</Text>
+          <TouchableOpacity style={styles.closeButton} onPress={onClose} activeOpacity={0.7}>
+            <CloseIcon />
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.headerSubtitle}>{t("reuse_guests_subtitle")}</Text>
+      </View>
+
+      {/* Fixed above the virtualized body: the search field is always
+          visible, so it never needs focus scrolling — the list below shrinks
+          instead (§6.4 layout 2). */}
+      <View style={styles.filters}>
+        <TextInput
+          style={styles.search}
+          placeholder={t("reuse_guests_search_placeholder")}
+          placeholderTextColor="#999"
+          value={search}
+          onChangeText={setSearch}
+        />
+        {categories.length > 0 && (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
+            <TouchableOpacity
+              style={[styles.chip, category === "" && styles.chipActive]}
+              onPress={() => setCategory("")}
+            >
+              <Text style={[styles.chipText, category === "" && styles.chipTextActive]}>
+                {t("reuse_guests_all_categories")}
+              </Text>
+            </TouchableOpacity>
+            {categories.map((c) => (
+              <TouchableOpacity
+                key={c}
+                style={[styles.chip, category === c && styles.chipActive]}
+                onPress={() => setCategory(category === c ? "" : c)}
+              >
+                <Text style={[styles.chipText, category === c && styles.chipTextActive]}>{c}</Text>
               </TouchableOpacity>
-            </View>
-            <Text style={styles.headerSubtitle}>{t("reuse_guests_subtitle")}</Text>
-          </View>
+            ))}
+          </ScrollView>
+        )}
+      </View>
+    </>
+  );
 
-          <View style={styles.filters}>
-            <TextInput
-              style={styles.search}
-              placeholder={t("reuse_guests_search_placeholder")}
-              placeholderTextColor="#999"
-              value={search}
-              onChangeText={setSearch}
-            />
-            {categories.length > 0 && (
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
-                <TouchableOpacity
-                  style={[styles.chip, category === "" && styles.chipActive]}
-                  onPress={() => setCategory("")}
-                >
-                  <Text style={[styles.chipText, category === "" && styles.chipTextActive]}>
-                    {t("reuse_guests_all_categories")}
-                  </Text>
+  const footer = (
+    <View style={styles.footer}>
+      <View style={styles.footerTopRow}>
+        <Text style={styles.count}>{t("reuse_guests_selected", { count: selectedCount })}</Text>
+        {selectedCount > 0 && (
+          <TouchableOpacity
+            style={styles.linkCategoryBtn}
+            onPress={() => setShowCategoryPicker(true)}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="pricetag-outline" size={16} color="#C28E5C" />
+            <Text style={styles.linkCategoryText}>{t("link_to_category")}</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+      <View style={styles.footerActions}>
+        <View style={styles.footerButton}>
+          <Button text={t("confirm")} onPress={handleAdd} disabled={selectedCount === 0} />
+        </View>
+        <View style={styles.footerButton}>
+          <Button text={t("cancel")} variant="secondary" onPress={onClose} />
+        </View>
+      </View>
+    </View>
+  );
+
+  return (
+    <>
+      <KeyboardSafeModalSheet
+        visible={visible}
+        onClose={onClose}
+        onRequestClose={onClose}
+        header={header}
+        footer={footer}
+        scrollBody={false}
+        accessibilityLabel={t("reuse_guests_title")}
+      >
+        {isLoading ? (
+          <View style={styles.state}>
+            <ActivityIndicator size="small" color="#C28E5C" />
+          </View>
+        ) : isError ? (
+          <View style={styles.state}>
+            <Text style={styles.stateText}>{t("reuse_guests_error")}</Text>
+          </View>
+        ) : contacts.length === 0 ? (
+          <View style={styles.state}>
+            <Text style={styles.stateText}>{t("reuse_guests_empty")}</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={contacts}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.phone}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            ListFooterComponent={
+              total > contacts.length ? (
+                <TouchableOpacity style={styles.loadMore} onPress={() => setLimit((l) => l + 50)}>
+                  <Text style={styles.loadMoreText}>{t("reuse_guests_load_more")}</Text>
                 </TouchableOpacity>
-                {categories.map((c) => (
-                  <TouchableOpacity
-                    key={c}
-                    style={[styles.chip, category === c && styles.chipActive]}
-                    onPress={() => setCategory(category === c ? "" : c)}
-                  >
-                    <Text style={[styles.chipText, category === c && styles.chipTextActive]}>{c}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            )}
-          </View>
-
-          {isLoading ? (
-            <View style={styles.state}>
-              <ActivityIndicator size="small" color="#C28E5C" />
-            </View>
-          ) : isError ? (
-            <View style={styles.state}>
-              <Text style={styles.stateText}>{t("reuse_guests_error")}</Text>
-            </View>
-          ) : contacts.length === 0 ? (
-            <View style={styles.state}>
-              <Text style={styles.stateText}>{t("reuse_guests_empty")}</Text>
-            </View>
-          ) : (
-            <FlatList
-              data={contacts}
-              renderItem={renderItem}
-              keyExtractor={(item) => item.phone}
-              contentContainerStyle={styles.listContent}
-              showsVerticalScrollIndicator={false}
-              ListFooterComponent={
-                total > contacts.length ? (
-                  <TouchableOpacity style={styles.loadMore} onPress={() => setLimit((l) => l + 50)}>
-                    <Text style={styles.loadMoreText}>{t("reuse_guests_load_more")}</Text>
-                  </TouchableOpacity>
-                ) : null
-              }
-            />
-          )}
-
-          <View style={styles.footer}>
-            <View style={styles.footerTopRow}>
-              <Text style={styles.count}>{t("reuse_guests_selected", { count: selectedCount })}</Text>
-              {selectedCount > 0 && (
-                <TouchableOpacity
-                  style={styles.linkCategoryBtn}
-                  onPress={() => setShowCategoryPicker(true)}
-                  activeOpacity={0.8}
-                >
-                  <Ionicons name="pricetag-outline" size={16} color="#C28E5C" />
-                  <Text style={styles.linkCategoryText}>{t("link_to_category")}</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-            <View style={styles.footerActions}>
-              <View style={styles.footerButton}>
-                <Button text={t("confirm")} onPress={handleAdd} disabled={selectedCount === 0} />
-              </View>
-              <View style={styles.footerButton}>
-                <Button text={t("cancel")} variant="secondary" onPress={onClose} />
-              </View>
-            </View>
-          </View>
-        </Pressable>
-      </Pressable>
+              ) : null
+            }
+          />
+        )}
+      </KeyboardSafeModalSheet>
 
       <CategoryPickerSheet
         visible={showCategoryPicker}
@@ -248,13 +263,11 @@ const ReuseGuestsModal = ({
         options={categories}
         title={t("link_to_category_title")}
       />
-    </Modal>
+    </>
   );
 };
 
 const styles = StyleSheet.create({
-  overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" },
-  modalContainer: { width: "100%", backgroundColor: "#FFF", borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: "90%" },
   header: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: "#F0F0F0" },
   headerTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 6 },
   headerTitle: { fontSize: 20, fontFamily: "Cairo_700Bold", color: "#2C2C2C" },

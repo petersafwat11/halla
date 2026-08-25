@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
   Image,
   Alert,
@@ -26,6 +25,7 @@ import {
   buildServiceCategoriesPayload,
   VENDOR_CATEGORY_KEYS,
 } from "../../utils/vendorHelpers";
+import { getImageUrl } from "../../utils/imageUtils";
 
 /**
  * Tile that owns BOTH ends of the single-image flow for a document field:
@@ -111,8 +111,9 @@ const ServiceDetailsForm = ({ data, onSave, onRefetch, loading }) => {
   const [commercialRecordFile, setCommercialRecordFile] = useState(null);
   const [deletingField, setDeletingField] = useState(null);
 
-  const existingNationalId = data?.nationalIdImage || null;
-  const existingCommercial = data?.commercialRecordImage || null;
+  // Absolutize the server's relative "/uploads/…" refs for RN Image.
+  const existingNationalId = getImageUrl(data?.nationalIdImage) || null;
+  const existingCommercial = getImageUrl(data?.commercialRecordImage) || null;
 
   useEffect(() => {
     methods.reset({
@@ -274,7 +275,7 @@ const ServiceDetailsForm = ({ data, onSave, onRefetch, loading }) => {
 
   return (
     <FormProvider {...methods}>
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <View style={styles.container}>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
             {t("settings.serviceDetails.title")}
@@ -396,14 +397,14 @@ const ServiceDetailsForm = ({ data, onSave, onRefetch, loading }) => {
             />
           </View>
         </View>
-      </ScrollView>
+      </View>
     </FormProvider>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    width: "100%",
   },
   section: {
     backgroundColor: "#fff",

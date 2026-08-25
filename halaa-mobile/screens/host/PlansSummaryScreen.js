@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
   ActivityIndicator,
   Platform,
@@ -38,6 +37,7 @@ import { priceToken } from "@halaa/shared/utils/displayTokens";
 import TopBar from "../../components/plans/TopBar";
 import PlanSummaryCard from "../../components/plans/PlanSummaryCard";
 import DiscountCodeCard from "../../components/plans/DiscountCodeCard";
+import KeyboardAwareFormScrollView from "../../components/commen/keyboard/KeyboardAwareFormScrollView";
 import PaymentSummaryCard from "../../components/plans/PaymentSummaryCard";
 import AddonsSummaryCard from "../../components/plans/AddonsSummaryCard";
 import PaymentMethodSelector from "../../components/plans/PaymentMethodSelector";
@@ -470,7 +470,7 @@ const PlansSummaryScreen = () => {
       <View style={styles.container}>
         <TopBar title={t("summary.title")} showBack={true} />
 
-        <ScrollView
+        <KeyboardAwareFormScrollView
           style={styles.content}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
@@ -613,7 +613,7 @@ const PlansSummaryScreen = () => {
           </View>
 
           {!isWeb && <PurchaseLegalLinks t={t} lang={currentLanguage} />}
-        </ScrollView>
+        </KeyboardAwareFormScrollView>
 
         <SafeAreaView edges={["bottom"]} style={styles.footerSafe}>
           <View style={styles.footer}>

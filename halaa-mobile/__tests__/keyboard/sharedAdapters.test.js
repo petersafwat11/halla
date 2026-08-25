@@ -123,6 +123,26 @@ test("KeyboardSafeModalSheet implements the shared sheet contract (§6.4)", () =
     /behavior=\{[^}]*undefined[^}]*\}/,
     "never disable the shared modal's Android keyboard avoidance"
   );
+  assert.match(
+    source,
+    /safeAreaFrame:\s*\{[\s\S]{0,80}flex:\s*1/,
+    "the safe-area frame must fill the native modal viewport"
+  );
+  assert.match(
+    source,
+    /avoider:\s*\{[\s\S]{0,80}flex:\s*1/,
+    "the avoiding owner must measure the full usable viewport, not only the sheet"
+  );
+  assert.match(
+    source,
+    /presentationBottom:\s*\{[\s\S]{0,80}justifyContent:\s*"flex-end"/,
+    "bottom alignment belongs inside the full-viewport avoiding owner"
+  );
+  assert.doesNotMatch(
+    source,
+    /avoider:\s*\{[\s\S]{0,80}flexShrink:\s*1/,
+    "an intrinsic-height avoider calculates the wrong overlap for bottom sheets"
+  );
 
   // Backdrop is a sibling hit region of the sheet, not a parent Pressable.
   const backdropIdx = source.indexOf("styles.backdrop");

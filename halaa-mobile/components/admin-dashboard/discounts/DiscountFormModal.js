@@ -1,16 +1,13 @@
 import React, { useEffect } from "react";
 import {
   View,
-  Modal,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import KeyboardSafeModalSheet from "../../commen/keyboard/KeyboardSafeModalSheet";
 import { useTranslation } from "../../../localization";
 import { useCreateDiscount, useUpdateDiscount } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
@@ -117,83 +114,70 @@ const DiscountFormModal = ({ visible, discount, onClose, onSave }) => {
     onClose();
   };
 
-  return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      transparent
-      onRequestClose={handleClose}
-    >
-      <KeyboardAvoidingView
-        style={styles.overlay}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+  const header = (
+    <View style={styles.header}>
+      <LocalizedText role="sectionTitle" style={styles.title}>
+        {isEdit ? t("discounts.form.editTitle") : t("discounts.form.createTitle")}
+      </LocalizedText>
+      <TouchableOpacity
+        onPress={handleClose}
+        activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={t("discounts.form.cancel")}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
       >
-        <View style={styles.sheet}>
-          <View style={styles.header}>
-            <LocalizedText role="sectionTitle" style={styles.title}>
-              {isEdit ? t("discounts.form.editTitle") : t("discounts.form.createTitle")}
-            </LocalizedText>
-            <TouchableOpacity
-              onPress={handleClose}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel={t("discounts.form.cancel")}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              {/* Close is semantic — never mirrored. */}
-              <Ionicons name="close" size={22} color={colors.natural[600]} />
-            </TouchableOpacity>
-          </View>
+        {/* Close is semantic — never mirrored. */}
+        <Ionicons name="close" size={22} color={colors.natural[600]} />
+      </TouchableOpacity>
+    </View>
+  );
 
-          <FormProvider {...methods}>
-            <ScrollView
-              style={styles.body}
-              contentContainerStyle={styles.bodyContent}
-              showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-            >
-              <DiscountFormFields isEdit={isEdit} />
-              <View style={styles.spacingHelper} />
-            </ScrollView>
+  const footer = (
+    <View style={styles.footer}>
+      <View style={styles.buttonWrapper}>
+        <Button
+          text={t("discounts.form.cancel")}
+          onPress={handleClose}
+          variant="outline"
+          size="small"
+          disabled={isPending}
+        />
+      </View>
+      <View style={styles.buttonWrapper}>
+        <Button
+          text={isPending ? t("discounts.form.saving") : t("discounts.form.save")}
+          onPress={handleSubmit(handleSave)}
+          variant="primary"
+          size="small"
+          loading={isPending}
+        />
+      </View>
+    </View>
+  );
 
-            <View style={styles.footer}>
-              <View style={styles.buttonWrapper}>
-                <Button
-                  text={t("discounts.form.cancel")}
-                  onPress={handleClose}
-                  variant="outline"
-                  size="small"
-                  disabled={isPending}
-                />
-              </View>
-              <View style={styles.buttonWrapper}>
-                <Button
-                  text={isPending ? t("discounts.form.saving") : t("discounts.form.save")}
-                  onPress={handleSubmit(handleSave)}
-                  variant="primary"
-                  size="small"
-                  loading={isPending}
-                />
-              </View>
-            </View>
-          </FormProvider>
-        </View>
-      </KeyboardAvoidingView>
-    </Modal>
+  return (
+    // Shared sheet (§8.2 admin row): aware scroll body owns focus scrolling;
+    // actions stay attached above the keyboard.
+    <KeyboardSafeModalSheet
+      visible={visible}
+      onClose={handleClose}
+      onRequestClose={handleClose}
+      header={header}
+      footer={footer}
+      contentContainerStyle={styles.bodyContent}
+      sheetStyle={styles.sheetBg}
+    >
+      <FormProvider {...methods}>
+        <DiscountFormFields isEdit={isEdit} />
+        <View style={styles.spacingHelper} />
+      </FormProvider>
+    </KeyboardSafeModalSheet>
   );
 };
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "flex-end",
-  },
-  sheet: {
+  sheetBg: {
     backgroundColor: backgrounds.card[1],
-    borderTopLeftRadius: borderRadius[20],
-    borderTopRightRadius: borderRadius[20],
-    maxHeight: "90%",
   },
   header: {
     flexDirection: "row",
@@ -208,9 +192,6 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_700Bold",
     fontSize: typography.fontSize.body.large,
     color: colors.natural[900],
-  },
-  body: {
-    flexGrow: 0,
   },
   bodyContent: {
     padding: spacing[20],

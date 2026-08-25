@@ -2,17 +2,15 @@ import React from "react";
 import {
   View,
   StyleSheet,
-  Modal,
   TouchableOpacity,
-  Pressable,
   Alert,
-  ScrollView,
 } from "react-native";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
+import KeyboardSafeModalSheet from "../commen/keyboard/KeyboardSafeModalSheet";
 import MobileInput from "../commen/MobileInput";
 import Button from "../commen/Button";
 import LocalizedText from "../commen/LocalizedText";
@@ -70,104 +68,91 @@ const TestMessageModal = ({ visible, onClose, onSuccess, eventId }) => {
     }
   };
 
+  const header = (
+    <>
+      {/* Handle bar */}
+      <View style={styles.handleBar} />
+
+      {/* Header: title/description at the logical start, close at the
+          logical end. */}
+      <View style={styles.header}>
+        <View style={styles.titleWrapper}>
+          <LocalizedText role="pageTitle" style={styles.title}>
+            {t("testMessage.title")}
+          </LocalizedText>
+          <LocalizedText role="description" style={styles.description}>
+            {t("testMessage.description")}
+          </LocalizedText>
+        </View>
+        <TouchableOpacity
+          onPress={handleClose}
+          hitSlop={8}
+          disabled={isPending}
+          accessibilityRole="button"
+          accessibilityLabel={t("testMessage.cancel")}
+        >
+          {/* Close glyph is not direction-mirrored (§7). */}
+          <Ionicons name="close" size={24} color="#2C2C2C" />
+        </TouchableOpacity>
+      </View>
+    </>
+  );
+
+  const footer = (
+    <View style={styles.actions}>
+      <View style={styles.actionBtn}>
+        <Button
+          text={t("testMessage.cancel")}
+          variant="outline"
+          onPress={handleClose}
+          disabled={isPending}
+        />
+      </View>
+      <View style={styles.actionBtn}>
+        <Button
+          text={isPending ? t("testMessage.sending") : t("testMessage.send")}
+          variant="primary"
+          onPress={handleSubmit(onSubmit)}
+          loading={isPending}
+          disabled={isPending}
+        />
+      </View>
+    </View>
+  );
+
   return (
-    <Modal
+    // Shared sheet (§8.2): aware scroll body keeps the phone field above the
+    // keyboard; actions stay attached above it.
+    <KeyboardSafeModalSheet
       visible={visible}
-      transparent
-      animationType="slide"
+      onClose={handleClose}
       onRequestClose={handleClose}
+      header={header}
+      footer={footer}
+      maxHeightRatio={0.85}
     >
-      <Pressable style={styles.overlay} onPress={handleClose}>
-        <Pressable style={styles.container} onPress={(e) => e.stopPropagation()}>
-          {/* Handle bar */}
-          <View style={styles.handleBar} />
+      <FormProvider {...methods}>
+        {/* Phone Number Input — shared phone-contract primitive:
+            localized placeholder, LTR digits when filled. */}
+        <MobileInput
+          name="phoneNumber"
+          label={t("testMessage.phoneLabel")}
+          placeholder="5XXXXXXXX"
+        />
 
-          {/* Header: title/description at the logical start, close at the
-              logical end. */}
-          <View style={styles.header}>
-            <View style={styles.titleWrapper}>
-              <LocalizedText role="pageTitle" style={styles.title}>
-                {t("testMessage.title")}
-              </LocalizedText>
-              <LocalizedText role="description" style={styles.description}>
-                {t("testMessage.description")}
-              </LocalizedText>
-            </View>
-            <TouchableOpacity
-              onPress={handleClose}
-              hitSlop={8}
-              disabled={isPending}
-              accessibilityRole="button"
-              accessibilityLabel={t("testMessage.cancel")}
-            >
-              {/* Close glyph is not direction-mirrored (§7). */}
-              <Ionicons name="close" size={24} color="#2C2C2C" />
-            </TouchableOpacity>
-          </View>
-
-          <FormProvider {...methods}>
-            <ScrollView
-              style={styles.content}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.contentInner}
-            >
-              {/* Phone Number Input — shared phone-contract primitive:
-                  localized placeholder, LTR digits when filled. */}
-              <MobileInput
-                name="phoneNumber"
-                label={t("testMessage.phoneLabel")}
-                placeholder="5XXXXXXXX"
-              />
-
-              {/* Info note */}
-              <View style={styles.infoBox}>
-                <Ionicons name="information-circle-outline" size={16} color="#C28E5C" />
-                <LocalizedText role="hint" style={styles.infoText}>
-                  {t("testMessage.infoText")}
-                </LocalizedText>
-              </View>
-            </ScrollView>
-
-            {/* Actions */}
-            <View style={styles.actions}>
-              <View style={styles.actionBtn}>
-                <Button
-                  text={t("testMessage.cancel")}
-                  variant="outline"
-                  onPress={handleClose}
-                  disabled={isPending}
-                />
-              </View>
-              <View style={styles.actionBtn}>
-                <Button
-                  text={isPending ? t("testMessage.sending") : t("testMessage.send")}
-                  variant="primary"
-                  onPress={handleSubmit(onSubmit)}
-                  loading={isPending}
-                  disabled={isPending}
-                />
-              </View>
-            </View>
-          </FormProvider>
-        </Pressable>
-      </Pressable>
-    </Modal>
+        {/* Info note */}
+        <View style={styles.infoBox}>
+          <Ionicons name="information-circle-outline" size={16} color="#C28E5C" />
+          <LocalizedText role="hint" style={styles.infoText}>
+            {t("testMessage.infoText")}
+          </LocalizedText>
+        </View>
+      </FormProvider>
+    </KeyboardSafeModalSheet>
   );
 };
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.55)",
-    justifyContent: "flex-end",
-  },
-  container: {
-    backgroundColor: "#FFF",
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    paddingBottom: 32,
-    maxHeight: "85%",
-  },
   handleBar: {
     width: 40,
     height: 4,
@@ -203,10 +188,8 @@ const styles = StyleSheet.create({
     color: "#656565",
     lineHeight: 20,
   },
-  content: {
-    paddingHorizontal: 24,
-  },
   contentInner: {
+    paddingHorizontal: 24,
     paddingTop: 20,
     paddingBottom: 8,
   },

@@ -3,13 +3,10 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
   Animated,
   Modal,
   Image as RNImage,
-  KeyboardAvoidingView,
-  Platform,
   Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -17,6 +14,7 @@ import { useFormContext, FormProvider, useForm, useWatch } from "react-hook-form
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import KeyboardAwareFormScrollView from "../commen/keyboard/KeyboardAwareFormScrollView";
 import EventTemplates from "../home/EventTemplates";
 import PreviewInvitation from "./PreviewInvitation";
 import { useTranslation } from "../../localization";
@@ -91,7 +89,10 @@ const StepThree = () => {
     (template) => {
       parentSetValue(
         "visualTemplate",
-        { ...template, isCustomUpload: false },
+        {
+          ...template,
+          isCustomUpload: false,
+        },
         { shouldValidate: true },
       );
       // Wipe the stale bake. The next bake happens when the host saves the
@@ -638,80 +639,77 @@ const TemplateFormModal = ({
           </TouchableOpacity>
         </View>
 
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-        >
-          <FormProvider {...methods}>
-            <ScrollView
-              style={{ flex: 1 }}
-              contentContainerStyle={styles.modalScrollContent}
-              keyboardShouldPersistTaps="handled"
-              showsVerticalScrollIndicator={false}
+        {/* One aware owner for the editor body (§8.2 StepThree): scrolls the
+            focused template field above the keyboard on both platforms; the
+            canvas/preview coordinates are untouched while no input is
+            focused. Replaces the former iOS-only KAV + raw ScrollView pair. */}
+        <FormProvider {...methods}>
+          <KeyboardAwareFormScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={styles.modalScrollContent}
+          >
+            {/* Live preview — also the bake source. The canvas subscribes
+                via `useWatch` (inside LiveCanvas) so it re-renders without
+                forcing the surrounding scroll owner + every form field to
+                re-render on each keystroke. */}
+            <View
+              style={styles.canvasWrapper}
+              collapsable={false}
+              ref={canvasRef}
             >
-              {/* Live preview — also the bake source. The canvas subscribes
-                  via `useWatch` (inside LiveCanvas) so it re-renders without
-                  forcing the surrounding ScrollView + every TextInput to
-                  re-render on each keystroke. */}
-              <View
-                style={styles.canvasWrapper}
-                collapsable={false}
-                ref={canvasRef}
-              >
-                <LiveCanvas
-                  template={template}
-                  control={methods.control}
-                  hasFields={hasFields}
-                  onBackgroundReady={handleBackgroundReady}
-                  onBackgroundError={handleBackgroundError}
-                />
-              </View>
-
-              {hasFields && (
-                <View style={styles.formContainer}>
-                  {fields.map((field) =>
-                    renderTemplateField(field, locale, t),
-                  )}
-                </View>
-              )}
-
-              {bakeError && (
-                <View style={styles.bakeWarningBadge}>
-                  <Text style={styles.bakeWarningText}>
-                    {String(bakeError).startsWith("TEMPLATE_BACKGROUND")
-                      ? t("template_background_failed")
-                      : t("template_bake_failed")}
-                  </Text>
-                </View>
-              )}
-            </ScrollView>
-
-            <View style={styles.modalFooter}>
-              <TouchableOpacity
-                style={[styles.footerBtn, styles.footerBtnSecondary]}
-                onPress={onClose}
-                activeOpacity={0.85}
-                disabled={baking}
-              >
-                <Text style={styles.footerBtnSecondaryText}>{t("cancel")}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.footerBtn,
-                  styles.footerBtnPrimary,
-                  (baking || !backgroundReady) && { opacity: 0.6 },
-                ]}
-                onPress={onSubmit}
-                activeOpacity={0.85}
-                disabled={baking || !backgroundReady}
-              >
-                <Text style={styles.footerBtnPrimaryText}>
-                  {baking ? t("saving") : t("save")}
-                </Text>
-              </TouchableOpacity>
+              <LiveCanvas
+                template={template}
+                control={methods.control}
+                hasFields={hasFields}
+                onBackgroundReady={handleBackgroundReady}
+                onBackgroundError={handleBackgroundError}
+              />
             </View>
-          </FormProvider>
-        </KeyboardAvoidingView>
+
+            {hasFields && (
+              <View style={styles.formContainer}>
+                {fields.map((field) =>
+                  renderTemplateField(field, locale, t),
+                )}
+              </View>
+            )}
+
+            {bakeError && (
+              <View style={styles.bakeWarningBadge}>
+                <Text style={styles.bakeWarningText}>
+                  {String(bakeError).startsWith("TEMPLATE_BACKGROUND")
+                    ? t("template_background_failed")
+                    : t("template_bake_failed")}
+                </Text>
+              </View>
+            )}
+          </KeyboardAwareFormScrollView>
+        </FormProvider>
+
+        <View style={styles.modalFooter}>
+          <TouchableOpacity
+            style={[styles.footerBtn, styles.footerBtnSecondary]}
+            onPress={onClose}
+            activeOpacity={0.85}
+            disabled={baking}
+          >
+            <Text style={styles.footerBtnSecondaryText}>{t("cancel")}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.footerBtn,
+              styles.footerBtnPrimary,
+              (baking || !backgroundReady) && { opacity: 0.6 },
+            ]}
+            onPress={onSubmit}
+            activeOpacity={0.85}
+            disabled={baking || !backgroundReady}
+          >
+            <Text style={styles.footerBtnPrimaryText}>
+              {baking ? t("saving") : t("save")}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </SafeAreaView>
     </Modal>
   );

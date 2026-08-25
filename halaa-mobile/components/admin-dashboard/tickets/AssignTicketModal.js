@@ -2,11 +2,10 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   StyleSheet,
-  Modal,
-  ScrollView,
   ActivityIndicator,
   Alert,
 } from "react-native";
+import KeyboardSafeModalSheet from "../../commen/keyboard/KeyboardSafeModalSheet";
 import TextInput from "../../commen/DirectionalTextInput";
 import PropTypes from "prop-types";
 import { ActionButton } from "../common";
@@ -95,31 +94,48 @@ const AssignTicketModal = ({ visible, onClose, ticket, onSave }) => {
 
   const isPending = assignTicket.isPending;
 
-  return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      transparent={true}
-      onRequestClose={handleClose}
-    >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-          {/* Header */}
-          <View style={styles.header}>
-            <LocalizedText style={styles.title}>{t("tickets.assign.title")}</LocalizedText>
-            <LocalizedText style={styles.subtitle}>
-              {t("tickets.assign.subtitle", {
-                ticketId: isolateLtr(`#${ticket?.id || ticket?._id || "—"}`),
-                subject: isolateAuto(ticket?.subject || t("tickets.noSubject")),
-              })}
-            </LocalizedText>
-          </View>
+  const header = (
+    <View style={styles.header}>
+      <LocalizedText style={styles.title}>{t("tickets.assign.title")}</LocalizedText>
+      <LocalizedText style={styles.subtitle}>
+        {t("tickets.assign.subtitle", {
+          ticketId: isolateLtr(`#${ticket?.id || ticket?._id || "—"}`),
+          subject: isolateAuto(ticket?.subject || t("tickets.noSubject")),
+        })}
+      </LocalizedText>
+    </View>
+  );
 
-          {/* Content */}
-          <ScrollView
-            style={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-          >
+  const footer = (
+    <View style={styles.actions}>
+      <ActionButton
+        label={t("common.cancel")}
+        onPress={handleClose}
+        variant="outline"
+        style={styles.actionButton}
+        disabled={isPending}
+      />
+      <ActionButton
+        label={isPending ? t("common.loading") : t("tickets.assign.assign")}
+        onPress={handleSave}
+        variant="primary"
+        style={styles.actionButton}
+        disabled={isPending || fetchingModerators || !selectedModeratorId}
+        loading={isPending}
+      />
+    </View>
+  );
+
+  return (
+    // Shared sheet (§8.2 admin row): aware scroll body keeps the optional
+    // note field above the keyboard; actions stay attached above it.
+    <KeyboardSafeModalSheet
+      visible={visible}
+      onClose={handleClose}
+      onRequestClose={handleClose}
+      header={header}
+      footer={footer}
+    >
             {fetchingModerators ? (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color={colors.primary[500]} />
@@ -160,29 +176,7 @@ const AssignTicketModal = ({ visible, onClose, ticket, onSave }) => {
                 </View>
               </>
             )}
-          </ScrollView>
-
-          {/* Actions */}
-          <View style={styles.actions}>
-            <ActionButton
-              label={t("common.cancel")}
-              onPress={handleClose}
-              variant="outline"
-              style={styles.actionButton}
-              disabled={isPending}
-            />
-            <ActionButton
-              label={isPending ? t("common.loading") : t("tickets.assign.assign")}
-              onPress={handleSave}
-              variant="primary"
-              style={styles.actionButton}
-              disabled={isPending || fetchingModerators || !selectedModeratorId}
-              loading={isPending}
-            />
-          </View>
-        </View>
-      </View>
-    </Modal>
+    </KeyboardSafeModalSheet>
   );
 };
 

@@ -162,10 +162,16 @@ function MapPickerInner({
     setDraft(normalizeLocation(value)); setQuery(""); setResults([]); setProviderFailed(false);
     sessionToken.current = newSessionToken(); setOpen(true);
   };
-  const closePicker = () => { setDraft(normalizeLocation(value)); setOpen(false); };
+  const closePicker = () => {
+    Keyboard.dismiss();
+    setDraft(normalizeLocation(value));
+    setOpen(false);
+  };
   const confirm = () => {
     if (!draft.address.trim() || !isFiniteCoordinate(draft)) return;
-    onChange(normalizeLocation(draft)); setOpen(false);
+    Keyboard.dismiss();
+    onChange(normalizeLocation(draft));
+    setOpen(false);
   };
   const displayValue = value?.address || "";
   const predictionText = (item) => item.text || item.description || item.formattedAddress || "";
@@ -199,7 +205,8 @@ function MapPickerInner({
             <View style={styles.searchBox}>
               {searching ? <ActivityIndicator size="small" color="#C28E5C" /> : <Ionicons name="search" size={20} color="#777" />}
               <DirectionalTextInput value={query} onChangeText={onSearchChange} placeholder={t("map_picker_search_placeholder")}
-                placeholderTextColor="#999" style={[styles.searchInput, direction.input]} />
+                placeholderTextColor="#999" style={[styles.searchInput, direction.input]}
+                returnKeyType="done" onSubmitEditing={useTypedAddress} />
               {query ? <TouchableOpacity onPress={() => onSearchChange("")}><Ionicons name="close-circle" size={20} color="#999" /></TouchableOpacity> : null}
             </View>
             {results.length ? (

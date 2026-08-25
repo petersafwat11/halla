@@ -10,6 +10,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useTranslation } from "../../localization";
 import { useToast } from "../../contexts/ToastContext";
+import { getImageUrl } from "../../utils/imageUtils";
 
 /**
  * Business-account settings:
@@ -32,12 +33,13 @@ const BusinessSettings = ({ user = {}, onProfileUpdate }) => {
 
   const [description, setDescription] = useState(initialDescription);
   const [logoAsset, setLogoAsset] = useState(null);
-  const [logoPreview, setLogoPreview] = useState(user?.avatar || null);
+  // Backend stores a relative "/uploads/…" ref — absolutize before RN Image.
+  const [logoPreview, setLogoPreview] = useState(getImageUrl(user?.avatar));
   const [saving, setSaving] = useState(false);
 
   React.useEffect(() => {
     setDescription(initialDescription);
-    setLogoPreview(user?.avatar || null);
+    setLogoPreview(getImageUrl(user?.avatar));
     setLogoAsset(null);
   }, [initialDescription, user?.avatar]);
 
@@ -81,7 +83,7 @@ const BusinessSettings = ({ user = {}, onProfileUpdate }) => {
   const handleCancel = () => {
     setDescription(initialDescription);
     setLogoAsset(null);
-    setLogoPreview(user?.avatar || null);
+    setLogoPreview(getImageUrl(user?.avatar));
   };
 
   return (

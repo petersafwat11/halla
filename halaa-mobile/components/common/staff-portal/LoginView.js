@@ -4,12 +4,10 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
   Alert,
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
 } from "react-native";
+import KeyboardAwareFormScrollView from "../../commen/keyboard/KeyboardAwareFormScrollView";
 import TextInput from "../../commen/DirectionalTextInput";
 import { Ionicons } from "@expo/vector-icons";
 import { useVerifyStaffAccess } from "../../../hooks/staff";
@@ -65,15 +63,11 @@ const LoginView = ({ onVerified, t }) => {
   const loading = verifyMutation.isPending || verifyMutation.isLoading;
 
   return (
-    <KeyboardAvoidingView
+    // One shared owner for the portal login form (§8.2 guest/staff row).
+    <KeyboardAwareFormScrollView
       style={styles.loginContainer}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      contentContainerStyle={styles.loginScroll}
     >
-      <ScrollView
-        contentContainerStyle={styles.loginScroll}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
         <View style={styles.loginHeader}>
           <View style={styles.loginIconWrap}>
             <Ionicons name="people" size={40} color="#C28E5C" />
@@ -132,8 +126,7 @@ const LoginView = ({ onVerified, t }) => {
             <Text style={styles.verifyBtnText}>{t("login.verifyButton")}</Text>
           )}
         </TouchableOpacity>
-      </ScrollView>
-    </KeyboardAvoidingView>
+    </KeyboardAwareFormScrollView>
   );
 };
 

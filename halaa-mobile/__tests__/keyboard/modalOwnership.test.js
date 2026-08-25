@@ -8,46 +8,16 @@ const SOURCE_ROOTS = ["components", "screens"];
 
 /**
  * Native modals that contain editable controls must be presented through the
- * shared KeyboardSafeModalSheet (§12 rule 5). Files below are the remaining
- * owners from the §8.2 audit, pending their rollout wave (§14); each entry is
- * blocked until migrated. NEW modal+input files are NOT allowlisted — adding
- * one fails this test.
+ * shared KeyboardSafeModalSheet (§12 rule 5). The sole exemption below is a
+ * reviewed full-screen editor whose top-anchored search has an explicit
+ * keyboard contract. NEW modal+input files are not exempt — adding one fails.
  */
-const PENDING_MODAL_MIGRATIONS = new Map([
-  // §8.2 Tickets (P1) — already have raw RN avoidance; adopt shared sheet.
-  ["components/tickets/TicketModal.js", "P1 tickets → KeyboardSafeModalSheet"],
-  ["components/tickets/TicketRatingModal.js", "P1 tickets → KeyboardSafeModalSheet"],
-  // §8.2 Guest/category sheets (P0/P1).
-  ["components/guests/ReuseGuestsModal.js", "P1 guest sheets → KeyboardSafeModalSheet"],
-  ["components/guests/VCardImportModal.js", "P1 guest sheets → KeyboardSafeModalSheet"],
-  ["components/events/AddGuestOrmoderatorPopup.js", "P1 guest popup → KeyboardSafeModalSheet"],
-  // §8.2 Create Step 3 editor modal (P1).
-  ["components/createEvent/StepThree.js", "P1 editor modal → shared aware owner"],
-  // §8.2 Account/settings + portal (P1).
-  ["components/settings/DeleteAccountSection.js", "P1 confirmation → centered sheet"],
-  ["components/common/staff-portal/QRModal.js", "P1 QR card → centered sheet"],
-  // §8.2 Map/location (P1).
-  ["components/commen/MapPicker.js", "P1 search modal → KeyboardSafeModalSheet"],
-  // Non-text pickers that merely embed a TextInput-like control incidentally.
-  ["components/commen/colorPicker.js", "Inspect: color picker, no text focus flow"],
-  // §8.2 Vendor modals (P2).
-  ["components/vendor/home/AddServicePopup.js", "P2 vendor → KeyboardSafeModalSheet"],
-  ["components/vendor/PhoneChangeOtpModal.js", "P2 OTP → centered card variant"],
-  // §8.2 Admin creation/edit modals (P2). DiscountFormModal composes its
-  // fields through a child component, so the inline-input scan cannot see it;
-  // it is allowlisted because it still presents its own raw native Modal.
-  ["components/admin-dashboard/businesses/AddBusinessModal.js", "P2 admin modal"],
-  ["components/admin-dashboard/hosts/AddHostModal.js", "P2 admin modal"],
-  ["components/admin-dashboard/moderators/AddModeratorModal.js", "P2 admin modal"],
-  ["components/admin-dashboard/plans/EditPlanModal.js", "P2 admin modal"],
-  ["components/admin-dashboard/common/ManagePlanModal.js", "P2 admin modal"],
-  ["components/admin-dashboard/discounts/DiscountFormModal.js", "P2 admin modal (fields via child)"],
-  ["components/admin-dashboard/notifications/SendNotificationModal.js", "P2 admin modal"],
-  ["components/admin-dashboard/vendors/RatingModal.js", "P2 admin modal"],
-  ["components/admin-dashboard/tickets/AssignTicketModal.js", "P2 admin modal"],
-  ["components/admin-dashboard/tickets/ResolveTicketModal.js", "P2 admin modal"],
-  ["screens/admin/admin-dashboard/PaymentDetailScreen.js", "P2 payment detail modal"],
-  ["components/home/TestMessageModal.js", "P2 template test-message modal"],
+const RAW_MODAL_EXEMPTIONS = new Map([
+  // §8.2 Map/location — SPECIALIZED EQUIVALENT (§12 rule 5): full-screen map
+  // editor, not a form sheet. The search box is top-anchored (never obscured),
+  // prediction rows stay virtualized, and selection/close dismiss the
+  // keyboard before transitions. A bottom-sheet frame would break the map.
+  ["components/commen/MapPicker.js", "P1 full-screen map editor → documented specialized owner"],
 ]);
 
 function sourceFiles(directory) {
@@ -72,7 +42,7 @@ const EDITABLE_CONTROL =
 
 test("native Modal files with editable inputs use KeyboardSafeModalSheet (§12 rule 5)", () => {
   const violations = [];
-  const staleAllowlistEntries = new Set(PENDING_MODAL_MIGRATIONS.keys());
+  const staleAllowlistEntries = new Set(RAW_MODAL_EXEMPTIONS.keys());
 
   for (const root of SOURCE_ROOTS) {
     for (const file of sourceFiles(path.join(MOBILE_ROOT, root))) {
@@ -85,7 +55,7 @@ test("native Modal files with editable inputs use KeyboardSafeModalSheet (§12 r
       // An allowlisted file stays "pending" while it still presents its own
       // native Modal (even when inputs are composed through children); the
       // entry only turns stale once it migrates off raw Modal entirely.
-      if (PENDING_MODAL_MIGRATIONS.has(rel)) {
+      if (RAW_MODAL_EXEMPTIONS.has(rel)) {
         if (rendersRawModal) staleAllowlistEntries.delete(rel);
         continue;
       }
@@ -110,8 +80,61 @@ test("native Modal files with editable inputs use KeyboardSafeModalSheet (§12 r
     [...staleAllowlistEntries],
     [],
     `Stale allowlist entries — these files no longer render <Modal> with inputs. ` +
-      `Remove them from PENDING_MODAL_MIGRATIONS:\n${[...staleAllowlistEntries].join("\n")}`
+      `Remove them from RAW_MODAL_EXEMPTIONS:\n${[...staleAllowlistEntries].join("\n")}`
   );
+});
+
+test("composed marketplace price inputs are owned by the shared sheet", () => {
+  const content = fs.readFileSync(
+    path.join(MOBILE_ROOT, "components/marketplace/FilterPopup.js"),
+    "utf8"
+  );
+
+  assert.match(content, /<KeyboardSafeModalSheet\b/);
+  assert.match(content, /<PriceRangeInputs\b/);
+  assert.doesNotMatch(content, /<Modal\b/);
+  assert.doesNotMatch(content, /<ScrollView\b/);
+});
+
+test("color picker custom hex input uses the shared centered sheet", () => {
+  const content = fs.readFileSync(
+    path.join(MOBILE_ROOT, "components/commen/colorPicker.js"),
+    "utf8"
+  );
+
+  assert.match(content, /<KeyboardSafeModalSheet\b/);
+  assert.match(content, /<RNTextInput\b/);
+  assert.match(content, /\bcentered\b/);
+  assert.doesNotMatch(content, /<Modal\b/);
+});
+
+test("category picker stays compact while retaining keyboard-safe ownership", () => {
+  const content = fs.readFileSync(
+    path.join(MOBILE_ROOT, "components/commen/CategoryPickerSheet.js"),
+    "utf8"
+  );
+
+  assert.match(content, /<KeyboardSafeModalSheet\b/);
+  assert.match(content, /maxHeightRatio=\{0\.58\}/);
+  assert.match(content, /onShow=\{handleShow\}/);
+});
+
+test("full-screen MapPicker exemption keeps its top search and transition contract", () => {
+  const content = fs.readFileSync(
+    path.join(MOBILE_ROOT, "components/commen/MapPicker.js"),
+    "utf8"
+  );
+  const searchIndex = content.indexOf("styles.searchWrap");
+  const mapIndex = content.indexOf("styles.mapWrap");
+
+  assert.match(content, /<Modal\b/);
+  assert.match(content, /<SafeAreaView\b/);
+  assert.ok(searchIndex !== -1 && mapIndex !== -1 && searchIndex < mapIndex,
+    "search must remain top-anchored above the map viewport");
+  assert.match(content, /onSubmitEditing=\{useTypedAddress\}/);
+  assert.match(content, /const closePicker[\s\S]{0,180}Keyboard\.dismiss\(\)/);
+  assert.match(content, /const confirm[\s\S]{0,180}Keyboard\.dismiss\(\)/);
+  assert.match(content, /selectPrediction[\s\S]{0,800}Keyboard\.dismiss\(\)/);
 });
 
 test("first-slice screen owners migrated to the shared aware scroll view (§9)", () => {

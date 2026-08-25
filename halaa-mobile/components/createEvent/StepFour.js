@@ -16,7 +16,6 @@ import {
   TouchableOpacity,
   Animated,
   ActivityIndicator,
-  ScrollView,
 } from "react-native";
 import { useFormContext } from "react-hook-form";
 import { Ionicons } from "@expo/vector-icons";
@@ -167,7 +166,6 @@ const StepFour = () => {
 
   return (
     <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
-      <ScrollView showsVerticalScrollIndicator={false}>
         {/* ── Invitation type ──────────────────────────────────── */}
         <View style={styles.inviteTypeSection}>
           <Text style={[styles.sectionTitle, fieldDirection.text]}>{t("invitation_type")}</Text>
@@ -430,8 +428,6 @@ const StepFour = () => {
             </View>
           )}
         </View>
-      </ScrollView>
-
       <PreviewInvitation
         visible={showPreview}
         onClose={() => setShowPreview(false)}
@@ -451,7 +447,7 @@ const StepFour = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { width: "100%" },
   header: { marginBottom: 16 },
   sectionTitle: {
     fontSize: 18,

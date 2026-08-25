@@ -16,11 +16,11 @@ import {
   View,
   StyleSheet,
   TouchableOpacity,
-  Modal,
   ActivityIndicator,
   Linking,
   Platform,
 } from "react-native";
+import KeyboardSafeModalSheet from "../commen/keyboard/KeyboardSafeModalSheet";
 import TextInput from "../commen/DirectionalTextInput";
 import LocalizedText from "../commen/LocalizedText";
 import AdaptiveText from "../commen/AdaptiveText";
@@ -143,20 +143,24 @@ const DeleteAccountSection = () => {
         </View>
       </TouchableOpacity>
 
-      <Modal
+      {/* Confirmation card (§8.2 account row): centered shared sheet — the
+          keyword/secret inputs stay above the keyboard on both platforms. */}
+      <KeyboardSafeModalSheet
         visible={modalVisible}
-        transparent
-        animationType="fade"
+        onClose={closeModal}
         onRequestClose={closeModal}
+        centered
+        animationType="fade"
+        dismissOnBackdropPress={false}
+        contentContainerStyle={styles.modalPadding}
+        sheetStyle={styles.modalCard}
       >
-        <View style={styles.overlay}>
-          <View style={styles.modalCard}>
-            <View style={styles.iconCircle}>
-              <Ionicons name="warning-outline" size={28} color="#e74c3c" />
-            </View>
-            <LocalizedText role="sectionTitle" center style={styles.modalTitle}>
-              {t("deleteAccount.title")}
-            </LocalizedText>
+        <View style={styles.iconCircle}>
+          <Ionicons name="warning-outline" size={28} color="#e74c3c" />
+        </View>
+        <LocalizedText role="sectionTitle" center style={styles.modalTitle}>
+          {t("deleteAccount.title")}
+        </LocalizedText>
             <LocalizedText role="description" center style={styles.modalBody}>
               {t("deleteAccount.warning")}
             </LocalizedText>
@@ -301,9 +305,7 @@ const DeleteAccountSection = () => {
                 )}
               </TouchableOpacity>
             </View>
-          </View>
-        </View>
-      </Modal>
+      </KeyboardSafeModalSheet>
     </View>
   );
 };
@@ -332,18 +334,11 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_600SemiBold",
     color: "#e74c3c",
   },
-  overlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 24,
-  },
   modalCard: {
     width: "100%",
     maxWidth: 420,
-    backgroundColor: "#fff",
-    borderRadius: 16,
+  },
+  modalPadding: {
     padding: 24,
     alignItems: "center",
   },

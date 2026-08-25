@@ -3,7 +3,6 @@ import {
   StyleSheet,
   View,
   Text,
-  ScrollView,
   TouchableOpacity,
   ActivityIndicator,
   Alert,
@@ -30,6 +29,7 @@ import LegalLinks from "../../components/legal/LegalLinks";
 import DirectionalIonicon from "../../components/common/DirectionalIonicon";
 import LocalizedText from "../../components/commen/LocalizedText";
 import AdaptiveText from "../../components/commen/AdaptiveText";
+import KeyboardAwareFormScrollView from "../../components/commen/keyboard/KeyboardAwareFormScrollView";
 
 const StatusBanner = ({ isPublished, t }) => (
   <View
@@ -228,7 +228,7 @@ const ManagePostEventScreen = ({ navigation, route }) => {
         <View style={styles.headerRight} />
       </View>
 
-      <ScrollView
+      <KeyboardAwareFormScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -287,7 +287,7 @@ const ManagePostEventScreen = ({ navigation, route }) => {
         />
 
         <View style={{ height: 40 }} />
-      </ScrollView>
+      </KeyboardAwareFormScrollView>
 
       <AccessLinksSheet
         visible={accessSheetOpen}

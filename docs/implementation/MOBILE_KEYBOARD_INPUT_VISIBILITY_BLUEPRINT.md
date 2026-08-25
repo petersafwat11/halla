@@ -435,3 +435,36 @@ The keyboard project is complete only when:
 8. there are no duplicated keyboard listeners, magic offsets, focus margins, or delayed scroll hacks;
 9. inputs remain responsible only for value, direction, validation, and focus semantics;
 10. automated guardrails prevent a new unowned input modal/form from being merged.
+
+---
+
+## 16. Rollout status — 2026-08-25
+
+The §14 waves are complete. Every editable native modal now presents through KeyboardSafeModalSheet (or a documented equivalent), and every full-screen form owns its scrolling through KeyboardAwareFormScrollView.
+
+### Migrated this wave
+
+| Wave | Files |
+|---|---|
+| Create-event modals | AddGuestOrmoderatorPopup, EditGuestOrModeratorsModal, ReuseGuestsModal, StepThree editor (aware scroll owner) |
+| Auth/profile screens | LoginScreen, SignupScreen, VendorSignupScreen, ForgetPasswordScreen, ResetPasswordScreen, CompleteProfileScreen, ForcePasswordChangeScreen, staff-portal LoginView |
+| Tickets/account/portal | TicketModal, TicketRatingModal, DeleteAccountSection, staff-portal QRModal |
+| Post event | PostEventScreen (aware-list adapter via `renderScrollComponent`) |
+| Vendor | AddServicePopup, PhoneChangeOtpModal |
+| Admin | AddBusinessModal, AddHostModal, AddModeratorModal, EditPlanModal, ManagePlanModal, DiscountFormModal, SendNotificationModal, RatingModal, AssignTicketModal, ResolveTicketModal, PaymentDetailScreen action card, TestMessageModal |
+
+### Remaining raw-modal exemption (documented and intentional)
+
+- components/commen/MapPicker.js — §12 rule 5 specialized equivalent: full-screen map editor; top-anchored search never obscured; keyboard dismissed before selection/close transitions.
+
+The color picker contains a real editable hex field and therefore uses the shared centered KeyboardSafeModalSheet. Marketplace FilterPopup also uses the shared sheet even though its price inputs are composed through a child component. The raw-KeyboardAvoidingView allowlist is empty, and MapPicker is the only raw input-modal exemption: new raw KeyboardAvoidingView usage or input-bearing native Modal files fail CI.
+
+The shared sheet's KeyboardAvoidingView fills the usable native-modal viewport before bottom/center alignment is applied; this prevents the controller from measuring only the sheet's intrinsic local frame and incorrectly calculating zero Android overlap. CategoryPickerSheet uses a compact 58% maximum-height ratio rather than the general 90% sheet cap.
+
+### Why Android previously still showed the keyboard over inputs
+
+SDK 54 enforces edge-to-edge. Under edge-to-edge, Android no longer resizes windows for the IME, so RN core's per-modal SOFT_INPUT_ADJUST_RESIZE becomes a no-op and any modal without an avoidance owner keeps its geometry while the keyboard overlays it. iOS masked the same container gap less often because RN core KeyboardAvoidingView padding worked there. The fix is container ownership, not input patches — exactly as §1–§3 prescribed.
+
+### Verification gate (unchanged)
+
+Static tests + lint pass (444 tests). Per §13, release remains gated on the physical-device matrix: Arabic/English × Android/iOS × keyboard open/closed, including Create Event Steps 1–2, Contacts Import footer category, Category Picker autofocus, Add Guest popup, and admin add/edit modals.

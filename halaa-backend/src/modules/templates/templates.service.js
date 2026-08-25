@@ -201,6 +201,20 @@ async function processImage(s3Key) {
 const LIST_LIMIT = 200;
 
 /**
+ * Public origin every client-facing media URL is built from. Compose sets
+ * PUBLIC_MEDIA_BASE_URL explicitly; BACKEND_URL (localhost default) is only
+ * a dev fallback. Empty result yields root-relative URLs, which both apps'
+ * resolvers join against their own API origin.
+ */
+function publicMediaOrigin() {
+  return String(
+    process.env.PUBLIC_MEDIA_BASE_URL ||
+      process.env.BACKEND_URL ||
+      ""
+  ).replace(/\/$/, "");
+}
+
+/**
  * Template objects live in a private S3 bucket in production. Exposing the
  * stored bucket URL made every mobile card fail with 403. Return stable API
  * asset URLs instead; the asset route below authenticates the caller and
@@ -211,8 +225,7 @@ function withAssetUrls(doc) {
   const plain = doc.toObject ? doc.toObject() : { ...doc };
   const id = String(plain._id || plain.id || "");
   if (!id) return plain;
-  const backendBase = String(process.env.BACKEND_URL || "").replace(/\/$/, "");
-  const assetBase = `${backendBase}/api/v2/templates/${id}/asset`;
+  const assetBase = `${publicMediaOrigin()}/api/v2/templates/${id}/asset`;
   return {
     ...plain,
     imageUrl: `${assetBase}?variant=original`,
@@ -562,6 +575,9 @@ module.exports = {
   processImage,
   s3KeyToUrl,
   deleteS3Key,
+  // Asset URL helpers (reused by events.crud for populated templateRefs)
+  publicMediaOrigin,
+  withAssetUrls,
   // Categories
   listCategories,
   createCategory,

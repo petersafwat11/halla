@@ -21,6 +21,7 @@ import { isolateLtr, isolateAuto } from "@halaa/shared/utils/bidi";
 import { useTranslation } from "../../localization";
 import { WEB_BASE_URL, ENDPOINTS } from "../../config/api";
 import { apiFetch } from "../../services/http";
+import { getImageUrl } from "../../utils/imageUtils";
 import { backgrounds, borderRadius, colors, spacing } from "../../styles/tokens";
 import DirectionalIonicon from "../../components/common/DirectionalIonicon";
 import LocalizedText from "../../components/commen/LocalizedText";
@@ -183,15 +184,23 @@ export default function VendorPublicProfileScreen({ route, navigation }) {
     );
   };
   const categories = (vendor.categories || []).map((key) => t(`sections.${key}`, key));
-  const services = vendor.services || [];
-  const portfolio = vendor.portfolio || [];
+  // Backend image refs are relative "/uploads/…" paths — absolutize for RN.
+  const coverImage = getImageUrl(vendor.coverImage);
+  const logo = getImageUrl(vendor.logo);
+  const services = (vendor.services || []).map((s) => ({
+    ...s,
+    image: getImageUrl(s.image),
+  }));
+  const portfolio = (vendor.portfolio || [])
+    .map((uri) => getImageUrl(uri))
+    .filter(Boolean);
   const socialEntries = Object.entries(vendor.socialLinks || {}).filter(([key, value]) => key !== "website" && value);
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 110 + insets.bottom }]} showsVerticalScrollIndicator={false}>
         <View style={styles.hero}>
-          {vendor.coverImage ? <Image source={{ uri: vendor.coverImage }} style={styles.cover} /> : <View style={styles.coverFallback}><Text style={styles.coverInitial}>{vendor.brandName?.charAt(0)}</Text></View>}
+          {coverImage ? <Image source={{ uri: coverImage }} style={styles.cover} /> : <View style={styles.coverFallback}><Text style={styles.coverInitial}>{vendor.brandName?.charAt(0)}</Text></View>}
           <View style={styles.heroShade} />
           {/* Full-width symmetric action strip: the physical left/right
               anchors are intentional artwork geometry with equal hit slop,
@@ -207,7 +216,7 @@ export default function VendorPublicProfileScreen({ route, navigation }) {
         </View>
 
         <View style={styles.identity}>
-          <View style={styles.logo}>{vendor.logo ? <Image source={{ uri: vendor.logo }} style={styles.logoImage} /> : <Text style={styles.logoInitial}>{vendor.brandName?.charAt(0)}</Text>}</View>
+          <View style={styles.logo}>{logo ? <Image source={{ uri: logo }} style={styles.logoImage} /> : <Text style={styles.logoInitial}>{vendor.brandName?.charAt(0)}</Text>}</View>
           <AdaptiveText center numberOfLines={2} style={styles.brand}>{vendor.brandName}</AdaptiveText>
           <View style={styles.metaRow}>
           {vendor.tagline ? <AdaptiveText center style={styles.tagline}>{vendor.tagline}</AdaptiveText> : null}
@@ -225,8 +234,7 @@ export default function VendorPublicProfileScreen({ route, navigation }) {
             const name = isAr && service.nameAr ? service.nameAr : service.name;
             const description = isAr && service.descriptionAr ? service.descriptionAr : service.description;
             return <View key={service.id} style={styles.serviceCard}>
-              {service.image ? <Image source={{ uri: service.image }} style={styles.serviceImage} /> : <View style={styles.serviceImageFallback}><Text style={styles.serviceInitial}>{name?.charAt(0)}</Text></View>}
-              <View style={styles.serviceBody}>
+              {service.image ? <Image source={{ uri: service.image }} style={styles.serviceImage} /> : <View style={styles.serviceImageFallback}><Text style={styles.serviceInitial}>{name?.charAt(0)}</Text></View>}              <View style={styles.serviceBody}>
                 <LocalizedText role="caption" style={styles.serviceCategory}>{t(`sections.${service.category}`, service.category)}</LocalizedText>
                 <AdaptiveText numberOfLines={2} style={styles.serviceName}>{name}</AdaptiveText>
                 {description ? <AdaptiveText numberOfLines={2} style={styles.serviceDescription}>{description}</AdaptiveText> : null}

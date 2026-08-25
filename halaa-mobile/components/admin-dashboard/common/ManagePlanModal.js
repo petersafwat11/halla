@@ -2,13 +2,12 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
-  Modal,
-  ScrollView,
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
   Share,
 } from "react-native";
+import KeyboardSafeModalSheet from "../../commen/keyboard/KeyboardSafeModalSheet";
 import TextInput from "../../commen/DirectionalTextInput";
 import AdaptiveText from "../../commen/AdaptiveText";
 import LocalizedText from "../../commen/LocalizedText";
@@ -260,31 +259,69 @@ const ManagePlanModal = ({ visible, onClose, entity, entityType = "host", onSave
     },
   ];
 
-  return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <View style={styles.overlay}>
-        <View style={styles.modalContainer}>
-          <View style={styles.header}>
-            <View style={{ flex: 1 }}>
-              <LocalizedText style={styles.kicker}>
-                {isBusiness ? mp("business", "Business") : mp("host", "Host")}
-              </LocalizedText>
-              <LocalizedText style={styles.title}>{mp("title", "Manage Plan")}</LocalizedText>
-              {/* Entity name is backend content — first-strong + isolation. */}
-              <AdaptiveText style={styles.entityName} numberOfLines={1}>
-                {entityName}
-              </AdaptiveText>
-            </View>
-            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <Ionicons name="close" size={24} color={colors.natural[900]} />
-            </TouchableOpacity>
-          </View>
+  const header = (
+    <View style={styles.header}>
+      <View style={{ flex: 1 }}>
+        <LocalizedText style={styles.kicker}>
+          {isBusiness ? mp("business", "Business") : mp("host", "Host")}
+        </LocalizedText>
+        <LocalizedText style={styles.title}>{mp("title", "Manage Plan")}</LocalizedText>
+        {/* Entity name is backend content — first-strong + isolation. */}
+        <AdaptiveText style={styles.entityName} numberOfLines={1}>
+          {entityName}
+        </AdaptiveText>
+      </View>
+      <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+        <Ionicons name="close" size={24} color={colors.natural[900]} />
+      </TouchableOpacity>
+    </View>
+  );
 
-          <ScrollView
-            style={styles.scroll}
-            contentContainerStyle={styles.content}
-            keyboardShouldPersistTaps="handled"
-          >
+  const footer = (
+    <View style={styles.footer}>
+      <View style={styles.buttonWrapper}>
+        <Button
+          text={checkoutLink ? mp("done", "Done") : t("common.cancel")}
+          onPress={onClose}
+          variant="outline"
+          size="small"
+          disabled={isSubmitting}
+        />
+      </View>
+      {!checkoutLink && (
+        <View style={styles.buttonWrapper}>
+          <Button
+            text={
+              isSubmitting
+                ? mp("saving", "Saving...")
+                : tab === "extra"
+                  ? mp("addInvites", "Add invites")
+                  : mp("updatePlan", "Update plan")
+            }
+            onPress={handleSubmit}
+            variant="primary"
+            size="small"
+            loading={isSubmitting}
+            disabled={
+              isSubmitting || (tab === "change" && (plansLoading || !!plansError))
+            }
+          />
+        </View>
+      )}
+    </View>
+  );
+
+  return (
+    // Shared sheet (§8.2 admin row): aware scroll body owns focus scrolling;
+    // actions stay attached above the keyboard.
+    <KeyboardSafeModalSheet
+      visible={visible}
+      onClose={onClose}
+      onRequestClose={onClose}
+      header={header}
+      footer={footer}
+      contentContainerStyle={styles.content}
+    >
             <View style={styles.summaryGrid}>
               {summaryRows.map((row) => (
                 <View style={styles.summaryItem} key={row.label}>
@@ -535,42 +572,7 @@ const ManagePlanModal = ({ visible, onClose, entity, entityType = "host", onSave
                 )}
               </>
             )}
-          </ScrollView>
-
-          <View style={styles.footer}>
-            <View style={styles.buttonWrapper}>
-              <Button
-                text={checkoutLink ? mp("done", "Done") : t("common.cancel")}
-                onPress={onClose}
-                variant="outline"
-                size="small"
-                disabled={isSubmitting}
-              />
-            </View>
-            {!checkoutLink && (
-              <View style={styles.buttonWrapper}>
-                <Button
-                  text={
-                    isSubmitting
-                      ? mp("saving", "Saving...")
-                      : tab === "extra"
-                        ? mp("addInvites", "Add invites")
-                        : mp("updatePlan", "Update plan")
-                  }
-                  onPress={handleSubmit}
-                  variant="primary"
-                  size="small"
-                  loading={isSubmitting}
-                  disabled={
-                    isSubmitting || (tab === "change" && (plansLoading || !!plansError))
-                  }
-                />
-              </View>
-            )}
-          </View>
-        </View>
-      </View>
-    </Modal>
+    </KeyboardSafeModalSheet>
   );
 };
 

@@ -12,32 +12,7 @@ const SOURCE_ROOTS = ["components", "screens", "navigation"];
  * a migration target; new entries are not allowed — migrate to
  * KeyboardAwareFormScrollView / KeyboardSafeModalSheet instead.
  */
-const RAW_AVOIDING_VIEW_ALLOWLIST = new Map([
-  // Auth/profile screens: replace repeated KAV+ScrollView pairs with the one
-  // shared form scroll owner (§8.2 Auth/profile row, P1).
-  ["screens/auth/LoginScreen.js", "P1 auth → KeyboardAwareFormScrollView"],
-  ["screens/auth/SignupScreen.js", "P1 auth → KeyboardAwareFormScrollView"],
-  ["screens/auth/VendorSignupScreen.js", "P1 auth → KeyboardAwareFormScrollView"],
-  ["screens/auth/ForgetPasswordScreen.js", "P1 auth → KeyboardAwareFormScrollView"],
-  ["screens/auth/ResetPasswordScreen.js", "P1 auth → KeyboardAwareFormScrollView"],
-  ["screens/auth/CompleteProfileScreen.js", "P1 auth → KeyboardAwareFormScrollView"],
-  ["screens/host/ForcePasswordChangeScreen.js", "P1 auth → KeyboardAwareFormScrollView"],
-  // Post-event local composition (§8.2 Post event row, P1).
-  ["screens/host/PostEventScreen.js", "P1 post-event → aware-list/sticky composer"],
-  // Staff portal page + QR card modal (§8.2 Guest portal row, P1).
-  ["components/common/staff-portal/LoginView.js", "P1 staff portal → aware owner"],
-  ["components/common/staff-portal/QRModal.js", "P1 QR card → KeyboardSafeModalSheet centered"],
-  // Tickets modals already avoid, but via raw RN views (§8.2 Tickets row, P1).
-  ["components/tickets/TicketModal.js", "P1 → KeyboardSafeModalSheet"],
-  ["components/tickets/TicketRatingModal.js", "P1 → KeyboardSafeModalSheet"],
-  // Admin creation/edit modals (§8.2 P2 rows).
-  ["components/admin-dashboard/plans/EditPlanModal.js", "P2 → KeyboardSafeModalSheet"],
-  ["components/admin-dashboard/discounts/DiscountFormModal.js", "P2 → KeyboardSafeModalSheet"],
-  ["components/admin-dashboard/hosts/AddHostModal.js", "P2 → KeyboardSafeModalSheet"],
-  // Step-three editor modal keeps a local pair until the canvas/preview state
-  // gets its enabled=false escape hatch (§8.2 Create Step 3 row, P1).
-  ["components/createEvent/StepThree.js", "P1 editor modal → shared aware owner"],
-]);
+const RAW_AVOIDING_VIEW_ALLOWLIST = new Map([]);
 
 function sourceFiles(directory) {
   if (!fs.existsSync(directory)) return [];

@@ -15,7 +15,7 @@ import {
   authErrorMessage as sharedAuthErrorMessage,
 } from "@halaa/shared/errors";
 
-export { ApiError };
+export { ApiError, apiErrorFromResponse };
 
 const buildUrl = (path) => `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
 

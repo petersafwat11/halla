@@ -29,6 +29,7 @@ import HostSelectorStep from "./HostSelectorStep";
 import LimitReachedView from "../../createEvent/LimitReachedView";
 import TopBar from "../../plans/TopBar";
 import KeyboardAwareFormScrollView from "../../commen/keyboard/KeyboardAwareFormScrollView";
+import LocalizedText from "../../commen/LocalizedText";
 import { spacing } from "../../../styles/tokens";
 
 // Both subscription sources we accept already deliver the canonical normalized shape:

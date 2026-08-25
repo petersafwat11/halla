@@ -2,13 +2,11 @@ import React, { useState } from "react";
 import {
   StyleSheet,
   View,
-  ScrollView,
   TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
   Dimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import KeyboardAwareFormScrollView from "../../components/commen/keyboard/KeyboardAwareFormScrollView";
 import { useTranslation } from "../../localization";
 import { useAuthStore } from "../../stores/authStore";
 import { useToast } from "../../contexts/ToastContext";
@@ -209,26 +207,21 @@ export default function SignupScreen({ navigation }) {
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <View style={styles.container}>
         <TopBar title={t("signup.title")} showBack={true} />
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      {/* One shared owner for the form region (§8.2 auth row). */}
+      <KeyboardAwareFormScrollView
         style={styles.keyboardView}
+        contentContainerStyle={styles.scrollContent}
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View style={styles.content}>
-            {renderStep()}
-            {/* Unauthenticated legal disclosure — opens the canonical web pages
-                (same shared content the in-app legal screens render). */}
-            <LegalLinks
-              prefix={t("signup.legalNotice")}
-              docTypes={["terms", "privacy", "community-rules"]}
-            />
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        <View style={styles.content}>
+          {renderStep()}
+          {/* Unauthenticated legal disclosure — opens the canonical web pages
+              (same shared content the in-app legal screens render). */}
+          <LegalLinks
+            prefix={t("signup.legalNotice")}
+            docTypes={["terms", "privacy", "community-rules"]}
+          />
+        </View>
+      </KeyboardAwareFormScrollView>
       </View>
     </SafeAreaView>
   );

@@ -120,7 +120,7 @@ const CategoryPickerSheet = ({
       onShow={handleShow}
       header={header}
       scrollBody={false}
-      maxHeightRatio={0.7}
+      maxHeightRatio={0.58}
       accessibilityLabel={title}
     >
       <FlatList

@@ -14,6 +14,8 @@ import QRCode from "react-native-qrcode-svg";
 import { useTranslation } from "../../localization";
 import useGuestByToken from "../../hooks/guestPortal/queries";
 import useSubmitRSVP from "../../hooks/guestPortal/mutations";
+import KeyboardAwareFormScrollView from "../../components/commen/keyboard/KeyboardAwareFormScrollView";
+import { getImageUrl } from "../../utils/imageUtils";
 
 const FALLBACK_BRAND_COLOR = "#C28E5C";
 const FALLBACK_BG = "#F9F4EF";
@@ -42,7 +44,8 @@ const InvitationScreen = ({ route }) => {
   // Defaults below preserve a sensible look without that source.
   const brandColor =
     event?.eventDetails?.primaryColor || FALLBACK_BRAND_COLOR;
-  const logoUri = event?.eventDetails?.logoUrl || null;
+  // Stored logo refs are relative "/uploads/…" paths — absolutize for RN.
+  const logoUri = getImageUrl(event?.eventDetails?.logoUrl);
 
   const currentStatus = submitChoice || guest?.status || "invited";
 
@@ -195,7 +198,7 @@ const InvitationScreen = ({ route }) => {
   // ---- Invited (RSVP buttons) ------------------------------------------
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: FALLBACK_BG }]}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <KeyboardAwareFormScrollView contentContainerStyle={styles.scrollContent}>
         {logoUri ? (
           <Image source={{ uri: logoUri }} style={styles.logo} resizeMode="contain" />
         ) : null}
@@ -267,7 +270,7 @@ const InvitationScreen = ({ route }) => {
             {submit.error?.message || t("guest.portal.submitError")}
           </Text>
         )}
-      </ScrollView>
+      </KeyboardAwareFormScrollView>
     </SafeAreaView>
   );
 };

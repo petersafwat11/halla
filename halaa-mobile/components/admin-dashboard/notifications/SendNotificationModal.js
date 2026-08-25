@@ -3,11 +3,10 @@ import {
   View,
   Text,
   StyleSheet,
-  Modal,
-  ScrollView,
   TouchableOpacity,
   Alert,
 } from "react-native";
+import KeyboardSafeModalSheet from "../../commen/keyboard/KeyboardSafeModalSheet";
 import DirectionalTextInput from "../../commen/DirectionalTextInput";
 import { useForm, FormProvider, Controller } from "react-hook-form";
 import { Ionicons } from "@expo/vector-icons";
@@ -93,57 +92,85 @@ const SendNotificationModal = ({
     onClose();
   };
 
-  return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      presentationStyle="pageSheet"
-      onRequestClose={handleClose}
-    >
-      <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={handleClose} style={styles.closeBtn}>
-            <Ionicons name="close" size={24} color="#2c2c2c" />
-          </TouchableOpacity>
-          <View style={styles.headerCenter}>
-            <Ionicons name="notifications-outline" size={22} color="#c28e5c" />
-            <Text style={styles.headerTitle}>
-              {isBulk
-                ? t("sendNotification.broadcastTitle")
-                : t("sendNotification.sendTitle")}
-            </Text>
-          </View>
-          <View style={styles.closeBtn} />
+  const header = (
+    <>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={handleClose} style={styles.closeBtn}>
+          <Ionicons name="close" size={24} color="#2c2c2c" />
+        </TouchableOpacity>
+        <View style={styles.headerCenter}>
+          <Ionicons name="notifications-outline" size={22} color="#c28e5c" />
+          <Text style={styles.headerTitle}>
+            {isBulk
+              ? t("sendNotification.broadcastTitle")
+              : t("sendNotification.sendTitle")}
+          </Text>
         </View>
+        <View style={styles.closeBtn} />
+      </View>
 
-        {/* Recipient Info */}
-        {!isBulk && targetUser && (
-          <View style={styles.recipientBar}>
-            <Text style={styles.recipientLabel}>{t("sendNotification.to")}:</Text>
-            <Text style={styles.recipientName}>
-              {targetUser.username || targetUser.email || targetUser.phoneNumber}
-            </Text>
-          </View>
+      {/* Recipient Info */}
+      {!isBulk && targetUser && (
+        <View style={styles.recipientBar}>
+          <Text style={styles.recipientLabel}>{t("sendNotification.to")}:</Text>
+          <Text style={styles.recipientName}>
+            {targetUser.username || targetUser.email || targetUser.phoneNumber}
+          </Text>
+        </View>
+      )}
+      {isBulk && targetRole && (
+        <View style={styles.warningBar}>
+          <Ionicons name="warning-outline" size={18} color="#F59E0B" />
+          <Text style={styles.warningText}>
+            {t("sendNotification.bulkWarning", {
+              role: t(`sendNotification.roles.${targetRole}`, targetRole),
+            })}
+          </Text>
+        </View>
+      )}
+    </>
+  );
+
+  const footer = (
+    <View style={styles.actions}>
+      <TouchableOpacity
+        style={styles.cancelButton}
+        onPress={handleClose}
+        disabled={isLoading}
+      >
+        <Text style={styles.cancelText}>{t("common.cancel")}</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.sendButton, isLoading && styles.sendButtonDisabled]}
+        onPress={handleSubmit(onSubmit)}
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <Text style={styles.sendText}>{t("common.loading")}</Text>
+        ) : (
+          <>
+            <Ionicons name="send-outline" size={18} color="#FFF" />
+            <Text style={styles.sendText}>{t("sendNotification.send")}</Text>
+          </>
         )}
-        {isBulk && targetRole && (
-          <View style={styles.warningBar}>
-            <Ionicons name="warning-outline" size={18} color="#F59E0B" />
-            <Text style={styles.warningText}>
-              {t("sendNotification.bulkWarning", {
-                role: t(`sendNotification.roles.${targetRole}`, targetRole),
-              })}
-            </Text>
-          </View>
-        )}
+      </TouchableOpacity>
+    </View>
+  );
+
+  return (
+    // Shared sheet (§8.2 admin row): aware scroll body owns focus scrolling;
+    // send/cancel actions stay attached above the keyboard.
+    <KeyboardSafeModalSheet
+      visible={visible}
+      onClose={handleClose}
+      onRequestClose={handleClose}
+      header={header}
+      footer={footer}
+      contentContainerStyle={styles.formContent}
+    >
 
         <FormProvider {...methods}>
-          <ScrollView
-            style={styles.form}
-            contentContainerStyle={styles.formContent}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
+          <>
             {/* Arabic Title */}
             <View style={styles.fieldGroup}>
               <Text style={styles.fieldLabel}>
@@ -226,35 +253,9 @@ const SendNotificationModal = ({
                 )}
               />
             </View>
-          </ScrollView>
+          </>
         </FormProvider>
-
-        {/* Actions */}
-        <View style={styles.actions}>
-          <TouchableOpacity
-            style={styles.cancelButton}
-            onPress={handleClose}
-            disabled={isLoading}
-          >
-            <Text style={styles.cancelText}>{t("common.cancel")}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.sendButton, isLoading && styles.sendButtonDisabled]}
-            onPress={handleSubmit(onSubmit)}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <Text style={styles.sendText}>{t("common.loading")}</Text>
-            ) : (
-              <>
-                <Ionicons name="send-outline" size={18} color="#FFF" />
-                <Text style={styles.sendText}>{t("sendNotification.send")}</Text>
-              </>
-            )}
-          </TouchableOpacity>
-        </View>
-      </View>
-    </Modal>
+    </KeyboardSafeModalSheet>
   );
 };
 

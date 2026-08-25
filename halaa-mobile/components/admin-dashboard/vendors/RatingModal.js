@@ -1,11 +1,10 @@
 import React, { useState } from "react";
 import {
   View,
-  Modal,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
 } from "react-native";
+import KeyboardSafeModalSheet from "../../commen/keyboard/KeyboardSafeModalSheet";
 import TextInput from "../../commen/DirectionalTextInput";
 import LocalizedText from "../../commen/LocalizedText";
 import AdaptiveText from "../../commen/AdaptiveText";
@@ -80,109 +79,112 @@ const RatingModal = ({ visible, onClose, vendor, onSave, loading }) => {
     return stars;
   };
 
-  return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      transparent={true}
-      onRequestClose={handleClose}
-    >
-      <View style={styles.overlay}>
-        <View style={styles.modalContainer}>
-          <View style={styles.header}>
-            <LocalizedText role="sectionTitle" style={styles.title}>
-              {t("vendors.rating.title")}
-            </LocalizedText>
-            <TouchableOpacity
-              onPress={handleClose}
-              style={styles.closeButton}
-              disabled={loading}
-              accessibilityRole="button"
-              accessibilityLabel={t("vendors.rating.cancel")}
-            >
-              {/* Close is semantic — never mirrored. */}
-              <Ionicons name="close" size={24} color={colors.natural[900]} />
-            </TouchableOpacity>
-          </View>
+  const header = (
+    <View style={styles.header}>
+      <LocalizedText role="sectionTitle" style={styles.title}>
+        {t("vendors.rating.title")}
+      </LocalizedText>
+      <TouchableOpacity
+        onPress={handleClose}
+        style={styles.closeButton}
+        disabled={loading}
+        accessibilityRole="button"
+        accessibilityLabel={t("vendors.rating.cancel")}
+      >
+        {/* Close is semantic — never mirrored. */}
+        <Ionicons name="close" size={24} color={colors.natural[900]} />
+      </TouchableOpacity>
+    </View>
+  );
 
-          <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-            <View style={styles.vendorInfo}>
-              {/* Store/brand and owner are backend content — first-strong. */}
-              <AdaptiveText style={styles.vendorName}>
-                {displayName}
-              </AdaptiveText>
-              {!!ownerName && (
-                <AdaptiveText style={styles.vendorOwner}>
-                  {ownerName}
-                </AdaptiveText>
-              )}
-            </View>
-
-            <View style={styles.field}>
-              <LocalizedText role="label" style={styles.label}>
-                {t("vendors.rating.newRating")}
-              </LocalizedText>
-              {/* A 1→5 numeric scale is intentionally physical: pinned LTR
-                  so the star order never mirrors by accident (blueprint §7). */}
-              <View style={styles.starsContainer}>{renderStars()}</View>
-              {rating > 0 && (
-                <LocalizedText role="body" center style={styles.ratingText}>
-                  {t("vendors.rating.summary", {
-                    rating: formatCount(rating, currentLanguage),
-                  })}
-                </LocalizedText>
-              )}
-              {!!ratingError && (
-                <LocalizedText role="error" center style={styles.errorText}>
-                  {ratingError}
-                </LocalizedText>
-              )}
-            </View>
-
-            <View style={styles.field}>
-              <LocalizedText role="label" style={styles.label}>
-                {t("vendors.rating.review")}
-              </LocalizedText>
-              {/* Free-text review is arbitrary user content (blueprint §5.3):
-                  localized placeholder while empty, first-strong when filled.
-                  The label above stays localized either way. */}
-              <TextInput
-                style={styles.textArea}
-                value={comment}
-                onChangeText={setComment}
-                placeholder={t("vendors.rating.reviewPlaceholder")}
-                placeholderTextColor={colors.natural[400]}
-                multiline
-                numberOfLines={4}
-                textAlignVertical="top"
-                editable={!loading}
-                contentDirection={CONTENT_DIRECTIONS.ADAPTIVE}
-              />
-            </View>
-          </ScrollView>
-
-          <View style={styles.footer}>
-            <View style={styles.buttonWrapper}>
-              <ActionButton
-                label={t("vendors.rating.cancel")}
-                onPress={handleClose}
-                variant="secondary"
-                disabled={loading}
-              />
-            </View>
-            <View style={styles.buttonWrapper}>
-              <ActionButton
-                label={t("vendors.rating.save")}
-                onPress={handleSave}
-                variant="primary"
-                loading={loading}
-                disabled={loading}
-              />
-            </View>
-          </View>
-        </View>
+  const footer = (
+    <View style={styles.footer}>
+      <View style={styles.buttonWrapper}>
+        <ActionButton
+          label={t("vendors.rating.cancel")}
+          onPress={handleClose}
+          variant="secondary"
+          disabled={loading}
+        />
       </View>
-    </Modal>
+      <View style={styles.buttonWrapper}>
+        <ActionButton
+          label={t("vendors.rating.save")}
+          onPress={handleSave}
+          variant="primary"
+          loading={loading}
+          disabled={loading}
+        />
+      </View>
+    </View>
+  );
+
+  return (
+    // Shared sheet (§8.2 admin row): aware scroll body keeps the growing
+    // review field visible; actions stay attached above the keyboard.
+    <KeyboardSafeModalSheet
+      visible={visible}
+      onClose={handleClose}
+      onRequestClose={handleClose}
+      header={header}
+      footer={footer}
+      contentContainerStyle={styles.contentPadding}
+      sheetStyle={styles.sheetBg}
+    >
+      <View style={styles.vendorInfo}>
+        {/* Store/brand and owner are backend content — first-strong. */}
+        <AdaptiveText style={styles.vendorName}>
+          {displayName}
+        </AdaptiveText>
+        {!!ownerName && (
+          <AdaptiveText style={styles.vendorOwner}>
+            {ownerName}
+          </AdaptiveText>
+        )}
+      </View>
+
+      <View style={styles.field}>
+        <LocalizedText role="label" style={styles.label}>
+          {t("vendors.rating.newRating")}
+        </LocalizedText>
+        {/* A 1→5 numeric scale is intentionally physical: pinned LTR
+            so the star order never mirrors by accident (blueprint §7). */}
+        <View style={styles.starsContainer}>{renderStars()}</View>
+        {rating > 0 && (
+          <LocalizedText role="body" center style={styles.ratingText}>
+            {t("vendors.rating.summary", {
+              rating: formatCount(rating, currentLanguage),
+            })}
+          </LocalizedText>
+        )}
+        {!!ratingError && (
+          <LocalizedText role="error" center style={styles.errorText}>
+            {ratingError}
+          </LocalizedText>
+        )}
+      </View>
+
+      <View style={styles.field}>
+        <LocalizedText role="label" style={styles.label}>
+          {t("vendors.rating.review")}
+        </LocalizedText>
+        {/* Free-text review is arbitrary user content (blueprint §5.3):
+            localized placeholder while empty, first-strong when filled.
+            The label above stays localized either way. */}
+        <TextInput
+          style={styles.textArea}
+          value={comment}
+          onChangeText={setComment}
+          placeholder={t("vendors.rating.reviewPlaceholder")}
+          placeholderTextColor={colors.natural[400]}
+          multiline
+          numberOfLines={4}
+          textAlignVertical="top"
+          editable={!loading}
+          contentDirection={CONTENT_DIRECTIONS.ADAPTIVE}
+        />
+      </View>
+    </KeyboardSafeModalSheet>
   );
 };
 
@@ -192,11 +194,11 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "flex-end",
   },
-  modalContainer: {
+  sheetBg: {
     backgroundColor: backgrounds.card[1],
-    borderTopLeftRadius: borderRadius[20],
-    borderTopRightRadius: borderRadius[20],
-    maxHeight: "80%",
+  },
+  contentPadding: {
+    padding: spacing[20],
   },
   header: {
     flexDirection: "row",
@@ -217,9 +219,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginEnd: -spacing[8],
-  },
-  content: {
-    padding: spacing[20],
   },
   vendorInfo: {
     marginBottom: spacing[24],

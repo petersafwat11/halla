@@ -130,13 +130,13 @@ export default function ImportExportSection({ isLimitReached, isUnlimited, guest
             <UploadIcon disabled={isLimitReached} />
           )}
           <Text style={[styles.importExportBtnText, isLimitReached && styles.importExportBtnTextDisabled]}>
-            {t("bulk_import")}
+            {t("import_from_excel")}
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.importExportBtn} onPress={handleExportTemplate} activeOpacity={0.7}>
           <DownloadIcon />
-          <Text style={styles.importExportBtnText}>{t("download_template")}</Text>
+          <Text style={styles.importExportBtnText}>{t("download_excel_template")}</Text>
         </TouchableOpacity>
       </View>
 

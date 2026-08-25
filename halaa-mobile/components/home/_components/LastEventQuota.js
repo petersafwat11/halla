@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, StyleSheet } from "react-native";
+import { Text, View, StyleSheet } from "react-native";
 import { useTranslation } from "../../../localization";
 import { formatCount } from "@halaa/shared/utils/locale";
 

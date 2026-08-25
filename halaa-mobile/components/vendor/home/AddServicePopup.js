@@ -3,11 +3,9 @@ import {
   View,
   TouchableOpacity,
   StyleSheet,
-  Modal,
-  ScrollView,
-  Animated,
   ActivityIndicator,
 } from "react-native";
+import KeyboardSafeModalSheet from "../../commen/keyboard/KeyboardSafeModalSheet";
 import RNTextInput from "../../commen/DirectionalTextInput";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -38,7 +36,6 @@ const AddServicePopup = ({
 }) => {
   const { t } = useTranslation("vendor");
   const toast = useToast();
-  const slideAnim = React.useRef(new Animated.Value(1000)).current;
   const [selectedTags, setSelectedTags] = useState([]);
   const [included, setIncluded] = useState([]);
   const [includedInput, setIncludedInput] = useState("");
@@ -60,59 +57,40 @@ const AddServicePopup = ({
   const { handleSubmit, reset } = methods;
 
   useEffect(() => {
-    if (visible) {
-      if (editingService?._raw) {
-        const raw = editingService._raw;
-        // Pre-fill form with existing service data
-        reset({
-          serviceName: editingService.name || raw.name || "",
-          serviceNameAr: raw.nameAr || "",
-          serviceType: raw.category || "",
-          description: raw.description || "",
-          descriptionAr: raw.descriptionAr || "",
-          price: String(raw.price ?? ""),
-          serviceImage: raw.image
-            ? { uri: getImageUrl(raw.image) }
-            : editingService.imageUri
-              ? { uri: editingService.imageUri }
-              : undefined,
-        });
-        setSelectedTags(raw.tags || []);
-        setIncluded(raw.included || []);
-        setIncludedInput("");
-      } else {
-        reset();
-        setSelectedTags([]);
-        setIncluded([]);
-        setIncludedInput("");
-      }
-      Animated.spring(slideAnim, {
-        toValue: 0,
-        useNativeDriver: true,
-        friction: 8,
-        tension: 40,
-      }).start();
+    if (!visible) return;
+    if (editingService?._raw) {
+      const raw = editingService._raw;
+      // Pre-fill form with existing service data
+      reset({
+        serviceName: editingService.name || raw.name || "",
+        serviceNameAr: raw.nameAr || "",
+        serviceType: raw.category || "",
+        description: raw.description || "",
+        descriptionAr: raw.descriptionAr || "",
+        price: String(raw.price ?? ""),
+        serviceImage: raw.image
+          ? { uri: getImageUrl(raw.image) }
+          : editingService.imageUri
+            ? { uri: editingService.imageUri }
+            : undefined,
+      });
+      setSelectedTags(raw.tags || []);
+      setIncluded(raw.included || []);
+      setIncludedInput("");
     } else {
-      Animated.timing(slideAnim, {
-        toValue: 1000,
-        duration: 300,
-        useNativeDriver: true,
-      }).start();
-    }
-  }, [visible, editingService, reset, slideAnim]);
-
-  const handleClose = () => {
-    Animated.timing(slideAnim, {
-      toValue: 1000,
-      duration: 300,
-      useNativeDriver: true,
-    }).start(() => {
       reset();
       setSelectedTags([]);
       setIncluded([]);
       setIncludedInput("");
-      onClose?.();
-    });
+    }
+  }, [visible, editingService, reset]);
+
+  const handleClose = () => {
+    reset();
+    setSelectedTags([]);
+    setIncluded([]);
+    setIncludedInput("");
+    onClose?.();
   };
 
   const handleAddIncluded = () => {
@@ -161,47 +139,73 @@ const AddServicePopup = ({
     toast.error(firstError);
   };
 
-  return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="none"
-      onRequestClose={handleClose}
-    >
-      <View style={styles.overlay}>
-        <Animated.View
-          style={[
-            styles.container,
-            { transform: [{ translateY: slideAnim }] },
-          ]}
+  const header = (
+    <>
+      <View style={styles.header}>
+        <TouchableOpacity
+          onPress={handleClose}
+          disabled={isLoading}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={t("services.cancel")}
         >
-          {/* Header — close sits at the logical start of the sheet row and
-              is a semantic glyph (never mirrored). */}
-          <View style={styles.header}>
-            <TouchableOpacity
-              onPress={handleClose}
-              disabled={isLoading}
-              hitSlop={8}
-              accessibilityRole="button"
-              accessibilityLabel={t("services.cancel")}
-            >
-              <MaterialCommunityIcons name="close" size={24} color="#2C2C2C" />
-            </TouchableOpacity>
-            <LocalizedText role="pageTitle" style={styles.title}>
-              {isEditing ? t("services.editTitle") : t("services.title")}
-            </LocalizedText>
-            <View style={{ width: 24 }} />
-          </View>
+          <MaterialCommunityIcons name="close" size={24} color="#2C2C2C" />
+        </TouchableOpacity>
+        <LocalizedText role="pageTitle" style={styles.title}>
+          {isEditing ? t("services.editTitle") : t("services.title")}
+        </LocalizedText>
+        <View style={{ width: 24 }} />
+      </View>
+      <View style={styles.divider} />
+    </>
+  );
 
-          <View style={styles.divider} />
+  const footer = (
+    <View style={styles.footer}>
+      <TouchableOpacity
+        style={[styles.cancelButton, isLoading && styles.buttonDisabled]}
+        onPress={handleClose}
+        disabled={isLoading}
+        activeOpacity={0.7}
+      >
+        <LocalizedText style={styles.cancelButtonText}>
+          {t("services.cancel")}
+        </LocalizedText>
+      </TouchableOpacity>
 
-          {/* Form */}
-          <ScrollView
-            style={styles.scrollView}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.scrollContent}
-            keyboardShouldPersistTaps="handled"
-          >
+      <TouchableOpacity
+        style={[
+          styles.submitButton,
+          isLoading && styles.submitButtonLoading,
+        ]}
+        onPress={handleSubmit(handleFormSubmit, handleInvalid)}
+        disabled={isLoading}
+        activeOpacity={0.7}
+      >
+        {isLoading ? (
+          <ActivityIndicator size="small" color="#FFF" />
+        ) : (
+          <LocalizedText style={styles.submitButtonText}>
+            {isEditing ? t("services.update") : t("services.create")}
+          </LocalizedText>
+        )}
+      </TouchableOpacity>
+    </View>
+  );
+
+  return (
+    // Shared bottom sheet (§8.2 vendor row): aware scroll body owns focus
+    // scrolling for the long service form; actions stay above the keyboard.
+    <KeyboardSafeModalSheet
+      visible={visible}
+      onClose={handleClose}
+      onRequestClose={handleClose}
+      header={header}
+      footer={footer}
+      dismissOnBackdropPress={false}
+      contentContainerStyle={styles.scrollContent}
+      accessibilityLabel={isEditing ? t("services.editTitle") : t("services.title")}
+    >
             <FormProvider {...methods}>
               <ImageInput
                 name="serviceImage"
@@ -311,62 +315,11 @@ const AddServicePopup = ({
               {/* Tags */}
               <TagsSelector selectedTags={selectedTags} onTagPress={handleTagPress} />
             </FormProvider>
-          </ScrollView>
-
-          {/* Footer */}
-          <View style={styles.footer}>
-            <TouchableOpacity
-              style={[styles.cancelButton, isLoading && styles.buttonDisabled]}
-              onPress={handleClose}
-              disabled={isLoading}
-              activeOpacity={0.7}
-            >
-              <LocalizedText style={styles.cancelButtonText}>
-                {t("services.cancel")}
-              </LocalizedText>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.submitButton,
-                isLoading && styles.submitButtonLoading,
-              ]}
-              onPress={handleSubmit(handleFormSubmit, handleInvalid)}
-              disabled={isLoading}
-              activeOpacity={0.7}
-            >
-              {isLoading ? (
-                <ActivityIndicator size="small" color="#FFF" />
-              ) : (
-                <LocalizedText style={styles.submitButtonText}>
-                  {isEditing ? t("services.update") : t("services.create")}
-                </LocalizedText>
-              )}
-            </TouchableOpacity>
-          </View>
-        </Animated.View>
-      </View>
-    </Modal>
+    </KeyboardSafeModalSheet>
   );
 };
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "flex-end",
-  },
-  container: {
-    backgroundColor: "#FFF",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    height: "92%",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 10,
-  },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -383,9 +336,6 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     backgroundColor: "#F2F2F2",
-  },
-  scrollView: {
-    flex: 1,
   },
   scrollContent: {
     paddingHorizontal: 24,

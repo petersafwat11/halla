@@ -12,6 +12,7 @@ import {
 import { useWindowDimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import { getImageUrl } from "../../../utils/imageUtils";
 
 /**
  * Unified media uploader. Picks photos OR videos in a single sheet,
@@ -69,7 +70,8 @@ const MediaUploader = ({
 
   const renderTile = ({ item }) => {
     const isVideo = item.type === "video";
-    const uri = item.thumbnailUrl || item.url;
+    // Stored refs are relative "/uploads/…" paths — absolutize for RN Image.
+    const uri = getImageUrl(item.thumbnailUrl || item.url);
     return (
       <View style={[styles.tileWrapper, { width: tileSize, height: tileSize }]}>
         {isVideo ? (

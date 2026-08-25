@@ -6,6 +6,7 @@ import { getStatusVisual } from "../../../constants/statusColors";
 import { getLocalized } from "@halaa/shared/utils/locale";
 import { isolateLtr } from "@halaa/shared/utils/bidi";
 import { useTranslation } from "../../../localization";
+import { getImageUrl } from "../../../utils/imageUtils";
 import {
   colors,
   spacing,
@@ -48,7 +49,7 @@ const HostHeroCard = ({ host }) => {
     <View style={styles.card}>
       <View style={styles.avatarWrap}>
         {host.avatar ? (
-          <Image source={{ uri: host.avatar }} style={styles.avatar} />
+          <Image source={{ uri: getImageUrl(host.avatar) }} style={styles.avatar} />
         ) : (
           <View style={styles.avatarPlaceholder}>
             <Text style={styles.avatarInitial}>{initial}</Text>

@@ -21,6 +21,9 @@ services:
       FILE_STORAGE_DRIVER: local
       UPLOAD_PATH: /app/public/uploads
       PUBLIC_MEDIA_BASE_URL: https://halaa.com.sa
+      # Public origin for client-facing URLs (swagger, template asset links).
+      # BACKEND_URL defaults to http://localhost:8000 — unreachable from phones.
+      BACKEND_URL: https://halaa.com.sa
     volumes:
       - ./certs:/app/certs:ro
       - ./data/uploads:/app/public/uploads

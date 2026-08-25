@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   View,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
 } from "react-native";
 import { useForm, FormProvider } from "react-hook-form";
@@ -13,6 +12,7 @@ import { useTranslation } from "../../localization";
 import { useAuthStore } from "../../stores/authStore";
 import { useToast } from "../../contexts/ToastContext";
 import EmailVerificationSection from "./_components/EmailVerificationSection";
+import KeyboardAwareFormScrollView from "../commen/keyboard/KeyboardAwareFormScrollView";
 
 const AccountSettings = ({
   onProfileUpdate,
@@ -144,7 +144,7 @@ const AccountSettings = ({
   return (
     <FormProvider {...methods}>
       <View style={styles.container}>
-        <ScrollView
+        <KeyboardAwareFormScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
         >
@@ -240,7 +240,7 @@ const AccountSettings = ({
           </View>
 
           {children}
-        </ScrollView>
+        </KeyboardAwareFormScrollView>
       </View>
     </FormProvider>
   );

@@ -562,7 +562,8 @@
       "live": "Live",
       "completed": "Completed",
       "draft": "Draft",
-      "cancelled": "Cancelled"
+      "cancelled": "Cancelled",
+      "failed": "Failed"
     },
     "rsvpStatuses": {
       "confirmed": "Confirmed",

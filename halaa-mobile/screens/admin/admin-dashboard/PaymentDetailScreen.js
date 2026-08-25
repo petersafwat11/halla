@@ -14,8 +14,8 @@ import {
   ScrollView,
   ActivityIndicator,
   TouchableOpacity,
-  Modal,
 } from "react-native";
+import KeyboardSafeModalSheet from "../../../components/commen/keyboard/KeyboardSafeModalSheet";
 import TextInput from "../../../components/commen/DirectionalTextInput";
 import LocalizedText from "../../../components/commen/LocalizedText";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -376,107 +376,108 @@ const PaymentDetailScreen = () => {
         )}
       </ScrollView>
 
-      {/* Refund / capture / void modal */}
-      <Modal
+      {/* Refund / capture / void modal — centered shared sheet (§8.2): the
+          amount/reason fields stay above the keyboard on both platforms. */}
+      <KeyboardSafeModalSheet
         visible={!!actionType}
-        transparent
-        animationType="fade"
+        onClose={closeModal}
         onRequestClose={closeModal}
+        centered
+        animationType="fade"
+        dismissOnBackdropPress={false}
+        contentContainerStyle={styles.modalPadding}
+        sheetStyle={styles.modalCardBg}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
-            <LocalizedText style={styles.modalTitle}>
-              {actionType ? t(`paymentDetail.actions.${actionType}`) : ""}
+        <LocalizedText style={styles.modalTitle}>
+          {actionType ? t(`paymentDetail.actions.${actionType}`) : ""}
+        </LocalizedText>
+
+        {actionType === "void" ? (
+          <LocalizedText style={styles.fieldLabel}>
+            {t("paymentDetail.voidConfirmMessage")}
+          </LocalizedText>
+        ) : null}
+
+        {actionType === "refund" || actionType === "capture" ? (
+          <>
+            {/* The currency token is authored inside the translation
+                string (blueprint §6) — never concatenated in JSX, where
+                parentheses would BiDi-scramble around the LTR code. */}
+            <LocalizedText style={styles.fieldLabel}>
+              {t("paymentDetail.amountWithCurrency", {
+                currency: isolateLtr(currency),
+              })}
             </LocalizedText>
+            <TextInput
+              style={styles.input}
+              keyboardType="numeric"
+              value={amount}
+              onChangeText={setAmount}
+              placeholder={t("paymentDetail.amountPlaceholder")}
+              placeholderTextColor={colors.natural[400]}
+              contentDirection={CONTENT_DIRECTIONS.LTR}
+            />
+          </>
+        ) : null}
 
-            {actionType === "void" ? (
-              <LocalizedText style={styles.fieldLabel}>
-                {t("paymentDetail.voidConfirmMessage")}
+        {actionType === "refund" ? (
+          <>
+            <LocalizedText style={styles.fieldLabel}>
+              {t("paymentDetail.reasonLabel")}
+            </LocalizedText>
+            <TextInput
+              style={[styles.input, styles.inputMultiline]}
+              multiline
+              value={reason}
+              onChangeText={setReason}
+              placeholder={t("paymentDetail.reasonPlaceholder")}
+              placeholderTextColor={colors.natural[400]}
+              contentDirection={CONTENT_DIRECTIONS.ADAPTIVE}
+            />
+          </>
+        ) : null}
+
+        {isPartialRefund ? (
+          <>
+            <LocalizedText style={styles.fieldLabel}>
+              {t("paymentDetail.deductInvitesLabel")}
+            </LocalizedText>
+            <TextInput
+              style={styles.input}
+              keyboardType="numeric"
+              value={deductInvites}
+              onChangeText={setDeductInvites}
+              placeholder={t("paymentDetail.deductInvitesPlaceholder")}
+              placeholderTextColor={colors.natural[400]}
+              contentDirection={CONTENT_DIRECTIONS.LTR}
+            />
+            <LocalizedText style={styles.fieldHint}>
+              {t("paymentDetail.deductInvitesHint")}
+            </LocalizedText>
+          </>
+        ) : null}
+
+        <View style={styles.modalButtons}>
+          <TouchableOpacity style={[styles.modalBtn, styles.modalCancel]} onPress={closeModal} disabled={busy}>
+            <LocalizedText style={styles.modalCancelText}>
+              {t("common.cancel")}
+            </LocalizedText>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.modalBtn, styles.modalConfirm]}
+            onPress={submitAction}
+            disabled={busy}
+          >
+            {busy ? (
+              <ActivityIndicator size="small" color={colors.natural[50]} />
+            ) : (
+              <LocalizedText style={styles.modalConfirmText}>
+                {t("common.confirm")}
               </LocalizedText>
-            ) : null}
-
-            {actionType === "refund" || actionType === "capture" ? (
-              <>
-                {/* The currency token is authored inside the translation
-                    string (blueprint §6) — never concatenated in JSX, where
-                    parentheses would BiDi-scramble around the LTR code. */}
-                <LocalizedText style={styles.fieldLabel}>
-                  {t("paymentDetail.amountWithCurrency", {
-                    currency: isolateLtr(currency),
-                  })}
-                </LocalizedText>
-                <TextInput
-                  style={styles.input}
-                  keyboardType="numeric"
-                  value={amount}
-                  onChangeText={setAmount}
-                  placeholder={t("paymentDetail.amountPlaceholder")}
-                  placeholderTextColor={colors.natural[400]}
-                  contentDirection={CONTENT_DIRECTIONS.LTR}
-                />
-              </>
-            ) : null}
-
-            {actionType === "refund" ? (
-              <>
-                <LocalizedText style={styles.fieldLabel}>
-                  {t("paymentDetail.reasonLabel")}
-                </LocalizedText>
-                <TextInput
-                  style={[styles.input, styles.inputMultiline]}
-                  multiline
-                  value={reason}
-                  onChangeText={setReason}
-                  placeholder={t("paymentDetail.reasonPlaceholder")}
-                  placeholderTextColor={colors.natural[400]}
-                  contentDirection={CONTENT_DIRECTIONS.ADAPTIVE}
-                />
-              </>
-            ) : null}
-
-            {isPartialRefund ? (
-              <>
-                <LocalizedText style={styles.fieldLabel}>
-                  {t("paymentDetail.deductInvitesLabel")}
-                </LocalizedText>
-                <TextInput
-                  style={styles.input}
-                  keyboardType="numeric"
-                  value={deductInvites}
-                  onChangeText={setDeductInvites}
-                  placeholder={t("paymentDetail.deductInvitesPlaceholder")}
-                  placeholderTextColor={colors.natural[400]}
-                  contentDirection={CONTENT_DIRECTIONS.LTR}
-                />
-                <LocalizedText style={styles.fieldHint}>
-                  {t("paymentDetail.deductInvitesHint")}
-                </LocalizedText>
-              </>
-            ) : null}
-
-            <View style={styles.modalButtons}>
-              <TouchableOpacity style={[styles.modalBtn, styles.modalCancel]} onPress={closeModal} disabled={busy}>
-                <LocalizedText style={styles.modalCancelText}>
-                  {t("common.cancel")}
-                </LocalizedText>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalBtn, styles.modalConfirm]}
-                onPress={submitAction}
-                disabled={busy}
-              >
-                {busy ? (
-                  <ActivityIndicator size="small" color={colors.natural[50]} />
-                ) : (
-                  <LocalizedText style={styles.modalConfirmText}>
-                    {t("common.confirm")}
-                  </LocalizedText>
-                )}
-              </TouchableOpacity>
-            </View>
-          </View>
+            )}
+          </TouchableOpacity>
         </View>
-      </Modal>
+      </KeyboardSafeModalSheet>
     </SafeAreaView>
   );
 };
@@ -562,15 +563,11 @@ const styles = StyleSheet.create({
   actionLabel: { ...textStyles.bodyMedium, fontWeight: typography.fontWeight.semibold },
 
   // Modal
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
-    padding: spacing[24],
-  },
-  modalCard: {
+  modalCardBg: {
     backgroundColor: backgrounds.card[1],
     borderRadius: borderRadius[12],
+  },
+  modalPadding: {
     padding: spacing[16],
     gap: spacing[8],
   },

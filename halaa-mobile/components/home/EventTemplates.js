@@ -33,121 +33,6 @@ const LOCAL_CATEGORIES = [
   { code: "general_event", nameEn: "General Event", nameAr: "مناسبات عامة" },
 ];
 
-const LOCAL_TEMPLATES = [
-  {
-    _id: "tpl-1",
-    nameEn: "Royal Groom",
-    nameAr: "زفاف ملكي",
-    categories: ["wedding"],
-    src: require("../../assets/template-cards/1.png"),
-  },
-  {
-    _id: "tpl-2",
-    nameEn: "Pearl Da'wah Wedding",
-    nameAr: "دعوة زفاف لؤلؤية",
-    categories: ["wedding"],
-    src: require("../../assets/template-cards/2.png"),
-  },
-  {
-    _id: "tpl-3",
-    nameEn: "Royal Da'wah Wedding",
-    nameAr: "دعوة الفرح الملكي",
-    categories: ["wedding"],
-    src: require("../../assets/template-cards/3.png"),
-  },
-  {
-    _id: "tpl-4",
-    nameEn: "Gulf Groom",
-    nameAr: "زفاف الخليج",
-    categories: ["wedding"],
-    src: require("../../assets/template-cards/4.png"),
-  },
-  {
-    _id: "tpl-5",
-    nameEn: "Rose Garden Wedding",
-    nameAr: "زفاف الورد",
-    categories: ["wedding"],
-    src: require("../../assets/template-cards/5.png"),
-  },
-  {
-    _id: "tpl-6",
-    nameEn: "Burgundy Bloom Wedding",
-    nameAr: "زفاف الورد الأرجواني",
-    categories: ["wedding", "ladies_event"],
-    src: require("../../assets/template-cards/6.png"),
-  },
-  {
-    _id: "tpl-7",
-    nameEn: "Floral Arch Wedding",
-    nameAr: "قوس الزهور",
-    categories: ["wedding"],
-    src: require("../../assets/template-cards/7.png"),
-  },
-  {
-    _id: "tpl-8",
-    nameEn: "Candle Engagement",
-    nameAr: "خطوبة الشموع",
-    categories: ["wedding", "engagement"],
-    src: require("../../assets/template-cards/8.png"),
-  },
-  {
-    _id: "tpl-9",
-    nameEn: "Sacred Vows",
-    nameAr: "عقد قران مبارك",
-    categories: ["wedding"],
-    src: require("../../assets/template-cards/9.png"),
-  },
-  {
-    _id: "tpl-10",
-    nameEn: "Eid Al-Adha",
-    nameAr: "عيد الأضحى",
-    categories: ["general_event"],
-    src: require("../../assets/template-cards/10.png"),
-  },
-  {
-    _id: "tpl-11",
-    nameEn: "Ramadan Iftar",
-    nameAr: "سفرة إفطار رمضان",
-    categories: ["general_event"],
-    src: require("../../assets/template-cards/11.png"),
-  },
-  {
-    _id: "tpl-12",
-    nameEn: "Birthday Party",
-    nameAr: "حفلة عيد ميلاد",
-    categories: ["birthday"],
-    src: require("../../assets/template-cards/12.png"),
-  },
-  {
-    _id: "tpl-13",
-    nameEn: "Newborn Boy",
-    nameAr: "بشارة المولود",
-    categories: ["baby_shower"],
-    src: require("../../assets/template-cards/13.png"),
-  },
-  {
-    _id: "tpl-14",
-    nameEn: "Newborn Girl",
-    nameAr: "بشارة الأميرة",
-    categories: ["baby_shower"],
-    src: require("../../assets/template-cards/14.jpg"),
-  },
-  {
-    _id: "tpl-15",
-    nameEn: "Graduation Celebration",
-    nameAr: "حفل تخرج",
-    categories: ["general_event"],
-    src: require("../../assets/template-cards/15.png"),
-  },
-  {
-    _id: "tpl-16",
-    nameEn: "Pearl Promise",
-    nameAr: "وعد لؤلؤي",
-    categories: ["engagement"],
-    src: require("../../assets/template-cards/16.png"),
-  },
-];
-
 const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
   const { t, currentLanguage, isRTL } = useTranslation("common");
   const locale = currentLanguage;
@@ -173,21 +58,19 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
 
   const catsError = !!categoriesError;
   const tplError = !!templatesError;
+  // Backend templates only — no bundled local catalogue fallback. When the
+  // request fails the picker renders its error state instead of showing
+  // placeholder cards.
   const categories = categoriesData?.data?.categories || LOCAL_CATEGORIES;
   const templates = React.useMemo(() => {
     const remote = templatesData?.data?.templates;
-    if (Array.isArray(remote)) return remote;
-    // The local catalogue remains a home-screen-only offline fallback. The
-    // picker renders its request error instead of opening metadata-less cards.
-    if (templatesError) return LOCAL_TEMPLATES;
-    return [];
-  }, [templatesData, templatesError]);
+    return Array.isArray(remote) ? remote : [];
+  }, [templatesData]);
 
   const maxIdx = Math.max(0, templates.length - 1);
   const previewImageSource = React.useMemo(() => {
     if (!previewTemplate) return null;
     if (previewTemplate.src) return previewTemplate.src;
-    if (previewImageError && previewTemplate.fallbackSource) return previewTemplate.fallbackSource;
 
     const templateId = String(previewTemplate._id || previewTemplate.id || "");
     const isDatabaseTemplate = /^[a-f\d]{24}$/i.test(templateId);
@@ -197,13 +80,13 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
       previewTemplate.thumbnailUrl ||
       (isDatabaseTemplate ? ENDPOINTS.TEMPLATES.ASSET(templateId) : null);
 
-    if (!raw) return previewTemplate.fallbackSource || null;
+    if (!raw) return null;
     const uri = resolveApiUrl(raw);
     return {
       uri,
       ...(token ? { headers: { Authorization: `Bearer ${token}`, "X-Client": "mobile" } } : {}),
     };
-  }, [previewTemplate, previewImageError, token]);
+  }, [previewTemplate, token]);
 
   // RTL indexing strategy (plan §3.1.6 / Phase 6 audit): on iOS an RTL
   // horizontal ScrollView reports contentOffset.x as 0 at the leading
@@ -213,15 +96,12 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
   // and preserve the selected index, pagination, and scroll direction.
   const OFFSET_SIGN = isRTL && Platform.OS === "ios" ? -1 : 1;
 
-  const handleTemplatePress = (template, fallbackSource) => {
+  const handleTemplatePress = (template) => {
     if (onSelectTemplate) {
       onSelectTemplate(template);
     } else {
       setPreviewImageError(false);
-      setPreviewTemplate({
-        ...template,
-        fallbackSource,
-      });
+      setPreviewTemplate(template);
     }
   };
 
@@ -312,7 +192,6 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
                     cardSpacing={CARD_SPACING}
                     isSelected={isSelected}
                     onPress={handleTemplatePress}
-                    fallbackSource={LOCAL_TEMPLATES[index % LOCAL_TEMPLATES.length]?.src}
                   />
                 );
               })}
@@ -399,13 +278,17 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
                   </TouchableOpacity>
                 </View>
                 <View style={styles.modalBody}>
-                  {previewImageSource ? (
+                  {previewImageSource && !previewImageError ? (
                     <Image
                       source={previewImageSource}
                       style={styles.modalImage}
                       resizeMode="contain"
                       onError={() => setPreviewImageError(true)}
                     />
+                  ) : previewImageError ? (
+                    <LocalizedText role="hint" style={styles.errorText}>
+                      {t("templates_load_error")}
+                    </LocalizedText>
                   ) : (
                     <ActivityIndicator size="large" color="#C28E5C" />
                   )}

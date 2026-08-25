@@ -160,6 +160,16 @@ const setupAndroidChannel = async () => {
  */
 const registerForPushNotifications = async () => {
   try {
+    // Android push was removed from Expo Go in SDK 53 — requesting a token
+    // there throws. Only dev-client / standalone builds can register.
+    if (
+      Platform.OS === "android" &&
+      Constants.executionEnvironment === Constants.ExecutionEnvironment.StoreClient
+    ) {
+      console.log("Push registration skipped: not supported in Expo Go (Android SDK 53+). Use a development build.");
+      return;
+    }
+
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
 

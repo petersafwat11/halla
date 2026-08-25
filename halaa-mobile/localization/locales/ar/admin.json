@@ -562,7 +562,8 @@
       "live": "مباشر",
       "completed": "مكتملة",
       "draft": "مسودة",
-      "cancelled": "ملغاة"
+      "cancelled": "ملغاة",
+      "failed": "فاشلة"
     },
     "rsvpStatuses": {
       "confirmed": "مؤكد",

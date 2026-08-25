@@ -34,6 +34,9 @@ const SubscriptionsService = require('../subscriptions/subscriptions.service');
 const { logAudit } = require('../../shared/utils/auditLog');
 const logger = require('../../shared/utils/logger');
 const taqnyatTemplatesService = require('../taqnyat-templates/taqnyat-templates.service');
+// Rewrites populated template image columns to authenticated asset-proxy URLs
+// (stored imageUrl/thumbnailUrl columns can hold stale/private bucket refs).
+const { withAssetUrls: withTemplateAssetUrls } = require('../templates/templates.service');
 
 module.exports = {
   /**
@@ -205,6 +208,16 @@ module.exports = {
 
     if (!event) {
       throw new NotFoundError("Event");
+    }
+
+    // The populate above returns the RAW stored image columns, which can be
+    // stale/private (S3 bucket URLs 403 on mobile). Rebuild them through the
+    // same asset-proxy URL builder the /templates list uses so update-wizard
+    // Step 3 renders the same background as create.
+    if (event.visualTemplate?.templateRef?._id) {
+      event.visualTemplate.templateRef = withTemplateAssetUrls(
+        event.visualTemplate.templateRef
+      );
     }
 
     // Attach the event-OWNER's subscription summary so the UI gates

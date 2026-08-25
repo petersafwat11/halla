@@ -325,7 +325,10 @@ class DashboardService {
       lastEvent,
     ] = await Promise.all([
       Event.countDocuments({ host: userId, status: { $ne: EVENT_STATUS.DELETED } }),
-      Event.countDocuments({ host: userId, status: { $in: [EVENT_STATUS.SCHEDULED, EVENT_STATUS.LIVE] } }),
+      // "Active" = in-flight, not yet over. `published` is included so
+      // launched events are never invisible (matches the active-status
+      // definition used by guests.service and admin.hosts.service).
+      Event.countDocuments({ host: userId, status: { $in: [EVENT_STATUS.SCHEDULED, EVENT_STATUS.LIVE, EVENT_STATUS.PUBLISHED] } }),
       Event.countDocuments({ host: userId, status: EVENT_STATUS.COMPLETED }),
       Event.countDocuments({ host: userId, status: EVENT_STATUS.PENDING_SCHEDULING }),
       Subscription.findOne({ userId, status: { $in: [SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.TRIAL] } }).populate('planId').lean(),

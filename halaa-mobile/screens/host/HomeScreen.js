@@ -146,7 +146,9 @@ const HomeScreen = ({ navigation }) => {
               <StatsCards
                 totalEvents={dashboardData?.stats?.totalEvents || 0}
                 activeEvents={dashboardData?.stats?.activeEvents || 0}
-                draftEvents={dashboardData?.stats?.draftEvents || 0}
+                // Backend sends this bucket as `pendingSchedulingEvents`
+                // (mobile labels it "Drafts"); there is no `draftEvents` key.
+                draftEvents={dashboardData?.stats?.pendingSchedulingEvents || 0}
                 endedEvents={dashboardData?.stats?.endedEvents || 0}
               />
             </View>

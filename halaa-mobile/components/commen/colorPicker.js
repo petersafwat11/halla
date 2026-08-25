@@ -4,12 +4,12 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Modal,
-  ScrollView
+  Keyboard,
 } from "react-native";
 import RNTextInput from "./DirectionalTextInput";
 import { useFormContext, Controller } from "react-hook-form";
 import { Ionicons } from "@expo/vector-icons";
+import KeyboardSafeModalSheet from "./keyboard/KeyboardSafeModalSheet";
 
 const presetColors = [
   { color: "#c28e5c", name: "ذهبي" },
@@ -61,6 +61,20 @@ const ColorPickerField = ({
   const isColorSelected = (color) =>
     value?.toLowerCase() === color.toLowerCase();
 
+  const closeModal = () => {
+    Keyboard.dismiss();
+    setShowModal(false);
+  };
+
+  const modalHeader = (
+    <View style={styles.modalHeader}>
+      <Text style={styles.modalTitle}>اختر اللون</Text>
+      <TouchableOpacity onPress={closeModal} style={styles.closeButton}>
+        <Ionicons name="close" size={24} color="#2C2C2C" />
+      </TouchableOpacity>
+    </View>
+  );
+
   return (
     <View style={styles.container}>
       {label && <Text style={styles.label}>{label}</Text>}
@@ -90,31 +104,17 @@ const ColorPickerField = ({
 
       {error && <Text style={styles.errorText}>{error.message}</Text>}
 
-      {/* Modal */}
-      <Modal
+      <KeyboardSafeModalSheet
         visible={showModal}
-        transparent
+        onClose={closeModal}
+        centered
         animationType="fade"
-        onRequestClose={() => setShowModal(false)}
+        header={modalHeader}
+        maxHeightRatio={0.8}
+        contentContainerStyle={styles.modalBodyContent}
+        sheetStyle={styles.modalContent}
+        accessibilityLabel="اختر اللون"
       >
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent]}>
-            <View style={[styles.modalHeader]}>
-              <Text style={[styles.modalTitle]}>اختر اللون</Text>
-
-              <TouchableOpacity
-                onPress={() => setShowModal(false)}
-                style={styles.closeButton}
-              >
-                <Ionicons name="close" size={24} color="#2C2C2C" />
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView
-              style={styles.modalBody}
-              contentContainerStyle={styles.modalBodyContent}
-              showsVerticalScrollIndicator={false}
-            >
               {showPresets && (
                 <View style={styles.presetsSection}>
                   <Text style={[styles.sectionTitle]}>الألوان الشائعة</Text>
@@ -172,14 +172,11 @@ const ColorPickerField = ({
 
               <TouchableOpacity
                 style={styles.applyButton}
-                onPress={() => setShowModal(false)}
+                onPress={closeModal}
               >
                 <Text style={styles.applyButtonText}>تطبيق</Text>
               </TouchableOpacity>
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
+      </KeyboardSafeModalSheet>
     </View>
   );
 };
@@ -256,20 +253,12 @@ const styles = StyleSheet.create({
     color: "#e74c3c",
     marginTop: 4,
     textAlign: "left"
-  },  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20
   },
-
   modalContent: {
     backgroundColor: "#FFF",
     borderRadius: 16,
     width: "100%",
     maxWidth: 400,
-    maxHeight: "80%",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
@@ -296,7 +285,6 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
 
-  modalBody: { flex: 1 },
   modalBodyContent: { padding: 20 },
 
   presetsSection: { marginBottom: 24 },

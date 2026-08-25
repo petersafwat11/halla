@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "../../localization/hooks/useTranslation";
@@ -38,7 +38,7 @@ const AdditionalLinksForm = ({ data, onSave, loading }) => {
 
   return (
     <FormProvider {...methods}>
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <View style={styles.container}>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
             {t("settings.additionalLinks.title")}
@@ -115,14 +115,14 @@ const AdditionalLinksForm = ({ data, onSave, loading }) => {
             />
           </View>
         </View>
-      </ScrollView>
+      </View>
     </FormProvider>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    width: "100%",
   },
   section: {
     backgroundColor: "#fff",
