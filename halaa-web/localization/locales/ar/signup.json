@@ -834,7 +834,7 @@
       }
     },
     "continueSignup": {
-      "title": "اكمل ملفك الشخصي",
+      "title": "اكمل معلوماتك الشخصية",
       "description": "بعض المعلومات الأساسية لنتمكن من خدمتك بأفضل شكل",
       "personalInfo": {
         "title": "معلومات شخصية",
@@ -844,7 +844,7 @@
         },
         "email": {
           "label": "البريد الالكتروني",
-          "placeholder": "davd@dffr.com"
+          "placeholder": "mohamed@gmail.com"
         },
         "newPassword": {
           "label": "كلمة مرور جديدة",
@@ -880,7 +880,7 @@
           "additional": "20+ مزايا إضافية إضغط للمزيد"
         }
       },
-      "nextButton": "التالي",
+      "nextButton": "حفظ",
       "selectButton": "اختر الباقة",
       "errors": {
         "fullNameRequired": "الاسم كاملا مطلوب",

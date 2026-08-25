@@ -1,6 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ENDPOINTS } from "../../config/api";
 import { addonsKeys } from "./keys";
+import { subscriptionsKeys } from "../subscriptions/keys";
+import { eventsKeys } from "../events/keys";
 import { addonsRequest } from "./queries";
 import { buildMoyasarCallbackUrl, runThreeDsSession } from "../../utils/paymentBrowser";
 
@@ -46,8 +48,8 @@ export const useAddonPurchase = () => {
     onSuccess: (result) => {
       if (result?.requiresAction) return;
       queryClient.invalidateQueries({ queryKey: addonsKeys.all });
-      // Cross-domain: subscription factory doesn't exist on mobile yet — literal stays.
-      queryClient.invalidateQueries({ queryKey: ["subscription"] });
+      queryClient.invalidateQueries({ queryKey: subscriptionsKeys.all });
+      queryClient.invalidateQueries({ queryKey: eventsKeys.subscriptionInfo() });
     },
   });
 };

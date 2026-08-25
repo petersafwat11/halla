@@ -9,13 +9,37 @@ import {
 import { useFormContext, Controller } from "react-hook-form";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
+import { isolateAuto } from "@halaa/shared/utils/bidi";
 import { useTranslation } from "../../localization";
 import { useFieldDirection } from "../../hooks/useInputDirection";
 import { formatTime as formatLocaleTime } from "@halaa/shared/utils/locale";
+import IosDateTimePickerSheet from "./IosDateTimePickerSheet";
+
+/**
+ * Shared time field (blueprint §5.3 "Date/time controls").
+ *
+ * - Label, placeholder and error always follow the UI locale.
+ * - The value is a localized, BiDi-isolated formatted token (e.g. "٣:٠٠ م") —
+ *   never the raw stored token and never a physical alignment patch.
+ * - Anatomy matches the create/update event reference: localized label on
+ *   top, value text at the logical start of the row, trailing clock
+ *   affordance at the logical end (§5.2).
+ * - iOS presents the shared `IosDateTimePickerSheet` with draft ownership:
+ *   spinning the wheel never commits until Confirm. Android keeps the native
+ *   dialog and commits immediately on a non-dismissed selection.
+ */
+
+// Safe Date coercion — returns null instead of an Invalid Date when a stored
+// form value cannot be represented on the picker wheel.
+const validTimeOrNull = (value) => {
+  if (!value) return null;
+  const date = value instanceof Date ? new Date(value.getTime()) : new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
 
 /**
  * Inner field renderer. Hoisted out of the Controller `render` prop so the
- * `useState` hook lives at the top level of a real component.
+ * `useState` hooks live at the top level of a real component.
  */
 const TimePickerField = ({
   label,
@@ -25,22 +49,31 @@ const TimePickerField = ({
   error,
   onChange,
   locale,
-  extraProps,
+  isRTL,
+  sheetTitle,
+  cancelLabel,
+  confirmLabel,
 }) => {
   const [show, setShow] = useState(false);
-  // Field-direction contract (blueprint §5): label/error follow the UI
-  // locale; the formatted time value is a localized token (e.g. "٣:٠٠ م")
-  // so it shares the same locale direction — never a physical patch.
+  // Draft ownership mirrors create/update event Step 1: wheel changes stay
+  // local until Confirm commits them into the react-hook-form state.
+  const [draftTime, setDraftTime] = useState(() => new Date());
+  // Field-direction contract (blueprint §5): the formatted time is a
+  // localized token so label/value/error all follow the UI locale.
   const fieldDirection = useFieldDirection("localized", {
     hasValue: !!value,
   });
-  const selectedTime = value ? new Date(value) : null;
+  const selectedTime = validTimeOrNull(value);
 
-  const handleTimeChange = (event, time) => {
-    if (Platform.OS === "android") {
-      setShow(false);
-    }
-    if (time) {
+  const openPicker = () => {
+    if (disabled) return;
+    setDraftTime(selectedTime || new Date());
+    setShow(true);
+  };
+
+  const handleAndroidChange = (event, time) => {
+    setShow(false);
+    if (event?.type !== "dismissed" && time) {
       onChange(time);
     }
   };
@@ -49,21 +82,23 @@ const TimePickerField = ({
 
   return (
     <View style={styles.container}>
-      {label && <Text style={[styles.label, fieldDirection.text]}>{label}</Text>}
+      {label && (
+        <Text style={[styles.label, fieldDirection.text]}>{label}</Text>
+      )}
       <TouchableOpacity
         style={[
           styles.inputContainer,
+          show && styles.inputContainerActive,
           error && styles.inputContainerError,
           disabled && styles.inputContainerDisabled,
         ]}
-        onPress={() => !disabled && setShow(true)}
+        onPress={openPicker}
         disabled={disabled}
         activeOpacity={0.7}
         accessibilityRole="button"
         accessibilityLabel={typeof label === "string" ? label : undefined}
+        accessibilityState={{ expanded: show }}
       >
-        {/* Clock glyph is semantic-leading and never mirrored (§7). */}
-        <Ionicons name="time-outline" size={20} color="#C28E5C" />
         <Text
           style={[
             styles.inputText,
@@ -71,8 +106,11 @@ const TimePickerField = ({
             !displayValue && styles.placeholderText,
           ]}
         >
-          {displayValue || placeholder}
+          {/* Localized formatted time, isolated as its own BiDi run (§6). */}
+          {displayValue ? isolateAuto(displayValue) : placeholder}
         </Text>
+        {/* Clock glyph is a semantic trailing affordance, never mirrored (§7). */}
+        <Ionicons name="time-outline" size={20} color="#C28E5C" />
       </TouchableOpacity>
       {error && (
         <Text style={[styles.errorText, fieldDirection.text]}>
@@ -80,15 +118,35 @@ const TimePickerField = ({
         </Text>
       )}
 
-      {show && (
+      {show && Platform.OS === "ios" && (
+        <IosDateTimePickerSheet
+          visible={show}
+          mode="time"
+          title={sheetTitle || label}
+          value={draftTime}
+          cancelLabel={cancelLabel}
+          confirmLabel={confirmLabel}
+          locale={locale}
+          isRTL={isRTL}
+          onChange={(_, time) => {
+            if (time) setDraftTime(time);
+          }}
+          onCancel={() => setShow(false)}
+          onConfirm={() => {
+            if (draftTime) onChange(draftTime);
+            setShow(false);
+          }}
+        />
+      )}
+
+      {show && Platform.OS !== "ios" && (
         <DateTimePicker
-          value={selectedTime || new Date()}
+          value={draftTime}
           mode="time"
           is24Hour={false}
-          display={Platform.OS === "ios" ? "spinner" : "default"}
-          onChange={handleTimeChange}
+          display="default"
+          onChange={handleAndroidChange}
           textColor="#2C2C2C"
-          {...extraProps}
         />
       )}
     </View>
@@ -101,10 +159,15 @@ const TimePicker = ({
   placeholder,
   disabled = false,
   rules,
+  sheetTitle,
+  cancelLabel,
+  confirmLabel,
   ...props
 }) => {
-  const { currentLanguage } = useTranslation();
+  const { currentLanguage, isRTL } = useTranslation();
+  const { t } = useTranslation("common");
   const { control } = useFormContext();
+  const pickerLocale = currentLanguage === "ar" ? "ar-SA" : "en-US";
 
   return (
     <Controller
@@ -119,8 +182,11 @@ const TimePicker = ({
           value={value}
           error={error}
           onChange={onChange}
-          locale={currentLanguage}
-          extraProps={props}
+          locale={pickerLocale}
+          isRTL={isRTL}
+          sheetTitle={sheetTitle}
+          cancelLabel={cancelLabel ?? t("buttons.cancel")}
+          confirmLabel={confirmLabel ?? t("buttons.confirm")}
         />
       )}
     />
@@ -134,22 +200,25 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontFamily: "Cairo_500Medium",
-    color: "#2C2C2C",
+    fontFamily: "Cairo_600SemiBold",
+    color: "#2c2c2c",
     marginBottom: 8,
-    paddingHorizontal: 8,
+    width: "100%",
   },
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
     borderWidth: 1,
-    borderColor: "#DFDFDF",
+    borderColor: "#e0e0e0",
     borderRadius: 12,
-    backgroundColor: "#FFF",
-    paddingHorizontal: 12,
-    paddingVertical: 12,
+    backgroundColor: "#fff",
     minHeight: 50,
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+  inputContainerActive: {
+    borderColor: "#C28E5C",
+    backgroundColor: "#FFFCF9",
   },
   inputContainerError: {
     borderColor: "#e74c3c",
@@ -160,21 +229,18 @@ const styles = StyleSheet.create({
   },
   inputText: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 15,
     fontFamily: "Cairo_400Regular",
-    color: "#2C2C2C",
-    lineHeight: 24,
-    letterSpacing: 0.08,
+    color: "#2c2c2c",
   },
   placeholderText: {
-    color: "#767676",
+    color: "#999",
   },
   errorText: {
     fontSize: 12,
     fontFamily: "Cairo_400Regular",
     color: "#e74c3c",
     marginTop: 4,
-    paddingHorizontal: 8,
   },
 });
 

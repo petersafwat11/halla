@@ -113,6 +113,9 @@ export const accountSettingsSchema = (t = idT) =>
           t("name_max_length") || "Name must be less than 100 characters"
         ),
 
+      // Legacy handle — no longer collected in Settings (the product has a
+      // single identity: the full name). Still validated when present so
+      // payloads that keep it stay well-formed.
       username: z
         .string()
         .min(
@@ -122,7 +125,9 @@ export const accountSettingsSchema = (t = idT) =>
         .max(
           50,
           t("username_max_length") || "Username must be less than 50 characters"
-        ),
+        )
+        .optional()
+        .or(z.literal("")),
 
       email: z
         .string()
@@ -189,10 +194,14 @@ export const mobileAccountSettingsSchema = (t = idT) =>
         .trim()
         .min(2, t("validation.nameMin"))
         .max(100, t("validation.nameMax")),
+      // Legacy handle — no longer collected in Settings (single identity:
+      // the full name). Validated only when a payload still carries it.
       username: z
         .string()
         .min(2, t("validation.usernameMin"))
-        .max(50, t("validation.usernameMax")),
+        .max(50, t("validation.usernameMax"))
+        .optional()
+        .or(z.literal("")),
       email: z.string().email(t("validation.emailInvalid")),
       currentPassword: z.string().optional(),
       newPassword: z

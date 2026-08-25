@@ -1,15 +1,23 @@
 "use client";
-import React from "react";
+import React, { useMemo } from "react";
 import { useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import styles from "./summary.module.css";
+import {
+  resolveTaqnyatPlaceholders,
+  buildTaqnyatPreviewContext,
+} from "@halaa/shared/utils";
+import useAuthStore from "@/stores/authStore";
 import SummaryCards from "./SummaryCards";
 import EventDataDisplay from "./EventDataDisplay";
 import ScheduleSection from "./ScheduleSection";
 
 const Summary = () => {
   const { watch, setValue } = useFormContext();
-  const { t } = useTranslation("createEvent");
+  const { t, i18n } = useTranslation("createEvent");
+  const hostName = useAuthStore(
+    (state) => state.user?.name || state.user?.username || ""
+  );
 
   // Watch confirmReviewed from form state
   const confirmChecked = watch("confirmReviewed") || false;
@@ -51,13 +59,55 @@ const Summary = () => {
     return typeMap[type] || type;
   };
 
+  // Resolve the WhatsApp template placeholders so the summary shows the same
+  // mapped message as the step 4 picker cards and the WhatsApp preview pane.
+  const invitationText = useMemo(() => {
+    const bodyText = selectedTemplate?.bodyText;
+    if (!bodyText) return "";
+    const locale = i18n?.language === "en" ? "en-US" : "ar-EG";
+    let dateFormatted = "";
+    if (eventDate) {
+      try {
+        dateFormatted = new Date(eventDate).toLocaleDateString(locale, {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          calendar: "gregory",
+        });
+      } catch {
+        dateFormatted = "";
+      }
+    }
+    const context = buildTaqnyatPreviewContext({
+      guestName: i18n?.language === "en" ? "Dear Guest" : "ضيفنا الكريم",
+      eventTitle: eventName,
+      dateFormatted,
+      eventTime,
+      locationAddress: address?.address || "",
+      hostName,
+    });
+    return resolveTaqnyatPlaceholders(
+      bodyText,
+      selectedTemplate?.varMapping,
+      context
+    );
+  }, [
+    selectedTemplate,
+    eventName,
+    eventDate,
+    eventTime,
+    address?.address,
+    hostName,
+    i18n?.language,
+  ]);
+
   const eventData = {
     staffCount: staffList.length || 0,
     guests: guestList.length,
     date: formatDate(eventDate),
     eventType: formatEventType(eventType),
     eventName: eventName,
-    invitationText: selectedTemplate?.bodyText || "",
+    invitationText: invitationText || "",
     guestCount: guestList.length,
     dateTime:
       eventDate && eventTime ? `${formatDate(eventDate)} - ${eventTime}` : "",

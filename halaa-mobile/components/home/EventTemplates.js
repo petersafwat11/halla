@@ -23,6 +23,7 @@ import { useHostTemplates, useTemplateCategories } from "../../hooks/templates";
 const CARD_WIDTH = 123;
 const CARD_SPACING = 12;
 const STEP = CARD_WIDTH + CARD_SPACING;
+const MAX_DOTS = 5;
 
 const LOCAL_CATEGORIES = [
   { code: "wedding",       nameEn: "Wedding",       nameAr: "زفاف" },
@@ -41,6 +42,7 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [scrollX] = useState(new Animated.Value(0));
   const [activeIdx, setActiveIdx] = useState(0);
+  const [viewportW, setViewportW] = useState(0);
   const [previewTemplate, setPreviewTemplate] = useState(null);
   const [previewImageError, setPreviewImageError] = useState(false);
   const scrollRef = useRef(null);
@@ -67,7 +69,20 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
     return Array.isArray(remote) ? remote : [];
   }, [templatesData]);
 
-  const maxIdx = Math.max(0, templates.length - 1);
+  // The ScrollView physically stops at (contentWidth - viewportWidth), so
+  // per-template indexes near the end are unreachable and made the active
+  // dot jump back after every scroll. Derive the real reachable positions
+  // from measured widths instead.
+  const contentW =
+    templates.length > 0
+      ? templates.length * CARD_WIDTH + (templates.length - 1) * CARD_SPACING
+      : 0;
+  const maxOffset = Math.max(0, contentW - viewportW);
+  const pageCount =
+    viewportW > 0
+      ? Math.ceil(maxOffset / STEP) + 1
+      : Math.max(1, templates.length);
+  const maxIdx = pageCount - 1;
   const previewImageSource = React.useMemo(() => {
     if (!previewTemplate) return null;
     if (previewTemplate.src) return previewTemplate.src;
@@ -108,13 +123,24 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
   const scrollToIdx = (i) => {
     const clamped = Math.min(Math.max(0, i), maxIdx);
     setActiveIdx(clamped);
-    scrollRef.current?.scrollTo({ x: OFFSET_SIGN * clamped * STEP, animated: true });
+    scrollRef.current?.scrollTo({
+      x: OFFSET_SIGN * Math.min(clamped * STEP, maxOffset),
+      animated: true,
+    });
+  };
+
+  const idxFromOffset = (x) => {
+    const cx = Math.min(Math.max(x * OFFSET_SIGN, 0), maxOffset);
+    if (cx >= maxOffset - 1) return maxIdx;
+    return Math.min(Math.round(cx / STEP), maxIdx);
   };
 
   const handleMomentumEnd = (e) => {
-    const x = e.nativeEvent.contentOffset.x;
-    const i = Math.round((x / STEP) * OFFSET_SIGN);
-    setActiveIdx(Math.min(Math.max(0, i), maxIdx));
+    setActiveIdx(idxFromOffset(e.nativeEvent.contentOffset.x));
+  };
+
+  const handleDragEnd = (e) => {
+    setActiveIdx(idxFromOffset(e.nativeEvent.contentOffset.x));
   };
 
   const onScroll = Animated.event(
@@ -124,6 +150,22 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
 
   const goPrev = () => scrollToIdx(activeIdx - 1);
   const goNext = () => scrollToIdx(activeIdx + 1);
+
+  React.useEffect(() => {
+    setActiveIdx((prev) => Math.min(prev, maxIdx));
+  }, [maxIdx]);
+
+  const dotStart =
+    pageCount > MAX_DOTS
+      ? Math.min(
+          Math.max(0, activeIdx - Math.floor(MAX_DOTS / 2)),
+          pageCount - MAX_DOTS
+        )
+      : 0;
+  const visibleDots = Array.from(
+    { length: Math.min(MAX_DOTS, pageCount) },
+    (_, k) => dotStart + k
+  );
 
   return (
     <View style={styles.container}>
@@ -177,6 +219,11 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
               contentContainerStyle={styles.templatesContent}
               onScroll={onScroll}
               onMomentumScrollEnd={handleMomentumEnd}
+              onScrollEndDrag={handleDragEnd}
+              onLayout={(e) => {
+                const w = e.nativeEvent.layout.width;
+                setViewportW((prev) => (Math.abs(prev - w) > 0.5 ? w : prev));
+              }}
               scrollEventThrottle={16}
               removeClippedSubviews={Platform.OS === "android"}
             >
@@ -197,7 +244,7 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
               })}
             </Animated.ScrollView>
 
-            {templates.length > 1 && (
+            {pageCount > 1 && (
               <View style={styles.controls}>
                 <TouchableOpacity
                   style={[
@@ -218,13 +265,14 @@ const EventTemplates = ({ onSelectTemplate, selectedTemplateId }) => {
                 </TouchableOpacity>
 
                 <View style={styles.dots}>
-                  {templates.map((_, i) => (
+                  {visibleDots.map((i) => (
                     <TouchableOpacity
                       key={i}
                       style={[
                         styles.dot,
                         i === activeIdx && styles.dotActive,
                       ]}
+                      hitSlop={{ top: 8, bottom: 8, left: 3, right: 3 }}
                       onPress={() => scrollToIdx(i)}
                       accessibilityRole="button"
                       accessibilityLabel={`${i + 1}`}

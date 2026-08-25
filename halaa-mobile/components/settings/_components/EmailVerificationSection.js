@@ -13,10 +13,14 @@ import { EmailInput, OTPInput, LocalizedText } from "../../commen";
 import { settingsApi } from "../../../hooks/users/_api";
 import { useVerifyEmail } from "../../../hooks/users/mutations";
 
-const EmailVerificationSection = ({ emailValue, loading }) => {
+const EmailVerificationSection = ({ emailValue, loading, user: userProp }) => {
   const { t } = useTranslation("settings");
   const toast = useToast();
-  const { user } = useAuthStore();
+  const authUser = useAuthStore((state) => state.user);
+  // Prefer the canonical profile user when provided so the verified badge
+  // reflects the freshest server state (e.g. verified on another platform)
+  // instead of a stale login-time snapshot.
+  const user = userProp || authUser;
 
   const [showVerificationInput, setShowVerificationInput] = useState(false);
   const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);

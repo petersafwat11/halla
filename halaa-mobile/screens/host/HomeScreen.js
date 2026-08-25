@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Text,
   ActivityIndicator,
+  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -36,7 +37,11 @@ const HomeScreen = ({ navigation }) => {
   const [testMessageModalVisible, setTestMessageModalVisible] = useState(false);
   const [scheduleModalVisible, setScheduleModalVisible] = useState(false);
 
-  const { data: dashboardData, isLoading: loading, error, refetch } = useHostDashboard();
+  const { data: dashboardData, isLoading: loading, error, refetch, isRefetching } = useHostDashboard();
+
+  const handleRefresh = () => {
+    refetch();
+  };
 
   const eventId = dashboardData?.lastEvent?.id || dashboardData?.lastEvent?._id;
   const hasEvents = dashboardData?.hasEvents === true;
@@ -120,6 +125,14 @@ const HomeScreen = ({ navigation }) => {
           style={styles.scrollView}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefetching}
+              onRefresh={handleRefresh}
+              tintColor="#F9F4EF"
+              colors={["#C28E5C"]}
+            />
+          }
         >
           <View style={styles.header}>
             <View style={styles.headerContent}>
@@ -187,6 +200,10 @@ const HomeScreen = ({ navigation }) => {
           onSuccess={() => refetch()}
           eventId={eventId}
           existingSchedule={dashboardData?.lastEvent?.launchSettings}
+          eventDate={
+            dashboardData?.lastEvent?.eventDetails?.date ||
+            dashboardData?.lastEvent?.date
+          }
         />
       </View>
     </SafeAreaView>
@@ -231,7 +248,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25, shadowRadius: 6, elevation: 8,
   },
   createEventFabText: {
-    fontSize: 13, fontFamily: "Cairo_600SemiBold", color: "#FFF",
+    fontSize: 13,
+    fontFamily: "Cairo_600SemiBold",
+    color: "#FFF",
+    // Explicit lineHeight: without it iOS falls back to Cairo's inflated
+    // natural metrics (~1.87x) and the label rides above the "+" glyph.
+    lineHeight: 20,
   },
 });
 

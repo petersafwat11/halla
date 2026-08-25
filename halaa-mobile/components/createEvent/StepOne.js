@@ -17,7 +17,7 @@ import {
 import TextInput from "../commen/TextInput";
 import MapPicker from "../commen/MapPicker";
 import DropdownInput from "../commen/DropdownInput";
-import IosDateTimePickerSheet from "./_components/IosDateTimePickerSheet";
+import IosDateTimePickerSheet from "../commen/IosDateTimePickerSheet";
 import Svg, { Path } from "react-native-svg";
 import { normalizeSubscriptionResponse } from "@halaa/shared/utils";
 import { useMySubscription } from "../../hooks/users";

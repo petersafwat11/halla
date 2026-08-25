@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -7,6 +8,7 @@ import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
 import Button from "@/ui/commen/button/Button";
 import OtpInput from "@/ui/commen/inputs/optInput/OtpInput";
 import { accountSettingsSchema } from "@halaa/shared/schemas/settings";
+import { buildDashboardUrl } from "@halaa/shared/utils/routes";
 import { useUserMutation } from "@/hooks/users";
 import { useAuthMutation } from "@/hooks/auth";
 import { toastUtils } from "@/utils/toastUtils";
@@ -14,6 +16,8 @@ import styles from "./AccountSettings.module.css";
 
 const AccountSettings = ({ user = {} }) => {
   const { t } = useTranslation("settings");
+  const router = useRouter();
+  const { lang } = useParams();
   const [verificationCode, setVerificationCode] = useState("");
   const [showVerificationInput, setShowVerificationInput] = useState(false);
 
@@ -26,8 +30,9 @@ const AccountSettings = ({ user = {} }) => {
     resolver: zodResolver(accountSettingsSchema(t)),
     mode: "onChange",
     defaultValues: {
-      name: user.name || "",
-      username: user.username || "",
+      // Single display identity. Hosts created before `name` was populated
+      // carry their signup full name in `username` — surface it here.
+      name: user.name || user.username || "",
       email: user.email || "",
       currentPassword: "",
       password: "",
@@ -43,8 +48,7 @@ const AccountSettings = ({ user = {} }) => {
 
   useEffect(() => {
     reset({
-      name: user.name || "",
-      username: user.username || "",
+      name: user.name || user.username || "",
       email: user.email || "",
       currentPassword: "",
       password: "",
@@ -57,8 +61,7 @@ const AccountSettings = ({ user = {} }) => {
 
   const onSubmit = async (formData) => {
     const profileChanged =
-      formData.name !== (user.name || "") ||
-      formData.username !== (user.username || "") ||
+      formData.name !== (user.name || user.username || "") ||
       formData.email !== (user.email || "");
     const passwordProvided = !!formData.password;
 
@@ -85,7 +88,6 @@ const AccountSettings = ({ user = {} }) => {
       try {
         const profileData = {
           name: formData.name,
-          username: formData.username,
           email: formData.email,
         };
         response = await updateProfileMutation.mutateAsync(profileData);
@@ -115,9 +117,12 @@ const AccountSettings = ({ user = {} }) => {
     }
 
     reset({
-      name: profileSuccess ? (response?.data?.user?.name || formData.name) : formData.name,
-      username: profileSuccess ? (response?.data?.user?.username || formData.username) : formData.username,
-      email: profileSuccess ? (response?.data?.user?.email || formData.email) : formData.email,
+      name: profileSuccess
+        ? response?.data?.user?.name || formData.name
+        : formData.name,
+      email: profileSuccess
+        ? response?.data?.user?.email || formData.email
+        : formData.email,
       currentPassword: passwordSuccess ? "" : formData.currentPassword,
       password: passwordSuccess ? "" : formData.password,
       confirmPassword: passwordSuccess ? "" : formData.confirmPassword,
@@ -163,17 +168,6 @@ const AccountSettings = ({ user = {} }) => {
                 name="name"
                 label={t("full_name")}
                 placeholder={t("full_name_placeholder")}
-                type="text"
-                iconPath="auth/profile.svg"
-                required
-              />
-            </div>
-
-            <div className={styles.inputRow}>
-              <InputGroup
-                name="username"
-                label={t("username_label")}
-                placeholder={t("username_placeholder")}
                 type="text"
                 iconPath="auth/profile.svg"
                 required
@@ -271,11 +265,9 @@ const AccountSettings = ({ user = {} }) => {
             variant="outline"
             title={t("cancel")}
             className={styles.cancelButton}
-            onClick={() => {
-              reset();
-              setShowVerificationInput(false);
-              setVerificationCode("");
-            }}
+            onClick={() =>
+              router.push(buildDashboardUrl({ role: user?.role || "host", locale: lang }))
+            }
           />
         </div>
       </form>

@@ -19,7 +19,6 @@ import {
 import RoleSelectionView from "../../components/auth/RoleSelectionView";
 import TopBar from "../../components/plans/TopBar";
 import LegalLinks from "../../components/legal/LegalLinks";
-import DirectionalIonicon from "../../components/common/DirectionalIonicon";
 import LocalizedText from "../../components/commen/LocalizedText";
 
 const { width } = Dimensions.get("window");
@@ -129,10 +128,6 @@ export default function SignupScreen({ navigation }) {
     navigation.navigate("Login");
   };
 
-  const handleBackToRole = () => {
-    setStep("role");
-  };
-
   const renderStep = () => {
     switch (step) {
       case "role":
@@ -146,15 +141,6 @@ export default function SignupScreen({ navigation }) {
       case "mobile":
         return (
           <>
-            <TouchableOpacity
-              onPress={handleBackToRole}
-              style={styles.backButton}
-            >
-              <DirectionalIonicon name="arrow-back" size={18} color="#c28e5c" />
-              <LocalizedText style={styles.backButtonText}>
-                {t("common.back")}
-              </LocalizedText>
-            </TouchableOpacity>
             <SignupMobileForm onSubmit={handleMobileSubmit} loading={loading} />
             {/* Login link — two adjacent runs in one logical row, never a
                 concatenated string, so each run keeps its own direction. */}
@@ -242,24 +228,14 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     justifyContent: "center",
-    paddingVertical: 40,
+    paddingTop: 8,
+    paddingBottom: 40,
   },
   content: {
     paddingHorizontal: width > 768 ? 80 : width > 480 ? 40 : 24,
     maxWidth: 600,
     width: "100%",
     alignSelf: "center",
-  },
-  backButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginBottom: 16,
-  },
-  backButtonText: {
-    fontSize: 14,
-    fontFamily: "Cairo_600SemiBold",
-    color: "#c28e5c",
   },
   loginContainer: {
     flexDirection: "row",

@@ -19,6 +19,9 @@ const AccountSettings = ({
   onPasswordChange,
   initialUser,
   children,
+  // Rendered <RefreshControl /> owned by the parent screen (which holds
+  // the profile query refetch). Optional so legacy callers stay untouched.
+  refreshControl = null,
 }) => {
   const { t } = useTranslation("settings");
   const toast = useToast();
@@ -33,8 +36,9 @@ const AccountSettings = ({
     resolver: zodResolver(accountSettingsSchema(t)),
     mode: "onChange",
     defaultValues: {
-      name: user?.name || "",
-      username: user?.username || "",
+      // Single display identity. Hosts created before `name` was populated
+      // carry their signup full name in `username` — surface it here.
+      name: user?.name || user?.username || "",
       email: user?.email || "",
       currentPassword: "",
       newPassword: "",
@@ -51,8 +55,7 @@ const AccountSettings = ({
 
   React.useEffect(() => {
     reset({
-      name: user?.name || "",
-      username: user?.username || "",
+      name: user?.name || user?.username || "",
       email: user?.email || "",
       currentPassword: "",
       newPassword: "",
@@ -70,16 +73,14 @@ const AccountSettings = ({
     let passwordError = null;
 
     const profileChanged =
-      data.name !== (user?.name || "") ||
-      data.username !== user?.username ||
-      data.email !== user?.email;
+      data.name !== (user?.name || user?.username || "") ||
+      data.email !== (user?.email || "");
     const passwordProvided = !!(data.currentPassword && data.newPassword);
 
     if (profileChanged) {
       try {
         const profileData = {
           name: data.name,
-          username: data.username,
           email: data.email,
         };
         await onProfileUpdate(profileData);
@@ -127,8 +128,7 @@ const AccountSettings = ({
     }
 
     reset({
-      name: profileSuccess ? data.name : (user?.name || ""),
-      username: profileSuccess ? data.username : (user?.username || ""),
+      name: profileSuccess ? data.name : (user?.name || user?.username || ""),
       email: profileSuccess ? data.email : (user?.email || ""),
       currentPassword: passwordSuccess ? "" : data.currentPassword,
       newPassword: passwordSuccess ? "" : data.newPassword,
@@ -147,6 +147,7 @@ const AccountSettings = ({
         <KeyboardAwareFormScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
+          refreshControl={refreshControl}
         >
           <View style={styles.section}>
             <LocalizedText role="sectionTitle" style={styles.sectionTitle}>
@@ -156,7 +157,9 @@ const AccountSettings = ({
             <View style={styles.inputsGroup}>
               {/* Full name is arbitrary user content: empty placeholder
                   follows the UI locale; a filled value follows its first
-                  strong character so "Ali" stays LTR and "علي" stays RTL. */}
+                  strong character so "Ali" stays LTR and "علي" stays RTL.
+                  Single identity field — the legacy `username` handle is
+                  no longer collected (see shared settings schema). */}
               <TextInput
                 name="name"
                 label={t("account.fullName")}
@@ -165,15 +168,11 @@ const AccountSettings = ({
                 disabled={loading}
               />
 
-              <TextInput
-                name="username"
-                label={t("account.username")}
-                placeholder={t("account.usernamePlaceholder")}
-                contentDirection="ltr"
-                disabled={loading}
+              <EmailVerificationSection
+                emailValue={emailValue}
+                loading={loading}
+                user={user}
               />
-
-              <EmailVerificationSection emailValue={emailValue} loading={loading} />
             </View>
           </View>
 

@@ -1,7 +1,6 @@
 import React, { useMemo } from "react";
 import {
   View,
-  Text,
   StyleSheet,
   Modal,
   TouchableOpacity,
@@ -9,6 +8,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { formatCount } from "@halaa/shared/utils/locale";
 import { useTranslation } from "../../localization";
+import LocalizedText from "../commen/LocalizedText";
 import {
   SEND_ACTIONS,
   computeSendAudiences,
@@ -52,8 +52,10 @@ export default function SendActionsSheet({ visible, event, guests, onPick, onClo
   return (
     <Modal visible={!!visible} transparent animationType="slide" onRequestClose={onClose}>
       <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={onClose}>
-        <TouchableOpacity style={styles.card} activeOpacity={1} onPress={() => {}}>
-          <Text style={styles.title}>{t("events:sendActions.menu")}</Text>
+      <TouchableOpacity style={styles.card} activeOpacity={1} onPress={() => {}}>
+        <LocalizedText style={styles.title}>
+          {t("events:sendActions.menu")}
+        </LocalizedText>
 
           {SEND_ACTIONS.map((action) => {
             const state = states[action];
@@ -72,30 +74,32 @@ export default function SendActionsSheet({ visible, event, guests, onPick, onClo
                   size={18}
                   color={state.enabled ? "#6B4E33" : "#BCAEA0"}
                 />
-                <Text
+                <LocalizedText
                   style={[styles.itemText, !state.enabled && styles.itemTextDisabled]}
                   numberOfLines={1}
                 >
                   {t(meta.labelKey)}
-                </Text>
+                </LocalizedText>
                 {state.enabled ? (
                   <View style={styles.countBadge}>
                     {/* Locale-formatted digits (٠١٢ / 0-9) in an LTR-isolated token. */}
-                    <Text style={styles.countText}>
+                    <LocalizedText style={styles.countText}>
                       {formatCount(state.audience.length, currentLanguage)}
-                    </Text>
+                    </LocalizedText>
                   </View>
                 ) : (
-                  <Text style={styles.reason} numberOfLines={1}>
+                  <LocalizedText style={styles.reason} numberOfLines={1}>
                     {reason}
-                  </Text>
+                  </LocalizedText>
                 )}
               </TouchableOpacity>
             );
           })}
 
           <TouchableOpacity style={styles.cancelBtn} onPress={onClose} activeOpacity={0.7}>
-            <Text style={styles.cancelText}>{t("events:bulkActions.cancel")}</Text>
+            <LocalizedText style={styles.cancelText}>
+              {t("events:bulkActions.cancel")}
+            </LocalizedText>
           </TouchableOpacity>
         </TouchableOpacity>
       </TouchableOpacity>

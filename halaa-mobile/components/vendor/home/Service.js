@@ -73,24 +73,44 @@ const ServiceCard = ({
               </View>
             )}
 
-            {/* Edit Button — pencil is semantic, anchored at the logical
-                end edge of the artwork; label follows the UI locale. */}
-            <TouchableOpacity
-              style={styles.editButton}
-              onPress={onEdit}
-              hitSlop={8}
-              accessibilityRole="button"
-              accessibilityLabel={t("services.edit")}
-            >
-              <MaterialCommunityIcons
-                name="pencil"
-                size={16}
-                color="#C28E5C"
-              />
-              <LocalizedText role="label" style={styles.editText}>
-                {t("services.edit")}
-              </LocalizedText>
-            </TouchableOpacity>
+            {/* Card actions — edit + delete sit BESIDE each other in one
+                cluster anchored at the logical end edge of the artwork.
+                `end` mirrors automatically under RTL; pencil/trash are
+                semantic glyphs and are never mirrored. */}
+            <View style={styles.actionsOverlay} pointerEvents="box-none">
+              <TouchableOpacity
+                style={styles.editButton}
+                onPress={onEdit}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel={t("services.edit")}
+              >
+                <MaterialCommunityIcons
+                  name="pencil"
+                  size={16}
+                  color="#C28E5C"
+                />
+                <LocalizedText role="label" style={styles.editText}>
+                  {t("services.edit")}
+                </LocalizedText>
+              </TouchableOpacity>
+
+              {onDelete && (
+                <TouchableOpacity
+                  style={styles.deleteButton}
+                  onPress={onDelete}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("common.delete")}
+                >
+                  <MaterialCommunityIcons
+                    name="trash-can-outline"
+                    size={16}
+                    color="#E74C3C"
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
 
           {/* Content Section */}
@@ -150,24 +170,6 @@ const ServiceCard = ({
                 />
               </View>
             </View>
-
-            {/* Delete Button — trash is semantic; anchored at the logical
-                start edge of the card body. */}
-            {onDelete && (
-              <TouchableOpacity
-                style={styles.deleteButton}
-                onPress={onDelete}
-                hitSlop={8}
-                accessibilityRole="button"
-                accessibilityLabel={t("common.delete")}
-              >
-                <MaterialCommunityIcons
-                  name="trash-can-outline"
-                  size={16}
-                  color="#E74C3C"
-                />
-              </TouchableOpacity>
-            )}
           </View>
         </View>
       </TouchableOpacity>
@@ -210,10 +212,18 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  editButton: {
+  // Action cluster: edit + delete side by side at the logical end edge of
+  // the artwork (bottom-end). `end` follows the reading direction in both
+  // locales — the pair mirrors as one unit, never individually.
+  actionsOverlay: {
     position: "absolute",
     bottom: 12,
     end: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  editButton: {
     flexDirection: "row",
     gap: 4,
     paddingHorizontal: 8,
@@ -229,6 +239,13 @@ const styles = StyleSheet.create({
     color: "#C28E5C",
     lineHeight: 16,
     letterSpacing: 0.06,
+  },
+  deleteButton: {
+    padding: 7,
+    backgroundColor: "rgba(255, 255, 255, 0.95)",
+    borderRadius: 4,
+    justifyContent: "center",
+    alignItems: "center",
   },
   content: {
     padding: 12,
@@ -312,12 +329,6 @@ const styles = StyleSheet.create({
     color: "#333",
     lineHeight: 24,
     letterSpacing: 0.08,
-  },
-  deleteButton: {
-    position: "absolute",
-    top: 12,
-    start: 12,
-    padding: 4,
   },
 });
 

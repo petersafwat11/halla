@@ -26,7 +26,13 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete
   const [showTestModal, setShowTestModal] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showManageMenu, setShowManageMenu] = useState(false);
-  const [testMessageSent, setTestMessageSent] = useState(event?.testMessageSent || false);
+  // Server flag wins as soon as fresh event data arrives (pull-to-refresh,
+  // polling, remount). The local flag is only an optimistic bridge between
+  // sending the test message in this session and the next successful refetch
+  // — seeding `useState` from the prop once at mount left the button visible
+  // forever when the component mounted on cached/stale data.
+  const [optimisticTestSent, setOptimisticTestSent] = useState(false);
+  const testMessageSent = !!(event?.testMessageSent || optimisticTestSent);
   const pulseAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -89,7 +95,7 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete
   };
 
   const handleTestMessageSuccess = () => {
-    setTestMessageSent(true);
+    setOptimisticTestSent(true);
     setShowTestModal(false);
   };
 

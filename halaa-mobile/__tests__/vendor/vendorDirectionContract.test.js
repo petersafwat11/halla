@@ -90,9 +90,17 @@ test("ServiceCard: backend name/tags adaptive, chrome localized, atomic LTR pric
     /priceWithCurrency:[\s\S]{0,120}direction:\s*"ltr"/,
     "price token row must pin stable LTR so digits/SAR glyph cannot split"
   );
-  // Semantic anchors use logical edges.
-  assert.match(source, /editButton:\s*\{[\s\S]*?end:\s*12/, "edit pill anchors to the logical end edge");
-  assert.match(source, /deleteButton:\s*\{[\s\S]*?start:\s*12/, "delete action anchors to the logical start edge");
+  // Semantic anchors use logical edges; edit + delete render BESIDE each
+  // other as one cluster anchored at the logical end of the artwork.
+  assert.match(source, /actionsOverlay:\s*\{[\s\S]*?end:\s*12/, "action cluster anchors to the logical end edge");
+  assert.ok(
+    /actionsOverlay[\s\S]*?editButton[\s\S]*?deleteButton/.test(source),
+    "delete button sits beside the edit button in the shared overlay"
+  );
+  assert.ok(
+    !/deleteButton:\s*\{[\s\S]*?position:\s*"absolute"/.test(source),
+    "delete is no longer a separately-anchored floating control"
+  );
   assert.match(source, /accessibilityLabel=\{t\("common\.delete"\)\}/, "icon-only delete needs a localized accessibility label");
 });
 

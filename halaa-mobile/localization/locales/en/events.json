@@ -81,7 +81,8 @@
     "noGuests": "No guests yet",
     "noModerators": "No moderators",
     "guestsTabCount": "Guests ({{count}})",
-    "moderatorsTabCount": "Moderators ({{count}})"
+    "moderatorsTabCount": "Moderators ({{count}})",
+    "dateTimeRow": "{{date}} • {{time}}"
   },
   "guestList": {
     "title": "Guest List",

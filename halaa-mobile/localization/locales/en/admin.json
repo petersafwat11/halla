@@ -1100,7 +1100,9 @@
       "criticalAlerts": "Critical Alerts",
       "updateSuccess": "Notification preferences saved",
       "updateError": "Failed to save preferences",
-      "save": "Save Changes"
+      "save": "Save Changes",
+      "emailNotVerified": "Verify your email before enabling email notifications",
+      "emailNotVerifiedWarning": "Your email isn't verified yet. Verify it in Account Settings to enable email notifications."
     },
     "security": {
       "title": "Security Settings",

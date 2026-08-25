@@ -115,13 +115,17 @@ const VendorCard = ({ vendor, onPress, index = 0 }) => {
           </AdaptiveText>
         ) : null}
 
+        {/* Meta cluster — rating and location sit TOGETHER at the logical
+            reading start under the name (never pinned to opposite edges).
+            The star/pin glyphs are semantic and are never mirrored. */}
         <View style={styles.meta}>
           {hasRating ? (
             <View style={styles.rating}>
-              {/* Star glyph is semantic, never mirrored. The numeric rating
-                  is one LTR-isolated locale-formatted token. */}
+              {/* The numeric rating is one LTR-isolated locale-formatted
+                  token, pinned LTR so digits/decimal separator keep stable
+                  glyph order under both locales. */}
               <Ionicons name="star" size={14} color="#F5B342" />
-              <LocalizedText style={styles.ratingValue}>
+              <LocalizedText style={[styles.ratingValue, styles.ltrValue]}>
                 {isolateLtr(
                   formatNumber(vendor.rating, currentLanguage, {
                     minimumFractionDigits: 1,
@@ -134,6 +138,7 @@ const VendorCard = ({ vendor, onPress, index = 0 }) => {
           {vendor.location ? (
             <View style={styles.locationRow}>
               <Ionicons name="location-outline" size={14} color="#C0A483" />
+              {/* Location is arbitrary backend content → first-strong. */}
               <AdaptiveText numberOfLines={1} style={styles.location}>
                 {vendor.location}
               </AdaptiveText>
@@ -299,11 +304,10 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 
-  /* ────── META (rating + location) ────── */
+  /* ────── META (rating + location cluster) ────── */
   meta: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
     gap: 12,
   },
   rating: {
@@ -330,6 +334,10 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#6B6B6B",
     lineHeight: 18,
+  },
+  // Numeric rating tokens keep stable LTR glyph order in every locale.
+  ltrValue: {
+    writingDirection: "ltr",
   },
 
   /* ────── TAGS ────── */
@@ -382,6 +390,9 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_700Bold",
     fontSize: 16,
     color: "#1A1A1A",
+    // The atomic price token (number + currency) keeps stable LTR glyph
+    // order inside the localized "starts from" label copy.
+    writingDirection: "ltr",
   },
   priceOnRequest: {
     fontFamily: "Cairo_600SemiBold",

@@ -15,7 +15,10 @@ test("TYPO-01 & RTL-04: PlanPriceBlock satisfies Cairo lineHeight >= 1.3 * fontS
   assert.ok(content.includes("isolateLtr("), "PlanPriceBlock must wrap price in isolateLtr");
   assert.ok(content.includes("lineHeight: 36"), "priceNum must have adequate Cairo lineHeight");
   assert.ok(content.includes("lineHeight: 28"), "cardName must have adequate Cairo lineHeight");
-  assert.ok(content.includes('alignItems: "center"'), "cardTopRow must center align items to avoid raised price defect");
+  assert.ok(
+    /cardTopRow:\s*{[\s\S]*?alignItems:\s*"baseline"/.test(content),
+    "cardTopRow must share the real text baseline so plan name and price stay on one line"
+  );
   // Atomic token row: number + SAR glyph may never shrink/wrap apart.
   assert.ok(
     /priceRow:\s*{[\s\S]*?flexShrink:\s*0/.test(content),

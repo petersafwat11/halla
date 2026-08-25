@@ -15,10 +15,14 @@
  */
 
 import { useCallback, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import * as Sentry from "@sentry/react-native";
 import { purchasePackage } from "../../services/purchases";
 import { reconcileExact } from "../../services/billingApi";
 import { mapReconcileState, isPurchaseCancelled } from "../../services/billing/reconcileState";
+import { subscriptionsKeys } from "../subscriptions/keys";
+import { addonsKeys } from "../addons/keys";
+import { eventsKeys } from "../events/keys";
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -64,6 +68,17 @@ export function usePurchaseFlow({
   const [status, setStatus] = useState(IDLE);
   const inFlight = useRef(false);
   const lastArgs = useRef(null); // { catalogCode, transactionId, storeProductId, operation }
+  const queryClient = useQueryClient();
+
+  // Terminal outcome: billing-derived caches must not outlive the purchase.
+  // The current-plan card reads the cached my-subscription query (5-minute
+  // staleTime), so without invalidation it renders the pre-purchase plan
+  // after navigating back to the plans page.
+  const markBillingCachesStale = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: subscriptionsKeys.all });
+    queryClient.invalidateQueries({ queryKey: addonsKeys.all });
+    queryClient.invalidateQueries({ queryKey: eventsKeys.subscriptionInfo() });
+  }, [queryClient]);
 
   const pollExact = useCallback(
     async (args, attempts, delayMs) => {
@@ -159,6 +174,7 @@ export function usePurchaseFlow({
         if (deferred) {
           const s = { phase: "done", state: "scheduled", deferred: true, result };
           setStatus(s);
+          markBillingCachesStale();
           return s;
         }
 
@@ -173,6 +189,7 @@ export function usePurchaseFlow({
         setStatus({ phase: "reconciling", state: "pending", attempt: 0 });
         addFlowBreadcrumb("reconcile_started", { state: "pending" });
         const final = await pollExact(args, pollAttempts, pollDelayMs);
+        markBillingCachesStale();
         const s = { phase: "done", state: final && final.state, reason: final && final.reason, reconcile: final, result };
         setStatus(s);
         return s;
@@ -180,7 +197,7 @@ export function usePurchaseFlow({
         inFlight.current = false;
       }
     },
-    [status, pollExact, pollAttempts, pollDelayMs]
+    [status, pollExact, pollAttempts, pollDelayMs, markBillingCachesStale]
   );
 
   /** User-triggered re-check of the last attempt (moves pending → terminal). */
@@ -190,13 +207,14 @@ export function usePurchaseFlow({
     try {
       setStatus((s) => ({ ...s, phase: "reconciling" }));
       const final = await pollExact(lastArgs.current, Math.min(4, pollAttempts), pollDelayMs);
+      markBillingCachesStale();
       const s = { phase: "done", state: final && final.state, reason: final && final.reason, reconcile: final };
       setStatus(s);
       return s;
     } finally {
       inFlight.current = false;
     }
-  }, [status, pollExact, pollAttempts, pollDelayMs]);
+  }, [status, pollExact, pollAttempts, pollDelayMs, markBillingCachesStale]);
 
   const reset = useCallback(() => {
     lastArgs.current = null;

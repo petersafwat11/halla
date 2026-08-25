@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from "react";
 import {
   View,
-  Text,
   StyleSheet,
   TouchableOpacity,
   Modal,
   Switch,
-  Platform,
   Pressable,
   ScrollView,
 } from "react-native";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
+import { useForm, FormProvider } from "react-hook-form";
 import { useTranslation } from "../../../localization";
 import { formatDate, formatTime } from "@halaa/shared/utils/locale";
 import { normalizeSubscriptionResponse } from "@halaa/shared/utils";
@@ -19,6 +17,9 @@ import { useToast } from "../../../contexts/ToastContext";
 import { useUpdateReminderSettings } from "../../../hooks/events/mutations/useEventMutation";
 import { useMySubscription } from "../../../hooks/users";
 import { colors, spacing, textStyles } from "../../../styles/tokens";
+import LocalizedText from "../../commen/LocalizedText";
+import DatePicker from "../../commen/DatePicker";
+import TimePicker from "../../commen/TimePicker";
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -44,6 +45,10 @@ const combineDateTime = (date, hhmm) => {
  * Small inline banner reminding the user that the platform auto-sends a
  * reminder. Allows customization of the schedule.
  *
+ * The customize sheet renders the shared DatePicker/TimePicker under a local
+ * FormProvider, so iOS gets the common bottom sheet with draft ownership and
+ * Android the native dialog — identical to create/update event Step 1.
+ *
  * @param {Object} props
  * @param {Object} props.event - The event object containing reminderSettings and status
  */
@@ -60,32 +65,32 @@ const AutoReminderInfoText = ({ event }) => {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [customReminderTime, setCustomReminderTime] = useState(false);
-  const [date, setDate] = useState(new Date());
-  const [time, setTime] = useState(new Date());
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showTimePicker, setShowTimePicker] = useState(false);
+
+  // Shared field contract requires a react-hook-form context; the two picker
+  // values live here instead of ad-hoc state so the migrated primitives apply
+  // unchanged.
+  const methods = useForm({
+    defaultValues: { reminderDate: new Date(), reminderTime: new Date() },
+  });
+  const { reset, getValues } = methods;
 
   // Sync state with event data when modal opens or event changes
   useEffect(() => {
     if (event?.reminderSettings) {
       setCustomReminderTime(!!event.reminderSettings.customReminderTime);
-      
-      const sDate = event.reminderSettings.scheduledDate;
-      if (sDate) {
-        setDate(new Date(sDate));
-      } else {
-        setDate(new Date());
-      }
 
+      const sDate = event.reminderSettings.scheduledDate;
+      const nextDate = sDate ? new Date(sDate) : new Date();
+
+      const nextTime = new Date();
       const sTime = event.reminderSettings.scheduledTime; // "HH:mm"
-      const timeObj = new Date();
       if (sTime) {
         const [h, m] = sTime.split(":");
-        timeObj.setHours(parseInt(h, 10), parseInt(m, 10), 0, 0);
+        nextTime.setHours(parseInt(h, 10), parseInt(m, 10), 0, 0);
       }
-      setTime(timeObj);
+      reset({ reminderDate: nextDate, reminderTime: nextTime });
     }
-  }, [event, modalOpen]);
+  }, [event, modalOpen, reset]);
 
   if (!event) return null;
 
@@ -143,23 +148,15 @@ const AutoReminderInfoText = ({ event }) => {
     ? new Date(eventInstant.getTime() - ONE_DAY_MS)
     : null;
 
-  const handleDatePress = () => {
-    setShowDatePicker((prev) => !prev);
-    setShowTimePicker(false);
-  };
-
-  const handleTimePress = () => {
-    setShowTimePicker((prev) => !prev);
-    setShowDatePicker(false);
-  };
-
   const onSave = async () => {
     let payload = {
       customReminderTime,
     };
 
     if (customReminderTime) {
-      if (!date || !time) {
+      const currentDate = getValues("reminderDate");
+      const currentTime = getValues("reminderTime");
+      if (!currentDate || !currentTime) {
         toast.error(
           t("reminderCustomize.errors.dateTimeRequired")
         );
@@ -167,14 +164,14 @@ const AutoReminderInfoText = ({ event }) => {
       }
 
       // Convert time to Riyadh wall clock 24h format "HH:mm"
-      const hour = time.getHours();
-      const minute = time.getMinutes();
+      const hour = currentTime.getHours();
+      const minute = currentTime.getMinutes();
       const time24 = `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
 
       // Client-side guard against the window [scheduledSend, event−24h]. The
       // backend is authoritative (REMINDER_OUT_OF_RANGE) but catching it here
       // saves a round-trip.
-      const chosenInstant = combineDateTime(date, time24);
+      const chosenInstant = combineDateTime(currentDate, time24);
       if (
         chosenInstant &&
         ((lowerBound && chosenInstant.getTime() < lowerBound.getTime()) ||
@@ -188,7 +185,7 @@ const AutoReminderInfoText = ({ event }) => {
 
       // Convert date to UTC midnight ISO string
       const utcMidnight = new Date(
-        Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+        Date.UTC(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate())
       ).toISOString();
 
       payload.scheduledDate = utcMidnight;
@@ -225,16 +222,16 @@ const AutoReminderInfoText = ({ event }) => {
         <View style={styles.iconWrap}>
           <Ionicons name="time-outline" size={16} color={colors.primary[700]} />
         </View>
-        <Text style={styles.text}>{infoText}</Text>
+        <LocalizedText style={styles.text}>{infoText}</LocalizedText>
         {isEditable && (
           <TouchableOpacity
             style={styles.customizeButton}
             onPress={() => setModalOpen(true)}
             activeOpacity={0.7}
           >
-            <Text style={styles.customizeButtonText}>
+            <LocalizedText style={styles.customizeButtonText}>
               {t("customizeReminder")}
-            </Text>
+            </LocalizedText>
           </TouchableOpacity>
         )}
       </View>
@@ -248,9 +245,9 @@ const AutoReminderInfoText = ({ event }) => {
         <Pressable style={styles.modalOverlay} onPress={() => setModalOpen(false)}>
           <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>
+              <LocalizedText style={styles.modalTitle}>
                 {t("customizeReminderModalTitle")}
-              </Text>
+              </LocalizedText>
               <TouchableOpacity
                 style={styles.closeBtn}
                 onPress={() => setModalOpen(false)}
@@ -260,32 +257,26 @@ const AutoReminderInfoText = ({ event }) => {
             </View>
 
             <ScrollView contentContainerStyle={styles.scrollContent}>
-              <Text style={styles.modalDescription}>
+              <LocalizedText style={styles.modalDescription}>
                 {t("reminderCustomize.description")}
-              </Text>
+              </LocalizedText>
 
               {isTrial && (
                 // Advisory only — derived from the host's current plan, not the
                 // event's. Trial reminders are auto (send + 10min) and can't be
                 // customized; the backend is authoritative.
-                <Text style={styles.trialInfo}>
+                <LocalizedText style={styles.trialInfo}>
                   {t("reminderCustomize.trialInfo")}
-                </Text>
+                </LocalizedText>
               )}
 
               <View style={styles.switchRow}>
-                <Text style={styles.switchLabel}>
+                <LocalizedText style={styles.switchLabel}>
                   {t("customReminderCheckbox")}
-                </Text>
+                </LocalizedText>
                 <Switch
                   value={customReminderTime}
-                  onValueChange={(val) => {
-                    setCustomReminderTime(val);
-                    if (!val) {
-                      setShowDatePicker(false);
-                      setShowTimePicker(false);
-                    }
-                  }}
+                  onValueChange={setCustomReminderTime}
                   trackColor={{ false: colors.natural[250], true: colors.primary[200] }}
                   thumbColor={customReminderTime ? colors.primary[500] : colors.natural[350]}
                 />
@@ -293,59 +284,28 @@ const AutoReminderInfoText = ({ event }) => {
 
               {customReminderTime && (
                 <View style={styles.pickerSection}>
-                  <Text style={styles.pickerLabel}>
-                    {t("reminderCustomize.dateLabel")}
-                  </Text>
-                  <TouchableOpacity
-                    style={styles.pickerButton}
-                    onPress={handleDatePress}
-                  >
-                    <Ionicons name="calendar-outline" size={18} color={colors.primary[500]} />
-                    <Text style={styles.pickerButtonText}>{formatDateLabel(date)}</Text>
-                  </TouchableOpacity>
-
-                  {showDatePicker && (
-                    <DateTimePicker
-                      value={date}
-                      mode="date"
-                      display={Platform.OS === "ios" ? "spinner" : "default"}
+                  {/* Shared field-contract pickers: localized labels, BiDi-
+                      isolated locale-formatted values, iOS bottom sheet with
+                      draft ownership, Android native dialog (blueprint §4.3).
+                      The calendar itself is bounded by the reminder window;
+                      the exact instant is re-checked on save because a
+                      day-granular bound cannot constrain the clock. */}
+                  <FormProvider {...methods}>
+                    <DatePicker
+                      name="reminderDate"
+                      label={t("reminderCustomize.dateLabel")}
                       minimumDate={lowerBound || undefined}
                       maximumDate={upperBound || undefined}
-                      onChange={(event, selectedDate) => {
-                        if (Platform.OS === "android") setShowDatePicker(false);
-                        if (selectedDate) setDate(selectedDate);
-                      }}
-                      textColor={colors.natural[900]}
                     />
-                  )}
-
-                  <Text style={styles.pickerLabel}>
-                    {t("reminderCustomize.timeLabel")}
-                  </Text>
-                  <TouchableOpacity
-                    style={styles.pickerButton}
-                    onPress={handleTimePress}
-                  >
-                    <Ionicons name="time-outline" size={18} color={colors.primary[500]} />
-                    <Text style={styles.pickerButtonText}>{formatTimeLabel(time)}</Text>
-                  </TouchableOpacity>
-
-                  {showTimePicker && (
-                    <DateTimePicker
-                      value={time}
-                      mode="time"
-                      display={Platform.OS === "ios" ? "spinner" : "default"}
-                      onChange={(event, selectedTime) => {
-                        if (Platform.OS === "android") setShowTimePicker(false);
-                        if (selectedTime) setTime(selectedTime);
-                      }}
-                      textColor={colors.natural[900]}
+                    <TimePicker
+                      name="reminderTime"
+                      label={t("reminderCustomize.timeLabel")}
                     />
-                  )}
+                  </FormProvider>
 
-                  <Text style={styles.windowHint}>
+                  <LocalizedText style={styles.windowHint}>
                     {t("reminderCustomize.windowHint")}
-                  </Text>
+                  </LocalizedText>
                 </View>
               )}
 
@@ -355,18 +315,18 @@ const AutoReminderInfoText = ({ event }) => {
                   onPress={() => setModalOpen(false)}
                   disabled={updateReminderMutation.isPending}
                 >
-                  <Text style={styles.secondaryBtnText}>
+                  <LocalizedText style={styles.secondaryBtnText} center>
                     {t("reminderCustomize.cancel")}
-                  </Text>
+                  </LocalizedText>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.btn, styles.primaryBtn]}
                   onPress={onSave}
                   disabled={updateReminderMutation.isPending}
                 >
-                  <Text style={styles.primaryBtnText}>
+                  <LocalizedText style={styles.primaryBtnText} center>
                     {t("save")}
-                  </Text>
+                  </LocalizedText>
                 </TouchableOpacity>
               </View>
             </ScrollView>
@@ -493,32 +453,6 @@ const styles = StyleSheet.create({
   },
   pickerSection: {
     marginBottom: 20,
-  },
-  pickerLabel: {
-    ...textStyles.bodySmall,
-    color: colors.natural[400],
-    fontFamily: "Cairo_500Medium",
-    marginBottom: 8,
-    fontSize: 13,
-  },
-  pickerButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    borderWidth: 1.5,
-    borderColor: colors.natural[250],
-    borderRadius: 12,
-    backgroundColor: "#FFF",
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    minHeight: 50,
-    marginBottom: 16,
-  },
-  pickerButtonText: {
-    ...textStyles.bodyMedium,
-    color: colors.natural[900],
-    fontFamily: "Cairo_400Regular",
-    fontSize: 15,
   },
   actions: {
     flexDirection: "row",

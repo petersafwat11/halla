@@ -22,7 +22,7 @@ const schema =
 // username keeps its own field and label, payload sends both.
 // ============================================================
 
-test("SET-01: mobile AccountSettings renders a distinct name field labelled as full name", () => {
+test("SET-01: mobile AccountSettings renders a single full-name identity field", () => {
   const source = read("components", "settings", "AccountSettings.js");
 
   const nameInput = source.match(/<TextInput\s+name="name"[\s\S]*?\/>/);
@@ -30,30 +30,27 @@ test("SET-01: mobile AccountSettings renders a distinct name field labelled as f
   assert.match(
     nameInput[0],
     /account\.fullName/,
-    "the name input must use the fullName label"
+    "the identity input must use the fullName label"
   );
-
-  const usernameInput = source.match(/<TextInput\s+name="username"[\s\S]*?\/>/);
-  assert.ok(usernameInput, "username must remain its own field");
   assert.doesNotMatch(
-    usernameInput[0],
-    /account\.fullName/,
-    "the username input must NOT use the fullName label"
+    source,
+    /name="username"/,
+    "the legacy username handle must not render as its own field"
   );
 });
 
-test("SET-01: mobile AccountSettings submits name alongside username and email", () => {
+test("SET-01: mobile AccountSettings submits name and email", () => {
   const source = read("components", "settings", "AccountSettings.js");
 
   assert.match(
     source,
-    /profileData\s*=\s*\{\s*name:\s*data\.name,\s*username:\s*data\.username,\s*email:\s*data\.email,?\s*\}/,
-    "mobile profile payload must include name, username, email"
+    /profileData\s*=\s*\{\s*name:\s*data\.name,\s*email:\s*data\.email,?\s*\}/,
+    "mobile profile payload must include name and email"
   );
   assert.match(
     source,
-    /defaultValues:\s*\{[\s\S]*?name:\s*user\?\.name\s*\|\|\s*""/,
-    "form defaults must seed the name field"
+    /defaultValues:\s*\{[\s\S]*?name:\s*user\?\.name\s*\|\|\s*user\?\.username\s*\|\|\s*""/,
+    "form defaults must seed the name field (falling back to legacy username)"
   );
 });
 

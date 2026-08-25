@@ -45,11 +45,31 @@ const NotificationPreferences = ({
   const defaults = getNotificationDefaultsForRole(userRole);
   const options = getNotificationOptionsForRole(userRole, t);
 
+  // Server prefs are sparse for accounts that never saved before — a missing
+  // key means "deliver" on the backend. Merge them over the role defaults so
+  // the toggles reflect the true delivery state instead of rendering OFF.
+  const mergePrefs = (server = {}) => {
+    const merged = {
+      appNotifications: {
+        ...(defaults.appNotifications || {}),
+        ...(server.appNotifications || {}),
+      },
+    };
+    if (defaults.emailNotifications) {
+      merged.emailNotifications = {
+        ...defaults.emailNotifications,
+        ...(server.emailNotifications || {}),
+      };
+    }
+    return merged;
+  };
+  const initialValues = mergePrefs(initialData);
+
   // Initialize React Hook Form
   const methods = useForm({
     resolver: zodResolver(schema),
     mode: "onChange",
-    defaultValues: initialData || defaults,
+    defaultValues: initialValues,
   });
 
   const {
@@ -97,7 +117,7 @@ const NotificationPreferences = ({
   };
 
   const handleReset = () => {
-    reset(initialData || defaults);
+    reset(initialValues);
   };
 
   return (

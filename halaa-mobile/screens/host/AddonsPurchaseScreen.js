@@ -13,7 +13,7 @@ import React, { useMemo, useState } from "react";
 import { View, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation, useRoute, CommonActions } from "@react-navigation/native";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "../../localization";
 import { useToast } from "../../contexts/ToastContext";
@@ -23,7 +23,8 @@ import {
   usePurchaseFlow,
   useFulfillment,
 } from "../../hooks/purchases";
-import { useMyAddons } from "../../hooks";
+import { useMyAddons, addonsKeys, subscriptionsKeys } from "../../hooks";
+import { eventsKeys } from "../../hooks/events/keys";
 import { addonPreflight } from "../../services/billingApi";
 import { canPurchase, isPurchasesAvailable } from "../../services/purchases";
 import { eligibleEntries } from "../../services/billing/catalog";
@@ -123,8 +124,18 @@ const AddonsPurchaseScreen = () => {
     const txn = flow.status?.result?.transactionId || null;
     if (txn) setLastTxn(txn);
     flow.reset();
-    queryClient.invalidateQueries({ queryKey: ["addons"] });
-    queryClient.invalidateQueries({ queryKey: ["subscriptions"] });
+    queryClient.invalidateQueries({ queryKey: addonsKeys.all });
+    queryClient.invalidateQueries({ queryKey: subscriptionsKeys.all });
+    queryClient.invalidateQueries({ queryKey: eventsKeys.subscriptionInfo() });
+    // The purchase is complete — leave the store surface entirely and land on
+    // the Plans page, which refetches and reflects the updated plan/add-ons.
+    // Reset wipes this screen from history so Back can't return to it.
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{ name: "MainTabs", params: { screen: "Plans" } }],
+      })
+    );
   };
 
   const historyItems = myAddonsData?.data?.addons || myAddonsData?.data || [];

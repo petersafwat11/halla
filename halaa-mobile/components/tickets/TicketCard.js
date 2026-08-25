@@ -115,6 +115,11 @@ const TicketCard = ({ ticket, onDelete, onEdit, onRate, index }) => {
         {t(`types.${ticket.type}`)}
       </LocalizedText>
 
+      {/* Subject */}
+      <LocalizedText style={styles.subject} numberOfLines={2}>
+        {ticket.subject}
+      </LocalizedText>
+
       {/* Bottom Section: Date and Message */}
       <View style={styles.bottom}>
         <View style={styles.dateContainer}>
@@ -275,6 +280,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: "Cairo_700Bold",
     color: "#2c2c2c",
+    marginBottom: 4
+  },
+  subject: {
+    fontSize: 15,
+    fontFamily: "Cairo_600SemiBold",
+    color: "#444",
     marginBottom: 12
   },  bottom: {
     gap: 8

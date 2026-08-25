@@ -1218,7 +1218,7 @@ class AuthService {
    * @returns {Promise<Object>}
    */
   async completeHostProfile(userId, profileData) {
-    const { username, email, password, passwordConfirm } = profileData;
+    const { username, name, email, password, passwordConfirm } = profileData;
 
     const user = await User.findById(userId);
     if (!user || user.role !== ROLES.HOST) {
@@ -1235,7 +1235,16 @@ class AuthService {
       user.password = password;
     }
 
-    if (username) user.username = username;
+    // ONE display identity: the full name. Newer clients send it as `name`;
+    // legacy clients labeled the same input "username" — normalize it into
+    // `name` (and keep `username` in sync for admin-table/header fallbacks)
+    // so users no longer end up with an empty name and a "username" holding
+    // their actual full name.
+    const displayName = name || username;
+    if (displayName) {
+      user.name = displayName;
+      if (!name && username) user.username = username;
+    }
     if (email && !user.email) user.email = email.toLowerCase();
 
     if (!user.profile.hostData) {

@@ -20,7 +20,13 @@ export default function EventActionsHeader({ event, isAdmin = false }) {
   const [showDropdown, setShowDropdown] = useState(false);
   const [showSchedulePopup, setShowSchedulePopup] = useState(false);
   const [showTestMessagePopup, setShowTestMessagePopup] = useState(false);
-  const [testMessageSent, setTestMessageSent] = useState(event?.testMessageSent || false);
+  // Server flag wins as soon as fresh event data arrives (router.refresh,
+  // remount). The local flag is only an optimistic bridge between sending
+  // the test message and the next successful refetch — seeding `useState`
+  // from the prop once at mount left the button visible forever when the
+  // component mounted on cached/stale data.
+  const [optimisticTestSent, setOptimisticTestSent] = useState(false);
+  const testMessageSent = !!(event?.testMessageSent || optimisticTestSent);
 
   const notifyStaffMutation = useEventMutation("notifyStaff");
 
@@ -52,7 +58,7 @@ export default function EventActionsHeader({ event, isAdmin = false }) {
   const handleTestMessageClick = () => setShowTestMessagePopup(true);
 
   const handleTestMessageSuccess = () => {
-    setTestMessageSent(true);
+    setOptimisticTestSent(true);
     setShowTestMessagePopup(false);
     router.refresh();
   };

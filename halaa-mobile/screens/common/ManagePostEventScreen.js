@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -232,6 +233,13 @@ const ManagePostEventScreen = ({ navigation, route }) => {
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={contentQuery.isRefetching}
+            onRefresh={() => contentQuery.refetch()}
+            tintColor="#C28E5C"
+          />
+        }
       >
         <StatusBanner isPublished={isPublished} t={t} />
 

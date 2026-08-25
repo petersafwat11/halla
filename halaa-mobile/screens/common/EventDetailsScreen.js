@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo, useState, useRef } from "react";
 import {
   View,
-  Text,
   StyleSheet,
   RefreshControl,
   Alert,
@@ -73,6 +72,10 @@ import AutoReminderInfoText from "../../components/admin-dashboard/events/AutoRe
 import SendActionsSheet from "../../components/events/SendActionsSheet";
 import SendActionModal from "../../components/events/SendActionModal";
 import AdaptiveText from "../../components/commen/AdaptiveText";
+import LocalizedText from "../../components/commen/LocalizedText";
+import TotalGuestsChips from "../../components/events/TotalGuestsChips";
+import RemainingInvitesBadge from "../../components/events/RemainingInvitesBadge";
+import ReminderButton from "../../components/events/ReminderButton";
 import { hasSendStarted, isTerminalEvent } from "../../components/events/sendAudiences";
 
 import {
@@ -503,7 +506,9 @@ const EventDetailsScreen = () => {
         <TopBar title={t("eventDetails.title")} showBack onBack={() => navigation.goBack()} />
         <View style={styles.centerState}>
           <ActivityIndicator size="large" color={colors.primary[500]} />
-          <Text style={styles.centerText}>{t("eventDetails.loading")}</Text>
+          <LocalizedText style={styles.centerText} center>
+            {t("eventDetails.loading")}
+          </LocalizedText>
         </View>
       </SafeAreaView>
     );
@@ -515,9 +520,13 @@ const EventDetailsScreen = () => {
         <TopBar title={t("eventDetails.title")} showBack onBack={() => navigation.goBack()} />
         <View style={styles.centerState}>
           <Ionicons name="alert-circle-outline" size={48} color={colors.danger?.[500] || "#C0392B"} />
-          <Text style={styles.centerText}>{t("eventDetails.loadFailed")}</Text>
+          <LocalizedText style={styles.centerText} center>
+            {t("eventDetails.loadFailed")}
+          </LocalizedText>
           <TouchableOpacity style={styles.retryBtn} onPress={() => refetch()}>
-            <Text style={styles.retryBtnText}>{t("events:common.retry")}</Text>
+            <LocalizedText style={styles.retryBtnText} center>
+              {t("events:common.retry")}
+            </LocalizedText>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -530,7 +539,9 @@ const EventDetailsScreen = () => {
         <TopBar title={t("eventDetails.title")} showBack onBack={() => navigation.goBack()} />
         <View style={styles.centerState}>
           <Ionicons name="calendar-outline" size={48} color={colors.natural[400]} />
-          <Text style={styles.centerText}>{t("eventDetails.notFound")}</Text>
+          <LocalizedText style={styles.centerText} center>
+            {t("eventDetails.notFound")}
+          </LocalizedText>
         </View>
       </SafeAreaView>
     );
@@ -620,9 +631,9 @@ const EventDetailsScreen = () => {
           </AdaptiveText>
           {STATUS_CONFIG[event?.status] && (
             <View style={[styles.statusChip, { backgroundColor: statusCfg.bg }]}>
-              <Text style={[styles.statusChipText, { color: statusCfg.color }]}>
+              <LocalizedText style={[styles.statusChipText, { color: statusCfg.color }]}>
                 {statusLabel}
-              </Text>
+              </LocalizedText>
             </View>
           )}
         </View>
@@ -640,18 +651,27 @@ const EventDetailsScreen = () => {
             {(eventDate || eventTime) && (
               <View style={styles.titleMetaRow}>
                 <Ionicons name="calendar-outline" size={13} color={colors.natural[450]} />
-                <Text style={styles.titleMetaText}>
-                  {formatDate(eventDate, currentLanguage) || ""}
-                  {eventTime ? `  •  ${formatLocaleTime(eventTime, currentLanguage)}` : ""}
-                </Text>
+                {/* Date/time join through one interpolation key so the
+                    separator cannot BiDi-spill between the two tokens. */}
+                <LocalizedText style={styles.titleMetaText} numberOfLines={1}>
+                  {eventDate && eventTime
+                    ? t("events:eventDetails.dateTimeRow", {
+                        date: formatDate(eventDate, currentLanguage),
+                        time: formatLocaleTime(eventTime, currentLanguage),
+                      })
+                    : eventDate
+                    ? formatDate(eventDate, currentLanguage)
+                    : formatLocaleTime(eventTime, currentLanguage)}
+                </LocalizedText>
               </View>
             )}
             {locationStr && (
               <View style={styles.titleMetaRow}>
                 <Ionicons name="location-outline" size={13} color={colors.natural[450]} />
-                <Text style={styles.titleMetaText} numberOfLines={1}>
+                {/* Address is arbitrary backend content → first-strong. */}
+                <AdaptiveText style={styles.titleMetaText} numberOfLines={1}>
                   {locationStr}
-                </Text>
+                </AdaptiveText>
               </View>
             )}
           </View>
@@ -681,38 +701,16 @@ const EventDetailsScreen = () => {
         <StatsCards stats={stats} eventStatus={event?.status} activeFilter={statusFilter} onFilterPress={handleFilterPress} />
 
         {/* Checked-in / total-guests mini row */}
-        <View style={styles.checkedInRow}>
-          {(event?.status === EVENT_STATUS.LIVE || event?.status === EVENT_STATUS.COMPLETED) && (
-            <TouchableOpacity
-              style={[
-                styles.checkedInChip,
-                statusFilter === "checkedIn" && styles.checkedInChipActive,
-              ]}
-              onPress={() => handleFilterPress("checkedIn")}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="qr-code-outline" size={14} color="#64748B" />
-              <Text style={styles.checkedInLabel}>
-                {t("events:eventDetails.checkedIn")}
-              </Text>
-              <Text style={styles.checkedInValue}>{formatLocaleCount(stats.checkedIn, currentLanguage)}</Text>
-            </TouchableOpacity>
-          )}
-          <TouchableOpacity
-            style={[
-              styles.checkedInChip,
-              statusFilter === "totalGuests" && styles.checkedInChipActive,
-            ]}
-            onPress={() => handleFilterPress("totalGuests")}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="people-outline" size={14} color="#6B4E33" />
-            <Text style={styles.checkedInLabel}>
-              {t("events:eventDetails.totalGuests")}
-            </Text>
-            <Text style={styles.checkedInValue}>{formatLocaleCount(stats.totalGuests, currentLanguage)}</Text>
-          </TouchableOpacity>
-        </View>
+        <TotalGuestsChips
+          checkedInCount={stats.checkedIn}
+          totalGuests={stats.totalGuests}
+          showCheckedIn={
+            event?.status === EVENT_STATUS.LIVE ||
+            event?.status === EVENT_STATUS.COMPLETED
+          }
+          activeFilter={statusFilter}
+          onFilterPress={handleFilterPress}
+        />
 
         {/* Admin-only: host info section */}
         {isAdmin && (hostName || hostEmail || hostPhone) && (
@@ -778,22 +776,7 @@ const EventDetailsScreen = () => {
 
         {/* Remaining invites — adding guests is free; charged only on send. */}
         {event?.subscription && (
-          <View style={styles.invitesBadge}>
-            <View style={styles.invitesBadgeRow}>
-              <Ionicons name="paper-plane-outline" size={16} color="#6B4E33" />
-              <Text style={styles.invitesBadgeLabel}>
-                {t("events:remainingInvites.label")}
-              </Text>
-              <Text style={styles.invitesBadgeValue}>
-                {invitesRemaining == null
-                  ? t("events:remainingInvites.unlimited")
-                  : formatLocaleCount(invitesRemaining, currentLanguage)}
-              </Text>
-            </View>
-            <Text style={styles.invitesBadgeHelp}>
-              {t("events:remainingInvites.helper")}
-            </Text>
-          </View>
+          <RemainingInvitesBadge remaining={invitesRemaining} />
         )}
 
         <AutoReminderInfoText event={event} />
@@ -832,7 +815,7 @@ const EventDetailsScreen = () => {
                 size={16}
                 color={activeTab === "guests" ? "#2C2C2C" : "#656565"}
               />
-              <Text
+              <LocalizedText
                 style={[
                   styles.tabText,
                   activeTab === "guests" && styles.tabTextActive,
@@ -843,7 +826,7 @@ const EventDetailsScreen = () => {
                   // from mixing digit systems inside Arabic copy.
                   count: formatLocaleCount(guests.length, currentLanguage),
                 })}
-              </Text>
+              </LocalizedText>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -856,7 +839,7 @@ const EventDetailsScreen = () => {
                 size={16}
                 color={activeTab === "moderators" ? "#2C2C2C" : "#656565"}
               />
-              <Text
+              <LocalizedText
                 style={[
                   styles.tabText,
                   activeTab === "moderators" && styles.tabTextActive,
@@ -865,7 +848,7 @@ const EventDetailsScreen = () => {
                 {t("events:eventDetails.moderatorsTabCount", {
                   count: formatLocaleCount(staffFromStats.length, currentLanguage),
                 })}
-              </Text>
+              </LocalizedText>
             </TouchableOpacity>
           </View>
 
@@ -898,11 +881,11 @@ const EventDetailsScreen = () => {
                 activeOpacity={0.85}
               >
                 <Ionicons name="add" size={16} color="#FFF" />
-                <Text style={styles.addBtnText}>
+                <LocalizedText style={styles.addBtnText}>
                   {activeTab === "guests"
                     ? t("events:guestList.addGuest")
                     : t("events:eventDetails.addModerator")}
-                </Text>
+                </LocalizedText>
               </TouchableOpacity>
             )}
           </View>
@@ -912,19 +895,10 @@ const EventDetailsScreen = () => {
               {/* The normal reminder is now FREE and confirmed-only — show it
                   whenever there are confirmed guests, with no quota gate. */}
               {hasConfirmedGuests && (
-                <TouchableOpacity
-                  style={styles.outlineActionBtn}
+                <ReminderButton
                   onPress={handleSendReminder}
-                  activeOpacity={0.7}
-                  disabled={sendReminderMutation.isPending}
-                >
-                  <Ionicons name="notifications-outline" size={14} color="#6B4E33" />
-                  <Text style={styles.outlineActionText}>
-                    {sendReminderMutation.isPending
-                      ? t("events:reminder.sending")
-                      : t("events:reminder.sendAll")}
-                  </Text>
-                </TouchableOpacity>
+                  sending={sendReminderMutation.isPending}
+                />
               )}
               {!isTerminalEvent(event) && hasSendStarted(event) && (
                 <TouchableOpacity
@@ -933,9 +907,9 @@ const EventDetailsScreen = () => {
                   activeOpacity={0.7}
                 >
                   <Ionicons name="paper-plane-outline" size={14} color="#6B4E33" />
-                  <Text style={styles.outlineActionText}>
+                  <LocalizedText style={styles.outlineActionText}>
                     {t("events:sendActions.menu")}
-                  </Text>
+                  </LocalizedText>
                 </TouchableOpacity>
               )}
               <TouchableOpacity
@@ -944,10 +918,10 @@ const EventDetailsScreen = () => {
                 activeOpacity={0.7}
                 disabled={exportGuestsMutation.isPending}
               >
-                <Ionicons name="download-outline" size={14} color="#6B4E33" />
-                <Text style={styles.outlineActionText}>
-                  {t("events:guest.alerts.exportTitle")}
-                </Text>
+                  <Ionicons name="download-outline" size={14} color="#6B4E33" />
+                  <LocalizedText style={styles.outlineActionText}>
+                    {t("events:guest.alerts.exportTitle")}
+                  </LocalizedText>
               </TouchableOpacity>
             </View>
           )}
@@ -957,9 +931,9 @@ const EventDetailsScreen = () => {
               filteredGuests.length === 0 ? (
                 <View style={styles.emptyState}>
                   <Ionicons name="people-outline" size={32} color={colors.natural[400]} />
-                  <Text style={styles.emptyStateText}>
+                  <LocalizedText style={styles.emptyStateText} center>
                     {t("eventDetails.noGuests")}
-                  </Text>
+                  </LocalizedText>
                 </View>
               ) : (
                 filteredGuests.map((g, idx) => (
@@ -986,9 +960,9 @@ const EventDetailsScreen = () => {
             ) : filteredStaff.length === 0 ? (
               <View style={styles.emptyState}>
                 <Ionicons name="shield-outline" size={32} color={colors.natural[400]} />
-                  <Text style={styles.emptyStateText}>
+                  <LocalizedText style={styles.emptyStateText} center>
                     {t("events:eventDetails.noModerators")}
-                  </Text>
+                  </LocalizedText>
               </View>
             ) : (
               filteredStaff.map((m, idx) => (
@@ -1128,26 +1102,6 @@ const styles = StyleSheet.create({
     borderColor: colors.natural[200] || "#EEE",
   },
 
-  checkedInRow: { flexDirection: "row", gap: spacing[8], paddingHorizontal: spacing[4] },
-  checkedInChip: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 10,
-    backgroundColor: "#FFF",
-    borderWidth: 1,
-    borderColor: colors.natural[200] || "#EEE",
-  },
-  checkedInChipActive: {
-    borderColor: "#C28E5C",
-    borderWidth: 2,
-  },
-  checkedInLabel: { flex: 1, fontSize: 11, fontFamily: "Cairo_500Medium", color: "#656565" },
-  checkedInValue: { fontSize: 14, fontFamily: "Cairo_700Bold", color: "#2C2C2C" },
-
   tabsCard: {
     backgroundColor: "#FFF",
     borderRadius: borderRadius[12] || 12,
@@ -1224,69 +1178,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: "Cairo_600SemiBold",
     color: "#6B4E33",
-  },
-  outlineActionBtnActive: {
-    backgroundColor: "#F5ECE4",
-    borderColor: "#C28E5C",
-  },
-  filterChipRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    paddingHorizontal: 12,
-    paddingBottom: 8,
-  },
-  filterChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "#D6B392",
-    backgroundColor: "#FFF",
-  },
-  filterChipActive: {
-    backgroundColor: "#C28E5C",
-    borderColor: "#C28E5C",
-  },
-  filterChipText: {
-    fontSize: 12,
-    fontFamily: "Cairo_600SemiBold",
-    color: "#6B4E33",
-  },
-  filterChipTextActive: {
-    color: "#FFF",
-  },
-
-  invitesBadge: {
-    backgroundColor: "#FFF",
-    borderRadius: borderRadius[12] || 12,
-    borderWidth: 1,
-    borderColor: "#E8D4C4",
-    padding: spacing[12],
-    marginHorizontal: spacing[4],
-    gap: 4,
-  },
-  invitesBadgeRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  invitesBadgeLabel: {
-    flex: 1,
-    fontSize: 13,
-    fontFamily: "Cairo_600SemiBold",
-    color: "#6B4E33",
-  },
-  invitesBadgeValue: {
-    fontSize: 16,
-    fontFamily: "Cairo_700Bold",
-    color: "#2C2C2C",
-  },
-  invitesBadgeHelp: {
-    fontSize: 11,
-    fontFamily: "Cairo_400Regular",
-    color: "#9CA3AF",
-    lineHeight: 16,
   },
 
   bulkBar: {

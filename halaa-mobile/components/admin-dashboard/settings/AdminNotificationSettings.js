@@ -7,6 +7,7 @@ import {
   Animated,
 } from "react-native";
 import { useForm, FormProvider } from "react-hook-form";
+import { Ionicons } from "@expo/vector-icons";
 import { ToggleInput } from "../../commen";
 import { useTranslation } from "../../../localization";
 import { useToast } from "../../../contexts/ToastContext";
@@ -20,7 +21,7 @@ import {
   backgrounds,
 } from "../../../styles/tokens";
 
-const AdminNotificationSettings = ({ initialData, onUpdate }) => {
+const AdminNotificationSettings = ({ initialData, onUpdate, emailVerified = false }) => {
   const { t } = useTranslation("admin");
   const toast = useToast();
   const [loading, setLoading] = useState(false);
@@ -83,7 +84,22 @@ const AdminNotificationSettings = ({ initialData, onUpdate }) => {
     }
   }, [initialData, reset]);
 
+  const handleCancel = () => {
+    reset(initialData || defaultValues);
+  };
+
   const onSubmit = async (data) => {
+    // Web parity: enabling email notifications requires a verified email.
+    if (!emailVerified) {
+      const hasEnabledEmailNotif = Object.values(
+        data.emailNotifications || {}
+      ).some((v) => v === true);
+      if (hasEnabledEmailNotif) {
+        toast.error(t("settings.notifications.emailNotVerified"));
+        return;
+      }
+    }
+
     setLoading(true);
     try {
       await onUpdate(data);
@@ -94,10 +110,6 @@ const AdminNotificationSettings = ({ initialData, onUpdate }) => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleCancel = () => {
-    reset(initialData || defaultValues);
   };
 
   return (
@@ -159,31 +171,45 @@ const AdminNotificationSettings = ({ initialData, onUpdate }) => {
               {t("settings.notifications.emailDescription")}
             </LocalizedText>
 
+            {/* Web parity: email preferences stay locked until the account
+                email is verified (Account Settings → Send Code). */}
+            {!emailVerified && (
+              <View style={styles.warningBox}>
+                <Ionicons name="warning-outline" size={16} color="#8a6d3b" />
+                <LocalizedText
+                  role="description"
+                  style={styles.warningText}
+                >
+                  {t("settings.notifications.emailNotVerifiedWarning")}
+                </LocalizedText>
+              </View>
+            )}
+
             <View style={styles.togglesGroup}>
               <ToggleInput
                 name="emailNotifications.dailyReport"
                 label={t("settings.notifications.dailyReport")}
-                disabled={loading}
+                disabled={loading || !emailVerified}
               />
               <ToggleInput
                 name="emailNotifications.weeklyReport"
                 label={t("settings.notifications.weeklyReport")}
-                disabled={loading}
+                disabled={loading || !emailVerified}
               />
               <ToggleInput
                 name="emailNotifications.vendorApprovals"
                 label={t("settings.notifications.vendorApprovals")}
-                disabled={loading}
+                disabled={loading || !emailVerified}
               />
               <ToggleInput
                 name="emailNotifications.supportTickets"
                 label={t("settings.notifications.supportTickets")}
-                disabled={loading}
+                disabled={loading || !emailVerified}
               />
               <ToggleInput
                 name="emailNotifications.criticalAlerts"
                 label={t("settings.notifications.criticalAlerts")}
-                disabled={loading}
+                disabled={loading || !emailVerified}
               />
             </View>
           </View>
@@ -246,6 +272,24 @@ const styles = StyleSheet.create({
   },
   togglesGroup: {
     width: "100%",
+  },
+  warningBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing[8],
+    backgroundColor: "#fff8ec",
+    borderColor: "#f0d9b5",
+    borderWidth: 1,
+    borderRadius: borderRadius[8],
+    paddingVertical: spacing[8],
+    paddingHorizontal: spacing[12],
+    marginBottom: spacing[16],
+  },
+  warningText: {
+    flex: 1,
+    ...textStyles.bodyMedium,
+    color: "#8a6d3b",
+    lineHeight: 18,
   },
   buttonContainer: {
     flexDirection: "row",

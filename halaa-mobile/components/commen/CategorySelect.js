@@ -11,6 +11,10 @@ import CategoryPickerSheet from "./CategoryPickerSheet";
  * with a trailing chevron, and opens the shared CategoryPickerSheet. Controlled
  * via value/onChange (plain string), so it drops into local state or RHF alike.
  *
+ * `onPickerVisibleChange` lets a hosting sheet suspend its own native Modal
+ * window while this picker is presented — only one modal window may be up
+ * at a time (§6.4) or touch/keyboard routing breaks on device.
+ *
  * Direction contract (blueprint §5): the label and empty placeholder follow
  * the UI locale; a selected user-created category renders adaptively by its
  * first strong character; the chevron stays in its logical trailing slot via
@@ -26,9 +30,21 @@ const CategorySelect = ({
   noneLabel,
   createLabel,
   disabled = false,
+  onPickerVisibleChange,
 }) => {
   const { t } = useTranslation("createEvent");
   const [isOpen, setIsOpen] = useState(false);
+
+  const openPicker = () => {
+    if (disabled) return;
+    setIsOpen(true);
+    onPickerVisibleChange?.(true);
+  };
+
+  const closePicker = () => {
+    setIsOpen(false);
+    onPickerVisibleChange?.(false);
+  };
 
   return (
     <View style={styles.container}>
@@ -38,13 +54,13 @@ const CategorySelect = ({
         placeholder={placeholder ?? t("category_placeholder")}
         contentDirection="adaptive"
         disabled={disabled}
-        onPress={() => !disabled && setIsOpen(true)}
+        onPress={openPicker}
         trailing={<Ionicons name="chevron-down" size={20} color="#656565" />}
       />
 
       <CategoryPickerSheet
         visible={isOpen}
-        onClose={() => setIsOpen(false)}
+        onClose={closePicker}
         onSelect={(val) => onChange?.(val)}
         value={value}
         options={options}

@@ -74,6 +74,9 @@ const EventList = ({
   allGuests = 0,
   attendanceRate = 0,
   responseRate = 0,
+  // Rendered <RefreshControl /> owned by the parent screen (which holds
+  // the query refetch). Optional so legacy callers stay untouched.
+  refreshControl = null,
 }) => {
   const { t, currentLanguage } = useTranslation("events");
   const [searchQuery, setSearchQuery] = useState("");
@@ -295,6 +298,7 @@ const EventList = ({
       ListHeaderComponent={renderHeader}
       contentContainerStyle={styles.listContent}
       showsVerticalScrollIndicator={false}
+      refreshControl={refreshControl}
     />
   );
 };

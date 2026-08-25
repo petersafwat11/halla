@@ -217,6 +217,9 @@ const StepFour = () => {
       language: template.language || "ar",
       hasImageHeader: template.hasImageHeader || false,
       bodyText: template.bodyText,
+      // Keep the admin-curated placeholder mapping so the WhatsApp preview
+      // resolves `{{N}}` slots exactly like the picker cards do.
+      varMapping: template.varMapping,
       category: template.category || category,
       invitationMode: template.invitationMode || invitationType,
       buttons: template.buttons || [],

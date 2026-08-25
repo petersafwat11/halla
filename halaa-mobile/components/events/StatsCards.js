@@ -1,8 +1,9 @@
 import React, { useMemo } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { formatCount } from "@halaa/shared/utils/locale";
 import { useTranslation } from "../../localization";
+import LocalizedText from "../commen/LocalizedText";
 import { EVENT_STATUS, EVENT_STATUS_GROUPS } from "@halaa/shared/constants/eventStatus";
 
 const StatsCards = ({ stats, eventStatus, activeFilter, onFilterPress }) => {
@@ -68,22 +69,25 @@ const StatsCards = ({ stats, eventStatus, activeFilter, onFilterPress }) => {
             activeOpacity={0.7}
           >
             <View style={styles.cardContent}>
+              {/* Semantic status icons — never mirrored. */}
               <Ionicons name={card.icon} size={12} color={card.textColor} />
-              <Text
+              <LocalizedText
                 style={[
                   styles.label,
                   { color: card.textColor }]}
+                center
               >
                 {card.label}
-              </Text>
+              </LocalizedText>
             </View>
-            <Text
+            <LocalizedText
               style={[
                 styles.value,
                 { color: card.textColor }]}
+              center
             >
               {formatCount(card.value, currentLanguage)}
-            </Text>
+            </LocalizedText>
           </TouchableOpacity>
         );
       })}

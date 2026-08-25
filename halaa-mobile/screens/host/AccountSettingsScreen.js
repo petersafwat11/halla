@@ -1,5 +1,5 @@
 import React from "react";
-import { View, StyleSheet, ActivityIndicator, ScrollView } from "react-native";
+import { View, StyleSheet, ActivityIndicator, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "../../localization";
 import { useAuthStore } from "../../stores/authStore";
@@ -12,7 +12,12 @@ export default function AccountSettingsScreen() {
   const { t } = useTranslation("settings");
   const { setUser } = useAuthStore();
 
-  const { data: profileResponse, isLoading: profileLoading } = useProfile();
+  const {
+    data: profileResponse,
+    isLoading: profileLoading,
+    refetch: refetchProfile,
+    isRefetching: profileRefetching,
+  } = useProfile();
   const updateProfileMutation = useUpdateProfile();
   const changePasswordMutation = useChangePassword();
 
@@ -46,6 +51,13 @@ export default function AccountSettingsScreen() {
             initialUser={profileUser}
             onProfileUpdate={handleProfileUpdate}
             onPasswordChange={handlePasswordChange}
+            refreshControl={
+              <RefreshControl
+                refreshing={profileRefetching}
+                onRefresh={refetchProfile}
+                tintColor="#c28e5c"
+              />
+            }
           >
             {profileUser?.accountType === "business" && (
               <BusinessSettings

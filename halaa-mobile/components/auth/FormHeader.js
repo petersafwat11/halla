@@ -1,5 +1,5 @@
 import React from "react";
-import { View, StyleSheet, Animated } from "react-native";
+import { View, StyleSheet, Animated, Image } from "react-native";
 import LocalizedText from "../commen/LocalizedText";
 
 /**
@@ -7,8 +7,11 @@ import LocalizedText from "../commen/LocalizedText";
  * render through the localized text-role contract: the writing direction
  * follows the UI locale and centered alignment keeps terminal punctuation at
  * the sentence end — never a value's script, never physical alignment.
+ *
+ * Pass `logo` (a require() image source) to render the brand mark instead of
+ * a text title; `subtitle` still renders beneath it when provided.
  */
-const FormHeader = ({ title, subtitle }) => {
+const FormHeader = ({ title, subtitle, logo }) => {
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
   const slideAnim = React.useRef(new Animated.Value(-20)).current;
 
@@ -38,9 +41,12 @@ const FormHeader = ({ title, subtitle }) => {
         },
       ]}
     >
-      <LocalizedText role="pageTitle" center style={styles.title}>
-        {title}
-      </LocalizedText>
+      {logo && <Image source={logo} style={styles.logo} resizeMode="contain" />}
+      {!!title && (
+        <LocalizedText role="pageTitle" center style={styles.title}>
+          {title}
+        </LocalizedText>
+      )}
       {subtitle && (
         <LocalizedText role="description" center style={styles.subtitle}>
           {subtitle}
@@ -52,7 +58,14 @@ const FormHeader = ({ title, subtitle }) => {
 
 const styles = StyleSheet.create({
   container: {
+    width: "100%",
     marginBottom: 32,
+    alignItems: "center",
+  },
+  logo: {
+    width: 84,
+    height: 84,
+    marginBottom: 14,
   },
   title: {
     fontSize: 28,

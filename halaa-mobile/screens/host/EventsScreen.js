@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { View, StyleSheet, ActivityIndicator, Text, TouchableOpacity } from "react-native";
+import { View, StyleSheet, ActivityIndicator, Text, TouchableOpacity, ScrollView, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
@@ -26,7 +26,16 @@ const EventsScreen = ({ navigation }) => {
   // (subscription-gated server-side). Reflect that in the create-event entry.
   const { blocked: createEventBlocked } = useBusinessCreateEventGate();
 
-  const { data: eventsData, isLoading: loading, error } = useEventStats();
+  const { data: eventsData, isLoading: loading, error, refetch, isRefetching } = useEventStats();
+
+  const refreshControl = (
+    <RefreshControl
+      refreshing={isRefetching}
+      onRefresh={refetch}
+      tintColor="#C28E5C"
+      colors={["#C28E5C"]}
+    />
+  );
 
   const handleEventPress = useCallback(
     (event) => {
@@ -67,9 +76,14 @@ const EventsScreen = ({ navigation }) => {
             </AdaptiveText>
           </View>
         ) : (eventsData?.events?.length ?? 0) === 0 ? (
-          <View style={styles.emptyContainer}>
+          <ScrollView
+            style={styles.container}
+            contentContainerStyle={styles.emptyScrollContent}
+            showsVerticalScrollIndicator={false}
+            refreshControl={refreshControl}
+          >
             <MakeYourFirst onCreatePress={handleCreateEvent} />
-          </View>
+          </ScrollView>
         ) : (
           <EventList
             events={eventsData?.events || []}
@@ -77,6 +91,7 @@ const EventsScreen = ({ navigation }) => {
             allGuests={eventsData?.allGuests || 0}
             attendanceRate={eventsData?.attendanceRate || 0}
             responseRate={eventsData?.responseRate || 0}
+            refreshControl={refreshControl}
           />
         )}
         <TouchableOpacity
@@ -119,6 +134,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 24,
   },
+  emptyScrollContent: {
+    flexGrow: 1,
+    justifyContent: "center",
+    paddingHorizontal: 24,
+  },
   errorText: {
     fontSize: 16,
     fontFamily: "Cairo_700Bold",
@@ -150,6 +170,9 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: "Cairo_600SemiBold",
     color: "#FFF",
+    // Explicit lineHeight: without it iOS falls back to Cairo's inflated
+    // natural metrics (~1.87x) and the label rides above the "+" glyph.
+    lineHeight: 20,
   },
 });
 

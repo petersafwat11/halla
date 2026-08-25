@@ -24,6 +24,7 @@ const AdminSettingsClient = () => {
   const { data: notificationPrefsData, isLoading: notifLoading } = useNotificationPreferences();
 
   const apiUser = profileData?.data?.user;
+  const userRole = apiUser?.role || USER_ROLES.ADMIN;
   const user = {
     emailVerified: apiUser?.emailVerified || false,
     email: apiUser?.email || "",
@@ -31,8 +32,8 @@ const AdminSettingsClient = () => {
     name: apiUser?.name || "",
     phoneNumber: apiUser?.phoneNumber || "",
     profile: apiUser?.profile || {},
+    role: userRole,
   };
-  const userRole = apiUser?.role || USER_ROLES.ADMIN;
 
   const tabs = [
     { key: "account", label: tSettings("tabs.account", "Account Settings") },

@@ -51,7 +51,16 @@ export function computeEventActionGate({
 
   return {
     hasTemplate,
-    canSendTest: hasTemplate && !testMessageSent && !isCompleted && !isFailed,
+    // Test message is only meaningful before the invitation send pipeline
+    // takes over: once the event is scheduled (auto-send queued) or live
+    // (invitations delivered) a preview send is pointless and confusing.
+    canSendTest:
+      hasTemplate &&
+      !testMessageSent &&
+      !isScheduled &&
+      !isLive &&
+      !isCompleted &&
+      !isFailed,
     canSchedule:
       hasTemplate && testMessageSent && !isLive && !isCompleted && !isFailed,
     hasStaff,

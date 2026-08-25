@@ -62,11 +62,22 @@ const DirectionalTextInput = React.forwardRef(
       autoCapitalize,
     });
     const currentValue = String(value ?? defaultValue ?? "");
-    const fieldDirection = useFieldDirection(resolvedDirection, {
+    const [isFocused, setIsFocused] = React.useState(false);
+    const resolvedFieldDirection = useFieldDirection(resolvedDirection, {
       hasValue: currentValue.length > 0,
       // Adaptive mode resolves the first-strong direction from the raw value.
       value: value ?? defaultValue,
     });
+    // Same iOS freeze as TextInputField: never flip writingDirection while
+    // the input holds focus — mid-composition flips stop rendering typed
+    // characters until blur.
+    const frozenFieldDirectionRef = React.useRef(resolvedFieldDirection);
+    if (!isFocused || frozenFieldDirectionRef.current == null) {
+      frozenFieldDirectionRef.current = resolvedFieldDirection;
+    }
+    const fieldDirection = isFocused
+      ? frozenFieldDirectionRef.current
+      : resolvedFieldDirection;
 
     return (
       <RNTextInput
@@ -79,6 +90,14 @@ const DirectionalTextInput = React.forwardRef(
         autoCapitalize={autoCapitalize}
         style={[fieldDirection.input, style]}
         textAlign="auto"
+        onFocus={(event) => {
+          setIsFocused(true);
+          props.onFocus?.(event);
+        }}
+        onBlur={(event) => {
+          setIsFocused(false);
+          props.onBlur?.(event);
+        }}
       />
     );
   }

@@ -59,6 +59,16 @@ const formatTimeForAPI = (date) => {
   return `${hh}:${mm}`;
 };
 
+// Restore a stored 24h "HH:mm" token as a Date so re-opening the modal keeps
+// the previously scheduled send time instead of silently clearing it.
+const timeFromHHmm = (hhmm) => {
+  const match = String(hhmm ?? "").match(/^(\d{1,2}):(\d{2})$/);
+  if (!match) return null;
+  const d = new Date();
+  d.setHours(Number(match[1]), Number(match[2]), 0, 0);
+  return d;
+};
+
 // Backend reads `getUTCDate()` from `scheduledDate`, so a local-midnight
 // Date serialized via `.toISOString()` shifts the calendar day back one
 // in any UTC+ zone (e.g. Riyadh +3). Build UTC-midnight of the picked
@@ -92,7 +102,7 @@ const ScheduleSendingModal = ({
       scheduledDate: existingSchedule?.scheduledDate
         ? new Date(existingSchedule.scheduledDate)
         : null,
-      scheduledTime: null,
+      scheduledTime: timeFromHHmm(existingSchedule?.scheduledTime),
     },
   });
 

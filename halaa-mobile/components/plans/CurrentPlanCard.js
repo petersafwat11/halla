@@ -20,26 +20,19 @@ const CurrentPlanCard = ({ subscription, usage, onBuyAddons }) => {
   const lang = i18n.language || "ar";
 
   if (!subscription) {
-    return (
-      <View style={styles.noSubCard}>
-        <View style={styles.accent} />
-        <View style={styles.noSubIcon}>
-          <Ionicons
-            name="calendar-outline"
-            size={22}
-            color={colors.primary[500]}
-          />
-        </View>
-        <View style={styles.noSubTextWrap}>
-          <LocalizedText style={styles.noSubTitle}>
-            {t("noActiveSubscription.title")}
-          </LocalizedText>
-          <LocalizedText style={styles.noSubSubtitle}>
-            {t("noActiveSubscription.subtitle")}
-          </LocalizedText>
-        </View>
-      </View>
-    );
+    return <NoActivePlanCard />;
+  }
+
+  // The free trial is not a real plan: it must never render as a purchased
+  // subscription ("1 event / 5 invites"). Trial accounts see the same
+  // "no active plan" state as unsubscribed users so they are steered to buy.
+  const isTrialSubscription =
+    subscription.status === "trial" ||
+    subscription.planType === "trial" ||
+    subscription.planId?.planType === "trial";
+
+  if (isTrialSubscription) {
+    return <NoActivePlanCard />;
   }
 
   const planName = getLocalized(subscription, "planName", i18n.language);
@@ -141,6 +134,32 @@ const CurrentPlanCard = ({ subscription, usage, onBuyAddons }) => {
           label={t("currentPlan.daysRemaining")}
           singleValue={daysRemaining}
         />
+      </View>
+    </View>
+  );
+};
+
+// "No active plan" compact card. Also shown to trial accounts — the trial
+// is not a purchasable plan, so it must not render like one.
+const NoActivePlanCard = () => {
+  const { t } = useTranslation("plans");
+  return (
+    <View style={styles.noSubCard}>
+      <View style={styles.accent} />
+      <View style={styles.noSubIcon}>
+        <Ionicons
+          name="calendar-outline"
+          size={22}
+          color={colors.primary[500]}
+        />
+      </View>
+      <View style={styles.noSubTextWrap}>
+        <LocalizedText style={styles.noSubTitle}>
+          {t("noActiveSubscription.title")}
+        </LocalizedText>
+        <LocalizedText style={styles.noSubSubtitle}>
+          {t("noActiveSubscription.subtitle")}
+        </LocalizedText>
       </View>
     </View>
   );

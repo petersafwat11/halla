@@ -89,10 +89,11 @@ test("shared AccountSettings classifies every value per blueprint §5", () => {
   // Full name is arbitrary user content: placeholder follows the UI locale,
   // a filled value follows its first strong character ("Ali" stays LTR).
   assert.match(source, /name="name"[\s\S]*?contentDirection="adaptive"/);
-  // Username/email are canonical identifiers; passwords stay secret LTR tokens.
-  // The email field itself flows through the shared EmailInput inside
-  // EmailVerificationSection (asserted below); this shell registers its value.
-  assert.match(source, /name="username"[\s\S]*?contentDirection="ltr"/);
+  // Single identity field — the legacy username handle is no longer
+  // collected. The email field itself flows through the shared EmailInput
+  // inside EmailVerificationSection (asserted below); this shell registers
+  // its value.
+  assert.doesNotMatch(source, /name="username"/);
   assert.match(source, /email:\s*user\?\.email \|\| ""/);
   assert.equal((source.match(/<PasswordInput/g) || []).length, 3,
     "current/new/confirm passwords all use the shared password primitive");

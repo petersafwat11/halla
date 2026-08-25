@@ -35,6 +35,15 @@ const username = z
   .max(50, 'Username must be at most 50 characters')
   .regex(/^[a-zA-Z0-9_]+$/, 'Username may contain letters, numbers, and underscores only');
 
+// Display identity (الاسم الكامل). Arbitrary user text — Arabic, Latin, or
+// mixed. Deliberately NOT the legacy `username` charset rule: signup asks
+// for a full name and users type it in their own script.
+const displayName = z
+  .string()
+  .trim()
+  .min(2, 'Name must be at least 2 characters')
+  .max(100, 'Name cannot exceed 100 characters');
+
 const stringOrJson = z.union([z.string(), z.record(z.any()), z.array(z.any())]);
 
 const otpCode = z
@@ -130,7 +139,12 @@ const updatePasswordSchema = z
 
 const completeProfileSchema = z
   .object({
-    username: username.optional(),
+    // Preferred field: the user's full display name.
+    name: displayName.optional(),
+    // Legacy clients (and current web/mobile signup builds) send the
+    // "Full Name" input under this key — accepted and normalized to `name`
+    // by the service. No charset restriction: Arabic names are valid.
+    username: displayName.optional(),
     email: email.optional(),
     password: password.optional(),
     passwordConfirm: z.string().optional(),

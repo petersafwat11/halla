@@ -40,7 +40,7 @@ const CompleteProfileForm = ({ onSubmit, loading = false }) => {
     <FormProvider {...methods}>
       <View style={styles.container}>
         <FormHeader
-          title={t("signup.completeProfileTitle")}
+          logo={require("../../assets/logo.png")}
           subtitle={t("signup.completeProfileSubtitle")}
         />
 

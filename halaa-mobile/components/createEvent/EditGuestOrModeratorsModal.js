@@ -43,6 +43,11 @@ const EditGuestOrModeratorsModal = ({
   const [phone, setPhone] = useState("");
   const [category, setCategory] = useState("");
   const [errors, setErrors] = useState({});
+  // True while the nested CategoryPickerSheet owns presentation (§6.4):
+  // stacked native Modal windows misroute touches/keyboard on device, so
+  // this sheet suspends while the picker is up and re-presents after.
+  // Field state above survives the suspension untouched.
+  const [pickerPresented, setPickerPresented] = useState(false);
 
   useEffect(() => {
     if (item) {
@@ -52,6 +57,11 @@ const EditGuestOrModeratorsModal = ({
       setErrors({});
     }
   }, [item]);
+
+  // A fresh open never resumes a stale picker suspension.
+  useEffect(() => {
+    if (!visible) setPickerPresented(false);
+  }, [visible]);
 
   const handleSave = () => {
     const result = onSave(item?.id, { name, phone, category });
@@ -109,7 +119,7 @@ const EditGuestOrModeratorsModal = ({
     // above the keyboard; the compact form body scrolls only if font scaling
     // requires it.
     <KeyboardSafeModalSheet
-      visible={visible}
+      visible={visible && !pickerPresented}
       onClose={handleClose}
       onRequestClose={handleClose}
       header={header}
@@ -171,6 +181,7 @@ const EditGuestOrModeratorsModal = ({
               value={category}
               onChange={setCategory}
               options={categories}
+              onPickerVisibleChange={setPickerPresented}
             />
           </View>
         )}

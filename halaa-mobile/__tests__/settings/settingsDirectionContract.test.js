@@ -96,7 +96,7 @@ test("settings tree renders visible copy through localized role primitives", () 
   }
 });
 
-test("AccountSettings: full name is adaptive while username/email/password stay LTR tokens", () => {
+test("AccountSettings: single identity field — full name is adaptive, no separate username input", () => {
   const source = read("components/settings/AccountSettings.js");
 
   assert.match(
@@ -104,10 +104,14 @@ test("AccountSettings: full name is adaptive while username/email/password stay 
     /name="name"[\s\S]*?contentDirection="adaptive"/,
     "full name is arbitrary user content → adaptive (placeholder locale, value first-strong)"
   );
+  assert.ok(
+    !source.includes('name="username"'),
+    "the legacy username handle must not render as its own input"
+  );
   assert.match(
     source,
-    /name="username"[\s\S]*?contentDirection="ltr"/,
-    "username is a canonical identifier → stable LTR"
+    /user\?\.name \|\| user\?\.username/,
+    "pre-existing hosts whose signup name lives in username must still see it"
   );
 
   // Validation errors are resolved through the localized schema factory so

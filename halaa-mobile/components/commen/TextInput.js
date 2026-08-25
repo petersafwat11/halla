@@ -35,6 +35,7 @@ const TextInputField = ({
   maxLength,
   showCounter,
   contentDirection,
+  sanitize,
   onChange,
   onBlur,
   style,
@@ -44,10 +45,21 @@ const TextInputField = ({
   const inputRef = React.useRef(null);
   // The raw value is required so `adaptive` mode recomputes its first-strong
   // writing direction on every controlled change (blueprint §5.1).
-  const fieldDirection = useFieldDirection(contentDirection, {
+  const resolvedFieldDirection = useFieldDirection(contentDirection, {
     hasValue: String(value ?? "").length > 0,
     value,
   });
+  // iOS (new architecture): flipping a FOCUSED input's writingDirection
+  // mid-composition rebuilds the attributed string and freshly typed
+  // characters stop rendering until the field loses focus. Freeze the
+  // resolved direction for the whole focus session; it refreshes on blur.
+  const frozenFieldDirectionRef = React.useRef(resolvedFieldDirection);
+  if (!isFocused || frozenFieldDirectionRef.current == null) {
+    frozenFieldDirectionRef.current = resolvedFieldDirection;
+  }
+  const fieldDirection = isFocused
+    ? frozenFieldDirectionRef.current
+    : resolvedFieldDirection;
 
   return (
     <View style={styles.container}>
@@ -79,7 +91,7 @@ const TextInputField = ({
           placeholder={placeholder}
           placeholderTextColor="#999"
           value={value ?? ""}
-          onChangeText={onChange}
+          onChangeText={(text) => onChange(sanitize ? sanitize(text) : text)}
           onBlur={() => {
             setIsFocused(false);
             onBlur?.();
@@ -127,6 +139,7 @@ const TextInput = ({
   maxLength,
   showCounter = false,
   contentDirection = "localized",
+  sanitize,
   rules,
   style,
   ...props
@@ -160,6 +173,7 @@ const TextInput = ({
           maxLength={maxLength}
           showCounter={showCounter}
           contentDirection={contentDirection}
+          sanitize={sanitize}
           onChange={onChange}
           onBlur={onBlur}
           style={style}

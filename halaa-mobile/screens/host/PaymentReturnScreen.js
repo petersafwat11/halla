@@ -19,8 +19,10 @@ import React, { useEffect } from "react";
 import { View, StyleSheet, ActivityIndicator, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRoute, useNavigation, CommonActions } from "@react-navigation/native";
+import { useQueryClient } from "@tanstack/react-query";
 import { Ionicons } from "@expo/vector-icons";
-import { usePaymentPoll } from "../../hooks";
+import { addonsKeys, subscriptionsKeys, usePaymentPoll } from "../../hooks";
+import { eventsKeys } from "../../hooks/events/keys";
 import { useTranslation } from "../../localization";
 import { clearPendingCheckoutCart } from "../../hooks/checkout";
 import LocalizedText from "../../components/commen/LocalizedText";
@@ -60,6 +62,7 @@ const PaymentReturnScreen = () => {
   const { t } = useTranslation("admin");
   const navigation = useNavigation();
   const route = useRoute();
+  const queryClient = useQueryClient();
   const moyasarId = route.params?.moyasarId || route.params?.id || null;
 
   const { status, payment, error } = usePaymentPoll(moyasarId);
@@ -72,9 +75,16 @@ const PaymentReturnScreen = () => {
     // has the canonical record so this is purely UI cleanup.
     clearPendingCheckoutCart();
 
+    // The 3DS leg bypasses useCheckout's onSuccess invalidation
+    // (requiresAction early-return), so refresh billing caches here before
+    // landing on whatever surface reflects the new subscription state.
+    queryClient.invalidateQueries({ queryKey: subscriptionsKeys.all });
+    queryClient.invalidateQueries({ queryKey: addonsKeys.all });
+    queryClient.invalidateQueries({ queryKey: eventsKeys.subscriptionInfo() });
+
     const purpose = payment.metadata?.purpose;
     navigation.dispatch(CommonActions.reset(purposeStackRoutes(purpose)));
-  }, [payment, navigation]);
+  }, [payment, navigation, queryClient]);
 
   const goHome = () => {
     navigation.dispatch(

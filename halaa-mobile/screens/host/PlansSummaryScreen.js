@@ -11,10 +11,18 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Sentry from "@sentry/react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation, useRoute, CommonActions } from "@react-navigation/native";
+import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "../../localization";
 import { useToast } from "../../contexts/ToastContext";
-import { useCheckout, useValidateDiscount, useMySubscription } from "../../hooks";
+import {
+  useCheckout,
+  useValidateDiscount,
+  useMySubscription,
+  addonsKeys,
+  subscriptionsKeys,
+} from "../../hooks";
+import { eventsKeys } from "../../hooks/events/keys";
 import {
   useAllOfferings,
   useStoreCatalog,
@@ -67,6 +75,7 @@ const PlansSummaryScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const toast = useToast();
+  const queryClient = useQueryClient();
   const checkoutMutation = useCheckout();
   const validateDiscount = useValidateDiscount();
 
@@ -381,7 +390,14 @@ const PlansSummaryScreen = () => {
       } else {
         toast.success(t("toasts.subscriptionCreated"));
       }
-      navigation.navigate("MainTabs", { screen: "Home" });
+      // Success: land on the Plans page so the active plan and add-ons are
+      // reflected immediately; reset wipes checkout out of history.
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: "MainTabs", params: { screen: "Plans" } }],
+        })
+      );
     } catch (error) {
       // Surface the real reason instead of masking every failure behind the
       // generic fallback. Three distinct cases must stay distinguishable:
@@ -442,10 +458,19 @@ const PlansSummaryScreen = () => {
   const onPurchaseSuccessContinue = () => {
     flow.reset();
     if (!isWeb && addonItems.length > 0) {
+      // Bundled add-ons are purchased one-by-one on the Add-ons screen; that
+      // screen now redirects to Plans itself once a purchase succeeds.
       navigation.navigate("AddonsPurchase", { pendingAddons: addonItems });
       return;
     }
-    navigation.navigate("MainTabs", { screen: "Home" });
+    // Success: land on the Plans page so the active plan is reflected
+    // immediately; reset wipes the checkout surfaces out of history.
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{ name: "MainTabs", params: { screen: "Plans" } }],
+      })
+    );
   };
 
   const handleRestore = async () => {
@@ -454,6 +479,9 @@ const PlansSummaryScreen = () => {
       // Subscriptions restore via the store; consumables are NOT restorable —
       // reconcile the authoritative backend ledger after (§9).
       await reconcileGeneric();
+      queryClient.invalidateQueries({ queryKey: subscriptionsKeys.all });
+      queryClient.invalidateQueries({ queryKey: addonsKeys.all });
+      queryClient.invalidateQueries({ queryKey: eventsKeys.subscriptionInfo() });
       toast.success(t("checkout.iap.restored"));
     } catch (error) {
       toast.error(error?.message || t("checkout.iap.restoreFailed"));

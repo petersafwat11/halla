@@ -4,10 +4,12 @@ import { useTranslation } from "../../../localization";
 import { formatCount } from "@halaa/shared/utils/locale";
 
 /**
- * RSVP summary row. Label + count live in ONE interpolated translation
- * string per locale ("موافق ٥" / "Accepted 5"), so punctuation/digit order
- * is authored per locale and never concatenated in JSX (blueprint §6).
- * The colour dots are physical artwork and stay in logical source order.
+ * RSVP summary row. All three stats (لم يرد / معتذر / موافق) sit on ONE
+ * line — each item flexes equally and truncates rather than wrapping to a
+ * second row. Label + count live in ONE interpolated translation string per
+ * locale ("موافق ٥" / "Accepted 5"), so punctuation/digit order is authored
+ * per locale and never concatenated in JSX (blueprint §6). The colour dots
+ * are physical artwork and stay in logical source order.
  */
 export default function LastEventStatsRow({ stats }) {
   const { t, currentLanguage } = useTranslation("home");
@@ -51,16 +53,16 @@ export default function LastEventStatsRow({ stats }) {
 const styles = StyleSheet.create({
   statsRow: {
     flexDirection: "row",
-    flexWrap: "wrap",
+    alignItems: "center",
     justifyContent: "space-between",
-    rowGap: 6,
     paddingVertical: 8,
     paddingHorizontal: 12,
     backgroundColor: "#F7F7F7",
     borderRadius: 8,
   },
   statItem: {
-    width: "48%",
+    flex: 1,
+    minWidth: 0,
     flexDirection: "row",
     alignItems: "center",
     gap: 4,

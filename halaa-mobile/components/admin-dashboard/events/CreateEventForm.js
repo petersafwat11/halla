@@ -304,11 +304,7 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
           />
         );
       case 4:
-        return isHostMode ? (
-          <StepFour onPreview={() => setShowPreview(true)} />
-        ) : (
-          <StepFour />
-        );
+        return <StepFour />;
       case 5:
         return <EventSummary />;
       default:

@@ -10,8 +10,9 @@ const read = (...parts) =>
   fs.readFileSync(path.join(WEB_ROOT, ...parts), "utf8");
 
 // ============================================================
-// SET-01 — Web identity fields: full name must bind to `name`,
-// username must have its own field, payload sends both.
+// SET-01 — Web identity fields: a single full-name identity
+// field bound to `name`; the legacy `username` handle is no
+// longer collected (payload sends name + email).
 // ============================================================
 
 test("SET-01: AccountSettings binds Full Name to the name field, not username", () => {
@@ -33,17 +34,15 @@ test("SET-01: AccountSettings binds Full Name to the name field, not username", 
     "the name input must use the full_name label"
   );
 
-  // The username field keeps its own distinct binding + label.
-  const usernameInput = source.match(/<InputGroup\s+name="username"[\s\S]*?\/>/);
-  assert.ok(usernameInput, "username must remain its own field");
+  // The legacy username handle must not render as its own field.
   assert.doesNotMatch(
-    usernameInput[0],
-    /full_name/,
-    "the username input must NOT be labelled full_name"
+    source,
+    /<InputGroup\s+name="username"/,
+    "username must not render as its own input"
   );
 });
 
-test("SET-01: AccountSettings submits both name and username in the profile payload", () => {
+test("SET-01: AccountSettings submits name and email in the profile payload", () => {
   const source = read(
     "app",
     "[lang]",
@@ -55,13 +54,13 @@ test("SET-01: AccountSettings submits both name and username in the profile payl
 
   assert.match(
     source,
-    /profileData\s*=\s*\{\s*name:\s*formData\.name,\s*username:\s*formData\.username,\s*email:\s*formData\.email,?\s*\}/,
-    "profile update payload must carry name, username, and email"
+    /profileData\s*=\s*\{\s*name:\s*formData\.name,\s*email:\s*formData\.email,?\s*\}/,
+    "profile update payload must carry name and email"
   );
   assert.match(
     source,
-    /formData\.name !== \(user\.name \|\| ""\)/,
-    "change detection must include the name field"
+    /formData\.name !== \(user\.name \|\| user\.username \|\| ""\)/,
+    "change detection must include the name field (with legacy username fallback)"
   );
 });
 
@@ -87,8 +86,8 @@ test("SET-01: shared web account settings form defaults include name", () => {
   );
   assert.match(
     source,
-    /defaultValues:\s*\{[\s\S]*?name:\s*user\.name\s*\|\|\s*""/,
-    "form defaults must seed the name field from the user"
+    /defaultValues:\s*\{[\s\S]*?name:\s*user\.name\s*\|\|\s*user\.username\s*\|\|\s*""/,
+    "form defaults must seed the name field from the user (with legacy username fallback)"
   );
 });
 

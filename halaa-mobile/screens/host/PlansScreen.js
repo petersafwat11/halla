@@ -5,6 +5,7 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  RefreshControl,
 } from "react-native";
 import LocalizedText from "../../components/commen/LocalizedText";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -44,12 +45,22 @@ const PlansScreen = () => {
     data: response,
     isLoading: plansLoading,
     error: plansError,
+    refetch: refetchPlans,
+    isRefetching: plansRefetching,
   } = useHostPlans();
   const {
     data: subscriptionData,
     isLoading: subLoading,
     error: subError,
+    refetch: refetchSubscription,
+    isRefetching: subRefetching,
   } = useMySubscription();
+
+  const handleRefresh = () => {
+    refetchPlans();
+    refetchSubscription();
+  };
+  const isRefreshing = plansRefetching || subRefetching;
   const subscription = subscriptionData?.data?.subscription || null;
   const usage = subscription?.usage || null;
 
@@ -193,6 +204,13 @@ const PlansScreen = () => {
         style={styles.content}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            tintColor={colors.primary[500]}
+          />
+        }
       >
         <CurrentPlanCard
           subscription={subscription}

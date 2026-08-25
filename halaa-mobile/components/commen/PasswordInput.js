@@ -30,8 +30,11 @@ const PasswordInputField = ({
   const [isSecure, setIsSecure] = useState(true);
   const inputRef = useRef(null);
   const { t } = useTranslation("common");
-  // Password value is LTR; field chrome still follows the selected locale.
-  const fieldDirection = useFieldDirection("ltr", { hasValue: !!value });
+  // Alignment mirrors the plain TextInput: placeholder/chrome follow the UI
+  // locale and stay put while typing. The previous forced-LTR policy made iOS
+  // render the Arabic placeholder right-aligned, then snap the masked dots
+  // left as soon as the user started typing (base-direction mismatch).
+  const fieldDirection = useFieldDirection("localized", { hasValue: !!value });
 
   return (
     <View style={styles.container}>
@@ -67,6 +70,7 @@ const PasswordInputField = ({
           secureTextEntry={isSecure}
           autoCapitalize="none"
           editable={!disabled}
+          textAlign="auto"
         />
         <TouchableOpacity
           onPress={() => setIsSecure(!isSecure)}
@@ -154,7 +158,6 @@ const styles = StyleSheet.create({
     minHeight: 50,
     paddingHorizontal: 16,
     width: "100%",
-    gap: 8,
   },
   inputContainerFocused: {
     borderColor: "#c28e5c",
@@ -168,7 +171,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   icon: {
-    marginEnd: 4,
+    marginEnd: 8,
   },
   input: {
     flex: 1,

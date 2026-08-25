@@ -11,9 +11,16 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 /**
+ * Shared iOS date/time bottom sheet (blueprint §4.3).
+ *
  * iOS does not add confirm/cancel controls around the spinner-style picker.
  * This sheet supplies those controls and deliberately leaves value ownership
  * with the caller so spinning the wheel never mutates the form prematurely.
+ *
+ * The toolbar keeps an explicit `direction` because native modals do not
+ * reliably inherit the root RTL layout direction on iOS; child order stays
+ * logical (cancel → title → confirm) and `flexDirection: "row"` is never
+ * reversed.
  */
 const IosDateTimePickerSheet = ({
   visible,
@@ -21,6 +28,7 @@ const IosDateTimePickerSheet = ({
   title,
   value,
   minimumDate,
+  maximumDate,
   cancelLabel,
   confirmLabel,
   locale,
@@ -84,6 +92,7 @@ const IosDateTimePickerSheet = ({
               mode={mode}
               display="spinner"
               minimumDate={minimumDate}
+              maximumDate={maximumDate}
               onChange={onChange}
               locale={locale}
               textColor="#2C2C2C"

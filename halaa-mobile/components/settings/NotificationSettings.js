@@ -54,10 +54,21 @@ const NotificationSettings = ({ initialData, onUpdate }) => {
     reset,
   } = methods;
 
+  // Server prefs are sparse for accounts that never saved before — missing
+  // keys mean "deliver" on the backend (`appNotifications[key] !== false`).
+  // Merge them over the model defaults so the UI shows the true state
+  // instead of rendering every toggle as OFF.
+  const mergeServerData = (server) => ({
+    appNotifications: {
+      ...defaultValues.appNotifications,
+      ...(server?.appNotifications || {}),
+    },
+  });
+
   // Reset form when initialData changes
   React.useEffect(() => {
     if (initialData) {
-      reset(initialData);
+      reset(mergeServerData(initialData));
     }
   }, [initialData, reset]);
 
@@ -75,7 +86,7 @@ const NotificationSettings = ({ initialData, onUpdate }) => {
   };
 
   const handleCancel = () => {
-    reset(initialData || defaultValues);
+    reset(mergeServerData(initialData));
   };
 
   return (

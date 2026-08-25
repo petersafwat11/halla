@@ -103,7 +103,11 @@ const InputGroup = ({
             : register ? register(name) : {}
           )}
           style={{
-            direction: type === "email" || type === "password" ? "ltr" : "rtl",
+            // Email/password are intrinsically LTR tokens; everything else
+            // inherits the page direction instead of forcing RTL (English
+            // pages previously rendered their text fields right-aligned).
+            direction:
+              type === "email" || type === "password" ? "ltr" : undefined,
           }}
         />
 

@@ -141,6 +141,32 @@ describe("Marketplace iOS direction blueprint (§8 Marketplace row)", () => {
     );
   });
 
+  it("VendorCard name/location/rating cluster at the logical start with LTR-pinned numeric tokens", () => {
+    const content = read(MARKETPLACE_SOURCES[2]);
+
+    // Rating + location render as ONE leading cluster under the name —
+    // never pinned to opposite edges by space-between.
+    const metaStart = content.indexOf("<View style={styles.meta}>");
+    const metaEnd = content.indexOf("</View>", content.indexOf("styles.locationRow", metaStart));
+    assert.ok(metaStart !== -1 && metaEnd > metaStart, "meta block exists");
+    const metaBlock = content.slice(metaStart, metaEnd);
+    assert.ok(metaBlock.includes("styles.rating") && metaBlock.includes("styles.locationRow"),
+      "rating and location live in the same meta cluster");
+
+    assert.ok(
+      /meta:\s*\{[\s\S]{0,200}?gap:\s*12,\s*\}/.test(content) &&
+        !/meta:\s*\{[\s\S]{0,200}?space-between/.test(content),
+      "meta row keeps the rating/location pair together at the logical start"
+    );
+
+    // The numeric rating token is pinned LTR so digits never reflow under RTL.
+    assert.match(content, /styles\.ratingValue,\s*styles\.ltrValue/, "rating value uses the ltrValue pin");
+    assert.match(content, /ltrValue:\s*\{[^}]*writingDirection:\s*"ltr"/, "ltrValue style pins writingDirection ltr");
+    assert.match(content, /priceValue:\s*\{[\s\S]{0,400}?writingDirection:\s*"ltr"/, "price token run is pinned LTR inside localized label copy");
+
+    assert.ok(!/flexDirection\s*:\s*["']row-reverse["']/.test(content), "no row-reverse in VendorCard");
+  });
+
   it("filter sheet places close at the logical end and keeps metadata localized", () => {
     const content = read(MARKETPLACE_SOURCES[4]);
     const headerStart = content.indexOf("<View style={styles.header}>");

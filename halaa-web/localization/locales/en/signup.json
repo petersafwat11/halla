@@ -844,7 +844,7 @@
         },
         "email": {
           "label": "Email Address",
-          "placeholder": "david@dffr.com"
+          "placeholder": "mohamed@gmail.com"
         },
         "newPassword": {
           "label": "New Password",
@@ -880,7 +880,7 @@
           "additional": "20+ additional features - click for more"
         }
       },
-      "nextButton": "Next",
+      "nextButton": "Save",
       "selectButton": "Select Package",
       "errors": {
         "fullNameRequired": "Full name is required",

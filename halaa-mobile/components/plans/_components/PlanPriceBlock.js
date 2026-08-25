@@ -54,7 +54,11 @@ const styles = StyleSheet.create({
   cardTopRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
+    // Baseline (not center) alignment: the plan name and the price use
+    // different font sizes / line heights, and centering their boxes lets
+    // the smaller one ride high on iOS. Sharing the real Cairo baseline
+    // keeps them on one visual line (same pattern as PaymentSummaryCard).
+    alignItems: "baseline",
     gap: spacing[12],
   },
   cardName: {

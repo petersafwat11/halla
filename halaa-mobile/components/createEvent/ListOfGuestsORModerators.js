@@ -88,6 +88,15 @@ const ListOfGuestsORModerators = ({
   const [selected, setSelected] = useState({}); // id -> true
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
 
+  // Single native modal window at a time (§6.4): stacking a second Modal
+  // window over the still-presented list misroutes touches, the Android
+  // back button and keyboard events on device (iOS + Android), which left
+  // guest editing dead in Step 2. While the editor or the bulk category
+  // sheet is up the list window suspends; both states live HERE, so when
+  // they close the list re-presents with selection/scroll intact and no
+  // parent coordination is needed.
+  const listVisible = visible && !showEditModal && !showCategoryPicker;
+
   const selectable = type === "guest" && typeof onAssignCategory === "function" && !allowAddOnly;
   const selectedIds = Object.keys(selected).filter((id) => selected[id]);
   const selectedCount = selectedIds.length;
@@ -189,7 +198,7 @@ const ListOfGuestsORModerators = ({
   return (
     <>
       <Modal
-        visible={visible}
+        visible={listVisible}
         transparent
         animationType="slide"
         onRequestClose={onClose}

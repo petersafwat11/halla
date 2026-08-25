@@ -81,7 +81,8 @@
     "noGuests": "لا يوجد مدعوون بعد",
     "noModerators": "لا يوجد مشرفون",
     "guestsTabCount": "المدعوون ({{count}})",
-    "moderatorsTabCount": "المشرفون ({{count}})"
+    "moderatorsTabCount": "المشرفون ({{count}})",
+    "dateTimeRow": "{{date}} • {{time}}"
   },
   "guestList": {
     "title": "قائمة الضيوف",

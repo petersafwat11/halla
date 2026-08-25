@@ -27,7 +27,6 @@ import {
 import { useHostTaqnyatTemplates } from "../../hooks/taqnyatTemplates";
 import { useTranslation } from "../../localization";
 import { useAuthStore } from "../../stores/authStore";
-import PreviewInvitation from "./PreviewInvitation";
 import DirectionalTextInput from "../commen/DirectionalTextInput";
 import { isolateAuto } from "@halaa/shared/utils/bidi";
 import { useFieldDirection } from "../../hooks/useInputDirection";
@@ -56,7 +55,6 @@ const StepFour = () => {
   const { setValue, watch } = useFormContext();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const [activeTab, setActiveTab] = useState("onAttend");
-  const [showPreview, setShowPreview] = useState(false);
   const previousCategoryRef = useRef("");
   const previousInvitationTypeRef = useRef("");
   const { t, currentLanguage } = useTranslation("createEvent");
@@ -65,7 +63,6 @@ const StepFour = () => {
   const categoryLabel = (cat) =>
     cat ? t(`event_types.${cat}`) : "";
 
-  const visualTemplate = watch("visualTemplate");
   const selectedTemplate = watch("selectedTemplate");
   // Filter templates by the event category chosen in step 1 (eventType),
   // not the visual template picked in step 3.
@@ -148,6 +145,9 @@ const StepFour = () => {
       language: template.language || "ar",
       hasImageHeader: template.hasImageHeader || false,
       bodyText: template.bodyText,
+      // Keep the admin-curated placeholder mapping so the preview and the
+      // summary resolve `{{N}}` slots exactly like the picker cards do.
+      varMapping: template.varMapping,
       category: template.category || category,
       invitationMode: template.invitationMode || invitationType,
       buttons: template.buttons || [],
@@ -303,17 +303,6 @@ const StepFour = () => {
           )}
         </View>
 
-        {selectedTemplate ? (
-          <TouchableOpacity
-            style={styles.previewButton}
-            onPress={() => setShowPreview(true)}
-            activeOpacity={0.85}
-          >
-            <Ionicons name="eye-outline" size={18} color="#C28E5C" />
-            <Text style={styles.previewButtonText}>{t("preview_template")}</Text>
-          </TouchableOpacity>
-        ) : null}
-
         {isLoading ? (
           <View style={styles.loadingBox}>
             <ActivityIndicator size="large" color="#C28E5C" />
@@ -428,20 +417,6 @@ const StepFour = () => {
             </View>
           )}
         </View>
-      <PreviewInvitation
-        visible={showPreview}
-        onClose={() => setShowPreview(false)}
-        templateImage={watch("templateImage")}
-        template={visualTemplate}
-        eventTitle={eventName || ""}
-        previewBody={selectedTemplate?.bodyText || ""}
-        selectedTemplate={selectedTemplate}
-        eventDate={eventDate}
-        eventTime={eventTime}
-        location={address?.address || ""}
-        templateData={visualTemplate?.data || {}}
-        invitationType={invitationType}
-      />
     </Animated.View>
   );
 };
@@ -458,24 +433,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#666",
     marginTop: 4,
-  },
-  previewButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: "#C28E5C",
-    backgroundColor: "#FDF9F4",
-    marginBottom: 16,
-  },
-  previewButtonText: {
-    fontSize: 14,
-    fontFamily: "Cairo_700Bold",
-    color: "#A87040",
   },
   loadingBox: { padding: 32, alignItems: "center" },
   emptyBox: {
