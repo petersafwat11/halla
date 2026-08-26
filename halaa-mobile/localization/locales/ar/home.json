@@ -15,8 +15,8 @@
         "description": "أضف تفاصيل المناسبة كما تحب."
       },
       "2": {
-        "title": "قائمة المدعوين",
-        "description": "أدخل جميع المدعوين لحضور المناسبة."
+        "title": "قائمة الضيوف",
+        "description": "أدخل جميع الضيوف لحضور المناسبة."
       },
       "3": {
         "title": "تصميم الدعوة وتخصيصها",
@@ -34,6 +34,7 @@
   "dashboard": {
     "title": "لوحة التحكم",
     "stats": {
+      "sectionTitle": "إحصائيات المناسبات",
       "totalEvents": "إجمالي المناسبات",
       "upcomingEvents": "المناسبات القادمة",
       "completedEvents": "المناسبات المكتملة",
@@ -65,10 +66,10 @@
     "untitled": "مناسبة بدون عنوان",
     "guests": "ضيف",
     "noResponse": "لم يرد",
-    "declined": "معتذر",
+    "declined": "اعتذار",
     "approved": "موافق",
     "noResponseCount": "لم يرد {{count}}",
-    "declinedCount": "معتذر {{count}}",
+    "declinedCount": "اعتذار {{count}}",
     "approvedCount": "موافق {{count}}",
     "quota": {
       "remainingInvites": "الدعوات المتبقية",

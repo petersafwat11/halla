@@ -37,7 +37,7 @@ import { isolateLtr, isolateLtrTokens } from "@halaa/shared/utils/bidi";
 import TopBar from "../../components/plans/TopBar";
 import PurchaseStatusModal from "../../components/plans/PurchaseStatusModal";
 import StatusBadge from "../../components/admin-dashboard/common/StatusBadge";
-import { colors, spacing, borderRadius, typography } from "../../styles/tokens";
+import { colors, spacing, borderRadius, typography, layout } from "../../styles/tokens";
 
 // Intrinsically LTR tokens inside disclosure copy (store names / URLs).
 const LTR_DISCLOSURE_TOKEN_REGEX =
@@ -300,7 +300,7 @@ const AddonsPurchaseScreen = () => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.primary[500] },
   content: { flex: 1, backgroundColor: colors.primary[50] },
-  scrollContent: { padding: spacing[20], paddingBottom: spacing[40] },
+  scrollContent: { padding: spacing[20], paddingBottom: layout.dashboardPageBottom },
   pendingNote: {
     flexDirection: "row",
     alignItems: "center",

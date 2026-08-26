@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, StyleSheet } from "react-native";
+import { Keyboard, View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
 import FormField from "./FormField";
@@ -37,6 +37,7 @@ const CategorySelect = ({
 
   const openPicker = () => {
     if (disabled) return;
+    Keyboard.dismiss();
     setIsOpen(true);
     onPickerVisibleChange?.(true);
   };

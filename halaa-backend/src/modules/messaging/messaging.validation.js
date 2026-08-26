@@ -16,15 +16,16 @@ const timeOfDay = z
   .string()
   .regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'scheduledTime must be HH:mm');
 
-// ISO 8601 date or date-time string parseable to a future Date.
-const futureIsoDate = z
+// ISO 8601 date or date-time string. Do not compare the date value by itself
+// with `Date.now()`: clients intentionally send the selected calendar day at
+// UTC midnight, and a valid same-day trial schedule would otherwise look
+// "past" before `scheduledTime` is combined with it. The schedule service
+// validates the complete Riyadh date+time instant and the plan-specific lead.
+const isoDate = z
   .string()
   .min(1, 'scheduledDate is required')
   .refine((v) => !Number.isNaN(Date.parse(v)), {
     message: 'scheduledDate must be an ISO date string',
-  })
-  .refine((v) => new Date(v).getTime() > Date.now(), {
-    message: 'scheduledDate must be in the future',
   });
 
 const sendMessageSchema = z
@@ -53,7 +54,7 @@ const retrySchema = z
 const scheduleSchema = z
   .object({
     eventId: objectId,
-    scheduledDate: futureIsoDate,
+    scheduledDate: isoDate,
     scheduledTime: timeOfDay,
     channel: channelEnum.default('whatsapp'),
   })

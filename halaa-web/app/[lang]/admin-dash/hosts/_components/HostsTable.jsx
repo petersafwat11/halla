@@ -234,7 +234,7 @@ export default function HostsTable({ showAddPopup: externalShowAdd, setShowAddPo
           headers={[
             t("hosts.columns.name", "الاسم"),
             t("hosts.columns.email", "البريد الإلكتروني"),
-            t("hosts.columns.phone", "الهاتف"),
+            t("hosts.columns.phone", "الجوال"),
             t("hosts.columns.status", "الحالة"),
             t("hosts.columns.subscription", "الاشتراك"),
             t("hosts.columns.createdAt", "تاريخ التسجيل"),

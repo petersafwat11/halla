@@ -27,8 +27,8 @@
     "usernamePlaceholder": "ادخل اسم المشرف",
     "email": "البريد الإلكتروني",
     "emailPlaceholder": "ادخل البريد الإلكتروني",
-    "phoneNumber": "رقم الهاتف",
-    "phoneNumberPlaceholder": "ادخل رقم الهاتف",
+    "phoneNumber": "رقم الجوال",
+    "phoneNumberPlaceholder": "ادخل رقم الجوال",
     "jobTitle": "المسمى الوظيفي",
     "jobTitlePlaceholder": "ادخل المسمى الوظيفي",
     "permissions": "الصلاحيات",
@@ -67,14 +67,14 @@
     "statusUpdated": "تم تحديث الحالة بنجاح",
     "columns": {
       "username": "اسم المستخدم",
-      "phoneNumber": "رقم الهاتف",
+      "phoneNumber": "رقم الجوال",
       "email": "البريد الإلكتروني",
       "title": "المسمى الوظيفي",
       "status": "الحالة",
       "createdAt": "تاريخ الانضمام",
       "actions": "الإجراءات",
       "name": "الاسم",
-      "phone": "الهاتف",
+      "phone": "الجوال",
       "role": "الدور"
     },
     "status": {
@@ -111,7 +111,7 @@
     "columns": {
       "name": "الاسم",
       "email": "البريد الإلكتروني",
-      "phone": "الهاتف",
+      "phone": "الجوال",
       "role": "الدور",
       "status": "الحالة",
       "createdAt": "تاريخ الإضافة"
@@ -130,7 +130,7 @@
       "namePlaceholder": "أدخل اسم المشرف",
       "email": "البريد الإلكتروني",
       "emailPlaceholder": "example@email.com",
-      "phone": "رقم الهاتف",
+      "phone": "رقم الجوال",
       "phonePlaceholder": "05xxxxxxxx",
       "password": "كلمة المرور",
       "passwordPlaceholder": "اتركه فارغاً للإنشاء التلقائي",

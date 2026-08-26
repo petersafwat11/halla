@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import Image from "next/image";
 import styles from "./CustomizeReminderPopup.module.css";
@@ -54,9 +54,16 @@ const CustomizeReminderPopup = ({ onClose, eventId, event, existingSettings, onS
   );
 
   const eventInstant = useMemo(() => {
-    const d = event?.eventDetails?.date ? new Date(event.eventDetails.date) : null;
-    return d && !Number.isNaN(d.getTime()) ? d : null;
-  }, [event?.eventDetails?.date]);
+    return combineDateTime(
+      event?.eventDetails?.date || event?.date,
+      event?.eventDetails?.time || event?.time
+    );
+  }, [
+    event?.eventDetails?.date,
+    event?.eventDetails?.time,
+    event?.date,
+    event?.time,
+  ]);
 
   const lowerBound = useMemo(() => {
     const now = new Date();
@@ -110,6 +117,24 @@ const CustomizeReminderPopup = ({ onClose, eventId, event, existingSettings, onS
       time: fromHHmm(existingSettings?.scheduledTime),
     },
   });
+
+  useEffect(() => {
+    methods.reset({
+      customReminderTime: isTrial
+        ? false
+        : !!existingSettings?.customReminderTime,
+      date: existingSettings?.scheduledDate
+        ? new Date(existingSettings.scheduledDate)
+        : null,
+      time: fromHHmm(existingSettings?.scheduledTime),
+    });
+  }, [
+    existingSettings?.customReminderTime,
+    existingSettings?.scheduledDate,
+    existingSettings?.scheduledTime,
+    isTrial,
+    methods,
+  ]);
 
   const customReminderTime = methods.watch("customReminderTime");
 
@@ -213,6 +238,7 @@ const CustomizeReminderPopup = ({ onClose, eventId, event, existingSettings, onS
                 type="checkbox"
                 {...methods.register("customReminderTime")}
                 className={styles.checkbox}
+                disabled={isTrial}
               />
               <span className={styles.checkboxText}>
                 {t("singleEvent.customReminderCheckbox", "Customize reminder time")}
@@ -220,7 +246,7 @@ const CustomizeReminderPopup = ({ onClose, eventId, event, existingSettings, onS
             </label>
           </div>
 
-          {customReminderTime && (
+          {customReminderTime && !isTrial && (
             <>
               <div className={styles.inputContainer}>
                 <DatePicker

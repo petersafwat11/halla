@@ -84,7 +84,7 @@ export default function LoginScreen({ navigation }) {
   }, [navigation]);
 
   const handleSignup = useCallback(() => {
-    navigation.navigate("Signup");
+    navigation.reset({ index: 0, routes: [{ name: "Signup" }] });
   }, [navigation]);
 
   const handleEditPhone = useCallback(() => {
@@ -94,7 +94,10 @@ export default function LoginScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <View style={styles.container}>
-        <TopBar title={t("login.title")} showBack={true} />
+        <TopBar
+          logoSource={require("../../assets/logo.png")}
+          showBack={true}
+        />
         {/* One shared owner for the form region (§8.2 auth row). */}
         <KeyboardAwareFormScrollView
           style={styles.keyboardView}

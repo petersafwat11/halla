@@ -63,18 +63,22 @@ export default function LastEventActions({
     <>
       <View style={styles.actionButtonsRow}>
         {canSendTest && onTestMessagePress && (
-          <AnimatedTouchableOpacity
-            style={[styles.outlineButton, flashingStyle]}
+          <TouchableOpacity
+            style={styles.outlineButton}
             onPress={onTestMessagePress}
             activeOpacity={0.7}
           >
             <Text style={styles.outlineButtonText}>{t("lastEvent.buttons.testMessage")}</Text>
-          </AnimatedTouchableOpacity>
+          </TouchableOpacity>
         )}
         {canSchedule && onSchedulePress && (
-          <TouchableOpacity style={styles.outlineButton} onPress={onSchedulePress} activeOpacity={0.7}>
+          <AnimatedTouchableOpacity
+            style={[styles.outlineButton, flashingStyle]}
+            onPress={onSchedulePress}
+            activeOpacity={0.7}
+          >
             <Text style={styles.outlineButtonText}>{t("lastEvent.buttons.scheduleEvent")}</Text>
-          </TouchableOpacity>
+          </AnimatedTouchableOpacity>
         )}
         {/* Notify Staff intentionally omitted here to match the web
             dashboard card (labbe LastEventActions). Notify Staff lives on

@@ -34,6 +34,7 @@
   "dashboard": {
     "title": "Dashboard",
     "stats": {
+      "sectionTitle": "Event statistics",
       "totalEvents": "Total Events",
       "upcomingEvents": "Upcoming Events",
       "completedEvents": "Completed Events",

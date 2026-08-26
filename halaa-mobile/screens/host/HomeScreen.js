@@ -26,6 +26,8 @@ import { useTranslation } from "../../localization";
 import AdaptiveText from "../../components/commen/AdaptiveText";
 import NotificationBell from "../../components/notifications/NotificationBell";
 import HomeHeaderContent from "../../components/home/HomeHeaderContent";
+import SectionCard from "../../components/commen/SectionCard";
+import { layout, spacing } from "../../styles/tokens";
 
 const HomeScreen = ({ navigation }) => {
   const { user } = useAuthStore();
@@ -154,24 +156,31 @@ const HomeScreen = ({ navigation }) => {
             </View>
           </View>
 
-          {!loading && hasEvents && (
-            <View style={styles.statsSection}>
-              <StatsCards
-                totalEvents={dashboardData?.stats?.totalEvents || 0}
-                activeEvents={dashboardData?.stats?.activeEvents || 0}
-                // Backend sends this bucket as `pendingSchedulingEvents`
-                // (mobile labels it "Drafts"); there is no `draftEvents` key.
-                draftEvents={dashboardData?.stats?.pendingSchedulingEvents || 0}
-                endedEvents={dashboardData?.stats?.endedEvents || 0}
-              />
+          <View style={styles.bodyContent}>
+            {!loading && hasEvents && (
+              <SectionCard
+                title={t("dashboard.stats.sectionTitle")}
+                icon="stats-chart-outline"
+                style={styles.statsSection}
+              >
+                <StatsCards
+                  embedded
+                  totalEvents={dashboardData?.stats?.totalEvents || 0}
+                  activeEvents={dashboardData?.stats?.activeEvents || 0}
+                  // Backend sends this bucket as `pendingSchedulingEvents`
+                  // (mobile labels it "Drafts"); there is no `draftEvents` key.
+                  draftEvents={dashboardData?.stats?.pendingSchedulingEvents || 0}
+                  endedEvents={dashboardData?.stats?.endedEvents || 0}
+                />
+              </SectionCard>
+            )}
+
+            <View style={styles.templatesSection}>
+              <EventTemplates />
             </View>
-          )}
 
-          <View style={styles.templatesSection}>
-            <EventTemplates />
+            <View style={styles.bottomSpacing} />
           </View>
-
-          <View style={styles.bottomSpacing} />
         </ScrollView>
 
         {!loading && hasEvents && (
@@ -204,6 +213,7 @@ const HomeScreen = ({ navigation }) => {
             dashboardData?.lastEvent?.eventDetails?.date ||
             dashboardData?.lastEvent?.date
           }
+          eventTime={dashboardData?.lastEvent?.eventDetails?.time}
         />
       </View>
     </SafeAreaView>
@@ -218,7 +228,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 12,
     borderBottomRightRadius: 12,
     overflow: "hidden",
-    marginBottom: 16,
+    marginBottom: 0,
   },
   topBarActions: { flexDirection: "row", alignItems: "center", gap: 16 },
   iconButton: { width: 32, height: 32, justifyContent: "center", alignItems: "center" },
@@ -231,12 +241,17 @@ const styles = StyleSheet.create({
     fontSize: 16, fontFamily: "Cairo_700Bold", color: "#FFF",
     lineHeight: 24, letterSpacing: 0.08,
   },
-  headerContent: { paddingHorizontal: 24, paddingTop: 0, paddingBottom: 24 },
-  scrollView: { flex: 1 },
-  scrollContent: { paddingTop: 0 },
-  statsSection: { marginBottom: 16 },
-  templatesSection: { paddingHorizontal: 24, marginBottom: 16 },
-  bottomSpacing: { height: 100 },
+  headerContent: { paddingHorizontal: 24, paddingTop: 16, paddingBottom: 24 },
+  scrollView: { flex: 1, backgroundColor: "#C28E5C" },
+  scrollContent: { paddingTop: 0, backgroundColor: "#C28E5C" },
+  bodyContent: {
+    backgroundColor: "#F9F4EF",
+    paddingTop: spacing[32],
+    gap: spacing[32],
+  },
+  statsSection: { marginHorizontal: 24, marginBottom: 0 },
+  templatesSection: { paddingHorizontal: 24, paddingBottom: spacing[24] },
+  bottomSpacing: { height: layout.dashboardPageBottom },
   createEventFab: {
     // Semantic floating action anchored at the logical START edge (§7):
     // `start` mirrors under the root RTL so the pill sits on the right in

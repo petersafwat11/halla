@@ -90,7 +90,7 @@ export default async function RootLayout(props) {
             className={`${cairo.className} ${cairo.variable} ${amiri.variable} ${greatVibes.variable}`}
           >
             <ToastContainer
-              position="top-right"
+              position="top-center"
               autoClose={5000}
               hideProgressBar={false}
               newestOnTop={false}
@@ -100,6 +100,7 @@ export default async function RootLayout(props) {
               draggable
               pauseOnHover
               theme="light"
+              toastClassName="halaa-toast"
             />
             {children}
           </body>

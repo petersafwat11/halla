@@ -107,7 +107,7 @@ export default function ResetPasswordScreen({ route, navigation }) {
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <View style={styles.container}>
         <TopBar
-          title={t("changePassword.title")}
+          logoSource={require("../../assets/logo.png")}
           showBack={true}
           onBack={back}
         />

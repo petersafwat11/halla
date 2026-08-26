@@ -20,6 +20,7 @@ import PostCard from "../../components/host/post-event/post-card/PostCard";
 import GuestEventHeader from "../../components/host/post-event/GuestEventHeader";
 import DirectionalIonicon from "../../components/common/DirectionalIonicon";
 import AdaptiveText from "../../components/commen/AdaptiveText";
+import { layout } from "../../styles/tokens";
 
 const _resolveQrErrorKey = (error) => {
   const reason = error?.data?.body?.reason || error?.data?.reason;
@@ -258,5 +259,5 @@ const styles = StyleSheet.create({
     color: "#fff",
     textAlign: "center",
   },
-  listContent: { paddingBottom: 32 },
+  listContent: { paddingBottom: layout.dashboardPageBottom },
 });

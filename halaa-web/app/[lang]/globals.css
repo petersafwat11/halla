@@ -576,3 +576,13 @@ textarea {
     gap: 1.5rem;
   }
 }
+/* App feedback is centered consistently in both RTL and LTR interfaces. */
+.halaa-toast .Toastify__toast-body {
+  justify-content: center;
+  text-align: center;
+}
+
+.halaa-toast .Toastify__toast-body > div:last-child {
+  width: 100%;
+  text-align: center;
+}

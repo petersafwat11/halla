@@ -86,18 +86,6 @@ const MiniCrossIcon = () => (
   </svg>
 );
 
-const EnvelopeIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-    <path
-      d="M3 7.5L10.7 12.6C11.5 13.1 12.5 13.1 13.3 12.6L21 7.5M5 19H19C20.1 19 21 18.1 21 17V7C21 5.9 20.1 5 19 5H5C3.9 5 3 5.9 3 7V17C3 18.1 3.9 19 5 19Z"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
 const REPLY_TABS = [
   {
     key: "attending",
@@ -227,6 +215,18 @@ const StepFour = () => {
     setValue("selectedTemplate", enriched, { shouldValidate: true });
     setValue("taqnyatTemplate", { templateRef: template._id }, { shouldValidate: false });
   };
+
+  useEffect(() => {
+    if (templates.length !== 1) return;
+    const onlyTemplate = templates[0];
+    const selectedId = selectedTemplate?._id || selectedTemplate?.id;
+    if (
+      selectedId === onlyTemplate._id ||
+      selectedTemplate?.name === onlyTemplate.templateName
+    ) return;
+    handleTemplateSelect(onlyTemplate);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [templates, selectedTemplate?._id, selectedTemplate?.id]);
 
   const activeReply = REPLY_TABS.find((tab) => tab.key === activeTab);
   const replyText = guestReplies?.[activeReply?.canonical];
@@ -372,7 +372,6 @@ const StepFour = () => {
                   selectedTemplate?._id === template._id ||
                   selectedTemplate?.id === template._id ||
                   selectedTemplate?.name === template.templateName;
-                const tplCategory = template.category || category;
                 return (
                   <button
                     key={template._id}
@@ -383,18 +382,6 @@ const StepFour = () => {
                   >
                     <span className={`${styles.cardAccent} ${isSelected ? styles.cardAccentActive : ""}`} />
                     <div className={styles.cardBody}>
-                      <div className={styles.cardTopRow}>
-                        <span className={styles.cardLabel}>
-                          <span className={styles.cardLabelIcon} aria-hidden="true">
-                            <EnvelopeIcon />
-                          </span>
-                          <span className={styles.cardLabelText}>
-                            {tplCategory
-                              ? t(`event_types.${tplCategory}`, tplCategory)
-                              : t("invitation_message", "نص الدعوة")}
-                          </span>
-                        </span>
-                      </div>
                       {template.bodyText && (
                         <div className={styles.bubbleWrap}>
                           <p className={styles.bubbleText}>
@@ -456,6 +443,7 @@ const StepFour = () => {
                 maxLength={500}
                 className={styles.replyTextarea}
                 placeholder={t("auto_reply_placeholder", "اكتب الرد التلقائي هنا")}
+                dir={i18n?.language === "ar" ? "rtl" : "ltr"}
                 style={{
                   width: "100%",
                   padding: 12,
@@ -463,7 +451,8 @@ const StepFour = () => {
                   border: "1px solid #ddd",
                   fontFamily: "inherit",
                   fontSize: 14,
-                  direction: "rtl",
+                  direction: i18n?.language === "ar" ? "rtl" : "ltr",
+                  textAlign: i18n?.language === "ar" ? "right" : "left",
                 }}
               />
             </>

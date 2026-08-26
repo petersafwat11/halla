@@ -81,7 +81,7 @@ export default function EditModeratorPopup({ moderator, onClose }) {
               required
             />
             <MobileInputGroup
-              label={t("moderators.form.phone", "رقم الهاتف")}
+              label={t("moderators.form.phone", "رقم الجوال")}
               placeholder={t("moderators.form.phonePlaceholder", "05xxxxxxxx")}
               type="text"
               name="phoneNumber"

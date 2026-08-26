@@ -54,7 +54,11 @@ export default function ForgetPasswordScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <View style={styles.container}>
-        <TopBar title={t("forgetPassword.title")} showBack={true} onBack={handleBackToLogin} />
+        <TopBar
+          logoSource={require("../../assets/logo.png")}
+          showBack={true}
+          onBack={handleBackToLogin}
+        />
 
         {/* One shared owner for the form region (§8.2 auth row): TopBar is a
             sibling above it, so no header offset compensation is needed. */}

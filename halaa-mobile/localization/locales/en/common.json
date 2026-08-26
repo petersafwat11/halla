@@ -1,4 +1,10 @@
 {
+  "unsavedChanges": {
+    "title": "Unsaved changes",
+    "message": "Discard the information you entered and leave this page?",
+    "keepEditing": "Keep editing",
+    "discard": "Discard"
+  },
   "success": "Success",
   "selectedCount": "{{count}} selected",
   "select": "Select",
@@ -12,6 +18,7 @@
     "all": "All"
   },
   "buttons": {
+    "ok": "OK",
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",

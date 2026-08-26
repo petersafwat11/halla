@@ -102,7 +102,7 @@ const EventListItem = ({ event, onPress }) => {
           <View style={[styles.statDot, { backgroundColor: declinedDot }]} />
           <Text style={styles.statText} numberOfLines={1}>
             {t("list.stats.declinedCount", {
-              defaultValue: "معتذر {{count}}",
+              defaultValue: "اعتذار {{count}}",
               count: formatCount(declined, currentLanguage),
             })}
           </Text>

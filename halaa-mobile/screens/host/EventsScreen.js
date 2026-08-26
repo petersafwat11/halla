@@ -10,6 +10,7 @@ import { TopBar } from "../../components/plans";
 import { useEventStats, useBusinessCreateEventGate } from "../../hooks";
 import { useAuthStore } from "../../stores/authStore";
 import { useToast } from "../../contexts/ToastContext";
+import { layout } from "../../styles/tokens";
 
 /**
  * Host events list. Tapping an event pushes the shared `EventDetails`
@@ -138,6 +139,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: "center",
     paddingHorizontal: 24,
+    paddingBottom: layout.dashboardPageBottom,
   },
   errorText: {
     fontSize: 16,

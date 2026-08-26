@@ -19,6 +19,7 @@ import LocalizedText from "../../components/commen/LocalizedText";
 import AdaptiveText from "../../components/commen/AdaptiveText";
 import StatusBadge from "../../components/admin-dashboard/common/StatusBadge";
 import TopBar from "../../components/plans/TopBar";
+import { layout } from "../../styles/tokens";
 
 const STATUS_FILTERS = ["all", "completed", "pending", "failed"];
 
@@ -198,7 +199,7 @@ const styles = StyleSheet.create({
     color: "#6B4E33",
   },
   filterChipTextActive: { color: "#FFF" },
-  scrollContent: { padding: 20, paddingBottom: 40, gap: 12 },
+  scrollContent: { padding: 20, paddingBottom: layout.dashboardPageBottom, gap: 12 },
   row: {
     backgroundColor: "#FFF",
     borderRadius: 12,

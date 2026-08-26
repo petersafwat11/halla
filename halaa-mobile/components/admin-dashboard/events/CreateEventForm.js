@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useEffect, useMemo } from "react";
 import {
   View,
   Alert,
@@ -8,7 +8,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FormProvider, useForm } from "react-hook-form";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, usePreventRemove } from "@react-navigation/native";
 import * as Sentry from "@sentry/react-native";
 import EventsService from "../../../hooks/events/useEventForm";
 import { useTranslation } from "../../../localization";
@@ -31,6 +31,7 @@ import TopBar from "../../plans/TopBar";
 import KeyboardAwareFormScrollView from "../../commen/keyboard/KeyboardAwareFormScrollView";
 import LocalizedText from "../../commen/LocalizedText";
 import { spacing } from "../../../styles/tokens";
+import { useWizardNavigationGuardStore } from "../../../stores/wizardNavigationGuardStore";
 
 // Both subscription sources we accept already deliver the canonical normalized shape:
 //   - useSubscriptionInfo() -> backend events.service.getSubscriptionInfo
@@ -77,8 +78,41 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
     defaultValues: EventsService.getDefaultFormValues(),
   });
 
-  const { watch, handleSubmit, setValue } = methods;
+  const { watch, handleSubmit, setValue, reset, formState: { isDirty } } = methods;
   const formData = watch();
+  const setWizardGuard = useWizardNavigationGuardStore((state) => state.setGuard);
+  const clearWizardGuard = useWizardNavigationGuardStore((state) => state.clearGuard);
+
+  const discardWizard = useCallback(() => {
+    reset(EventsService.getDefaultFormValues());
+    setCurrentStep(1);
+    setShowPreview(false);
+  }, [reset]);
+
+  useEffect(() => {
+    if (!isHostMode) return undefined;
+    setWizardGuard({ isDirty: isDirty && !isCompleting, discard: discardWizard });
+    return () => clearWizardGuard();
+  }, [isHostMode, isDirty, isCompleting, discardWizard, setWizardGuard, clearWizardGuard]);
+
+  usePreventRemove(isHostMode && isDirty && !isCompleting, ({ data }) => {
+    Alert.alert(
+      tCreate("unsaved_changes_title", "Unsaved changes"),
+      tCreate("unsaved_changes_message", "Discard the information you entered and leave this page?"),
+      [
+        { text: tCreate("unsaved_changes_keep", "Keep editing"), style: "cancel" },
+        {
+          text: tCreate("unsaved_changes_discard", "Discard"),
+          style: "destructive",
+          onPress: () => {
+            discardWizard();
+            clearWizardGuard();
+            navigation.dispatch(data.action);
+          },
+        },
+      ]
+    );
+  });
 
   // Subscription that gates event creation: host mode always uses self;
   // admin mode uses self when "create for self" is chosen, otherwise the
@@ -157,6 +191,7 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
           // false by design. Freeze this screen in its completion state so it
           // cannot swap to LimitReachedView while navigation is committing.
           setIsCompleting(true);
+          clearWizardGuard();
           await hostCreateMutation.mutateAsync(formDataObj);
           navigation.reset({
             index: 0,
@@ -199,6 +234,7 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
       navigation,
       onSubmit,
       tCreate,
+      clearWizardGuard,
     ],
   );
 
@@ -338,6 +374,19 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
 
         <View style={styles.contentContainer}>{renderStepContent()}</View>
 
+        {isHostMode && currentStep === 4 && (
+          <TouchableOpacity
+            style={styles.previewButton}
+            onPress={() => setShowPreview(true)}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="eye-outline" size={22} color="#FFF" />
+            <LocalizedText style={styles.floatingPreviewText}>
+              {tCreate("preview_template")}
+            </LocalizedText>
+          </TouchableOpacity>
+        )}
+
         <PrevAndNextBtns
           onNext={onNext}
           onPrevious={onPrevious}
@@ -350,19 +399,6 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
 
       {/* Host-mode extras: live preview button + onboarding popup. The
           preview only makes sense on the template/customisation step. */}
-      {isHostMode && currentStep === 4 && (
-        <TouchableOpacity
-          style={styles.floatingPreviewButton}
-          onPress={() => setShowPreview(true)}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="eye-outline" size={24} color="#FFF" />
-          <LocalizedText style={styles.floatingPreviewText}>
-            {tCreate("preview_template")}
-          </LocalizedText>
-        </TouchableOpacity>
-      )}
-
       {isHostMode && (
         <>
           <PreviewInvitation
@@ -430,32 +466,23 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: spacing[16],
     paddingTop: spacing[12],
-    paddingBottom: spacing[20],
+    paddingBottom: 50,
   },
   contentContainer: {
     marginTop: spacing[12],
     marginBottom: spacing[16],
   },
   hostContainer: { flex: 1, backgroundColor: "#F9F4EF" },
-  floatingPreviewButton: {
-    position: "absolute",
-    bottom: 100,
-    // Semantic end anchor — logical trailing edge (left in Arabic, right in
-    // English) under the app's forced-RTL root; never a physical `right`.
-    end: 20,
+  previewButton: {
     backgroundColor: "#C28E5C",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 14,
     paddingHorizontal: 20,
-    borderRadius: 25,
+    borderRadius: 12,
     gap: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    marginBottom: spacing[16],
   },
   floatingPreviewText: {
     fontSize: 16,

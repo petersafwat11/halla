@@ -13,6 +13,7 @@ import { useAuthStore } from "../../stores/authStore";
 import { useToast } from "../../contexts/ToastContext";
 import EmailVerificationSection from "./_components/EmailVerificationSection";
 import KeyboardAwareFormScrollView from "../commen/keyboard/KeyboardAwareFormScrollView";
+import { layout } from "../../styles/tokens";
 
 const AccountSettings = ({
   onProfileUpdate,
@@ -252,7 +253,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: layout.dashboardPageBottom,
   },
   section: {
     marginBottom: 32,

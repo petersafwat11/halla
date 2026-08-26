@@ -80,19 +80,21 @@ test("CREATE-01: wizard footer defaults come from translation keys", () => {
   );
 });
 
-test("CREATE-02: floating preview button anchors to semantic end in create + update", () => {
+test("CREATE-02: preview button participates in create/update document flow", () => {
   for (const rel of [
     "components/admin-dashboard/events/CreateEventForm.js",
     "screens/common/update-event/UpdateEventScreen.js",
   ]) {
     const source = read(...rel.split("/"));
+    const previewStyle = source.match(/previewButton:\s*\{([^}]*)\}/s);
     assert.ok(
-      /floatingPreviewButton:\s*\{[^}]*end:\s*20/s.test(source),
-      `${rel} must use end:20`
+      previewStyle,
+      `${rel} must define the inline preview action`
     );
     assert.ok(
-      !/floatingPreviewButton:[^]*?\.?\bright\s*:/.test(source),
-      `${rel} must not anchor the preview physically right`
+      !source.includes("floatingPreviewButton") &&
+        !/position:\s*["']absolute["']/.test(previewStyle[1]),
+      `${rel} must not leave the preview fixed over the wizard footer`
     );
   }
 });

@@ -108,7 +108,7 @@ const StatCard = ({ icon, value, label }) => (
 const DetailRow = ({ icon, children }) => (
   <View style={styles.detailRow}>
     <View style={styles.detailIcon}>{icon}</View>
-    <View style={{ flex: 1 }}>{children}</View>
+    <View style={styles.detailContent}>{children}</View>
   </View>
 );
 
@@ -381,19 +381,28 @@ const styles = StyleSheet.create({
   },
   detailRow: {
     flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
+    alignItems: "flex-start",
+    gap: 12,
   },
   detailIcon: {
-    width: 28,
-    height: 28,
+    width: 32,
+    height: 32,
     alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  detailContent: {
+    flex: 1,
+    minWidth: 0,
+    minHeight: 32,
     justifyContent: "center",
   },
   detailValue: {
     fontSize: 13,
     fontFamily: "Cairo_500Medium",
     color: "#2C2C2C",
+    lineHeight: 20,
+    flexShrink: 1,
   },
   linkValue: {
     color: "#C28E5C",

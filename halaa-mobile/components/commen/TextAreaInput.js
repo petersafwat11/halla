@@ -9,6 +9,7 @@ import {
 import { useFormContext, Controller } from "react-hook-form";
 import { isolateLtr } from "@halaa/shared/utils/bidi";
 import { useFieldDirection } from "../../hooks/useInputDirection";
+import LocalizedText from "./LocalizedText";
 
 /**
  * Inner renderer hoisted out of the Controller `render` prop so the
@@ -46,7 +47,7 @@ const TextAreaField = ({
 
   return (
     <View style={styles.container}>
-      {!!label && <Text style={[styles.label, fieldDirection.text]}>{label}</Text>}
+      {!!label && <LocalizedText role="label" style={styles.label}>{label}</LocalizedText>}
       {/* The whole box is pressable so a tap anywhere inside (padding included,
           not just the text node) focuses the input. */}
       <Pressable
@@ -81,10 +82,10 @@ const TextAreaField = ({
         />
       </Pressable>
       {error && (
-        <Text style={[styles.errorText, fieldDirection.text]}>{error.message}</Text>
+        <LocalizedText role="error" style={styles.errorText}>{error.message}</LocalizedText>
       )}
       {!error && helper ? (
-        <Text style={[styles.helperText, fieldDirection.text]}>{helper}</Text>
+        <LocalizedText role="hint" style={styles.helperText}>{helper}</LocalizedText>
       ) : null}
       {maxLength && (
         <Text style={[styles.charCount, fieldDirection.counter]}>

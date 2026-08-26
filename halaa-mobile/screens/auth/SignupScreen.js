@@ -125,7 +125,7 @@ export default function SignupScreen({ navigation }) {
   };
 
   const handleLogin = () => {
-    navigation.navigate("Login");
+    navigation.reset({ index: 0, routes: [{ name: "Login" }] });
   };
 
   const renderStep = () => {
@@ -192,7 +192,11 @@ export default function SignupScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <View style={styles.container}>
-        <TopBar title={t("signup.title")} showBack={true} />
+        <TopBar
+          logoSource={require("../../assets/logo.png")}
+          showBack={true}
+          onBack={handleLogin}
+        />
       {/* One shared owner for the form region (§8.2 auth row). */}
       <KeyboardAwareFormScrollView
         style={styles.keyboardView}

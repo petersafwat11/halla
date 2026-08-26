@@ -18,11 +18,11 @@
       "loginWithOTP": "تسجيل الدخول بكلمة مرور مؤقتة"
     },
     "otpLogin": {
-      "phoneNumber": "رقم الهاتف",
+      "phoneNumber": "رقم الجوال",
       "verification": "التحقق",
       "editPhone": "إلغاء",
       "loginWithEmail": "تسجيل الدخول بالبريد اللإلكترونى",
-      "verificationTitle": "التحقق من رقم الهاتف",
+      "verificationTitle": "التحقق من رقم الجوال",
       "verificationDescription": "لقد أرسلنا رمز مكون من 6 أرقام إلى رقم هاتفك المحمول ",
       "verificationDescriptionEnd": " يرجى إدخاله أدناه",
       "resendCode": "إعادة إرسال الرمز؟ ({{seconds}} ثانية)",
@@ -63,12 +63,12 @@
       "passwordMinLength": "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل",
       "passwordComplexity": "كلمة المرور تتكون من حروف وأرقام فقط، وبها حرف ورقم على الأقل",
       "invalidPassword": "كلمة المرور غير صحيحة، تحقق منها وحاول مرة أخرى.",
-      "phoneNumberInvalid": "رقم الهاتف غير صحيح تحقق منه وحاول مرة اخرى",
+      "phoneNumberInvalid": "رقم الجوال غير صحيح تحقق منه وحاول مرة اخرى",
       "otpInvalid": "رمز التحقق غير صحيح",
       "otpIncomplete": "يرجى إدخال رمز التحقق كاملاً"
     }
   },
   "validation": {
-    "invalidSaudiPhone": "رقم الهاتف يجب أن يتكون من 10 أرقام (يبدأ بـ 05) أو 9 أرقام (يبدأ بـ 5)"
+    "invalidSaudiPhone": "رقم الجوال يجب أن يتكون من 10 أرقام (يبدأ بـ 05) أو 9 أرقام (يبدأ بـ 5)"
   }
 }

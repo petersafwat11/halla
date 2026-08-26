@@ -6,14 +6,14 @@
   "declined": "إعتذر",
   "confirmed": "حضور",
   "checkedIn": "حضر",
-  "guests": "المدعوين",
+  "guests": "الضيوف",
   "scanQrCode": "مسح رمز QR",
   "confirmAttendance": "تأكيد الحضور",
   "alreadyCheckedIn": "تم تسجيل الحضور مسبقاً",
   "confirm": "تأكيد",
   "cancel": "إلغاء",
   "guestName": "اسم الضيف",
-  "phone": "الهاتف",
+  "phone": "الجوال",
   "email": "البريد الإلكتروني",
   "noGuests": "لا يوجد ضيوف",
   "loading": "جاري التحميل...",
@@ -23,7 +23,7 @@
   "stats": {
     "total": "اجمالي الضيوف",
     "confirmed": "أكد الحضور",
-    "declined": "اعتذر",
+    "declined": "اعتذار",
     "checkedIn": "في الحفل الآن"
   },
   "errors": {
@@ -40,7 +40,7 @@
     "alreadyAt": "تم تسجيل الحضور في {{time}}"
   },
   "filters": {
-    "searchPlaceholder": "ابحث بالاسم أو الهاتف",
+    "searchPlaceholder": "ابحث بالاسم أو الجوال",
     "allStatuses": "كل الحالات",
     "checkedIn": "حضر",
     "confirmed": "حضور",

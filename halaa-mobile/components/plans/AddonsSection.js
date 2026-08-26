@@ -32,7 +32,7 @@ import {
  * `priceToken`; tier quantities are locale-formatted counts glued to their
  * "+" sign inside an LTR isolate so neither can BiDi-reorder (blueprint §6).
  */
-const AddonsSection = ({ onAddonsChange, showBusiness = false }) => {
+const AddonsSection = ({ onAddonsChange, showBusiness = false, style }) => {
   const { t, i18n } = useTranslation("plans");
   const lang = i18n.language || "ar";
   const sarLabel = t("common.currency.sar");
@@ -134,7 +134,7 @@ const AddonsSection = ({ onAddonsChange, showBusiness = false }) => {
 
   if (isLoading) {
     return (
-      <View style={styles.section}>
+      <View style={[styles.section, style]}>
         <SectionHeader t={t} />
         <View style={styles.loadingCard}>
           <ActivityIndicator color={colors.primary[500]} />
@@ -145,7 +145,7 @@ const AddonsSection = ({ onAddonsChange, showBusiness = false }) => {
 
   if (error || !catalog) {
     return (
-      <View style={styles.section}>
+      <View style={[styles.section, style]}>
         <SectionHeader t={t} />
         <View style={styles.errorState}>
           <Ionicons name="alert-circle" size={18} color="#B91C1C" />
@@ -158,7 +158,7 @@ const AddonsSection = ({ onAddonsChange, showBusiness = false }) => {
   }
 
   return (
-    <View style={styles.section}>
+    <View style={[styles.section, style]}>
       <SectionHeader t={t} />
 
       <AddonCard

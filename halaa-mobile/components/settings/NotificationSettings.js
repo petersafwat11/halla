@@ -12,6 +12,7 @@ import { mobileNotificationSettingsSchema as notificationSettingsSchema } from "
 import { ToggleInput, LocalizedText } from "../commen";
 import { useTranslation } from "../../localization";
 import { useToast } from "../../contexts/ToastContext";
+import { layout } from "../../styles/tokens";
 
 const NotificationSettings = ({ initialData, onUpdate }) => {
   const { t } = useTranslation("settings");
@@ -189,7 +190,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: layout.dashboardPageBottom,
   },
   section: {
     marginBottom: 32,

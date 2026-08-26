@@ -79,7 +79,7 @@ const FormField = ({
   return (
     <View style={styles.container}>
       {!!label && (
-        <LocalizedText role="label" style={[styles.label, fieldDirection.text]}>
+        <LocalizedText role="label" style={styles.label}>
           {label}
         </LocalizedText>
       )}
@@ -136,11 +136,11 @@ const FormField = ({
       </Pressable>
 
       {error ? (
-        <LocalizedText role="error" style={[styles.meta, styles.errorText, fieldDirection.text]}>
+        <LocalizedText role="error" style={[styles.meta, styles.errorText]}>
           {error}
         </LocalizedText>
       ) : helper ? (
-        <LocalizedText role="hint" style={[styles.meta, styles.helperText, fieldDirection.text]}>
+        <LocalizedText role="hint" style={[styles.meta, styles.helperText]}>
           {helper}
         </LocalizedText>
       ) : null}

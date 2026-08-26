@@ -17,7 +17,7 @@
     "export": "تصدير",
     "columns": {
       "username": "اسم التاجر",
-      "phoneNumber": "رقم الهاتف",
+      "phoneNumber": "رقم الجوال",
       "email": "البريد الإلكتروني",
       "serviceType": "نوع الخدمة",
       "rating": "التقييم",

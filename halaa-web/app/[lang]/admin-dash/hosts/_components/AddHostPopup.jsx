@@ -58,7 +58,7 @@ export default function AddHostPopup({ onClose }) {
               required
             />
             <MobileInputGroup
-              label={t("hosts.form.phone", "رقم الهاتف")}
+              label={t("hosts.form.phone", "رقم الجوال")}
               placeholder={t("hosts.form.phonePlaceholder", "05xxxxxxxx")}
               type="text"
               name="phoneNumber"

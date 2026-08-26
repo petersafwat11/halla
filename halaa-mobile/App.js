@@ -31,6 +31,7 @@ import { ENDPOINTS } from "./config/api";
 import { apiFetch } from "./services/http";
 import { initPurchases } from "./services/purchases";
 import ErrorBoundary from "./components/shared/ErrorBoundary";
+import CenteredAlertProvider from "./components/commen/CenteredAlertProvider";
 
 // ------------------------------------------------- //
 //                 CRASH REPORTING                   //
@@ -386,9 +387,11 @@ function App() {
         <KeyboardProvider>
           <QueryProvider>
             <LanguageProvider>
-              <ToastProvider>
-                <AppRoot />
-              </ToastProvider>
+              <CenteredAlertProvider>
+                <ToastProvider>
+                  <AppRoot />
+                </ToastProvider>
+              </CenteredAlertProvider>
             </LanguageProvider>
           </QueryProvider>
         </KeyboardProvider>

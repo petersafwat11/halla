@@ -3,6 +3,7 @@ import React from "react";
 import styles from "./textarea.module.css";
 import Image from "next/image";
 import { get, useFormContext } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 
 const TextArea = ({
   label,
@@ -19,6 +20,8 @@ const TextArea = ({
   maxLength,
   rows = 4,
 }) => {
+  const { i18n } = useTranslation();
+  const localeDirection = i18n.dir();
   const formContext = useFormContext();
   const register = formContext?.register;
   const errors = formContext?.formState?.errors || {};
@@ -31,7 +34,7 @@ const TextArea = ({
   return (
     <div className={styles.input_group}>
       {label && (
-        <label className={styles.label}>
+        <label className={styles.label} dir={localeDirection}>
           {label}
           {required && <span className={styles.required}>*</span>}
         </label>
@@ -39,6 +42,7 @@ const TextArea = ({
       <div className={styles.input_container}>
         {prefixText && <span className={styles.prefix_text}>{prefixText}</span>}
         <textarea
+          dir="auto"
           className={
             formError || externalError
               ? styles.input_error
@@ -68,12 +72,12 @@ const TextArea = ({
       </div>
       {(formError || externalError) && (
         <div className={styles.error_container}>
-          <p className={styles.error}>{formError || externalError}</p>
+          <p className={styles.error} dir={localeDirection}>{formError || externalError}</p>
         </div>
       )}
 
       {hintMessage && !formError && !externalError && (
-        <p className={styles.hint}>{hintMessage}</p>
+        <p className={styles.hint} dir={localeDirection}>{hintMessage}</p>
       )}
 
       {maxLength && (

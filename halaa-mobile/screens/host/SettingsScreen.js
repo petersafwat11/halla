@@ -6,6 +6,7 @@ import { useToast } from "../../contexts/ToastContext";
 import SettingsTabs from "../../components/settings/SettingsTabs";
 import DeleteAccountSection from "../../components/settings/DeleteAccountSection";
 import { TopBar } from "../../components/plans";
+import { layout } from "../../styles/tokens";
 
 export default function SettingsScreen({ navigation }) {
   const { t } = useTranslation("settings");
@@ -74,6 +75,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 16,
-    paddingVertical: 20,
+    paddingTop: 20,
+    paddingBottom: layout.dashboardPageBottom,
   },
 });

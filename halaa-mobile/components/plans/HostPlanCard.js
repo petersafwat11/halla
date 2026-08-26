@@ -20,6 +20,7 @@ const HostPlanCard = ({
   selectedInvites,
   onInviteChange,
   onSubscribe,
+  style,
 }) => {
   const { t, i18n } = useTranslation("plans");
   const lang = i18n.language || "ar";
@@ -38,7 +39,7 @@ const HostPlanCard = ({
     : null;
 
   return (
-    <View style={[styles.card, isPopular && styles.cardPopular]}>
+    <View style={[styles.card, isPopular && styles.cardPopular, style]}>
       {isPopular ? (
         <View style={styles.popularBadge}>
           <Text style={styles.popularBadgeText}>
@@ -86,7 +87,7 @@ const styles = StyleSheet.create({
     position: "relative",
     backgroundColor: colors.natural[50],
     borderRadius: borderRadius[20],
-    padding: spacing[20],
+    padding: spacing[24],
     marginBottom: spacing[16],
     shadowColor: colors.black[100],
     shadowOffset: { width: 0, height: 2 },

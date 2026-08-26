@@ -3,16 +3,16 @@ import {
   View,
   StyleSheet,
   FlatList,
-  ActivityIndicator
-  ,TouchableOpacity
+  ActivityIndicator,
+  TouchableOpacity,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import VendorCard from "./VendorCard";
 import LocalizedText from "../commen/LocalizedText";
 import { useTranslation } from "../../localization";
-import { colors } from "../../styles/tokens";
+import { colors, layout } from "../../styles/tokens";
 
-const VendorCards = ({ vendors, onVendorPress, loading, error, onRetry, onReset, refreshing, onRefresh, onEndReached, isFetchingNextPage }) => {
+const VendorCards = ({ vendors, onVendorPress, loading, error, onRetry, onReset, refreshing, onRefresh, onEndReached, isFetchingNextPage, bottomSpacing = layout.dashboardPageBottom }) => {
   const { t } = useTranslation("marketplace");
   const renderItem = ({ item, index }) => (
     <VendorCard
@@ -71,7 +71,7 @@ const VendorCards = ({ vendors, onVendorPress, loading, error, onRetry, onReset,
       data={vendors}
       renderItem={renderItem}
       keyExtractor={(item, index) => item.id?.toString() || index.toString()}
-      contentContainerStyle={styles.listContent}
+      contentContainerStyle={[styles.listContent, { paddingBottom: bottomSpacing }]}
       showsVerticalScrollIndicator={false}
       ListEmptyComponent={renderEmpty}
       ListFooterComponent={renderFooter}

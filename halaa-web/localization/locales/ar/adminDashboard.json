@@ -68,7 +68,7 @@
     "subscriptions": "الاشتراكات",
     "tickets": "الشكاوى",
     "confirmed": "موافق",
-    "declined": "معتذر",
+    "declined": "اعتذار",
     "pending": "لم يرد",
     "host": "المضيف",
     "addons": "الإضافات",
@@ -98,7 +98,7 @@
     "title": "إنشاء شكوى دعم",
     "username": "اسم المستخدم",
     "usernamePlaceholder": "ادخل اسم المستخدم",
-    "number": "رقم الهاتف",
+    "number": "رقم الجوال",
     "numberPlaceholder": "5xx xxx xxx",
     "type": "نوع الشكوى",
     "message": "الرسالة",
@@ -143,7 +143,7 @@
       "columns": {
         "ownerFullName": "اسم المالك",
         "email": "البريد الإلكتروني",
-        "phoneNumber": "رقم الهاتف",
+        "phoneNumber": "رقم الجوال",
         "status": "الحالة"
       }
     },

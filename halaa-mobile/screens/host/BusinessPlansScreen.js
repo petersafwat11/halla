@@ -24,6 +24,7 @@ import {
   spacing,
   borderRadius,
   typography,
+  layout,
 } from "../../styles/tokens";
 
 /**
@@ -148,7 +149,11 @@ const BusinessPlansScreen = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <CurrentPlanCard subscription={subscription} usage={usage} />
+        <CurrentPlanCard
+          subscription={subscription}
+          usage={usage}
+          style={styles.planComponent}
+        />
 
         {/* No active subscription → self-serve intro (DEC-02: first purchase is
             allowed; no admin-activation lock). */}
@@ -209,6 +214,7 @@ const BusinessPlansScreen = () => {
               // First self-serve purchase allowed for eligible business accounts.
               canSelfUpgrade
               onUpgrade={handleUpgrade}
+              style={styles.planComponent}
             />
           ))
         )}
@@ -219,6 +225,7 @@ const BusinessPlansScreen = () => {
         {hasActiveSubscription ? (
           <AddonsSection
             showBusiness
+            style={styles.planComponent}
             onAddonsChange={(items, sum) => {
               setAddonItems(items);
               setAddonTotal(sum);
@@ -278,8 +285,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary[50],
   },
   scrollContent: {
-    padding: spacing[20],
-    paddingBottom: spacing[40],
+    padding: spacing[24],
+    paddingBottom: layout.dashboardPageBottom,
+    gap: spacing[24],
+  },
+  planComponent: {
+    marginTop: 0,
+    marginBottom: 0,
   },
   pendingBanner: {
     flexDirection: "row",
@@ -290,7 +302,7 @@ const styles = StyleSheet.create({
     borderColor: colors.primary[300],
     borderRadius: borderRadius[16],
     padding: spacing[16],
-    marginBottom: spacing[16],
+    marginBottom: 0,
   },
   pendingIcon: {
     width: 40,
@@ -320,7 +332,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary[100],
     borderRadius: borderRadius[12],
     padding: 4,
-    marginBottom: spacing[16],
+    marginBottom: 0,
     gap: 4,
   },
   tierPill: {

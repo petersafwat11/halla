@@ -156,6 +156,19 @@ const StepFour = () => {
     setValue("taqnyatTemplate", { templateRef: template._id }, { shouldValidate: false });
   };
 
+  useEffect(() => {
+    if (templates.length !== 1) return;
+    const onlyTemplate = templates[0];
+    const selectedId = selectedTemplate?._id || selectedTemplate?.id;
+    if (
+      selectedId === onlyTemplate._id ||
+      selectedTemplate?.name === onlyTemplate.templateName
+    ) return;
+    handleTemplateSelect(onlyTemplate);
+    // The query result is the trigger. Selection itself must not loop.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [templates, selectedTemplate?._id, selectedTemplate?.id]);
+
   const activeReplyMeta = REPLY_TABS.find((tab) => tab.key === activeTab);
   const activeReplyValue = guestReplies?.[activeTab] || "";
 
@@ -287,48 +300,48 @@ const StepFour = () => {
         </View>
 
         {/* ── Taqnyat template picker ──────────────────────────── */}
-        <View style={styles.header}>
-          <Text style={[styles.sectionTitle, fieldDirection.text]}>{t("step4_title")}</Text>
-          {category ? (
-            <View style={styles.filterRow}>
-              <Text style={[styles.subtitle, fieldDirection.text]}>{t("step4_description")}</Text>
-              <View style={styles.categoryChip}>
-                <Text style={styles.categoryChipText}>
-                  {categoryLabel(category)}
-                </Text>
+        <View style={styles.templateSection}>
+          <View style={styles.header}>
+            <Text style={[styles.sectionTitle, fieldDirection.text]}>{t("step4_title")}</Text>
+            {category ? (
+              <View style={styles.filterRow}>
+                <Text style={[styles.subtitle, fieldDirection.text]}>{t("step4_description")}</Text>
+                <View style={styles.categoryChip}>
+                  <Text style={styles.categoryChipText}>
+                    {categoryLabel(category)}
+                  </Text>
+                </View>
               </View>
+            ) : (
+              <Text style={[styles.subtitle, fieldDirection.text]}>{t("step4_description")}</Text>
+            )}
+          </View>
+
+          {isLoading ? (
+            <View style={styles.loadingBox}>
+              <ActivityIndicator size="large" color="#C28E5C" />
+            </View>
+          ) : error ? (
+            <View style={styles.emptyBox}>
+              <Ionicons name="alert-circle-outline" size={36} color="#C0392B" />
+              <Text style={[styles.emptyTitle, fieldDirection.text]}>{t("taqnyat_load_failed")}</Text>
+              <Text style={styles.emptyHint}>{t("try_again_later")}</Text>
+            </View>
+          ) : templates.length === 0 ? (
+            <View style={styles.emptyBox}>
+              <Ionicons name="mail-outline" size={36} color="#999" />
+              <Text style={[styles.emptyTitle, fieldDirection.text]}>{t("no_taqnyat_templates")}</Text>
+              <Text style={styles.emptyHint}>
+                {t("no_taqnyat_templates_hint")}
+              </Text>
             </View>
           ) : (
-            <Text style={[styles.subtitle, fieldDirection.text]}>{t("step4_description")}</Text>
-          )}
-        </View>
-
-        {isLoading ? (
-          <View style={styles.loadingBox}>
-            <ActivityIndicator size="large" color="#C28E5C" />
-          </View>
-        ) : error ? (
-          <View style={styles.emptyBox}>
-            <Ionicons name="alert-circle-outline" size={36} color="#C0392B" />
-            <Text style={[styles.emptyTitle, fieldDirection.text]}>{t("taqnyat_load_failed")}</Text>
-            <Text style={styles.emptyHint}>{t("try_again_later")}</Text>
-          </View>
-        ) : templates.length === 0 ? (
-          <View style={styles.emptyBox}>
-            <Ionicons name="mail-outline" size={36} color="#999" />
-            <Text style={[styles.emptyTitle, fieldDirection.text]}>{t("no_taqnyat_templates")}</Text>
-            <Text style={styles.emptyHint}>
-              {t("no_taqnyat_templates_hint")}
-            </Text>
-          </View>
-        ) : (
-          <View style={styles.templateList}>
-            {templates.map((tpl) => {
+            <View style={styles.templateList}>
+              {templates.map((tpl) => {
               const isSelected =
                 selectedTemplate?._id === tpl._id ||
                 selectedTemplate?.id === tpl._id ||
                 selectedTemplate?.name === tpl.templateName;
-              const tplCategory = tpl.category || category;
               return (
                 <TouchableOpacity
                   key={tpl._id}
@@ -343,16 +356,6 @@ const StepFour = () => {
                     ]}
                   />
                   <View style={styles.cardContent}>
-                    <View style={styles.cardHeader}>
-                      <View style={styles.cardLabel}>
-                        <View style={styles.cardLabelIcon}>
-                          <Ionicons name="mail-outline" size={14} color="#A87040" />
-                        </View>
-                        <Text style={[styles.cardLabelText, fieldDirection.text]}>
-                          {tplCategory ? categoryLabel(tplCategory) : t("invitation_message_label")}
-                        </Text>
-                      </View>
-                    </View>
                     {tpl.bodyText ? (
                       <View style={styles.bubble}>
                         <Text style={[styles.bubbleText, fieldDirection.text]}>
@@ -372,9 +375,10 @@ const StepFour = () => {
                   )}
                 </TouchableOpacity>
               );
-            })}
-          </View>
-        )}
+              })}
+            </View>
+          )}
+        </View>
 
         {/* ── Auto-replies (only for reply-enabled invitation types) ── */}
         <View style={styles.repliesSection}>
@@ -422,8 +426,9 @@ const StepFour = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { width: "100%" },
-  header: { marginBottom: 16 },
+  container: { width: "100%", gap: 24 },
+  templateSection: { width: "100%", gap: 16 },
+  header: {},
   sectionTitle: {
     fontSize: 18,
     fontFamily: "Cairo_700Bold",
@@ -470,7 +475,7 @@ const styles = StyleSheet.create({
     color: "#6B4E33",
     letterSpacing: 0.2,
   },
-  templateList: { marginBottom: 24 },
+  templateList: { gap: 8 },
   card: {
     flexDirection: "row",
     overflow: "hidden",
@@ -478,12 +483,11 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: "#E8E2DA",
     backgroundColor: "#FFF",
-    marginBottom: 12,
     position: "relative",
   },
   cardSelected: {
     borderColor: "#C28E5C",
-    backgroundColor: "#FDF9F4",
+    backgroundColor: "#FFF",
     shadowColor: "#C28E5C",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.18,
@@ -528,12 +532,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   bubble: {
-    backgroundColor: "#FAF6EF",
+    backgroundColor: "#FFF",
     borderRadius: 10,
     borderTopStartRadius: 4,
     padding: 12,
     borderWidth: 1,
-    borderColor: "#EFE6D6",
+    borderColor: "#EEE9E3",
   },
   bubbleText: {
     fontSize: 13,
@@ -558,10 +562,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   repliesSection: {
-    marginTop: 8,
-    paddingTop: 20,
-    borderTopWidth: 1,
-    borderTopColor: "#EEE",
+    width: "100%",
   },
   hint: { fontSize: 12, color: "#666", marginBottom: 12 },
   textArea: {
@@ -593,7 +594,7 @@ const styles = StyleSheet.create({
   tabBtnTextActive: { color: "#5A4A42", fontFamily: "Cairo_700Bold" },
 
   // ── Invitation-type selector ──
-  inviteTypeSection: { marginBottom: 24 },
+  inviteTypeSection: { width: "100%" },
   inviteTypeList: {
     gap: 12,
     marginTop: 8,

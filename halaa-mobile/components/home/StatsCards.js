@@ -232,7 +232,13 @@ const CalendarRemoveIcon = ({ color }) => (
   </Svg>
 );
 
-const StatsCards = ({ totalEvents = 0, activeEvents = 0, endedEvents = 0, draftEvents = 0 }) => {
+const StatsCards = ({
+  totalEvents = 0,
+  activeEvents = 0,
+  endedEvents = 0,
+  draftEvents = 0,
+  embedded = false,
+}) => {
   const { t, currentLanguage } = useTranslation("home");
   const locale = currentLanguage || "ar";
   const cards = [
@@ -263,7 +269,7 @@ const StatsCards = ({ totalEvents = 0, activeEvents = 0, endedEvents = 0, draftE
   ];
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, embedded && styles.containerEmbedded]}>
       {cards.map((card, index) => (
         <View key={index} style={styles.card}>
           <View style={[styles.iconContainer, { backgroundColor: card.tint }]}>
@@ -287,7 +293,11 @@ const styles = StyleSheet.create({
     alignItems: "stretch",
     gap: 10,
     paddingHorizontal: 24,
-  },card: {
+  },
+  containerEmbedded: {
+    paddingHorizontal: 0,
+  },
+  card: {
     flex: 1,
     padding: 10,
     flexDirection: "column",

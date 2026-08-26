@@ -40,14 +40,14 @@ export default function LastEventActions({
   };
 
   const testButton = canSendTest ? (
-    <button className={`${styles.outlineButton} ${styles.flashingButton}`} onClick={onTestMessage}>
+    <button className={styles.outlineButton} onClick={onTestMessage}>
       <span>{t("lastEvent.buttons.testMessage")}</span>
       <Image src="/svg/events/calendar-edit.svg" alt="test" width={12} height={12} />
     </button>
   ) : null;
 
   const scheduleButton = canSchedule && !isCompleted ? (
-    <button className={styles.outlineButton} onClick={onScheduleSending}>
+    <button className={`${styles.outlineButton} ${styles.flashingButton}`} onClick={onScheduleSending}>
       <span>{t("lastEvent.buttons.scheduleEvent")}</span>
       <Image src="/svg/events/calendar-edit.svg" alt="calendar" width={12} height={12} />
     </button>

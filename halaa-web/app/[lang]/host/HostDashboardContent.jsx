@@ -89,7 +89,10 @@ export default function HostDashboardContent() {
           </div>
 
           <div className={styles.eventsContainer}>
-            <StatsCards cards={cards} isLoading={isLoading} />
+            <section className={styles.statsPanel}>
+              <h2 className={styles.sectionTitle}>{t("stats.sectionTitle")}</h2>
+              <StatsCards cards={cards} isLoading={isLoading} />
+            </section>
             <LastEventStats />
           </div>
 

@@ -50,6 +50,7 @@
     }
   },
   "stats": {
+    "sectionTitle": "Event statistics",
     "totalEvents": "Total Events",
     "activeEvents": "Active Events",
     "completedEvents": "Completed Events",

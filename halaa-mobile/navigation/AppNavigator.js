@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
-import { ActivityIndicator, View, StyleSheet, Text } from "react-native";
+import { ActivityIndicator, View, StyleSheet, Text, Alert } from "react-native";
 import { useAuthStore } from "../stores/authStore";
+import { useWizardNavigationGuardStore } from "../stores/wizardNavigationGuardStore";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AdminNavigator from "./AdminNavigator";
 import { useTranslation } from "../localization";
 import { colors, backgrounds } from "../styles/tokens";
@@ -148,6 +150,47 @@ function HostEventsStackNavigator() {
 // Host Tab Navigator (for authenticated hosts)
 function HostTabNavigator() {
   const { t } = useTranslation("common");
+  const insets = useSafeAreaInsets();
+  const { isDirty, discard, clearGuard } = useWizardNavigationGuardStore();
+
+  const leaveWizard = (navigation, event, destination, nestedScreen) => {
+    const navigate = () => {
+      discard?.();
+      clearGuard();
+      if (nestedScreen) {
+        navigation.navigate(destination, { screen: nestedScreen });
+      } else {
+        navigation.navigate(destination);
+      }
+    };
+
+    if (isDirty) {
+      event.preventDefault();
+      Alert.alert(
+        t("unsavedChanges.title", { defaultValue: "Unsaved changes" }),
+        t("unsavedChanges.message", {
+          defaultValue: "Discard the information you entered and leave this page?",
+        }),
+        [
+          {
+            text: t("unsavedChanges.keepEditing", { defaultValue: "Keep editing" }),
+            style: "cancel",
+          },
+          {
+            text: t("unsavedChanges.discard", { defaultValue: "Discard" }),
+            style: "destructive",
+            onPress: navigate,
+          },
+        ]
+      );
+      return;
+    }
+
+    if (nestedScreen) {
+      event.preventDefault();
+      navigation.navigate(destination, { screen: nestedScreen });
+    }
+  };
 
   return (
     <Tab.Navigator
@@ -177,6 +220,9 @@ function HostTabNavigator() {
           backgroundColor: backgrounds.card[1],
           borderTopColor: colors.natural[200],
           borderTopWidth: 1,
+          height: 62 + insets.bottom,
+          paddingTop: 10,
+          paddingBottom: Math.max(insets.bottom, 6),
         },
         tabBarLabelStyle: {
           fontSize: 12,
@@ -192,31 +238,51 @@ function HostTabNavigator() {
         name="Home"
         component={HostHomeStackNavigator}
         options={{ tabBarLabel: t("navigation.home") }}
+        listeners={({ navigation }) => ({
+          tabPress: (event) => leaveWizard(navigation, event, "Home"),
+        })}
       />
       <Tab.Screen
         name="Events"
         component={HostEventsStackNavigator}
         options={{ tabBarLabel: t("navigation.events") }}
+        listeners={({ navigation }) => ({
+          tabPress: (event) =>
+            leaveWizard(navigation, event, "Events", "EventsList"),
+        })}
       />
       <Tab.Screen
         name="Marketplace"
         component={MarketplaceStackNavigator}
         options={{ tabBarLabel: t("navigation.marketplace") }}
+        listeners={({ navigation }) => ({
+          tabPress: (event) =>
+            leaveWizard(navigation, event, "Marketplace", "MarketplaceMain"),
+        })}
       />
       <Tab.Screen
         name="Plans"
         component={PlansTabScreen}
         options={{ tabBarLabel: t("navigation.plans") }}
+        listeners={({ navigation }) => ({
+          tabPress: (event) => leaveWizard(navigation, event, "Plans"),
+        })}
       />
       <Tab.Screen
         name="Tickets"
         component={TicketsScreen}
         options={{ tabBarLabel: t("navigation.tickets") }}
+        listeners={({ navigation }) => ({
+          tabPress: (event) => leaveWizard(navigation, event, "Tickets"),
+        })}
       />
       <Tab.Screen
         name="Settings"
         component={SettingsStackNavigator}
         options={{ tabBarLabel: t("navigation.settings") }}
+        listeners={({ navigation }) => ({
+          tabPress: (event) => leaveWizard(navigation, event, "Settings"),
+        })}
       />
     </Tab.Navigator>
   );
@@ -225,6 +291,7 @@ function HostTabNavigator() {
 // Vendor Tab Navigator (for authenticated vendors)
 function VendorTabNavigator() {
   const { t } = useTranslation("common");
+  const insets = useSafeAreaInsets();
 
   return (
     <Tab.Navigator
@@ -250,6 +317,9 @@ function VendorTabNavigator() {
           backgroundColor: backgrounds.card[1],
           borderTopColor: colors.natural[200],
           borderTopWidth: 1,
+          height: 62 + insets.bottom,
+          paddingTop: 10,
+          paddingBottom: Math.max(insets.bottom, 6),
         },
         tabBarLabelStyle: {
           fontSize: 12,
@@ -274,6 +344,12 @@ function VendorTabNavigator() {
         name="Marketplace"
         component={MarketplaceStackNavigator}
         options={{ tabBarLabel: t("navigation.marketplace") }}
+        listeners={({ navigation }) => ({
+          tabPress: (event) => {
+            event.preventDefault();
+            navigation.navigate("Marketplace", { screen: "MarketplaceMain" });
+          },
+        })}
       />
       <Tab.Screen
         name="Settings"
@@ -337,7 +413,7 @@ function AuthStack() {
             onLogin={() => handleOnboardingDone(navigation)}
             onSignup={() => {
               saveOnboardingSeen();
-              navigation.navigate("Signup");
+              navigation.reset({ index: 0, routes: [{ name: "Signup" }] });
             }}
           />
         )}

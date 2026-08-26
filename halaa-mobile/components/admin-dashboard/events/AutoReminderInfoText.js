@@ -133,14 +133,10 @@ const AutoReminderInfoText = ({ event }) => {
     event?.launchSettings?.scheduledDate,
     event?.launchSettings?.scheduledTime
   );
-  const eventInstant = (() => {
-    const d = event?.eventDetails?.date
-      ? new Date(event.eventDetails.date)
-      : event?.date
-      ? new Date(event.date)
-      : null;
-    return d && !Number.isNaN(d.getTime()) ? d : null;
-  })();
+  const eventInstant = combineDateTime(
+    event?.eventDetails?.date || event?.date,
+    event?.eventDetails?.time || event?.time
+  );
   const nowTs = Date.now();
   const lowerBound =
     sendInstant && sendInstant.getTime() > nowTs ? sendInstant : new Date(nowTs);
@@ -223,7 +219,7 @@ const AutoReminderInfoText = ({ event }) => {
           <Ionicons name="time-outline" size={16} color={colors.primary[700]} />
         </View>
         <LocalizedText style={styles.text}>{infoText}</LocalizedText>
-        {isEditable && (
+        {isEditable && !isTrial && (
           <TouchableOpacity
             style={styles.customizeButton}
             onPress={() => setModalOpen(true)}
@@ -277,12 +273,13 @@ const AutoReminderInfoText = ({ event }) => {
                 <Switch
                   value={customReminderTime}
                   onValueChange={setCustomReminderTime}
+                  disabled={isTrial}
                   trackColor={{ false: colors.natural[250], true: colors.primary[200] }}
                   thumbColor={customReminderTime ? colors.primary[500] : colors.natural[350]}
                 />
               </View>
 
-              {customReminderTime && (
+              {customReminderTime && !isTrial && (
                 <View style={styles.pickerSection}>
                   {/* Shared field-contract pickers: localized labels, BiDi-
                       isolated locale-formatted values, iOS bottom sheet with

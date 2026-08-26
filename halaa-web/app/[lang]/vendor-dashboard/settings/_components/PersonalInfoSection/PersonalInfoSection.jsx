@@ -158,7 +158,7 @@ const PersonalInfoSection = ({ data, onSave, onPhoneVerified, onRefetch }) => {
             }
           />
           <ReadField
-            label={t("personalInfo.phoneWhatsapp", "رقم الهاتف / واتساب")}
+            label={t("personalInfo.phoneWhatsapp", "رقم الجوال / واتساب")}
             value={displayData.phoneNumber}
           />
         </FieldGrid>

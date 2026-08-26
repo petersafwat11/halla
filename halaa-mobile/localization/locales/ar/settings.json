@@ -121,7 +121,7 @@
     "nameMinLength": "الاسم يجب أن يكون حرفين على الأقل",
     "nameMaxLength": "الاسم يجب أن لا يتجاوز 100 حرف",
     "invalidEmail": "البريد الإلكتروني غير صالح",
-    "invalidPhone": "رقم الهاتف غير صالح",
+    "invalidPhone": "رقم الجوال غير صالح",
     "currentPasswordRequired": "كلمة المرور الحالية مطلوبة",
     "passwordMinLength": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
     "passwordComplexity": "كلمة المرور تتكون من حروف وأرقام فقط، وبها حرف ورقم على الأقل",
@@ -129,7 +129,7 @@
     "passwordsDoNotMatch": "كلمات المرور غير متطابقة",
     "passwordRequired": "كلمة المرور مطلوبة للتأكيد",
     "confirmDeletion": "يرجى كتابة DELETE للتأكيد",
-    "invalidSaudiPhone": "رقم الهاتف يجب أن يتكون من 10 أرقام (يبدأ بـ 05) أو 9 أرقام (يبدأ بـ 5)"
+    "invalidSaudiPhone": "رقم الجوال يجب أن يتكون من 10 أرقام (يبدأ بـ 05) أو 9 أرقام (يبدأ بـ 5)"
   },
   "language": {
     "title": "اللغة",

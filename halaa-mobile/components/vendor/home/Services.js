@@ -10,6 +10,7 @@ import LocalizedText from "../../commen/LocalizedText";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import ServiceCard from "./Service";
+import { layout } from "../../../styles/tokens";
 
 const EmptyServiceState = React.memo(({ onAddService, t }) => (
   <View style={styles.emptyStateContainer}>
@@ -42,6 +43,7 @@ const Services = ({
   onDeleteService,
   onToggleService,
   headerComponent = null,
+  bottomSpacing = layout.dashboardPageBottom,
 }) => {
   const { t } = useTranslation("vendor");
   const [selectedFilter, setSelectedFilter] = useState("all");
@@ -184,7 +186,7 @@ const Services = ({
         ListEmptyComponent={
           <EmptyServiceState onAddService={onAddService} t={t} />
         }
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[styles.listContent, { paddingBottom: bottomSpacing }]}
         showsVerticalScrollIndicator={false}
       />
     </View>
@@ -270,7 +272,6 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingTop: 8,
-    paddingBottom: 100,
   },
   emptyStateContainer: {
     flex: 1,

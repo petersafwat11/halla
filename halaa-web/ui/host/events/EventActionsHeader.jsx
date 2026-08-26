@@ -174,6 +174,7 @@ export default function EventActionsHeader({ event, isAdmin = false }) {
           onSuccess={() => router.refresh()}
           existingSchedule={event?.launchSettings}
           eventDate={event?.eventDetails?.date}
+          eventTime={event?.eventDetails?.time}
         />
       </PopupWrapper>
     </>

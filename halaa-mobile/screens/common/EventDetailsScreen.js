@@ -84,6 +84,7 @@ import {
   textStyles,
   backgrounds,
   borderRadius,
+  layout,
 } from "../../styles/tokens";
 
 /**
@@ -1035,7 +1036,11 @@ const EventDetailsScreen = () => {
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: backgrounds.card?.[8] || "#C28E5C" },
   scroll: { flex: 1, backgroundColor: backgrounds.artboard || "#F9F4EF" },
-  content: { padding: spacing[16], gap: spacing[12] },
+  content: {
+    padding: spacing[16],
+    paddingBottom: layout.dashboardPageBottom,
+    gap: spacing[12],
+  },
   centerState: {
     flex: 1,
     alignItems: "center",

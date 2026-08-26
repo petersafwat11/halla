@@ -178,7 +178,7 @@ const CreateEventPopup = ({ onClose }) => {
         {/* Phone Number Input */}
         <div className={styles.inputGroup}>
           <label htmlFor="phoneNumber" className={styles.label}>
-            {t("createEvent.phoneLabel", "رقم الهاتف")}
+            {t("createEvent.phoneLabel", "رقم الجوال")}
             <span className={styles.required}>*</span>
           </label>
 

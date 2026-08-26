@@ -329,8 +329,8 @@
   "validation": {
     "nameRequired": "الاسم مطلوب",
     "invalidEmail": "يرجى إدخال بريد إلكتروني صحيح",
-    "phoneRequired": "رقم الهاتف مطلوب",
-    "phoneFormat": "رقم الهاتف يجب أن يكون بين 7 و 15 رقم",
+    "phoneRequired": "رقم الجوال مطلوب",
+    "phoneFormat": "رقم الجوال يجب أن يكون بين 7 و 15 رقم",
     "planRequired": "الرجاء اختيار خطة",
     "roleRequired": "الرجاء اختيار الدور",
     "ratingRequired": "الرجاء اختيار تقييم",

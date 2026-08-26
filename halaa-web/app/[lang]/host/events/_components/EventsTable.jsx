@@ -52,7 +52,7 @@ const EventsTable = () => {
           t("table.columns.eventTitle", "عنوان المناسبة"),
           t("table.columns.eventType", "نوع المناسبة"),
           t("table.columns.confirmed", "مؤكد"),
-          t("table.columns.declined", "معتذر"),
+          t("table.columns.declined", "اعتذار"),
           t("table.columns.noResponse", "لم يرد"),
           t("table.columns.dateTime", "التاريخ والوقت"),
           t("table.columns.status", "الحالة"),

@@ -29,6 +29,7 @@ import {
   text,
   spacing,
   borderRadius,
+  layout,
 } from "../../styles/tokens";
 import {
   NotificationItem,
@@ -273,7 +274,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   listContent: {
-    paddingBottom: spacing[40],
+    paddingBottom: layout.dashboardPageBottom,
   },
   listContentEmpty: {
     flexGrow: 1,

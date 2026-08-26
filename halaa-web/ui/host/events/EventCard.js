@@ -242,6 +242,7 @@ function EventCard({ event }) {
           eventId={event?._id}
           existingSchedule={event?.launchSettings}
           eventDate={event?.eventDetails?.date}
+          eventTime={event?.eventDetails?.time}
         />
       </PopupWrapper>
     </>

@@ -60,16 +60,16 @@ describe("Marketplace iOS direction blueprint (§8 Marketplace row)", () => {
     });
   });
 
-  it("Marketplace screen formats and isolates counts instead of concatenating them", () => {
+  it("Marketplace keeps the top bar counter-free and formats the result count", () => {
     const content = read(MARKETPLACE_SOURCES[0]);
 
     assert.ok(
-      content.includes('t("titleWithCount", { count: totalToken })'),
-      "TopBar title must use the interpolated titleWithCount key"
+      content.includes('title={t("title")}'),
+      "TopBar title must not include the result counter"
     );
     assert.ok(
-      !content.includes("${t(\"title\")}") && !content.includes("`${t(`title`)}`"),
-      "title must not be assembled by string concatenation"
+      !content.includes('t("titleWithCount", { count: totalToken })'),
+      "TopBar must not render titleWithCount"
     );
     assert.ok(
       content.includes("countToken(total, currentLanguage)"),

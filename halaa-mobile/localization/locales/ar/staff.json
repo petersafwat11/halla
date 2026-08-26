@@ -16,7 +16,7 @@
     }
   },
   "portal": {
-    "guests": "المدعوين",
+    "guests": "الضيوف",
     "searchPlaceholder": "ابحث بالاسم أو الجوال...",
     "noGuests": "لا يوجد ضيوف",
     "noGuestsSearch": "لا توجد نتائج لبحثك",
@@ -30,7 +30,7 @@
     "title": "إحصائيات المناسبة",
     "pending": "في الانتظار",
     "confirmed": "حضور",
-    "declined": "اعتذر",
+    "declined": "اعتذار",
     "checkedIn": "تم التسجيل",
     "total": "الإجمالي"
   },
@@ -51,7 +51,7 @@
   "status": {
     "invited": "مدعو",
     "confirmed": "حضور",
-    "declined": "اعتذر",
+    "declined": "اعتذار",
     "checked_in": "تم التسجيل",
     "no_show": "لم يحضر"
   },
@@ -67,7 +67,7 @@
     "allStatuses": "الكل",
     "checkedIn": "حضر",
     "confirmed": "حضور",
-    "declined": "اعتذر",
+    "declined": "اعتذار",
     "invited": "مدعو"
   }
 }

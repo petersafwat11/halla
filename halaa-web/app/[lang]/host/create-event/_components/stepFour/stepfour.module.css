@@ -44,7 +44,7 @@
   padding: 0 2.4rem;
   flex-direction: column;
   align-items: flex-start;
-  gap: 2rem;
+  gap: 2.4rem;
   align-self: stretch;
 }
 .formSection > * {
@@ -128,14 +128,14 @@
 
 .templateCard:hover {
   border-color: #d4a878;
-  background: #fefcf9;
+  background: #ffffff;
   box-shadow: 0 2px 12px rgba(194, 142, 92, 0.12);
   transform: translateY(-1px);
 }
 
 .templateCardSelected {
   border-color: #c28e5c;
-  background: linear-gradient(135deg, #fdf9f4 0%, #fef6ee 100%);
+  background: #ffffff;
   box-shadow:
     0 0 0 1px rgba(194, 142, 92, 0.3),
     0 4px 16px rgba(194, 142, 92, 0.14);
@@ -213,10 +213,10 @@
 /* Message bubble */
 .bubbleWrap {
   position: relative;
-  background: #faf6ef;
+  background: #ffffff;
   border-radius: 0.4rem 1rem 1rem 1rem;
   padding: 1.1rem 1.3rem;
-  border: 1px solid #efe6d6;
+  border: 1px solid #eee9e3;
 }
 
 .bubbleText {
@@ -458,7 +458,6 @@
   flex-direction: column;
   gap: 1.2rem;
   align-self: stretch;
-  margin-bottom: 2rem;
 }
 
 .inviteTypeGrid {

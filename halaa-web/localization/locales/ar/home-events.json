@@ -33,7 +33,7 @@
       "upcoming": "قادم"
     },
     "stats": {
-      "invited": "المدعوين",
+      "invited": "الضيوف",
       "confirmed": "المؤكدين",
       "apologies": "المعتذرين",
       "noReply": "لم يرد",
@@ -50,6 +50,7 @@
     }
   },
   "stats": {
+    "sectionTitle": "إحصائيات المناسبات",
     "totalEvents": "إجمالي المناسبات",
     "activeEvents": "المناسبات النشطة",
     "completedEvents": "المناسبات المنتهية",
@@ -66,7 +67,7 @@
     "editEvent": "تعديل المناسبة",
     "responseStatus": "حالة الرد",
     "approved": "تم التأكيد",
-    "declined": "اعتذر",
+    "declined": "اعتذار",
     "noResponse": "لم يرد",
     "remainingEvents": "المناسبات المتبقية",
     "plan": "الخطة",
@@ -165,7 +166,7 @@
     "eventType": "نوع المناسبة",
     "totalInvites": "إجمالي الدعوات",
     "confirmed": "تم التأكيد",
-    "declined": "اعتذر",
+    "declined": "اعتذار",
     "noResponse": "لم يرد",
     "status": "الحالة",
     "actions": "الإجراءات",
@@ -179,7 +180,7 @@
     "columns": {
       "addedBy": "أضيف بواسطة",
       "name": "الاسم",
-      "phone": "رقم الهاتف",
+      "phone": "رقم الجوال",
       "status": "الحالة",
       "respondAt": "تاريخ الرد",
       "actions": "الإجراءات",
@@ -213,7 +214,7 @@
       "totalGuests": "إجمالي الضيوف",
       "confirmed": "تم التأكيد",
       "guestAcceptance": "عدد المقبولين",
-      "declined": "اعتذر",
+      "declined": "اعتذار",
       "responseRate": "معدل الاستجابة",
       "noResponse": "لم يرد"
     }
@@ -295,7 +296,7 @@
     },
     "stats": {
       "attendanceTracking": "الاحصائيات",
-      "declined": "اعتذر",
+      "declined": "اعتذار",
       "confirmed": "تم التأكيد",
       "noResponse": "لم يرد",
       "checkedIn": "حضر",
@@ -331,9 +332,9 @@
       "title": "إضافة ضيف",
       "name": "الاسم",
       "namePlaceholder": "أدخل اسم الضيف",
-      "phone": "رقم الهاتف",
-      "phonePlaceholder": "أدخل رقم الهاتف",
-      "invalidPhone": "رقم الهاتف يجب أن يكون 10 أرقام ويبدأ بـ 05 أو 9 أرقام ويبدأ بـ 5",
+      "phone": "رقم الجوال",
+      "phonePlaceholder": "أدخل رقم الجوال",
+      "invalidPhone": "رقم الجوال يجب أن يكون 10 أرقام ويبدأ بـ 05 أو 9 أرقام ويبدأ بـ 5",
       "invalidEmail": "يرجى إدخال بريد إلكتروني صحيح",
       "success": "تم إضافة الضيف بنجاح",
       "error": "فشل في إضافة الضيف"
@@ -348,13 +349,13 @@
       "title": "إضافة موظف",
       "name": "الاسم",
       "namePlaceholder": "أدخل اسم الموظف",
-      "phone": "رقم الهاتف",
-      "phonePlaceholder": "أدخل رقم الهاتف",
+      "phone": "رقم الجوال",
+      "phonePlaceholder": "أدخل رقم الجوال",
       "email": "البريد الإلكتروني",
       "emailPlaceholder": "أدخل البريد الإلكتروني",
       "mainStaff": "الموظف الرئيسي",
-      "phoneRequired": "رقم الهاتف مطلوب",
-      "invalidPhone": "رقم الهاتف يجب أن يكون 10 أرقام ويبدأ بـ 05 أو 9 أرقام ويبدأ بـ 5",
+      "phoneRequired": "رقم الجوال مطلوب",
+      "invalidPhone": "رقم الجوال يجب أن يكون 10 أرقام ويبدأ بـ 05 أو 9 أرقام ويبدأ بـ 5",
       "nameRequired": "الاسم يجب أن يكون حرفين على الأقل",
       "nameMaxLength": "الاسم لا يمكن أن يتجاوز 100 حرف",
       "success": "تم إضافة الموظف بنجاح",
@@ -364,7 +365,7 @@
       "title": "مشرفين البوابة",
       "add": "إضافة موظف",
       "mainStaff": "الموظف الرئيسي",
-      "phone": "الهاتف",
+      "phone": "الجوال",
       "email": "البريد الإلكتروني"
     }
   },

@@ -26,6 +26,7 @@ import {
   spacing,
   borderRadius,
   typography,
+  layout,
 } from "../../styles/tokens";
 
 const PlansScreen = () => {
@@ -182,7 +183,10 @@ const PlansScreen = () => {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          <AddonsSection onAddonsChange={handleAddonsChange} />
+          <AddonsSection
+            onAddonsChange={handleAddonsChange}
+            style={styles.planComponent}
+          />
 
           <TouchableOpacity
             style={styles.continueBtn}
@@ -212,9 +216,13 @@ const PlansScreen = () => {
           />
         }
       >
+        <LocalizedText role="description" style={styles.pageSubtitle}>
+          {t("pageSubtitle")}
+        </LocalizedText>
         <CurrentPlanCard
           subscription={subscription}
           usage={usage}
+          style={styles.planComponent}
           onBuyAddons={
             subscription ? () => navigation.navigate("AddonsPurchase") : undefined
           }
@@ -261,6 +269,7 @@ const PlansScreen = () => {
               selectedInvites={selectedInvites}
               onInviteChange={setSelectedInvites}
               onSubscribe={(plan) => handleSubscribe("basic", plan)}
+              style={styles.planComponent}
             />
             <HostPlanCard
               planFamily="premium"
@@ -270,6 +279,7 @@ const PlansScreen = () => {
               selectedInvites={selectedInvites}
               onInviteChange={setSelectedInvites}
               onSubscribe={(plan) => handleSubscribe("premium", plan)}
+              style={styles.planComponent}
             />
           </>
         )}
@@ -326,15 +336,25 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary[50],
   },
   scrollContent: {
-    padding: spacing[20],
-    paddingBottom: spacing[40],
+    padding: spacing[24],
+    paddingBottom: layout.dashboardPageBottom,
+    gap: spacing[24],
+  },
+  pageSubtitle: {
+    width: "100%",
+    fontSize: typography.fontSize.body.medium,
+    fontFamily: "Cairo_400Regular",
+    color: colors.natural[450],
+  },
+  planComponent: {
+    marginBottom: 0,
   },
   billingPills: {
     flexDirection: "row",
     backgroundColor: colors.primary[100],
     borderRadius: borderRadius[12],
     padding: 4,
-    marginBottom: spacing[16],
+    marginBottom: 0,
     gap: 4,
   },
   billingPill: {

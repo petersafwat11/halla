@@ -24,6 +24,7 @@ import {
   useDeleteTicket
 } from "../../hooks";
 import { TopBar } from "../../components/plans";
+import { layout } from "../../styles/tokens";
 
 export default function TicketsScreen() {
   const { t } = useTranslation("tickets");
@@ -274,7 +275,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 16,
-    paddingBottom: 100
+    paddingBottom: layout.dashboardPageBottom + 50
   },
   listContentEmpty: {
     flexGrow: 1

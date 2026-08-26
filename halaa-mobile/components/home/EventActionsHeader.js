@@ -269,6 +269,7 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete
         onClose={() => setShowScheduleModal(false)}
         existingSchedule={event?.launchSettings}
         eventDate={event?.eventDetails?.date || event?.date}
+        eventTime={event?.eventDetails?.time || event?.time}
       />
     </>
   );

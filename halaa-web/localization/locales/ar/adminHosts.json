@@ -14,7 +14,7 @@
     "columns": {
       "username": "اسم المستخدم",
       "email": "البريد الإلكتروني",
-      "phoneNumber": "رقم الهاتف",
+      "phoneNumber": "رقم الجوال",
       "events": "عدد المناسبات",
       "createdAt": "تاريخ الانضمام",
       "actions": "الإجراءات"
@@ -29,7 +29,7 @@
     "title": "إضافة مضيف",
     "username": "اسم المستخدم",
     "email": "البريد الإلكتروني",
-    "phoneNumber": "رقم الهاتف",
+    "phoneNumber": "رقم الجوال",
     "save": "حفظ",
     "saving": "جاري الحفظ...",
     "cancel": "إلغاء",
@@ -61,13 +61,13 @@
   "hostDetails": {
     "title": "تفاصيل المستخدم",
     "backToHosts": "العودة إلى المضيفين",
-    "phoneNumber": "رقم الهاتف",
+    "phoneNumber": "رقم الجوال",
     "email": "البريد الإلكتروني",
     "eventsCount": "عدد المناسبات",
     "event": "مناسبة",
     "guests": "ضيف",
     "confirmed": "موافق",
-    "declined": "معتذر",
+    "declined": "اعتذار",
     "pending": "لم يرد",
     "attended": "حضر",
     "active": "نشط",
@@ -157,7 +157,7 @@
     "columns": {
       "name": "الاسم",
       "email": "البريد الإلكتروني",
-      "phone": "الهاتف",
+      "phone": "الجوال",
       "status": "الحالة",
       "subscription": "الاشتراك",
       "createdAt": "تاريخ التسجيل"
@@ -182,7 +182,7 @@
       "namePlaceholder": "أدخل اسم المضيف",
       "email": "البريد الإلكتروني",
       "emailPlaceholder": "example@email.com",
-      "phone": "رقم الهاتف",
+      "phone": "رقم الجوال",
       "phonePlaceholder": "05xxxxxxxx",
       "password": "كلمة المرور",
       "passwordPlaceholder": "اتركه فارغاً للإنشاء التلقائي"

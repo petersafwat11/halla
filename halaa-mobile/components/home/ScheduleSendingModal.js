@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import {
   View,
   StyleSheet,
@@ -88,6 +88,7 @@ const ScheduleSendingModal = ({
   eventId,
   existingSchedule,
   eventDate,
+  eventTime,
 }) => {
   const { t } = useTranslation("events");
   const scheduleSend = useScheduleSend();
@@ -112,6 +113,21 @@ const ScheduleSendingModal = ({
     formState: { isSubmitting },
   } = methods;
 
+  useEffect(() => {
+    if (!visible) return;
+    reset({
+      scheduledDate: existingSchedule?.scheduledDate
+        ? new Date(existingSchedule.scheduledDate)
+        : null,
+      scheduledTime: timeFromHHmm(existingSchedule?.scheduledTime),
+    });
+  }, [
+    visible,
+    existingSchedule?.scheduledDate,
+    existingSchedule?.scheduledTime,
+    reset,
+  ]);
+
   const isPending = isSubmitting || scheduleSend.isPending;
 
   // Live scheduling window: [now + minLead, event − 3d]. The picker is
@@ -122,8 +138,10 @@ const ScheduleSendingModal = ({
     if (!eventDate) return undefined;
     const ev = new Date(eventDate);
     if (Number.isNaN(ev.getTime())) return undefined;
+    const match = String(eventTime || "").match(/^(\d{1,2}):(\d{2})/);
+    if (match) ev.setHours(Number(match[1]), Number(match[2]), 0, 0);
     return toDay(new Date(ev.getTime() - THREE_DAYS_MS));
-  }, [eventDate]);
+  }, [eventDate, eventTime]);
 
   const onSubmit = async (data) => {
     const chosenDay = toDay(new Date(data.scheduledDate));
@@ -163,7 +181,12 @@ const ScheduleSendingModal = ({
 
   const handleClose = () => {
     if (!isPending) {
-      reset();
+      reset({
+        scheduledDate: existingSchedule?.scheduledDate
+          ? new Date(existingSchedule.scheduledDate)
+          : null,
+        scheduledTime: timeFromHHmm(existingSchedule?.scheduledTime),
+      });
       onClose();
     }
   };

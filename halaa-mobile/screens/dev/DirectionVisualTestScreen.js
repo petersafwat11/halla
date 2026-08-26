@@ -98,7 +98,7 @@ const DirectionVisualTestScreen = () => {
               {isArabic ? "قيم مختلطة ومعزولة" : "Isolated mixed values"}
             </Text>
             <Text style={[styles.token, fieldDirection.text]}>
-              {isArabic ? "الهاتف: " : "Phone: "}{isolateLtr("+966 55 123 4567")}
+              {isArabic ? "الجوال: " : "Phone: "}{isolateLtr("+966 55 123 4567")}
             </Text>
             <Text style={[styles.token, fieldDirection.text]}>
               {isArabic ? "البريد: " : "Email: "}{isolateLtr("host@halaa.com")}

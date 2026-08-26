@@ -218,7 +218,7 @@ export default function ModeratorsTable({ showAddPopup: externalShowAdd, setShow
           headers={[
             t("moderators.columns.name", "الاسم"),
             t("moderators.columns.email", "البريد الإلكتروني"),
-            t("moderators.columns.phone", "الهاتف"),
+            t("moderators.columns.phone", "الجوال"),
             t("moderators.columns.role", "الدور"),
             t("moderators.columns.status", "الحالة"),
             t("moderators.columns.createdAt", "تاريخ الإضافة"),

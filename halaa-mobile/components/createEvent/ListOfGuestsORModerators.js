@@ -7,7 +7,8 @@ import {
   TouchableOpacity,
   Pressable,
   ScrollView,
-  FlatList
+  FlatList,
+  Keyboard,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { isolateLtr } from "@halaa/shared/utils/bidi";
@@ -268,7 +269,10 @@ const ListOfGuestsORModerators = ({
                 </Text>
                 <TouchableOpacity
                   style={styles.linkCategoryBtn}
-                  onPress={() => setShowCategoryPicker(true)}
+                  onPress={() => {
+                    Keyboard.dismiss();
+                    setShowCategoryPicker(true);
+                  }}
                   activeOpacity={0.8}
                 >
                   <Ionicons name="pricetag-outline" size={18} color="#FFF" />

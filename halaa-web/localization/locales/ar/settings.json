@@ -114,7 +114,7 @@
     "nameMinLength": "الاسم يجب أن يكون حرفين على الأقل",
     "nameMaxLength": "الاسم يجب أن لا يتجاوز 100 حرف",
     "invalidEmail": "البريد الإلكتروني غير صالح",
-    "invalidPhone": "رقم الهاتف غير صالح",
+    "invalidPhone": "رقم الجوال غير صالح",
     "currentPasswordRequired": "كلمة المرور الحالية مطلوبة",
     "passwordMinLength": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
     "passwordComplexity": "كلمة المرور تتكون من حروف وأرقام فقط، وبها حرف ورقم على الأقل",

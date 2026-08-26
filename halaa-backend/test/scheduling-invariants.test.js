@@ -10,8 +10,20 @@ const {
   MIN_GAP_BEFORE_EVENT_MS,
 } = require('../src/shared/utils/schedulingWindow');
 const { toRiyadhComponents, fromRiyadhComponents } = require('../src/shared/utils/timezone');
+const { scheduleSchema } = require('../src/modules/messaging/messaging.validation');
 
 describe('Session 1.6: Scheduling Invariants & Timezone Rules (EVT-09)', () => {
+  test('schedule request accepts a same-day UTC-midnight date and defers instant validation to the service', () => {
+    const todayAtUtcMidnight = `${new Date().toISOString().slice(0, 10)}T00:00:00.000Z`;
+    const parsed = scheduleSchema.safeParse({
+      eventId: '507f1f77bcf86cd799439011',
+      scheduledDate: todayAtUtcMidnight,
+      scheduledTime: '23:59',
+    });
+
+    assert.equal(parsed.success, true);
+  });
+
   test('assertSendWindow enforces minimum lead time: 15m for trial, 24h for paid', () => {
     const now = Date.now();
     const futureEventInstant = new Date(now + 10 * 24 * 60 * 60 * 1000); // 10 days in future

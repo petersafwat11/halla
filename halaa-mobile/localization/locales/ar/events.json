@@ -28,10 +28,10 @@
     },
     "stats": {
       "confirmed": "موافق",
-      "declined": "معتذر",
+      "declined": "اعتذار",
       "noResponse": "لم يرد",
       "confirmedCount": "موافق {{count}}",
-      "declinedCount": "معتذر {{count}}",
+      "declinedCount": "اعتذار {{count}}",
       "noResponseCount": "لم يرد {{count}}"
     },
     "untitled": "مناسبة بدون عنوان",
@@ -65,30 +65,30 @@
     "deleted": "تم حذف المناسبة بنجاح",
     "deleteFailed": "فشل حذف المناسبة",
     "checkedIn": "تم تسجيل الحضور",
-    "totalGuests": "إجمالي المدعوين",
+    "totalGuests": "إجمالي الضيوف",
     "host": "المضيف",
     "name": "الاسم",
     "email": "البريد الإلكتروني",
-    "phone": "رقم الهاتف",
+    "phone": "رقم الجوال",
     "subscription": "الاشتراك",
     "plan": "الباقة",
     "guestsRemaining": "الدعوات المتبقية",
     "guestsTab": "المدعوون",
-    "moderatorsTab": "المشرفون",
-    "searchGuests": "بحث في قائمة المدعوين...",
+    "moderatorsTab": "المشرفين",
+    "searchGuests": "بحث في قائمة الضيوف...",
     "searchModerators": "بحث في المشرفين...",
     "addModerator": "إضافة مشرف",
     "noGuests": "لا يوجد مدعوون بعد",
     "noModerators": "لا يوجد مشرفون",
     "guestsTabCount": "المدعوون ({{count}})",
-    "moderatorsTabCount": "المشرفون ({{count}})",
+    "moderatorsTabCount": "المشرفين ({{count}})",
     "dateTimeRow": "{{date}} • {{time}}"
   },
   "guestList": {
     "title": "قائمة الضيوف",
     "addGuest": "إضافة ضيف",
     "name": "الاسم",
-    "phone": "الهاتف",
+    "phone": "الجوال",
     "status": "الحالة",
     "rotateQrTitle": "تحديث رمز الدخول",
     "rotateQrBody": "سيتم إنشاء رمز QR جديد للضيف {{name}}. الرمز القديم سيتوقف عن العمل فوراً.",
@@ -410,14 +410,14 @@
     "status": {
       "confirmed": "مؤكد",
       "checkedIn": "حضر",
-      "declined": "معتذر",
+      "declined": "اعتذار",
       "invited": "مدعو"
     },
     "sentOn": "أُرسل · {{date}}"
   },
   "statsCards": {
     "confirmed": "حضور",
-    "declined": "اعتذر",
+    "declined": "اعتذار",
     "pending": "في الانتظار"
   },
   "actions": {

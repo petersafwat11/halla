@@ -17,6 +17,7 @@ import EventListItem from "./EventListItem";
 import { useExportEvents } from "../../hooks/events/mutations/useEventMutation";
 import { saveBlobAndShare } from "../../utils/download";
 import { useTranslation } from "../../localization";
+import { layout } from "../../styles/tokens";
 
 // Same SVG icons as home StatsCards
 const PeopleIcon = ({ color }) => (
@@ -308,7 +309,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   listContent: {
-    paddingBottom: 88, // Clearance for floating action button
+    // Shared page rhythm plus clearance for the floating create button.
+    paddingBottom: layout.dashboardPageBottom + 38,
   },
   headerContainer: {
     paddingTop: 16,

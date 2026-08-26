@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-const SectionCard = ({ title, icon, children, style }) => {
+const SectionCard = ({ title, icon, children, style, contentStyle }) => {
   return (
     <View style={[styles.card, style]}>
       {(title || icon) && (
@@ -15,7 +15,7 @@ const SectionCard = ({ title, icon, children, style }) => {
           {title && <Text style={styles.title}>{title}</Text>}
         </View>
       )}
-      <View style={styles.content}>{children}</View>
+      <View style={[styles.content, contentStyle]}>{children}</View>
     </View>
   );
 };

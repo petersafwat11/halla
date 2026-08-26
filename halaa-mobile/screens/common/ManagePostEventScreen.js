@@ -31,6 +31,7 @@ import DirectionalIonicon from "../../components/common/DirectionalIonicon";
 import LocalizedText from "../../components/commen/LocalizedText";
 import AdaptiveText from "../../components/commen/AdaptiveText";
 import KeyboardAwareFormScrollView from "../../components/commen/keyboard/KeyboardAwareFormScrollView";
+import { layout } from "../../styles/tokens";
 
 const StatusBanner = ({ isPublished, t }) => (
   <View
@@ -294,7 +295,6 @@ const ManagePostEventScreen = ({ navigation, route }) => {
           docTypes={["terms", "community-rules"]}
         />
 
-        <View style={{ height: 40 }} />
       </KeyboardAwareFormScrollView>
 
       <AccessLinksSheet
@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
   retryButton: { paddingVertical: 8, paddingHorizontal: 20, backgroundColor: "#C28E5C", borderRadius: 8 },
   retryText: { fontSize: 14, fontFamily: "Cairo_600SemiBold", color: "#FFF" },
   scroll: { flex: 1, backgroundColor: "#F9F4EF" },
-  scrollContent: { padding: 16, gap: 16 },
+  scrollContent: { padding: 16, paddingBottom: layout.dashboardPageBottom, gap: 16 },
   statusBanner: {
     flexDirection: "row", alignItems: "center", gap: 8, paddingVertical: 10,
     paddingHorizontal: 14, borderRadius: 8, borderWidth: 1,

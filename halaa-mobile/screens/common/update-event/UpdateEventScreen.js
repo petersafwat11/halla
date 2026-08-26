@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FormProvider, useForm } from "react-hook-form";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation, useRoute, usePreventRemove } from "@react-navigation/native";
 import { useQueryClient } from "@tanstack/react-query";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -33,6 +33,7 @@ import PreviewInvitation from "../../../components/createEvent/PreviewInvitation
 
 import useEventLoadAndGate from "./useEventLoadAndGate";
 import UpdateEventStepRenderer from "./UpdateEventStepRenderer";
+import { useWizardNavigationGuardStore } from "../../../stores/wizardNavigationGuardStore";
 
 const TOTAL_STEPS = 4;
 
@@ -52,6 +53,7 @@ const UpdateEventScreen = () => {
   const [currentStep, setCurrentStep] = useState(initialStep);
   const [showPreview, setShowPreview] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [allowLeave, setAllowLeave] = useState(false);
 
   const { data: subscriptionData } = useMySubscription();
   const subscription = subscriptionData?.data?.subscription;
@@ -65,8 +67,10 @@ const UpdateEventScreen = () => {
     mode: "onChange",
     defaultValues: EventsService.getDefaultFormValues(),
   });
-  const { watch, handleSubmit, reset } = methods;
+  const { watch, handleSubmit, reset, formState: { isDirty } } = methods;
   const formData = watch();
+  const setWizardGuard = useWizardNavigationGuardStore((state) => state.setGuard);
+  const clearWizardGuard = useWizardNavigationGuardStore((state) => state.clearGuard);
 
   const {
     eventData,
@@ -83,6 +87,36 @@ const UpdateEventScreen = () => {
   useEffect(() => {
     if (formValues) reset(formValues);
   }, [formValues, reset]);
+
+  const discardWizard = useCallback(() => {
+    reset(formValues || EventsService.getDefaultFormValues());
+    setCurrentStep(1);
+    setShowPreview(false);
+  }, [formValues, reset]);
+
+  useEffect(() => {
+    setWizardGuard({ isDirty: isDirty && !allowLeave, discard: discardWizard });
+    return () => clearWizardGuard();
+  }, [isDirty, allowLeave, discardWizard, setWizardGuard, clearWizardGuard]);
+
+  usePreventRemove(isDirty && !allowLeave, ({ data }) => {
+    Alert.alert(
+      t("events.update.cancelTitle"),
+      t("events.update.cancelBody"),
+      [
+        { text: t("events.update.cancelKeep"), style: "cancel" },
+        {
+          text: t("events.update.cancelDiscard"),
+          style: "destructive",
+          onPress: () => {
+            discardWizard();
+            clearWizardGuard();
+            navigation.dispatch(data.action);
+          },
+        },
+      ]
+    );
+  });
 
   const saveStep = useCallback(
     async (data) => {
@@ -141,9 +175,14 @@ const UpdateEventScreen = () => {
         queryClient.invalidateQueries({ queryKey: ["events"] });
         queryClient.invalidateQueries({ queryKey: ["events", "single-stats", eventId] });
 
+        // The current step has been persisted; make it the new clean baseline.
+        reset(data);
+
         if (currentStep < TOTAL_STEPS) {
           setCurrentStep((s) => s + 1);
         } else {
+          setAllowLeave(true);
+          clearWizardGuard();
           Alert.alert("✓", t("events.update.updateSuccess"), [
             { text: t("events.update.successOk"), onPress: () => navigation.goBack() },
           ]);
@@ -157,6 +196,7 @@ const UpdateEventScreen = () => {
     [
       currentStep, eventId, navigation, queryClient, t,
       updateEventDetails, updateStep2, updateVisualTemplate, updateTaqnyatTemplate,
+      reset, clearWizardGuard,
     ]
   );
 
@@ -178,19 +218,8 @@ const UpdateEventScreen = () => {
   }, [currentStep]);
 
   const handleClose = useCallback(() => {
-    Alert.alert(
-      t("events.update.cancelTitle"),
-      t("events.update.cancelBody"),
-      [
-        { text: t("events.update.cancelKeep"), style: "cancel" },
-        {
-          text: t("events.update.cancelDiscard"),
-          style: "destructive",
-          onPress: () => navigation.goBack(),
-        },
-      ]
-    );
-  }, [navigation, t]);
+    navigation.goBack();
+  }, [navigation]);
 
   const topBarLeftContent = (
     <TouchableOpacity
@@ -257,6 +286,18 @@ const UpdateEventScreen = () => {
               allowAddOnlyOnStep2={allowAddOnlyOnStep2}
             />
           </View>
+          {currentStep === 4 && (
+            <TouchableOpacity
+              style={styles.previewButton}
+              onPress={() => setShowPreview(true)}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="eye-outline" size={22} color="#FFF" />
+              <LocalizedText style={styles.floatingPreviewText}>
+                {t("events.update.preview")}
+              </LocalizedText>
+            </TouchableOpacity>
+          )}
           <PrevAndNextBtns
             onNext={onNext}
             onPrevious={onPrevious}
@@ -270,19 +311,6 @@ const UpdateEventScreen = () => {
             isLoading={isSaving}
           />
         </KeyboardAwareFormScrollView>
-
-        {currentStep === 4 && (
-          <TouchableOpacity
-            style={styles.floatingPreviewButton}
-            onPress={() => setShowPreview(true)}
-            activeOpacity={0.8}
-          >
-            <Ionicons name="eye-outline" size={24} color="#FFF" />
-            <LocalizedText style={styles.floatingPreviewText}>
-              {t("events.update.preview")}
-            </LocalizedText>
-          </TouchableOpacity>
-        )}
 
         <PreviewInvitation
           visible={showPreview}
@@ -309,7 +337,7 @@ const UpdateEventScreen = () => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#F9F4EF" },
   scrollView: { flex: 1 },
-  scrollContent: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 20 },
+  scrollContent: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 50 },
   contentContainer: { marginTop: 12, marginBottom: 16 },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
   errorText: {
@@ -317,14 +345,11 @@ const styles = StyleSheet.create({
     textAlign: "center", padding: 16,
   },
   closeButton: { width: 32, height: 32, justifyContent: "center", alignItems: "center" },
-  floatingPreviewButton: {
-    // Semantic end anchor — logical trailing edge (left in Arabic, right in
-    // English) under the app's forced-RTL root; never a physical `right`.
-    position: "absolute", bottom: 100, end: 20, backgroundColor: "#C28E5C",
+  previewButton: {
+    backgroundColor: "#C28E5C",
     flexDirection: "row", alignItems: "center", justifyContent: "center",
-    paddingVertical: 14, paddingHorizontal: 20, borderRadius: 25, gap: 8,
-    shadowColor: "#000", shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3, shadowRadius: 8, elevation: 8,
+    paddingVertical: 14, paddingHorizontal: 20, borderRadius: 12, gap: 8,
+    marginBottom: 16,
   },
   floatingPreviewText: { fontSize: 16, fontFamily: "Cairo_600SemiBold", color: "#FFF" },
   lockoutBanner: {

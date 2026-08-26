@@ -6,6 +6,7 @@ import { useToast } from "../../contexts/ToastContext";
 import TopBar from "../../components/plans/TopBar";
 import VendorSettingsTabs from "../../components/vendor/VendorSettingsTabs";
 import DeleteAccountSection from "../../components/settings/DeleteAccountSection";
+import { layout } from "../../styles/tokens";
 
 const VendorSettingsScreen = ({ navigation }) => {
   const { t: tVendor } = useTranslation("vendor");
@@ -72,7 +73,8 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 16,
-    paddingVertical: 20,
+    paddingTop: 20,
+    paddingBottom: layout.dashboardPageBottom,
   },
 });
 

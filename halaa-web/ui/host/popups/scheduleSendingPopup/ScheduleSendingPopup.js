@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import Image from "next/image";
 import styles from "./scheduleSendingPopup.module.css";
@@ -14,7 +14,14 @@ import useAuthStore from "@/stores/authStore";
 
 const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
 
-const ScheduleSendingPopup = ({ onClose, eventId, onSuccess, existingSchedule, eventDate }) => {
+const ScheduleSendingPopup = ({
+  onClose,
+  eventId,
+  onSuccess,
+  existingSchedule,
+  eventDate,
+  eventTime,
+}) => {
   const { t, i18n } = useTranslation("common");
   const scheduleSend = useScheduleSend();
   const subscription = useAuthStore((s) => s.subscription);
@@ -41,8 +48,10 @@ const ScheduleSendingPopup = ({ onClose, eventId, onSuccess, existingSchedule, e
     if (!eventDate) return undefined;
     const ev = new Date(eventDate);
     if (Number.isNaN(ev.getTime())) return undefined;
+    const match = String(eventTime || "").match(/^(\d{1,2}):(\d{2})/);
+    if (match) ev.setHours(Number(match[1]), Number(match[2]), 0, 0);
     return toDay(new Date(ev.getTime() - THREE_DAYS_MS));
-  }, [eventDate]);
+  }, [eventDate, eventTime]);
 
   // Human-readable window for the live hint under the date input.
   const windowText = useMemo(() => {
@@ -108,6 +117,19 @@ const ScheduleSendingPopup = ({ onClose, eventId, onSuccess, existingSchedule, e
     },
   });
 
+  useEffect(() => {
+    methods.reset({
+      date: existingSchedule?.scheduledDate
+        ? new Date(existingSchedule.scheduledDate)
+        : null,
+      time: fromHHmm(existingSchedule?.scheduledTime),
+    });
+  }, [
+    existingSchedule?.scheduledDate,
+    existingSchedule?.scheduledTime,
+    methods,
+  ]);
+
   const onSubmit = async (data) => {
     if (!data.date || !data.time) {
       toast.error(t("schedule_date_time_required"));
@@ -142,7 +164,7 @@ const ScheduleSendingPopup = ({ onClose, eventId, onSuccess, existingSchedule, e
       onClose();
     } catch (error) {
       console.error("Error scheduling message:", error);
-      const code = error?.response?.data?.code;
+      const code = error?.code || error?.response?.data?.code;
       if (code === "SCHEDULE_TOO_SOON" || code === "EVENT_DATE_TOO_SOON") {
         toast.error(t("schedule_too_soon"));
       } else if (code === "SCHEDULE_TOO_LATE") {

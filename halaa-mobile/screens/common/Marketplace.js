@@ -112,9 +112,12 @@ export default function Marketplace({ navigation }) {
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <StatusBar barStyle="light-content" backgroundColor={colors.primary[500]} />
       <TopBar
-        title={total ? t("titleWithCount", { count: totalToken }) : t("title")}
-        onBack={() => navigation?.goBack()}
-        showBack={false}
+        title={t("title")}
+        onBack={() => {
+          if (navigation?.canGoBack?.()) navigation.goBack();
+          else navigation?.navigate?.("Login");
+        }}
+        showBack={true}
       />
       <View style={styles.content}>
         <SearchAndFilter

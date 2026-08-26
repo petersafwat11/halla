@@ -56,7 +56,7 @@ export default function CompleteProfileScreen() {
   return (
     <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
         <TopBar
-          title={t("signup.completeProfileTitle")}
+          logoSource={require("../../assets/logo.png")}
           showBack={false}
           rightContent={
             <TouchableOpacity

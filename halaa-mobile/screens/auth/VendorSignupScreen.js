@@ -199,7 +199,10 @@ export default function VendorSignupScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <TopBar title={t('signupForm.vendor.title')} showBack={true} />
+        <TopBar
+          logoSource={require('../../assets/logo.png')}
+          showBack={true}
+        />
         <FormProvider {...methods}>
           {/* One shared owner for the wizard body (§8.2 auth row); the fixed
               action footer stays below it, outside the scroll region. */}

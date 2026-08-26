@@ -26,7 +26,7 @@
     "columns": {
       "name": "الاسم",
       "email": "البريد الإلكتروني",
-      "phone": "الهاتف",
+      "phone": "الجوال",
       "status": "الحالة",
       "subscription": "الاشتراك",
       "createdAt": "تاريخ الإنشاء"
@@ -48,7 +48,7 @@
     "namePlaceholder": "أدخل اسم حساب الأعمال",
     "email": "البريد الإلكتروني",
     "emailPlaceholder": "example@email.com",
-    "phone": "رقم الهاتف",
+    "phone": "رقم الجوال",
     "phonePlaceholder": "05xxxxxxxx",
     "password": "كلمة المرور",
     "passwordPlaceholder": "حدّد كلمة مرور مبدئية",
@@ -64,7 +64,7 @@
   "details": {
     "backToBusinesses": "العودة إلى الحسابات",
     "contactInfo": "معلومات التواصل",
-    "phoneNumber": "الهاتف",
+    "phoneNumber": "الجوال",
     "email": "البريد الإلكتروني",
     "joinDate": "تاريخ الانضمام",
     "description": "الوصف",

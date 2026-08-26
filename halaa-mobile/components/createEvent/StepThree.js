@@ -9,7 +9,7 @@ import {
   Image as RNImage,
   Alert,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFormContext, FormProvider, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Ionicons } from "@expo/vector-icons";
@@ -548,6 +548,7 @@ const TemplateFormModal = ({
   onClose,
   onSave,
 }) => {
+  const insets = useSafeAreaInsets();
   const fieldDirection = useFieldDirection("localized");
   const canvasRef = useRef(null);
   const [baking, setBaking] = useState(false);
@@ -625,7 +626,7 @@ const TemplateFormModal = ({
       onRequestClose={onClose}
       statusBarTranslucent
     >
-      <SafeAreaView style={styles.modalContainer} edges={["top", "bottom"]}>
+      <SafeAreaView style={styles.modalContainer} edges={["top"]}>
         <View style={styles.modalHeader}>
           <Text style={[styles.modalTitle, fieldDirection.text]}>
             {t("edit_design_template")}
@@ -686,7 +687,12 @@ const TemplateFormModal = ({
           </KeyboardAwareFormScrollView>
         </FormProvider>
 
-        <View style={styles.modalFooter}>
+        <View
+          style={[
+            styles.modalFooter,
+            { paddingBottom: Math.max(insets.bottom + 8, 16) },
+          ]}
+        >
           <TouchableOpacity
             style={[styles.footerBtn, styles.footerBtnSecondary]}
             onPress={onClose}

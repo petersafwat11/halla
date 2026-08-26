@@ -2,6 +2,7 @@ import React from "react";
 import {
   View,
   Text,
+  Image,
   StyleSheet,
   TouchableOpacity,
   StatusBar,
@@ -35,6 +36,7 @@ const TopBar = ({
   onBack,
   rightContent = null,
   leftContent = null,
+  logoSource = null,
 }) => {
   const navigation = useNavigation();
   const { t, isRTL } = useTranslation("common");
@@ -95,6 +97,14 @@ const TopBar = ({
       <View style={styles.content}>
         <View style={styles.startCluster}>
           {renderStart()}
+          {!!logoSource && (
+            <Image
+              source={logoSource}
+              style={styles.brandLogo}
+              resizeMode="contain"
+              accessibilityLabel="Halaa"
+            />
+          )}
           {!!title && (
             <Text
               style={[styles.title, chromeDirection, { writingDirection: titleDirection }]}
@@ -157,6 +167,11 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.title.medium,
     fontWeight: typography.fontWeight.semibold,
     color: colors.natural[50],
+  },
+  brandLogo: {
+    width: 44,
+    height: 44,
+    flexShrink: 0,
   },
 });
 

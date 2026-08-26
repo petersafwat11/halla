@@ -15,12 +15,12 @@ import { getLocalized } from "@halaa/shared/utils/locale";
 import { countRatioToken, countToken } from "@halaa/shared/utils/displayTokens";
 import { isPoolPlan } from "@halaa/shared/constants/plans";
 
-const CurrentPlanCard = ({ subscription, usage, onBuyAddons }) => {
+const CurrentPlanCard = ({ subscription, usage, onBuyAddons, style }) => {
   const { t, i18n } = useTranslation("plans");
   const lang = i18n.language || "ar";
 
   if (!subscription) {
-    return <NoActivePlanCard />;
+    return <NoActivePlanCard style={style} />;
   }
 
   // The free trial is not a real plan: it must never render as a purchased
@@ -32,7 +32,7 @@ const CurrentPlanCard = ({ subscription, usage, onBuyAddons }) => {
     subscription.planId?.planType === "trial";
 
   if (isTrialSubscription) {
-    return <NoActivePlanCard />;
+    return <NoActivePlanCard style={style} />;
   }
 
   const planName = getLocalized(subscription, "planName", i18n.language);
@@ -71,7 +71,7 @@ const CurrentPlanCard = ({ subscription, usage, onBuyAddons }) => {
   const guestsPercent = Number.isFinite(guestsPercentRaw) ? guestsPercentRaw : 0;
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, style]}>
       <View style={styles.accent} />
       <View style={styles.header}>
         <View style={styles.headerTitleWrap}>
@@ -141,10 +141,10 @@ const CurrentPlanCard = ({ subscription, usage, onBuyAddons }) => {
 
 // "No active plan" compact card. Also shown to trial accounts — the trial
 // is not a purchasable plan, so it must not render like one.
-const NoActivePlanCard = () => {
+const NoActivePlanCard = ({ style }) => {
   const { t } = useTranslation("plans");
   return (
-    <View style={styles.noSubCard}>
+    <View style={[styles.noSubCard, style]}>
       <View style={styles.accent} />
       <View style={styles.noSubIcon}>
         <Ionicons

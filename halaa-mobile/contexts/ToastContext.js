@@ -183,6 +183,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "Cairo_400Regular",
     color: "#2c2c2c",
+    textAlign: "center",
   },
   closeButton: {
     padding: 4,

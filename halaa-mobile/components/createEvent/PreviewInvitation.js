@@ -8,7 +8,9 @@ import {
   ScrollView,
   Image,
   Pressable,
+  useWindowDimensions,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import {
   resolveTaqnyatPlaceholders,
@@ -55,6 +57,8 @@ const PreviewInvitation = ({
   const { t, currentLanguage } = useTranslation("createEvent");
   const fieldDirection = useFieldDirection("localized");
   const brandDirection = useInputDirection("ltr");
+  const { width: viewportWidth, height: viewportHeight } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const hostName = useAuthStore(
     (state) => state.user?.name || state.user?.username || ""
   );
@@ -110,6 +114,20 @@ const PreviewInvitation = ({
 
   const messageTime = t("preview_timestamp");
   const showReplyActions = invitationAllowsReply(invitationType);
+  const previewWidth = Math.min(viewportWidth - 24, 390);
+  const previewHeight = Math.min(
+    viewportHeight - insets.top - insets.bottom - 24,
+    720
+  );
+  const imageHeight = Math.min(
+    (previewWidth - 36) / Math.max(aspectRatio, 0.5),
+    viewportHeight * 0.3,
+    280
+  );
+  const messageDirection = useInputDirection("adaptive", {
+    hasValue: !!resolvedBody,
+    value: resolvedBody,
+  });
 
   return (
     <Modal
@@ -119,8 +137,17 @@ const PreviewInvitation = ({
       onRequestClose={onClose}
       statusBarTranslucent
     >
-      <Pressable style={styles.overlay} onPress={onClose}>
-        <Pressable style={styles.card} onPress={(e) => e.stopPropagation()}>
+      <Pressable
+        style={[
+          styles.overlay,
+          { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 12 },
+        ]}
+        onPress={onClose}
+      >
+        <Pressable
+          style={[styles.card, { width: previewWidth, height: previewHeight }]}
+          onPress={(e) => e.stopPropagation()}
+        >
         {/* Screen header */}
         <View style={styles.header}>
           <Text style={[styles.headerTitle, fieldDirection.text]}>
@@ -159,12 +186,12 @@ const PreviewInvitation = ({
         >
           {/* Received message card */}
           <View style={styles.msgCard}>
-            <View style={styles.msgImageWrap}>
+            <View style={[styles.msgImageWrap, { height: imageHeight }]}>
               {bakedImageSource ? (
                 <Image
                   source={bakedImageSource}
                   style={styles.templateImage}
-                  resizeMode="cover"
+                  resizeMode="contain"
                   onError={() => {}}
                 />
               ) : template ? (
@@ -177,13 +204,13 @@ const PreviewInvitation = ({
                 <Image
                   source={require("../../assets/invetation.png")}
                   style={styles.templateImage}
-                  resizeMode="cover"
+                  resizeMode="contain"
                 />
               )}
             </View>
 
             {resolvedBody ? (
-              <Text style={[styles.msgBody, fieldDirection.text]}>
+              <Text style={[styles.msgBody, messageDirection]}>
                 {isolateAuto(resolvedBody)}
               </Text>
             ) : (
@@ -241,9 +268,9 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "center",
     paddingHorizontal: 12,
+    alignItems: "center",
   },
   card: {
-    height: "82%",
     backgroundColor: "#EFEAE2",
     borderRadius: 18,
     overflow: "hidden",
@@ -330,7 +357,6 @@ const styles = StyleSheet.create({
   },
   msgImageWrap: {
     width: "100%",
-    height: 300,
     backgroundColor: "#F1E8D6",
     overflow: "hidden",
     borderRadius: 8,

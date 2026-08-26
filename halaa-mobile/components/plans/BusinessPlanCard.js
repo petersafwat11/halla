@@ -37,6 +37,7 @@ const BusinessPlanCard = ({
   isCurrent = false,
   canSelfUpgrade = false,
   onUpgrade,
+  style,
 }) => {
   const { t, i18n } = useTranslation("plans");
   const lang = i18n.language || "ar";
@@ -48,7 +49,7 @@ const BusinessPlanCard = ({
   const setupFee = Number(plan.setupFeeAmount) || 0;
 
   return (
-    <View style={[styles.card, isCurrent && styles.cardCurrent]}>
+    <View style={[styles.card, isCurrent && styles.cardCurrent, style]}>
       {isCurrent ? (
         <View style={styles.currentBadge}>
           <Ionicons name="checkmark-circle" size={14} color={colors.natural[50]} />
@@ -106,7 +107,7 @@ const styles = StyleSheet.create({
     position: "relative",
     backgroundColor: colors.natural[50],
     borderRadius: borderRadius[20],
-    padding: spacing[20],
+    padding: spacing[24],
     marginBottom: spacing[16],
     shadowColor: colors.black[100],
     shadowOffset: { width: 0, height: 2 },

@@ -421,6 +421,12 @@ export const iconSizes = {
   xsmall: 12,
 };
 
+// Dashboard scroll/list containers own this trailing viewport space. Keeping
+// it here prevents leaf cards from accumulating inconsistent bottom margins.
+export const layout = {
+  dashboardPageBottom: 50,
+};
+
 // Helper function to create text styles
 export const createTextStyle = (
   size,
@@ -519,6 +525,7 @@ export default {
   borderRadius,
   typography,
   iconSizes,
+  layout,
   textStyles,
   createTextStyle,
 };
