@@ -17,38 +17,22 @@ import DatePicker from "../commen/DatePicker";
 import TimePicker from "../commen/TimePicker";
 import Button from "../commen/Button";
 import LocalizedText from "../commen/LocalizedText";
-import { normalizeSubscriptionResponse } from "@halaa/shared/utils";
+import {
+  normalizeSubscriptionResponse,
+  toSubscriptionDTO,
+} from "@halaa/shared/utils";
+import {
+  getScheduleWindow,
+  validateScheduleSelection,
+} from "@halaa/shared/utils/schedulingWindow";
 import { useScheduleSend } from "../../hooks/messaging";
 import { useMySubscription } from "../../hooks/users";
 
-const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
-
-// Floor a date to local calendar midnight — the picker is day-granular.
-const toDay = (d) => {
-  const c = new Date(d);
-  c.setHours(0, 0, 0, 0);
-  return c;
-};
-
-// Live scheduling window lower bound: now + minLead.
-//   minLead: trial = 15min, paid = 24h.
-const getMinSendDate = (isTrial) => {
-  const leadMs = isTrial ? 15 * 60 * 1000 : 24 * 60 * 60 * 1000;
-  return toDay(new Date(Date.now() + leadMs));
-};
-
-// Schema is plan-aware: validate against the same min-send day used by the
-// picker bound, so trial hosts can schedule inside the 2-day window.
-const buildSchema = (t, isTrial) =>
-  z
-    .object({
-      scheduledDate: z.date({ required_error: t("scheduleSend.validation.dateRequired") }),
-      scheduledTime: z.date({ required_error: t("scheduleSend.validation.timeRequired") }),
-    })
-    .refine((data) => toDay(data.scheduledDate) >= getMinSendDate(isTrial), {
-      message: t("scheduleSend.validation.minDate"),
-      path: ["scheduledDate"],
-    });
+const buildSchema = (t) =>
+  z.object({
+    scheduledDate: z.date({ required_error: t("scheduleSend.validation.dateRequired") }),
+    scheduledTime: z.date({ required_error: t("scheduleSend.validation.timeRequired") }),
+  });
 
 // Backend Zod schema for /messaging/schedule expects 24h "HH:mm".
 const formatTimeForAPI = (date) => {
@@ -94,10 +78,12 @@ const ScheduleSendingModal = ({
   const scheduleSend = useScheduleSend();
   const { data: subData } = useMySubscription();
   const normalizedSub = normalizeSubscriptionResponse(subData);
-  const isTrial = normalizedSub.subscription?.planCode === "trial";
+  const subscription = toSubscriptionDTO(normalizedSub.subscription);
+  const isTrial =
+    subscription?.planCode === "trial" || subscription?.planType === "trial";
 
   const methods = useForm({
-    resolver: zodResolver(buildSchema(t, isTrial)),
+    resolver: zodResolver(buildSchema(t)),
     mode: "onChange",
     defaultValues: {
       scheduledDate: existingSchedule?.scheduledDate
@@ -133,31 +119,39 @@ const ScheduleSendingModal = ({
   // Live scheduling window: [now + minLead, event − 3d]. The picker is
   // day-granular; the backend is authoritative and returns SCHEDULE_TOO_SOON /
   // SCHEDULE_TOO_LATE for boundary cases.
-  const minDate = useMemo(() => getMinSendDate(isTrial), [isTrial]);
-  const maxDate = useMemo(() => {
-    if (!eventDate) return undefined;
-    const ev = new Date(eventDate);
-    if (Number.isNaN(ev.getTime())) return undefined;
-    const match = String(eventTime || "").match(/^(\d{1,2}):(\d{2})/);
-    if (match) ev.setHours(Number(match[1]), Number(match[2]), 0, 0);
-    return toDay(new Date(ev.getTime() - THREE_DAYS_MS));
-  }, [eventDate, eventTime]);
+  const scheduleWindow = useMemo(
+    () => getScheduleWindow({ isTrial, eventDate, eventTime }),
+    [isTrial, eventDate, eventTime]
+  );
+  const minDate = scheduleWindow.minimumDate;
+  const maxDate = scheduleWindow.maximumDate;
 
   const onSubmit = async (data) => {
-    const chosenDay = toDay(new Date(data.scheduledDate));
-    if (minDate && chosenDay < minDate) {
+    const scheduledTime = formatTimeForAPI(data.scheduledTime);
+    const validation = validateScheduleSelection({
+      date: data.scheduledDate,
+      time: scheduledTime,
+      isTrial,
+      eventDate,
+      eventTime,
+    });
+    if (validation.reason === "tooSoon") {
       Alert.alert(t("alerts.errorTitle"), t("scheduleSend.validation.tooSoon"));
       return;
     }
-    if (maxDate && chosenDay > maxDate) {
+    if (validation.reason === "tooLate" || !scheduleWindow.hasValidWindow) {
       Alert.alert(t("alerts.errorTitle"), t("scheduleSend.validation.tooLate"));
+      return;
+    }
+    if (!validation.valid) {
+      Alert.alert(t("alerts.errorTitle"), t("scheduleSend.validation.timeRequired"));
       return;
     }
     try {
       await scheduleSend.mutateAsync({
         eventId,
         scheduledDate: toUtcMidnightIso(data.scheduledDate),
-        scheduledTime: formatTimeForAPI(data.scheduledTime),
+        scheduledTime,
       });
       reset();
       if (onSuccess) onSuccess();

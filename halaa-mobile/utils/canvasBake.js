@@ -17,9 +17,10 @@
  */
 
 import { captureRef } from "react-native-view-shot";
+import { normalizeInvitationImage } from "./invitationImage";
 
 /**
- * Capture the referenced view as a PNG and return both the file URI
+ * Capture the referenced view as a bounded JPEG and return both the file URI
  * and a multer-compatible file object.
  *
  * @param {React.RefObject} viewRef - Ref attached to a View / ViewShot
@@ -34,24 +35,31 @@ export async function bakeCanvas(viewRef, options = {}) {
     throw new Error("bakeCanvas: viewRef is empty — make sure the canvas mounted before calling");
   }
 
+  const naturalWidth = Number(options.width) || null;
+  const naturalHeight = Number(options.height) || null;
+  const maxDimension = 2048;
+  const scale =
+    naturalWidth && naturalHeight
+      ? Math.min(1, maxDimension / Math.max(naturalWidth, naturalHeight))
+      : 1;
+
   const captureOptions = {
-    format: "png",
-    quality: options.quality ?? 0.95,
+    format: "jpg",
+    quality: options.quality ?? 0.86,
     result: "tmpfile",
   };
-  if (options.width) captureOptions.width = options.width;
-  if (options.height) captureOptions.height = options.height;
+  if (naturalWidth) captureOptions.width = Math.max(1, Math.round(naturalWidth * scale));
+  if (naturalHeight) captureOptions.height = Math.max(1, Math.round(naturalHeight * scale));
 
   const uri = await captureRef(viewRef, captureOptions);
-  const filename = `template-${Date.now()}.png`;
-  return {
+  const normalized = await normalizeInvitationImage({
     uri,
-    file: {
-      uri,
-      name: filename,
-      fileName: filename,
-      type: "image/png",
-    },
+    width: captureOptions.width,
+    height: captureOptions.height,
+  });
+  return {
+    uri: normalized.uri,
+    file: normalized,
   };
 }
 

@@ -11,8 +11,11 @@ import TimePicker from "@/ui/commen/inputs/TimePicker";
 import { toast } from "react-toastify";
 import { useScheduleSend } from "@/hooks/messaging";
 import useAuthStore from "@/stores/authStore";
-
-const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
+import { toSubscriptionDTO } from "@halaa/shared/utils";
+import {
+  getScheduleWindow,
+  validateScheduleSelection,
+} from "@halaa/shared/utils/schedulingWindow";
 
 const ScheduleSendingPopup = ({
   onClose,
@@ -24,8 +27,13 @@ const ScheduleSendingPopup = ({
 }) => {
   const { t, i18n } = useTranslation("common");
   const scheduleSend = useScheduleSend();
-  const subscription = useAuthStore((s) => s.subscription);
-  const isTrial = subscription?.planCode === "trial";
+  const rawSubscription = useAuthStore((s) => s.subscription);
+  const subscription = useMemo(
+    () => toSubscriptionDTO(rawSubscription),
+    [rawSubscription]
+  );
+  const isTrial =
+    subscription?.planCode === "trial" || subscription?.planType === "trial";
 
   // Live scheduling window: [now + minLead, event − 3d].
   //   minLead: trial = 15min, paid = 24h.
@@ -33,25 +41,12 @@ const ScheduleSendingPopup = ({
   // The picker is day-granular, so we floor each bound to its calendar day;
   // the backend is authoritative on the exact instant and returns
   // SCHEDULE_TOO_SOON / SCHEDULE_TOO_LATE for boundary cases.
-  const toDay = (d) => {
-    const c = new Date(d);
-    c.setHours(0, 0, 0, 0);
-    return c;
-  };
-
-  const minDate = useMemo(() => {
-    const leadMs = isTrial ? 15 * 60 * 1000 : 24 * 60 * 60 * 1000;
-    return toDay(new Date(Date.now() + leadMs));
-  }, [isTrial]);
-
-  const maxDate = useMemo(() => {
-    if (!eventDate) return undefined;
-    const ev = new Date(eventDate);
-    if (Number.isNaN(ev.getTime())) return undefined;
-    const match = String(eventTime || "").match(/^(\d{1,2}):(\d{2})/);
-    if (match) ev.setHours(Number(match[1]), Number(match[2]), 0, 0);
-    return toDay(new Date(ev.getTime() - THREE_DAYS_MS));
-  }, [eventDate, eventTime]);
+  const scheduleWindow = useMemo(
+    () => getScheduleWindow({ isTrial, eventDate, eventTime }),
+    [isTrial, eventDate, eventTime]
+  );
+  const minDate = scheduleWindow.minimumDate;
+  const maxDate = scheduleWindow.maximumDate;
 
   // Human-readable window for the live hint under the date input.
   const windowText = useMemo(() => {
@@ -136,18 +131,28 @@ const ScheduleSendingPopup = ({
       return;
     }
 
-    const chosenDay = toDay(new Date(data.date));
-    if (minDate && chosenDay < minDate) {
-      toast.error(t("schedule_too_soon"));
-      return;
-    }
-    if (maxDate && chosenDay > maxDate) {
-      toast.error(t("schedule_too_late"));
+    const time24 = to24h(data.time);
+    if (!time24) {
+      toast.error(t("schedule_invalid_time"));
       return;
     }
 
-    const time24 = to24h(data.time);
-    if (!time24) {
+    const validation = validateScheduleSelection({
+      date: data.date,
+      time: time24,
+      isTrial,
+      eventDate,
+      eventTime,
+    });
+    if (validation.reason === "tooSoon") {
+      toast.error(t("schedule_too_soon"));
+      return;
+    }
+    if (validation.reason === "tooLate" || !scheduleWindow.hasValidWindow) {
+      toast.error(t("schedule_too_late"));
+      return;
+    }
+    if (!validation.valid) {
       toast.error(t("schedule_invalid_time"));
       return;
     }

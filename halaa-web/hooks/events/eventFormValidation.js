@@ -30,13 +30,15 @@ export const validateEventStep = (step, formData) => {
     }
     case 2:
       return Boolean(formData.guestList && formData.guestList.length > 0);
-    case 3:
-      return Boolean(
-        formData.templateImage ||
+    case 3: {
+      const hasTemplateMode = Boolean(
+        formData.visualTemplate?.isCustomUpload ||
         formData.visualTemplate?.templateRef ||
         formData.visualTemplate?.id ||
         formData.visualTemplate?._id
       );
+      return hasTemplateMode && Boolean(formData.templateImage);
+    }
     case 4:
       return Boolean(
         formData.selectedTemplate?.name ||

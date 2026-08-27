@@ -15,6 +15,7 @@ const completeFormData = {
   },
   guestList: [{ name: "Mohammed", phone: "501234567" }],
   visualTemplate: { templateRef: "template_123" },
+  templateImage: new Blob(["baked-image"], { type: "image/jpeg" }),
   selectedTemplate: { name: "Default Wedding Template" },
   confirmReviewed: true,
 };
@@ -47,12 +48,12 @@ test("validateEventStep: step 2 requires non-empty guestList", () => {
   assert.equal(validateEventStep(2, { ...completeFormData, guestList: [] }), false);
 });
 
-test("validateEventStep: step 3 requires template image or visual template", () => {
+test("validateEventStep: step 3 requires a template mode and a baked or uploaded image", () => {
   assert.equal(validateEventStep(3, completeFormData), true);
   assert.equal(
     validateEventStep(3, {
       ...completeFormData,
-      visualTemplate: null,
+      visualTemplate: { isCustomUpload: true },
       templateImage: "data:image/png;base64,...",
     }),
     true
@@ -61,6 +62,14 @@ test("validateEventStep: step 3 requires template image or visual template", () 
     validateEventStep(3, {
       ...completeFormData,
       visualTemplate: null,
+      templateImage: null,
+    }),
+    false
+  );
+  assert.equal(
+    validateEventStep(3, {
+      ...completeFormData,
+      visualTemplate: { templateRef: "template_123" },
       templateImage: null,
     }),
     false

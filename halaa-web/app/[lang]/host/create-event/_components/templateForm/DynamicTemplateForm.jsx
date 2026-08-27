@@ -62,33 +62,31 @@ export default function DynamicTemplateForm({
     fonts.find((f) => f.id === fontFamilyId)?.webFamily || fontFamilyId;
 
   const onSubmit = async (data) => {
-    setEventValues("selectedTemplate", {
-      ...template,
-      fieldValues: data,
-      data,
-    });
-
     setIsGenerating(true);
     try {
       const file = await bakeTemplateImage(previewRef, {
         backgroundUrl: template?.imageUrl,
       });
+      // Commit the template reference and its image atomically. Allowing the
+      // wizard to continue after a failed bake creates an IMAGE-header event
+      // that cannot be delivered by WhatsApp.
+      setEventValues("selectedTemplate", {
+        ...template,
+        fieldValues: data,
+        data,
+      });
       setEventValues("templateImage", file);
+      onClose();
     } catch (err) {
-      // Bake failure is non-fatal: visualTemplate is already saved
-      // above, so the backend can render the header from the
-      // template ref + fieldValues. Warn the host but let them
-      // continue rather than trapping them in the popup.
-      console.warn("[StepThree] template bake skipped:", err);
-      toastUtils.warning(
+      console.error("[StepThree] template bake failed:", err);
+      toastUtils.error(
         t(
           "template_bake_failed",
-          "تعذر إنشاء صورة القالب. سيتم استخدام تصميم القالب الأصلي."
+          "تعذر إنشاء صورة القالب. يرجى المحاولة مرة أخرى."
         )
       );
     } finally {
       setIsGenerating(false);
-      onClose();
     }
   };
 

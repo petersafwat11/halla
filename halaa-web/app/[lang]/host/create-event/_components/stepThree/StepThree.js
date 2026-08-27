@@ -31,10 +31,8 @@ import {
 } from "@/hooks/templates";
 import TemplatesCards from "./templatesCards/TemplatesCards";
 import TemplatePreviewCanvas from "@/components/shared/TemplatePreviewCanvas";
+import { normalizeInvitationImageFile } from "@/utils/invitationImage";
 
-// Server-side limit lives in s3Upload.js (uploadInvitationImage, 10MB).
-// Keep this in sync so the host sees a friendly error before upload.
-const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 const ACCEPTED_MIME = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
 const StepThree = () => {
@@ -150,23 +148,23 @@ const StepThree = () => {
       );
       return false;
     }
-    if (file.size > MAX_UPLOAD_BYTES) {
-      toastUtils.error(
-        t("upload_card_too_big"),
-      );
-      return false;
-    }
     return true;
   };
 
-  const handleFilePicked = (file) => {
+  const handleFilePicked = async (file) => {
     if (!file || !validateFile(file)) return;
-    setValue(
-      "visualTemplate",
-      { isCustomUpload: true, fieldValues: {} },
-      { shouldValidate: true },
-    );
-    setValue("templateImage", file, { shouldValidate: true });
+    try {
+      const normalizedFile = await normalizeInvitationImageFile(file);
+      setValue(
+        "visualTemplate",
+        { isCustomUpload: true, fieldValues: {} },
+        { shouldValidate: true },
+      );
+      setValue("templateImage", normalizedFile, { shouldValidate: true });
+    } catch (error) {
+      console.error("[StepThree] invitation image normalization failed", error);
+      toastUtils.error(t("upload_card_too_big"));
+    }
   };
 
   const handleInputChange = (e) => {

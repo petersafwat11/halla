@@ -1,6 +1,7 @@
 "use client";
 
 import { htmlToImageConvert } from "@/utils/index";
+import { normalizeInvitationImageFile } from "@/utils/invitationImage";
 
 /**
  * Drives the html-to-image bake step for template previews.
@@ -92,7 +93,7 @@ export async function bakeTemplateImage(previewRef, _options = {}) {
     if (!baked?.file) {
       throw new Error("Failed to bake template image");
     }
-    return baked.file;
+    return normalizeInvitationImageFile(baked.file);
   } finally {
     restore();
   }

@@ -29,9 +29,8 @@ import TemplatePreviewCanvas from "../shared/TemplatePreviewCanvas";
 import { bakeCanvas } from "../../utils/canvasBake";
 import { renderTemplateField } from "./_components/TemplateFieldRenderer";
 import { resolveMediaUri } from "../../utils/resolveMediaUri";
+import { normalizeInvitationImage } from "../../utils/invitationImage";
 
-// Server limit lives in s3Upload.js (uploadInvitationImage, 10MB).
-const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 const ACCEPTED_EXT = /\.(jpe?g|png|webp)$/i;
 
 /**
@@ -99,7 +98,7 @@ const StepThree = () => {
       // modal — preventing a stock thumbnail from leaking through if they
       // never confirm a customisation.
       parentSetValue("templateImage", null, { shouldValidate: true });
-      if (template?.fields?.length > 0) {
+      if (template) {
         setShowFormModal(true);
       }
     },
@@ -156,21 +155,12 @@ const StepThree = () => {
         );
         return;
       }
-      if (typeof asset.fileSize === "number" && asset.fileSize > MAX_UPLOAD_BYTES) {
-        Alert.alert(
-          t("upload_card_too_big_title", "Image too large"),
-          t("upload_card_too_big", "Maximum size is 10 MB."),
-        );
-        return;
-      }
-
-      const file = {
+      const file = await normalizeInvitationImage({
         uri: asset.uri,
-        type: asset.mimeType || "image/jpeg",
         fileName: name,
         width: asset.width,
         height: asset.height,
-      };
+      });
 
       parentSetValue(
         "visualTemplate",
