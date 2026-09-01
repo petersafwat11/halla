@@ -178,8 +178,8 @@ guestAccessTokenSchema.statics.validateToken = async function (
   // Look up by token alone first so we can tell the caller *why* a token
   // is invalid (revoked vs expired vs unknown).
   const candidate = await this.findOne({ token })
-    .populate("guest", "name phone email status")
-    .populate("event", "eventDetails host status");
+    .populate("guest", "name phone email status deleted event")
+    .populate("event", "eventDetails host status guestList");
 
   if (!candidate) {
     return { valid: false, reason: "qr_invalid", message: "Token not found" };
@@ -203,6 +203,21 @@ guestAccessTokenSchema.statics.validateToken = async function (
       valid: false,
       reason: "qr_expired",
       message: "This QR has expired",
+    };
+  }
+
+  const guestIsCurrent = candidate.guest
+    && candidate.event
+    && candidate.guest.deleted !== true
+    && String(candidate.guest.event) === String(candidate.event._id)
+    && (candidate.event.guestList || []).some(
+      (guestId) => String(guestId) === String(candidate.guest._id)
+    );
+  if (!guestIsCurrent) {
+    return {
+      valid: false,
+      reason: 'qr_revoked',
+      message: 'This guest no longer has access to the event',
     };
   }
 

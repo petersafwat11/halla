@@ -243,7 +243,7 @@ router.patch(
 router.post(
   "/:eventId/publish",
   validateObjectId("eventId"),
-  idempotency({ scope: "post_event_publish" }),
+  idempotency({ scope: "post_event_publish", required: true }),
   postEventController.publishContent
 );
 
@@ -316,7 +316,7 @@ router.post(
   "/:eventId/publish-and-notify",
   validateObjectId("eventId"),
   otpHourlyLimiter,
-  idempotency({ scope: "post_event_publish_notify" }),
+  idempotency({ scope: "post_event_publish_notify", required: true }),
   validateZod(publishAndNotifySchema),
   postEventController.publishAndNotify
 );
@@ -415,7 +415,7 @@ router.post(
   "/:eventId/send-access-links",
   validateObjectId("eventId"),
   otpHourlyLimiter,
-  idempotency({ scope: "post_event_access" }),
+  idempotency({ scope: "post_event_access", required: true }),
   validateZod(sendAccessLinksSchema),
   postEventController.sendBulkAccessLinks
 );

@@ -586,9 +586,8 @@ const EventDetailsScreen = () => {
   const isTerminal = isTerminalEvent(event);
   const allowGuestMutations = !isLive && !isTerminal;
 
-  // The normal reminder is now FREE and confirmed-only — show the inline
-  // shortcut whenever there are confirmed guests (no quota gate).
-  const hasConfirmedGuests = stats.confirmed > 0;
+  // The RSVP reminder nudge is free and targets SENT, UNANSWERED guests during LIVE events.
+  const hasUnansweredSentGuests = isLive && Boolean(resp?.hasUnansweredSentGuests || resp?.unansweredSentCount > 0);
 
   // Pass the full event so `useEventActionGate` sees every field the
   // hook reads (taqnyatTemplate, staffList, status, launchSettings, …).
@@ -823,8 +822,6 @@ const EventDetailsScreen = () => {
                 ]}
               >
                 {t("events:eventDetails.guestsTabCount", {
-                  // Locale digits (٠١٢ / 0-9) keep the parenthesised count
-                  // from mixing digit systems inside Arabic copy.
                   count: formatLocaleCount(guests.length, currentLanguage),
                 })}
               </LocalizedText>
@@ -893,9 +890,7 @@ const EventDetailsScreen = () => {
 
           {activeTab === "guests" && (
             <View style={styles.guestActionsRow}>
-              {/* The normal reminder is now FREE and confirmed-only — show it
-                  whenever there are confirmed guests, with no quota gate. */}
-              {hasConfirmedGuests && (
+              {hasUnansweredSentGuests && (
                 <ReminderButton
                   onPress={handleSendReminder}
                   sending={sendReminderMutation.isPending}
@@ -919,10 +914,10 @@ const EventDetailsScreen = () => {
                 activeOpacity={0.7}
                 disabled={exportGuestsMutation.isPending}
               >
-                  <Ionicons name="download-outline" size={14} color="#6B4E33" />
-                  <LocalizedText style={styles.outlineActionText}>
-                    {t("events:guest.alerts.exportTitle")}
-                  </LocalizedText>
+                <Ionicons name="download-outline" size={14} color="#6B4E33" />
+                <LocalizedText style={styles.outlineActionText}>
+                  {t("events:guest.alerts.exportTitle")}
+                </LocalizedText>
               </TouchableOpacity>
             </View>
           )}
@@ -961,9 +956,9 @@ const EventDetailsScreen = () => {
             ) : filteredStaff.length === 0 ? (
               <View style={styles.emptyState}>
                 <Ionicons name="shield-outline" size={32} color={colors.natural[400]} />
-                  <LocalizedText style={styles.emptyStateText} center>
-                    {t("events:eventDetails.noModerators")}
-                  </LocalizedText>
+                <LocalizedText style={styles.emptyStateText} center>
+                  {t("events:eventDetails.noModerators")}
+                </LocalizedText>
               </View>
             ) : (
               filteredStaff.map((m, idx) => (
@@ -1012,9 +1007,6 @@ const EventDetailsScreen = () => {
           addStaffMutation.isPending ||
           updateStaffMutation.isPending
         }
-        // Show the existing roster inside the popup so the host has the
-        // same list-in-modal UX the web `StaffPopup` provides. Edit/delete
-        // re-use the same handlers wired into the tabs view below.
         itemsList={popup.type === "guest" ? guests : staffFromStats}
         onEditItem={
           popup.type === "guest"

@@ -194,6 +194,12 @@ const guestSchema = new mongoose.Schema(
       // True when Taqnyat returned 429 — transient, not permanently failed
       rateLimited: { type: Boolean, default: false },
 
+      // Short-lived per-guest dispatch lease. It prevents two workers/actions
+      // from sending the same first invitation concurrently. A stale lease may
+      // be reclaimed after five minutes.
+      dispatchClaimToken: { type: String },
+      dispatchClaimedAt: { type: Date },
+
       // 48h auto-reminder (free, covered by base plan). Written by
       // scheduledTasks.scheduleGuestReminders after a successful send.
       autoReminderSent: { type: Boolean, default: false },

@@ -265,6 +265,85 @@ function buildPostEventAccessLinkSmsBody(event, guestName, accessLink) {
   return `${name}شكراً لحضورك ${title}.\nشاهد صور ومقاطع المناسبة من هنا:\n${accessLink}`;
 }
 
+const crypto = require('crypto');
+
+function deepSortObject(obj) {
+  if (obj === null || typeof obj !== 'object') return obj;
+  if (Array.isArray(obj)) return obj.map(deepSortObject);
+  return Object.keys(obj)
+    .sort()
+    .reduce((acc, key) => {
+      acc[key] = deepSortObject(obj[key]);
+      return acc;
+    }, {});
+}
+
+/**
+ * Compute canonical SHA-256 fingerprint for message-affecting content.
+ * Any change to templates, cards, or event details will produce a different hash.
+ *
+ * @param {Object} event
+ * @param {Object} [resolvedTemplate=null]
+ * @returns {string}
+ */
+function computeInvitationFingerprint(event, resolvedTemplate = null) {
+  if (!event) return '';
+  const ed = event.eventDetails?.toObject?.() || event.eventDetails || {};
+  const vt = event.visualTemplate?.toObject?.() || event.visualTemplate || {};
+  const loc = ed.location?.toObject?.() || ed.location || {};
+  const replies = event.guestReplies?.toObject?.() || event.guestReplies || {};
+
+  const hostName =
+    event.host && typeof event.host === 'object'
+      ? event.host.name || event.host.username || ''
+      : '';
+
+  const mapUrl =
+    loc.latitude != null && loc.longitude != null
+      ? `https://maps.google.com/?q=${loc.latitude},${loc.longitude}`
+      : '';
+
+  const renderedBodyParams = getEventBodyParams(event, 'SAMPLE_GUEST', resolvedTemplate);
+  const resolvedImageUrl = getEventImageUrl(event, resolvedTemplate);
+
+  const payload = {
+    templateRef: event.taqnyatTemplate?.templateRef?.toString?.() || null,
+    templateName: resolvedTemplate?.templateName || null,
+    templateLanguage: resolvedTemplate?.language || 'ar',
+    templateUpdatedAt: resolvedTemplate?.updatedAt ? new Date(resolvedTemplate.updatedAt).toISOString() : null,
+    templateContract: deepSortObject({
+      bodyText: resolvedTemplate?.bodyText || '',
+      hasImageHeader: Boolean(resolvedTemplate?.hasImageHeader),
+      varMapping: resolvedTemplate?.varMapping || [],
+      buttons: resolvedTemplate?.buttons || [],
+    }),
+    visualTemplateRef: vt.templateRef?.toString?.() || null,
+    fieldValues: deepSortObject(vt.fieldValues || {}),
+    bakedImagePath: vt.bakedImagePath || event.templateImage || null,
+    resolvedImageUrl: resolvedImageUrl || null,
+    renderedBodyParams,
+    title: (ed.title || '').trim(),
+    type: ed.type || '',
+    date: ed.date ? new Date(ed.date).toISOString().slice(0, 10) : '',
+    time: (ed.time || '').trim(),
+    hostName: hostName.trim(),
+    location: {
+      address: (loc.address || '').trim(),
+      placeId: loc.placeId || null,
+      latitude: loc.latitude != null ? Number(loc.latitude) : null,
+      longitude: loc.longitude != null ? Number(loc.longitude) : null,
+      mapUrl,
+    },
+    invitationType: event.invitationType || 'reply_and_qr',
+    guestReplies: {
+      onAttend: (replies.onAttend || '').trim(),
+      onAbsent: (replies.onAbsent || '').trim(),
+    },
+  };
+
+  return crypto.createHash('sha256').update(JSON.stringify(deepSortObject(payload))).digest('hex');
+}
+
 module.exports = {
   TAQNYAT_SENDER,
   formatDate,
@@ -276,4 +355,5 @@ module.exports = {
   getRequiredEventImageUrl,
   getPostEventBodyParams,
   buildPostEventAccessLinkSmsBody,
+  computeInvitationFingerprint,
 };

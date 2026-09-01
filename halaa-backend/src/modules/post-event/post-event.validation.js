@@ -48,6 +48,7 @@ const bulkGuestActionSchema = z
   .object({
     guestIds: z.array(objectId).min(1).optional(),
     filter: z.enum(['attended', 'confirmed', 'all']).optional(),
+    attemptId: z.string().max(100).optional(),
   })
   .strict()
   .refine(
@@ -59,6 +60,7 @@ const bulkGuestActionSchema = z
 
 const sendAccessLinksSchema = bulkGuestActionSchema.innerType().extend({
   taqnyatTemplateRef: objectId.optional(),
+  attemptId: z.string().max(100).optional(),
 });
 
 const paginationSchema = z
@@ -74,6 +76,7 @@ const publishAndNotifySchema = z
   .object({
     filter: z.enum(['attended', 'confirmed', 'all']).default('attended'),
     taqnyatTemplateRef: objectId.optional(),
+    attemptId: z.string().max(100).optional(),
   })
   .strict();
 

@@ -119,27 +119,76 @@ async function recordOutboundMessage({
 async function updateOutboundDeliveryStatus(messageId, status, timestamp = new Date()) {
   if (!messageId) return null;
   const at = timestamp ? new Date(timestamp) : new Date();
-  return OutboundMessage.findOneAndUpdate(
-    { provider: "taqnyat", providerMessageId: messageId },
+
+  const allowedPreviousStatuses = {
+    failed: ['failed', 'rejected', 'unknown'],
+    sent: ['failed', 'rejected', 'unknown', 'sent'],
+    delivered: ['failed', 'rejected', 'unknown', 'sent', 'delivered'],
+    read: ['failed', 'rejected', 'unknown', 'sent', 'delivered', 'read'],
+  };
+  if (!Object.prototype.hasOwnProperty.call(allowedPreviousStatuses, status)) {
+    logger.warn('[taqnyat] ignoring unknown delivery status', { messageId, status });
+    return OutboundMessage.findOne({ provider: 'taqnyat', providerMessageId: messageId });
+  }
+
+  // 1. Monotonic status write
+  await OutboundMessage.updateOne(
     {
-      $set: { status, lastDeliveryAt: at },
-      $push: { deliveryHistory: { status, timestamp: at, source: "provider_webhook" } },
+      provider: 'taqnyat',
+      providerMessageId: messageId,
+      status: { $in: allowedPreviousStatuses[status] },
     },
-    { new: true }
+    {
+      $set: { status, statusUpdatedAt: at, lastDeliveryAt: at },
+      $push: { deliveryHistory: { status, timestamp: at, source: 'provider_webhook' } },
+    }
   );
+
+  // 2. Monotonic timestamps
+  if (status === 'delivered' || status === 'read') {
+    await OutboundMessage.updateOne(
+      { provider: 'taqnyat', providerMessageId: messageId, $or: [{ deliveredAt: null }, { deliveredAt: { $exists: false } }] },
+      { $set: { deliveredAt: at } }
+    );
+    await OutboundMessage.updateOne(
+      { provider: 'taqnyat', providerMessageId: messageId, deliveredAt: { $type: 'date', $gt: at } },
+      { $set: { deliveredAt: at } }
+    );
+  }
+
+  if (status === 'read') {
+    await OutboundMessage.updateOne(
+      { provider: 'taqnyat', providerMessageId: messageId, $or: [{ readAt: null }, { readAt: { $exists: false } }] },
+      { $set: { readAt: at } }
+    );
+    await OutboundMessage.updateOne(
+      { provider: 'taqnyat', providerMessageId: messageId, readAt: { $type: 'date', $lt: at } },
+      { $set: { readAt: at } }
+    );
+  }
+
+  return OutboundMessage.findOne({ provider: 'taqnyat', providerMessageId: messageId });
 }
 
 async function markOutboundSmsFallback(messageId, timestamp = new Date()) {
   if (!messageId) return null;
   const at = timestamp ? new Date(timestamp) : new Date();
-  return OutboundMessage.findOneAndUpdate(
+  await OutboundMessage.updateOne(
     { provider: "taqnyat", providerMessageId: messageId },
     {
-      $set: { effectiveChannel: "sms", status: "sent", lastDeliveryAt: at },
+      $set: { effectiveChannel: "sms", lastDeliveryAt: at },
       $push: { deliveryHistory: { status: "sms_fallback", timestamp: at, source: "provider_webhook" } },
-    },
-    { new: true }
+    }
   );
+  await OutboundMessage.updateOne(
+    {
+      provider: 'taqnyat',
+      providerMessageId: messageId,
+      status: { $in: ['failed', 'rejected', 'unknown', 'sent'] },
+    },
+    { $set: { status: 'sent', statusUpdatedAt: at } }
+  );
+  return OutboundMessage.findOne({ provider: 'taqnyat', providerMessageId: messageId });
 }
 
 module.exports = {

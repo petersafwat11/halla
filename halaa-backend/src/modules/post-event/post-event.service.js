@@ -23,10 +23,11 @@ const PostEventContent = require('../../../models/PostEventContentModel');
 const { runBatched } = require('../../shared/utils/runBatched');
 const { logAudit } = require('../../shared/utils/auditLog');
 const logger = require('../../shared/utils/logger');
-const { GUEST_STATUS } = require('../../shared/constants');
+const { GUEST_STATUS, EVENT_LIFECYCLE_ALLOWED } = require('../../shared/constants');
 const { ROLES } = require('../../shared/constants/roles');
 const { resolveTaqnyatTemplateRef } = require('../events/templateRefResolver');
 const { extractStoredRef, deleteFromS3 } = require('../../shared/utils/s3Upload');
+const { getActiveEventGuestsFilter } = require('../../shared/utils/guestFilter');
 
 const dispatchService = require('./post-event.dispatch.service');
 const moderationService = require('../moderation/moderation.service');
@@ -199,6 +200,14 @@ class PostEventService {
     const event = await Event.findOne(buildScopedEventQuery(eventId, user));
     if (!event) throw new NotFoundError('Event');
 
+    if (!EVENT_LIFECYCLE_ALLOWED.POST_EVENT_DRAFT_MUTATION.includes(event.status)) {
+      throw new AppError(
+        `Cannot modify post-event draft for event with status "${event.status}"`,
+        409,
+        'EVENT_LIFECYCLE_CONFLICT'
+      );
+    }
+
     const actorId = user?._id?.toString?.() || user?._id;
     let content = await PostEventContent.findOne({ event: eventId });
     if (!content) {
@@ -244,6 +253,14 @@ class PostEventService {
     const event = await Event.findOne(buildScopedEventQuery(eventId, user));
     if (!event) throw new NotFoundError('Event');
 
+    if (!EVENT_LIFECYCLE_ALLOWED.POST_EVENT_DRAFT_MUTATION.includes(event.status)) {
+      throw new AppError(
+        `Cannot modify post-event draft for event with status "${event.status}"`,
+        409,
+        'EVENT_LIFECYCLE_CONFLICT'
+      );
+    }
+
     const content = await PostEventContent.findOne({ event: eventId });
     if (!content) throw new NotFoundError('Post-event content');
 
@@ -275,14 +292,20 @@ class PostEventService {
   // ============================================
 
   async updateThankYouMessage(eventId, messageData, user) {
-    // UGC text filter (§6 · UGC-02): the thank-you title/description is shown to
-    // every guest on the post-event page, so it must pass the content filter.
     for (const f of ['text', 'textAr', 'description', 'descriptionAr']) {
       if (messageData[f]) moderationService.assertCleanText(messageData[f]);
     }
 
     const event = await Event.findOne(buildScopedEventQuery(eventId, user));
     if (!event) throw new NotFoundError('Event');
+
+    if (!EVENT_LIFECYCLE_ALLOWED.POST_EVENT_DRAFT_MUTATION.includes(event.status)) {
+      throw new AppError(
+        `Cannot modify post-event draft for event with status "${event.status}"`,
+        409,
+        'EVENT_LIFECYCLE_CONFLICT'
+      );
+    }
 
     const actorId = user?._id?.toString?.() || user?._id;
     let content = await PostEventContent.findOne({ event: eventId });
@@ -315,13 +338,17 @@ class PostEventService {
   // HOST: MESSAGING TEMPLATE
   // ============================================
 
-  /**
-   * Save the host's chosen Taqnyat WhatsApp template for access-link
-   * dispatch.
-   */
   async updateMessagingTemplate(eventId, { taqnyatTemplateRef }, user) {
     const event = await Event.findOne(buildScopedEventQuery(eventId, user));
     if (!event) throw new NotFoundError('Event');
+
+    if (!EVENT_LIFECYCLE_ALLOWED.POST_EVENT_DRAFT_MUTATION.includes(event.status)) {
+      throw new AppError(
+        `Cannot modify post-event draft for event with status "${event.status}"`,
+        409,
+        'EVENT_LIFECYCLE_CONFLICT'
+      );
+    }
 
     const resolvedRef = await resolveTaqnyatTemplateRef(taqnyatTemplateRef);
     if (!resolvedRef) {
@@ -356,10 +383,17 @@ class PostEventService {
 
   async publishContent(eventId, user) {
     const event = await Event.findOne(buildScopedEventQuery(eventId, user))
-      .populate('guestList', 'name phone status')
       .populate('host', 'name username');
 
     if (!event) throw new NotFoundError('Event');
+
+    if (!EVENT_LIFECYCLE_ALLOWED.POST_EVENT_PUBLISH.includes(event.status)) {
+      throw new AppError(
+        'Post-event content can only be published once the event is completed',
+        409,
+        'EVENT_NOT_COMPLETED'
+      );
+    }
 
     const actorId = user?._id?.toString?.() || user?._id;
 
@@ -368,17 +402,6 @@ class PostEventService {
     if (!content) throw new ValidationError('No post-event content to publish');
 
     await content.publish();
-
-    // Non-blocking: dispatch access-link messages. Errors are logged but
-    // don't fail the publish call.
-    dispatchService
-      .autoNotifyAfterPublish(event, content)
-      .catch((err) => {
-        logger.error('[post-event] autoNotifyAfterPublish failed', {
-          eventId: event._id.toString(),
-          error: err.message,
-        });
-      });
 
     logAudit({
       action: 'post_event.published',
@@ -391,44 +414,36 @@ class PostEventService {
     return {
       published: true,
       publishedAt: content.settings.publishedAt,
-      notifiedGuests: event.guestList?.length || 0,
     };
   }
 
   /**
    * Publish AND notify guests in one action (the web "Publish & notify"
-   * button). Self-contained — composes three already-tested steps:
-   *   1. publish the content
-   *   2. generate-or-reuse access tokens for the chosen audience
-   *      (`sendBulkAccessLinks` only dispatches to *existing* tokens, so on a
-   *      fresh event this MUST run first or the send half throws NotFound)
-   *   3. dispatch the access links (also persists `stats.lastSend`)
-   *
-   * Distinct from `publishContent` (used by the mobile app): this never
-   * triggers the publish-scope auto-notify, so there is no double-send.
+   * button and mobile unified flow).
    */
-  async publishAndNotify(eventId, user, { filter = 'attended', taqnyatTemplateRef } = {}) {
-    const event = await Event.findOne(buildScopedEventQuery(eventId, user)).select('_id');
+  async publishAndNotify(eventId, user, { filter = 'attended', taqnyatTemplateRef, attemptId } = {}) {
+    const event = await Event.findOne(buildScopedEventQuery(eventId, user)).select('_id status');
     if (!event) throw new NotFoundError('Event');
+
+    if (!EVENT_LIFECYCLE_ALLOWED.POST_EVENT_PUBLISH.includes(event.status)) {
+      throw new AppError(
+        'Post-event content can only be published once the event is completed',
+        409,
+        'EVENT_NOT_COMPLETED'
+      );
+    }
 
     const content = await PostEventContent.findOne({ event: eventId });
     if (!content) throw new ValidationError('No post-event content to publish');
 
     await content.publish();
 
-    // Notify is best-effort: the publish already succeeded and is durable, so
-    // a notify failure (empty audience, deleted template, dispatch error) must
-    // NOT roll the host back to the composer. We return `notified: false` so
-    // the UI flips to the published view (which surfaces "no links sent yet"),
-    // matching the original non-fatal `autoNotifyAfterPublish` semantics.
     try {
-      // Step 2 — create or reuse tokens for the audience (must precede send;
-      // sendBulkAccessLinks only dispatches to existing tokens).
       await this.generateBulkTokens(eventId, user, { filter });
-      // Step 3 — dispatch (persists stats.lastSend).
       const sendResult = await dispatchService.sendBulkAccessLinks(eventId, user, {
         filter,
         taqnyatTemplateRef,
+        attemptId,
       });
       return {
         published: true,
@@ -454,8 +469,16 @@ class PostEventService {
   }
 
   async unpublishContent(eventId, user) {
-    const event = await Event.findOne(buildScopedEventQuery(eventId, user)).select('_id');
+    const event = await Event.findOne(buildScopedEventQuery(eventId, user)).select('_id status');
     if (!event) throw new NotFoundError('Event');
+
+    if (!EVENT_LIFECYCLE_ALLOWED.POST_EVENT_UNPUBLISH.includes(event.status)) {
+      throw new AppError(
+        `Cannot unpublish post-event content when status is '${event.status}'`,
+        409,
+        'EVENT_LIFECYCLE_CONFLICT'
+      );
+    }
 
     const content = await PostEventContent.findOne({ event: eventId });
     if (!content) throw new NotFoundError('Post-event content');
@@ -738,9 +761,14 @@ class PostEventService {
 
     let guests;
     if (guestIds?.length) {
-      guests = await Guest.find({ _id: { $in: guestIds }, event: eventId });
+      guests = await Guest.find(
+        getActiveEventGuestsFilter(eventId, event.guestList, guestIds)
+      );
     } else {
-      guests = await Guest.find({ event: eventId, ...guestFilterToQuery(filter) });
+      guests = await Guest.find({
+        ...getActiveEventGuestsFilter(eventId, event.guestList),
+        ...guestFilterToQuery(filter),
+      });
     }
 
     if (!guests?.length) throw new NotFoundError('No guests found');

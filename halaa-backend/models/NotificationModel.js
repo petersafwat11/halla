@@ -17,6 +17,11 @@ const NOTIFICATION_TYPES = {
   EVENT_STATUS_CHANGE: "event_status_change",
   EVENT_COMPLETED: "event_completed",
   EVENT_CANCELLED: "event_cancelled",
+  EVENT_PARTIAL_DELIVERY_FAILED: "event_partial_delivery_failed",
+  EVENT_UNSCHEDULED: "event_unscheduled",
+  EVENT_UPDATED: "event_updated",
+  EVENT_DELETED: "event_deleted",
+  EVENT_LAUNCH_FAILED: "event_launch_failed",
 
   // Guest notifications
   GUEST_RSVP_ACCEPTED: "guest_rsvp_accepted",
@@ -27,7 +32,10 @@ const NOTIFICATION_TYPES = {
 
   // Subscription notifications
   SUBSCRIPTION_EXPIRING: "subscription_expiring",
+  SUBSCRIPTION_ACTIVATED: "subscription_activated",
   SUBSCRIPTION_RENEWED: "subscription_renewed",
+  SUBSCRIPTION_RENEWAL_INVOICE: "subscription_renewal_invoice",
+  SUBSCRIPTION_UPDATED: "subscription_updated",
   SUBSCRIPTION_EXPIRED: "subscription_expired",
   PLAN_LIMIT_WARNING: "plan_limit_warning",
   PAYMENT_SUCCESSFUL: "payment_successful",
@@ -42,14 +50,17 @@ const NOTIFICATION_TYPES = {
   VENDOR_PENDING_APPROVAL: "vendor_pending_approval",
   VENDOR_APPROVED: "vendor_approved",
   VENDOR_REJECTED: "vendor_rejected",
+  VENDOR_REGISTRATION: "vendor_registration",
   PROFILE_INCOMPLETE: "profile_incomplete",
   WELCOME: "welcome",
+  ACCOUNT_STATUS_CHANGE: "account_status_change",
 
   // Support notifications
   TICKET_CREATED: "ticket_created",
   TICKET_ASSIGNED: "ticket_assigned",
   TICKET_RESPONSE: "ticket_response",
   TICKET_RESOLVED: "ticket_resolved",
+  TICKET_STATUS: "ticket_status",
 
   // Admin notifications
   SYSTEM_ALERT: "system_alert",
@@ -58,6 +69,7 @@ const NOTIFICATION_TYPES = {
 
   // Moderation (§6)
   MODERATION_WARNING: "moderation_warning",
+  ADDON_PENDING_REFUND: "addon_pending_refund",
 
   // General
   ANNOUNCEMENT: "announcement",

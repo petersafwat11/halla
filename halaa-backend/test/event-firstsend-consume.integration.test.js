@@ -95,7 +95,7 @@ const mkEvent = (host, subscriptionId) =>
   Event.create({
     host,
     subscriptionId,
-    status: "scheduled",
+    status: "live",
     eventDetails: {
       title: "Test Event",
       type: "wedding",

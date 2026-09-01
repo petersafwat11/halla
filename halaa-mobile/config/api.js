@@ -235,6 +235,7 @@ export const ENDPOINTS = {
     UPDATE_THANK_YOU: API_PATHS.postEvent.updateThankYouMessage,
     UPDATE_MESSAGING_TEMPLATE: API_PATHS.postEvent.updateMessagingTemplate,
     PUBLISH: API_PATHS.postEvent.publishContent,
+    PUBLISH_AND_NOTIFY: API_PATHS.postEvent.publishAndNotify,
     UNPUBLISH: API_PATHS.postEvent.unpublishContent,
     GENERATE_TOKENS: API_PATHS.postEvent.generateBulkTokens,
     SEND_ACCESS_LINKS: API_PATHS.postEvent.sendBulkAccessLinks,

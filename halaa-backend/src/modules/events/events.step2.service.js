@@ -10,6 +10,7 @@ const {
   PackageLimitError,
   AppError,
 } = require("../../shared/errors");
+const { EVENT_LIFECYCLE_ALLOWED } = require("../../shared/constants/status");
 
 // Import existing models during migration
 const Event = require("../../../models/EventModel");
@@ -58,8 +59,12 @@ module.exports = {
       .populate('guestList', 'name phone status category');
     if (!event) throw new NotFoundError("Event");
 
-    if (['completed', 'cancelled'].includes(event.status)) {
-      throw new ValidationError('Cannot modify a completed or cancelled event');
+    if (!EVENT_LIFECYCLE_ALLOWED.STAFF_MUTATION.includes(event.status)) {
+      throw new AppError(
+        `Cannot modify step 2 when event status is '${event.status}'`,
+        409,
+        'EVENT_LIFECYCLE_CONFLICT'
+      );
     }
 
     // List cap (NO consumption): replacing the guest list is a re-list of
@@ -149,20 +154,39 @@ module.exports = {
       .filter((g) => !incomingPhones.has(normalizePhoneNumber(g.phone)))
       .map((g) => g._id);
 
-    // EVT-03: Live event invariants — existing guests are immutable, new guests allowed.
-    if (event.status === 'live') {
-      if (toDeleteIds.length > 0) {
-        throw new ValidationError('Cannot remove existing guests from a live event');
-      }
-      if (toUpdate.length > 0) {
-        throw new ValidationError('Cannot modify existing guests on a live event');
-      }
-    }
-
     const normalisedStaff = staffList.map((s) => ({
       name: s.name,
       phone: s.phone,
     }));
+
+    // EVT-03: Live event invariants — existing guests and staff are immutable, new guests allowed.
+    if (event.status === 'live') {
+      if (toDeleteIds.length > 0) {
+        throw new AppError('Cannot remove existing guests from a live event', 409, 'EVENT_LIFECYCLE_CONFLICT');
+      }
+      if (toUpdate.length > 0) {
+        throw new AppError('Cannot modify existing guests on a live event', 409, 'EVENT_LIFECYCLE_CONFLICT');
+      }
+
+      const cleanP = (p) => (typeof p === 'string' ? p.replace(/[\s\-\(\)]/g, '') : '');
+      const existingStaffKeys = (event.staffList || [])
+        .map((s) => `${cleanP(s.phone)}:${(s.name || '').trim()}`)
+        .sort();
+      const incomingStaffKeys = normalisedStaff
+        .map((s) => `${cleanP(s.phone)}:${(s.name || '').trim()}`)
+        .sort();
+      const staffMatches =
+        existingStaffKeys.length === incomingStaffKeys.length &&
+        existingStaffKeys.every((k, i) => k === incomingStaffKeys[i]);
+
+      if (!staffMatches) {
+        throw new AppError(
+          'Cannot bulk-replace staff on a live event. Use dedicated staff management.',
+          409,
+          'EVENT_LIFECYCLE_CONFLICT'
+        );
+      }
+    }
 
     let session = null;
     let useTransactions = true;

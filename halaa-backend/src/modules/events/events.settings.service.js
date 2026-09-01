@@ -4,7 +4,7 @@
  * @module modules/events/events.settings.service
  */
 
-const { EVENT_STATUS, INVITATION_TYPE } = require("../../shared/constants");
+const { EVENT_STATUS, INVITATION_TYPE, EVENT_LIFECYCLE_ALLOWED } = require("../../shared/constants");
 const {
   NotFoundError,
   ValidationError,
@@ -142,18 +142,63 @@ module.exports = {
       .populate('planId', 'code planType');
     if (!event) throw new NotFoundError("Event");
 
-    // Live/published events are immutable
-    const BLOCKED_STATUSES = ['live', 'published', 'completed', 'cancelled', 'archived'];
-    if (BLOCKED_STATUSES.includes(event.status)) {
-      throw new ValidationError(`Cannot modify event details when status is '${event.status}'`);
+    // Lifecycle check: details can only be modified before launch
+    if (!EVENT_LIFECYCLE_ALLOWED.DETAILS_MUTATION.includes(event.status)) {
+      throw new AppError(
+        `Cannot modify event details when status is '${event.status}'`,
+        409,
+        'EVENT_LIFECYCLE_CONFLICT'
+      );
     }
+    const wasScheduled = event.status === 'scheduled';
 
     // 24h pre-launch edit lock
     this._checkEditLock(event, details);
 
-    // Does this edit touch the event date/time? Floor + schedule
-    // re-validation only run when it does (a title-only edit on a
-    // near-term event must not be rejected). Mirrors _checkEditLock.
+    // If the event was scheduled, modifying details invalidates the test fingerprint and auto-unschedules
+    const unscheduled = await Event.updateOne(
+      { _id: event._id, status: 'scheduled' },
+      {
+        $set: {
+          status: 'pending_scheduling',
+          testMessageSent: false,
+          testMessageFingerprint: null,
+        },
+        $unset: {
+          'launchSettings.scheduledDate': 1,
+          'launchSettings.scheduledTime': 1,
+        },
+      }
+    );
+    if (wasScheduled && unscheduled.modifiedCount !== 1) {
+      throw new AppError(
+        'Event lifecycle changed while details were being updated',
+        409,
+        'EVENT_LIFECYCLE_CONFLICT'
+      );
+    }
+
+    if (unscheduled.modifiedCount > 0) {
+      event.status = 'pending_scheduling';
+      event.testMessageSent = false;
+      event.testMessageFingerprint = null;
+      if (event.launchSettings) {
+        event.launchSettings.scheduledDate = undefined;
+        event.launchSettings.scheduledTime = undefined;
+      }
+      logAudit({
+        action: 'event.auto_unscheduled',
+        actor: userContext,
+        targetType: 'event',
+        targetId: event._id,
+        metadata: { reason: 'event_details_updated' },
+      }).catch(() => {});
+    } else {
+      event.testMessageSent = false;
+      event.testMessageFingerprint = null;
+    }
+
+    // Does this edit touch the event date/time? Floor validation only runs when it does.
     const dateTimeChanging = details.date !== undefined || details.time !== undefined;
     const previousCategory = event.eventDetails?.type;
 
@@ -172,19 +217,6 @@ module.exports = {
 
       // Event-date floor: a valid send window must still exist for the new date.
       assertEventDateFloor({ eventInstant: newEventInstant, isTrial });
-
-      // Re-validate any stored launch schedule against the new event instant.
-      // Only the event-relative upper bound (≤ event − maxLead) and "still in
-      // the future" matter here — we must NOT re-impose the original min-lead,
-      // or a still-valid schedule would be silently cleared just because time
-      // passed since it was set (requireMinLead: false).
-      const sendInstant = storedSendInstant(event);
-      if (sendInstant && !isSendInWindow({ scheduledInstant: sendInstant, eventInstant: newEventInstant, isTrial, requireMinLead: false })) {
-        event.launchSettings = { ...event.launchSettings, scheduledDate: undefined, scheduledTime: undefined };
-        if (event.status === EVENT_STATUS.SCHEDULED) {
-          event.status = EVENT_STATUS.PENDING_SCHEDULING;
-        }
-      }
     }
 
     // Rescheduling edge case: if custom reminder exists and new event start time occurs before it, reset customReminderTime to false
@@ -225,9 +257,57 @@ module.exports = {
     const event = await Event.findOne(this._buildScopedEventQuery(eventId, userContext));
     if (!event) throw new NotFoundError("Event");
 
-    // Don't allow modifications to completed or cancelled events
-    if (['completed', 'cancelled'].includes(event.status)) {
-      throw new ValidationError('Cannot modify a completed or cancelled event');
+    // Lifecycle check: invitation settings can only be modified before launch
+    if (!EVENT_LIFECYCLE_ALLOWED.INVITATION_SETTINGS_MUTATION.includes(event.status)) {
+      throw new AppError(
+        `Cannot modify invitation settings when status is '${event.status}'`,
+        409,
+        'EVENT_LIFECYCLE_CONFLICT'
+      );
+    }
+    const wasScheduled = event.status === 'scheduled';
+
+    // If the event was scheduled, modifying invitation settings invalidates the test fingerprint and auto-unschedules
+    const unscheduled = await Event.updateOne(
+      { _id: event._id, status: 'scheduled' },
+      {
+        $set: {
+          status: 'pending_scheduling',
+          testMessageSent: false,
+          testMessageFingerprint: null,
+        },
+        $unset: {
+          'launchSettings.scheduledDate': 1,
+          'launchSettings.scheduledTime': 1,
+        },
+      }
+    );
+    if (wasScheduled && unscheduled.modifiedCount !== 1) {
+      throw new AppError(
+        'Event lifecycle changed while invitation settings were being updated',
+        409,
+        'EVENT_LIFECYCLE_CONFLICT'
+      );
+    }
+
+    if (unscheduled.modifiedCount > 0) {
+      event.status = 'pending_scheduling';
+      event.testMessageSent = false;
+      event.testMessageFingerprint = null;
+      if (event.launchSettings) {
+        event.launchSettings.scheduledDate = undefined;
+        event.launchSettings.scheduledTime = undefined;
+      }
+      logAudit({
+        action: 'event.auto_unscheduled',
+        actor: userContext,
+        targetType: 'event',
+        targetId: event._id,
+        metadata: { reason: 'invitation_settings_updated' },
+      }).catch(() => {});
+    } else {
+      event.testMessageSent = false;
+      event.testMessageFingerprint = null;
     }
 
     if (file) {
@@ -354,43 +434,34 @@ module.exports = {
   },
 
   /**
-   * Update launch settings
+   * Update launch settings — unified with canonical scheduleBulkSend service.
    * @param {string} eventId
    * @param {Object} settings
-   * @param {string} userId
+   * @param {Object} userContext
    * @returns {Promise<Object>}
    */
   async updateLaunchSettings(eventId, settings, userContext) {
-    const event = await Event.findOne(this._buildScopedEventQuery(eventId, userContext));
-    if (!event) throw new NotFoundError("Event");
-
-    if (['completed', 'cancelled'].includes(event.status)) {
-      throw new ValidationError('Cannot modify a completed or cancelled event');
-    }
-
-    // 24h pre-launch edit lock — block scheduledDate/time changes within the window.
-    this._checkEditLock(event, {
-      date: settings.scheduledDate,
-      time: settings.scheduledTime,
-    });
-
-    event.launchSettings = { ...event.launchSettings, ...settings };
-    await event.save();
-
+    const messagingSchedule = require('../messaging/messaging.schedule.service');
     const userId =
       typeof userContext === 'object' && userContext !== null
         ? userContext._id?.toString?.() || userContext._id
         : userContext;
+    const isAdmin =
+      typeof userContext === 'object' && userContext !== null
+        ? isAdminRole(userContext.role)
+        : false;
 
-    logAudit({
-      action: 'event.launch_settings_updated',
-      actor: { _id: userId },
-      targetType: 'event',
-      targetId: eventId,
-      metadata: { changedKeys: Object.keys(settings || {}) },
-    }).catch(() => {});
+    const result = await messagingSchedule.scheduleBulkSend({
+      eventId,
+      scheduledDate: settings.scheduledDate,
+      scheduledTime: settings.scheduledTime,
+      userId,
+      isAdmin,
+      actorRole: typeof userContext === 'object' ? userContext?.role : undefined,
+    });
 
-    return { event };
+    const updatedEvent = await Event.findById(eventId);
+    return { event: updatedEvent, ...result };
   },
 
   /**

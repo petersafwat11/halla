@@ -798,7 +798,7 @@ class GuestsService {
 
     const frontendUrl = config.frontend.url;
     await notificationService.sendToUser(event.host, {
-      type: `guest_rsvp_${response}`,
+      type: response === 'confirmed' ? 'guest_rsvp_accepted' : 'guest_rsvp_declined',
       title: 'Guest RSVP',
       titleAr: 'رد ضيف',
       message: `${guest.name} ${msg.en} for your event`,
@@ -817,7 +817,7 @@ class GuestsService {
     if (!msg) return;
 
     await notificationService.sendToUser(hostId, {
-      type: 'guest_status_change',
+      type: 'guest_checked_in',
       title: 'Guest Status Update',
       titleAr: 'تحديث حالة ضيف',
       message: `${guest.name} ${msg.en}`,

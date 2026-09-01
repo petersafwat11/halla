@@ -26,8 +26,13 @@ const {
   generateDailyReportPDF,
   generateWeeklyReportPDF,
 } = require("./pdfGenerator");
-const { ROLES } = require("../constants");
 const { parseEventTime, isDue, nowUtc } = require("./timezone");
+const { getActiveEventGuestsFilter } = require("./guestFilter");
+const { eventInstantOf } = require("./schedulingWindow");
+const {
+  resolveTaqnyatTemplate,
+  computeInvitationFingerprint,
+} = require("../../modules/messaging/messaging.formatting");
 const { logAudit } = require("./auditLog");
 const eventLock = require("./eventLock");
 
@@ -174,10 +179,7 @@ async function runEventLaunch(event, workerId) {
     return { launched: false, reason: "no_guests" };
   }
 
-  // Centralized dispatch-policy gate. Without it the cron path skips the
-  // subscription/owner checks that HTTP routes enforce — a subscription
-  // active at schedule time that lapses before the cron fires would still
-  // send. Consult the single guard here.
+  // Centralized dispatch-policy gate
   const dispatchPolicy = require("../../modules/messaging/messaging.dispatchPolicy.service");
   const decision = await dispatchPolicy.assertCanDispatch(
     event,
@@ -188,226 +190,207 @@ async function runEventLaunch(event, workerId) {
     return { launched: false, reason: `dispatch_blocked:${decision.reason}` };
   }
 
-  // Filter out guests whose invitation has already been delivered. Calling
-  // sendBulk over the FULL guestList on every retry duplicates SMS: the
-  // per-attempt idempotency fingerprint (`event.lastAttemptAt.getTime()`)
-  // changes on each attempt, so the idempotency cache does NOT deduplicate
-  // across attempts — a successfully-delivered guest would receive a fresh
-  // SMS on every retry, up to 5 duplicates after the maximum attempt count.
-  // The atomic delivered-state lives in `Guest.invitation.sent`; only
-  // guests where that flag is not true (failed / never sent) need a new
-  // dispatch.
-  const Guest = require("../../../models/GuestModel");
-  const undelivered = await Guest.find({
-    _id: { $in: allGuestIds },
-    "invitation.sent": { $ne: true },
-  })
-    .select("_id")
-    .lean();
-  const guestIds = undelivered.map((g) => g._id.toString());
-
-  if (guestIds.length === 0) {
-    // Every guest has already received an invitation. Treat this as a
-    // successful launch (e.g. all attempts succeeded incrementally). Flip
-    // straight to `live` without dispatching.
-    //
-    // If attemptCount is 0, this means we're being asked
-    // to launch an event whose guests ALREADY all show invitation.sent
-    // — without any cron attempt having fired. That can only happen if
-    // an admin / seed / support tool flipped the flag manually. Audit
-    // it loudly so ops can investigate (rather than silently flipping
-    // status to `live`).
-    const att = event.attemptCount || 0;
-    if (att === 0) {
-      console.warn(
-        `[Cron] SUSPICIOUS: event ${eventId} has all guests marked invitation.sent` +
-          ` but attemptCount=0 — launching anyway. Investigate seed/admin overrides.`
-      );
-      try {
-        await logAudit({
-          action: "event.launched_no_dispatch",
-          actor: { _id: null, role: "system" },
-          targetType: "event",
-          targetId: event._id,
-          metadata: {
-            reason: "all_guests_already_marked_sent",
-            attemptCount: att,
-            workerId,
-          },
-          status: "anomaly",
-        });
-      } catch (_) { /* swallow audit failure */ }
-    } else {
-      console.log(
-        `[Cron] Event ${eventId} has no undelivered guests — finalising as launched`
-      );
-    }
-    const lockEarly = await eventLock.acquire(eventId, workerId);
-    if (!lockEarly.acquired) {
-      return { launched: false, reason: "locked" };
-    }
-    try {
-      const ev = await Event.findById(eventId);
-      if (
-        ev &&
-        ev.status !== "live" &&
-        ev.status !== "completed" &&
-        ev.status !== "failed" &&
-        ev.status !== "cancelled"
-      ) {
-        ev.status = "live";
-        ev.launchedAt = new Date();
-        ev.failureReason = null;
-        await ev.save();
-      }
-      return { launched: true, reason: "all_already_delivered" };
-    } finally {
-      await _safeReleaseLock(eventId, workerId);
-    }
-  }
-
-  // Dynamically size the lock TTL based on the worst-case sendBulk
-  // duration for this guestlist. With ratePerSecond=10 a fixed
-  // 10-min TTL is too small for >6000 guests; a second cron tick would
-  // reacquire the stale lock mid-send and double-fire the entire batch.
-  const dynamicTtl = eventLock.estimateLockTtl(guestIds.length);
+  const dynamicTtl = eventLock.estimateLockTtl(allGuestIds.length);
   const lock = await eventLock.acquire(eventId, workerId, { ttlMs: dynamicTtl });
   if (!lock.acquired) {
     console.log(`[Cron] Event ${eventId} is already locked by another worker — skipping`);
     return { launched: false, reason: "locked" };
   }
 
-  // Heartbeat refreshes lockedAt every minute so even if our TTL
-  // estimate was wrong the lock stays alive while we're actively running.
   const beat = eventLock.heartbeat(eventId, workerId);
 
-  // Re-read inside the lock in case another worker ran first.
-  const fresh = await Event.findById(eventId);
-  // Bail on any terminal state — defense in depth against a race between
-  // the cron filter (which excludes these) and our re-read.
-  if (
-    !fresh ||
-    fresh.status === "live" ||
-    fresh.status === "completed" ||
-    fresh.status === "failed" ||
-    fresh.status === "cancelled"
-  ) {
-    await _safeReleaseLock(eventId, workerId);
-    return { launched: false, reason: "stale" };
-  }
+  try {
+    // Re-read inside the lock in case another worker ran first.
+    const fresh = await Event.findById(eventId).populate('host', 'name username email preferredLanguage');
+    if (!fresh || fresh.status !== 'scheduled') {
+      return { launched: false, reason: "stale" };
+    }
 
-  // Re-check subscription validity at dispatch time. The cron candidate query
-  // only filters on event status, so a subscription that was cancelled /
-  // refunded / expired AFTER the event was scheduled would otherwise still
-  // fire. (Invite balance is separately enforced inside sendBulk's budget
-  // pre-check; here we gate on active/trial status + not-expired.)
-  if (fresh.subscriptionId) {
-    const sub = await Subscription.findById(fresh.subscriptionId).select(
-      "status expiresAt"
-    );
-    const valid =
-      sub &&
-      ["active", "trial"].includes(sub.status) &&
-      (!sub.expiresAt || new Date(sub.expiresAt).getTime() > Date.now());
-    if (!valid) {
-      const reason = !sub
-        ? "subscription_missing"
-        : sub.status !== "active" && sub.status !== "trial"
-        ? `subscription_${sub.status}`
-        : "subscription_expired";
+    // Pre-launch fingerprint validation: test message must match current event content
+    const cachedTemplate = await resolveTaqnyatTemplate(fresh);
+    const currentFingerprint = computeInvitationFingerprint(fresh, cachedTemplate);
+
+    if (!fresh.testMessageSent || fresh.testMessageFingerprint !== currentFingerprint) {
       console.warn(
-        `[Cron] Event ${eventId} NOT launched — ${reason}; skipping scheduled send.`
+        `[Cron] Event ${eventId} launch aborted: test message missing or outdated fingerprint`
       );
       await Event.updateOne(
-        { _id: eventId, $or: [{ failureReason: null }, { failureReason: { $exists: false } }] },
-        { $set: { failureReason: reason } }
-      ).catch(() => {});
+        { _id: eventId, status: "scheduled" },
+        {
+          $set: {
+            status: "pending_scheduling",
+            testMessageSent: false,
+            testMessageFingerprint: null,
+            failureReason: "untested_changes",
+          },
+          $unset: {
+            "launchSettings.scheduledDate": 1,
+            "launchSettings.scheduledTime": 1,
+          },
+        }
+      );
+
+      if (fresh.host) {
+        notificationService
+          .sendToUser(fresh.host, {
+            type: "event_unscheduled",
+            title: "تم إلغاء جدولة الإرسال",
+            titleAr: "تم إلغاء جدولة الإرسال",
+            message: "تم تعديل تفاصيل الفعالية بعد الاختبار، يرجى إرسال رسالة تجريبية وإعادة الجدولة.",
+            messageAr: "تم تعديل تفاصيل الفعالية بعد الاختبار، يرجى إرسال رسالة تجريبية وإعادة الجدولة.",
+            data: { entityType: "event", entityId: fresh._id },
+          })
+          .catch(() => {});
+      }
+
       try {
         await logAudit({
-          action: "event.launch_blocked",
+          action: "event.launch_aborted_untested",
           actor: { _id: null, role: "system" },
           targetType: "event",
           targetId: fresh._id,
-          metadata: { reason, subscriptionId: String(fresh.subscriptionId), workerId },
+          metadata: { reason: "untested_changes", workerId },
           status: "failure",
         });
-      } catch (_) { /* swallow audit failure */ }
-      await _safeReleaseLock(eventId, workerId);
-      return { launched: false, reason };
+      } catch (_) {}
+
+      return { launched: false, reason: "untested_changes" };
     }
-  }
 
-  console.log(`[Cron] Launching event: ${eventId} (${fresh.eventDetails?.title}) attempt ${(fresh.attemptCount || 0) + 1}`);
-
-  try {
-    fresh.attemptCount = (fresh.attemptCount || 0) + 1;
-    fresh.lastAttemptAt = new Date();
-    await fresh.save();
-
-    const channel = fresh.messagingStatus?.preferredChannel || "sms";
-    const canUseWhatsApp = !!fresh.taqnyatTemplate?.templateRef;
-    const finalChannel = channel === "whatsapp" && canUseWhatsApp ? "whatsapp" : "sms";
-
-    const sendResult = await messagingService.sendBulk({
-      guestIds,
-      eventId,
-      channel: finalChannel,
-    });
-
-    // Send succeeded (possibly with partial per-guest failures handled
-    // by the retry-failed flow downstream). Flip to live now.
-    fresh.status = "live";
-    fresh.launchedAt = new Date();
-    // Clear via `null`. Mongoose treats `undefined` as "leave field as-is"
-    // on subdocuments / cast paths, so we explicitly null these out.
-    fresh.failureReason = null;
-    await fresh.save();
-
-    await logAudit({
-      action: "event.launched",
-      actor: { _id: null, role: "system" },
-      targetType: "event",
-      targetId: fresh._id,
-      changes: { after: { status: "live", launchedAt: fresh.launchedAt } },
-      metadata: {
-        sentTo: sendResult.successful ?? guestIds.length,
-        failedSends: sendResult.failed ?? 0,
-        attemptCount: fresh.attemptCount,
-        workerId,
-      },
-    });
-
-    console.log(`[Cron] Event ${eventId} launched (sent ${sendResult.successful || 0}/${guestIds.length})`);
-    return { launched: true };
-  } catch (err) {
-    console.error(`[Cron] Event ${eventId} launch threw:`, err);
-    // sendBulk now throws AppError with `.code` (e.g. ALL_SENDS_FAILED,
-    // EVENT_NOT_FOUND, FORBIDDEN). Prefer the code for `failureReason`
-    // so the stored value stays a stable identifier; fall back to the
-    // human message for unexpected exceptions.
-    const reason = err.code || err.message || "exception";
-    try {
-      // Only overwrite `failureReason` if a more specific one isn't
-      // already set — defense in depth against future inner saves.
-      await Event.updateOne(
-        { _id: eventId, $or: [{ failureReason: null }, { failureReason: { $exists: false } }] },
-        { $set: { failureReason: reason } }
+    if (fresh.subscriptionId) {
+      const sub = await Subscription.findById(fresh.subscriptionId).select(
+        "status expiresAt"
       );
+      const valid =
+        sub &&
+        ["active", "trial"].includes(sub.status) &&
+        (!sub.expiresAt || new Date(sub.expiresAt).getTime() > Date.now());
+      if (!valid) {
+        const reason = !sub
+          ? "subscription_missing"
+          : sub.status !== "active" && sub.status !== "trial"
+          ? `subscription_${sub.status}`
+          : "subscription_expired";
+        console.warn(
+          `[Cron] Event ${eventId} NOT launched — ${reason}; skipping scheduled send.`
+        );
+        await Event.updateOne(
+          { _id: eventId, $or: [{ failureReason: null }, { failureReason: { $exists: false } }] },
+          { $set: { failureReason: reason } }
+        ).catch(() => {});
+        try {
+          await logAudit({
+            action: "event.launch_blocked",
+            actor: { _id: null, role: "system" },
+            targetType: "event",
+            targetId: fresh._id,
+            metadata: { reason, subscriptionId: String(fresh.subscriptionId), workerId },
+            status: "failure",
+          });
+        } catch (_) { /* swallow audit failure */ }
+        return { launched: false, reason };
+      }
+    }
+
+    // Resolve the authoritative current-list subset only after the lock and
+    // fingerprint gate. This prevents stale pre-lock recipient snapshots from
+    // being dispatched after a concurrent guest-list edit.
+    const Guest = require("../../../models/GuestModel");
+    const undelivered = await Guest.find({
+      ...getActiveEventGuestsFilter(eventId, fresh.guestList),
+      "invitation.sent": { $ne: true },
+    })
+      .select("_id")
+      .lean();
+    const guestIds = undelivered.map((guest) => guest._id.toString());
+
+    if (guestIds.length === 0) {
+      fresh.status = 'live';
+      fresh.launchedAt = new Date();
+      fresh.failureReason = null;
+      fresh.messagingStatus = fresh.messagingStatus || {};
+      fresh.messagingStatus.deliveryStatus = 'delivered';
+      fresh.messagingStatus.failedCount = 0;
+      fresh.messagingStatus.pendingCount = 0;
+      await fresh.save();
       await logAudit({
-        action: "event.launch_failed",
+        action: 'event.launched_no_dispatch',
+        actor: { _id: null, role: 'system' },
+        targetType: 'event',
+        targetId: fresh._id,
+        metadata: { reason: 'all_guests_already_marked_sent', workerId },
+        status: 'success',
+      }).catch(() => {});
+      return { launched: true, reason: 'all_already_delivered' };
+    }
+
+    console.log(`[Cron] Launching event: ${eventId} (${fresh.eventDetails?.title}) attempt ${(fresh.attemptCount || 0) + 1}`);
+
+    try {
+      fresh.attemptCount = (fresh.attemptCount || 0) + 1;
+      fresh.lastAttemptAt = new Date();
+      await fresh.save();
+
+      const channel = fresh.messagingStatus?.preferredChannel || "sms";
+      const canUseWhatsApp = !!fresh.taqnyatTemplate?.templateRef;
+      const finalChannel = channel === "whatsapp" && canUseWhatsApp ? "whatsapp" : "sms";
+
+      const sendResult = await messagingService.sendInitialLaunchBatch({
+        guestIds,
+        eventId,
+        channel: finalChannel,
+        attemptId: fresh.lastAttemptAt.getTime(),
+      });
+
+      fresh.status = "live";
+      fresh.launchedAt = new Date();
+      fresh.failureReason = null;
+      if (sendResult.failed === 0) {
+        fresh.messagingStatus = fresh.messagingStatus || {};
+        fresh.messagingStatus.deliveryStatus = "delivered";
+        fresh.messagingStatus.deliveryExhaustedAt = null;
+        fresh.messagingStatus.lastError = null;
+      }
+      await fresh.save();
+
+      await logAudit({
+        action: "event.launched",
         actor: { _id: null, role: "system" },
         targetType: "event",
-        targetId: event._id,
-        metadata: { reason, message: err.message, workerId },
-        status: "failure",
+        targetId: fresh._id,
+        changes: { after: { status: "live", launchedAt: fresh.launchedAt } },
+        metadata: {
+          sentTo: sendResult.successful ?? guestIds.length,
+          failedSends: sendResult.failed ?? 0,
+          attemptCount: fresh.attemptCount,
+          workerId,
+        },
       });
-    } catch (_) {
-      /* swallow audit failures */
+
+      console.log(`[Cron] Event ${eventId} launched (sent ${sendResult.successful || 0}/${guestIds.length})`);
+      return { launched: true };
+    } catch (err) {
+      console.error(`[Cron] Event ${eventId} launch threw:`, err);
+      const reason = err.code || err.message || "exception";
+      try {
+        await Event.updateOne(
+          { _id: eventId, $or: [{ failureReason: null }, { failureReason: { $exists: false } }] },
+          { $set: { failureReason: reason } }
+        );
+        await logAudit({
+          action: "event.launch_failed",
+          actor: { _id: null, role: "system" },
+          targetType: "event",
+          targetId: event._id,
+          metadata: { reason, message: err.message, workerId },
+          status: "failure",
+        });
+      } catch (_) {
+        /* swallow audit failures */
+      }
+      return { launched: false, reason };
     }
-    return { launched: false, reason };
   } finally {
-    // The lock release MUST NOT throw out of `finally` — that would mask
-    // the original error from the try/catch. _safeReleaseLock swallows.
     try { beat?.stop?.(); } catch (_) { /* heartbeat may be unset on early-out */ }
     await _safeReleaseLock(eventId, workerId);
   }
@@ -634,45 +617,87 @@ const scheduleSubscriptionExpiryCheck = () => {
   });
 };
 
-/**
- * Mark live events as completed 24 hours after their event date — runs every hour.
- * A live event is one whose invitations have already been sent (status = 'live').
- */
-const scheduleEventCompletion = () => {
-  cron.schedule("0 * * * *", async () => {
+const runEventCompletion = async (now = new Date()) => {
+  // Step 1: Candidate search: live events where date has passed + 24h
+  const candidates = await Event.find({
+    status: "live",
+    "eventDetails.date": { $lte: now },
+  }).select("_id host eventDetails status completionNotificationStatus");
+
+  for (const event of candidates) {
     try {
-      const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
-      // Find first (so we can notify each host) then update.
-      const toComplete = await Event.find({
-        status: "live",
-        "eventDetails.date": { $lte: cutoff },
-      }).select("_id host eventDetails.title");
+      const eventInstant = eventInstantOf(event);
+      const completionDueAt = new Date(eventInstant.getTime() + 24 * 60 * 60 * 1000);
 
-      if (toComplete.length === 0) return;
+      if (now.getTime() < completionDueAt.getTime()) {
+        continue;
+      }
 
-      await Event.updateMany(
-        { _id: { $in: toComplete.map((e) => e._id) } },
-        { $set: { status: "completed" } }
+      // Atomically claim the completion transition
+      await Event.findOneAndUpdate(
+        { _id: event._id, status: "live" },
+        {
+          $set: {
+            status: "completed",
+            completedAt: now,
+            completionNotificationStatus: "pending",
+          },
+        }
       );
+    } catch (eventErr) {
+      console.error(`[Cron] Event ${event._id} completion processing failed:`, eventErr.message);
+    }
+  }
 
-      for (const event of toComplete) {
-        if (!event.host) continue;
-        const title = event.eventDetails?.title || "Untitled";
-        notificationService
-          .sendToUser(event.host, {
+  // Step 2: Query completed events with pending/failed notifications for durable outbox delivery
+  const pendingNotificationEvents = await Event.find({
+    status: "completed",
+    completionNotificationStatus: { $in: ["pending", "failed"] },
+  }).populate("host", "name email preferredLanguage");
+
+  for (const completedDoc of pendingNotificationEvents) {
+    if (completedDoc.host) {
+      try {
+        const title = completedDoc.eventDetails?.title || "Untitled";
+        const notifyKey = `event_completion_notify:${completedDoc._id}`;
+        const notifyRequestHash = sha256({ eventId: String(completedDoc._id), type: 'event_completed' });
+        await withIdempotency(
+          notifyKey,
+          () => notificationService.sendToUser(completedDoc.host, {
             type: "event_completed",
             title: "Event Completed",
             titleAr: "اكتملت المناسبة",
             message: `Your event "${title}" is now marked as completed.`,
             messageAr: `تم تحديث حالة مناسبتك "${title}" إلى مكتملة.`,
-            data: { entityType: "event", entityId: event._id },
-          })
-          .catch((err) =>
-            console.error("[Cron] event_completed notify failed", err?.message)
-          );
-      }
+            data: { entityType: "event", entityId: completedDoc._id },
+          }),
+          { scope: 'event_completion_notify', requestHash: notifyRequestHash }
+        );
 
-      console.log(`[Cron] Marked ${toComplete.length} events as completed`);
+        await Event.updateOne(
+          { _id: completedDoc._id },
+          {
+            $set: {
+              completionNotificationStatus: "sent",
+              completionNotifiedAt: new Date(),
+            },
+          }
+        );
+      } catch (err) {
+        console.error(`[Cron] Event ${completedDoc._id} completion notification failed:`, err?.message);
+        await Event.updateOne(
+          { _id: completedDoc._id },
+          { $set: { completionNotificationStatus: "failed" } }
+        ).catch(() => {});
+      }
+    }
+  }
+};
+
+const scheduleEventCompletion = () => {
+  cron.schedule("0 * * * *", async () => {
+    try {
+      await runEventCompletion(new Date());
     } catch (error) {
       console.error("[Cron] Event completion job failed:", error);
     }
@@ -1133,40 +1158,186 @@ const _markFailedAndNotify = async (event, reason) => {
   }, { scope: "event_launch_failed_notify", requestHash: notifyRequestHash });
 };
 
+async function _deliverPartialFailureNotification(event) {
+  const reason = event.messagingStatus?.lastError || 'delivery_retries_exhausted';
+  const notifyKey = `partial_delivery_failed:${event._id}:${event.attemptCount || 0}:${reason}`;
+  const notifyRequestHash = sha256({
+    eventId: String(event._id),
+    attemptCount: event.attemptCount || 0,
+    reason,
+  });
+
+  try {
+    await withIdempotency(
+      notifyKey,
+      async () => {
+        if (event.host) {
+          await notificationService.sendToUser(
+            event.host,
+            {
+              type: 'event_partial_delivery_failed',
+              title: 'تعذر تسليم بعض الدعوات',
+              titleAr: 'تعذر تسليم بعض الدعوات',
+              message: `تعذر تسليم بعض الدعوات لمناسبتك "${event.eventDetails?.title || ''}". يمكنك إعادة المحاولة يدوياً من لوحة التحكم.`,
+              messageAr: `تعذر تسليم بعض الدعوات لمناسبتك "${event.eventDetails?.title || ''}". يمكنك إعادة المحاولة يدوياً من لوحة التحكم.`,
+              actionUrl: `${process.env.FRONTEND_URL || 'https://halaa.sa'}/ar/host/events/${event._id}`,
+              data: { entityType: 'event', entityId: event._id, metadata: { reason } },
+              priority: 'high',
+            },
+            false
+          );
+        }
+        return { notified: true };
+      },
+      { scope: 'partial_delivery_failed_notify', requestHash: notifyRequestHash }
+    );
+
+    await Event.updateOne(
+      {
+        _id: event._id,
+        'messagingStatus.failureNotificationStatus': { $in: ['pending', 'failed'] },
+      },
+      {
+        $set: {
+          'messagingStatus.failureNotificationStatus': 'sent',
+          'messagingStatus.failureNotificationSentAt': new Date(),
+        },
+      }
+    );
+  } catch (error) {
+    await Event.updateOne(
+      { _id: event._id },
+      { $set: { 'messagingStatus.failureNotificationStatus': 'failed' } }
+    ).catch(() => {});
+    throw error;
+  }
+}
+
 const scheduleEventRetry = () => {
   cron.schedule("*/5 * * * *", async () => {
     try {
       const now = new Date();
 
+      // Durable partial-delivery notification outbox. These events are no
+      // longer retry candidates for message delivery, so notification retries
+      // must be processed independently on every cron run.
+      const pendingFailureNotifications = await Event.find({
+        status: 'live',
+        'messagingStatus.deliveryStatus': 'partial_delivery_failed',
+        'messagingStatus.failureNotificationStatus': { $in: ['pending', 'failed'] },
+      });
+      for (const failedEvent of pendingFailureNotifications) {
+        await _deliverPartialFailureNotification(failedEvent).catch((error) => {
+          console.error(`[Cron] Partial delivery notification retry failed for event ${failedEvent._id}:`, error.message);
+        });
+      }
+
       const candidates = await Event.find({
-        status: "scheduled",
-        attemptCount: { $gt: 0 },
-        "launchSettings.scheduledDate": {
-          $gte: new Date(now.getTime() - 48 * 60 * 60 * 1000),
-          $lte: new Date(now.getTime() + 48 * 60 * 60 * 1000),
-        },
+        $or: [
+          {
+            status: "scheduled",
+            attemptCount: { $gt: 0 },
+            "launchSettings.scheduledDate": {
+              $gte: new Date(now.getTime() - 48 * 60 * 60 * 1000),
+              $lte: new Date(now.getTime() + 48 * 60 * 60 * 1000),
+            },
+          },
+          {
+            status: "live",
+            "messagingStatus.failedCount": { $gt: 0 },
+            "messagingStatus.deliveryStatus": { $ne: "partial_delivery_failed" },
+            attemptCount: { $gt: 0 },
+          },
+        ],
       });
 
       for (const event of candidates) {
         const scheduledUtc = parseEventTime(event);
         if (!scheduledUtc) continue;
 
-        // Beyond the 24h grace window? Terminal fail.
-        if (now.getTime() > scheduledUtc.getTime() + LAUNCH_RETRY_WINDOW_MS) {
-          await _markFailedAndNotify(event, "retry_window_expired");
+        // Branch 1: Scheduled event (initial launch never succeeded)
+        if (event.status === "scheduled") {
+          // Beyond the 24h grace window? Terminal fail.
+          if (now.getTime() > scheduledUtc.getTime() + LAUNCH_RETRY_WINDOW_MS) {
+            await _markFailedAndNotify(event, "retry_window_expired");
+            continue;
+          }
+
+          // Hit max attempts? Terminal fail.
+          if ((event.attemptCount || 0) >= MAX_LAUNCH_ATTEMPTS) {
+            await _markFailedAndNotify(event, "max_attempts_exceeded");
+            continue;
+          }
+
+          if (!_isRetryDue(event, now)) continue;
+
+          console.log(`[Cron] Retry attempt ${(event.attemptCount || 0) + 1}/${MAX_LAUNCH_ATTEMPTS} for event ${event._id}`);
+          await runEventLaunch(event, "cron-retry");
           continue;
         }
 
-        // Hit max attempts? Terminal fail.
-        if ((event.attemptCount || 0) >= MAX_LAUNCH_ATTEMPTS) {
-          await _markFailedAndNotify(event, "max_attempts_exceeded");
-          continue;
+        // Branch 2: Live event with partial delivery failures
+        if (event.status === "live") {
+          const isExhausted =
+            (event.attemptCount || 0) >= MAX_LAUNCH_ATTEMPTS ||
+            now.getTime() > scheduledUtc.getTime() + LAUNCH_RETRY_WINDOW_MS;
+
+          if (isExhausted) {
+            const reason = (event.attemptCount || 0) >= MAX_LAUNCH_ATTEMPTS ? "max_attempts_exceeded" : "retry_window_expired";
+            event.messagingStatus = event.messagingStatus || {};
+            event.messagingStatus.deliveryStatus = "partial_delivery_failed";
+            event.messagingStatus.deliveryExhaustedAt = new Date();
+            event.messagingStatus.lastError = reason;
+            event.messagingStatus.failureNotificationStatus = "pending";
+            await event.save();
+
+            await _deliverPartialFailureNotification(event).catch((notifErr) => {
+              console.error(`[Cron] Partial delivery failure notification failed for event ${event._id}:`, notifErr?.message);
+            });
+
+            continue;
+          }
+
+          if (!_isRetryDue(event, now)) continue;
+
+          const lock = await eventLock.acquire(event._id.toString(), "cron-live-retry", { ttlMs: 60000 });
+          if (!lock.acquired) continue;
+
+          try {
+            const Guest = require("../../../models/GuestModel");
+            const failedGuests = await Guest.find({
+              ...getActiveEventGuestsFilter(event._id, event.guestList),
+              "invitation.status": "failed",
+              $or: [
+                { "invitation.failedAttempts": { $exists: false } },
+                { "invitation.failedAttempts": { $lt: 3 } },
+              ],
+            }).select("_id");
+
+            if (failedGuests.length > 0) {
+              event.attemptCount = (event.attemptCount || 0) + 1;
+              event.lastAttemptAt = new Date();
+              await event.save();
+
+              await Guest.updateMany(
+                { _id: { $in: failedGuests.map((g) => g._id) } },
+                { $inc: { "invitation.failedAttempts": 1 } }
+              );
+
+              const channel = event.messagingStatus?.preferredChannel || "sms";
+              await messagingService.sendInitialLaunchBatch({
+                guestIds: failedGuests.map((g) => g._id.toString()),
+                eventId: event._id,
+                channel,
+                attemptId: `retry_${Date.now()}`,
+              });
+            }
+          } catch (err) {
+            console.error(`[Cron] Live retry failed for event ${event._id}:`, err.message);
+          } finally {
+            await _safeReleaseLock(event._id.toString(), "cron-live-retry");
+          }
         }
-
-        if (!_isRetryDue(event, now)) continue;
-
-        console.log(`[Cron] Retry attempt ${(event.attemptCount || 0) + 1}/${MAX_LAUNCH_ATTEMPTS} for event ${event._id}`);
-        await runEventLaunch(event, "cron-retry");
       }
     } catch (error) {
       console.error("[Cron] Event retry failed:", error);
@@ -1478,6 +1649,7 @@ module.exports = {
   schedulePaymentReconcile,
   scheduleSubscriptionRenewal,
   runEventLaunch,
+  runEventCompletion,
   MAX_LAUNCH_ATTEMPTS,
   LAUNCH_RETRY_WINDOW_MS,
 };

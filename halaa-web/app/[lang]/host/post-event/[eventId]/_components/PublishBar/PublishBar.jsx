@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import Button from "@/ui/commen/button/Button";
-import { usePublishAndNotify } from "@/hooks/postEvent";
+import { createPostEventAttemptId, usePublishAndNotify } from "@/hooks/postEvent";
 import { handleError } from "@/services/errorHandlingService";
 import styles from "./publishBar.module.css";
 
@@ -27,8 +27,9 @@ const PublishBar = ({ eventId, hasMedia, hasTemplate }) => {
     : "";
 
   const onPublish = () => {
+    const attemptId = createPostEventAttemptId('publish-notify');
     publishAndNotify.mutate(
-      { eventId, data: { filter } },
+      { eventId, data: { filter }, attemptId },
       {
         onSuccess: (resp) => {
           const summary = resp?.data || {};

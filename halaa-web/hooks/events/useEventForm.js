@@ -38,8 +38,7 @@ const DEFAULT_FORM_VALUES = {
     onAttend: "",
     onAbsent: "",
   },
-  // Step 5 - Schedule and confirmation (create only)
-  sendSchedule: "now",
+  // Step 5 - Confirmation (create only)
   scheduleDate: "",
   scheduleTime: "",
   confirmReviewed: false,
@@ -61,15 +60,6 @@ export const transformStaffList = (staff = []) =>
     mobile: s.phone || "",
   }));
 
-// `event.visualTemplate.templateRef` and `event.taqnyatTemplate.templateRef`
-// are populated by the backend (events.crud.service findById path) so the
-// step-3 picker / step-4 picker can highlight the saved selection and
-// preview body text without a follow-up fetch.
-//
-// Custom-upload events: the doc has `isCustomUpload: true`, no
-// templateRef, and the uploaded image URL on `bakedImagePath`. We carry
-// the flag through so StepThree opens in upload mode and the host sees
-// the previously uploaded card.
 const populatedVisualTemplate = (event) => {
   const vt = event.visualTemplate;
   if (!vt) return { isCustomUpload: true, fieldValues: {} };
@@ -82,8 +72,6 @@ const populatedVisualTemplate = (event) => {
   }
   const ref = vt.templateRef;
   if (!ref) return null;
-  // Populated docs are objects with _id; raw ObjectId strings are bare
-  // strings. Both shapes carry the canonical templateRef forward.
   if (typeof ref === "object" && ref !== null) {
     return {
       ...ref,
@@ -136,7 +124,6 @@ export const mapEventToFormValues = (event) => ({
     onAttend: event.guestReplies?.onAttend || "",
     onAbsent: event.guestReplies?.onAbsent || "",
   },
-  sendSchedule: "now",
   scheduleDate: "",
   scheduleTime: "",
   confirmReviewed: false,
@@ -159,7 +146,6 @@ export const buildEventPayload = (data = {}) => ({
     name: s.name,
     phone: s.mobile || s.phone,
   })),
-  // Canonical top-level keys (no legacy invitationSettings mirror).
   visualTemplate: data.visualTemplate
     ? data.visualTemplate.isCustomUpload
       ? {
@@ -191,9 +177,8 @@ export const buildEventPayload = (data = {}) => ({
   invitationType: data.invitationType || DEFAULT_INVITATION_TYPE,
   templateImage: data.templateImage,
   launchSettings: {
-    sendSchedule: data.sendSchedule || "now",
-    scheduledDate: data.scheduleDate,
-    scheduledTime: data.scheduleTime,
+    scheduledDate: data.scheduleDate || undefined,
+    scheduledTime: data.scheduleTime || undefined,
   },
 });
 

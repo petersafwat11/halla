@@ -21,6 +21,7 @@ const { isPoolPlan, isPerEventPlan } = require('../../shared/constants/plans');
 const { countsAgainstPlanStatusFilter } = require('../../shared/constants/events');
 const { classifyRsvpBucket } = require('../../shared/constants/status');
 const { isTrialFromPlan } = require('../../shared/utils/schedulingWindow');
+const { getActiveEventGuestsFilter } = require('../../shared/utils/guestFilter');
 
 module.exports = {
   /**
@@ -171,14 +172,16 @@ module.exports = {
     const event = await Event.findOne(query).populate("host", "username email phoneNumber name");
     if (!event) throw new NotFoundError("Event");
 
-    const guests = await Guest.find({ event: eventId })
+    const guests = await Guest.find(getActiveEventGuestsFilter(eventId, event.guestList))
       .populate("addedBy", "username name")
       .lean();
 
     const eventObj = event.toObject ? event.toObject() : event;
     const host = eventObj.host || null;
+    const unansweredSentCount = guests.filter((g) => g.invitation?.sent === true && g.rsvp?.responded !== true).length;
 
     return {
+      status: eventObj.status,
       event: {
         id: eventObj._id,
         title: eventObj.eventDetails?.title || "",
@@ -213,6 +216,7 @@ module.exports = {
           status: guestObj.status || "invited",
           addedBy: guestObj.addedBy || "",
           responseTime: guestObj.rsvp?.respondedAt || null,
+          invitation: guestObj.invitation || {},
         };
       }),
       staff: eventObj.staffList || [],
@@ -224,6 +228,8 @@ module.exports = {
       declined: guests.filter((g) => g.status === "declined").length,
       pending: guests.filter((g) => classifyRsvpBucket(g.status) === "pending").length,
       checkedIn: guests.filter((g) => g.status === "checked_in").length,
+      unansweredSentCount,
+      hasUnansweredSentGuests: unansweredSentCount > 0,
     };
   },
 

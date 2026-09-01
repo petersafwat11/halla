@@ -1,7 +1,7 @@
 /**
  * Messaging webhook service.
  * Handles delivery-status updates and WhatsApp button (RSVP) replies
- * received via the Taqnyat / Meta webhook.
+ * received via the Taqnyat / Meta webhook with monotonic transitions.
  */
 
 const taqnyat = require('../../infrastructure/taqnyat');
@@ -12,8 +12,6 @@ const {
   markOutboundSmsFallback,
 } = require('../../infrastructure/outboundMessageLog');
 const { normalizePhoneNumber } = require('../../shared/utils/phone');
-// Use the gated notifications service so a host who turned off
-// `guestResponses` in Settings doesn't get a WhatsApp-RSVP push.
 const notificationService = require('../notifications/notifications.service');
 const { logAudit } = require('../../shared/utils/auditLog');
 const logger = require('../../shared/utils/logger');
@@ -28,10 +26,23 @@ const {
   buildConfirmedCaption,
 } = require('../../shared/utils/rsvpMessages');
 
+const ALLOWED_PREVIOUS_STATUSES = {
+  failed: ['failed'],
+  pending: ['failed', 'pending'],
+  sent: ['failed', 'pending', 'sent'],
+  delivered: ['failed', 'pending', 'sent', 'delivered'],
+  read: ['failed', 'pending', 'sent', 'delivered', 'read'],
+};
+
 /**
- * Update a guest's invitation delivery status from a webhook event.
+ * Update a guest's invitation delivery status from a webhook event with strict atomic monotonicity.
  */
-async function updateDeliveryStatus(messageId, status, timestamp) {
+async function updateDeliveryStatus(messageId, status, timestamp = new Date()) {
+  if (!Object.prototype.hasOwnProperty.call(ALLOWED_PREVIOUS_STATUSES, status)) {
+    logger.warn('[Messaging] Ignoring unknown delivery status', { messageId, status });
+    return { success: false, ignored: true, error: 'UNKNOWN_DELIVERY_STATUS' };
+  }
+
   await updateOutboundDeliveryStatus(messageId, status, timestamp).catch((error) => {
     logger.error('[Messaging] Failed to update outbound delivery record', {
       messageId,
@@ -39,27 +50,54 @@ async function updateDeliveryStatus(messageId, status, timestamp) {
       error: error.message,
     });
   });
+
   const guest = await Guest.findOne({ 'invitation.messageId': messageId });
   if (!guest) {
     throw new NotFoundError('Guest');
   }
 
-  const updateData = { 'invitation.status': status };
-  if (status === 'delivered') {
-    updateData['invitation.deliveredAt'] = timestamp;
-  } else if (status === 'read') {
-    updateData['invitation.readAt'] = timestamp;
+  const at = timestamp ? new Date(timestamp) : new Date();
+
+  // Status and its timestamp advance together. Lower-rank callbacks can still
+  // enrich delivered/read timestamps below, but cannot regress current state.
+  await Guest.updateOne(
+    {
+      'invitation.messageId': messageId,
+      'invitation.status': { $in: ALLOWED_PREVIOUS_STATUSES[status] },
+    },
+    { $set: { 'invitation.status': status, 'invitation.statusUpdatedAt': at } }
+  );
+
+  // 3. Two-step timestamp update for deliveredAt (earliest)
+  if (status === 'delivered' || status === 'read') {
+    await Guest.updateOne(
+      { 'invitation.messageId': messageId, $or: [{ 'invitation.deliveredAt': null }, { 'invitation.deliveredAt': { $exists: false } }] },
+      { $set: { 'invitation.deliveredAt': at } }
+    );
+    await Guest.updateOne(
+      { 'invitation.messageId': messageId, 'invitation.deliveredAt': { $type: 'date', $gt: at } },
+      { $set: { 'invitation.deliveredAt': at } }
+    );
   }
 
-  await Guest.findByIdAndUpdate(guest._id, updateData);
+  // 4. Two-step timestamp update for readAt (latest)
+  if (status === 'read') {
+    await Guest.updateOne(
+      { 'invitation.messageId': messageId, $or: [{ 'invitation.readAt': null }, { 'invitation.readAt': { $exists: false } }] },
+      { $set: { 'invitation.readAt': at } }
+    );
+    await Guest.updateOne(
+      { 'invitation.messageId': messageId, 'invitation.readAt': { $type: 'date', $lt: at } },
+      { $set: { 'invitation.readAt': at } }
+    );
+  }
+
   return { success: true, guestId: guest._id, status };
 }
 
 /**
  * Mark a guest's invitation as fallen back to SMS when Taqnyat reports
- * `no_capability` / `failed` for a WhatsApp send. Used by the webhook
- * controller — extracted here to keep the controller free of model
- * imports.
+ * `no_capability` / `failed` for a WhatsApp send without clobbering delivered state.
  */
 async function markGuestAsSmsFallback(messageId) {
   await markOutboundSmsFallback(messageId).catch((error) => {
@@ -68,25 +106,62 @@ async function markGuestAsSmsFallback(messageId) {
       error: error.message,
     });
   });
-  return Guest.findOneAndUpdate(
+
+  await Guest.updateOne(
     { 'invitation.messageId': messageId },
     {
       $set: {
         'invitation.effectiveChannel': 'sms',
         'invitation.smsFallback': true,
+      },
+    }
+  );
+
+  await Guest.updateOne(
+    {
+      'invitation.messageId': messageId,
+      'invitation.status': { $in: ['failed', 'pending', 'sent'] },
+    },
+    {
+      $set: {
         'invitation.status': 'sent',
       },
     }
   );
+
+  return Guest.findOne({ 'invitation.messageId': messageId });
+}
+
+function normalizeRsvpResponse(buttonText) {
+  if (!buttonText || typeof buttonText !== 'string') return null;
+  const normalized = buttonText
+    .trim()
+    .toLowerCase()
+    .replace(/[\u064b-\u065f\u0670]/g, '')
+    .replace(/ـ/g, '')
+    .replace(/[أإآ]/g, 'ا')
+    .replace(/ة/g, 'ه')
+    .replace(/ى/g, 'ي')
+    .replace(/[^\p{L}\p{N}' ]/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const confirmResponses = new Set([
+    'احضر', 'ساحضر', 'حضور', 'حاضر', 'تاكيد', 'نعم', 'موافق', 'قبول',
+    'تاكيد الحضور', 'confirm', 'confirmed', 'yes', 'attend', 'attending', 'accept'
+  ]);
+  const declineResponses = new Set([
+    'اعتذر', 'ساعتذر', 'اعتذار', 'معتذر', 'رفض', 'لا', 'لن احضر',
+    'decline', 'declined', 'no', 'cancel', 'sorry', 'cannot attend', "can't attend"
+  ]);
+
+  if (confirmResponses.has(normalized)) return 'confirmed';
+  if (declineResponses.has(normalized)) return 'declined';
+  return null;
 }
 
 /**
  * Handle a WhatsApp button-reply event (RSVP confirm / decline).
- *
- * Resolves the guest by phone (trying multiple format variants), persists
- * the RSVP status, notifies the host, and sends an auto-reply. Falls back
- * to SMS for the QR delivery if the WhatsApp 24h conversation window has
- * expired.
  */
 async function handleButtonResponse({
   phoneNumber,
@@ -94,8 +169,6 @@ async function handleButtonResponse({
   messageId,
   originalMessageId,
 }) {
-  // Build phone-format variants — Meta sends e.g. "966512345678"; the DB
-  // may store "0512345678" or "512345678".
   const normalized = normalizePhoneNumber(phoneNumber);
   const digits = normalized.replace(/\D/g, '');
   const phoneVariants = new Set([phoneNumber, normalized]);
@@ -138,151 +211,143 @@ async function handleButtonResponse({
   }
 
   if (!guest || !guest.event) {
-    logger.warn('[Messaging] Guest not found for phone variants — sending default reply', {
-      variants: Array.from(phoneVariants),
+    logger.warn('[Messaging] No guest found for button response', {
+      phoneNumber,
+      buttonText,
       messageId,
     });
-    const defaultReply = 'شكراً لردك! لم يتم العثور على بياناتك في النظام.';
-    try {
-      await taqnyat.sendWhatsAppText(phoneNumber, defaultReply, {
-        logContext: { purpose: 'rsvp_unknown_guest_reply' },
-      });
-    } catch (e) {
-      logger.error('[Messaging] Failed to send default reply to unknown guest', {
-        error: e.message,
-      });
-    }
     return { success: false, error: 'GUEST_NOT_FOUND' };
   }
 
   const event = guest.event;
-  const replyLogOptions = {
+
+  if (!invitationAllowsReply(event.invitationType)) {
+    logger.info('[Messaging] Reply ignored — event mode does not collect RSVPs', {
+      eventId: event._id,
+      guestId: guest._id,
+      mode: event.invitationType,
+    });
+    return { success: false, error: 'RSVP_NOT_ENABLED' };
+  }
+
+  const newStatus = normalizeRsvpResponse(buttonText);
+  if (!newStatus) {
+    logger.warn('[Messaging] Ignoring unrecognized RSVP response', {
+      guestId: guest._id,
+      buttonText,
+      messageId,
+    });
+    return { success: false, error: 'INVALID_BUTTON' };
+  }
+  const isConfirm = newStatus === 'confirmed';
+
+  if (guest.rsvp?.responded && guest.rsvp?.response === newStatus) {
+    logger.info('[Messaging] RSVP already recorded for guest', {
+      guestId: guest._id,
+      currentStatus: guest.status,
+      newStatus,
+    });
+    return { success: true, alreadyResponded: true };
+  }
+
+  guest.status = newStatus;
+  guest.rsvp = {
+    responded: true,
+    response: newStatus,
+    respondedAt: new Date(),
+    message: buttonText,
+  };
+  await guest.save();
+
+  try {
+    await notificationService.sendToUser(event.host, {
+      type: isConfirm ? 'guest_rsvp_accepted' : 'guest_rsvp_declined',
+      title: isConfirm ? 'تأكيد حضور جديد' : 'اعتذار عن الحضور',
+      titleAr: isConfirm ? 'تأكيد حضور جديد' : 'اعتذار عن الحضور',
+      message: `${guest.name} ${isConfirm ? 'أكد الحضور' : 'اعتذر عن الحضور'} لفعالية "${event.eventDetails?.title || 'فعاليتك'}"`,
+      messageAr: `${guest.name} ${isConfirm ? 'أكد الحضور' : 'اعتذر عن الحضور'} لفعالية "${event.eventDetails?.title || 'فعاليتك'}"`,
+      data: {
+        entityType: 'event',
+        entityId: event._id,
+        metadata: {
+          guestId: guest._id,
+          guestName: guest.name,
+          status: newStatus,
+        },
+      },
+    });
+  } catch (notifErr) {
+    logger.warn('[Messaging] Failed to send host notification for RSVP', {
+      error: notifErr.message,
+    });
+  }
+
+  const logOptions = {
     logContext: {
       eventId: event._id,
       guestId: guest._id,
       purpose: 'rsvp_auto_reply',
-      metadata: { inboundMessageId: messageId || null },
+      metadata: { isConfirm, newStatus },
     },
+    sensitive: true,
   };
 
-  if (!invitationAllowsReply(event.invitationType)) {
-    logger.warn('[Messaging] Ignoring RSVP button for a no-reply invitation', {
-      eventId: event._id,
-      guestId: guest._id,
-      invitationType: event.invitationType,
-      messageId,
+  const qrReply = isConfirm && invitationIncludesQr(event.invitationType);
+  const replyText = qrReply
+    ? buildConfirmedCaption(event, guest, 'ar')
+    : getReplyMessage(newStatus, event, 'ar');
+  const qrCodeUrl = qrReply
+    ? `https://quickchart.io/qr?text=${encodeURIComponent(guest.qrcode || guest._id.toString())}&size=300`
+    : null;
+
+  try {
+    const waResult = qrReply
+      ? await taqnyat.sendWhatsAppImage(guest.phone, qrCodeUrl, replyText, {
+          ...logOptions,
+          logContext: { ...logOptions.logContext, purpose: 'rsvp_qr_reply' },
+        })
+      : await taqnyat.sendWhatsAppText(guest.phone, replyText, logOptions);
+    if (!waResult?.success) {
+      throw new Error(waResult?.error || 'WhatsApp RSVP reply failed');
+    }
+  } catch (waErr) {
+    logger.warn('[Messaging] WhatsApp RSVP reply failed — falling back to SMS', {
+      error: waErr.message,
     });
-    return { success: false, error: 'REPLY_NOT_ALLOWED' };
+    const smsText = qrReply
+      ? `${replyText}\nرمز الدخول الخاص بك: ${qrCodeUrl}`
+      : replyText;
+    await taqnyat.sendSMS(guest.phone, smsText, {
+      sender: TAQNYAT_SENDER,
+      logContext: {
+        ...logOptions.logContext,
+        purpose: qrReply ? 'rsvp_qr_sms_fallback' : 'rsvp_auto_reply_sms_fallback',
+      },
+    });
   }
-
-  const statusMap = {
-    'سأحضر': 'confirmed',
-    'سأعتذر': 'declined',
-  };
-  const rsvpStatus = statusMap[buttonText];
-  if (!rsvpStatus) {
-    return { success: false, error: 'INVALID_BUTTON' };
-  }
-
-  await Guest.findByIdAndUpdate(guest._id, {
-    status: rsvpStatus,
-    'rsvp.responded': true,
-    'rsvp.response': rsvpStatus,
-    'rsvp.respondedAt': new Date(),
-  });
 
   try {
     await logAudit({
-      action: 'guest.rsvp.button',
-      actor: { _id: null, role: 'system' },
+      action: 'messaging.rsvp_button_response',
+      actor: { _id: null, role: 'guest' },
       targetType: 'guest',
       targetId: guest._id,
+      changes: { after: { status: newStatus } },
       metadata: {
         eventId: event._id,
-        rsvpStatus,
+        phone: phoneNumber,
+        buttonText,
         messageId,
       },
     });
-  } catch (_) {
-    /* audit must never break the operation */
-  }
+  } catch (_) {}
 
-  try {
-    if (event.host) {
-      const statusLabel = rsvpStatus === 'confirmed' ? 'سيحضر ✅' : 'اعتذر ❌';
-      await notificationService.sendToUser(event.host, {
-        type: 'guest_rsvp',
-        title: 'رد ضيف جديد',
-        message: `${guest.name} — ${statusLabel}`,
-        data: { eventId: event._id, guestId: guest._id, status: rsvpStatus },
-      });
-    }
-  } catch (notifErr) {
-    logger.error('[Messaging] Failed to notify host of RSVP', { error: notifErr.message });
-  }
-
-  // Reply copy from shared source of truth (per-event override → default).
-  // WhatsApp invites are Arabic-templated, so replies use Arabic.
-  const replyMessage = getReplyMessage(rsvpStatus, event, 'ar');
-
-  // Only a CONFIRMED guest on a QR-bearing invitation type receives the entry
-  // pass (QR image + rich caption). Declined guests — and confirmed guests on
-  // a reply_only invitation (no QR) — get a plain text reply.
-  if (rsvpStatus !== 'confirmed' || !invitationIncludesQr(event.invitationType)) {
-    try {
-      const waResult = await taqnyat.sendWhatsAppText(phoneNumber, replyMessage, replyLogOptions);
-      if (!waResult.success) throw new Error(waResult.error || 'WA text failed');
-    } catch (waErr) {
-      logger.warn('[Messaging] WhatsApp text reply failed, falling back to SMS', {
-        error: waErr.message,
-      });
-      await taqnyat.sendSMS(phoneNumber, replyMessage, {
-        sender: TAQNYAT_SENDER,
-        logContext: { ...replyLogOptions.logContext, purpose: 'rsvp_auto_reply_sms_fallback' },
-      });
-    }
-    return { success: true, status: rsvpStatus };
-  }
-
-  // Confirmed → QR image of the guest's qrcode + a formatted caption carrying
-  // event data + guest count + entry instructions.
-  const caption = buildConfirmedCaption(event, guest, 'ar');
-  const qrCodeUrl = `https://quickchart.io/qr?text=${encodeURIComponent(
-    guest.qrcode || guest._id.toString()
-  )}&size=300`;
-
-  // sendWhatsAppImage uses the 24h conversation window (session message).
-  // If the window has expired, fall back to SMS with the QR link as text.
-  try {
-    const waResult = await taqnyat.sendWhatsAppImage(
-      phoneNumber,
-      qrCodeUrl,
-      caption,
-      { ...replyLogOptions, logContext: { ...replyLogOptions.logContext, purpose: 'rsvp_qr_reply' } }
-    );
-    if (!waResult.success) {
-      throw new Error(waResult.error || 'WA image failed');
-    }
-  } catch (waErr) {
-    logger.warn(
-      '[Messaging] WhatsApp image send failed, falling back to SMS for QR delivery',
-      { error: waErr.message }
-    );
-    await taqnyat.sendSMS(
-      phoneNumber,
-      `${caption}\nرمز الدخول الخاص بك: ${qrCodeUrl}`,
-      {
-        sender: TAQNYAT_SENDER,
-        logContext: { ...replyLogOptions.logContext, purpose: 'rsvp_qr_sms_fallback' },
-      }
-    );
-  }
-
-  return { success: true, status: rsvpStatus };
+  return { success: true, guestId: guest._id, status: newStatus };
 }
 
 module.exports = {
   updateDeliveryStatus,
   markGuestAsSmsFallback,
   handleButtonResponse,
+  normalizeRsvpResponse,
 };

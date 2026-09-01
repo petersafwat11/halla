@@ -45,6 +45,10 @@ export const saudiPhone = (t = idT) =>
       message: t("validation.invalidSaudiPhone"),
     });
 
+// Optional form variant shared by web/mobile guest and staff editors.
+export const optionalSaudiPhone = (t = idT) =>
+  saudiPhone(t).optional().or(z.literal(""));
+
 export const email = (t = idT) =>
   z
     .string()

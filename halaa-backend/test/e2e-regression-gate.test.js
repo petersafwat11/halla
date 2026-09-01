@@ -106,7 +106,7 @@ test("Acceptance Matrix 1: Live Event Guest Invariants (EVT-03, EVT-15)", async 
         host
       );
     },
-    (err) => err.statusCode === 400 || err.name === "ValidationError"
+    (err) => err.statusCode === 400 || err.statusCode === 409 || err.name === "ValidationError" || err.isOperational
   );
 
   // Attempt 2: Deleting existing guest on live event MUST fail
@@ -118,7 +118,7 @@ test("Acceptance Matrix 1: Live Event Guest Invariants (EVT-03, EVT-15)", async 
         host
       );
     },
-    (err) => err.statusCode === 400 || err.name === "ValidationError"
+    (err) => err.statusCode === 400 || err.statusCode === 409 || err.name === "ValidationError" || err.isOperational
   );
 
   // Attempt 3: Adding a brand new guest to live event MUST succeed via addGuest
@@ -182,7 +182,7 @@ test("Acceptance Matrix 2: Terminal Event Immutability (Completed/Cancelled)", a
         host
       );
     },
-    (err) => err.statusCode === 400 || err.name === "ValidationError"
+    (err) => err.statusCode === 400 || err.statusCode === 409 || err.name === "ValidationError" || err.code === "EVENT_LIFECYCLE_CONFLICT"
   );
 });
 

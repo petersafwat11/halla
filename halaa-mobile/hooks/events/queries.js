@@ -119,7 +119,6 @@ const _statsPollInterval = (eventStatus) => {
 export function useSingleEventStats(eventId, opts) {
   const eventStatus = typeof opts === "string" ? opts : opts?.eventStatus;
   const token = useAuthStore((state) => state.token);
-  const refetchInterval = _statsPollInterval(eventStatus);
 
   return useQuery({
     queryKey: eventsKeys.singleStats(eventId),
@@ -129,13 +128,6 @@ export function useSingleEventStats(eventId, opts) {
         eventsRequest(ENDPOINTS.EVENTS.BY_ID(eventId)),
       ]);
       const stats = statsRes?.data || {};
-      // `getEventById` returns the envelope `{ success, data: { event } }`, so
-      // the event is nested at `data.event` — NOT `data` itself. Unwrapping the
-      // extra level is what makes `taqnyatTemplate` / `status` / `staffList`
-      // visible to `useEventActionGate`; without it every field read below was
-      // `undefined` and ALL action buttons (test/schedule/notify/post-event)
-      // were hidden on the single-event screen for every role. Fall back to
-      // `data` for resilience if the shape ever flattens.
       const eventData = eventRes?.data?.event || eventRes?.data || {};
       const guestList = Array.isArray(eventData.guestList) ? eventData.guestList : [];
       const staffList = Array.isArray(eventData.staffList) ? eventData.staffList : [];
@@ -146,21 +138,29 @@ export function useSingleEventStats(eventId, opts) {
         status: guest.status || "invited",
         respondedAt: guest.rsvp?.respondedAt || guest.respondedAt || null,
         addedBy: guest.addedBy || "",
+        invitation: guest.invitation || {},
+        rsvp: guest.rsvp || {},
       }));
       return {
         event: eventData,
         guests,
         staff: staffList,
+        status: eventData.status || stats.status,
         confirmed: stats.confirmed || 0,
         declined: stats.declined || 0,
         pending: stats.pending || 0,
         checkedIn: stats.checkedIn || 0,
         totalGuests: stats.totalGuests || 0,
+        unansweredSentCount: stats.unansweredSentCount || 0,
+        hasUnansweredSentGuests: stats.hasUnansweredSentGuests || false,
       };
     },
     enabled: !!token && !!eventId,
-    staleTime: refetchInterval ? 0 : 2 * 60 * 1000,
-    refetchInterval,
+    staleTime: 0,
+    refetchInterval: (query) => {
+      const currentStatus = query?.state?.data?.event?.status || query?.state?.data?.status || eventStatus;
+      return _statsPollInterval(currentStatus);
+    },
     refetchIntervalInBackground: false,
   });
 }

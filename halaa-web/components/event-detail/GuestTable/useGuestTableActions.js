@@ -4,12 +4,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { handleError } from "@/services/errorHandlingService";
 import { downloadExportFile } from "@/services/http";
 import { API_PATHS } from "@halaa/shared/api/paths";
-import { useSendReminder, useSendBulkInvitations } from "@/hooks/messaging";
 
 export default function useGuestTableActions({
   t,
   eventId,
-  guests,
   deleteGuestMutation,
   updateGuestMutation,
   rotateGuestMutation,
@@ -18,15 +16,8 @@ export default function useGuestTableActions({
   setDeleteModal,
   setShowEditPopup,
   setEditingGuest,
-  setShowReminderPopup,
-  setShowInvitationPopup,
-  setIsSendingInvitation,
-  selectedGuests,
-  setSelectedGuests,
 }) {
   const queryClient = useQueryClient();
-  const sendReminderMutation = useSendReminder();
-  const sendBulkInvitationsMutation = useSendBulkInvitations();
 
   const handleExportGuests = async () => {
     try {
@@ -113,78 +104,6 @@ export default function useGuestTableActions({
     setEditingGuest(null);
   };
 
-  const handleSendReminder = () => setShowReminderPopup(true);
-  const handleCloseReminderPopup = () => setShowReminderPopup(false);
-
-  const handleConfirmReminder = async (message) => {
-    try {
-      await sendReminderMutation.mutateAsync({
-        eventId,
-        channel: "sms",
-        customMessage: message,
-      });
-      toast.success(t("reminderPopup.success"));
-      setShowReminderPopup(false);
-    } catch (error) {
-      handleError(error, t, { fallbackMessage: "reminderPopup.error" });
-    }
-  };
-
-  const handleSendInvitation = () => {
-    const guestsWithPhone = guests.filter((g) => g.phone && g.phone !== "-");
-    if (guestsWithPhone.length === 0) {
-      toast.error(
-        t("messaging.noGuestsWithPhone", "لا يوجد ضيوف لديهم أرقام هواتف")
-      );
-      return;
-    }
-    setSelectedGuests(guestsWithPhone.map((g) => g.id));
-    setShowInvitationPopup(true);
-  };
-
-  const handleConfirmSendInvitation = async () => {
-    if (selectedGuests.length === 0) return;
-    setIsSendingInvitation(true);
-    try {
-      const result = await sendBulkInvitationsMutation.mutateAsync({
-        eventId,
-        guestIds: selectedGuests,
-        channel: "whatsapp",
-      });
-      const data = result?.data || result;
-      const successful = data?.successful ?? selectedGuests.length;
-      const failed = data?.failed ?? 0;
-
-      if (failed > 0 && successful > 0) {
-        toast.warn(
-          t("messaging.invitationsPartial", {
-            successful,
-            failed,
-            defaultValue: `تم إرسال ${successful} دعوة بنجاح، وفشل إرسال ${failed}`,
-          })
-        );
-      } else {
-        toast.success(
-          t("messaging.invitationsSent", {
-            count: successful,
-            defaultValue: `تم إرسال ${successful} دعوة بنجاح`,
-          })
-        );
-      }
-      setShowInvitationPopup(false);
-      setSelectedGuests([]);
-    } catch (error) {
-      handleError(error, t, { fallbackMessage: "messaging.sendError" });
-    } finally {
-      setIsSendingInvitation(false);
-    }
-  };
-
-  const handleCloseInvitationPopup = () => {
-    setShowInvitationPopup(false);
-    setSelectedGuests([]);
-  };
-
   // Rotate a guest's QR/access token — invalidates the old code and issues a
   // fresh one (backend re-delivers it). Parity with the mobile long-press menu.
   const handleRotateQr = async (guest) => {
@@ -245,12 +164,6 @@ export default function useGuestTableActions({
     handleCloseDeleteModal,
     handleUpdateGuest,
     handleCloseEditPopup,
-    handleSendReminder,
-    handleCloseReminderPopup,
-    handleConfirmReminder,
-    handleSendInvitation,
-    handleConfirmSendInvitation,
-    handleCloseInvitationPopup,
     handleRotateQr,
     handleRevokeAccess,
   };

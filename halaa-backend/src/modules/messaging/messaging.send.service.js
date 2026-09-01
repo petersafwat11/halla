@@ -1,9 +1,10 @@
 /**
  * Messaging send service.
- * Test, single-guest, bulk, and retry flows.
+ * Test, single-guest, bulk, launch batch, and retry flows.
  */
 
 const taqnyat = require('../../infrastructure/taqnyat');
+const crypto = require('crypto');
 const Event = require('../../../models/EventModel');
 const Guest = require('../../../models/GuestModel');
 const Subscription = require('../../../models/SubscriptionModel');
@@ -23,9 +24,96 @@ const {
   getEventBodyParams,
   buildSmsBody,
   getRequiredEventImageUrl,
+  computeInvitationFingerprint,
 } = require('./messaging.formatting');
 const taqnyatTemplatesService = require('../taqnyat-templates/taqnyat-templates.service');
-const { INVITATION_TYPE } = require('../../shared/constants');
+const { INVITATION_TYPE, EVENT_LIFECYCLE_ALLOWED } = require('../../shared/constants');
+const { getActiveEventGuestsFilter } = require('../../shared/utils/guestFilter');
+
+const DISPATCH_CLAIM_TTL_MS = 5 * 60 * 1000;
+
+async function claimFirstInvitationDispatch(guest, eventId) {
+  if (guest.invitation?.sent === true) return null;
+
+  const token = crypto.randomUUID();
+  const staleBefore = new Date(Date.now() - DISPATCH_CLAIM_TTL_MS);
+  const claimed = await Guest.updateOne(
+    {
+      _id: guest._id,
+      event: eventId,
+      deleted: { $ne: true },
+      'invitation.sent': { $ne: true },
+      $or: [
+        { 'invitation.dispatchClaimToken': { $exists: false } },
+        { 'invitation.dispatchClaimToken': null },
+        { 'invitation.dispatchClaimedAt': { $exists: false } },
+        { 'invitation.dispatchClaimedAt': { $lt: staleBefore } },
+      ],
+    },
+    {
+      $set: {
+        'invitation.dispatchClaimToken': token,
+        'invitation.dispatchClaimedAt': new Date(),
+      },
+    }
+  );
+
+  if (claimed.modifiedCount !== 1) {
+    throw new AppError(
+      'An invitation dispatch is already in progress for this guest',
+      409,
+      'INVITATION_DISPATCH_IN_PROGRESS'
+    );
+  }
+  return token;
+}
+
+async function releaseInvitationDispatchClaim(guestId, token) {
+  if (!token) return;
+  await Guest.updateOne(
+    { _id: guestId, 'invitation.dispatchClaimToken': token },
+    { $unset: { 'invitation.dispatchClaimToken': 1, 'invitation.dispatchClaimedAt': 1 } }
+  );
+}
+
+async function reserveInviteCapacity(subscriptionId) {
+  if (!subscriptionId) return false;
+
+  const subscription = await Subscription.findById(subscriptionId)
+    .select('invitePool');
+  if (!subscription) {
+    throw new AppError('Event subscription was not found', 409, 'SUBSCRIPTION_NOT_FOUND');
+  }
+  if (subscription.invitePool === null || subscription.invitePool === undefined) {
+    return false;
+  }
+
+  const reserved = await Subscription.updateOne(
+    {
+      _id: subscriptionId,
+      invitePool: { $ne: null },
+      $expr: {
+        $lt: [
+          { $ifNull: ['$invitesConsumed', 0] },
+          { $add: [{ $ifNull: ['$invitePool', 0] }, { $ifNull: ['$compensationPool', 0] }] },
+        ],
+      },
+    },
+    { $inc: { invitesConsumed: 1 } }
+  );
+  if (reserved.modifiedCount !== 1) {
+    throw new AppError('Insufficient invitations remaining in the plan pool', 402, 'INSUFFICIENT_INVITES');
+  }
+  return true;
+}
+
+async function releaseInviteCapacity(subscriptionId, reserved) {
+  if (!subscriptionId || !reserved) return;
+  await Subscription.updateOne(
+    { _id: subscriptionId, invitesConsumed: { $gt: 0 } },
+    { $inc: { invitesConsumed: -1 } }
+  );
+}
 
 function createInvitationPreviewCode(eventId) {
   const token = jwt.sign(
@@ -41,13 +129,22 @@ async function sendSMS(phoneNumber, message, logContext = {}) {
 }
 
 /**
- * Send a test message for an event. Throws on failure (rate limit, missing
- * event, or no template). Returns the underlying provider result on success.
+ * Send a test message for an event.
+ * Validates status allowlist, sends test payload, and records canonical test fingerprint.
  */
 async function sendTestMessage({ eventId, phoneNumber, channel = 'whatsapp', isAdmin = false }) {
   const event = await Event.findById(eventId).populate('host', 'name username');
   if (!event) {
     throw new NotFoundError('Event');
+  }
+
+  // Lifecycle check: test messages only allowed before launch
+  if (!EVENT_LIFECYCLE_ALLOWED.TEST_MESSAGE.includes(event.status)) {
+    throw new AppError(
+      `Test messages cannot be sent for events with status "${event.status}"`,
+      409,
+      'EVENT_LIFECYCLE_CONFLICT'
+    );
   }
 
   // Per-event throttle: reject if last test was < 30s ago (admins exempt).
@@ -146,67 +243,50 @@ async function sendTestMessage({ eventId, phoneNumber, channel = 'whatsapp', isA
     code: result.code || null,
   });
 
+  const fingerprint = result.success ? computeInvitationFingerprint(event, cached) : null;
+
   // Always update the throttle timestamp; success-only fields stay gated.
-  await Event.findByIdAndUpdate(eventId, {
-    lastTestAt: new Date(),
-    ...(result.success && {
-      testMessageSent: true,
-      'messagingStatus.preferredChannel': channel,
-    }),
-  });
+  const stamped = await Event.updateOne(
+    { _id: eventId, status: { $in: EVENT_LIFECYCLE_ALLOWED.TEST_MESSAGE } },
+    {
+      $set: {
+        lastTestAt: new Date(),
+        ...(result.success && {
+          testMessageSent: true,
+          testMessageFingerprint: fingerprint,
+          'messagingStatus.preferredChannel': channel,
+        }),
+      },
+    }
+  );
+  if (stamped.matchedCount !== 1) {
+    throw new AppError(
+      'Event lifecycle changed while sending the test message',
+      409,
+      'EVENT_LIFECYCLE_CONFLICT'
+    );
+  }
 
   // Expose template/image so the caller can include them in audit metadata.
   return { ...result, templateName: templateName || null, imageUrl, channel };
 }
 
 /**
- * Send invitation to a single guest.
- *
- * Note: a 429 from Taqnyat is treated as transient — we mark the guest
- * `rateLimited` and return `{ rateLimited: true }` so the bulk loop and
- * `runBatched`'s 429 handler can treat it as a controlled retry signal
- * rather than a permanent failure.
+ * Private per-guest primitive: dispatches invitation to a single guest,
+ * records database status, handles rate limits, pool charging, and audit logs.
  */
-async function sendToGuest({ guestId, eventId, channel = 'sms', userId, isAdmin = false }) {
-  const [guest, event] = await Promise.all([
-    Guest.findById(guestId),
-    Event.findById(eventId).populate('host', 'name username'),
-  ]);
+async function _dispatchInvitationToGuest({
+  guest,
+  event,
+  channel = 'sms',
+  userId,
+  actorRole,
+}) {
+  const guestId = guest._id;
+  const eventId = event._id;
+  let dispatchClaimToken = null;
+  let inviteReserved = false;
 
-  if (!guest) {
-    throw new NotFoundError('Guest');
-  }
-  if (!event) {
-    throw new NotFoundError('Event');
-  }
-
-  // The guest MUST belong to the event being sent. Without this a caller could
-  // pair a guest from one event with another event's template/content (and
-  // charge the wrong subscription's pool). `sendBulk` validates this for the
-  // batch path; this is the single-send equivalent.
-  if (!guest.event || guest.event.toString() !== eventId.toString()) {
-    throw new ForbiddenError('Guest does not belong to this event');
-  }
-
-  if (!isAdmin && event.host && userId && event.host._id.toString() !== userId.toString()) {
-    throw new ForbiddenError('Not authorized for this event');
-  }
-
-  const decision = await dispatchPolicy.assertCanDispatch(
-    event,
-    { path: 'sendToGuest' },
-    { requireInvites: !guest.invitation?.sent }
-  );
-  if (!decision.allowed) {
-    throw new AppError(
-      `Invitations can no longer be sent for this event (${decision.reason}).`,
-      403
-    );
-  }
-
-  // Points at the live guest portal, keyed by the guest's qrcode
-  // (route: app/[lang]/invitation/[code]). The old /rsvp/:eventId/:guestId
-  // path had no corresponding page and 404'd.
   const rsvpBase = config.frontend?.url || 'https://halaa.sa';
   const rsvpLink = `${rsvpBase.replace(/\/$/, '')}/ar/invitation/${guest.qrcode}`;
 
@@ -226,6 +306,13 @@ async function sendToGuest({ guestId, eventId, channel = 'sms', userId, isAdmin 
     },
     sensitive: true,
   };
+
+  try {
+    dispatchClaimToken = await claimFirstInvitationDispatch(guest, eventId);
+    if (dispatchClaimToken) {
+      inviteReserved = await reserveInviteCapacity(event.subscriptionId);
+    }
+
   if (channel === 'whatsapp') {
     if (!templateName) {
       throw new AppError(
@@ -251,8 +338,6 @@ async function sendToGuest({ guestId, eventId, channel = 'sms', userId, isAdmin 
       },
     ];
 
-    // SMS fallback automatically dispatched by Taqnyat when the guest
-    // has no WhatsApp capability.
     const smsFallback = {
       sender: TAQNYAT_SENDER,
       body: buildSmsBody(event, guest.name, rsvpLink),
@@ -281,8 +366,15 @@ async function sendToGuest({ guestId, eventId, channel = 'sms', userId, isAdmin 
     smsBody = buildSmsBody(event, guest.name, rsvpLink);
     result = await sendSMS(guest.phone, smsBody, logOptions.logContext);
   }
+  } catch (error) {
+    await Promise.allSettled([
+      releaseInviteCapacity(event.subscriptionId, inviteReserved),
+      releaseInvitationDispatchClaim(guestId, dispatchClaimToken),
+    ]);
+    throw error;
+  }
 
-  logger.info('[sendToGuest] result', {
+  logger.info('[_dispatchInvitationToGuest] result', {
     eventId,
     guestId,
     channel,
@@ -297,23 +389,32 @@ async function sendToGuest({ guestId, eventId, channel = 'sms', userId, isAdmin 
     code: result.code || null,
   });
 
-  // 429 → transient. Do NOT mark as failed or increment failedAttempts so
-  // the guest stays eligible for the next retry window. The rate-limit
-  // recovery happens upstream (runBatched 429 handler / cron).
   const isRateLimited =
     !result.success &&
     (result.statusCode === 429 || result.error === 'RATE_LIMITED');
   if (isRateLimited) {
-    await Guest.findByIdAndUpdate(guestId, {
-      'invitation.rateLimited': true,
-      'invitation.lastAttemptAt': new Date(),
-      'invitation.lastError': result.error || 'RATE_LIMITED',
-    });
-    return { ...result, rateLimited: true };
+    await Guest.updateOne(
+      {
+        _id: guestId,
+        ...(dispatchClaimToken && { 'invitation.dispatchClaimToken': dispatchClaimToken }),
+      },
+      {
+        $set: {
+          ...(dispatchClaimToken && {
+            'invitation.sent': false,
+            'invitation.status': 'failed',
+          }),
+          'invitation.rateLimited': true,
+          'invitation.lastAttemptAt': new Date(),
+          'invitation.lastError': result.error || 'RATE_LIMITED',
+        },
+        $unset: { 'invitation.dispatchClaimToken': 1, 'invitation.dispatchClaimedAt': 1 },
+      }
+    );
+    await releaseInviteCapacity(event.subscriptionId, inviteReserved);
+    return { ...result, rateLimited: true, success: false };
   }
 
-  // `effectiveChannel` starts equal to the attempted channel. The webhook
-  // worker flips it to 'sms' on a Taqnyat 'no_capability' status.
   const updateData = {
     'invitation.sent': result.success,
     'invitation.method': channel,
@@ -330,20 +431,25 @@ async function sendToGuest({ guestId, eventId, channel = 'sms', userId, isAdmin 
   }
 
   if (result.success) {
-    // Consume one invite per guest, exactly once, at send time. Guard the
-    // sent:false->true transition so retries / idempotent replays / concurrent
-    // sends can never double-charge — only the update that actually flips
-    // `sent` debits the pool. (finalizeWaResult guarantees success ⇒ a real
-    // messageId, so we never charge for an undelivered message.)
     const flip = await Guest.updateOne(
-      { _id: guestId, 'invitation.sent': { $ne: true } },
-      { $set: updateData }
+      {
+        _id: guestId,
+        'invitation.sent': { $ne: true },
+        ...(dispatchClaimToken && { 'invitation.dispatchClaimToken': dispatchClaimToken }),
+      },
+      {
+        $set: updateData,
+        $unset: { 'invitation.dispatchClaimToken': 1, 'invitation.dispatchClaimedAt': 1 },
+      }
     );
+    if (flip.modifiedCount !== 1 && inviteReserved) {
+      await releaseInviteCapacity(event.subscriptionId, true);
+      inviteReserved = false;
+    }
+    if (flip.modifiedCount !== 1) {
+      await releaseInvitationDispatchClaim(guestId, dispatchClaimToken);
+    }
     if (flip.modifiedCount === 1 && event.subscriptionId) {
-      // Stamp `firstSendAt` once, on the first real dispatch on this
-      // subscription. This is the authoritative "sending started" signal for
-      // the per-event re-creation gate (set even at capacity, when the message
-      // still goes out but isn't charged below).
       const firstStamp = await Subscription.updateOne(
         { _id: event.subscriptionId, firstSendAt: null },
         { $set: { firstSendAt: new Date() } }
@@ -352,67 +458,33 @@ async function sendToGuest({ guestId, eventId, channel = 'sms', userId, isAdmin 
         return null;
       });
 
-      // §9.4: on the FIRST send, mark a linked store event-entitlement consumed
-      // (best-effort ledger sync; access/consume is enforced by the subscription
-      // firstSendAt gate above).
       if (firstStamp?.modifiedCount === 1) {
         await EventEntitlement.updateOne(
           { subscriptionId: event.subscriptionId, status: 'unused' },
           { $set: { status: 'consumed', consumedEventId: event._id, consumedAt: new Date() } }
         ).catch(() => {});
       }
-
-      // Unified pool: per-event and pool subscriptions both carry an
-      // invitePool. Skip unlimited plans (invitePool null). The batch-level
-      // send-budget pre-check enforces the ceiling, so a plain $inc is safe.
-      // Guard the $inc so concurrent batches can't push invitesConsumed past
-      // capacity (the batch-level budget pre-check is not atomic across
-      // simultaneous sends on the same pool). If already at capacity the
-      // message still went out — we just don't over-charge.
-      const consume = await Subscription.updateOne(
-        {
-          _id: event.subscriptionId,
-          invitePool: { $ne: null },
-          $expr: {
-            $lt: [
-              { $ifNull: ['$invitesConsumed', 0] },
-              { $add: [{ $ifNull: ['$invitePool', 0] }, { $ifNull: ['$compensationPool', 0] }] },
-            ],
-          },
-        },
-        { $inc: { invitesConsumed: 1 } }
-      ).catch((err) => {
-        // A consume failure means a message went out UNCHARGED — surface it
-        // loudly (error, not warn) so it can be reconciled, not silently lost.
-        logger.error('[sendToGuest] invite consume failed — message sent but UNCHARGED', {
-          guestId,
-          subscriptionId: String(event.subscriptionId),
-          err: err?.message,
-        });
-        return null;
-      });
-      // matchedCount 0 (without an error) = the clamp rejected the charge
-      // because the pool was already at capacity: an oversend. Log it so the
-      // gap between sent and charged is observable.
-      if (consume && consume.matchedCount === 0) {
-        logger.error('[sendToGuest] invite NOT charged — pool already at capacity (oversend)', {
-          guestId,
-          subscriptionId: String(event.subscriptionId),
-        });
-      }
     }
   } else {
-    // Never clobber an already-sent guest with a failure write (stale retry).
     await Guest.updateOne(
-      { _id: guestId, 'invitation.sent': { $ne: true } },
-      { $set: updateData }
+      {
+        _id: guestId,
+        'invitation.sent': { $ne: true },
+        ...(dispatchClaimToken && { 'invitation.dispatchClaimToken': dispatchClaimToken }),
+      },
+      {
+        $set: updateData,
+        $unset: { 'invitation.dispatchClaimToken': 1, 'invitation.dispatchClaimedAt': 1 },
+      }
     );
+    await releaseInviteCapacity(event.subscriptionId, inviteReserved);
+    inviteReserved = false;
   }
 
   try {
     await logAudit({
       action: 'messaging.send_one',
-      actor: { _id: userId || null, role: userId ? 'host' : 'system' },
+      actor: { _id: userId || null, role: actorRole || (userId ? 'host' : 'system') },
       targetType: 'guest',
       targetId: guestId,
       metadata: {
@@ -435,13 +507,219 @@ async function sendToGuest({ guestId, eventId, channel = 'sms', userId, isAdmin 
 }
 
 /**
- * Send invitations to multiple guests. Failure paths throw; partial
- * per-guest failures are reflected in the per-item `details[]`.
- *
- * Idempotency: each per-guest send runs inside `withIdempotency(...)`.
- * The key uses `event.lastAttemptAt.getTime()` (or an explicit
- * `attemptId`) as the attempt fingerprint so distinct attempts (cron
- * tick #1, retry, manual resend) never collide.
+ * Send invitation to a single guest (public entrypoint).
+ * Enforces live event status and permission boundaries.
+ */
+async function sendToGuest({ guestId, eventId, channel = 'sms', userId, isAdmin = false, actorRole }) {
+  const [guest, event] = await Promise.all([
+    Guest.findById(guestId),
+    Event.findById(eventId).populate('host', 'name username'),
+  ]);
+
+  if (!guest) {
+    throw new NotFoundError('Guest');
+  }
+  if (!event) {
+    throw new NotFoundError('Event');
+  }
+
+  if (!guest.event || guest.event.toString() !== eventId.toString()) {
+    throw new ForbiddenError('Guest does not belong to this event');
+  }
+
+  if (!isAdmin && event.host && userId && event.host._id.toString() !== userId.toString()) {
+    throw new ForbiddenError('Not authorized for this event');
+  }
+
+  if (!EVENT_LIFECYCLE_ALLOWED.LIVE_SEND.includes(event.status)) {
+    throw new AppError(
+      'Invitations cannot be sent until the event is live',
+      409,
+      'EVENT_NOT_LIVE'
+    );
+  }
+
+  const decision = await dispatchPolicy.assertCanDispatch(
+    event,
+    { path: 'sendToGuest' },
+    { requireInvites: !guest.invitation?.sent }
+  );
+  if (!decision.allowed) {
+    throw new AppError(
+      `Invitations can no longer be sent for this event (${decision.reason}).`,
+      403
+    );
+  }
+
+  return _dispatchInvitationToGuest({
+    guest,
+    event,
+    channel,
+    userId,
+    actorRole,
+  });
+}
+
+/**
+ * Re-computes and saves authoritative messagingStatus numbers from the Guest collection.
+ */
+async function _recomputeAuthoritativeMessagingStatus(eventId, guestList = []) {
+  const guestFilter = getActiveEventGuestsFilter(eventId, guestList);
+  const [totalCount, sentCount, failedCount, pendingCount] = await Promise.all([
+    Guest.countDocuments(guestFilter),
+    Guest.countDocuments({ ...guestFilter, 'invitation.sent': true }),
+    Guest.countDocuments({ ...guestFilter, 'invitation.sent': { $ne: true }, 'invitation.status': 'failed' }),
+    Guest.countDocuments({ ...guestFilter, 'invitation.sent': { $ne: true }, 'invitation.status': { $ne: 'failed' } }),
+  ]);
+
+  await Event.findByIdAndUpdate(eventId, {
+    'messagingStatus.totalMessages': totalCount,
+    'messagingStatus.sentCount': sentCount,
+    'messagingStatus.failedCount': failedCount,
+    'messagingStatus.pendingCount': pendingCount,
+    'messagingStatus.bulkSendCompletedAt': new Date(),
+    ...(failedCount === 0 && pendingCount === 0 && sentCount > 0 ? {
+      'messagingStatus.deliveryStatus': 'delivered',
+      'messagingStatus.deliveryExhaustedAt': null,
+      'messagingStatus.lastError': null,
+    } : {}),
+  });
+
+  return { totalCount, sentCount, failedCount, pendingCount };
+}
+
+/**
+ * Internal Launch Batch method: called by runEventLaunch for scheduled initial
+ * launches and retry jobs. Scope is strictly 'internal_event_launch'.
+ */
+async function sendInitialLaunchBatch({
+  eventId,
+  guestIds,
+  channel = 'sms',
+  attemptId,
+}) {
+  const event = await Event.findById(eventId);
+  if (!event) {
+    throw new NotFoundError('Event');
+  }
+  if (!['scheduled', 'live'].includes(event.status)) {
+    throw new AppError(
+      `Initial launch dispatch is not allowed for status "${event.status}"`,
+      409,
+      'EVENT_LIFECYCLE_CONFLICT'
+    );
+  }
+  const validGuests = await Guest.find(
+    getActiveEventGuestsFilter(eventId, event.guestList, guestIds)
+  );
+
+  const effectiveGuests = validGuests;
+  const effectiveGuestIds = effectiveGuests.map((g) => g._id.toString());
+
+  if (event.subscriptionId) {
+    const sub = await Subscription.findById(event.subscriptionId)
+      .select('invitePool compensationPool invitesConsumed');
+    if (sub && sub.invitePool !== null && sub.invitePool !== undefined) {
+      const remaining =
+        (sub.invitePool || 0) + (sub.compensationPool || 0) - (sub.invitesConsumed || 0);
+      const notYetSent = await Guest.countDocuments({
+        ...getActiveEventGuestsFilter(eventId, event.guestList, effectiveGuestIds),
+        'invitation.sent': { $ne: true },
+      });
+      if (notYetSent > remaining) {
+        throw new AppError(
+          `Insufficient invites: ${notYetSent} to send but ${Math.max(0, remaining)} remaining in plan pool.`,
+          402,
+          'INSUFFICIENT_INVITES'
+        );
+      }
+    }
+  }
+
+  await Event.findByIdAndUpdate(eventId, {
+    'messagingStatus.bulkSendStarted': true,
+    'messagingStatus.bulkSendStartedAt': new Date(),
+    'messagingStatus.preferredChannel': channel,
+  });
+
+  const fingerprint =
+    attemptId !== undefined && attemptId !== null
+      ? attemptId
+      : event.lastAttemptAt
+      ? new Date(event.lastAttemptAt).getTime()
+      : event.attemptCount || 0;
+
+  const scope = 'internal_event_launch';
+
+  const batched = await runBatched(
+    effectiveGuests,
+    async (guest) => {
+      const key = `${scope}:${eventId}:${guest._id}:${fingerprint}`;
+      const requestHash = sha256(
+        JSON.stringify({ eventId: String(eventId), guestId: String(guest._id), channel })
+      );
+      return withIdempotency(
+        key,
+        () => _dispatchInvitationToGuest({ guest, event, channel, userId: null, actorRole: 'system' }),
+        { scope, userId: null, requestHash }
+      );
+    },
+    { concurrency: 5, ratePerSecond: 10 }
+  );
+
+  const successful = batched.results.filter(
+    (r) => r.ok && r.value?.success
+  ).length;
+  const failed = batched.total - successful;
+  const details = batched.results.map((r) => ({
+    guestId: r.item._id,
+    ...(r.ok ? r.value : { success: false, error: r.error }),
+  }));
+
+  // Authoritative re-aggregation from DB records
+  await _recomputeAuthoritativeMessagingStatus(eventId, event.guestList);
+
+  if (event.subscriptionId && successful > 0) {
+    Subscription.findById(event.subscriptionId)
+      .select('userId invitePool compensationPool invitesConsumed')
+      .then((sub) => sub && maybeNotifyPlanLimit(sub.userId, sub))
+      .catch(() => {});
+  }
+
+  logger.info('[sendInitialLaunchBatch] complete', {
+    eventId,
+    channel,
+    total: effectiveGuestIds.length,
+    successful,
+    failed,
+  });
+
+  if (successful === 0 && effectiveGuestIds.length > 0) {
+    const err = new AppError(
+      'No invitations were delivered',
+      502,
+      'ALL_SENDS_FAILED'
+    );
+    err.details = details;
+    err.total = effectiveGuestIds.length;
+    err.successful = successful;
+    err.failed = failed;
+    throw err;
+  }
+
+  return {
+    success: true,
+    partial: failed > 0,
+    total: effectiveGuestIds.length,
+    successful,
+    failed,
+    details,
+  };
+}
+
+/**
+ * Send invitations to multiple guests (public entrypoint / manual resend).
+ * Defaults scope to 'manual_send'.
  */
 async function sendBulk({
   guestIds,
@@ -450,7 +728,7 @@ async function sendBulk({
   userId,
   isAdmin = false,
   actorRole,
-  scope = 'event_launch',
+  scope = 'manual_send',
   attemptId,
 }) {
   const event = await Event.findById(eventId);
@@ -461,11 +739,15 @@ async function sendBulk({
     throw new ForbiddenError('Not authorized for this event');
   }
 
-  // Dispatch-policy gate for every send path that funnels through sendBulk
-  // (HTTP bulk send + retryFailed). Blocks terminal events, suspended/deleted
-  // owners, missing/owner-mismatched/expired subscriptions, and under-refund
-  // assignments. The cron launch/reminder paths already gate upstream; a second
-  // check here is idempotent and keeps the gate centralized for all callers.
+  // Public/manual bulk sending requires event to be live
+  if (scope !== 'internal_event_launch' && !EVENT_LIFECYCLE_ALLOWED.LIVE_SEND.includes(event.status)) {
+    throw new AppError(
+      'Invitations cannot be sent until the event is live',
+      409,
+      'EVENT_NOT_LIVE'
+    );
+  }
+
   const decision = await dispatchPolicy.assertCanDispatch(event, { path: `sendBulk:${scope}` });
   if (!decision.allowed) {
     throw new AppError(
@@ -474,31 +756,13 @@ async function sendBulk({
     );
   }
 
-  // Validate that all guestIds belong to the event before sending.
-  const validGuests = await Guest.find({
-    _id: { $in: guestIds },
-    event: eventId,
-  })
-    .select('_id')
-    .lean();
-  const validGuestIdSet = new Set(validGuests.map((g) => g._id.toString()));
-  const filteredGuestIds = guestIds.filter((id) =>
-    validGuestIdSet.has(id.toString())
+  const validGuests = await Guest.find(
+    getActiveEventGuestsFilter(eventId, event.guestList, guestIds)
   );
-  if (filteredGuestIds.length < guestIds.length) {
-    logger.warn('[sendBulk] some guest IDs do not belong to event — skipping', {
-      eventId,
-      skipped: guestIds.length - filteredGuestIds.length,
-    });
-  }
-  const effectiveGuestIds = filteredGuestIds;
 
-  // Send-budget gate: a send consumes one invite per delivered guest. Block the
-  // batch up front when the not-yet-sent guests would exceed the subscription's
-  // remaining invites (pool or per-event — both carry an invitePool now).
-  // Unlimited plans (invitePool null) are never gated. Retries only re-send
-  // already-failed guests, and `notYetSent` reflects prior successes via the
-  // per-guest consume, so this stays correct across attempts.
+  const effectiveGuests = validGuests;
+  const effectiveGuestIds = effectiveGuests.map((g) => g._id.toString());
+
   if (event.subscriptionId) {
     const sub = await Subscription.findById(event.subscriptionId)
       .select('invitePool compensationPool invitesConsumed');
@@ -506,8 +770,7 @@ async function sendBulk({
       const remaining =
         (sub.invitePool || 0) + (sub.compensationPool || 0) - (sub.invitesConsumed || 0);
       const notYetSent = await Guest.countDocuments({
-        _id: { $in: effectiveGuestIds },
-        event: eventId,
+        ...getActiveEventGuestsFilter(eventId, event.guestList, effectiveGuestIds),
         'invitation.sent': { $ne: true },
       });
       if (notYetSent > remaining) {
@@ -523,10 +786,6 @@ async function sendBulk({
   await Event.findByIdAndUpdate(eventId, {
     'messagingStatus.bulkSendStarted': true,
     'messagingStatus.bulkSendStartedAt': new Date(),
-    'messagingStatus.totalMessages': effectiveGuestIds.length,
-    'messagingStatus.sentCount': 0,
-    'messagingStatus.failedCount': 0,
-    'messagingStatus.pendingCount': effectiveGuestIds.length,
     'messagingStatus.preferredChannel': channel,
   });
 
@@ -538,12 +797,6 @@ async function sendBulk({
     attemptId: attemptId || null,
   });
 
-  // Attempt fingerprint priority:
-  //   1. explicit `attemptId` (e.g. retryFailed)
-  //   2. `event.lastAttemptAt.getTime()` set by runEventLaunch
-  //   3. `event.attemptCount` (legacy fallback)
-  // The fingerprint must change between distinct attempts so a cached
-  // failure from attempt N doesn't poison attempt N+1.
   const fingerprint =
     attemptId !== undefined && attemptId !== null
       ? attemptId
@@ -552,25 +805,17 @@ async function sendBulk({
       : event.attemptCount || 0;
 
   const batched = await runBatched(
-    effectiveGuestIds,
-    async (guestId) => {
-      const key = `${scope}:${eventId}:${guestId}:${fingerprint}`;
+    effectiveGuests,
+    async (guest) => {
+      const key = `${scope}:${eventId}:${guest._id}:${fingerprint}`;
       const requestHash = sha256(
-        JSON.stringify({ eventId: String(eventId), guestId: String(guestId), channel })
+        JSON.stringify({ eventId: String(eventId), guestId: String(guest._id), channel })
       );
-      const result = await withIdempotency(
+      return withIdempotency(
         key,
-        () => sendToGuest({ guestId, eventId, channel }),
+        () => _dispatchInvitationToGuest({ guest, event, channel, userId, actorRole }),
         { scope, userId, requestHash }
       );
-      // Persist stats incrementally so a crash mid-loop doesn't lose progress.
-      const inc = result?.success
-        ? { 'messagingStatus.sentCount': 1, 'messagingStatus.pendingCount': -1 }
-        : { 'messagingStatus.failedCount': 1, 'messagingStatus.pendingCount': -1 };
-      Event.findByIdAndUpdate(eventId, { $inc: inc })
-        .exec()
-        .catch(() => {});
-      return result;
     },
     { concurrency: 5, ratePerSecond: 10 }
   );
@@ -580,21 +825,13 @@ async function sendBulk({
   ).length;
   const failed = batched.total - successful;
   const details = batched.results.map((r) => ({
-    guestId: r.item,
+    guestId: r.item._id,
     ...(r.ok ? r.value : { success: false, error: r.error }),
   }));
 
-  // Final authoritative write — overrides incremental counts with exact totals.
-  await Event.findByIdAndUpdate(eventId, {
-    'messagingStatus.sentCount': successful,
-    'messagingStatus.failedCount': failed,
-    'messagingStatus.pendingCount':
-      effectiveGuestIds.length - successful - failed,
-    'messagingStatus.bulkSendCompletedAt': new Date(),
-  });
+  // Authoritative re-aggregation from DB
+  await _recomputeAuthoritativeMessagingStatus(eventId, event.guestList);
 
-  // Plan-usage warning fires here now that consumption lives on the send path.
-  // Best-effort; never blocks the response.
   if (event.subscriptionId && successful > 0) {
     Subscription.findById(event.subscriptionId)
       .select('userId invitePool compensationPool invitesConsumed')
@@ -630,9 +867,6 @@ async function sendBulk({
     /* audit must never break the operation */
   }
 
-  // Bulk is `success: true` if at least one send succeeded; partial-failure
-  // recovery happens via `retryFailed`. ALL_SENDS_FAILED throws so the cron
-  // and HTTP callers get a typed error to act on.
   if (successful === 0 && effectiveGuestIds.length > 0) {
     const err = new AppError(
       'No invitations were delivered',
@@ -648,6 +882,7 @@ async function sendBulk({
 
   return {
     success: true,
+    partial: failed > 0,
     total: effectiveGuestIds.length,
     successful,
     failed,
@@ -657,22 +892,19 @@ async function sendBulk({
 
 /**
  * Retry failed invitations for an event.
- * `attemptId` is bumped per-call so cached failures from earlier attempts
- * don't short-circuit the resend.
  */
 async function retryFailed(eventId, channel = 'sms', userId = null, isAdmin = false, actorRole) {
-  if (userId) {
-    const event = await Event.findById(eventId);
-    if (!event) {
-      throw new NotFoundError('Event');
-    }
-    if (!isAdmin && event.host && event.host.toString() !== userId.toString()) {
-      throw new ForbiddenError('Not authorized for this event');
-    }
+  const event = await Event.findById(eventId);
+  if (!event) {
+    throw new NotFoundError('Event');
+  }
+
+  if (!isAdmin && event.host && userId && event.host.toString() !== userId.toString()) {
+    throw new ForbiddenError('Not authorized for this event');
   }
 
   const failedGuests = await Guest.find({
-    event: eventId,
+    ...getActiveEventGuestsFilter(eventId, event.guestList),
     'invitation.status': 'failed',
     $or: [
       { 'invitation.failedAttempts': { $exists: false } },
@@ -692,7 +924,7 @@ async function retryFailed(eventId, channel = 'sms', userId = null, isAdmin = fa
   try {
     await logAudit({
       action: 'messaging.retry',
-      actor: { _id: userId || null, role: userId ? 'host' : 'system' },
+      actor: { _id: userId || null, role: actorRole || (userId ? 'host' : 'system') },
       targetType: 'event',
       targetId: eventId,
       metadata: { channel, retried: failedGuests.length },
@@ -708,10 +940,6 @@ async function retryFailed(eventId, channel = 'sms', userId = null, isAdmin = fa
     userId,
     isAdmin,
     actorRole,
-    // retryFailed runs outside the runEventLaunch lifecycle, so the
-    // event's `lastAttemptAt` may still point at the original cron
-    // attempt that produced the cached failures. Pass a fresh
-    // fingerprint to bust the cache and re-send.
     attemptId: `retry_failed:${Date.now()}`,
     scope: 'manual_resend',
   });
@@ -719,7 +947,9 @@ async function retryFailed(eventId, channel = 'sms', userId = null, isAdmin = fa
 
 module.exports = {
   sendTestMessage,
+  sendInitialLaunchBatch,
   sendToGuest,
   sendBulk,
   retryFailed,
+  _recomputeAuthoritativeMessagingStatus,
 };

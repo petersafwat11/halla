@@ -6,18 +6,9 @@ import { API_PATHS } from "@halaa/shared/api/paths";
 
 /**
  * Stats polling cadence:
- *
  *   live      → 30s
  *   completed → 5min
  *   draft / scheduled / failed → no polling
- *
- * The `eventStatus` argument flips the React Query `refetchInterval` on
- * the next render. React Query also handles unmount cleanup and
- * cancellation of inflight queries on re-poll automatically (same
- * queryKey).
- *
- * Override for QA: set `localStorage.STATS_POLL_INTERVAL_MS = "<ms>"`
- * (number) to use a fixed interval regardless of status.
  */
 const POLL_INTERVALS = {
   live: 30 * 1000,
@@ -32,16 +23,13 @@ const getPollInterval = (eventStatus) => {
         10
       );
       if (Number.isFinite(override) && override >= 1000) return override;
-    } catch (_) {
-      /* ignore */
-    }
+    } catch (_) {}
   }
   return POLL_INTERVALS[eventStatus] || false;
 };
 
 /**
- * Hook to fetch single event stats. Pass the event's current status to
- * activate the polling cadence; omit it (or pass null) for one-shot.
+ * Hook to fetch single event stats with dynamic query status polling callback.
  *
  * @param {string} eventId
  * @param {Object} [options]
@@ -49,7 +37,6 @@ const getPollInterval = (eventStatus) => {
  */
 export const useSingleEventStats = (eventId, options = {}) => {
   const { eventStatus, ...rest } = options;
-  const refetchInterval = getPollInterval(eventStatus);
 
   return useQuery({
     queryKey: ["events", eventId, "stats"],
@@ -59,8 +46,12 @@ export const useSingleEventStats = (eventId, options = {}) => {
         path: API_PATHS.events.getSingleEventStats(eventId),
       }),
     enabled: !!eventId,
-    staleTime: refetchInterval ? 0 : 5 * 60 * 1000,
-    refetchInterval,
+    staleTime: 0,
+    refetchInterval: (query) => {
+      const resp = query?.state?.data?.data;
+      const currentStatus = resp?.status || resp?.event?.status || eventStatus;
+      return getPollInterval(currentStatus);
+    },
     refetchIntervalInBackground: false,
     ...rest,
   });

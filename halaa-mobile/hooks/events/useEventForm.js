@@ -316,9 +316,8 @@ export const transformFormDataToPayload = (formData) => ({
   invitationType: formData.invitationType || DEFAULT_INVITATION_TYPE,
   templateImage: formData.templateImage,
   launchSettings: {
-    sendSchedule: formData.sendSchedule || "now",
-    scheduledDate: formData.scheduleDate,
-    scheduledTime: formData.scheduleTime,
+    scheduledDate: formData.scheduleDate || undefined,
+    scheduledTime: formData.scheduleTime || undefined,
   },
 });
 
@@ -358,7 +357,6 @@ export const getDefaultFormValues = () => ({
   guestReplies: { onAttend: "", onAbsent: "" },
 
   // Launch settings
-  sendSchedule: "now",
   scheduleDate: "",
   scheduleTime: "",
 

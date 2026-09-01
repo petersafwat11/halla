@@ -19,6 +19,7 @@ import {
   useUnpublishPostEventContent,
   useUpdateThankYouMessage,
   useUploadPostEventMedia,
+  createPostEventAttemptId,
 } from "../../hooks/postEvent";
 import ThankYouMessageSection from "../../components/host/post-event/ThankYouMessageSection";
 import ContentSummary from "../../components/host/post-event/ContentSummary";
@@ -31,6 +32,7 @@ import DirectionalIonicon from "../../components/common/DirectionalIonicon";
 import LocalizedText from "../../components/commen/LocalizedText";
 import AdaptiveText from "../../components/commen/AdaptiveText";
 import KeyboardAwareFormScrollView from "../../components/commen/keyboard/KeyboardAwareFormScrollView";
+import { formatCount } from "@halaa/shared/utils/locale";
 import { layout } from "../../styles/tokens";
 
 const StatusBanner = ({ isPublished, t }) => (
@@ -61,7 +63,7 @@ const StatusBanner = ({ isPublished, t }) => (
 
 const ManagePostEventScreen = ({ navigation, route }) => {
   const { eventId } = route.params || {};
-  const { t } = useTranslation("postEvent");
+  const { t, currentLanguage } = useTranslation("postEvent");
   const toast = useToast();
 
   const contentQuery = useHostPostEventContent(eventId);
@@ -80,6 +82,7 @@ const ManagePostEventScreen = ({ navigation, route }) => {
   const [messageSaved, setMessageSaved] = useState(false);
   const [accessSheetOpen, setAccessSheetOpen] = useState(false);
   const [deletingMediaId, setDeletingMediaId] = useState(null);
+  const [publishAudience, setPublishAudience] = useState("attended");
 
   useEffect(() => {
     if (content?.thankYouMessage?.text !== undefined) {
@@ -145,9 +148,31 @@ const ManagePostEventScreen = ({ navigation, route }) => {
           text: t("host.publish"),
           onPress: () =>
             publish.mutate(
-              { eventId },
               {
-                onSuccess: () => toast.success(t("host.publishSuccess")),
+                eventId,
+                body: { filter: publishAudience },
+                attemptId: createPostEventAttemptId("publish-notify"),
+              },
+              {
+                onSuccess: (response) => {
+                  const summary = response?.data || {};
+                  const breakdown = summary.channelBreakdown || {};
+                  toast.success(t("host.publishSuccess"));
+                  if (
+                    (breakdown.whatsapp ?? 0) +
+                      (breakdown.sms ?? 0) +
+                      (breakdown.failed ?? 0) >
+                    0
+                  ) {
+                    toast.info(
+                      t("host.accessLinks.channelBreakdown", {
+                        whatsapp: formatCount(breakdown.whatsapp || 0, currentLanguage),
+                        sms: formatCount(breakdown.sms || 0, currentLanguage),
+                        failed: formatCount(breakdown.failed || 0, currentLanguage),
+                      })
+                    );
+                  }
+                },
                 onError: (err) =>
                   toast.error(err?.message || t("host.errors.publishFailed")),
               }
@@ -278,6 +303,38 @@ const ManagePostEventScreen = ({ navigation, route }) => {
 
         <ContentSummary media={media} content={content} t={t} />
 
+        {!isPublished && (
+          <View style={styles.section}>
+            <LocalizedText style={styles.sectionTitle}>
+              {t("host.accessLinks.filterLabel")}
+            </LocalizedText>
+            <View style={styles.audienceRow}>
+              {["attended", "confirmed", "all"].map((audience) => (
+                <TouchableOpacity
+                  key={audience}
+                  style={[
+                    styles.audienceChip,
+                    publishAudience === audience && styles.audienceChipActive,
+                  ]}
+                  onPress={() => setPublishAudience(audience)}
+                  disabled={publish.isPending}
+                >
+                  <LocalizedText
+                    style={[
+                      styles.audienceText,
+                      publishAudience === audience && styles.audienceTextActive,
+                    ]}
+                  >
+                    {t(
+                      `host.accessLinks.filter${audience.charAt(0).toUpperCase()}${audience.slice(1)}`
+                    )}
+                  </LocalizedText>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        )}
+
         <PublishControls
           isPublished={isPublished}
           publishing={publish.isPending}
@@ -344,6 +401,14 @@ const styles = StyleSheet.create({
   },
   sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   sectionTitle: { fontSize: 14, fontFamily: "Cairo_700Bold", color: "#2C2C2C" },
+  audienceRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  audienceChip: {
+    borderWidth: 1, borderColor: "#D8C9BB", borderRadius: 18,
+    paddingVertical: 7, paddingHorizontal: 12, backgroundColor: "#FFF",
+  },
+  audienceChipActive: { borderColor: "#C28E5C", backgroundColor: "#FDF6EE" },
+  audienceText: { fontSize: 12, fontFamily: "Cairo_500Medium", color: "#5C5148" },
+  audienceTextActive: { color: "#9B6D3F", fontFamily: "Cairo_700Bold" },
 });
 
 export default ManagePostEventScreen;

@@ -47,22 +47,26 @@ export function computeEventActionGate({
     isFailed &&
     (eventHostId?.toString?.() === userId?.toString?.() ||
       userRole === "admin" ||
-      userRole === "super_admin");
+      userRole === "super_admin" ||
+      userRole === "moderator");
 
   return {
     hasTemplate,
-    // Test message is only meaningful before the invitation send pipeline
-    // takes over: once the event is scheduled (auto-send queued) or live
-    // (invitations delivered) a preview send is pointless and confusing.
     canSendTest:
       hasTemplate &&
-      !testMessageSent &&
       !isScheduled &&
       !isLive &&
       !isCompleted &&
-      !isFailed,
+      !isFailed &&
+      status !== "cancelled" &&
+      status !== "archived",
     canSchedule:
-      hasTemplate && testMessageSent && !isLive && !isCompleted && !isFailed,
+      hasTemplate &&
+      testMessageSent &&
+      (status === "pending_scheduling" || status === "scheduled") &&
+      !isLive &&
+      !isCompleted &&
+      !isFailed,
     hasStaff,
     isCompleted,
     isLive,
@@ -78,18 +82,6 @@ export function computeEventActionGate({
  * Shared gate hook for the single-event UI (web host single-event,
  * mobile EventDetails / LastEvent / SingleEventStats). Centralises the
  * per-action visibility logic so the two apps can't drift.
- *
- * Inputs:
- *   event           — { status, invitationSettings, staffList,
- *                       messagingStatus, attemptCount, host,
- *                       taqnyatTemplate }
- *   testMessageSent — local UI state set by the test-message popup
- *   currentUser     — { _id, role }; gates manual retry
- *
- * Outputs: hasTemplate, canSendTest, canSchedule, hasStaff, isCompleted,
- * isLive, isFailed, isScheduled, hasFailedSends, failedCount,
- * canManualRetry (RBAC mirror of EventFailureBanner / PartialFailureBanner;
- * server still enforces).
  */
 export function useEventActionGate({
   event,

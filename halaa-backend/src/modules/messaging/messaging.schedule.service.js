@@ -15,6 +15,12 @@ const {
 } = require('../../shared/utils/schedulingWindow');
 const { logAudit } = require('../../shared/utils/auditLog');
 const { AppError, NotFoundError, ForbiddenError } = require('../../shared/errors');
+const { EVENT_LIFECYCLE_ALLOWED } = require('../../shared/constants');
+const {
+  resolveTaqnyatTemplate,
+  computeInvitationFingerprint,
+} = require('./messaging.formatting');
+const { getActiveEventGuestsFilter } = require('../../shared/utils/guestFilter');
 
 /**
  * Schedule an event launch.
@@ -22,15 +28,6 @@ const { AppError, NotFoundError, ForbiddenError } = require('../../shared/errors
  * Sets `launchSettings` so the cron picks it up. The whole flow goes
  * through `scheduleEventLaunch` regardless of channel — single retry
  * path, idempotency contract, and lock semantics.
- *
- * Scheduling window: the absolute UTC send instant must fall within
- * `[ now + minLead(plan), eventInstant − 3 days ]`. minLead is 15min
- * (trial) / 24h (paid). Below min → SCHEDULE_TOO_SOON, above max (too
- * close to the event) → SCHEDULE_TOO_LATE. The picker enforces the same
- * bounds; the backend check exists so a crafted POST cannot bypass it.
- *
- * After validating, a TRIAL event's normal reminder is pinned to
- * `scheduledSend + 10min` (paid keeps the pre-save default event−48h).
  */
 async function scheduleBulkSend({
   eventId,
@@ -50,8 +47,29 @@ async function scheduleBulkSend({
     throw new ForbiddenError('Not authorized for this event');
   }
 
+  // Lifecycle check: allow only pending_scheduling or scheduled
+  if (!EVENT_LIFECYCLE_ALLOWED.SCHEDULE.includes(event.status)) {
+    throw new AppError(
+      `Cannot schedule event with status "${event.status}". Only pending or scheduled events can be scheduled.`,
+      409,
+      'EVENT_LIFECYCLE_CONFLICT'
+    );
+  }
+
+  // Canonical fingerprint validation: test message must match current content
+  const cachedTemplate = await resolveTaqnyatTemplate(event);
+  const currentFingerprint = computeInvitationFingerprint(event, cachedTemplate);
+
+  if (!event.testMessageSent || event.testMessageFingerprint !== currentFingerprint) {
+    throw new AppError(
+      'A test message matching the current invitation content must be sent before scheduling',
+      409,
+      'TEST_MESSAGE_REQUIRED'
+    );
+  }
+
   const guests = await Guest.find({
-    event: eventId,
+    ...getActiveEventGuestsFilter(eventId, event.guestList),
     phone: { $exists: true, $ne: null },
   });
   if (guests.length === 0) {
@@ -86,13 +104,7 @@ async function scheduleBulkSend({
     failureReason: null,
   };
 
-  // Normal/auto reminder. TRIAL: pin it to scheduledSend + 10 minutes and
-  // mark it custom so the EventModel pre-save (which recomputes
-  // event−48h when customReminderTime===false) can't clobber it. This
-  // update goes through findByIdAndUpdate (no pre-save hook), but a later
-  // `.save()` elsewhere would, hence customReminderTime:true is required.
-  // PAID: leave the reminder untouched — the pre-save default (event−48h)
-  // applies unless the host customized it.
+  // Normal/auto reminder. TRIAL: pin it to scheduledSend + 10 minutes
   if (isTrial) {
     const reminderInstant = new Date(scheduledInstant.getTime() + TRIAL_REMINDER_OFFSET_MS);
     const comps = toRiyadhComponents(reminderInstant);
@@ -101,7 +113,22 @@ async function scheduleBulkSend({
     update['reminderSettings.customReminderTime'] = true;
   }
 
-  await Event.findByIdAndUpdate(eventId, update);
+  const scheduled = await Event.updateOne(
+    {
+      _id: eventId,
+      status: { $in: EVENT_LIFECYCLE_ALLOWED.SCHEDULE },
+      testMessageSent: true,
+      testMessageFingerprint: currentFingerprint,
+    },
+    { $set: update }
+  );
+  if (scheduled.matchedCount !== 1) {
+    throw new AppError(
+      'Event content or lifecycle changed while scheduling; send a new test message and try again',
+      409,
+      'TEST_MESSAGE_REQUIRED'
+    );
+  }
 
   try {
     await logAudit({

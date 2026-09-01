@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   ScrollView,
   StyleSheet,
+  Text,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { formatCount } from "@halaa/shared/utils/locale";
@@ -13,6 +14,7 @@ import { useHostTaqnyatTemplates } from "../../../hooks/taqnyatTemplates";
 import {
   useGeneratePostEventTokens,
   useSendPostEventAccessLinks,
+  createPostEventAttemptId,
 } from "../../../hooks/postEvent";
 import { useTranslation } from "../../../localization";
 import AdaptiveText from "../../commen/AdaptiveText";
@@ -63,7 +65,11 @@ const AccessLinksSheet = ({
           const sendBody = { filter };
           if (overrideRef) sendBody.taqnyatTemplateRef = overrideRef;
           sendLinks.mutate(
-            { eventId, body: sendBody },
+            {
+              eventId,
+              body: sendBody,
+              attemptId: createPostEventAttemptId("access-links"),
+            },
             {
               onSuccess: (response) => {
                 const summary = response?.data || {};

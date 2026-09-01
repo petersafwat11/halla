@@ -23,6 +23,9 @@ class MessagingService {
   sendTestMessage(params) {
     return send.sendTestMessage(params);
   }
+  sendInitialLaunchBatch(params) {
+    return send.sendInitialLaunchBatch(params);
+  }
   sendToGuest(params) {
     return send.sendToGuest(params);
   }

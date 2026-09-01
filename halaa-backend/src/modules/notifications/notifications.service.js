@@ -22,6 +22,11 @@ const APP_NOTIFICATION_TYPE_TO_PREF_KEY = {
   event_status_change: "eventUpdates",
   event_completed: "eventUpdates",
   event_cancelled: "eventUpdates",
+  event_updated: "eventUpdates",
+  event_deleted: "eventUpdates",
+  event_launch_failed: "eventUpdates",
+  event_partial_delivery_failed: "eventUpdates",
+  event_unscheduled: "eventUpdates",
   invitations_sent: "eventUpdates",
   template_status_change: "eventUpdates",
   // Host — reminders
@@ -38,6 +43,7 @@ const APP_NOTIFICATION_TYPE_TO_PREF_KEY = {
   subscription_expired: "subscriptionAlerts",
   subscription_renewed: "subscriptionAlerts",
   subscription_renewal_invoice: "subscriptionAlerts",
+  subscription_updated: "subscriptionAlerts",
   plan_limit_warning: "subscriptionAlerts",
   // Host — payment status alerts
   payment_successful: "subscriptionAlerts",
@@ -47,6 +53,7 @@ const APP_NOTIFICATION_TYPE_TO_PREF_KEY = {
   payment_voided: "subscriptionAlerts",
   // Host — system / welcome
   welcome: "systemUpdates",
+  account_status_change: "systemUpdates",
   announcement: "systemUpdates",
 };
 
@@ -58,12 +65,16 @@ class NotificationsService {
    * @param {boolean} [sendEmail=false] - Whether to also send email
    * @returns {Promise<Object>}
    */
-  async sendToUser(userId, notificationData, sendEmail = false) {
-    // Preference gate — load the user's saved appNotifications map and
-    // skip in-app creation when the relevant toggle is `false`. Unknown
-    // notification types (no entry in APP_NOTIFICATION_TYPE_TO_PREF_KEY)
-    // always deliver. A missing preferences record means "all on" (the
-    // defaults applied at signup), so undefined === enabled.
+  async sendToUser(userIdOrDoc, notificationData, sendEmail = false) {
+    const userId =
+      userIdOrDoc?._id
+        ? userIdOrDoc._id.toString()
+        : typeof userIdOrDoc === "string"
+        ? userIdOrDoc
+        : userIdOrDoc?.id
+        ? String(userIdOrDoc.id)
+        : String(userIdOrDoc);
+
     const User = require("../../../models/UserModel");
     const user = await User.findById(userId).select("email notificationPreferences");
 

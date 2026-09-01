@@ -151,11 +151,13 @@ export const createEventSchema = (t = idT) =>
 
     invitationSettings: invitationSettingsSchema(t).optional(),
 
-    launchSettings: z.object({
-      sendSchedule: z.enum(["now", "later"]).default("now"),
-      scheduledDate: z.date().optional().nullable(),
-      scheduledTime: z.string().optional(),
-    }),
+    launchSettings: z
+      .object({
+        sendSchedule: z.enum(["now", "later"]).optional().default("now"),
+        scheduledDate: z.date().optional().nullable(),
+        scheduledTime: z.string().optional(),
+      })
+      .optional(),
   });
 
 // ============================================================
@@ -186,7 +188,7 @@ export const updateEventSchema = (t = idT) =>
 
     launchSettings: z
       .object({
-        sendSchedule: z.enum(["now", "later"]).default("now"),
+        sendSchedule: z.enum(["now", "later"]).optional().default("now"),
         scheduledDate: dateLike.nullable().optional(),
         scheduledTime: z.string().optional(),
       })
@@ -260,7 +262,7 @@ export const hasRequiredStepData = (stepNumber, data) => {
     case 3:
       return true;
     case 4:
-      return Boolean(data?.launchSettings?.sendSchedule);
+      return true;
     default:
       return false;
   }
@@ -418,10 +420,6 @@ export const buildDefaultValues = (template, parentEventDate, parentEventTime, o
           : (saved ?? parentEventTime ?? "12:00:AM");
         break;
       case "font":
-        // Cairo is the product-wide default for every template form (web +
-        // mobile). Honour a previously saved choice, but otherwise always
-        // start on Cairo — we intentionally ignore a per-template
-        // `defaultValue` so the default font stays consistent everywhere.
         defaultVal = saved ?? "cairo";
         break;
       case "color":

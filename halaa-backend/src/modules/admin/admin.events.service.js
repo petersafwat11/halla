@@ -8,8 +8,8 @@ const Guest = require('../../../models/GuestModel');
 const StaffAccessToken = require('../../../models/StaffAccessTokenModel');
 const Subscription = require('../../../models/SubscriptionModel');
 const User = require('../../../models/UserModel');
-const { NotFoundError, ValidationError } = require('../../shared/errors');
-const { ROLES, USER_STATUS, EVENT_STATUS, INVITATION_TYPE, isValidEventStatusTransition } = require('../../shared/constants');
+const { NotFoundError, ValidationError, AppError } = require('../../shared/errors');
+const { ROLES, USER_STATUS, EVENT_STATUS, INVITATION_TYPE, EVENT_LIFECYCLE_ALLOWED, isValidEventStatusTransition } = require('../../shared/constants');
 const mongoose = require('mongoose');
 const notificationService = require('../notifications/notifications.service');
 const logger = require('../../shared/utils/logger');
@@ -59,6 +59,25 @@ async function updateEventFull(eventId, updateData, context = {}) {
       'Direct updates to guestList or staffList via full-event update are deprecated. Use dedicated guest and staff endpoints.'
     );
   }
+
+  const messageAffectingFields = [
+    'eventDetails',
+    'visualTemplate',
+    'taqnyatTemplate',
+    'templateImage',
+    'invitationType',
+    'guestReplies',
+  ];
+  const touchesMessage = messageAffectingFields.some((field) => updateData[field] !== undefined)
+    || Boolean(context.file);
+  if (touchesMessage && !EVENT_LIFECYCLE_ALLOWED.DETAILS_MUTATION.includes(event.status)) {
+    throw new AppError(
+      `Cannot modify message-affecting event fields when status is '${event.status}'`,
+      409,
+      'EVENT_LIFECYCLE_CONFLICT'
+    );
+  }
+  const wasScheduled = event.status === EVENT_STATUS.SCHEDULED;
 
   const allowedFields = [
     'eventDetails',
@@ -140,6 +159,43 @@ async function updateEventFull(eventId, updateData, context = {}) {
       ...((event.visualTemplate?.toObject?.() || event.visualTemplate) || {}),
       bakedImagePath: templateImagePath,
     };
+  }
+
+  // Message-affecting updates invalidate test message fingerprint and auto-unschedule
+  if (touchesMessage) {
+    const unscheduled = await Event.updateOne(
+      { _id: event._id, status: 'scheduled' },
+      {
+        $set: {
+          status: 'pending_scheduling',
+          testMessageSent: false,
+          testMessageFingerprint: null,
+        },
+        $unset: {
+          'launchSettings.scheduledDate': 1,
+          'launchSettings.scheduledTime': 1,
+        },
+      }
+    );
+    if (wasScheduled && unscheduled.modifiedCount !== 1) {
+      throw new AppError(
+        'Event lifecycle changed while the admin update was being applied',
+        409,
+        'EVENT_LIFECYCLE_CONFLICT'
+      );
+    }
+    if (unscheduled.modifiedCount > 0) {
+      event.status = 'pending_scheduling';
+      event.testMessageSent = false;
+      event.testMessageFingerprint = null;
+      if (event.launchSettings) {
+        event.launchSettings.scheduledDate = undefined;
+        event.launchSettings.scheduledTime = undefined;
+      }
+    } else {
+      event.testMessageSent = false;
+      event.testMessageFingerprint = null;
+    }
   }
 
   await event.save();

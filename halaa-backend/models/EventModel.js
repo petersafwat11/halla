@@ -245,6 +245,23 @@ const messagingStatusSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // Overall delivery status for batch sending
+    deliveryStatus: {
+      type: String,
+      enum: ['pending', 'delivering', 'delivered', 'partial_delivery_failed', null],
+      default: null,
+    },
+    // Timestamp when launch retries were exhausted
+    deliveryExhaustedAt: Date,
+    // Last delivery error description
+    lastError: String,
+    // Status of partial failure notifications to host/admin
+    failureNotificationStatus: {
+      type: String,
+      enum: ['pending', 'failed', 'sent', null],
+      default: null,
+    },
+    failureNotificationSentAt: Date,
   },
   { _id: false }
 );
@@ -446,6 +463,11 @@ const eventSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // SHA-256 fingerprint of the message content tested
+    testMessageFingerprint: {
+      type: String,
+      default: null,
+    },
     // last test message timestamp for per-event throttle
     lastTestAt: { type: Date },
 
@@ -477,6 +499,22 @@ const eventSchema = new mongoose.Schema(
 
     // Set on successful launch (status → 'live')
     launchedAt: Date,
+
+    // Set when status transitions to 'completed'
+    completedAt: {
+      type: Date,
+      default: null,
+    },
+    // Status of automatic completion notification to host
+    completionNotificationStatus: {
+      type: String,
+      enum: ['pending', 'sent', 'failed', null],
+      default: null,
+    },
+    completionNotifiedAt: {
+      type: Date,
+      default: null,
+    },
 
     // Set when status transitions to 'failed'
     failedAt: Date,

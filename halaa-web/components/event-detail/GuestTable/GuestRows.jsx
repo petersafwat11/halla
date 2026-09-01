@@ -19,8 +19,6 @@ export default function GuestRows({
   onDeleteGuest,
   onRotateQr,
   onRevokeAccess,
-  onSendInvitation,
-  onSendReminder,
   onExportGuests,
 }) {
   const guestsList = guests || [];
@@ -39,15 +37,6 @@ export default function GuestRows({
   const activeDropdownValue =
     statusFilter && statusFilter !== "totalGuests" ? statusFilter : null;
 
-  // Pool-charged send actions (resend / extra reminder / new guests) now live
-  // in the single-event header's "Send messages" menu, not in the table's
-  // bulk-selection bar — so there are no bulk actions or row checkboxes here.
-
-  // Column keys must match `headers` 1:1 in the same order. The Table
-  // component falls back to `Object.keys(row)` when `headerKeys` isn't
-  // passed, which would render every property as a column — including
-  // side-channel fields like `smsFallback` that the renderer reads from
-  // `row` but should never be its own cell. Pass keys explicitly.
   const columnKeys = [
     "name",
     "phone",
@@ -80,9 +69,6 @@ export default function GuestRows({
         sentVia:
           guest.invitation?.effectiveChannel || guest.invitation?.method || null,
         smsFallback: guest.invitation?.smsFallback || false,
-        // Pass the raw invitation sub-object through so the renderers
-        // (which are pure cell-level) can read auto fields without us
-        // having to flatten every flag onto the row shape.
         invitation: guest.invitation || {},
         autoReminder: guest.invitation?.autoReminderSent || false,
         responseTime: guest.rsvp?.respondedAt,
@@ -133,23 +119,11 @@ export default function GuestRows({
             ]
           : []),
       ]}
-      moreOptions={[
-        {
-          text: t("messaging.sendInvitations", "إرسال الدعوات"),
-          onClick: onSendInvitation,
-        },
-        {
-          text: t("singleEvent.header.sendReminder", "إرسال تذكير"),
-          onClick: onSendReminder,
-        },
-      ]}
       renderCell={(key, value, row) => {
         if (key === "sentVia") return renderSentViaBadge(value, row, t);
         if (key === "status") return renderStatusBadge(value, t);
         if (key === "autoReminder") return renderAutoReminderBadge(row, t, formatDateTime || formatDate);
         if (key === "responseTime" && value) {
-          // Show full date+time so the host can see exactly when the
-          // guest replied — date alone is ambiguous after 24h.
           return (formatDateTime || formatDate)(value);
         }
         return value;

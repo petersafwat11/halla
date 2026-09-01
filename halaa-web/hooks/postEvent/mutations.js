@@ -169,10 +169,11 @@ export const useUpdatePostEventMessagingTemplate = () => {
 export const usePublishPostEventContent = () => {
   const invalidate = useInvalidateHostContent();
   return useMutation({
-    mutationFn: ({ eventId }) =>
+    mutationFn: ({ eventId, attemptId = createPostEventAttemptId('publish') }) =>
       apiRequest({
         method: "POST",
         path: API_PATHS.postEvent.publishContent(eventId),
+        config: { headers: { "Idempotency-Key": attemptId } },
       }),
     onSuccess: (_, { eventId }) => invalidate(eventId),
   });
@@ -186,11 +187,12 @@ export const usePublishPostEventContent = () => {
 export const usePublishAndNotify = () => {
   const invalidate = useInvalidateHostContent();
   return useMutation({
-    mutationFn: ({ eventId, data }) =>
+    mutationFn: ({ eventId, data, attemptId = createPostEventAttemptId('publish-notify') }) =>
       apiRequest({
         method: "POST",
         path: API_PATHS.postEvent.publishAndNotify(eventId),
-        data,
+        data: { ...data, attemptId },
+        config: { headers: { "Idempotency-Key": attemptId } },
       }),
     onSuccess: (_, { eventId }) => invalidate(eventId),
   });
@@ -225,6 +227,13 @@ export const useGeneratePostEventTokens = () => {
   });
 };
 
+export const createPostEventAttemptId = (prefix = 'post-event') => {
+  const uuid = globalThis.crypto?.randomUUID?.();
+  return uuid
+    ? `${prefix}-${uuid}`
+    : `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+};
+
 /**
  * Send WhatsApp/SMS access links via Taqnyat. Body:
  * `{ guestIds?, filter?, taqnyatTemplateRef? }` — `taqnyatTemplateRef` is
@@ -234,11 +243,12 @@ export const useGeneratePostEventTokens = () => {
 export const useSendPostEventAccessLinks = () => {
   const invalidate = useInvalidateHostContent();
   return useMutation({
-    mutationFn: ({ eventId, data }) =>
+    mutationFn: ({ eventId, data, attemptId = createPostEventAttemptId('access-links') }) =>
       apiRequest({
         method: "POST",
         path: API_PATHS.postEvent.sendBulkAccessLinks(eventId),
-        data,
+        data: { ...data, attemptId },
+        config: { headers: { "Idempotency-Key": attemptId } },
       }),
     onSuccess: (_, { eventId }) => invalidate(eventId),
   });

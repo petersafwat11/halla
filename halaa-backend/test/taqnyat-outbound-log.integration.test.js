@@ -173,7 +173,7 @@ test('persists image sends and follows delivery/fallback webhooks', async () => 
   assert.equal(row.messageType, 'image');
   assert.equal(row.requestPayload.image.caption, 'Your QR pass');
   assert.equal(row.effectiveChannel, 'sms');
-  assert.equal(row.status, 'sent');
+  assert.equal(row.status, 'delivered', 'SMS fallback must not regress a delivered message');
   assert.deepEqual(row.deliveryHistory.map((entry) => entry.status), [
     'sent',
     'delivered',

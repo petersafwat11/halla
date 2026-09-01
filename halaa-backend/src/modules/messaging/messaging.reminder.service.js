@@ -1,6 +1,6 @@
 /**
  * Messaging reminder service.
- * Sends reminders to pending (unanswered) guests for an event.
+ * Sends reminders to pending (unanswered) guests or auto/extra reminder batches.
  */
 
 const taqnyat = require('../../infrastructure/taqnyat');
@@ -9,7 +9,10 @@ const Guest = require('../../../models/GuestModel');
 const config = require('../../config');
 const { runBatched } = require('../../shared/utils/runBatched');
 const { logAudit } = require('../../shared/utils/auditLog');
-const { NotFoundError, ForbiddenError } = require('../../shared/errors');
+const { NotFoundError, ForbiddenError, AppError } = require('../../shared/errors');
+const dispatchPolicy = require('./messaging.dispatchPolicy.service');
+const { EVENT_LIFECYCLE_ALLOWED } = require('../../shared/constants/status');
+const { getActiveEventGuestsFilter } = require('../../shared/utils/guestFilter');
 const {
   TAQNYAT_SENDER,
   formatDate,
@@ -26,14 +29,6 @@ async function sendSMS(phoneNumber, message, logContext = {}) {
 
 /**
  * Send a reminder to guests who haven't responded.
- *
- * @param {Object} params
- * @param {string} params.eventId
- * @param {string[]} [params.guestIds] - Optional specific guest IDs
- * @param {string} [params.channel='sms']
- * @param {string} [params.customMessage]
- * @param {string} [params.reminderTemplateName]
- * @param {string} [params.userId]
  */
 async function sendReminder({
   eventId,
@@ -53,19 +48,40 @@ async function sendReminder({
     throw new ForbiddenError('Not authorized for this event');
   }
 
+  // Reminders only permitted on live events
+  if (!EVENT_LIFECYCLE_ALLOWED.LIVE_SEND.includes(event.status)) {
+    throw new AppError(
+      'Reminders cannot be sent until the event is live',
+      409,
+      'EVENT_NOT_LIVE'
+    );
+  }
+
+  const decision = await dispatchPolicy.assertCanDispatch(
+    event,
+    { path: 'sendReminder' },
+    { requireInvites: false }
+  );
+  if (!decision.allowed) {
+    throw new AppError(
+      `Reminders can no longer be sent for this event (${decision.reason}).`,
+      403
+    );
+  }
+
   const templateName =
     reminderTemplateName || config.taqnyat?.reminderTemplateName;
 
   const query = {
-    event: eventId,
+    ...getActiveEventGuestsFilter(
+      eventId,
+      event.guestList,
+      Array.isArray(guestIds) ? guestIds : null
+    ),
     'invitation.sent': true,
     'invitation.status': { $in: ['sent', 'delivered'] },
     'rsvp.responded': { $ne: true },
   };
-  if (guestIds && guestIds.length > 0) {
-    query._id = { $in: guestIds };
-  }
-
   const pendingGuests = await Guest.find(query);
   if (pendingGuests.length === 0) {
     return {
@@ -81,6 +97,8 @@ async function sendReminder({
     date: formatDate(event.eventDetails?.date),
   };
 
+  const frontendUrl = (config.frontend?.url || 'https://halaa.sa').replace(/\/$/, '');
+
   const batched = await runBatched(
     pendingGuests,
     async (guest) => {
@@ -92,7 +110,7 @@ async function sendReminder({
           purpose: 'guest_reminder_manual',
         },
       };
-      const rsvpLink = `${config.frontend?.url || 'https://halaa.sa'}/rsvp/${eventId}/${guest._id}`;
+      const rsvpLink = `${frontendUrl}/ar/invitation/${guest.qrcode}`;
       const defaultMessage = `تذكير: ${eventData.hostName} بانتظار ردك على دعوة "${eventData.title}". للرد: ${rsvpLink}`;
       const message = customMessage || defaultMessage;
 
@@ -165,14 +183,7 @@ async function sendReminder({
 
 /**
  * Send an auto-reminder batch (48h-before cron) or an extra-reminder batch
- * (manual schedule). Uses the curated Taqnyat template's varMapping for
- * body params and an SMS fallback derived from event details. Each per-
- * guest send runs inside `withIdempotency`. Returns per-guest details so
- * the caller can write Guest.invitation.{auto,extra}Reminder* fields and
- * adjust subscription quota counters accordingly.
- *
- * Does NOT write to Guest.invitation.reminderSentAt / reminderCount —
- * those are the manual nudge service's accounting fields.
+ * (manual schedule).
  */
 async function sendAutoReminderBatch({
   event,
@@ -188,12 +199,12 @@ async function sendAutoReminderBatch({
     return { successful: 0, failed: guests.length, rateLimited: 0, details: [] };
   }
 
-  const rsvpBaseUrl = config.frontend?.url || 'https://halaa.sa';
+  const frontendUrl = (config.frontend?.url || 'https://halaa.sa').replace(/\/$/, '');
 
   const batched = await runBatched(
     guests,
     async (guest) => {
-      const rsvpLink = `${rsvpBaseUrl}/rsvp/${event._id}/${guest._id}`;
+      const rsvpLink = `${frontendUrl}/ar/invitation/${guest.qrcode}`;
       const attemptToken =
         attemptKey || attemptId || `${event._id}:${reminderType}:48h`;
       const key = `${idempotencyPrefix}:${event._id}:${guest._id}:${reminderType}:${attemptToken}`;
@@ -266,9 +277,6 @@ async function sendAutoReminderBatch({
     { concurrency: 5, ratePerSecond: 10 }
   );
 
-  // Always attach guestId in every detail entry — the dispatcher relies on
-  // it to do per-guest quota release/consume accounting without double-
-  // refunding via the missing-guest backstop.
   const details = batched.results.map((r) => {
     if (r.ok) return r.value;
     return {

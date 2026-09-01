@@ -8,6 +8,13 @@ import {
   postEventWithSession,
 } from "./queries";
 
+export const createPostEventAttemptId = (prefix = "post-event") => {
+  const uuid = globalThis.crypto?.randomUUID?.();
+  return uuid
+    ? `${prefix}-${uuid}`
+    : `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+};
+
 /**
  * Optimistic toggle-like mutation. Snapshots `post-event/content`,
  * mutates the matching media item's `userLiked` + `likesCount`, then
@@ -220,9 +227,15 @@ export function useUpdatePostEventMessagingTemplate() {
 export function usePublishPostEventContent() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ eventId }) =>
-      hostPostEventRequest(ENDPOINTS.POST_EVENT.PUBLISH(eventId), {
+    mutationFn: ({
+      eventId,
+      body = { filter: "attended" },
+      attemptId = createPostEventAttemptId("publish-notify"),
+    }) =>
+      hostPostEventRequest(ENDPOINTS.POST_EVENT.PUBLISH_AND_NOTIFY(eventId), {
         method: "POST",
+        headers: { "Idempotency-Key": attemptId },
+        body: { ...body, attemptId },
       }),
     onSuccess: (_data, { eventId }) => {
       queryClient.invalidateQueries({ queryKey: postEventKeys.hostContent(eventId) });
@@ -255,10 +268,15 @@ export function useGeneratePostEventTokens() {
 
 export function useSendPostEventAccessLinks() {
   return useMutation({
-    mutationFn: ({ eventId, body }) =>
+    mutationFn: ({
+      eventId,
+      body,
+      attemptId = createPostEventAttemptId("access-links"),
+    }) =>
       hostPostEventRequest(ENDPOINTS.POST_EVENT.SEND_ACCESS_LINKS(eventId), {
         method: "POST",
-        body,
+        headers: { "Idempotency-Key": attemptId },
+        body: { ...body, attemptId },
       }),
   });
 }

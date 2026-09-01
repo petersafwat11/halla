@@ -255,10 +255,11 @@ exports.getPostComments = catchAsync(async (req, res) => {
  * POST /api/v2/post-event/:eventId/publish-and-notify
  */
 exports.publishAndNotify = catchAsync(async (req, res) => {
+  const attemptId = req.get('idempotency-key');
   const result = await postEventService.publishAndNotify(
     req.params.eventId,
     req.user,
-    req.body
+    { ...req.body, attemptId }
   );
   sendSuccess(res, result, "Content published and guests notified");
 });
@@ -282,10 +283,11 @@ exports.generateBulkTokens = catchAsync(async (req, res) => {
  * POST /api/v2/post-event/:eventId/send-access-links
  */
 exports.sendBulkAccessLinks = catchAsync(async (req, res) => {
+  const attemptId = req.get('idempotency-key');
   const result = await postEventService.sendBulkAccessLinks(
     req.params.eventId,
     req.user,
-    req.body
+    { ...req.body, attemptId }
   );
   sendSuccess(res, result, "Access links sent");
 });

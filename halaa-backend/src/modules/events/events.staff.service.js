@@ -9,7 +9,9 @@ const { SUPERVISOR_STATUS } = require("../../shared/constants");
 const {
   NotFoundError,
   ValidationError,
+  AppError,
 } = require("../../shared/errors");
+const { EVENT_LIFECYCLE_ALLOWED } = require("../../shared/constants/status");
 // Every export/notification helper uses formatRiyadh so we don't
 // re-render UTC server-locale dates as the previous local day.
 const { formatRiyadh } = require("../../shared/utils/timezone");
@@ -39,8 +41,12 @@ module.exports = {
     const event = await Event.findOne(this._buildScopedEventQuery(eventId, userContext));
     if (!event) throw new NotFoundError("Event");
 
-    if (['completed', 'cancelled'].includes(event.status)) {
-      throw new ValidationError('Cannot modify a completed or cancelled event');
+    if (!EVENT_LIFECYCLE_ALLOWED.STAFF_MUTATION.includes(event.status)) {
+      throw new AppError(
+        `Cannot modify staff when event status is '${event.status}'`,
+        409,
+        'EVENT_LIFECYCLE_CONFLICT'
+      );
     }
 
     const userId =
@@ -53,11 +59,12 @@ module.exports = {
       name: s.name,
       phone: s.phone,
     }));
-    await event.save();
 
     // Revoke StaffAccessToken records for any phone dropped from the list
-    // so removed staff lose portal access immediately.
+    // before persisting the roster so a revocation failure cannot leave a
+    // removed staff member with live portal access.
     await this._revokeRemovedStaffTokens(eventId, preImagePhones, event.staffList);
+    await event.save();
 
     logAudit({
       action: 'event.staff_list_updated',
@@ -77,52 +84,34 @@ module.exports = {
    * Invalidate StaffAccessToken records for staff removed from an event's
    * staffList.
    *
-   * Phone strings on `staffList` and on the token records are stored
-   * in raw form (the entry the host typed). We normalise both sides
-   * by stripping spaces / dashes / parentheses (matches
-   * `staff.service` cleanPhone) so a phone like "+966 55 123 4567"
-   * still matches "+966551234567" when revoking.
-   *
    * @private
    */
   async _revokeRemovedStaffTokens(eventId, preImagePhones, newStaffList) {
-    try {
-      const cleanPhone = (p) => (typeof p === 'string' ? p.replace(/[\s\-\(\)]/g, '') : '');
-      const newPhones = new Set(
-        (newStaffList || []).map((s) => cleanPhone(s?.phone)).filter(Boolean)
-      );
-      const removedPhones = (preImagePhones || [])
-        .map(cleanPhone)
-        .filter((p) => p && !newPhones.has(p));
-      if (removedPhones.length === 0) return;
+    const cleanPhone = (p) => (typeof p === 'string' ? p.replace(/[\s\-\(\)]/g, '') : '');
+    const newPhones = new Set(
+      (newStaffList || []).map((s) => cleanPhone(s?.phone)).filter(Boolean)
+    );
+    const removedPhones = (preImagePhones || [])
+      .map(cleanPhone)
+      .filter((p) => p && !newPhones.has(p));
+    if (removedPhones.length === 0) return;
 
-      // Query the active tokens for this event and filter in-memory by
-      // the cleaned phone — done in JS rather than via a complex regex
-      // $in so phone-format drift between record and list (raw vs
-      // formatted) doesn't leak access. The active-token set per event
-      // is small (one per staff member, plus historical revoked ones),
-      // so this is fine.
-      const activeTokens = await StaffAccessToken.find({
-        event: eventId,
-        isRevoked: false,
-      })
-        .select('_id phone')
-        .lean();
+    const activeTokens = await StaffAccessToken.find({
+      event: eventId,
+      isRevoked: false,
+    })
+      .select('_id phone')
+      .lean();
 
-      const tokenIdsToRevoke = activeTokens
-        .filter((t) => removedPhones.includes(cleanPhone(t.phone)))
-        .map((t) => t._id);
-      if (tokenIdsToRevoke.length === 0) return;
+    const tokenIdsToRevoke = activeTokens
+      .filter((t) => removedPhones.includes(cleanPhone(t.phone)))
+      .map((t) => t._id);
+    if (tokenIdsToRevoke.length === 0) return;
 
-      await StaffAccessToken.updateMany(
-        { _id: { $in: tokenIdsToRevoke } },
-        { $set: { isRevoked: true, revokedAt: new Date() } }
-      );
-    } catch (err) {
-      // Non-fatal — the staffList update already committed. Log so an
-      // operator can re-revoke manually if needed.
-      logger.warn('_revokeRemovedStaffTokens failed', { err: err?.message });
-    }
+    await StaffAccessToken.updateMany(
+      { _id: { $in: tokenIdsToRevoke } },
+      { $set: { isRevoked: true, revokedAt: new Date() } }
+    );
   },
 
   /**
@@ -135,6 +124,15 @@ module.exports = {
   async addStaffToEvent(eventId, staffData, userContext) {
     const event = await Event.findOne(this._buildScopedEventQuery(eventId, userContext));
     if (!event) throw new NotFoundError("Event");
+
+    if (!EVENT_LIFECYCLE_ALLOWED.STAFF_MUTATION.includes(event.status)) {
+      throw new AppError(
+        `Cannot modify staff when event status is '${event.status}'`,
+        409,
+        'EVENT_LIFECYCLE_CONFLICT'
+      );
+    }
+
     const userId = typeof userContext === 'object' ? userContext._id : userContext;
 
     if (!event.staffList) event.staffList = [];
@@ -173,13 +171,26 @@ module.exports = {
   async updateStaff(eventId, staffId, updateData, userContext) {
     const event = await Event.findOne(this._buildScopedEventQuery(eventId, userContext));
     if (!event) throw new NotFoundError("Event");
+
+    if (!EVENT_LIFECYCLE_ALLOWED.STAFF_MUTATION.includes(event.status)) {
+      throw new AppError(
+        `Cannot modify staff when event status is '${event.status}'`,
+        409,
+        'EVENT_LIFECYCLE_CONFLICT'
+      );
+    }
+
     const userId = typeof userContext === 'object' ? userContext._id : userContext;
 
     const staffIndex = event.staffList?.findIndex(
       (s) => s._id?.toString() === staffId
     );
-    if (staffIndex === -1 || staffIndex === undefined)
-      throw new NotFoundError("Staff");
+    if (staffIndex === undefined || staffIndex < 0) {
+      throw new NotFoundError('Staff');
+    }
+    const staffMember = event.staffList[staffIndex];
+    const previousPhone = staffMember.phone;
+    const previousStatus = staffMember.status;
 
     const allowedFields = ["name", "phone", "status"];
     const changes = {};
@@ -190,6 +201,18 @@ module.exports = {
       }
     });
 
+    const newPhone = event.staffList[staffIndex].phone;
+    const newStatus = event.staffList[staffIndex].status;
+    if (
+      previousPhone !== newPhone ||
+      (newStatus === 'inactive' && previousStatus !== 'inactive')
+    ) {
+      await this._revokeRemovedStaffTokens(
+        eventId,
+        [previousPhone],
+        newStatus === 'inactive' ? [] : event.staffList
+      );
+    }
     await event.save();
 
     logAudit({
@@ -225,6 +248,15 @@ module.exports = {
   async deleteStaff(eventId, staffId, userContext) {
     const event = await Event.findOne(this._buildScopedEventQuery(eventId, userContext));
     if (!event) throw new NotFoundError("Event");
+
+    if (!EVENT_LIFECYCLE_ALLOWED.STAFF_MUTATION.includes(event.status)) {
+      throw new AppError(
+        `Cannot modify staff when event status is '${event.status}'`,
+        409,
+        'EVENT_LIFECYCLE_CONFLICT'
+      );
+    }
+
     const userId = typeof userContext === 'object' ? userContext._id : userContext;
 
     const removed = (event.staffList || []).find(
@@ -237,13 +269,10 @@ module.exports = {
       (s) => s._id?.toString() !== staffId
     );
 
-    await event.save();
-
-    // Revoke any active StaffAccessToken so the removed staff loses
-    // portal access immediately rather than at natural 48h TTL.
     if (removedPhone) {
       await this._revokeRemovedStaffTokens(eventId, [removedPhone], event.staffList);
     }
+    await event.save();
 
     logAudit({
       action: 'event.staff_deleted',
@@ -269,6 +298,14 @@ module.exports = {
     const event = await Event.findOne(query);
     if (!event) throw new NotFoundError("Event");
 
+    if (!EVENT_LIFECYCLE_ALLOWED.STAFF_NOTIFY.includes(event.status)) {
+      throw new AppError(
+        `Cannot notify staff for an event with status "${event.status}"`,
+        409,
+        'EVENT_LIFECYCLE_CONFLICT'
+      );
+    }
+
     const activeStaff = (event.staffList || []).filter(
       (s) => s.status === SUPERVISOR_STATUS.ACTIVE
     );
@@ -292,8 +329,6 @@ module.exports = {
     let failed = 0;
     const results = [];
 
-    // Single global staff_access template (or null if admin hasn't tagged
-    // one yet — we degrade to the plain SMS body in that case).
     const template = await taqnyatTemplatesService
       .findActiveByCategoryAndType(null, 'staff_access')
       .catch(() => null);
@@ -308,9 +343,6 @@ module.exports = {
 
         const staffUrl = `${frontendUrl}/ar/staff?token=${tokenDoc.token}`;
 
-        // SMS body kept as the fallback that Taqnyat falls through to when
-        // the recipient has no WhatsApp capability or the template send
-        // errors out.
         const smsBody =
           `مرحبا ${staffMember.name}!\n\n` +
           `تم تعيينك كمشرف في فعالية "${eventTitle}"\n` +
@@ -330,7 +362,6 @@ module.exports = {
         let sendResult;
 
         if (template) {
-          // Per-iteration local — never mutates the shared event doc.
           const staffCtx = {
             staff: { name: staffMember.name, accessUrl: staffUrl },
           };
@@ -388,7 +419,6 @@ module.exports = {
           response: error.response?.data,
           stack: error.stack,
         });
-        // Track staff SMS failures for host dashboard visibility
         event.messagingStatus = event.messagingStatus || {};
         event.messagingStatus.staffFailedCount = (event.messagingStatus.staffFailedCount || 0) + 1;
         await event.save().catch(() => {});

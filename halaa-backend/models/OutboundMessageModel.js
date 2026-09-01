@@ -66,6 +66,9 @@ const outboundMessageSchema = new mongoose.Schema(
     sentAt: { type: Date, default: null, index: true },
     failedAt: { type: Date, default: null },
     lastDeliveryAt: { type: Date, default: null },
+    statusUpdatedAt: { type: Date, default: null },
+    deliveredAt: { type: Date, default: null },
+    readAt: { type: Date, default: null },
     deliveryHistory: { type: [deliveryEventSchema], default: [] },
   },
   { timestamps: true }

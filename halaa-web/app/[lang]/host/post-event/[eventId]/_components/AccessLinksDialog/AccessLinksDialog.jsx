@@ -7,6 +7,7 @@ import { useHostTaqnyatTemplates } from "@/hooks/taqnyatTemplates";
 import {
   useGeneratePostEventTokens,
   useSendPostEventAccessLinks,
+  createPostEventAttemptId,
 } from "@/hooks/postEvent";
 import { handleError } from "@/services/errorHandlingService";
 import styles from "./accessLinksDialog.module.css";
@@ -38,7 +39,8 @@ const AccessLinksDialog = ({ eventId, savedTemplateRef, onClose }) => {
 
     try {
       await generateTokens.mutateAsync({ eventId, data: { filter } });
-      const result = await sendLinks.mutateAsync({ eventId, data: body });
+      const attemptId = createPostEventAttemptId('access-links');
+      const result = await sendLinks.mutateAsync({ eventId, data: body, attemptId });
       const summary = result?.data || {};
       const breakdown = summary.channelBreakdown || {};
       toast.success(
