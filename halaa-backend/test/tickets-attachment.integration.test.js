@@ -32,7 +32,6 @@ const BASE_URL = process.env.AWS_S3_BASE_URL;
 const hostUser = () => ({
   _id: new mongoose.Types.ObjectId(),
   role: "host",
-  username: "test-host",
   phoneNumber: "+966500000000",
 });
 
@@ -43,7 +42,6 @@ const seedHost = async () => {
   await mongoose.connection.collection("users").insertOne({
     _id: user._id,
     role: user.role,
-    username: `test-host-${user._id}`,
     email: `test-host-${user._id}@example.com`,
     phoneNumber: user.phoneNumber,
   });

@@ -358,7 +358,7 @@ const TargetCard = ({
       </div>
       <div className={styles.hostInfo}>
         <div className={styles.hostName}>
-          {target.name || target.username || "Unknown"}
+          {target.name || "Unknown"}
         </div>
         <div className={styles.hostPhone}>
           {target.phoneNumber || target.phone || "-"}

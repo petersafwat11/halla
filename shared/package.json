@@ -27,7 +27,9 @@
     "./legal": "./src/legal/index.js",
     "./legal/*": "./src/legal/*.js",
     "./brand": "./src/brand/index.js",
-    "./brand/*": "./src/brand/*.js"
+    "./brand/*": "./src/brand/*.js",
+    "./support": "./src/support/index.js",
+    "./support/*": "./src/support/*.js"
   },
   "dependencies": {
     "xlsx": "npm:@e965/xlsx@^0.20.3"

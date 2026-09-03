@@ -47,10 +47,10 @@ export default function VendorRatingPopup({ vendor, onClose }) {
         <FormProvider {...methods}>
           <form onSubmit={methods.handleSubmit(onSubmit)} className={styles.form}>
             <div className={styles.formGroup}>
-              <label>{t("table.columns.username")}</label>
+              <label>{t("table.columns.name") || "Vendor"}</label>
               <input
                 type="text"
-                value={vendor?.username || vendor?.name || ""}
+                value={vendor?.name || vendor?.brandName || ""}
                 disabled
                 className={styles.inputDisabled}
               />

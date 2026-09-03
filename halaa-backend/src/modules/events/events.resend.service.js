@@ -164,7 +164,7 @@ module.exports = {
    */
   async sendToNewGuests(eventId, body = {}, user) {
     const query = this._buildScopedEventQuery(eventId, user);
-    const event = await Event.findOne(query).populate("host", "name username");
+    const event = await Event.findOne(query).populate("host", "name");
 
     if (!event) {
       throw new NotFoundError("Event");
@@ -293,7 +293,7 @@ module.exports = {
         path: "taqnyatTemplate.templateRef",
         select: "templateName bodyText hasImageHeader language category varMapping",
       })
-      .populate("host", "name username");
+      .populate("host", "name");
 
     if (!event) {
       throw new NotFoundError("Event");
@@ -489,10 +489,7 @@ module.exports = {
    */
   async extraReminder(eventId, body = {}, user) {
     const query = this._buildScopedEventQuery(eventId, user);
-    const event = await Event.findOne(query).populate(
-      "host",
-      "name username"
-    );
+    const event = await Event.findOne(query).populate("host", "name");
 
     if (!event) {
       throw new NotFoundError("Event");

@@ -16,7 +16,7 @@ const Summary = () => {
   const { watch, setValue } = useFormContext();
   const { t, i18n } = useTranslation("createEvent");
   const hostName = useAuthStore(
-    (state) => state.user?.name || state.user?.username || ""
+    (state) => state.user?.name || ""
   );
 
   // Watch confirmReviewed from form state

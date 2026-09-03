@@ -85,7 +85,6 @@ async function seedUser(over = {}) {
     email: "alice@example.com",
     mobile: "+966500000009",
     phoneNumber: "+966500000009",
-    username: "alicehost",
     password: "password123",
     role: "host",
     accountType: "personal",

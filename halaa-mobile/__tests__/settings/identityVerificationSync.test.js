@@ -49,16 +49,15 @@ test("SET-01: mobile AccountSettings submits name and email", () => {
   );
   assert.match(
     source,
-    /defaultValues:\s*\{[\s\S]*?name:\s*user\?\.name\s*\|\|\s*user\?\.username\s*\|\|\s*""/,
-    "form defaults must seed the name field (falling back to legacy username)"
+    /defaultValues:\s*\{[\s\S]*?name:\s*user\?\.name\s*\|\|\s*""/,
+    "form defaults must seed the name field"
   );
 });
 
 test("SET-01: mobile schema accepts the full settings form with name", () => {
   const result = schema.safeParse({
     name: "Ahmed Al-Saud",
-    username: "ahmed_s",
-    email: "ahmed@example.com",
+        email: "ahmed@example.com",
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",

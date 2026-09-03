@@ -76,7 +76,7 @@ async function assignUnlimitedPlan() {
 
         if (existingSub) {
           if (existingSub.planId?.code === PLAN_CODES.UNLIMITED) {
-            console.log(`Admin ${admin.username || admin._id} already has unlimited plan`);
+            console.log(`Admin ${admin.name || admin._id} already has unlimited plan`);
             existing++;
             continue;
           }
@@ -87,7 +87,7 @@ async function assignUnlimitedPlan() {
           existingSub.compensationPool = null;
           existingSub.expiresAt = null;
           await existingSub.save();
-          console.log(`Updated subscription for admin ${admin.username || admin._id}`);
+          console.log(`Updated subscription for admin ${admin.name || admin._id}`);
           created++;
         } else {
           // Create new unlimited subscription via createForUser
@@ -98,11 +98,11 @@ async function assignUnlimitedPlan() {
           );
 
           await User.findByIdAndUpdate(admin._id, { subscription: subscription._id });
-          console.log(`Created unlimited subscription for admin ${admin.username || admin._id}`);
+          console.log(`Created unlimited subscription for admin ${admin.name || admin._id}`);
           created++;
         }
       } catch (err) {
-        console.error(`Error processing admin ${admin.username || admin._id}:`, err.message);
+        console.error(`Error processing admin ${admin.name || admin._id}:`, err.message);
         errors++;
       }
     }

@@ -46,7 +46,7 @@ const ContinueSignupForm = () => {
     resolver: zodResolver(hostProfileCompletionSchema(t)),
     mode: "onBlur",
     defaultValues: {
-      username: "",
+      name: "",
       email: "",
       password: "",
       passwordConfirm: "",
@@ -82,20 +82,20 @@ const ContinueSignupForm = () => {
 
     try {
       await completeProfile({
-        username: formData.username,
+        name: formData.name,
         email: formData.email,
         password: formData.password,
         passwordConfirm: formData.passwordConfirm,
       });
       router.push(`/${currentLocale}/host`);
     } catch (error) {
-      // Surface duplicate-email / duplicate-username on the field that
+      // Surface duplicate-email / duplicate-name on the field that
       // caused it instead of dumping a generic toast. The duplicate-key
       // path returns { code: 'DUPLICATE_FIELD' | 'CONFLICT', field }.
       const parsed = error?.parsedError;
       const resolved = getAuthErrorMessage(parsed, tCommon);
       if (parsed && (parsed.code === "CONFLICT" || parsed.code === "DUPLICATE_FIELD")) {
-        const fieldMap = { email: "email", phoneNumber: "email", username: "username" };
+        const fieldMap = { email: "email", phoneNumber: "email", name: "name" };
         const target = fieldMap[parsed.field] || "email";
         setError(target, { type: "server", message: resolved?.message || error.message });
         return;
@@ -144,7 +144,7 @@ const ContinueSignupForm = () => {
                   placeholder={t(
                     "signupForm.continueSignup.personalInfo.fullName.placeholder"
                   )}
-                  name="username"
+                  name="name"
                   iconPath="auth/profile.svg"
                 />
                 <InputGroup

@@ -108,7 +108,7 @@ const AdminTicketsScreen = () => {
         (tk) =>
           tk.subject?.toLowerCase().includes(q) ||
           tk.submittedBy?.name?.toLowerCase().includes(q) ||
-          tk.submittedBy?.username?.toLowerCase().includes(q) ||
+          tk.submittedBy?.name?.toLowerCase().includes(q) ||
           tk.ticketNumber?.toString().includes(q),
       );
     }

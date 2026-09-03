@@ -56,6 +56,9 @@ const YourEventManagedByUsPopup = ({ visible, onClose, onContactUs }) => {
               style={styles.primaryButton}
               onPress={onContactUs}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={t("managed_popup_contact")}
+              testID="managed-popup-contact-button"
             >
               <LocalizedText style={styles.primaryButtonText}>
                 {t("managed_popup_contact")}

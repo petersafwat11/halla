@@ -33,7 +33,6 @@ test.beforeEach(async () => {
   // Create host and admin users
   hostUser = await User.create({
     name: 'Host User',
-    username: `host_${Date.now()}`,
     email: `host_${Date.now()}@example.com`,
     phoneNumber: '+966551112233',
     role: ROLES.HOST,
@@ -43,7 +42,6 @@ test.beforeEach(async () => {
 
   adminUser = await User.create({
     name: 'Admin User',
-    username: `admin_${Date.now()}`,
     email: `admin_${Date.now()}@example.com`,
     phoneNumber: '+966559998877',
     role: ROLES.ADMIN,

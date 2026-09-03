@@ -42,6 +42,8 @@ export {
   localizeDigits,
   normalizeDigits,
   normalizeDigitsOnly,
+  parseCivilDate,
+  formatEventDate,
   formatDate,
   formatTime,
   formatDateTime,

@@ -87,7 +87,7 @@ const getTodayEvents = async () => {
   return Event.find({
     "eventDetails.date": { $gte: today, $lt: tomorrow },
     status: { $ne: "cancelled" },
-  }).populate("host", "email username phoneNumber");
+  }).populate("host", "email name phoneNumber");
 };
 
 /**
@@ -102,7 +102,7 @@ const getExpiringSubscriptions = async (daysAhead = 7) => {
   return Subscription.find({
     status: { $in: ["active", "trial"] },
     expiresAt: { $gte: now, $lte: futureDate },
-  }).populate("userId", "email username phoneNumber");
+  }).populate("userId", "email name phoneNumber");
 };
 
 // ============================================
@@ -201,7 +201,7 @@ async function runEventLaunch(event, workerId) {
 
   try {
     // Re-read inside the lock in case another worker ran first.
-    const fresh = await Event.findById(eventId).populate('host', 'name username email preferredLanguage');
+    const fresh = await Event.findById(eventId).populate('host', 'name email preferredLanguage');
     if (!fresh || fresh.status !== 'scheduled') {
       return { launched: false, reason: "stale" };
     }
@@ -439,7 +439,7 @@ const scheduleEventReminders = () => {
             await emailService.sendEventReminderEmail(
               event.host.email,
               {
-                hostName: event.host.username || "Host",
+                hostName: event.host.name || "Host",
                 eventTitle: event.eventDetails?.title || "Your Event",
                 eventDate: event.eventDetails?.date,
                 eventTime: event.eventDetails?.time,
@@ -475,7 +475,7 @@ const scheduleDailyAdminReport = () => {
       const admins = await User.find({
         role: { $in: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
         status: "active",
-      }).select("email username");
+      }).select("email name");
 
       for (const admin of admins) {
         if (!admin.email) continue;
@@ -519,7 +519,7 @@ const scheduleWeeklyReport = () => {
       const admins = await User.find({
         role: { $in: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
         status: "active",
-      }).select("email username");
+      }).select("email name");
 
       for (const admin of admins) {
         if (!admin.email) continue;
@@ -592,7 +592,7 @@ const scheduleSubscriptionExpiryCheck = () => {
             await emailService.sendSubscriptionAlertEmail(
               subscription.userId.email,
               {
-                userName: subscription.userId.username || "User",
+                recipientName: subscription.userId?.name || "User",
                 planName: subscription.planId?.name || "Your Plan",
                 daysLeft,
                 expiryDate: subscription.expiresAt,
@@ -738,7 +738,7 @@ const scheduleGuestReminders = () => {
         status: { $in: ["scheduled", "live"] },
         "reminderSettings.scheduledDate": { $lte: dateLimit },
         "messagingStatus.reminderSent": { $ne: true },
-      }).populate("host", "name username");
+      }).populate("host", "name");
 
       // Load legacy events without custom settings that fall into the 48h window
       const windowStart = new Date(now.getTime() + 47.5 * 3600 * 1000);
@@ -748,7 +748,7 @@ const scheduleGuestReminders = () => {
         "eventDetails.date": { $gte: windowStart, $lte: windowEnd },
         "reminderSettings.scheduledDate": { $exists: false },
         "messagingStatus.reminderSent": { $ne: true },
-      }).populate("host", "name username");
+      }).populate("host", "name");
 
       // Combine arrays
       const allEvents = [...eventsWithSettings];

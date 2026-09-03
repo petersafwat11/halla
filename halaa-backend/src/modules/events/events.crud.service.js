@@ -191,7 +191,7 @@ module.exports = {
       // badges. Without them, the picker shows zero eligible guests for the
       // confirmed bucket and the badges never light up.
       .populate("guestList", "name phone category status rsvp invitation")
-      .populate("host", "username email phoneNumber")
+      .populate("host", "email phoneNumber name")
       // Populate the canonical refs so the wizard can highlight the
       // saved template (Step 3) and show body text (Step 4) on edit.
       .populate({
@@ -371,7 +371,7 @@ module.exports = {
 
     const [events, total, statusAgg] = await Promise.all([
       Event.find(query)
-        .populate("host", "username email phoneNumber name")
+        .populate("host", "email phoneNumber name")
         .select('-guestList')
         .sort({ createdAt: -1 })
         .skip(skip)
@@ -653,7 +653,7 @@ module.exports = {
 
       // Populate and return
       const populatedEvent = await Event.findById(event._id)
-        .populate("host", "username email phoneNumber")
+        .populate("host", "email phoneNumber name")
         .populate("guestList", "name phone category status");
 
       this._notifyEventCreated(populatedEvent, userId, guestIds.length).catch(
@@ -992,7 +992,7 @@ module.exports = {
       host: event.host
         ? {
           id: event.host._id,
-          name: event.host.name || event.host.username,
+          name: event.host.name,
           email: event.host.email,
           phoneNumber: event.host.phoneNumber,
         }

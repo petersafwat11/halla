@@ -39,7 +39,7 @@ export default function AdminEventHeader({ data }) {
     data?.event?.title ||
     t("singleEvent.title", "Event Details");
   const hostName =
-    data?.host?.name || data?.host?.username || "";
+    data?.host?.name || "";
 
   // Spread the full event so every field the shared `useEventActionGate`
   // hook reads (`taqnyatTemplate`, `status`, `launchSettings`,

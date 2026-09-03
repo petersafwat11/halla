@@ -38,7 +38,6 @@ function buildDateRangeQuery(from, to) {
 function formatUserResponse(user) {
   const base = {
     id: user._id,
-    username: user.username,
     name: user.name,
     email: user.email,
     phoneNumber: user.phoneNumber,

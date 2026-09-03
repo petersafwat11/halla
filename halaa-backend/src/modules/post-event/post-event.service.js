@@ -104,9 +104,9 @@ class PostEventService {
     const [event, content] = await Promise.all([
       Event.findOne(buildScopedEventQuery(eventId, user))
         .select('eventDetails status visualTemplate host')
-        .populate('host', 'name username'),
+        .populate('host', 'name'),
       PostEventContent.findOne({ event: eventId })
-        .populate('host', 'name username')
+        .populate('host', 'name')
         .populate('taqnyatTemplate.templateRef')
         .lean(),
     ]);
@@ -383,7 +383,7 @@ class PostEventService {
 
   async publishContent(eventId, user) {
     const event = await Event.findOne(buildScopedEventQuery(eventId, user))
-      .populate('host', 'name username');
+      .populate('host', 'name');
 
     if (!event) throw new NotFoundError('Event');
 

@@ -62,7 +62,7 @@ router.post(
 
 /**
  * PATCH /users/profile
- * Top-level user fields only: name, username, email, preferredLanguage.
+ * Top-level user fields only: name, email, preferredLanguage.
  * Avatar/businessLogo can be uploaded via multipart. Phone is NOT here —
  * use the OTP-gated phone routes below.
  */

@@ -40,7 +40,7 @@ async function sendReminder({
   isAdmin = false,
   actorRole,
 }) {
-  const event = await Event.findById(eventId).populate('host', 'name username');
+  const event = await Event.findById(eventId).populate('host', 'name');
   if (!event) {
     throw new NotFoundError('Event');
   }
@@ -93,7 +93,7 @@ async function sendReminder({
 
   const eventData = {
     title: event.eventDetails?.title || 'Event',
-    hostName: event.host?.name || event.host?.username || 'Host',
+    hostName: event.host?.name || 'Host',
     date: formatDate(event.eventDetails?.date),
   };
 

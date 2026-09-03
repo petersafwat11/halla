@@ -42,7 +42,7 @@ const ModeratorListItem = ({ moderator, isSelected, onPress }) => {
             style={[styles.moderatorName, isSelected && styles.moderatorNameSelected]}
             numberOfLines={1}
           >
-            {moderator.name || moderator.username || t("common.unknown")}
+            {moderator.name || t("common.unknown")}
           </AdaptiveText>
           {moderator.email ? (
             <AdaptiveText style={[styles.moderatorEmail, styles.ltrToken]} isolate={false} numberOfLines={1}>

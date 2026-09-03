@@ -45,7 +45,7 @@ class GuestsService {
         }
         const event = await Event.findById(decoded.eventId)
           .select('eventDetails status host branding invitationDeliveryMode invitationType')
-          .populate('host', 'username name');
+          .populate('host', 'name');
         if (!event) throw new Error('preview event not found');
         return {
           guest: {
@@ -66,7 +66,7 @@ class GuestsService {
     }).populate({
       path: 'event',
       select: 'eventDetails status host branding invitationDeliveryMode invitationType',
-      populate: { path: 'host', select: 'username name' },
+      populate: { path: 'host', select: 'name' },
     });
 
     if (!guest) {
@@ -232,7 +232,7 @@ class GuestsService {
     const [guests, total] = await Promise.all([
       Guest.find(query)
         .select('name phone category status rsvp checkIn invitation addedBy createdAt')
-        .populate('addedBy', 'username name')
+        .populate('addedBy', 'name')
         .sort({ name: 1 })
         .skip(skip)
         .limit(limit),
@@ -404,7 +404,7 @@ class GuestsService {
       .populate({
         path: 'guestList',
         select: 'name phone category status rsvp checkIn invitation addedBy',
-        populate: { path: 'addedBy', select: 'username' },
+        populate: { path: 'addedBy', select: 'name' },
       });
 
     if (!event) {
@@ -426,7 +426,7 @@ class GuestsService {
         ? formatRiyadh(guest.checkIn.checkedInAt)
         : '',
       'Invitation Sent': guest.invitation?.sent ? 'Yes' : 'No',
-      'Added By': guest.addedBy?.username || 'Unknown',
+      'Added By': guest.addedBy?.name || 'Unknown',
     }));
 
     const buffer = await generateExcel(guestsForExport, `event-${eventId}-guests`);
@@ -731,7 +731,6 @@ class GuestsService {
       } : null,
       addedBy: guest.addedBy ? {
         id: guest.addedBy._id,
-        username: guest.addedBy.username,
         name: guest.addedBy.name,
       } : null,
       createdAt: guest.createdAt,
@@ -771,7 +770,7 @@ class GuestsService {
       time: event.eventDetails?.time,
       location: event.eventDetails?.location,
       description: event.eventDetails?.description,
-      hostName: event.host?.name || event.host?.username,
+      hostName: event.host?.name || '',
       deliveryMode: event.invitationDeliveryMode || null,
       // Drives the portal's mode: reply types render the RSVP form; plain
       // invitations show an information-only card.

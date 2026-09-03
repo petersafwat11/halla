@@ -95,7 +95,6 @@ const RIYADH = {
 const hostSpec = {
   email: HOST_EMAIL,
   phoneNumber: HOST_PHONE,
-  username: "ReviewerHost",
   name: "Reviewer Host / حساب المراجعة",
   role: ROLES.HOST,
   accountType: ACCOUNT_TYPES.PERSONAL,
@@ -115,7 +114,6 @@ const hostSpec = {
 const vendorSpec = {
   email: VENDOR_EMAIL,
   phoneNumber: VENDOR_PHONE,
-  username: "ReviewerVendor",
   name: "Reviewer Vendor / مورد المراجعة",
   role: ROLES.VENDOR,
   status: USER_STATUS.ACTIVE,
@@ -202,7 +200,6 @@ async function ensurePaidEntitlement(user, planCode) {
 const businessSpec = {
   email: BUSINESS_EMAIL,
   phoneNumber: BUSINESS_PHONE,
-  username: "ReviewerBusiness",
   name: "Reviewer Business Host / حساب أعمال للمراجعة",
   role: ROLES.HOST,
   accountType: ACCOUNT_TYPES.BUSINESS,

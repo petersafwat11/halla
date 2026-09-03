@@ -563,7 +563,7 @@ const EventDetailsScreen = () => {
     event?.name ||
     t("eventDetails.title");
   const hostName =
-    event?.host?.name || event?.host?.username || event?.hostName || null;
+    event?.host?.name || event?.hostName || null;
   const hostEmail = event?.host?.email || event?.hostEmail || null;
   const hostPhone = event?.host?.phone || event?.hostPhone || null;
 

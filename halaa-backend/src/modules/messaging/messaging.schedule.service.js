@@ -38,7 +38,7 @@ async function scheduleBulkSend({
   actorRole,
 }) {
   const event = await Event.findById(eventId)
-    .populate('host', 'name username')
+    .populate('host', 'name')
     .populate('planId', 'code planType');
   if (!event) {
     throw new NotFoundError('Event');

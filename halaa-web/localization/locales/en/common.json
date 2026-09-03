@@ -234,5 +234,10 @@
       "5": "Friday",
       "6": "Saturday"
     }
+  },
+  "support": {
+    "title": "Contact Support",
+    "fallbackMessage": "Unable to open WhatsApp. You can reach us directly at:\n{{displayNumber}}",
+    "accessibilityLabel": "Customer support chat on WhatsApp"
   }
 }

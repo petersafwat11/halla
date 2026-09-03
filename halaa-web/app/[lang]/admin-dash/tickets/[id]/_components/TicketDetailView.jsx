@@ -152,7 +152,7 @@ const TicketDetailView = ({ ticket }) => {
               </h3>
               <p className={styles.message}>{ticket.resolution.message}</p>
               <p className={styles.meta}>
-                {t("viewResolution.resolvedBy")}: {ticket.resolution.by?.username || ticket.resolution.by}{" "}
+                {t("viewResolution.resolvedBy")}: {ticket.resolution.by?.name || ticket.resolution.by}{" "}
                 {t("viewResolution.resolvedAt")}: {new Date(ticket.resolution.at).toLocaleDateString()}
               </p>
             </div>
@@ -166,7 +166,7 @@ const TicketDetailView = ({ ticket }) => {
               <FaUser className={styles.icon} />
               <div>
                 <span className={styles.label}>{t("table.columns.submittedBy")}</span>
-                <p>{ticket.user?.username || ticket.user?.email || t("assign.selectModerator")}</p>
+                <p>{ticket.user?.name || ticket.user?.email || t("assign.selectModerator")}</p>
                 <p className={styles.subtext}>{ticket.user?.email}</p>
               </div>
             </div>
@@ -182,7 +182,7 @@ const TicketDetailView = ({ ticket }) => {
                 <FaUser className={styles.icon} />
                 <div>
                   <span className={styles.label}>{t("table.columns.assignedTo")}</span>
-                  <p>{ticket.assignedTo.username || ticket.assignedTo.email}</p>
+                  <p>{ticket.assignedTo.name || ticket.assignedTo.email}</p>
                 </div>
               </div>
             )}

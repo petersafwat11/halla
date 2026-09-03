@@ -185,7 +185,7 @@ const send = {
   /**
    * Send subscription alert email
    * @param {string} to - Recipient email
-   * @param {Object} data - { userName, alertType, planName, daysLeft, expiryDate, subscriptionUrl }
+   * @param {Object} data - { recipientName, alertType, planName, daysLeft, expiryDate, subscriptionUrl }
    * @param {string} lang - Language (ar/en)
    */
   subscriptionAlert: async (to, data, lang = "ar") => {
@@ -199,7 +199,7 @@ const send = {
   /**
    * Send subscription created email
    * @param {string} to - Recipient email
-   * @param {Object} data - { userName, planName, features, price, billingCycle, startDate, endDate, dashboardUrl }
+   * @param {Object} data - { recipientName, planName, features, price, billingCycle, startDate, endDate, dashboardUrl }
    * @param {string} lang - Language (ar/en)
    */
   subscriptionCreated: async (to, data, lang = "ar") => {
@@ -213,7 +213,7 @@ const send = {
   /**
    * Send payment confirmation email
    * @param {string} to - Recipient email
-   * @param {Object} data - { userName, amount, currency, planName, paymentDate, invoiceNumber, paymentMethod, invoiceUrl }
+   * @param {Object} data - { recipientName, amount, currency, planName, paymentDate, invoiceNumber, paymentMethod, invoiceUrl }
    * @param {string} lang - Language (ar/en)
    */
   paymentConfirmation: async (to, data, lang = "ar") => {
@@ -227,7 +227,7 @@ const send = {
   /**
    * Send payment failed email
    * @param {string} to - Recipient email
-   * @param {Object} data - { userName, amount, currency, planName, reason, retryUrl }
+   * @param {Object} data - { recipientName, amount, currency, planName, reason, retryUrl }
    * @param {string} lang - Language (ar/en)
    */
   paymentFailed: async (to, data, lang = "ar") => {
@@ -310,7 +310,7 @@ const send = {
   /**
    * Send weekly report email
    * @param {string} to - Recipient email
-   * @param {Object} data - { userName, role, weekRange, stats, upcomingEvents, dashboardUrl, attachmentNote }
+   * @param {Object} data - { recipientName, role, weekRange, stats, upcomingEvents, dashboardUrl, attachmentNote }
    * @param {string} lang - Language (ar/en)
    * @param {Buffer} pdfBuffer - Optional PDF attachment
    */
@@ -361,7 +361,7 @@ const send = {
   /**
    * Send ticket created email
    * @param {string} to - Recipient email
-   * @param {Object} data - { userName, ticketId, subject, category, priority, message, ticketUrl }
+   * @param {Object} data - { recipientName, ticketId, subject, category, priority, message, ticketUrl }
    * @param {string} lang - Language (ar/en)
    */
   ticketCreated: async (to, data, lang = "ar") => {
@@ -372,7 +372,7 @@ const send = {
   /**
    * Send ticket response email
    * @param {string} to - Recipient email
-   * @param {Object} data - { userName, ticketId, subject, agentName, response, ticketUrl }
+   * @param {Object} data - { recipientName, ticketId, subject, agentName, response, ticketUrl }
    * @param {string} lang - Language (ar/en)
    */
   ticketResponse: async (to, data, lang = "ar") => {
@@ -383,7 +383,7 @@ const send = {
   /**
    * Send ticket resolved email
    * @param {string} to - Recipient email
-   * @param {Object} data - { userName, ticketId, subject, resolution, feedbackUrl, ticketUrl }
+   * @param {Object} data - { recipientName, ticketId, subject, resolution, feedbackUrl, ticketUrl }
    * @param {string} lang - Language (ar/en)
    */
   ticketResolved: async (to, data, lang = "ar") => {

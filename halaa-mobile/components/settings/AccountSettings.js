@@ -37,9 +37,8 @@ const AccountSettings = ({
     resolver: zodResolver(accountSettingsSchema(t)),
     mode: "onChange",
     defaultValues: {
-      // Single display identity. Hosts created before `name` was populated
-      // carry their signup full name in `username` — surface it here.
-      name: user?.name || user?.username || "",
+      // Single display identity: full name.
+      name: user?.name || "",
       email: user?.email || "",
       currentPassword: "",
       newPassword: "",
@@ -56,13 +55,13 @@ const AccountSettings = ({
 
   React.useEffect(() => {
     reset({
-      name: user?.name || user?.username || "",
+      name: user?.name || "",
       email: user?.email || "",
       currentPassword: "",
       newPassword: "",
       confirmPassword: "",
     });
-  }, [user?.name, user?.username, user?.email, reset]);
+  }, [user?.name, user?.email, reset]);
 
   const emailValue = watch("email");
 
@@ -74,7 +73,7 @@ const AccountSettings = ({
     let passwordError = null;
 
     const profileChanged =
-      data.name !== (user?.name || user?.username || "") ||
+      data.name !== (user?.name || "") ||
       data.email !== (user?.email || "");
     const passwordProvided = !!(data.currentPassword && data.newPassword);
 
@@ -129,7 +128,7 @@ const AccountSettings = ({
     }
 
     reset({
-      name: profileSuccess ? data.name : (user?.name || user?.username || ""),
+      name: profileSuccess ? data.name : (user?.name || ""),
       email: profileSuccess ? data.email : (user?.email || ""),
       currentPassword: passwordSuccess ? "" : data.currentPassword,
       newPassword: passwordSuccess ? "" : data.newPassword,
@@ -159,8 +158,7 @@ const AccountSettings = ({
               {/* Full name is arbitrary user content: empty placeholder
                   follows the UI locale; a filled value follows its first
                   strong character so "Ali" stays LTR and "علي" stays RTL.
-                  Single identity field — the legacy `username` handle is
-                  no longer collected (see shared settings schema). */}
+                  Single identity field: full name. */}
               <TextInput
                 name="name"
                 label={t("account.fullName")}

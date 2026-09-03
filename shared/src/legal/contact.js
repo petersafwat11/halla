@@ -22,30 +22,24 @@ export const LEGAL_CONTACT = Object.freeze({
     approved: true,
     status: "OWNER_APPROVED",
     value: "support@halaa.com.sa",
-    // Compatibility alias for existing consumers.
-    provisional: "support@halaa.com.sa",
   },
   whatsapp: {
     approved: true,
     status: "OWNER_APPROVED",
     value: "+966552619282",
     display: "+966 55 261 9282",
-    provisional: "+966552619282",
   },
   phone: {
     approved: true,
     status: "OWNER_APPROVED",
     value: "+966552619282",
     display: "+966 55 261 9282",
-    provisional: "+966552619282",
   },
   postalAddress: {
     approved: true,
     status: "OWNER_APPROVED_REGISTERED_ADDRESS",
-    provisional: {
-      ar: "شارع المتحف - جدة - الرمز البريدي 23326",
-      en: "Museum Street, Jeddah, Postal Code 23326, Saudi Arabia",
-    },
+    ar: "شارع المتحف - جدة - الرمز البريدي 23326",
+    en: "Museum Street, Jeddah, Postal Code 23326, Saudi Arabia",
     note: "Owner confirmed this is the registered legal address.",
   },
   responseSla: {

@@ -325,7 +325,7 @@ export default function AdminCreateEvent() {
               title={tAdmin("createEvent.title") || "Create Event (Admin)"}
               description={
                 selectedHost
-                  ? `${tAdmin("createEvent.creatingFor") || "Creating for:"} ${selectedHost.name || selectedHost.username || selectedHost.phoneNumber}`
+                  ? `${tAdmin("createEvent.creatingFor") || "Creating for:"} ${selectedHost.name || selectedHost.phoneNumber}`
                   : t("page_description")
               }
               buttonText={t("promo_button")}

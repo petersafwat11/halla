@@ -22,7 +22,7 @@ import { Ionicons } from "@expo/vector-icons";
 import {
   resolveTaqnyatPlaceholders,
   buildTaqnyatPreviewContext,
-  formatDate,
+  formatEventDate,
 } from "@halaa/shared/utils";
 import { useHostTaqnyatTemplates } from "../../hooks/taqnyatTemplates";
 import { useTranslation } from "../../localization";
@@ -75,14 +75,14 @@ const StepFour = () => {
   const eventTime = watch("eventTime");
   const address = watch("address");
   const hostName = useAuthStore(
-    (state) => state.user?.name || state.user?.username || ""
+    (state) => state.user?.name || ""
   );
 
   // Build a preview-resolution context once per form change so template
   // previews on screen match what the guest will receive.
   const previewContext = useMemo(() => {
     const dateFormatted = eventDate
-      ? formatDate(eventDate, currentLanguage || "ar")
+      ? formatEventDate(eventDate, currentLanguage || "ar")
       : "";
     return buildTaqnyatPreviewContext({
       guestName: t("preview_guest_placeholder"),

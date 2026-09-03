@@ -236,7 +236,7 @@ const ManagePlanModal = ({ visible, onClose, entity, entityType = "host", onSave
 
   if (!visible || !entity) return null;
 
-  const entityName = entity?.name || entity?.username || entity?.email || "—";
+  const entityName = entity?.name || entity?.email || "—";
   const showExtraSection =
     tab === "extra" || (tab === "change" && addAfterChange && !isCheckout);
 

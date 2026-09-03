@@ -78,8 +78,8 @@ class TicketsService {
       ],
       status: { $ne: USER_STATUS.SUSPENDED },
     })
-      .select("_id username name email role")
-      .sort({ role: 1, username: 1 });
+      .select("_id name email role")
+      .sort({ role: 1, name: 1 });
 
     return assignees;
   }
@@ -133,8 +133,8 @@ class TicketsService {
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .populate("user", "username name phoneNumber email")
-        .populate("assignedTo", "username name email")
+        .populate("user", "name phoneNumber email")
+        .populate("assignedTo", "name email")
         .lean(),
       Ticket.countDocuments(query),
       Ticket.aggregate([
@@ -186,8 +186,8 @@ class TicketsService {
    */
   async getTicketById(ticketId, userId, isAdmin) {
     const ticket = await Ticket.findById(ticketId)
-      .populate("user", "username name phoneNumber email")
-      .populate("assignedTo", "username name email")
+      .populate("user", "name phoneNumber email")
+      .populate("assignedTo", "name email")
       .lean();
 
     if (!ticket) {
@@ -288,7 +288,7 @@ class TicketsService {
 
     const ticket = await Ticket.findByIdAndUpdate(ticketId, updateData, {
       new: true,
-    }).populate("user", "username phoneNumber email");
+    }).populate("user", "name phoneNumber email");
 
     if (!ticket) {
       throw new NotFoundError("Ticket");
@@ -325,7 +325,7 @@ class TicketsService {
       ticketId,
       update,
       { new: true, runValidators: true }
-    ).populate("assignedTo", "username name email");
+    ).populate("assignedTo", "name email");
 
     if (!ticket) {
       throw new NotFoundError("Ticket");
@@ -607,18 +607,18 @@ class TicketsService {
     }
 
     const tickets = await Ticket.find(query)
-      .populate('user', 'username email phoneNumber')
-      .populate('assignedTo', 'username email')
+      .populate('user', 'name email phoneNumber')
+      .populate('assignedTo', 'name email')
       .sort({ createdAt: -1 })
       .lean();
 
     return tickets.map(t => ({
       Subject: t.subject || '-',
       Type: t.type || '-',
-      User: t.user?.username || t.user?.email || '-',
+      User: t.user?.name || t.user?.email || '-',
       Priority: t.priority || '-',
       Status: t.status || '-',
-      'Assigned To': t.assignedTo?.username || '-',
+      'Assigned To': t.assignedTo?.name || '-',
       'Created At': t.createdAt ? new Date(t.createdAt).toISOString().split('T')[0] : '-',
     }));
   }
@@ -648,7 +648,6 @@ class TicketsService {
       user: ticket.user
         ? {
           id: ticket.user._id,
-          username: ticket.user.username,
           name: ticket.user.name,
           email: ticket.user.email,
           phoneNumber: ticket.user.phoneNumber,
@@ -657,7 +656,6 @@ class TicketsService {
       assignedTo: ticket.assignedTo
         ? {
           id: ticket.assignedTo._id,
-          username: ticket.assignedTo.username,
           name: ticket.assignedTo.name,
           email: ticket.assignedTo.email,
         }
@@ -705,7 +703,7 @@ class TicketsService {
       type: "ticket_created",
       title: "New Support Ticket",
       titleAr: "شكوى دعم جديدة",
-      message: `New ticket #${ticket._id.toString().slice(-6)} from ${user.username || user.phoneNumber}`,
+      message: `New ticket #${ticket._id.toString().slice(-6)} from ${user.name || user.phoneNumber}`,
       messageAr: `شكوى جديدة #${ticket._id.toString().slice(-6)}`,
       actionUrl: `${frontendUrl}/ar/admin-dash/tickets`,
       data: { entityType: "ticket", entityId: ticket._id },

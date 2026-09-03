@@ -21,7 +21,7 @@ test("EVT-01: EventSummary destructures currentLanguage and includes it in useMe
   // imported aliased as formatLocaleDate).
   assert.match(
     source,
-    /format(?:Locale)?Date\(\s*eventDate\s*,\s*currentLanguage\s*\|\|\s*["']ar["']\s*\)/,
+    /format(?:Locale|Event)?Date\(\s*eventDate\s*,\s*currentLanguage\s*\|\|\s*["']ar["']\s*\)/,
     "EventSummary must pass currentLanguage to the shared date formatter"
   );
 

@@ -17,7 +17,6 @@ async function main() {
     user = await User.create({
       email: businessEmail,
       phoneNumber: "534567890",
-      username: "TestBusiness",
       name: "حساب الأعمال التجريبي / Business Host",
       password: password,
       role: ROLES.HOST,

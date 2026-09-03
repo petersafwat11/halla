@@ -122,7 +122,6 @@ test.before(async () => {
   superAdminUser = await User.create({
     email: "superadmin@labbe.sa",
     phoneNumber: "545678901",
-    username: "SuperAdmin",
     name: "Super Admin",
     password: "password123",
     role: ROLES.SUPER_ADMIN,
@@ -139,7 +138,6 @@ test.before(async () => {
   adminUser = await User.create({
     email: "admin@labbe.sa",
     phoneNumber: "556789012",
-    username: "Admin",
     name: "Platform Admin",
     password: "password123",
     role: ROLES.ADMIN,
@@ -156,7 +154,6 @@ test.before(async () => {
   moderatorUser = await User.create({
     email: "moderator@labbe.sa",
     phoneNumber: "567890123",
-    username: "Moderator",
     name: "Moderator",
     password: "password123",
     role: ROLES.MODERATOR,
@@ -173,7 +170,6 @@ test.before(async () => {
   hostUser = await User.create({
     email: "host@labbe.sa",
     phoneNumber: "512345678",
-    username: "Host",
     name: "Test Host",
     password: "password123",
     role: ROLES.HOST,
@@ -191,7 +187,6 @@ test.before(async () => {
   vendorUser = await User.create({
     email: "vendor@labbe.sa",
     phoneNumber: "523456789",
-    username: "Vendor",
     name: "Test Vendor",
     password: "password123",
     role: ROLES.VENDOR,

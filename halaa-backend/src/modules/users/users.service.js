@@ -76,7 +76,6 @@ class UsersService {
     const user = await User.findById(userId);
     if (!user) throw new NotFoundError("User");
 
-    if (updateData.username !== undefined) user.username = updateData.username;
     if (updateData.name !== undefined) user.name = updateData.name;
     if (updateData.preferredLanguage !== undefined) {
       user.preferredLanguage = updateData.preferredLanguage;

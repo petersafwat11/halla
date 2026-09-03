@@ -70,7 +70,7 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
     if (visible) {
       if (moderator) {
         setFormData({
-          name:        moderator.name || moderator.username || "",
+          name:        moderator.name || "",
           email:       moderator.email || "",
           password:    "",
           phoneNumber: moderator.phoneNumber || moderator.phone || "",

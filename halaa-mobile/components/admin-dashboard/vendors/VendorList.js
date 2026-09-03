@@ -79,8 +79,7 @@ const VendorList = ({
         (v) =>
           v.brandName?.toLowerCase().includes(q) ||
           v.vendorData?.brandName?.toLowerCase().includes(q) ||
-          v.username?.toLowerCase().includes(q) ||
-          v.email?.toLowerCase().includes(q) ||
+                    v.email?.toLowerCase().includes(q) ||
           v.vendorData?.email?.toLowerCase().includes(q),
       );
     }

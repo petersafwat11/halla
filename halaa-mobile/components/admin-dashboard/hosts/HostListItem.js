@@ -11,7 +11,7 @@ import { colors } from "../../../styles/tokens";
 import AdminListItem from "../common/AdminListItem";
 
 const HostListItem = ({ host, onPress, onManageSubscription, selected = false, onSelect }) => {
-  const { id, _id, name, username, email, phoneNumber, subscription, status, createdAt } = host;
+  const { id, _id, name, email, phoneNumber, subscription, status, createdAt } = host;
   const hostId = id || _id;
 
   const { t, currentLanguage } = useTranslation("admin");
@@ -104,7 +104,7 @@ const HostListItem = ({ host, onPress, onManageSubscription, selected = false, o
 
   return (
     <AdminListItem
-      title={name || username || email || t("hosts.labels.unnamed")}
+      title={name || email || t("hosts.labels.unnamed")}
       subtitle={email}
       subtitleAlt={phoneNumber ? isolateLtr(phoneNumber) : null}
       avatarColor={colors.primary[500]}

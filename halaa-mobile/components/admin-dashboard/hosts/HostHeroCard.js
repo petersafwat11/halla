@@ -31,7 +31,7 @@ const HostHeroCard = ({ host }) => {
   const { t, currentLanguage } = useTranslation("admin");
   if (!host) return null;
 
-  const displayName = host.name || host.username || "";
+  const displayName = host.name || "";
   const initial = (displayName || host.email || "?").charAt(0).toUpperCase();
   const subscription = host.subscription;
   // Plan display names are bilingual backend content — pick the locale

@@ -40,7 +40,7 @@ async function main() {
 
   await connectDB();
 
-  const event = await Event.findById(eventId).populate('host', 'name username');
+  const event = await Event.findById(eventId).populate('host', 'name');
   if (!event) {
     console.error(`Event ${eventId} not found.`);
     await disconnectDB();
@@ -50,7 +50,7 @@ async function main() {
   console.log('=== EVENT ===');
   console.log(pad('Event ID'), event._id.toString());
   console.log(pad('Title'), event.eventDetails?.title || '(none)');
-  console.log(pad('Host'), event.host?.name || event.host?.username || '(none)');
+  console.log(pad('Host'), event.host?.name || '(none)');
   console.log(pad('lastTestAt'), event.lastTestAt || '(never)');
   console.log(pad('testMessageSent'), event.testMessageSent === true);
   console.log(

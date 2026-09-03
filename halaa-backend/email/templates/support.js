@@ -75,7 +75,7 @@ const STATUS_CONFIG = {
 
 /**
  * Ticket created confirmation email for users
- * @param {Object} data - { userName, ticketId, subject, category, priority, message, ticketUrl }
+ * @param {Object} data - { recipientName, ticketId, subject, category, priority, message, ticketUrl }
  * @param {string} lang - Language code (ar/en)
  * @returns {Object} { subject, html }
  */
@@ -88,7 +88,7 @@ const ticketCreatedEmail = (data, lang = "ar") => {
     : `Support Ticket Created #${data.ticketId}`;
 
   const content = `
-    ${getGreeting(data.userName, lang)}
+    ${getGreeting(data.recipientName || data.name, lang)}
     
     <div class="highlight-box success-box">
       <p style="margin: 0; font-size: 16px; font-weight: 600; color: ${COLORS.success};">
@@ -151,7 +151,7 @@ ${data.message}
 
 /**
  * Ticket assigned notification email for support agents
- * @param {Object} data - { agentName, ticketId, subject, priority, userName, userEmail, message, ticketUrl }
+ * @param {Object} data - { agentName, ticketId, subject, priority, recipientName, userEmail, message, ticketUrl }
  * @param {string} lang - Language code (ar/en)
  * @returns {Object} { subject, html }
  */
@@ -175,7 +175,7 @@ const ticketAssignedEmail = (data, lang = "ar") => {
       ${getKeyValue(isAr ? "رقم التذكرة" : "Ticket #", `<strong>#${data.ticketId}</strong>`)}
       ${getKeyValue(isAr ? "الموضوع" : "Subject", data.subject)}
       ${getKeyValue(isAr ? "الأولوية" : "Priority", `<span style="color: ${priority.color}; font-weight: 600;">${isAr ? priority.label.ar : priority.label.en}</span>`)}
-      ${getKeyValue(isAr ? "المستخدم" : "User", data.userName)}
+      ${getKeyValue(isAr ? "المستخدم" : "User", data.recipientName || data.name)}
       ${data.userEmail ? getKeyValue(isAr ? "البريد الإلكتروني" : "Email", data.userEmail) : ""}
     `)}
     
@@ -231,7 +231,7 @@ ${data.message}
 
 /**
  * Ticket response notification email for users
- * @param {Object} data - { userName, ticketId, subject, agentName, response, ticketUrl }
+ * @param {Object} data - { recipientName, ticketId, subject, agentName, response, ticketUrl }
  * @param {string} lang - Language code (ar/en)
  * @returns {Object} { subject, html }
  */
@@ -243,7 +243,7 @@ const ticketResponseEmail = (data, lang = "ar") => {
     : `New Response to Your Ticket #${data.ticketId}`;
 
   const content = `
-    ${getGreeting(data.userName, lang)}
+    ${getGreeting(data.recipientName || data.name, lang)}
     
     <div class="highlight-box info-box">
       <p style="margin: 0; font-size: 16px; font-weight: 600; color: ${COLORS.info};">
@@ -290,7 +290,7 @@ ${data.response}</div>
 
 /**
  * Ticket resolved notification email for users
- * @param {Object} data - { userName, ticketId, subject, resolution, feedbackUrl, ticketUrl }
+ * @param {Object} data - { recipientName, ticketId, subject, resolution, feedbackUrl, ticketUrl }
  * @param {string} lang - Language code (ar/en)
  * @returns {Object} { subject, html }
  */
@@ -302,7 +302,7 @@ const ticketResolvedEmail = (data, lang = "ar") => {
     : `Your Ticket Has Been Resolved #${data.ticketId}`;
 
   const content = `
-    ${getGreeting(data.userName, lang)}
+    ${getGreeting(data.recipientName || data.name, lang)}
     
     <div class="highlight-box success-box">
       <p style="margin: 0; font-size: 16px; font-weight: 600; color: ${COLORS.success};">
@@ -369,7 +369,7 @@ const ticketResolvedEmail = (data, lang = "ar") => {
 
 /**
  * Ticket status update notification email
- * @param {Object} data - { userName, ticketId, subject, oldStatus, newStatus, note, ticketUrl }
+ * @param {Object} data - { recipientName, ticketId, subject, oldStatus, newStatus, note, ticketUrl }
  * @param {string} lang - Language code (ar/en)
  * @returns {Object} { subject, html }
  */
@@ -382,7 +382,7 @@ const ticketStatusUpdateEmail = (data, lang = "ar") => {
     : `Ticket Status Update #${data.ticketId}`;
 
   const content = `
-    ${getGreeting(data.userName, lang)}
+    ${getGreeting(data.recipientName || data.name, lang)}
     
     <p>${
       isAr
@@ -429,7 +429,7 @@ const ticketStatusUpdateEmail = (data, lang = "ar") => {
 
 /**
  * Feedback request email after ticket resolution
- * @param {Object} data - { userName, ticketId, subject, feedbackUrl }
+ * @param {Object} data - { recipientName, ticketId, subject, feedbackUrl }
  * @param {string} lang - Language code (ar/en)
  * @returns {Object} { subject, html }
  */
@@ -441,7 +441,7 @@ const feedbackRequestEmail = (data, lang = "ar") => {
     : `How Was Your Support Experience? #${data.ticketId}`;
 
   const content = `
-    ${getGreeting(data.userName, lang)}
+    ${getGreeting(data.recipientName || data.name, lang)}
     
     <p>${
       isAr
@@ -501,7 +501,7 @@ const feedbackRequestEmail = (data, lang = "ar") => {
 
 /**
  * New ticket notification email for admins
- * @param {Object} data - { adminName, ticketId, subject, priority, userName, userEmail, category, ticketUrl }
+ * @param {Object} data - { adminName, ticketId, subject, priority, recipientName, userEmail, category, ticketUrl }
  * @param {string} lang - Language code (ar/en)
  * @returns {Object} { subject, html }
  */
@@ -526,7 +526,7 @@ const newTicketNotificationEmail = (data, lang = "ar") => {
       ${getKeyValue(isAr ? "الموضوع" : "Subject", data.subject)}
       ${data.category ? getKeyValue(isAr ? "التصنيف" : "Category", data.category) : ""}
       ${getKeyValue(isAr ? "الأولوية" : "Priority", `<span style="color: ${priority.color}; font-weight: 600;">${isAr ? priority.label.ar : priority.label.en}</span>`)}
-      ${getKeyValue(isAr ? "المستخدم" : "User", data.userName)}
+      ${getKeyValue(isAr ? "المستخدم" : "User", data.recipientName || data.name)}
       ${data.userEmail ? getKeyValue(isAr ? "البريد الإلكتروني" : "Email", data.userEmail) : ""}
     `)}
     

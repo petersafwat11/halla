@@ -6,6 +6,7 @@ const { updatePasswordSchema } = require("../src/modules/users/users.validation"
 
 test("profile completion accepts a simple lowercase alphanumeric password", () => {
   const result = completeProfileSchema.safeParse({
+    name: "Valid User",
     password: "simple123",
     passwordConfirm: "simple123",
   });
@@ -14,6 +15,7 @@ test("profile completion accepts a simple lowercase alphanumeric password", () =
 
 test("profile completion rejects symbols", () => {
   const result = completeProfileSchema.safeParse({
+    name: "Valid User",
     password: "Simple123!",
     passwordConfirm: "Simple123!",
   });
@@ -23,6 +25,7 @@ test("profile completion rejects symbols", () => {
 test("profile completion requires both a letter and a number", () => {
   assert.equal(
     completeProfileSchema.safeParse({
+      name: "Valid User",
       password: "lettersOnly",
       passwordConfirm: "lettersOnly",
     }).success,
@@ -30,6 +33,7 @@ test("profile completion requires both a letter and a number", () => {
   );
   assert.equal(
     completeProfileSchema.safeParse({
+      name: "Valid User",
       password: "12345678",
       passwordConfirm: "12345678",
     }).success,

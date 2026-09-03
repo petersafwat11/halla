@@ -13,6 +13,7 @@ import { Ionicons } from "@expo/vector-icons";
 import {
   resolveTaqnyatPlaceholders,
   buildTaqnyatPreviewContext,
+  formatEventDate,
   formatDate as formatLocaleDate,
   formatTime as formatLocaleTime,
   formatCount,
@@ -135,7 +136,7 @@ const EventSummary = () => {
   const selectedTemplate = watch("selectedTemplate") || null;
   const confirmReviewed = watch("confirmReviewed") || false;
   const hostName = useAuthStore(
-    (state) => state.user?.name || state.user?.username || ""
+    (state) => state.user?.name || ""
   );
 
   const eventTypeLabel = eventType
@@ -145,7 +146,7 @@ const EventSummary = () => {
   // Locale-formatted tokens only — the raw stored `h:mm AM` string is never
   // rendered, and the pair joins through an interpolation key so the
   // separator/punctuation is authored per locale (blueprint §6).
-  const dateStr = eventDate ? formatLocaleDate(eventDate, currentLanguage || "ar") : "";
+  const dateStr = eventDate ? formatEventDate(eventDate, currentLanguage || "ar") : "";
   const timeStr = eventTime
     ? formatLocaleTime(eventTime, currentLanguage || "ar")
     : "";
@@ -163,7 +164,7 @@ const EventSummary = () => {
     const bodyText = selectedTemplate?.bodyText;
     if (!bodyText) return "";
     const dateFormatted = eventDate
-      ? formatLocaleDate(eventDate, currentLanguage || "ar")
+      ? formatEventDate(eventDate, currentLanguage || "ar")
       : "";
     const context = buildTaqnyatPreviewContext({
       guestName: t("preview_guest_placeholder"),

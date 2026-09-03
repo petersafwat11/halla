@@ -10,6 +10,7 @@ import { useFormContext } from "react-hook-form";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useTranslation } from "../../localization";
 import {
+  formatEventDate,
   formatDate as formatLocaleDate,
   formatTime as formatLocaleTime,
   normalizeDigits,
@@ -154,7 +155,7 @@ const StepOne = () => {
 
   const formatDate = (date) => {
     if (!date) return "";
-    return formatLocaleDate(date, currentLanguage || "ar");
+    return formatEventDate(date, currentLanguage || "ar");
   };
 
   const pickerLocale = currentLanguage === "ar" ? "ar-SA" : "en-US";

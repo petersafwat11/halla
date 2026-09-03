@@ -53,6 +53,14 @@ describe('Phone Utilities (@halaa/shared/utils/phone)', () => {
     it('strips spaces, dashes, and parentheses cleanly', () => {
       assert.equal(normalizePhoneNumber('+966 (50) 123-4567'), '966501234567');
       assert.equal(toE164('+966 (50) 123-4567'), '+966501234567');
+      assert.equal(normalizePhoneNumber('055-123-4567'), '966551234567');
+      assert.equal(toE164('055-123-4567'), '+966551234567');
+      assert.equal(normalizePhoneNumber('(055) 123 4567'), '966551234567');
+      assert.equal(toE164('(055) 123 4567'), '+966551234567');
+      assert.equal(normalizePhoneNumber('55 123 4567'), '966551234567');
+      assert.equal(toE164('55 123 4567'), '+966551234567');
+      assert.equal(normalizePhoneNumber('55-123-4567'), '966551234567');
+      assert.equal(toE164('55-123-4567'), '+966551234567');
     });
 
     it('handles empty / invalid input gracefully', () => {

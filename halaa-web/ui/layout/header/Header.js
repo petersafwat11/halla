@@ -107,7 +107,7 @@ function Header({ dashboardType: propDashboardType }) {
               <div className={styles.userNameContainer}>
                 <FaRegUser className={styles.userIcon} />
                 <div className={styles.userName}>
-                  {user?.name || user?.username}
+                  {user?.name}
                 </div>
               </div>
               <div className={styles.userRole}>{getRoleLabel()}</div>

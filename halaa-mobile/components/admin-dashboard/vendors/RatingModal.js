@@ -31,9 +31,8 @@ const RatingModal = ({ visible, onClose, vendor, onSave, loading }) => {
   const displayName =
     vendor?.brandName ||
     vendor?.vendorData?.brandName ||
-    vendor?.username ||
-    "—";
-  const ownerName = vendor?.name || vendor?.username || "";
+        "—";
+  const ownerName = vendor?.name || "";
 
   const handleSave = () => {
     if (rating === 0) {

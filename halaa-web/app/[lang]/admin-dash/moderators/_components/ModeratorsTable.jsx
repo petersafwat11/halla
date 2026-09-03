@@ -199,7 +199,7 @@ export default function ModeratorsTable({ showAddPopup: externalShowAdd, setShow
 
   const tableData = (data?.data?.moderators || []).map((moderator) => ({
     id: moderator.id || moderator._id,
-    name: moderator.name || moderator.username || "-",
+    name: moderator.name || "-",
     email: moderator.email || "-",
     phone: moderator.phoneNumber || moderator.phone || "-",
     role: moderator.role || "moderator",

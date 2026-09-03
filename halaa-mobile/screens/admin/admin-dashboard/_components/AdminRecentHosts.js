@@ -29,7 +29,7 @@ const AdminRecentHosts = ({ hosts, t, onViewAll }) => {
         )}
       </View>
       {hosts.map((host, idx) => {
-        const name = host.name || host.username || "—";
+        const name = host.name || "—";
         const initial = name.charAt(0).toUpperCase();
         const statusColor = HOST_STATUS_COLORS[host.status] ?? colors.natural[400];
         return (

@@ -645,11 +645,11 @@ class CheckoutService {
     // Plan/payment emails always fire — host has no opt-out for these.
     // `_fulfillBundle` only receives `userId`, so load the user here (the
     // outer `checkout()` `user` binding is not in scope on this path).
-    const user = await User.findById(userId).select('email name username role');
+    const user = await User.findById(userId).select('email name role');
     if (user?.email) {
       const frontendUrl = config.frontendUrl || process.env.FRONTEND_URL || '';
       email.send.paymentConfirmation(user.email, {
-        userName: user.name || user.username || '',
+        recipientName: user.name || '',
         amount: totals?.totalAmount ?? totals?.amount ?? paymentRecord?.amount ?? 0,
         currency: paymentRecord?.currency || plan?.currency || 'SAR',
         planName: plan?.name || planCode,

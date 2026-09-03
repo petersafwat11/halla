@@ -75,8 +75,7 @@ const GuestListItem = ({
 
   const statusStyle = getStatusStyle(guest.status);
   const addedByValue =
-    guest.addedBy?.username ||
-    guest.addedBy?.name ||
+        guest.addedBy?.name ||
     (typeof guest.addedBy === "string" && !OBJECT_ID_PATTERN.test(guest.addedBy)
       ? guest.addedBy
       : null) ||

@@ -34,7 +34,6 @@ describe('Session 1.5: Event Entitlement & Stats Fixes (EVT-10, EVT-16)', () => 
         _id: mockEventId,
         host: {
           _id: mockHostId,
-          username: 'host1',
           name: 'Host One',
           phoneNumber: '+966500000001',
         },
@@ -86,7 +85,7 @@ describe('Session 1.5: Event Entitlement & Stats Fixes (EVT-10, EVT-16)', () => 
     Event.findOne = () => ({
       populate: () => Promise.resolve({
         _id: mockEventId,
-        host: { _id: mockHostId, username: 'host1' },
+        host: { _id: mockHostId, name: 'Host One' },
         subscriptionId: mockSubId,
         status: 'live',
       }),

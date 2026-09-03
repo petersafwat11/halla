@@ -229,13 +229,6 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
 
-    username: {
-      type: String,
-      trim: true,
-      minlength: [2, "Username must be at least 2 characters"],
-      maxlength: [50, "Username cannot exceed 50 characters"],
-    },
-
     name: {
       type: String,
       trim: true,
@@ -449,7 +442,6 @@ userSchema.index(
 
 // Text index for search
 userSchema.index({
-  username: "text",
   name: "text",
   email: "text",
   "profile.vendorData.brandName": "text",
@@ -462,7 +454,6 @@ userSchema.index({
 // Get display name based on role
 userSchema.virtual("displayName").get(function () {
   if (this.name) return this.name;
-  if (this.username) return this.username;
   if (this.profile?.vendorData?.brandName)
     return this.profile.vendorData.brandName;
   if (this.email) return this.email.split("@")[0];
@@ -940,7 +931,6 @@ userSchema.statics.search = async function (searchTerm, filters = {}) {
 
   if (searchTerm) {
     query.$or = [
-      { username: { $regex: searchTerm, $options: "i" } },
       { name: { $regex: searchTerm, $options: "i" } },
       { email: { $regex: searchTerm, $options: "i" } },
       { mobile: { $regex: searchTerm, $options: "i" } },

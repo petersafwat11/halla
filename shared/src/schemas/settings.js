@@ -27,19 +27,6 @@ const idT = (k) => k;
 
 export const profileUpdateSchema = (t = idT) =>
   z.object({
-    username: z
-      .string()
-      .min(
-        3,
-        t("settings.errors.usernameMinLength") ||
-          "اسم المستخدم يجب أن يكون 3 أحرف على الأقل"
-      )
-      .max(
-        50,
-        t("settings.errors.usernameMaxLength") ||
-          "اسم المستخدم يجب أن لا يتجاوز 50 حرف"
-      )
-      .optional(),
     name: z
       .string()
       .min(
@@ -113,22 +100,6 @@ export const accountSettingsSchema = (t = idT) =>
           t("name_max_length") || "Name must be less than 100 characters"
         ),
 
-      // Legacy handle — no longer collected in Settings (the product has a
-      // single identity: the full name). Still validated when present so
-      // payloads that keep it stay well-formed.
-      username: z
-        .string()
-        .min(
-          2,
-          t("username_min_length") || "Username must be at least 2 characters"
-        )
-        .max(
-          50,
-          t("username_max_length") || "Username must be less than 50 characters"
-        )
-        .optional()
-        .or(z.literal("")),
-
       email: z
         .string()
         .email(t("email_invalid") || "Please enter a valid email address"),
@@ -194,14 +165,6 @@ export const mobileAccountSettingsSchema = (t = idT) =>
         .trim()
         .min(2, t("validation.nameMin"))
         .max(100, t("validation.nameMax")),
-      // Legacy handle — no longer collected in Settings (single identity:
-      // the full name). Validated only when a payload still carries it.
-      username: z
-        .string()
-        .min(2, t("validation.usernameMin"))
-        .max(50, t("validation.usernameMax"))
-        .optional()
-        .or(z.literal("")),
       email: z.string().email(t("validation.emailInvalid")),
       currentPassword: z.string().optional(),
       newPassword: z
@@ -433,7 +396,6 @@ export const mobileNotificationSettingsSchema = z.object({
 // ============================================================
 
 export const getProfileDefaults = (user) => ({
-  username: user?.username || "",
   name: user?.name || "",
   email: user?.email || "",
   phoneNumber: user?.phoneNumber || "",

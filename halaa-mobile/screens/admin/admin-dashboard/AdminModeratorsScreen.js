@@ -69,7 +69,7 @@ const AdminModeratorsScreen = ({ navigation }) => {
     const newStatus   = m.status === "active" ? "inactive" : "active";
     const isSuspend   = newStatus === "inactive";
     const actionLabel = isSuspend ? t("common.suspend") : t("common.activate");
-    const name        = m.name || m.username || t("common.unknown");
+    const name        = m.name || t("common.unknown");
     Alert.alert(
       actionLabel,
       // Interpolated key + first-strong isolate around the backend name.
@@ -100,7 +100,7 @@ const AdminModeratorsScreen = ({ navigation }) => {
   }, [t, updateStatus, toast, refetch]);
 
   const handleDelete = useCallback((m) => {
-    const name = m.name || m.username || t("common.unknown");
+    const name = m.name || t("common.unknown");
     Alert.alert(
       t("moderators.delete.title"),
       t("moderators.delete.confirmMessage", { name: isolateAuto(name) }),

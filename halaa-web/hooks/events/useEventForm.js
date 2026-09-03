@@ -17,7 +17,7 @@ const DEFAULT_ADDRESS = {
   provider: "google",
 };
 
-const DEFAULT_FORM_VALUES = {
+export const DEFAULT_FORM_VALUES = {
   // Step 1 - Event Details
   eventType: "",
   eventName: "",
@@ -43,6 +43,8 @@ const DEFAULT_FORM_VALUES = {
   scheduleTime: "",
   confirmReviewed: false,
 };
+
+export const initialFormState = DEFAULT_FORM_VALUES;
 
 // Data transformation utilities
 export const transformGuestList = (guests = []) =>

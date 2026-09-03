@@ -122,9 +122,9 @@ const TicketDetailsScreen = () => {
     );
   }
 
-  const submitterName = ticket.submittedBy?.name || ticket.submittedBy?.username || t("ticketDetails.unknown");
-  const assignedName = ticket.assignedTo ? ticket.assignedTo.name || ticket.assignedTo.username || ticket.assignedTo.email || t("ticketDetails.unassigned") : t("ticketDetails.unassigned");
-  const resolvedBy = ticket.resolution?.by ? ticket.resolution.by?.name || ticket.resolution.by?.username || t("ticketDetails.admin") : "";
+  const submitterName = ticket.submittedBy?.name || t("ticketDetails.unknown");
+  const assignedName = ticket.assignedTo ? ticket.assignedTo.name || ticket.assignedTo.email || t("ticketDetails.unassigned") : t("ticketDetails.unassigned");
+  const resolvedBy = ticket.resolution?.by ? ticket.resolution.by?.name || t("ticketDetails.admin") : "";
   // Interpolated meta sentence (blueprint §6) — the resolver name is adaptive
   // content and the date a locale-formatted token, both first-strong isolated
   // so punctuation cannot spill across scripts.

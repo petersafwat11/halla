@@ -177,7 +177,7 @@ export default function EventsTable() {
   const tableData = rawEvents.map((event) => ({
     id: event.id || event._id,
     title: event.title || "-",
-    host: event.host?.name || event.host?.username || event.hostName || "-",
+    host: event.host?.name || event.hostName || "-",
     date: event.date || event.eventDate,
     guests: event.guestCount || 0,
     status: event.status || "pending_scheduling",

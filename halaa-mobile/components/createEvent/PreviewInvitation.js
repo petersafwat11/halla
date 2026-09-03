@@ -15,7 +15,7 @@ import { Ionicons } from "@expo/vector-icons";
 import {
   resolveTaqnyatPlaceholders,
   buildTaqnyatPreviewContext,
-  formatDate,
+  formatEventDate,
 } from "@halaa/shared/utils";
 import { isolateAuto, isolateLtr } from "@halaa/shared/utils/bidi";
 import { useTranslation } from "../../localization";
@@ -60,12 +60,12 @@ const PreviewInvitation = ({
   const { width: viewportWidth, height: viewportHeight } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const hostName = useAuthStore(
-    (state) => state.user?.name || state.user?.username || ""
+    (state) => state.user?.name || ""
   );
 
   const formattedDate = useMemo(() => {
     if (!eventDate) return "";
-    return formatDate(eventDate, currentLanguage || "ar");
+    return formatEventDate(eventDate, currentLanguage || "ar");
   }, [eventDate, currentLanguage]);
 
   const resolvedBody = useMemo(() => {

@@ -21,7 +21,7 @@ async function getModerators({ page = 1, limit = 10, search, status, from, to })
   let query = { role: { $in: [ROLES.MODERATOR, ROLES.ADMIN] } };
 
   if (search) {
-    const searchQuery = buildSearchQuery(search, ['username', 'name', 'email', 'phoneNumber']);
+    const searchQuery = buildSearchQuery(search, ['name', 'email', 'phoneNumber']);
     query = { ...query, ...searchQuery };
   }
 
@@ -36,7 +36,7 @@ async function getModerators({ page = 1, limit = 10, search, status, from, to })
 
   const baseQuery = { role: { $in: [ROLES.MODERATOR, ROLES.ADMIN] } };
   if (search) {
-    const searchQuery = buildSearchQuery(search, ['username', 'name', 'email', 'phoneNumber']);
+    const searchQuery = buildSearchQuery(search, ['name', 'email', 'phoneNumber']);
     Object.assign(baseQuery, searchQuery);
   }
   if (Object.keys(dateRange).length > 0) {
@@ -83,7 +83,7 @@ async function getModerators({ page = 1, limit = 10, search, status, from, to })
 /**
  * Create new moderator
  */
-async function createModerator({ email, phoneNumber, name, username, password, permissions, role: requestedRole, actorRole }) {
+async function createModerator({ email, phoneNumber, name, password, permissions, role: requestedRole, actorRole }) {
   if (actorRole !== ROLES.SUPER_ADMIN && actorRole !== ROLES.ADMIN) {
     throw new ValidationError('Not authorized to create moderators');
   }
@@ -113,7 +113,6 @@ async function createModerator({ email, phoneNumber, name, username, password, p
     phoneNumber: normalizedPhone,
     mobile: normalizedPhone,
     name,
-    username: username || `moderator_${Date.now()}`,
     password: effectivePassword,
     role: moderatorRole,
     status: USER_STATUS.ACTIVE,
@@ -292,7 +291,7 @@ async function bulkUpdateModeratorStatus(moderatorIds, status) {
 async function exportModerators({ search, status, from, to } = {}) {
   let query = { role: { $in: [ROLES.MODERATOR, ROLES.ADMIN] } };
   if (search) {
-    const searchQuery = buildSearchQuery(search, ['username', 'name', 'email', 'phoneNumber']);
+    const searchQuery = buildSearchQuery(search, ['name', 'email', 'phoneNumber']);
     query = { ...query, ...searchQuery };
   }
   if (status) query.status = status;
@@ -300,12 +299,12 @@ async function exportModerators({ search, status, from, to } = {}) {
   if (Object.keys(dateRange).length > 0) query.createdAt = dateRange;
 
   const moderators = await User.find(query)
-    .select('username name email phoneNumber role status createdAt')
+    .select('name email phoneNumber role status createdAt')
     .sort({ createdAt: -1 })
     .lean();
 
   return moderators.map(m => ({
-    Name: m.name || m.username || '-',
+    Name: m.name || '-',
     Email: m.email || '-',
     Phone: m.phoneNumber || '-',
     Role: m.role || '-',

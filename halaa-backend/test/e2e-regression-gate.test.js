@@ -324,7 +324,6 @@ test("Acceptance Matrix 5: Marketplace Multi-District Pagination and Moderation 
 test("Acceptance Matrix 6: User Identity Separation & Email Verification Sync (SET-01, SET-02)", async () => {
   const user = await User.create({
     name: "Original Name",
-    username: "original_username",
     email: "verify@test.com",
     role: "host",
     accountType: "personal",
@@ -342,6 +341,6 @@ test("Acceptance Matrix 6: User Identity Separation & Email Verification Sync (S
 
   const refreshed = await User.findById(user._id);
   assert.equal(refreshed.name, "New Display Name");
-  assert.equal(refreshed.username, "original_username");
+  assert.equal(refreshed.username, undefined);
   assert.equal(refreshed.profile.hostData.emailVerified, false);
 });

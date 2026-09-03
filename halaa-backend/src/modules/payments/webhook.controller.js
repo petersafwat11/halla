@@ -50,11 +50,11 @@ const config = require('../../config');
 async function sendPaymentFailedEmail({ userId, amount, currency, planName, reason }) {
   try {
     if (!userId) return;
-    const user = await User.findById(userId).select('email name username role');
+    const user = await User.findById(userId).select('email name role');
     if (!user?.email) return;
     const frontendUrl = config.frontendUrl || process.env.FRONTEND_URL || '';
     await email.send.paymentFailed(user.email, {
-      userName: user.name || user.username || '',
+      recipientName: user.name || '',
       amount: amount ?? 0,
       currency: currency || 'SAR',
       planName: planName || '',
@@ -257,10 +257,10 @@ async function sendInvoiceNotifications(eventType, sub, amount, currency) {
     const notificationService = require('../notifications/notifications.service');
     const config = require('../../config');
 
-    const payer = await User.findById(sub.userId).select('name username email role');
+    const payer = await User.findById(sub.userId).select('name email role');
     if (!payer) return;
 
-    const payerName = payer.name || payer.username || payer.email || 'Client';
+    const payerName = payer.name || payer.email || 'Client';
     const amountStr = `${amount} ${currency}`;
     const frontendUrl = config.frontend?.url || '';
 

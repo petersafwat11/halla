@@ -6,9 +6,10 @@ const User = require('../models/UserModel');
 const { ROLES, USER_STATUS } = require('../src/shared/constants');
 const usersService = require('../src/modules/users/users.service');
 const authService = require('../src/modules/auth/auth.service');
+const { updateProfileSchema } = require('../src/modules/users/users.validation');
 
 // ============================================================
-// SET-01 / SET-02 — Identity field separation and email
+// SET-01 / SET-02 — Identity single-field (name only) and email
 // verification state synchronization (backend contract).
 // ============================================================
 
@@ -26,7 +27,6 @@ test.beforeEach(async () => {
   await db.clearAll();
   hostUser = await User.create({
     name: 'Original Name',
-    username: `host_${Date.now()}`,
     email: `host_${Date.now()}@example.com`,
     phoneNumber: '+966551112233',
     role: ROLES.HOST,
@@ -35,35 +35,36 @@ test.beforeEach(async () => {
   });
 });
 
-test('SET-01: updateMyProfile edits name without overwriting username', async () => {
+test('SET-01: updateMyProfile edits name and returns updated user', async () => {
   const result = await usersService.updateMyProfile(hostUser._id, {
     name: 'Renamed Host',
   });
 
   assert.equal(result.user.name, 'Renamed Host');
-  assert.equal(result.user.username, hostUser.username, 'username must remain untouched');
+  assert.equal(result.user.username, undefined, 'username must not exist on user');
   assert.equal(result.user.email, hostUser.email);
 });
 
-test('SET-01: updateMyProfile edits username without overwriting name', async () => {
-  const result = await usersService.updateMyProfile(hostUser._id, {
-    username: 'fresh_username',
+test('SET-01: updateProfileSchema rejects payload containing username', async () => {
+  assert.throws(() => {
+    updateProfileSchema.parse({
+      username: 'fresh_username',
+      name: 'Test Name',
+    });
+  }, (err) => {
+    return err.name === 'ZodError' && JSON.stringify(err.issues).includes('unrecognized_keys');
   });
-
-  assert.equal(result.user.username, 'fresh_username');
-  assert.equal(result.user.name, 'Original Name', 'name must remain untouched');
 });
 
-test('SET-01: profile payload carries both identity fields and emailVerified', async () => {
+test('SET-01: profile payload carries name and emailVerified', async () => {
   const result = await usersService.updateMyProfile(hostUser._id, {
     name: 'Full Identity',
-    username: 'identity_user',
   });
 
   assert.ok('emailVerified' in result.user, 'public user DTO must expose emailVerified');
   assert.equal(typeof result.user.emailVerified, 'boolean');
   assert.equal(result.user.name, 'Full Identity');
-  assert.equal(result.user.username, 'identity_user');
+  assert.equal(result.user.username, undefined);
 });
 
 test('SET-01: changing email resets emailVerified server-side', async () => {
@@ -86,7 +87,7 @@ test('SET-02: verifyEmail flips the flag and returns the updated user DTO', asyn
   assert.ok(returnedUser, 'verifyEmail must return the updated sanitized user');
   assert.equal(returnedUser.emailVerified, true);
   assert.equal(returnedUser.name, 'Original Name');
-  assert.equal(returnedUser.username, hostUser.username);
+  assert.equal(returnedUser.username, undefined);
   assert.equal(returnedUser.password, undefined);
   assert.equal(returnedUser.emailVerificationCode, undefined);
 });

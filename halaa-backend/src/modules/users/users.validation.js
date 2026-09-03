@@ -32,7 +32,6 @@ const updatePasswordSchema = z
 // ============================================================================
 const updateProfileSchema = z
   .object({
-    username: z.string().min(2).max(50).optional(),
     name: z.string().min(1).max(100).optional(),
     email: z.string().email().optional(),
     preferredLanguage: z.enum(["ar", "en"]).optional(),

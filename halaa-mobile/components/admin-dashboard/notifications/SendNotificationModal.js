@@ -114,7 +114,7 @@ const SendNotificationModal = ({
         <View style={styles.recipientBar}>
           <Text style={styles.recipientLabel}>{t("sendNotification.to")}:</Text>
           <Text style={styles.recipientName}>
-            {targetUser.username || targetUser.email || targetUser.phoneNumber}
+            {targetUser.name || targetUser.email || targetUser.phoneNumber}
           </Text>
         </View>
       )}

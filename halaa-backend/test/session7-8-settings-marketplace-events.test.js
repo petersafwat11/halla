@@ -59,7 +59,6 @@ describe('Session 7 & 8: Settings, Marketplace, and Event Lifecycle Cross-Client
   describe('Session 7: Settings, Password Security, & Marketplace Privacy', () => {
     it('1. updateMyPassword verifies current password, rejects mismatch, and issues rotated tokens (BACK-07)', async () => {
       const user = await User.create({
-        username: 'secureuser',
         email: 'secure@test.com',
         phoneNumber: '+966500000010',
         role: 'host',
@@ -211,7 +210,6 @@ describe('Session 7 & 8: Settings, Marketplace, and Event Lifecycle Cross-Client
   describe('Session 8: Event Lifecycle, Quota Enforcement & Concurrency', () => {
     it('1. Event draft creation, guest addition, and capacity limit enforcement (EVT-03, BACK-03)', async () => {
       const host = await User.create({
-        username: 'eventhost1',
         email: 'ehost1@test.com',
         phoneNumber: '+966500000030',
         role: 'host',
@@ -271,7 +269,6 @@ describe('Session 7 & 8: Settings, Marketplace, and Event Lifecycle Cross-Client
 
     it('2. Per-event plan single-active-event slot locking and freeing (EVT-15, BACK-04)', async () => {
       const host = await User.create({
-        username: 'pereventhost',
         email: 'perevent@test.com',
         phoneNumber: '+966500000040',
         role: 'host',
@@ -336,7 +333,6 @@ describe('Session 7 & 8: Settings, Marketplace, and Event Lifecycle Cross-Client
 
     it('3. RSVP status transitions from invited to confirmed, declined, and checked-in (EVT-03)', async () => {
       const host = await User.create({
-        username: 'rsvphost',
         email: 'rsvphost@test.com',
         phoneNumber: '+966500000050',
         role: 'host',

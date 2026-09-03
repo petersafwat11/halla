@@ -19,7 +19,11 @@ function formatDate(date, lang = 'ar') {
   if (!date) return '';
   return formatRiyadh(date, {
     style: 'date',
-    locale: lang === 'ar' ? 'ar-SA' : 'en-US',
+    locale: lang === 'ar' ? 'ar-SA-u-ca-gregory-nu-latn' : 'en-US-u-ca-gregory-nu-latn',
+    options: {
+      calendar: 'gregory',
+      numberingSystem: 'latn',
+    },
   });
 }
 

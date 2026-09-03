@@ -155,10 +155,10 @@ export default function TicketsTable() {
   const tableData = useMemo(() => (data?.data || []).map((ticket) => ({
     id: ticket.id || ticket._id,
     subject: ticket.subject || ticket.type || "-",
-    user: ticket.user?.username || ticket.user?.name || ticket.userName || "-",
+    user: ticket.user?.name || ticket.user?.email || "-",
     priority: ticket.priority || "medium",
     status: ticket.status || "open",
-    assignedTo: ticket.assignedTo?.username || ticket.assignedTo?.name || "",
+    assignedTo: ticket.assignedTo?.name || "",
     createdAt: ticket.createdAt || ticket.created_at,
     message: ticket.message || "",
     resolution: ticket.resolution || null,

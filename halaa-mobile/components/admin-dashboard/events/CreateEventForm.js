@@ -32,6 +32,7 @@ import KeyboardAwareFormScrollView from "../../commen/keyboard/KeyboardAwareForm
 import LocalizedText from "../../commen/LocalizedText";
 import { spacing } from "../../../styles/tokens";
 import { useWizardNavigationGuardStore } from "../../../stores/wizardNavigationGuardStore";
+import { openSupportWhatsApp } from "../../../services/support/openSupportWhatsApp";
 
 // Both subscription sources we accept already deliver the canonical normalized shape:
 //   - useSubscriptionInfo() -> backend events.service.getSubscriptionInfo
@@ -55,7 +56,7 @@ import { useWizardNavigationGuardStore } from "../../../stores/wizardNavigationG
  */
 const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
   const { t } = useTranslation("admin");
-  const { t: tCreate } = useTranslation("createEvent");
+  const { t: tCreate, currentLanguage } = useTranslation("createEvent");
   const { t: tEvents } = useTranslation("events");
   const navigation = useNavigation();
   const isHostMode = mode === "host";
@@ -258,9 +259,13 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
     navigation?.goBack?.();
   }, [navigation]);
 
-  const handleContactUs = useCallback(() => {
+  const handleContactUs = useCallback(async () => {
     setShowInfoPopup(false);
-  }, []);
+    await openSupportWhatsApp({
+      language: currentLanguage,
+      source: "managed_event_modal",
+    });
+  }, [currentLanguage]);
 
   // Step info: admin mode includes a step 1 for HostSelector; host mode
   // skips the selector and starts directly with event details.

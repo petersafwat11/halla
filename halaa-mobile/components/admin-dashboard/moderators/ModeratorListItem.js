@@ -24,7 +24,6 @@ const ModeratorListItem = ({
 
   const {
     name,
-    username,
     email,
     phoneNumber,
     phone: phoneField,
@@ -34,7 +33,7 @@ const ModeratorListItem = ({
     created_at,
   } = moderator;
 
-  const displayName = name || username || t("common.unknown");
+  const displayName = name || t("common.unknown");
   const phone = phoneNumber || phoneField || null;
   const joinedDate =
     createdAt || created_at

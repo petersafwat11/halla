@@ -285,7 +285,7 @@ export const useAuthStore = create((set, get) => ({
     set({ status: "loading", error: null });
     try {
       const result = await completeProfileAPI({
-        username: fullName,
+        name: fullName,
         email,
         password,
         token: get().token,

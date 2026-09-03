@@ -277,7 +277,7 @@ postEventContentSchema.statics.getForGuest = async function (eventId, guestId) {
     event: eventId,
     "settings.isPublished": true,
   })
-    .populate("host", "username name")
+    .populate("host", "name")
     .populate("event", "eventDetails")
     .lean();
 

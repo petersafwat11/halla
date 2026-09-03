@@ -77,7 +77,7 @@ test("toGuestDTO (EVT-15): produces canonical GuestDTO from various shapes", () 
     checkIn: { checkedInAt: new Date("2026-08-21T18:00:00Z") },
     rsvp: { response: "confirmed", respondedAt: new Date() },
     invitation: { sent: true, autoReminderSent: true },
-    addedBy: { _id: "user_1", username: "host1" },
+    addedBy: { _id: "user_1", name: "Host 1" },
     createdAt: new Date("2026-08-20T10:00:00Z"),
   };
 

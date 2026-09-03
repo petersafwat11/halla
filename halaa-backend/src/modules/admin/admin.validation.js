@@ -35,15 +35,20 @@ const optionalPassword = z
   .transform((v) => (v === '' ? undefined : v));
 
 // ── Hosts ──────────────────────────────────────────────────────────────────
-const createHostSchema = z.object({
-  phoneNumber: phonePattern,
-  name: z.string().min(2).max(100),
-  email: optionalEmail,
-  username: optionalString,
-  password: optionalPassword,
-  planCode: optionalString,
-  subscriptionStatus: optionalString,
-});
+const createHostSchema = z
+  .object({
+    phoneNumber: phonePattern,
+    name: z.string().min(2).max(100),
+    email: optionalEmail,
+    password: optionalPassword,
+    planCode: optionalString,
+    subscriptionStatus: optionalString,
+  })
+  .passthrough()
+  .refine((data) => !('username' in data) || data.username === undefined, {
+    message: 'Unrecognized field: username',
+    path: ['username'],
+  });
 
 const findOrCreateHostSchema = z.object({
   phoneNumber: phonePattern,
@@ -149,26 +154,36 @@ const bulkVendorStatusSchema = z
   });
 
 // ── Moderators ─────────────────────────────────────────────────────────────
-const createModeratorSchema = z.object({
-  name: z.string().min(2).max(100),
-  email: z.string().email(),
-  phoneNumber: phonePattern,
-  password: optionalPassword,
-  username: optionalString,
-  permissions: z.array(z.string()).optional(),
-  pageAccess: z.record(z.any()).optional(),
-  role: optionalString,
-});
+const createModeratorSchema = z
+  .object({
+    name: z.string().min(2).max(100),
+    email: z.string().email(),
+    phoneNumber: phonePattern,
+    password: optionalPassword,
+    permissions: z.array(z.string()).optional(),
+    pageAccess: z.record(z.any()).optional(),
+    role: optionalString,
+  })
+  .passthrough()
+  .refine((data) => !('username' in data) || data.username === undefined, {
+    message: 'Unrecognized field: username',
+    path: ['username'],
+  });
 
-const updateModeratorSchema = z.object({
-  name: z.string().min(2).max(100).optional(),
-  email: optionalEmail,
-  phoneNumber: phonePattern.optional().or(z.literal('')).transform((v) => (v ? normalizePhoneNumber(v) : undefined)),
-  permissions: z.array(z.string()).optional(),
-  pageAccess: z.record(z.any()).optional(),
-  username: optionalString,
-  role: z.enum(['moderator', 'admin']).optional(),
-});
+const updateModeratorSchema = z
+  .object({
+    name: z.string().min(2).max(100).optional(),
+    email: optionalEmail,
+    phoneNumber: phonePattern.optional().or(z.literal('')).transform((v) => (v ? normalizePhoneNumber(v) : undefined)),
+    permissions: z.array(z.string()).optional(),
+    pageAccess: z.record(z.any()).optional(),
+    role: z.enum(['moderator', 'admin']).optional(),
+  })
+  .passthrough()
+  .refine((data) => !('username' in data) || data.username === undefined, {
+    message: 'Unrecognized field: username',
+    path: ['username'],
+  });
 
 const updateModeratorStatusSchema = z.object({
   status: z.enum(['active', 'suspended', 'inactive']),

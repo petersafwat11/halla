@@ -16,7 +16,7 @@
     "filter": "التصفية",
     "export": "تصدير",
     "columns": {
-      "username": "اسم التاجر",
+      "name": "اسم التاجر",
       "phoneNumber": "رقم الجوال",
       "email": "البريد الإلكتروني",
       "serviceType": "نوع الخدمة",

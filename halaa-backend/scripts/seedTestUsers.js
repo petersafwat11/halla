@@ -31,7 +31,6 @@ const testUsers = {
   host: {
     email: "test.host@labbe.sa",
     phoneNumber: "512345678",
-    username: "TestHost",
     name: "محمد أحمد الحربي",
     password: TEST_PASSWORD,
     role: ROLES.HOST,
@@ -53,7 +52,6 @@ const testUsers = {
   vendor: {
     email: "test.vendor@labbe.sa",
     phoneNumber: "523456789",
-    username: "TestVendor",
     name: "أحمد محمد السالم",
     password: TEST_PASSWORD,
     role: ROLES.VENDOR,
@@ -108,7 +106,6 @@ const testUsers = {
   superAdmin: {
     email: "test.superadmin@labbe.sa",
     phoneNumber: "545678901",
-    username: "TestSuperAdmin",
     name: "عبدالرحمن محمد القحطاني",
     password: TEST_PASSWORD,
     role: ROLES.SUPER_ADMIN,
@@ -128,7 +125,6 @@ const testUsers = {
   admin: {
     email: "test.admin@labbe.sa",
     phoneNumber: "556789012",
-    username: "TestAdmin",
     name: "سعد إبراهيم الدوسري",
     password: TEST_PASSWORD,
     role: ROLES.ADMIN,
@@ -148,7 +144,6 @@ const testUsers = {
   moderator: {
     email: "test.moderator@labbe.sa",
     phoneNumber: "567890123",
-    username: "TestModerator",
     name: "فهد عبدالله المالكي",
     password: TEST_PASSWORD,
     role: ROLES.MODERATOR,

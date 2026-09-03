@@ -29,10 +29,10 @@ exports.getHostById = catchAsync(async (req, res) => {
 });
 
 exports.createHost = catchAsync(async (req, res) => {
-  const { email, phoneNumber, name, username, password } = req.body;
+  const { email, phoneNumber, name, password } = req.body;
 
   const host = await adminService.createHost({
-    email, phoneNumber, name, username,
+    email, phoneNumber, name,
     password: password || crypto.randomBytes(16).toString('hex'),
   });
 

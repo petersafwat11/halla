@@ -19,7 +19,11 @@ function formatDate(date, lang = 'ar') {
   if (!date) return '';
   return formatRiyadh(date, {
     style: 'date',
-    locale: lang === 'ar' ? 'ar-SA' : 'en-US',
+    locale: lang === 'ar' ? 'ar-SA-u-ca-gregory-nu-latn' : 'en-US-u-ca-gregory-nu-latn',
+    options: {
+      calendar: 'gregory',
+      numberingSystem: 'latn',
+    },
   });
 }
 
@@ -30,12 +34,14 @@ function formatDay(date, lang = 'ar') {
   if (!date) return '';
   return formatRiyadh(date, {
     style: 'date',
-    locale: lang === 'ar' ? 'ar-SA' : 'en-US',
+    locale: lang === 'ar' ? 'ar-SA-u-ca-gregory-nu-latn' : 'en-US-u-ca-gregory-nu-latn',
     options: {
       year: undefined,
       month: undefined,
       day: undefined,
       weekday: 'long',
+      calendar: 'gregory',
+      numberingSystem: 'latn',
     },
   });
 }
@@ -105,7 +111,7 @@ function getEventBodyParams(event, guestName, taqnyatTemplate = null, extraConte
     },
     host:
       event.host && typeof event.host === 'object'
-        ? { name: event.host.name || event.host.username || '' }
+        ? { name: event.host.name || '' }
         : {},
     // Caller-supplied branches (e.g. staff.*) merge last so they win.
     ...extraContext,
@@ -229,7 +235,7 @@ function getPostEventBodyParams(event, guestName, taqnyatTemplate, accessCtx = {
     },
     host:
       event.host && typeof event.host === 'object'
-        ? { name: event.host.name || event.host.username || '' }
+        ? { name: event.host.name || '' }
         : {},
     access: {
       link: accessCtx.link || '',
@@ -295,7 +301,7 @@ function computeInvitationFingerprint(event, resolvedTemplate = null) {
 
   const hostName =
     event.host && typeof event.host === 'object'
-      ? event.host.name || event.host.username || ''
+      ? event.host.name || ''
       : '';
 
   const mapUrl =

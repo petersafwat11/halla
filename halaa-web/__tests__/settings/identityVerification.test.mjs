@@ -59,19 +59,19 @@ test("SET-01: AccountSettings submits name and email in the profile payload", ()
   );
   assert.match(
     source,
-    /formData\.name !== \(user\.name \|\| user\.username \|\| ""\)/,
-    "change detection must include the name field (with legacy username fallback)"
+    /formData\.name !== \(user\.name \|\| ""\)/,
+    "change detection must include the name field"
   );
 });
 
-test("SET-01: settings page passes name and username without collapsing them", () => {
+test("SET-01: settings page passes name as sole identity field", () => {
   const source = read("app", "[lang]", "host", "settings", "page.js");
 
   assert.match(source, /name:\s*user\?\.name\s*\|\|\s*""/);
   assert.doesNotMatch(
     source,
-    /username:\s*user\?\.username\s*\|\|\s*user\?\.name/,
-    "page must not collapse username into the user's name"
+    /username:/,
+    "page must not pass username"
   );
 });
 
@@ -86,8 +86,8 @@ test("SET-01: shared web account settings form defaults include name", () => {
   );
   assert.match(
     source,
-    /defaultValues:\s*\{[\s\S]*?name:\s*user\.name\s*\|\|\s*user\.username\s*\|\|\s*""/,
-    "form defaults must seed the name field from the user (with legacy username fallback)"
+    /defaultValues:\s*\{[\s\S]*?name:\s*user\.name\s*\|\|\s*""/,
+    "form defaults must seed the name field from user.name"
   );
 });
 

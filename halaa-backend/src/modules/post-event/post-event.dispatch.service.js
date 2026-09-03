@@ -105,7 +105,7 @@ async function sendBulkAccessLinks(
   const { buildScopedEventQuery } = require('./post-event.service');
   const actorId = user?._id?.toString?.() || user?._id;
   const event = await Event.findOne(buildScopedEventQuery(eventId, user))
-    .populate('host', 'name username');
+    .populate('host', 'name');
   if (!event) throw new NotFoundError('Event');
 
   if (!EVENT_LIFECYCLE_ALLOWED.POST_EVENT_NOTIFY.includes(event.status)) {

@@ -16,7 +16,7 @@
     "filter": "Filter",
     "export": "Export",
     "columns": {
-      "username": "Vendor Name",
+      "name": "Vendor Name",
       "phoneNumber": "Phone Number",
       "email": "Email",
       "serviceType": "Service Type",

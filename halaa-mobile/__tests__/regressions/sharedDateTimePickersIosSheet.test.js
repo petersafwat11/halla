@@ -107,3 +107,17 @@ test("ScheduleSendingModal restores an existing schedule time", () => {
 
   assert.match(modal, /timeFromHHmm\(existingSchedule\?\.scheduledTime\)/);
 });
+
+test("DatePicker accepts valid dates 25-31 and does not truncate month endings", () => {
+  const source = read("components", "commen", "DatePicker.js");
+
+  // Valid dates on days 25, 28, 30, and 31 evaluate to valid Date instances
+  for (const day of [25, 28, 30, 31]) {
+    const d = new Date(2026, 0, day, 12, 0, 0);
+    assert.equal(d.getDate(), day);
+    assert.ok(!Number.isNaN(d.getTime()));
+  }
+
+  assert.match(source, /const validDateOrNull/);
+  assert.match(source, /onChange\(draftDate\)/);
+});

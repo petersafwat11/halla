@@ -31,8 +31,7 @@ const AccountSettings = ({ user = {} }) => {
     mode: "onChange",
     defaultValues: {
       // Single display identity. Hosts created before `name` was populated
-      // carry their signup full name in `username` — surface it here.
-      name: user.name || user.username || "",
+            name: user.name || "",
       email: user.email || "",
       currentPassword: "",
       password: "",
@@ -48,20 +47,20 @@ const AccountSettings = ({ user = {} }) => {
 
   useEffect(() => {
     reset({
-      name: user.name || user.username || "",
+      name: user.name || "",
       email: user.email || "",
       currentPassword: "",
       password: "",
       confirmPassword: "",
     });
-  }, [user.name, user.username, user.email, reset]);
+  }, [user.name, user.email, reset]);
 
   const isSaving = updateProfileMutation.isPending || updatePasswordMutation.isPending;
   const isVerifying = sendCodeMutation.isPending || verifyEmailMutation.isPending;
 
   const onSubmit = async (formData) => {
     const profileChanged =
-      formData.name !== (user.name || user.username || "") ||
+      formData.name !== (user.name || "") ||
       formData.email !== (user.email || "");
     const passwordProvided = !!formData.password;
 

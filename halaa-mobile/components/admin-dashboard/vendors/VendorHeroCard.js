@@ -26,7 +26,7 @@ const VendorHeroCard = ({ vendor }) => {
   const labelKey = STATUS_LABEL_KEY[status] || STATUS_LABEL_KEY.pending;
   const statusLabel = t(`vendorDetails.statuses.${labelKey}`, labelKey);
   const roleData = vendor?.roleData || vendor?.vendorData || {};
-  const displayName = roleData?.brandName || vendor?.brandName || vendor?.username || "—";
+  const displayName = roleData?.brandName || vendor?.brandName || vendor?.name || "—";
   const ownerName = roleData?.ownerFullName || roleData?.ownerName || vendor?.name || "—";
   const email = vendor?.email || roleData?.email || "—";
   const phone = vendor?.phoneNumber || roleData?.phone || "—";

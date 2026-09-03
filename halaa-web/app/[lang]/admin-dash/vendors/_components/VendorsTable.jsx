@@ -23,7 +23,7 @@ import styles from "./VendorsTable.module.css";
 function normalizeVendorData(data) {
   return (data?.data?.vendors || data?.data || []).map((vendor) => ({
     id: vendor.id || vendor._id,
-    name: vendor.brandName || vendor.username || vendor.name || "-",
+    name: vendor.brandName || vendor.name || "-",
     email: vendor.email || "-",
     phone: vendor.phoneNumber || vendor.phone || "-",
     category: vendor.serviceCategories?.[0] || vendor.category || "-",
@@ -205,7 +205,7 @@ export default function VendorsTable() {
           mode="server"
           title={t("table.title")}
           headers={[
-            t("table.columns.username"),
+            t("table.columns.name"),
             t("table.columns.email"),
             t("table.columns.phoneNumber"),
             t("table.columns.serviceType"),

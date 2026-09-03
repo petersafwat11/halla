@@ -18,7 +18,7 @@ export default function AssignTicketPopup({ ticket, onClose, onSuccess }) {
   const assignMutation = useTicketMutation("assignTicket");
 
   const assigneeOptions = (assignees?.data || []).map((a) => ({
-    label: a.username || a.name,
+    label: a.name || a.email,
     value: a._id || a.id,
   }));
 

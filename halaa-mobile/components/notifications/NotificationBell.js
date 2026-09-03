@@ -4,6 +4,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { useUnreadCount } from "../../hooks/notifications";
 import { useTranslation } from "../../localization";
 import { localizeDigits } from "@halaa/shared/utils/locale";
+import { parseUnreadCount } from "../../utils/notificationCount";
+
+export { parseUnreadCount };
 
 /**
  * Icon-only action (blueprint §7): semantic bell glyph is never mirrored,
@@ -16,7 +19,7 @@ const MAX_BADGE_COUNT = 99;
 const NotificationBell = ({ onPress, color = "#F9F4EF", size = 20 }) => {
   const { t, currentLanguage } = useTranslation("common");
   const { data: unreadData } = useUnreadCount();
-  const unreadCount = unreadData?.count || 0;
+  const unreadCount = parseUnreadCount(unreadData?.count);
 
   const formatCount = (count) => {
     if (count > MAX_BADGE_COUNT) {

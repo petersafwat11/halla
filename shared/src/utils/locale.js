@@ -28,6 +28,7 @@ const _normalizeLocale = (locale = "ar") => {
 
 /**
  * Format a number per the locale's digit system.
+ * Halaa policy (F-15): uses Latin digits (0-9) across all business metrics.
  * @param {number|string} n
  * @param {string} [locale="ar"] - "ar" or "en"
  * @param {Intl.NumberFormatOptions} [options]
@@ -35,28 +36,23 @@ const _normalizeLocale = (locale = "ar") => {
 export const formatNumber = (n, locale = "ar", options = {}) => {
   if (n == null || n === "") return "";
   const value = Number(n);
-  if (!Number.isFinite(value)) return String(n ?? "");
+  if (!Number.isFinite(value)) return normalizeDigits(String(n ?? ""));
 
   const lang = _normalizeLocale(locale);
-  if (lang === "ar") {
-    if (_hasIntl()) {
-      try {
-        return new Intl.NumberFormat("ar-SA", options).format(value);
-      } catch (_) {
-        return _toArabicDigits(value.toLocaleString("en-US", options));
-      }
-    }
-    return _toArabicDigits(value.toLocaleString("en-US", options));
-  }
+  const opts = {
+    ...options,
+    numberingSystem: "latn",
+  };
+  const localeTag = lang === "ar" ? "ar-SA-u-nu-latn" : "en-US-u-nu-latn";
 
   if (_hasIntl()) {
     try {
-      return new Intl.NumberFormat("en-US", options).format(value);
+      return new Intl.NumberFormat(localeTag, opts).format(value);
     } catch (_) {
-      return value.toLocaleString("en-US", options);
+      return value.toLocaleString("en-US", opts);
     }
   }
-  return value.toLocaleString("en-US", options);
+  return value.toLocaleString("en-US", opts);
 };
 
 /**
@@ -67,12 +63,12 @@ export const formatCount = (n, locale = "ar") =>
 
 /**
  * Format a percentage.
- * e.g. 15 -> "15%" in en, "١٥٪" in ar
+ * e.g. 15 -> "15%" in en, "15٪" in ar (Latin digits + Arabic percent glyph)
  */
 export const formatPercent = (n, locale = "ar", options = {}) => {
   if (n == null || n === "") return "";
   const value = Number(n);
-  if (!Number.isFinite(value)) return String(n);
+  if (!Number.isFinite(value)) return normalizeDigits(String(n));
 
   const lang = _normalizeLocale(locale);
   const formattedNum = formatNumber(value, lang, options);
@@ -85,15 +81,17 @@ export const formatPercent = (n, locale = "ar", options = {}) => {
 export const formatCurrency = (n, locale = "ar", currency = "SAR") => {
   if (n == null || n === "") return "";
   const value = Number(n);
-  if (!Number.isFinite(value)) return String(n ?? "");
+  if (!Number.isFinite(value)) return normalizeDigits(String(n ?? ""));
 
   const lang = _normalizeLocale(locale);
+  const localeTag = lang === "ar" ? "ar-SA-u-nu-latn" : "en-US-u-nu-latn";
   if (_hasIntl()) {
     try {
-      return new Intl.NumberFormat(lang === "ar" ? "ar-SA" : "en-US", {
+      return new Intl.NumberFormat(localeTag, {
         style: "currency",
         currency,
         maximumFractionDigits: 2,
+        numberingSystem: "latn",
       }).format(value);
     } catch (_) {
       // Fall through to manual formatting
@@ -106,12 +104,11 @@ export const formatCurrency = (n, locale = "ar", currency = "SAR") => {
 
 /**
  * Convert any string with Latin digits to the locale's preferred digits.
+ * Under Latin digit policy (F-15), Halaa normalizes all digits to standard Latin ASCII.
  */
-export const localizeDigits = (input, locale = "ar") => {
+export const localizeDigits = (input, _locale = "ar") => {
   if (input == null) return "";
-  const lang = _normalizeLocale(locale);
-  if (lang === "ar") return _toArabicDigits(input);
-  return String(input);
+  return normalizeDigits(input);
 };
 
 /**
@@ -145,7 +142,119 @@ export const normalizeDigitsOnly = (input) => normalizeDigits(input, { stripNonD
 
 
 /**
+ * Parse an input value into a Date instance, preserving civil date values (YYYY-MM-DD
+ * or UTC midnight Date) without UTC rollover shifts across timezones.
+ *
+ * @param {Date|string|number} value - Date, timestamp, or ISO / civil string
+ * @param {string} [timeZone] - Optional explicit IANA timezone name
+ * @returns {Date|null}
+ */
+export const parseCivilDate = (value, timeZone) => {
+  if (value == null || value === "") return null;
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    // Civil date string: "2026-08-31" or "2026-08-31T00:00:00..."
+    const civilMatch = trimmed.match(
+      /^(\d{4})-(\d{2})-(\d{2})(?:[T\s](?:00:00(?::00(?:\.000)?)?(?:Z|[+-]00:?00)?)?)?$/
+    );
+    if (civilMatch) {
+      const year = parseInt(civilMatch[1], 10);
+      const month = parseInt(civilMatch[2], 10) - 1;
+      const day = parseInt(civilMatch[3], 10);
+      if (timeZone) {
+        return new Date(Date.UTC(year, month, day, 12, 0, 0));
+      }
+      return new Date(year, month, day, 12, 0, 0);
+    }
+  } else if (value instanceof Date) {
+    if (Number.isNaN(value.getTime())) return null;
+    // Check if it's UTC midnight (a date-only value stored in UTC)
+    if (
+      value.getUTCHours() === 0 &&
+      value.getUTCMinutes() === 0 &&
+      value.getUTCSeconds() === 0 &&
+      value.getUTCMilliseconds() === 0
+    ) {
+      if (timeZone) {
+        return new Date(
+          Date.UTC(
+            value.getUTCFullYear(),
+            value.getUTCMonth(),
+            value.getUTCDate(),
+            12,
+            0,
+            0
+          )
+        );
+      }
+      return new Date(
+        value.getUTCFullYear(),
+        value.getUTCMonth(),
+        value.getUTCDate(),
+        12,
+        0,
+        0
+      );
+    }
+    return value;
+  }
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? null : d;
+};
+
+/**
+ * Formats an event date explicitly using the Gregorian calendar and Latin digits (0-9).
+ * F-04: explicitly locks to Gregorian calendar to prevent runtime fallback to Islamic calendar.
+ * F-15: explicitly locks to Latin numbering system (nu-latn).
+ *
+ * Contract:
+ *   Arabic locale:  "ar-SA-u-ca-gregory-nu-latn"
+ *   English locale: "en-US-u-ca-gregory-nu-latn"
+ *   always passes calendar: "gregory"
+ *
+ * @param {Date|string|number} value - Date, timestamp, or civil date string
+ * @param {string} [language="ar"] - "ar" or "en"
+ * @param {Intl.DateTimeFormatOptions} [options]
+ * @returns {string} Formatted date string, e.g. "31 أغسطس 2026" or "August 31, 2026"
+ */
+export const formatEventDate = (value, language = "ar", options = {}) => {
+  if (value == null || value === "") return "";
+  const date = parseCivilDate(value, options?.timeZone);
+  if (!date || Number.isNaN(date.getTime())) return "";
+
+  const lang = _normalizeLocale(language);
+  const localeTag =
+    lang === "ar"
+      ? "ar-SA-u-ca-gregory-nu-latn"
+      : "en-US-u-ca-gregory-nu-latn";
+
+  const defaultOptions = {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  };
+
+  const opts = {
+    ...defaultOptions,
+    ...options,
+    calendar: "gregory",
+    numberingSystem: "latn",
+  };
+
+  if (_hasIntl()) {
+    try {
+      return new Intl.DateTimeFormat(localeTag, opts).format(date);
+    } catch (_) {
+      // Fall through
+    }
+  }
+
+  return date.toLocaleDateString("en-US", opts);
+};
+
+/**
  * Format a Date, timestamp, or ISO string as a localized date.
+ * Explicitly locks calendar to Gregorian (F-04) and digits to Latin (F-15).
  *
  * @param {Date|string|number} input
  * @param {string} [locale="ar"]
@@ -153,31 +262,39 @@ export const normalizeDigitsOnly = (input) => normalizeDigits(input, { stripNonD
  */
 export const formatDate = (input, locale = "ar", options) => {
   if (!input) return "";
-  const date = input instanceof Date ? input : new Date(input);
-  if (Number.isNaN(date.getTime())) return "";
+  const date = parseCivilDate(input, options?.timeZone);
+  if (!date || Number.isNaN(date.getTime())) return "";
 
   const lang = _normalizeLocale(locale);
-  const opts = options ?? {
+  const opts = {
     year: "numeric",
     month: "short",
     day: "numeric",
+    calendar: "gregory",
+    numberingSystem: "latn",
+    ...(options || {}),
   };
+
+  const localeTag =
+    lang === "ar"
+      ? "ar-SA-u-ca-gregory-nu-latn"
+      : "en-US-u-ca-gregory-nu-latn";
 
   if (_hasIntl()) {
     try {
-      return new Intl.DateTimeFormat(lang === "ar" ? "ar-SA" : "en-US", opts).format(date);
+      return new Intl.DateTimeFormat(localeTag, opts).format(date);
     } catch (_) {
       // Fall through
     }
   }
 
-  const enStr = date.toLocaleDateString("en-US", opts);
-  return lang === "ar" ? _toArabicDigits(enStr) : enStr;
+  return date.toLocaleDateString("en-US", opts);
 };
 
 /**
  * Format a Date, ISO string, or stored time string (e.g. "6:30 AM", "6:30:AM", "18:30")
  * into a localized time string.
+ * Output uses Latin digits (0-9) per Halaa policy (F-15).
  *
  * @param {Date|string|number} input
  * @param {string} [locale="ar"]
@@ -189,7 +306,7 @@ export const formatTime = (input, locale = "ar", options) => {
 
   // If input is a string that represents a time string like "6:30 AM", "6:30:AM", "18:30"
   if (typeof input === "string") {
-    const raw = input.trim();
+    const raw = normalizeDigits(input).trim();
     // Match "H:MM", "H:MM:SS", "H:MM AM/PM", "H:MM:AM/PM"
     const match = raw.match(/^(\d{1,2}):(\d{2})(?::\d{2})?(?::)?\s*(AM|PM|am|pm|صباحاً|مساءً|ص|م)?$/i);
     if (match) {
@@ -215,7 +332,7 @@ export const formatTime = (input, locale = "ar", options) => {
 
       if (lang === "ar") {
         const periodAr = isPM ? "م" : "ص";
-        return `${_toArabicDigits(displayHours)}:${_toArabicDigits(displayMinutes)} ${periodAr}`;
+        return `${displayHours}:${displayMinutes} ${periodAr}`;
       } else {
         const periodEn = isPM ? "PM" : "AM";
         return `${displayHours}:${displayMinutes} ${periodEn}`;
@@ -226,18 +343,21 @@ export const formatTime = (input, locale = "ar", options) => {
   // Otherwise, parse as Date
   const date = input instanceof Date ? input : new Date(input);
   if (Number.isNaN(date.getTime())) {
-    // If not a valid date, return raw string with localized digits if Arabic
-    return lang === "ar" ? _toArabicDigits(input) : String(input);
+    return normalizeDigits(String(input));
   }
 
-  const opts = options ?? {
+  const opts = {
     hour: "numeric",
     minute: "2-digit",
+    numberingSystem: "latn",
+    ...(options || {}),
   };
+
+  const localeTag = lang === "ar" ? "ar-SA-u-nu-latn" : "en-US-u-nu-latn";
 
   if (_hasIntl()) {
     try {
-      return new Intl.DateTimeFormat(lang === "ar" ? "ar-SA" : "en-US", opts).format(date);
+      return new Intl.DateTimeFormat(localeTag, opts).format(date);
     } catch (_) {
       // Fall through
     }
@@ -251,7 +371,7 @@ export const formatTime = (input, locale = "ar", options) => {
 
   if (lang === "ar") {
     const periodAr = isPM ? "م" : "ص";
-    return `${_toArabicDigits(displayHours)}:${_toArabicDigits(displayMinutes)} ${periodAr}`;
+    return `${displayHours}:${displayMinutes} ${periodAr}`;
   }
   const periodEn = isPM ? "PM" : "AM";
   return `${displayHours}:${displayMinutes} ${periodEn}`;
@@ -259,6 +379,7 @@ export const formatTime = (input, locale = "ar", options) => {
 
 /**
  * Format a Date or ISO string as a localized date+time.
+ * Explicitly locks calendar to Gregorian (F-04) and digits to Latin (F-15).
  *
  * @param {Date|string|number} input
  * @param {string} [locale="ar"]
@@ -270,18 +391,26 @@ export const formatDateTime = (input, locale = "ar", options) => {
   if (Number.isNaN(date.getTime())) return "";
 
   const lang = _normalizeLocale(locale);
-  const opts = options ?? {
+  const opts = {
     weekday: "long",
     day: "numeric",
     month: "long",
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    calendar: "gregory",
+    numberingSystem: "latn",
+    ...(options || {}),
   };
+
+  const localeTag =
+    lang === "ar"
+      ? "ar-SA-u-ca-gregory-nu-latn"
+      : "en-US-u-ca-gregory-nu-latn";
 
   if (_hasIntl()) {
     try {
-      return new Intl.DateTimeFormat(lang === "ar" ? "ar-SA" : "en-US", opts).format(date);
+      return new Intl.DateTimeFormat(localeTag, opts).format(date);
     } catch (_) {
       // Fall through
     }
@@ -335,7 +464,7 @@ export const formatLocation = (input, locale = "ar") => {
 };
 
 /**
- * Format guest count string per locale.
+ * Format guest count string per locale using Latin digits (F-15).
  *
  * @param {number|string} count
  * @param {string} [locale="ar"]
@@ -348,10 +477,9 @@ export const formatGuestCount = (count, locale = "ar") => {
     if (n === 0) return "لا يوجد ضيوف";
     if (n === 1) return "ضيف واحد";
     if (n === 2) return "ضيفان";
-    const formattedN = _toArabicDigits(n);
-    if (n >= 3 && n <= 10) return `${formattedN} ضيوف`;
-    if (n >= 11 && n <= 99) return `${formattedN} ضيفاً`;
-    return `${formattedN} ضيف`;
+    if (n >= 3 && n <= 10) return `${n} ضيوف`;
+    if (n >= 11 && n <= 99) return `${n} ضيفاً`;
+    return `${n} ضيف`;
   }
 
   if (n === 1) return "1 guest";
@@ -379,6 +507,8 @@ export default {
   formatPercent,
   formatCurrency,
   localizeDigits,
+  parseCivilDate,
+  formatEventDate,
   formatDate,
   formatTime,
   formatDateTime,

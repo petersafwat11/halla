@@ -85,3 +85,51 @@ export const resolveTemplateFont = (name, fontWeight) => {
   if (name === "cairo_bold") return "Cairo_700Bold";
   return getCairoFontFamily(fontWeight);
 };
+
+export const ICON_FONT_FAMILIES = new Set([
+  "anticon",
+  "entypo",
+  "evilicons",
+  "feather",
+  "FontAwesome",
+  "Fontisto",
+  "foundation",
+  "ionicons",
+  "material",
+  "material-community",
+  "octicons",
+  "simple-line-icons",
+  "zocial",
+]);
+
+export const isIconFontFamily = (fontFamily) =>
+  typeof fontFamily === "string" &&
+  (ICON_FONT_FAMILIES.has(fontFamily) || fontFamily.startsWith("FontAwesome"));
+
+/**
+ * Resolves font style overrides for a flattened style object.
+ * F-14: The named Cairo font file is authoritative. Redundant native fontWeight is
+ * neutralized to "normal" so iOS CoreText does not trigger faux-bold synthesis
+ * that merges counters and erodes dots on Arabic letters.
+ *
+ * @param {object} flatStyle - Flattened style object
+ * @returns {object|null} - Style overrides to apply, or null if style should be untouched
+ */
+export const resolveFontPatch = (flatStyle = {}) => {
+  if (!flatStyle || isIconFontFamily(flatStyle.fontFamily)) {
+    return null;
+  }
+
+  const fontFamily = normalizeCairoFamily(flatStyle.fontFamily, flatStyle.fontWeight);
+
+  const hasRedundantWeight =
+    flatStyle.fontWeight !== undefined &&
+    flatStyle.fontWeight !== null &&
+    flatStyle.fontWeight !== "normal";
+
+  if (flatStyle.fontFamily === fontFamily && !hasRedundantWeight) {
+    return null;
+  }
+
+  return { fontFamily, fontWeight: "normal" };
+};

@@ -34,7 +34,7 @@ const CreateEventPopup = ({ onClose }) => {
       const filtered = hosts.filter(
         (host) =>
           host.phoneNumber?.includes(searchTerm) ||
-          host.username?.toLowerCase().includes(searchTerm.toLowerCase())
+          host.name?.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredHosts(filtered);
       // Keep dropdown open even if no matches to show "no results"
@@ -150,7 +150,7 @@ const CreateEventPopup = ({ onClose }) => {
             className={styles.dropdownItem}
             onClick={() => handleSelectHost(host)}
           >
-            <span className={styles.hostName}>{host.username || "مستخدم"}</span>
+            <span className={styles.hostName}>{host.name || "مستخدم"}</span>
             <span className={styles.hostPhone}>{host.phoneNumber}</span>
           </div>
         ))}

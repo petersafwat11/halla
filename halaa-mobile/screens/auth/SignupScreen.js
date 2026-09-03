@@ -61,8 +61,7 @@ export default function SignupScreen({ navigation }) {
   const fieldKeyFor = (apiField) => {
     if (apiField === "email") return "email";
     if (apiField === "phoneNumber" || apiField === "phone") return "mobile";
-    if (apiField === "username") return "username";
-    return null;
+        return null;
   };
 
   const handleMobileSubmit = async (data) => {

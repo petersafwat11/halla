@@ -716,7 +716,7 @@ eventSchema.methods.validatePackageLimits = async function () {
 // Static method to find events by host
 eventSchema.statics.findByHost = function (hostId) {
   return this.find({ host: hostId })
-    .populate("host", "username email phoneNumber")
+    .populate("host", "name email phoneNumber")
     .populate("guestList", "name email phone status")
     .sort({ "eventDetails.date": -1 });
 };
@@ -726,7 +726,7 @@ eventSchema.statics.findUpcoming = function (hostId = null) {
   const query = { "eventDetails.date": { $gt: new Date() } };
   if (hostId) query.host = hostId;
   return this.find(query)
-    .populate("host", "username email phoneNumber")
+    .populate("host", "name email phoneNumber")
     .populate("guestList", "name email phone status")
     .sort({ "eventDetails.date": 1 });
 };

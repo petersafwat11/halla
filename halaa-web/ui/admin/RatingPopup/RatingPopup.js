@@ -50,7 +50,7 @@ const RatingPopup = ({ data, onClose, onSuccess }) => {
 
       <div className={styles.vendorInfo}>
         <p className={styles.vendorName}>
-          {data?.brandName || data?.username || "Unknown Vendor"}
+          {data?.brandName || data?.name || "Unknown Vendor"}
         </p>
       </div>
 

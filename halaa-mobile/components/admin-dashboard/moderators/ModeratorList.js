@@ -69,7 +69,7 @@ const ModeratorList = ({
       const q = searchQuery.toLowerCase();
       list = list.filter(
         (m) =>
-          (m.name || m.username || "").toLowerCase().includes(q) ||
+          (m.name || "").toLowerCase().includes(q) ||
           (m.email || "").toLowerCase().includes(q),
       );
     }

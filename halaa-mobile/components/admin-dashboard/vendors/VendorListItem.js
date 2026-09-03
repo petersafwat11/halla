@@ -27,7 +27,7 @@ const VendorListItem = ({ vendor, onPress, onRate, selected = false, onSelect })
   const vendorStatus = vendor?.vendorStatus || vendor?.status || "pending";
 
   const displayName =
-    vendor?.brandName || vendor?.name || vendor?.username || t("common.unknown");
+    vendor?.brandName || vendor?.name || t("common.unknown");
   const email = vendor?.email || vendor?.vendorData?.email || "—";
   const phone =
     vendor?.phoneNumber ||

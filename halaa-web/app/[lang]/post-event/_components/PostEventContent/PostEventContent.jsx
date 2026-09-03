@@ -34,7 +34,7 @@ const PostEventContent = ({ content, eventInfo, guestId, eventId, loading }) => 
 
   // Host name + event details come from the populated `content` (the guest
   // token payload only carries event id + title).
-  const hostName = content?.host?.name || content?.host?.username || "";
+  const hostName = content?.host?.name || "";
   const eventTitle =
     content?.event?.eventDetails?.title || eventInfo?.title || "";
   const eventDate = formatEventDate(

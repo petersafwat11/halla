@@ -365,7 +365,7 @@ async function sendPaymentNotifications(payment) {
     const config = require("../src/config");
 
     // Fetch user who made the payment
-    const payer = await User.findById(payment.userId).select("name username email role");
+    const payer = await User.findById(payment.userId).select("name email role");
     if (!payer) {
       console.warn(`[PaymentNotification] Payer user ${payment.userId} not found`);
       return;
@@ -373,7 +373,7 @@ async function sendPaymentNotifications(payment) {
 
     const items = resolveItemDetails(payment);
     const amountStr = `${payment.amount} ${payment.currency}`;
-    const payerName = payer.name || payer.username || payer.email || "Client";
+    const payerName = payer.name || payer.email || "Client";
     const frontendUrl = config.frontend?.url || "";
 
     // For refunds, determine the most recent refund transaction amount

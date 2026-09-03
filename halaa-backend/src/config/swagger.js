@@ -452,7 +452,6 @@ const swaggerOptions = {
           description:
             'Body for `PATCH /users/profile`. Multipart accepts `avatar` and `businessLogo` files plus a JSON-stringified `profile` field. Unknown fields are rejected.',
           properties: {
-            username: { type: 'string', minLength: 1 },
             name: { type: 'string', minLength: 1 },
             email: { type: 'string', format: 'email' },
             preferredLanguage: { type: 'string', enum: ['ar', 'en'] },
@@ -732,7 +731,6 @@ const swaggerOptions = {
               nullable: true,
               properties: {
                 id: { type: 'string' },
-                username: { type: 'string' },
                 name: { type: 'string' },
               },
             },

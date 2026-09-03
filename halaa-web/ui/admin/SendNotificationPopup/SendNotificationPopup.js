@@ -79,7 +79,7 @@ const SendNotificationPopup = ({
             </h2>
             {!isBulk && targetUser && (
               <p className={styles.subtitle}>
-                {t("sendNotification.dialog.to")} {targetUser.username || targetUser.email || targetUser.phoneNumber}
+                {t("sendNotification.dialog.to")} {targetUser.name || targetUser.email || targetUser.phoneNumber}
               </p>
             )}
           </div>

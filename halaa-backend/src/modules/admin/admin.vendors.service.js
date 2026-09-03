@@ -359,12 +359,12 @@ async function exportVendors({ search, status, category, from, to } = {}) {
   if (Object.keys(dateRange).length > 0) query.createdAt = dateRange;
 
   const vendors = await User.find(query)
-    .select('username name email phoneNumber status profile.vendorData createdAt')
+    .select('name email phoneNumber status profile.vendorData createdAt')
     .sort({ createdAt: -1 })
     .lean();
 
   return vendors.map(v => ({
-    Name: v.profile?.vendorData?.brandName || v.name || v.username || '-',
+    Name: v.profile?.vendorData?.brandName || v.name || '-',
     Email: v.email || '-',
     Phone: v.phoneNumber || '-',
     Category: (v.profile?.vendorData?.serviceCategories || []).join(', ') || '-',

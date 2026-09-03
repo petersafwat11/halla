@@ -1,3 +1,5 @@
+import { parseCivilDate } from "./locale.js";
+
 /**
  * Formats a date value using locale-aware month/day names from the "common"
  * i18next namespace. Output: "{month} | {weekday} {day} | {year}"
@@ -8,8 +10,8 @@
  */
 export function formatTemplateDate(value, t) {
   if (!value) return "";
-  const date = value instanceof Date ? value : new Date(value);
-  if (isNaN(date.getTime())) return "";
+  const date = parseCivilDate(value);
+  if (!date || isNaN(date.getTime())) return "";
 
   if (typeof t === "function") {
     const month = t(`date.months.${date.getMonth()}`);
@@ -18,7 +20,13 @@ export function formatTemplateDate(value, t) {
   }
 
   // Fallback when t is unavailable (should not occur in production)
-  const month = new Intl.DateTimeFormat("ar", { month: "long" }).format(date);
-  const weekday = new Intl.DateTimeFormat("ar", { weekday: "long" }).format(date);
+  const month = new Intl.DateTimeFormat("ar-SA-u-ca-gregory-nu-latn", {
+    month: "long",
+    calendar: "gregory",
+  }).format(date);
+  const weekday = new Intl.DateTimeFormat("ar-SA-u-ca-gregory-nu-latn", {
+    weekday: "long",
+    calendar: "gregory",
+  }).format(date);
   return `${month} | ${weekday} ${date.getDate()} | ${date.getFullYear()}`;
 }

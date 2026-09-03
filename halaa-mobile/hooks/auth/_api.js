@@ -181,10 +181,16 @@ export const verifySignupOTP = async ({ mobile, otp }) => {
   };
 };
 
-export const completeProfile = async ({ username, email, password, token }) => {
+export const completeProfile = async ({ name, email, password, token }) => {
+  const body = {
+    name,
+    email,
+    password,
+    passwordConfirm: password,
+  };
   const res = await apiFetch(ENDPOINTS.AUTH.COMPLETE_PROFILE, {
     method: "PATCH",
-    body: { username, email, password, passwordConfirm: password },
+    body,
     ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {}),
   });
   const data = await res.json().catch(() => ({}));

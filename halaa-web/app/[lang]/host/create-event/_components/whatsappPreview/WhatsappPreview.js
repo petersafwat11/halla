@@ -34,7 +34,7 @@ const WhatsappPreview = ({
   const { t } = useTranslation("createEvent");
   const { entryDate, address } = templateData;
   const hostName = useAuthStore(
-    (state) => state.user?.name || state.user?.username || ""
+    (state) => state.user?.name || ""
   );
   const showReplyActions = invitationAllowsReply(invitationType);
 

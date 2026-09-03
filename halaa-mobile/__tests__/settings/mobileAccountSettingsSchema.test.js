@@ -10,8 +10,7 @@ const schema = typeof exported === "function" ? exported() : exported;
 
 test("mobileAccountSettingsSchema accepts valid profile without password changes", () => {
   const result = schema.safeParse({
-    username: "ahmed123",
-    name: "Ahmed Al-Saud",
+        name: "Ahmed Al-Saud",
     email: "ahmed@example.com",
     currentPassword: "",
     newPassword: "",
@@ -22,8 +21,7 @@ test("mobileAccountSettingsSchema accepts valid profile without password changes
 
 test("mobileAccountSettingsSchema accepts valid password change", () => {
   const result = schema.safeParse({
-    username: "ahmed123",
-    name: "Ahmed Al-Saud",
+        name: "Ahmed Al-Saud",
     email: "ahmed@example.com",
     currentPassword: "OldPassword123",
     newPassword: "NewPassword123",
@@ -34,8 +32,7 @@ test("mobileAccountSettingsSchema accepts valid password change", () => {
 
 test("mobileAccountSettingsSchema rejects currentPassword when newPassword is missing", () => {
   const result = schema.safeParse({
-    username: "ahmed123",
-    name: "Ahmed Al-Saud",
+        name: "Ahmed Al-Saud",
     email: "ahmed@example.com",
     currentPassword: "OldPassword123",
     newPassword: "",
@@ -49,8 +46,7 @@ test("mobileAccountSettingsSchema rejects currentPassword when newPassword is mi
 
 test("mobileAccountSettingsSchema rejects newPassword when currentPassword is missing", () => {
   const result = schema.safeParse({
-    username: "ahmed123",
-    name: "Ahmed Al-Saud",
+        name: "Ahmed Al-Saud",
     email: "ahmed@example.com",
     currentPassword: "",
     newPassword: "NewPassword123",
@@ -64,8 +60,7 @@ test("mobileAccountSettingsSchema rejects newPassword when currentPassword is mi
 
 test("mobileAccountSettingsSchema rejects mismatched new and confirm passwords", () => {
   const result = schema.safeParse({
-    username: "ahmed123",
-    name: "Ahmed Al-Saud",
+        name: "Ahmed Al-Saud",
     email: "ahmed@example.com",
     currentPassword: "OldPassword123",
     newPassword: "NewPassword123",
@@ -79,8 +74,7 @@ test("mobileAccountSettingsSchema rejects mismatched new and confirm passwords",
 
 test("mobileAccountSettingsSchema rejects password not meeting complexity policy", () => {
   const result = schema.safeParse({
-    username: "ahmed123",
-    name: "Ahmed Al-Saud",
+        name: "Ahmed Al-Saud",
     email: "ahmed@example.com",
     currentPassword: "OldPassword123",
     newPassword: "letters_only!",
@@ -91,8 +85,7 @@ test("mobileAccountSettingsSchema rejects password not meeting complexity policy
 
 test("mobileAccountSettingsSchema rejects confirmPassword when newPassword is missing", () => {
   const result = schema.safeParse({
-    username: "ahmed123",
-    name: "Ahmed Al-Saud",
+        name: "Ahmed Al-Saud",
     email: "ahmed@example.com",
     currentPassword: "OldPassword123",
     newPassword: "",

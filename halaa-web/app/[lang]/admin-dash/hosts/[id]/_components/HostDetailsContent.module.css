@@ -77,7 +77,7 @@
   line-height: 1.2;
 }
 
-.username {
+.hostSubtitle {
   font-family: var(--font-ar, "Cairo", sans-serif);
   font-size: 1.3rem;
   color: var(--c-n400, #767676);

@@ -64,7 +64,7 @@ export default function GuestRows({
         id: guest.id,
         name: guest.name || "-",
         phone: guest.phone || "-",
-        addedBy: guest.addedBy?.username || guest.addedBy?.name || "-",
+        addedBy: guest.addedBy?.name || "-",
         status: guest.status || "invited",
         sentVia:
           guest.invitation?.effectiveChannel || guest.invitation?.method || null,

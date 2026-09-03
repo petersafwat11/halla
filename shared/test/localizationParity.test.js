@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+  formatEventDate,
   formatDate,
   formatTime,
   formatDateTime,
@@ -96,11 +97,11 @@ describe("Session 6.2: Localization & Accessibility Parity Suite", () => {
     assert.equal(formatDate("not-a-date"), "");
   });
 
-  it("formatTime handles dates, timestamps, and 12/24 hour strings in both locales", () => {
+  it("formatTime handles dates, timestamps, and 12/24 hour strings in both locales using Latin digits (F-15)", () => {
     assert.equal(formatTime("14:30", "en"), "2:30 PM");
-    assert.equal(formatTime("14:30", "ar"), "٢:٣٠ م");
+    assert.equal(formatTime("14:30", "ar"), "2:30 م");
     assert.equal(formatTime("09:15 AM", "en"), "9:15 AM");
-    assert.equal(formatTime("09:15 AM", "ar"), "٩:١٥ ص");
+    assert.equal(formatTime("09:15 AM", "ar"), "9:15 ص");
     assert.equal(formatTime(null), "");
   });
 
@@ -118,17 +119,47 @@ describe("Session 6.2: Localization & Accessibility Parity Suite", () => {
     assert.equal(loc, "Hall, Main St, Riyadh");
   });
 
-  it("formatNumber, formatPercent, formatGuestCount handle Arabic and English plurals and numerals", () => {
+  it("formatNumber, formatPercent, formatGuestCount handle Arabic and English plurals and Latin numerals (F-15)", () => {
     assert.equal(formatNumber(1250, "en"), "1,250");
+    assert.equal(formatNumber(1250, "ar"), "1,250");
     assert.equal(formatPercent(25, "en"), "25%");
-    assert.equal(formatPercent(25, "ar"), "٢٥٪");
+    assert.equal(formatPercent(25, "ar"), "25٪");
 
     assert.equal(formatGuestCount(0, "ar"), "لا يوجد ضيوف");
     assert.equal(formatGuestCount(1, "ar"), "ضيف واحد");
     assert.equal(formatGuestCount(2, "ar"), "ضيفان");
-    assert.equal(formatGuestCount(5, "ar"), "٥ ضيوف");
-    assert.equal(formatGuestCount(50, "ar"), "٥٠ ضيفاً");
-    assert.equal(formatGuestCount(150, "ar"), "١٥٠ ضيف");
+    assert.equal(formatGuestCount(5, "ar"), "5 ضيوف");
+    assert.equal(formatGuestCount(50, "ar"), "50 ضيفاً");
+    assert.equal(formatGuestCount(150, "ar"), "150 ضيف");
+  });
+
+  it("formatEventDate locks to Gregorian calendar (F-04) and Latin digits (F-15) across fixed civil dates", () => {
+    const testCases = [
+      { date: "2026-05-25", arDay: "25", arMonth: "مايو", enMonth: "May" },
+      { date: "2026-05-28", arDay: "28", arMonth: "مايو", enMonth: "May" },
+      { date: "2026-08-30", arDay: "30", arMonth: "أغسطس", enMonth: "August" },
+      { date: "2026-08-31", arDay: "31", arMonth: "أغسطس", enMonth: "August" },
+    ];
+
+    for (const { date, arDay, arMonth, enMonth } of testCases) {
+      const ar = formatEventDate(date, "ar");
+      const en = formatEventDate(date, "en");
+
+      // Gregorian month and year check (never Islamic months like صفر / شوال / محرم)
+      assert.ok(ar.includes(arDay), `Arabic output for ${date} must contain Latin day ${arDay}: ${ar}`);
+      assert.ok(ar.includes(arMonth), `Arabic output for ${date} must contain Gregorian month ${arMonth}: ${ar}`);
+      assert.ok(ar.includes("2026"), `Arabic output for ${date} must contain Latin year 2026: ${ar}`);
+      assert.ok(!ar.includes("صفر") && !ar.includes("شوال") && !ar.includes("محرم"), `Must not use Islamic calendar for ${date}`);
+
+      assert.ok(en.includes(arDay), `English output for ${date} must contain day ${arDay}: ${en}`);
+      assert.ok(en.includes(enMonth), `English output for ${date} must contain month ${enMonth}: ${en}`);
+      assert.ok(en.includes("2026"), `English output for ${date} must contain year 2026: ${en}`);
+
+      // UTC midnight Date instance produces identical day meaning without 1-day rollover
+      const utcDate = new Date(`${date}T00:00:00.000Z`);
+      const arFromUtc = formatEventDate(utcDate, "ar");
+      assert.equal(arFromUtc, ar, `Date object at UTC midnight must match string format for ${date}`);
+    }
   });
 
   it("formatSar and buildCheckoutQuote preserve exact currency format without floating drift", () => {

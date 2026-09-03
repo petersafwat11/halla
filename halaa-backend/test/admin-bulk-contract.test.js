@@ -99,7 +99,6 @@ test('admin hosts bulk delete: mixed valid, non-existent, and active-event hosts
   // Host 1: eligible for deletion
   const host1 = await User.create({
     name: 'Host One',
-    username: `host1_${Date.now()}`,
     email: `host1_${Date.now()}@example.com`,
     phoneNumber: '+966551110001',
     role: ROLES.HOST,
@@ -110,7 +109,6 @@ test('admin hosts bulk delete: mixed valid, non-existent, and active-event hosts
   // Host 2: has an active published event
   const host2 = await User.create({
     name: 'Host Two',
-    username: `host2_${Date.now()}`,
     email: `host2_${Date.now()}@example.com`,
     phoneNumber: '+966551110002',
     role: ROLES.HOST,
@@ -159,7 +157,6 @@ test('admin hosts bulk delete: mixed valid, non-existent, and active-event hosts
 test('admin vendors bulk operations: delete and status update with mixed results', async () => {
   const vendor1 = await User.create({
     name: 'Vendor One',
-    username: `v1_${Date.now()}`,
     email: `v1_${Date.now()}@example.com`,
     phoneNumber: '+966552220001',
     role: ROLES.VENDOR,
@@ -169,7 +166,6 @@ test('admin vendors bulk operations: delete and status update with mixed results
 
   const vendor2 = await User.create({
     name: 'Vendor Two',
-    username: `v2_${Date.now()}`,
     email: `v2_${Date.now()}@example.com`,
     phoneNumber: '+966552220002',
     role: ROLES.VENDOR,
@@ -217,7 +213,6 @@ test('admin vendors bulk operations: delete and status update with mixed results
 test('admin moderators bulk operations: delete and status update with mixed results', async () => {
   const mod1 = await User.create({
     name: 'Moderator One',
-    username: `m1_${Date.now()}`,
     email: `m1_${Date.now()}@example.com`,
     phoneNumber: '+966553330001',
     role: ROLES.MODERATOR,
@@ -260,7 +255,6 @@ test('admin moderators bulk operations: delete and status update with mixed resu
 test('host events bulkDeleteEvents: returns standard per-item result envelope', async () => {
   const host = await User.create({
     name: 'Host User',
-    username: `h_${Date.now()}`,
     email: `h_${Date.now()}@example.com`,
     phoneNumber: '+966554440001',
     role: ROLES.HOST,
@@ -270,7 +264,6 @@ test('host events bulkDeleteEvents: returns standard per-item result envelope', 
 
   const otherHost = await User.create({
     name: 'Other Host',
-    username: `oh_${Date.now()}`,
     email: `oh_${Date.now()}@example.com`,
     phoneNumber: '+966554440002',
     role: ROLES.HOST,

@@ -32,7 +32,7 @@ async function getEventById(eventId) {
   const query = { _id: eventId };
 
   const event = await Event.findOne(query)
-    .populate('host', 'username email phoneNumber name')
+    .populate('host', 'email phoneNumber name')
     .populate('guestList', 'name phone category status rsvp checkIn')
     .lean();
 
@@ -223,7 +223,7 @@ async function getEventTargets(type = 'host', requestingUser = null) {
   const query = { role: ROLES.HOST, status: { $ne: USER_STATUS.DELETED } };
 
   const users = await User.find(query)
-    .select('username name email phoneNumber role status')
+    .select('name email phoneNumber role status')
     .lean();
 
   const userIds = users.map(u => u._id);
@@ -426,13 +426,13 @@ async function exportEvents({ search, status, from, to } = {}) {
 
   const events = await Event.find(query)
     .select('eventDetails status guestList host createdAt')
-    .populate({ path: 'host', select: 'name username' })
+    .populate({ path: 'host', select: 'name' })
     .sort({ createdAt: -1 })
     .lean();
 
   return events.map(e => ({
     Title: e.eventDetails?.eventName || e.eventDetails?.title || '-',
-    Host: e.host?.name || e.host?.username || '-',
+    Host: e.host?.name || '-',
     Date: e.eventDetails?.date || '-',
     Guests: e.guestList?.length || 0,
     Status: e.status || '-',

@@ -215,7 +215,7 @@ export default function HostsTable({ showAddPopup: externalShowAdd, setShowAddPo
 
   const tableData = (data?.data?.hosts || []).map((host) => ({
     id: host.id || host._id,
-    name: host.name || host.username || "-",
+    name: host.name || "-",
     email: host.email || "-",
     phone: host.phoneNumber || host.phone || "-",
     status: host.status || "active",

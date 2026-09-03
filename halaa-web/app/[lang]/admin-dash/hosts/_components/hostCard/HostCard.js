@@ -111,7 +111,7 @@ const HostCard = ({ data }) => {
               height={48}
             />
             <div className={styles.headerInfo}>
-              <h3 className={styles.title}>{host?.name || host?.username}</h3>
+              <h3 className={styles.title}>{host?.name}</h3>
               <span
                 className={styles.statusBadge}
                 style={{ color: statusBadge.color, background: statusBadge.bg }}

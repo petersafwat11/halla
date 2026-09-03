@@ -21,7 +21,7 @@ const { getConfig } = require("../config");
 
 /**
  * Subscription alert email (expiring, expired, renewed)
- * @param {Object} data - { userName, alertType, planName, daysLeft, expiryDate, subscriptionUrl }
+ * @param {Object} data - { recipientName, alertType, planName, daysLeft, expiryDate, subscriptionUrl }
  * @param {string} lang - Language code (ar/en)
  * @returns {Object} { subject, html }
  */
@@ -76,7 +76,7 @@ const subscriptionAlertEmail = (data, lang = "ar") => {
   const subject = isAr ? alert.title.ar : alert.title.en;
 
   const content = `
-    ${getGreeting(data.userName, lang)}
+    ${getGreeting(data.recipientName || data.name, lang)}
     
     <div class="highlight-box ${alert.boxType}">
       <p style="margin: 0; font-size: 16px; font-weight: 600;">
@@ -133,7 +133,7 @@ const subscriptionAlertEmail = (data, lang = "ar") => {
 
 /**
  * New subscription created email
- * @param {Object} data - { userName, planName, features, price, billingCycle, startDate, endDate, dashboardUrl }
+ * @param {Object} data - { recipientName, planName, features, price, billingCycle, startDate, endDate, dashboardUrl }
  * @param {string} lang - Language code (ar/en)
  * @returns {Object} { subject, html }
  */
@@ -155,7 +155,7 @@ const subscriptionCreatedEmail = (data, lang = "ar") => {
       : "";
 
   const content = `
-    ${getGreeting(data.userName, lang)}
+    ${getGreeting(data.recipientName || data.name, lang)}
     
     <div class="highlight-box success-box">
       <p style="margin: 0; font-size: 16px; font-weight: 600; color: ${COLORS.success};">
@@ -204,7 +204,7 @@ const subscriptionCreatedEmail = (data, lang = "ar") => {
 
 /**
  * Subscription upgraded email
- * @param {Object} data - { userName, oldPlan, newPlan, newFeatures, effectiveDate, subscriptionUrl }
+ * @param {Object} data - { recipientName, oldPlan, newPlan, newFeatures, effectiveDate, subscriptionUrl }
  * @param {string} lang - Language code (ar/en)
  * @returns {Object} { subject, html }
  */
@@ -223,7 +223,7 @@ const subscriptionUpgradedEmail = (data, lang = "ar") => {
       : "";
 
   const content = `
-    ${getGreeting(data.userName, lang)}
+    ${getGreeting(data.recipientName || data.name, lang)}
     
     <div class="highlight-box success-box">
       <p style="margin: 0; font-size: 16px; font-weight: 600; color: ${COLORS.success};">🚀 ${isAr ? "تمت ترقية اشتراكك بنجاح!" : "Your subscription has been upgraded!"}
@@ -276,7 +276,7 @@ const subscriptionUpgradedEmail = (data, lang = "ar") => {
 
 /**
  * Subscription downgraded email
- * @param {Object} data - { userName, oldPlan, newPlan, effectiveDate, lostFeatures, subscriptionUrl }
+ * @param {Object} data - { recipientName, oldPlan, newPlan, effectiveDate, lostFeatures, subscriptionUrl }
  * @param {string} lang - Language code (ar/en)
  * @returns {Object} { subject, html }
  */
@@ -295,7 +295,7 @@ const subscriptionDowngradedEmail = (data, lang = "ar") => {
       : "";
 
   const content = `
-    ${getGreeting(data.userName, lang)}
+    ${getGreeting(data.recipientName || data.name, lang)}
     
     <div class="highlight-box warning-box">
       <p style="margin: 0; font-size: 16px; font-weight: 600; color: ${COLORS.warning};">
@@ -350,7 +350,7 @@ const subscriptionDowngradedEmail = (data, lang = "ar") => {
 
 /**
  * Payment confirmation email
- * @param {Object} data - { userName, amount, currency, planName, paymentDate, invoiceNumber, paymentMethod, invoiceUrl }
+ * @param {Object} data - { recipientName, amount, currency, planName, paymentDate, invoiceNumber, paymentMethod, invoiceUrl }
  * @param {string} lang - Language code (ar/en)
  * @returns {Object} { subject, html }
  */
@@ -363,7 +363,7 @@ const paymentConfirmationEmail = (data, lang = "ar") => {
     : `Payment Confirmation - ${data.amount} ${currency}`;
 
   const content = `
-    ${getGreeting(data.userName, lang)}
+    ${getGreeting(data.recipientName || data.name, lang)}
     
     <div class="highlight-box success-box">
       <p style="margin: 0; font-size: 16px; font-weight: 600; color: ${COLORS.success};">
@@ -420,7 +420,7 @@ const paymentConfirmationEmail = (data, lang = "ar") => {
 
 /**
  * Payment failed email
- * @param {Object} data - { userName, amount, currency, planName, reason, retryUrl }
+ * @param {Object} data - { recipientName, amount, currency, planName, reason, retryUrl }
  * @param {string} lang - Language code (ar/en)
  * @returns {Object} { subject, html }
  */
@@ -431,7 +431,7 @@ const paymentFailedEmail = (data, lang = "ar") => {
   const subject = isAr ? "فشل في عملية الدفع" : "Payment Failed";
 
   const content = `
-    ${getGreeting(data.userName, lang)}
+    ${getGreeting(data.recipientName || data.name, lang)}
     
     <div class="highlight-box error-box">
       <p style="margin: 0; font-size: 16px; font-weight: 600; color: ${COLORS.error};">
@@ -493,7 +493,7 @@ const paymentFailedEmail = (data, lang = "ar") => {
 
 /**
  * Subscription cancelled email
- * @param {Object} data - { userName, planName, endDate, reason, reactivateUrl }
+ * @param {Object} data - { recipientName, planName, endDate, reason, reactivateUrl }
  * @param {string} lang - Language code (ar/en)
  * @returns {Object} { subject, html }
  */
@@ -503,7 +503,7 @@ const subscriptionCancelledEmail = (data, lang = "ar") => {
   const subject = isAr ? "تم إلغاء اشتراكك" : "Subscription Cancelled";
 
   const content = `
-    ${getGreeting(data.userName, lang)}
+    ${getGreeting(data.recipientName || data.name, lang)}
     
     <div class="highlight-box warning-box">
       <p style="margin: 0; font-size: 16px; font-weight: 600; color: ${COLORS.warning};">
@@ -564,7 +564,7 @@ const subscriptionCancelledEmail = (data, lang = "ar") => {
 
 /**
  * Usage limit warning email
- * @param {Object} data - { userName, resourceType, used, limit, percentage, upgradeUrl }
+ * @param {Object} data - { recipientName, resourceType, used, limit, percentage, upgradeUrl }
  * @param {string} lang - Language code (ar/en)
  * @returns {Object} { subject, html }
  */
@@ -590,7 +590,7 @@ const usageLimitWarningEmail = (data, lang = "ar") => {
     : `Warning: Approaching ${resourceName.en} Limit`;
 
   const content = `
-    ${getGreeting(data.userName, lang)}
+    ${getGreeting(data.recipientName || data.name, lang)}
     
     <div class="highlight-box warning-box">
       <p style="margin: 0; font-size: 16px; font-weight: 600; color: ${COLORS.warning};">⚠️ ${

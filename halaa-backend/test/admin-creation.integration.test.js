@@ -36,20 +36,28 @@ describe('Admin Creation Validation & Phone Normalization (ADM-10, ADM-11)', () 
   });
 
   describe('createHostSchema validation', () => {
+    it('rejects host payload containing username', () => {
+      assert.throws(() => {
+        createHostSchema.parse({
+          name: 'Test Host',
+          phoneNumber: '0512345678',
+          username: 'bad_username',
+        });
+      });
+    });
+
     it('validates host with empty optional password and normalizes phone', () => {
       const result = createHostSchema.parse({
         name: 'Test Host',
         phoneNumber: '0512345678',
         email: '',
         password: '',
-        username: '',
       });
 
       assert.equal(result.name, 'Test Host');
       assert.equal(result.phoneNumber, '966512345678');
       assert.equal(result.password, undefined);
       assert.equal(result.email, undefined);
-      assert.equal(result.username, undefined);
     });
 
     it('validates host with valid password >= 8 characters', () => {
@@ -144,13 +152,11 @@ describe('Admin Creation Validation & Phone Normalization (ADM-10, ADM-11)', () 
         name: 'Updated Name',
         email: '',
         phoneNumber: '',
-        username: '',
       });
 
       assert.equal(result.name, 'Updated Name');
       assert.equal(result.email, undefined);
       assert.equal(result.phoneNumber, undefined);
-      assert.equal(result.username, undefined);
     });
   });
 });

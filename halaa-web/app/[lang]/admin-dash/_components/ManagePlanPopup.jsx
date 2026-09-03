@@ -224,7 +224,7 @@ export default function ManagePlanPopup({
                 : t("managePlan.host", "Host")}
             </p>
             <h2>{t("managePlan.title", "Manage plan")}</h2>
-            <span>{entity?.name || entity?.username || entity?.email || "-"}</span>
+            <span>{entity?.name || entity?.email || "-"}</span>
           </div>
           <button
             type="button"

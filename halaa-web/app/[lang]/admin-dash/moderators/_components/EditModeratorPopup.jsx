@@ -32,7 +32,7 @@ export default function EditModeratorPopup({ moderator, onClose }) {
   const methods = useForm({
     resolver: zodResolver(editModeratorSchema),
     defaultValues: {
-      name: moderator?.name || moderator?.username || "",
+      name: moderator?.name || "",
       email: moderator?.email || "",
       phoneNumber: rawPhone,
       role: moderator?.role || defaultRole,

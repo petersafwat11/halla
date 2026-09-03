@@ -157,7 +157,7 @@ const dailyReportEmail = (data, lang = "ar") => {
 
 /**
  * Weekly report email for hosts/vendors
- * @param {Object} data - { userName, role, weekRange, stats, upcomingEvents, dashboardUrl, attachmentNote }
+ * @param {Object} data - { recipientName, role, weekRange, stats, upcomingEvents, dashboardUrl, attachmentNote }
  * @param {string} lang - Language code (ar/en)
  * @returns {Object} { subject, html }
  */
@@ -186,7 +186,7 @@ const weeklyReportEmail = (data, lang = "ar") => {
       : "";
 
   const content = `
-    ${getGreeting(data.userName, lang)}
+    ${getGreeting(data.recipientName || data.name, lang)}
     
     <p>${
       isAr

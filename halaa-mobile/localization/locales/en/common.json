@@ -155,5 +155,10 @@
     "errors": {
       "phoneInvalid": "Phone number must be 10 digits (starting with 05) or 9 digits (starting with 5)"
     }
+  },
+  "support": {
+    "title": "Contact Support",
+    "fallbackMessage": "Unable to open WhatsApp. You can reach us directly at:\n{{displayNumber}}",
+    "accessibilityLabel": "Customer support chat on WhatsApp"
   }
 }

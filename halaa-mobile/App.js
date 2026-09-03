@@ -95,7 +95,7 @@ const scrubPII = (event) => {
     if (event.user) {
       delete event.user.email;
       delete event.user.ip_address;
-      delete event.user.username;
+      delete event.user.name;
     }
   } catch {
     /* never block error reporting on scrub failure */

@@ -28,10 +28,11 @@ import NotificationBell from "../../components/notifications/NotificationBell";
 import HomeHeaderContent from "../../components/home/HomeHeaderContent";
 import SectionCard from "../../components/commen/SectionCard";
 import { layout, spacing } from "../../styles/tokens";
+import { openSupportWhatsApp } from "../../services/support/openSupportWhatsApp";
 
 const HomeScreen = ({ navigation }) => {
   const { user } = useAuthStore();
-  const { t } = useTranslation("home");
+  const { t, currentLanguage } = useTranslation("home");
   const toast = useToast();
   // Business accounts with no active subscription cannot create events
   // (subscription-gated server-side). Reflect that in the create-event entry.
@@ -94,6 +95,13 @@ const HomeScreen = ({ navigation }) => {
     });
   };
 
+  const handleOpenSupport = async () => {
+    await openSupportWhatsApp({
+      language: currentLanguage,
+      source: "home_header",
+    });
+  };
+
   const topBarActions = (
     <View style={styles.topBarActions}>
       <NotificationBell
@@ -101,7 +109,13 @@ const HomeScreen = ({ navigation }) => {
         color="#F9F4EF"
         size={20}
       />
-      <TouchableOpacity style={styles.iconButton}>
+      <TouchableOpacity
+        style={styles.iconButton}
+        onPress={handleOpenSupport}
+        accessibilityRole="button"
+        accessibilityLabel={t("supportChat", { defaultValue: "محادثة الدعم الفني" })}
+        testID="home-header-support-chat-button"
+      >
         <Ionicons name="chatbubbles-outline" size={20} color="#F9F4EF" />
       </TouchableOpacity>
     </View>
@@ -113,7 +127,7 @@ const HomeScreen = ({ navigation }) => {
       {/* The account/organization name is backend content: its direction
           follows the first strong character, never the UI locale (§6). */}
       <AdaptiveText style={styles.organizationName} numberOfLines={1}>
-        {user?.name || user?.username || t("guest")}
+        {user?.name || t("guest")}
       </AdaptiveText>
     </View>
   );

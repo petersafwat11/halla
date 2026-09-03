@@ -27,13 +27,10 @@ const TicketListItem = ({ ticket, onPress, onResolve, onAssign, selected = false
 
   const submitter =
     ticket.submittedBy?.name ||
-    ticket.submittedBy?.username ||
     ticket.user?.name ||
-    ticket.user?.username ||
-    ticket.userName ||
     t("common.unknown");
 
-  const assignedTo = ticket.assignedTo?.name || ticket.assignedTo?.username || null;
+  const assignedTo = ticket.assignedTo?.name || null;
 
   const ticketNum =
     ticket.ticketNumber || ticket.id?.toString().slice(-6) || null;

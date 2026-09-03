@@ -25,8 +25,8 @@ const Footer = ({ lang = "ar" }) => {
   const helpLinks = t("footer.helpLinks", { returnObjects: true });
   const address =
     lang === "ar"
-      ? LEGAL_CONTACT.postalAddress.provisional.ar
-      : LEGAL_CONTACT.postalAddress.provisional.en;
+      ? LEGAL_CONTACT.postalAddress.ar
+      : LEGAL_CONTACT.postalAddress.en;
   return (
     <footer className={styles.footer}>
       <div className={styles.container}>

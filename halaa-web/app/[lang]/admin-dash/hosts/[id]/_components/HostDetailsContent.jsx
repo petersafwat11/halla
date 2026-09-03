@@ -94,10 +94,10 @@ export default function HostDetailsContent({ hostId }) {
       <div className={styles.page}>
         <div className={styles.hero}>
           <div className={styles.heroLeft}>
-            <div className={styles.avatar}>{initials(host?.name || host?.username)}</div>
+            <div className={styles.avatar}>{initials(host?.name)}</div>
             <div className={styles.heroInfo}>
-              <h1 className={styles.hostName}>{host?.name || host?.username || "—"}</h1>
-              <span className={styles.username}>@{host?.username || "—"}</span>
+              <h1 className={styles.hostName}>{host?.name || "—"}</h1>
+              <span className={styles.hostSubtitle}>{host?.phoneNumber || host?.email || "—"}</span>
               <span className={styles.statusPill} style={{ color: hStatus.color, background: hStatus.bg }}>{hStatus.label}</span>
             </div>
           </div>

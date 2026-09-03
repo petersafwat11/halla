@@ -21,10 +21,10 @@ exports.getModerators = catchAsync(async (req, res) => {
 });
 
 exports.createModerator = catchAsync(async (req, res) => {
-  const { email, phoneNumber, name, username, password, permissions, role } = req.body;
+  const { email, phoneNumber, name, password, permissions, role } = req.body;
 
   const moderator = await adminService.createModerator({
-    email, phoneNumber, name, username, password, permissions, role,
+    email, phoneNumber, name, password, permissions, role,
     actorRole: req.user.role,
   });
 

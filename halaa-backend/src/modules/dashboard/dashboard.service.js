@@ -149,8 +149,8 @@ class DashboardService {
       ]),
       Ticket.countDocuments({ status: { $in: [TICKET_STATUS.OPEN, TICKET_STATUS.IN_PROGRESS] } }),
       Ticket.countDocuments({ status: TICKET_STATUS.RESOLVED, updatedAt: { $gte: startDate, $lte: endDate } }),
-      User.find(personalHostFilter()).select('username name email createdAt status').sort({ createdAt: -1 }).limit(5).lean(),
-      Event.find({ status: { $ne: EVENT_STATUS.DELETED } }).select('eventDetails.title eventDetails.date status host').populate('host', 'username name').sort({ createdAt: -1 }).limit(5).lean(),
+      User.find(personalHostFilter()).select('name email createdAt status').sort({ createdAt: -1 }).limit(5).lean(),
+      Event.find({ status: { $ne: EVENT_STATUS.DELETED } }).select('eventDetails.title eventDetails.date status host').populate('host', 'name').sort({ createdAt: -1 }).limit(5).lean(),
       Service.aggregate([
         { $match: { vendorId: { $ne: null } } },
         { $group: { _id: '$vendorId', totalViews: { $sum: { $ifNull: ['$viewCount', 0] } } } },
@@ -166,7 +166,7 @@ class DashboardService {
                 {
                   $ifNull: [
                     '$vendorUser.name',
-                    { $ifNull: ['$vendorUser.username', '$vendorUser.email'] },
+                    '$vendorUser.email',
                   ],
                 },
               ],
@@ -283,7 +283,7 @@ class DashboardService {
       recentActivity: {
         hosts: recentHosts.map((h) => ({
           id: h._id,
-          name: h.name || h.username,
+          name: h.name || '-',
           email: h.email,
           status: h.status,
           createdAt: h.createdAt,
@@ -293,7 +293,7 @@ class DashboardService {
           title: e.eventDetails?.title,
           date: e.eventDetails?.date,
           status: e.status,
-          host: e.host?.name || e.host?.username,
+          host: e.host?.name || '-',
         })),
       },
       bestVendors: topVendorsByViews.map((v) => ({

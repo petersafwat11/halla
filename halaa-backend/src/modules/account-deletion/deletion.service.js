@@ -387,7 +387,6 @@ async function runDeletion({ userId, channel = "app" }) {
             email: "",
             mobile: "",
             phoneNumber: "",
-            username: "",
             password: "",
             passwordChangedAt: "",
             passwordResetToken: "",

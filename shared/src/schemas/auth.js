@@ -113,9 +113,16 @@ export const signupMobileSchema = (t = idT) =>
 export const hostProfileCompletionSchema = (t = idT) =>
   z
     .object({
-      username: z
+      name: z
         .string()
-        .min(3, t("signupForm.hostSignup.errors.usernameMinLength")),
+        .min(
+          2,
+          t("signupForm.hostSignup.errors.nameMinLength", {
+            defaultValue: t("validation.nameMinLength", {
+              defaultValue: "Name must be at least 2 characters",
+            }),
+          })
+        ),
       email: z
         .string()
         .min(1, t("signupForm.hostSignup.errors.emailRequired"))
@@ -127,7 +134,6 @@ export const hostProfileCompletionSchema = (t = idT) =>
           1,
           t("signupForm.hostSignup.errors.passwordConfirmRequired")
         ),
-      name: z.string().optional(),
       company: z.string().optional(),
       position: z.string().optional(),
       bio: z.string().optional(),
@@ -277,10 +283,6 @@ export const vendorSignupSchema = (t = idT) =>
 
 export const updateProfileSchema = (t = idT) =>
   z.object({
-    username: z
-      .string()
-      .min(2, t("signupForm.hostSignup.errors.usernameMinLength"))
-      .optional(),
     name: z.string().optional(),
     phoneNumber: saudiPhone(t).optional().or(z.literal("")),
     avatar: z.any().optional(),
@@ -322,7 +324,6 @@ export const authStoreSnapshotSchema = z
         role: z.string(),
         email: z.string().optional().nullable(),
         phoneNumber: z.string().optional().nullable(),
-        username: z.string().optional().nullable(),
         name: z.string().optional().nullable(),
         roleData: z.record(z.any()).optional(),
       })

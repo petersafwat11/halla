@@ -1,37 +1,33 @@
 /**
  * WhatsApp customer-service contact button — mobile.
  *
- * Generates a `wa.me/<number>?text=<msg>` link and opens it via
- * `Linking.openURL`.
- *
- * Replace `WHATSAPP_CONTACT_NUMBER` (or set EXPO_PUBLIC_HALAA_WHATSAPP_NUMBER
- * in `.env`) when the production support number is known.
+ * Delegates to the shared openSupportWhatsApp launcher backed by LEGAL_CONTACT.
  */
 
 import React from 'react';
-import { TouchableOpacity, Text, Linking, StyleSheet } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-
-const WHATSAPP_CONTACT_NUMBER =
-  process.env.EXPO_PUBLIC_HALAA_WHATSAPP_NUMBER || '966552619282';
+import { openSupportWhatsApp } from '../../services/support/openSupportWhatsApp';
+import { SUPPORT_SOURCE } from '@halaa/shared/support';
+import { useTranslation } from '../../localization';
 
 export default function WhatsAppContactButton({
-  contextMessage = '',
+  source = SUPPORT_SOURCE.GENERAL,
+  reference = null,
   label,
   variant = 'filled',
   style,
+  language,
 }) {
+  const { currentLanguage } = useTranslation();
+  const effectiveLanguage = language || currentLanguage || 'ar';
+
   const handlePress = async () => {
-    const text = encodeURIComponent(contextMessage || '');
-    const url = `https://wa.me/${WHATSAPP_CONTACT_NUMBER}${text ? `?text=${text}` : ''}`;
-    try {
-      const supported = await Linking.canOpenURL(url);
-      if (supported) {
-        await Linking.openURL(url);
-      }
-    } catch (err) {
-      console.warn('[WhatsAppContactButton] failed to open URL:', err.message);
-    }
+    await openSupportWhatsApp({
+      language: effectiveLanguage,
+      source,
+      reference,
+    });
   };
 
   const variantStyle = variant === 'outlined' ? styles.outlined : styles.filled;
@@ -84,5 +80,3 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
-
-export { WHATSAPP_CONTACT_NUMBER };

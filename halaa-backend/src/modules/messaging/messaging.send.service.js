@@ -133,7 +133,7 @@ async function sendSMS(phoneNumber, message, logContext = {}) {
  * Validates status allowlist, sends test payload, and records canonical test fingerprint.
  */
 async function sendTestMessage({ eventId, phoneNumber, channel = 'whatsapp', isAdmin = false }) {
-  const event = await Event.findById(eventId).populate('host', 'name username');
+  const event = await Event.findById(eventId).populate('host', 'name');
   if (!event) {
     throw new NotFoundError('Event');
   }
@@ -513,7 +513,7 @@ async function _dispatchInvitationToGuest({
 async function sendToGuest({ guestId, eventId, channel = 'sms', userId, isAdmin = false, actorRole }) {
   const [guest, event] = await Promise.all([
     Guest.findById(guestId),
-    Event.findById(eventId).populate('host', 'name username'),
+    Event.findById(eventId).populate('host', 'name'),
   ]);
 
   if (!guest) {

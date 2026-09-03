@@ -36,7 +36,7 @@ describe("Marketplace iOS direction blueprint (§8 Marketplace row)", () => {
 
       const ar = countToken(12, "ar");
       assert.ok(ar.startsWith(LRI) && ar.endsWith(PDI), "count must be isolated");
-      assert.ok(/[\u0660-\u0669]/.test(ar), "ar count uses Arabic-Indic digits");
+      assert.ok(ar.includes("12"), "ar count uses Latin digits per F-15");
     });
 
     it("priceToken builds ONE atomic isolated number+currency token", () => {

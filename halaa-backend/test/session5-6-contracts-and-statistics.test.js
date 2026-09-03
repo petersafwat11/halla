@@ -115,7 +115,6 @@ describe('Session 5 & 6: Backend API Contracts, Response Envelopes & Statistics 
     const adminPaymentsService = require('../src/modules/admin/admin.payments.service');
 
     const hostUser = await User.create({
-      username: 'payhost',
       email: 'payhost@example.com',
       phoneNumber: '+966500000001',
       role: 'host',
@@ -179,7 +178,6 @@ describe('Session 5 & 6: Backend API Contracts, Response Envelopes & Statistics 
     const eventsService = require('../src/modules/events/events.service');
 
     const host = await User.create({
-      username: 'eventhost',
       email: 'eventhost@example.com',
       phoneNumber: '+966500000002',
       role: 'host',

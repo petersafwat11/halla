@@ -169,11 +169,11 @@ module.exports = {
    */
   async getSingleEventStats(eventId, userContext) {
     const query = this._buildScopedEventQuery(eventId, userContext);
-    const event = await Event.findOne(query).populate("host", "username email phoneNumber name");
+    const event = await Event.findOne(query).populate("host", "email phoneNumber name");
     if (!event) throw new NotFoundError("Event");
 
     const guests = await Guest.find(getActiveEventGuestsFilter(eventId, event.guestList))
-      .populate("addedBy", "username name")
+      .populate("addedBy", "name")
       .lean();
 
     const eventObj = event.toObject ? event.toObject() : event;
@@ -202,7 +202,6 @@ module.exports = {
       host: host
         ? {
             id: host._id,
-            username: host.username || "",
             name: host.name || "",
             phoneNumber: host.phoneNumber || "",
           }
@@ -243,7 +242,7 @@ module.exports = {
    */
   async getEventCapabilities(eventId, userContext) {
     const query = this._buildScopedEventQuery(eventId, userContext);
-    const event = await Event.findOne(query).populate("host", "username email phoneNumber");
+    const event = await Event.findOne(query).populate("host", "email phoneNumber name");
     if (!event) throw new NotFoundError("Event");
 
     let sub = null;

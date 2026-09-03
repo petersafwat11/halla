@@ -108,11 +108,7 @@ test("AccountSettings: single identity field — full name is adaptive, no separ
     !source.includes('name="username"'),
     "the legacy username handle must not render as its own input"
   );
-  assert.match(
-    source,
-    /user\?\.name \|\| user\?\.username/,
-    "pre-existing hosts whose signup name lives in username must still see it"
-  );
+  assert.match(source, /user\?\.name/, "name is bound");
 
   // Validation errors are resolved through the localized schema factory so
   // they always follow the UI locale, never the value's script.
@@ -204,8 +200,7 @@ test("mobileAccountSettingsSchema resolves opaque keys through t() and keeps raw
   ));
 
   const result = mobileAccountSettingsSchema((key) => `«${key}»`).safeParse({
-    username: "ahmed123",
-    name: "علي",
+        name: "علي",
     email: "ahmed@example.com",
     currentPassword: "",
     newPassword: "NewPassword123",
@@ -216,14 +211,13 @@ test("mobileAccountSettingsSchema resolves opaque keys through t() and keeps raw
   assert.equal(issue.message, "«validation.currentPasswordRequired»");
 
   const raw = mobileAccountSettingsSchema().safeParse({
-    username: "a",
-    name: "",
+        name: "",
     email: "bad",
   });
   assert.equal(raw.success, false);
   assert.deepEqual(
     raw.error.issues.map((i) => i.message).sort(),
-    ["validation.emailInvalid", "validation.nameMin", "validation.usernameMin"]
+    ["validation.emailInvalid", "validation.nameMin"]
   );
 });
 

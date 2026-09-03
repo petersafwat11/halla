@@ -42,13 +42,13 @@ test("isolateLtrTokens: wraps only matching tokens, only in RTL copy", () => {
   assert.equal(isolateLtrTokens("نص عربي فقط", /App Store/g, true), "نص عربي فقط");
 });
 
-test("countToken: locale digits inside an LTR isolate", () => {
+test("countToken: Latin digits inside an LTR isolate per F-15 policy", () => {
   const en = countToken(5, "en");
   assert.ok(en.includes("5"));
   assert.ok(en.startsWith(LRI) && en.endsWith(PDI));
 
   const ar = countToken(12, "ar");
-  assert.ok(ar.includes("١٢"), `arabic digits expected: ${JSON.stringify(ar)}`);
+  assert.ok(ar.includes("12"), `latin digits expected per F-15: ${JSON.stringify(ar)}`);
 });
 
 test("countRatioToken: used/limit is ONE stable token (blueprint screenshot 8)", () => {

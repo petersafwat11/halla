@@ -26,8 +26,7 @@ const AdminEventListItem = ({ event, onPress, selected = false, onSelect }) => {
   // Host names and event titles are arbitrary backend content.
   const hostName =
     event.host?.name ||
-    event.host?.username ||
-    event.hostName ||
+        event.hostName ||
     t("common.unknown");
   const eventTitle = event.title || "—";
   const totalGuests = event.guestCount ?? event.guestListLength ?? event.totalGuests ?? 0;

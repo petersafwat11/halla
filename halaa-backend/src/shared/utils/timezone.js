@@ -106,7 +106,7 @@ const formatRiyadh = (date, opts = {}) => {
   const d = date instanceof Date ? date : new Date(date);
   if (Number.isNaN(d.getTime())) return "";
 
-  const { locale = "ar-SA", style = "datetime", options = {} } = opts;
+  const { locale = "ar-SA-u-ca-gregory-nu-latn", style = "datetime", options = {} } = opts;
 
   const base =
     style === "date"
@@ -123,6 +123,8 @@ const formatRiyadh = (date, opts = {}) => {
 
   return new Intl.DateTimeFormat(locale, {
     timeZone: DEFAULT_TZ,
+    calendar: "gregory",
+    numberingSystem: "latn",
     ...base,
     ...options,
   }).format(d);

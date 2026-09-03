@@ -44,7 +44,7 @@ async function getBusinesses({ page = 1, limit = 10, search, status, from, to })
   let query = businessHostFilter();
 
   if (search) {
-    query = { ...query, ...buildSearchQuery(search, ['username', 'name', 'email', 'phoneNumber']) };
+    query = { ...query, ...buildSearchQuery(search, ['name', 'email', 'phoneNumber']) };
   }
   if (status) query.status = status;
   const dateRange = buildDateRangeQuery(from, to);
@@ -161,7 +161,6 @@ async function createBusiness({ name, email, phoneNumber, password, description,
       phoneNumber: normalizedPhone,
       mobile: normalizedPhone,
       name,
-      username: `business_${Date.now()}`,
       password: effectivePassword,
       avatar: logoKey || undefined,
       role: ROLES.HOST,

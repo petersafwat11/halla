@@ -121,7 +121,7 @@ const StepFour = () => {
   const eventTime = watch("eventTime");
   const address = watch("address");
   const hostName = useAuthStore(
-    (state) => state.user?.name || state.user?.username || ""
+    (state) => state.user?.name || ""
   );
 
   // Build the preview context once per form change. The same context drives

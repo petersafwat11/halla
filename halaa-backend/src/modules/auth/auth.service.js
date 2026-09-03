@@ -449,7 +449,7 @@ class AuthService {
    * @returns {Promise<{user: Object, accessToken: string, refreshToken: string, subscription: Object}>}
    */
   async signupHost(userData, context = {}) {
-    const { email, phoneNumber, password, username, name } = userData;
+    const { email, phoneNumber, password, name } = userData;
 
     if (!phoneNumber) {
       throw new ValidationError('Phone number is required');
@@ -472,7 +472,6 @@ class AuthService {
       email: email?.toLowerCase(),
       phoneNumber: normalizedPhone,
       password,
-      username: username || `host_${normalizedPhone.slice(-6)}`,
       name,
       role: ROLES.HOST,
       accountType: ACCOUNT_TYPES.PERSONAL,
@@ -525,7 +524,7 @@ class AuthService {
         .then((rawToken) => {
           const verificationUrl = `${config.frontend.url}/${lang}/verify-email?token=${rawToken}`;
           return emailModule.send.emailVerification(host.email, {
-            name: host.name || host.username,
+            name: host.name,
             verificationUrl,
             expiresIn: '24 hours',
           }, lang);
@@ -535,7 +534,7 @@ class AuthService {
 
     if (host.email) {
       emailModule.send.welcome(host.email, {
-        name: host.name || host.username,
+        name: host.name,
         email: host.email,
         role: ROLES.HOST,
       }, context.lang || 'ar').catch((err) =>
@@ -638,7 +637,6 @@ class AuthService {
        email: email.toLowerCase(),
        phoneNumber: normalizedPhone,
        password,
-       username: brandName.replace(/\s+/g, '_').toLowerCase(),
        name: ownerFullName,
        role: ROLES.VENDOR,
        status: USER_STATUS.PENDING,
@@ -749,7 +747,7 @@ class AuthService {
       const rawToken = await otpService.createEmailVerificationToken(user.email, user._id);
       const verificationUrl = `${config.frontend.url}/${lang}/verify-email?token=${rawToken}`;
       await emailModule.send.emailVerification(user.email, {
-        name: user.name || user.username,
+        name: user.name,
         verificationUrl,
         expiresIn: '24 hours',
       }, lang);
@@ -884,7 +882,6 @@ class AuthService {
     try {
       user = await User.create({
         phoneNumber: normalizedPhone,
-        username: `host_${normalizedPhone.slice(-6)}`,
         role: ROLES.HOST,
         accountType: ACCOUNT_TYPES.PERSONAL,
         status: USER_STATUS.ACTIVE,
@@ -1070,7 +1067,7 @@ class AuthService {
     await emailModule.send.passwordReset(
       user.email,
       {
-        userName: user.name || user.username || 'User',
+        recipientName: user.name || 'User',
         resetUrl: resetURL,
         expiresIn: '1 hour',
       },
@@ -1218,7 +1215,7 @@ class AuthService {
    * @returns {Promise<Object>}
    */
   async completeHostProfile(userId, profileData) {
-    const { username, name, email, password, passwordConfirm } = profileData;
+    const { name, email, password, passwordConfirm } = profileData;
 
     const user = await User.findById(userId);
     if (!user || user.role !== ROLES.HOST) {
@@ -1235,15 +1232,8 @@ class AuthService {
       user.password = password;
     }
 
-    // ONE display identity: the full name. Newer clients send it as `name`;
-    // legacy clients labeled the same input "username" — normalize it into
-    // `name` (and keep `username` in sync for admin-table/header fallbacks)
-    // so users no longer end up with an empty name and a "username" holding
-    // their actual full name.
-    const displayName = name || username;
-    if (displayName) {
-      user.name = displayName;
-      if (!name && username) user.username = username;
+    if (name) {
+      user.name = name;
     }
     if (email && !user.email) user.email = email.toLowerCase();
 
@@ -1259,7 +1249,7 @@ class AuthService {
       actor: user._id,
       targetType: 'User',
       targetId: user._id,
-      metadata: { username: user.username, email: user.email },
+      metadata: { name: user.name, email: user.email },
       status: 'success',
     }).catch((err) => logger.error('complete profile: audit log failed', err));
 
@@ -1360,7 +1350,7 @@ class AuthService {
       data: {
         entityType: 'user',
         entityId: user._id,
-        metadata: { userId: user._id, userName: user.name || user.username, userRole: role },
+        metadata: { userId: user._id, name: user.name, userRole: role },
       },
     });
   }

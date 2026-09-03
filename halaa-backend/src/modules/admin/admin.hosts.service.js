@@ -35,7 +35,7 @@ async function getHosts({ page = 1, limit = 10, search, status, from, to }) {
 
   // Search filter
   if (search) {
-    const searchQuery = buildSearchQuery(search, ['username', 'name', 'email', 'phoneNumber']);
+    const searchQuery = buildSearchQuery(search, ['name', 'email', 'phoneNumber']);
     query = { ...query, ...searchQuery };
   }
 
@@ -164,7 +164,7 @@ async function getHostById(hostId) {
 /**
  * Create new host
  */
-async function createHost({ email, phoneNumber, name, username, password }) {
+async function createHost({ email, phoneNumber, name, password }) {
   // Check for duplicates
   const normalizedPhone = phoneNumber ? normalizePhoneNumber(phoneNumber) : undefined;
   const existingUser = await User.findOne({
@@ -188,7 +188,6 @@ async function createHost({ email, phoneNumber, name, username, password }) {
     phoneNumber: normalizedPhone,
     mobile: normalizedPhone,
     name,
-    username: username || `host_${Date.now()}`,
     password: effectivePassword,
     role: ROLES.HOST,
     accountType: ACCOUNT_TYPES.PERSONAL,
@@ -431,7 +430,7 @@ async function verifyHostByPhone(phoneNumber) {
     role: ROLES.HOST,
   };
 
-  const host = await User.findOne(query).select('_id username name email phoneNumber mobile status').lean();
+  const host = await User.findOne(query).select('_id name email phoneNumber mobile status').lean();
 
   return {
     exists: !!host,
@@ -466,7 +465,6 @@ async function findOrCreateHost({ phoneNumber, name, email }) {
     phoneNumber,
     name,
     email,
-    username: `host_${Date.now()}`,
     password: require('crypto').randomBytes(16).toString('hex'), // Secure random password
   });
 
@@ -482,7 +480,7 @@ async function findOrCreateHost({ phoneNumber, name, email }) {
 async function exportHosts({ search, status, from, to } = {}) {
   let query = personalHostFilter();
   if (search) {
-    const searchQuery = buildSearchQuery(search, ['username', 'name', 'email', 'phoneNumber']);
+    const searchQuery = buildSearchQuery(search, ['name', 'email', 'phoneNumber']);
     query = { ...query, ...searchQuery };
   }
   if (status) query.status = status;
@@ -490,13 +488,13 @@ async function exportHosts({ search, status, from, to } = {}) {
   if (Object.keys(dateRange).length > 0) query.createdAt = dateRange;
 
   const hosts = await User.find(query)
-    .select('username name email phoneNumber status createdAt')
+    .select('name email phoneNumber status createdAt')
     .populate({ path: 'subscription', select: 'planType status' })
     .sort({ createdAt: -1 })
     .lean();
 
   return hosts.map(h => ({
-    Name: h.name || h.username || '-',
+    Name: h.name || '-',
     Email: h.email || '-',
     Phone: h.phoneNumber || '-',
     Status: h.status || '-',

@@ -22,7 +22,6 @@ test.beforeEach(async () => {
 test("normal refresh token rotation issues a new pair and marks old token as revoked with replacedBy", async () => {
   const user = await User.create({
     name: "User One",
-    username: "userone",
     email: "userone@example.com",
     phoneNumber: "0501111111",
     password: "Password123",
@@ -48,7 +47,6 @@ test("normal refresh token rotation issues a new pair and marks old token as rev
 test("grace window reuse within 30s succeeds and does not revoke user sessions", async () => {
   const user = await User.create({
     name: "User Two",
-    username: "usertwo",
     email: "usertwo@example.com",
     phoneNumber: "0502222222",
     password: "Password123",
@@ -76,7 +74,6 @@ test("grace window reuse within 30s succeeds and does not revoke user sessions",
 test("replay reuse after 30s grace window revokes all user sessions", async () => {
   const user = await User.create({
     name: "User Three",
-    username: "userthree",
     email: "userthree@example.com",
     phoneNumber: "0503333333",
     password: "Password123",
@@ -114,7 +111,6 @@ test("replay reuse after 30s grace window revokes all user sessions", async () =
 test("expired refresh token is rejected without grace", async () => {
   const user = await User.create({
     name: "User Four",
-    username: "userfour",
     email: "userfour@example.com",
     phoneNumber: "0504444444",
     password: "Password123",
@@ -146,7 +142,6 @@ test("expired refresh token is rejected without grace", async () => {
 test("updateMyPassword revokes previous refresh tokens and returns fresh tokens", async () => {
   const user = await User.create({
     name: "User Five",
-    username: "userfive",
     email: "userfive@example.com",
     phoneNumber: "0505555555",
     password: "OldPassword123",

@@ -55,7 +55,6 @@ test("Session 2.4: Ticket State Machine & Transitions (ADM-05)", async () => {
 
 test("Session 2.4: Ticket Reopen Semantics (ADM-05)", async () => {
   const user = await User.create({
-    username: "ticket_creator",
     phoneNumber: "+966501112233",
     role: ROLES.HOST,
     accountType: "personal",
@@ -63,7 +62,6 @@ test("Session 2.4: Ticket Reopen Semantics (ADM-05)", async () => {
   });
 
   const admin = await User.create({
-    username: "admin_user",
     phoneNumber: "+966509998877",
     role: ROLES.ADMIN,
     status: USER_STATUS.ACTIVE,
@@ -117,7 +115,6 @@ test("Session 2.4: Ticket Reopen Semantics (ADM-05)", async () => {
 
 test("Session 2.4: Bulk Ticket Status with Mixed Outcomes (ADM-07)", async () => {
   const user = await User.create({
-    username: "ticket_user_bulk",
     phoneNumber: "+966502223344",
     role: ROLES.HOST,
     accountType: "personal",
@@ -125,7 +122,6 @@ test("Session 2.4: Bulk Ticket Status with Mixed Outcomes (ADM-07)", async () =>
   });
 
   const admin = await User.create({
-    username: "admin_bulk",
     phoneNumber: "+966508887766",
     role: ROLES.ADMIN,
     status: USER_STATUS.ACTIVE,
@@ -184,7 +180,6 @@ test("Session 2.4: Bulk Ticket Status with Mixed Outcomes (ADM-07)", async () =>
 
 test("Session 2.4: Bulk Ticket Delete (ADM-07)", async () => {
   const user = await User.create({
-    username: "ticket_delete_user",
     phoneNumber: "+966503334455",
     role: ROLES.HOST,
     accountType: "personal",
@@ -192,7 +187,6 @@ test("Session 2.4: Bulk Ticket Delete (ADM-07)", async () => {
   });
 
   const otherUser = await User.create({
-    username: "other_ticket_user",
     phoneNumber: "+966504445566",
     role: ROLES.HOST,
     accountType: "personal",
