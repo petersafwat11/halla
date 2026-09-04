@@ -15,7 +15,7 @@ import { Ionicons } from "@expo/vector-icons";
 import {
   resolveTaqnyatPlaceholders,
   buildTaqnyatPreviewContext,
-  formatEventDate,
+  formatDate,
 } from "@halaa/shared/utils";
 import { isolateAuto, isolateLtr } from "@halaa/shared/utils/bidi";
 import { useTranslation } from "../../localization";
@@ -65,7 +65,7 @@ const PreviewInvitation = ({
 
   const formattedDate = useMemo(() => {
     if (!eventDate) return "";
-    return formatEventDate(eventDate, currentLanguage || "ar");
+    return formatDate(eventDate, currentLanguage || "ar");
   }, [eventDate, currentLanguage]);
 
   const resolvedBody = useMemo(() => {

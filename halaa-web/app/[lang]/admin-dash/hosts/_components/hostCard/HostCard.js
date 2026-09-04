@@ -12,6 +12,7 @@ import {
   FaUserSlash,
   FaUserCheck,
 } from "react-icons/fa";
+import { formatDate } from "@halaa/shared/utils/locale";
 
 const HostCard = ({ data }) => {
   const { t } = useTranslation("adminHosts");
@@ -238,9 +239,7 @@ const HostCard = ({ data }) => {
                   {t("subscription.expiresAt", "ينتهي في")}:
                 </span>
                 <span className={styles.subscriptionValue}>
-                  {new Date(subscription.expiresAt).toLocaleDateString(
-                    "ar-EG"
-                  )}
+                  {formatDate(subscription.expiresAt, lang || "ar")}
                 </span>
               </div>
             )}

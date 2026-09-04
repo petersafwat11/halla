@@ -9,6 +9,7 @@ import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
 import TextArea from "@/ui/commen/inputs/inputGroup/TextArea";
 import Button from "@/ui/commen/button/Button";
+import { formatCurrency } from "@halaa/shared/utils/locale";
 import styles from "./PaymentActionModal.module.css";
 
 const buildSchema = (type, remainingAmount) => {
@@ -44,12 +45,8 @@ const buildSchema = (type, remainingAmount) => {
   return base;
 };
 
-const formatCurrency = (amount, currency = "SAR", isArabic) =>
-  new Intl.NumberFormat(isArabic ? "ar-SA" : "en-US", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 0,
-  }).format(amount || 0);
+const renderCurrency = (amount, currency = "SAR", isArabic = true) =>
+  formatCurrency(amount || 0, isArabic ? "ar" : "en", currency);
 
 export default function PaymentActionModal({
   actionPayment,
@@ -160,7 +157,7 @@ export default function PaymentActionModal({
               {t("detail.amount", "Amount")}
             </span>
             <span className={styles.infoValue}>
-              {formatCurrency(payment.amount, payment.currency, isArabic)}
+              {renderCurrency(payment.amount, payment.currency, isArabic)}
             </span>
           </div>
           {type === "refund" && payment.refundedAmount > 0 && (
@@ -169,7 +166,7 @@ export default function PaymentActionModal({
                 {t("detail.alreadyRefunded", "Already refunded")}
               </span>
               <span className={styles.infoValue}>
-                {formatCurrency(
+                {renderCurrency(
                   payment.refundedAmount,
                   payment.currency,
                   isArabic
@@ -183,7 +180,7 @@ export default function PaymentActionModal({
                 {t("detail.remaining", "Remaining")}
               </span>
               <span className={styles.infoValue}>
-                {formatCurrency(remainingAmount, payment.currency, isArabic)}
+                {renderCurrency(remainingAmount, payment.currency, isArabic)}
               </span>
             </div>
           )}

@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AdaptiveText from "../../../../components/commen/AdaptiveText";
 import LocalizedText from "../../../../components/commen/LocalizedText";
-import { formatCount, localizeDigits } from "@halaa/shared/utils/locale";
+import { formatCount } from "@halaa/shared/utils/locale";
 import { useTranslation } from "../../../../localization";
 import { colors, spacing, borderRadius, typography, textStyles, backgrounds } from "../../../../styles/tokens";
 
@@ -28,7 +28,7 @@ const AdminTopVendors = ({ vendors, t, onViewAll }) => {
         <React.Fragment key={vendor.name ?? idx}>
           {idx > 0 && <View style={styles.divider} />}
           <View style={styles.listRow}>
-            <Text style={styles.rankNumber}>{localizeDigits(idx + 1, currentLanguage)}</Text>
+            <Text style={styles.rankNumber}>{formatCount(idx + 1, currentLanguage)}</Text>
             {/* Vendor/store names are backend content — first-strong. */}
             <AdaptiveText style={styles.vendorName} numberOfLines={1}>
               {vendor.name}

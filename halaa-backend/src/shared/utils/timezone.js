@@ -87,8 +87,10 @@ const parseEventTime = (eventDoc, tz = DEFAULT_TZ) => {
   );
 };
 
+const { formatDate, formatDateTime, formatTime } = require("@halaa/shared/utils/locale");
+
 /**
- * Format a Date in Asia/Riyadh wall-clock using `Intl.DateTimeFormat`.
+ * Format a Date in Asia/Riyadh wall-clock using the canonical shared formatter.
  *
  * Without an explicit `timeZone` option, `toLocaleString()` follows the host
  * TZ, so a server running in UTC formats Riyadh-evening events as the
@@ -96,7 +98,7 @@ const parseEventTime = (eventDoc, tz = DEFAULT_TZ) => {
  *
  * @param {Date|string|number} date
  * @param {Object} [opts]
- * @param {string} [opts.locale='ar-SA']
+ * @param {string} [opts.locale='ar']
  * @param {('date'|'datetime'|'time')} [opts.style='datetime']
  * @param {Intl.DateTimeFormatOptions} [opts.options] - extra Intl options
  * @returns {string}
@@ -106,28 +108,34 @@ const formatRiyadh = (date, opts = {}) => {
   const d = date instanceof Date ? date : new Date(date);
   if (Number.isNaN(d.getTime())) return "";
 
-  const { locale = "ar-SA-u-ca-gregory-nu-latn", style = "datetime", options = {} } = opts;
+  const { locale = "ar", style = "datetime", options = {} } = opts;
 
-  const base =
-    style === "date"
-      ? { year: "numeric", month: "long", day: "numeric" }
-      : style === "time"
-        ? { hour: "2-digit", minute: "2-digit" }
-        : {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-          };
-
-  return new Intl.DateTimeFormat(locale, {
+  if (style === "date") {
+    return formatDate(d, locale, {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      timeZone: DEFAULT_TZ,
+      ...options,
+    });
+  }
+  if (style === "time") {
+    return formatTime(d, locale, {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: DEFAULT_TZ,
+      ...options,
+    });
+  }
+  return formatDateTime(d, locale, {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
     timeZone: DEFAULT_TZ,
-    calendar: "gregory",
-    numberingSystem: "latn",
-    ...base,
     ...options,
-  }).format(d);
+  });
 };
 
 /**

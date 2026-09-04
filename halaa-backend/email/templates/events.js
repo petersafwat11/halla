@@ -14,6 +14,7 @@ const {
   COLORS,
 } = require("../layout");
 const { getConfig } = require("../config");
+const { formatDateTime } = require("@halaa/shared/utils/locale");
 
 // ============================================
 // EVENT REMINDER EMAIL
@@ -165,8 +166,8 @@ const guestCheckInEmail = (data, lang = "ar") => {
     : `Guest Check-in - ${data.eventTitle}`;
 
   const checkedInAt = data.checkedInAt
-    ? new Date(data.checkedInAt).toLocaleString(isAr ? "ar-SA" : "en-US")
-    : new Date().toLocaleString(isAr ? "ar-SA" : "en-US");
+    ? formatDateTime(data.checkedInAt, lang)
+    : formatDateTime(new Date(), lang);
 
   const content = `
     ${getGreeting(data.hostName, lang)}

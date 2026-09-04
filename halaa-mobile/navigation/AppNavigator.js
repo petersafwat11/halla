@@ -432,7 +432,9 @@ function AuthStack() {
       <Stack.Screen name="Marketplace" component={Marketplace} />
       <Stack.Screen name="VendorPublicProfile" component={VendorPublicProfileScreen} />
       <Stack.Screen name="DirectionVisualTest" component={DirectionVisualTestScreen} />
-      <Stack.Screen name="TypographyVisualTest" component={TypographyVisualTestScreen} />
+      {__DEV__ ? (
+        <Stack.Screen name="TypographyVisualTest" component={TypographyVisualTestScreen} />
+      ) : null}
     </Stack.Navigator>
   );
 }

@@ -52,7 +52,7 @@ const lockInRules = {
         {
           name: '../utils/formatTemplateDate',
           message:
-            "Phase 8 slice 8: formatTemplateDate moved to @halaa/shared. Import from '@halaa/shared/utils/formatTemplateDate' instead.",
+            "Phase 8 slice 8: formatTemplateDate was deleted. Import { formatDate } from '@halaa/shared/utils/locale' instead.",
         },
         {
           name: '../utils/constants/eventStatus',

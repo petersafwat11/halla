@@ -1,6 +1,7 @@
 const xlsx = require("xlsx");
 const config = require("../../config");
 const { ValidationError } = require("../../shared/errors");
+const { formatNumber } = require("@halaa/shared/utils/locale");
 
 /**
  * Export row cap.
@@ -16,7 +17,7 @@ const guardExportMaxRows = (count, entityName = "records") => {
   const maxRows = config.EXPORT_MAX_ROWS ?? 10_000;
   if (count > maxRows) {
     throw new ValidationError(
-      `Export exceeds the maximum of ${maxRows.toLocaleString()} ${entityName}. ` +
+      `Export exceeds the maximum of ${formatNumber(maxRows, "en")} ${entityName}. ` +
       `Please narrow your filters (date range, status, search) and try again.`
     );
   }

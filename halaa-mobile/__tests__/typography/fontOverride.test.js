@@ -68,49 +68,41 @@ test("resolveFontPatch: exempts icon fonts completely", () => {
   assert.equal(resolveFontPatch(iconStyle), null);
 });
 
-test("resolveFontPatch: neutralizes redundant fontWeight to prevent iOS faux-bold dot erosion (F-14)", () => {
-  // Bold weight style -> maps to Cairo_700Bold and neutralizes fontWeight to "normal"
+test("resolveFontPatch: resolves Cairo font without neutralizing fontWeight pending signed-device evidence (F-14 evidence gate)", () => {
+  // Bold weight style -> maps to Cairo_700Bold
   const boldStyle = { fontWeight: "bold", fontSize: 16 };
   assert.deepEqual(resolveFontPatch(boldStyle), {
     fontFamily: "Cairo_700Bold",
-    fontWeight: "normal",
   });
 
   // Numeric 700 style
   const weight700Style = { fontWeight: "700", color: "#2C2C2C" };
   assert.deepEqual(resolveFontPatch(weight700Style), {
     fontFamily: "Cairo_700Bold",
-    fontWeight: "normal",
   });
 
   // Light 300 style
   const lightStyle = { fontWeight: "300" };
   assert.deepEqual(resolveFontPatch(lightStyle), {
     fontFamily: "Cairo_300Light",
-    fontWeight: "normal",
   });
 
   // Black 900 style
   const blackStyle = { fontWeight: "900" };
   assert.deepEqual(resolveFontPatch(blackStyle), {
     fontFamily: "Cairo_900Black",
-    fontWeight: "normal",
   });
 
-  // Redundant fontWeight on an already named Cairo variant is neutralized
-  const redundantStyle = { fontFamily: "Cairo_700Bold", fontWeight: "bold" };
-  assert.deepEqual(resolveFontPatch(redundantStyle), {
-    fontFamily: "Cairo_700Bold",
-    fontWeight: "normal",
-  });
+  // An already named Cairo variant leaves the style untouched (null patch)
+  const alreadyCairoStyle = { fontFamily: "Cairo_700Bold", fontWeight: "bold" };
+  assert.equal(resolveFontPatch(alreadyCairoStyle), null);
 
-  // Pure Cairo variant without redundant fontWeight needs no patch
+  // Pure Cairo variant needs no patch
   const pureCairoStyle = { fontFamily: "Cairo_700Bold", fontSize: 18 };
   assert.equal(resolveFontPatch(pureCairoStyle), null);
 
   // Default unstyled element maps to Cairo_400Regular
   assert.deepEqual(resolveFontPatch({}), {
     fontFamily: "Cairo_400Regular",
-    fontWeight: "normal",
   });
 });

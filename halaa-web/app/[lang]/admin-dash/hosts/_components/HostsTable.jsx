@@ -18,6 +18,7 @@ import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import { getStatusVisual } from "@/utils/statusColors";
 import AddHostPopup from "./AddHostPopup";
 import SubscriptionAssignmentPopup from "../../_components/SubscriptionAssignmentPopup";
+import { formatDate } from "@halaa/shared/utils/locale";
 import styles from "./HostsTable.module.css";
 
 export default function HostsTable({ showAddPopup: externalShowAdd, setShowAddPopup: externalSetShowAdd }) {
@@ -175,7 +176,7 @@ export default function HostsTable({ showAddPopup: externalShowAdd, setShowAddPo
     }
 
     if (key === "createdAt" && value) {
-      return new Date(value).toLocaleDateString("ar-SA");
+      return formatDate(value, lang);
     }
 
     if (key === "phone") {

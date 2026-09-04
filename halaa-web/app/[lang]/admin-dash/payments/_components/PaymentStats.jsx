@@ -8,13 +8,10 @@ import { normalizePaymentsFilters } from "@/utils/filterNormalizer";
 import StatsCards from "@/ui/host/main-page/StatsCards";
 import { FaMoneyBillWave, FaCheckCircle, FaClock, FaTimesCircle } from "react-icons/fa";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
+import { formatCurrency as sharedFormatCurrency } from "@halaa/shared/utils/locale";
 
 const formatCurrency = (amount, isArabic, currency = "SAR") =>
-  new Intl.NumberFormat(isArabic ? "ar-SA" : "en-US", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 0,
-  }).format(amount || 0);
+  sharedFormatCurrency(amount || 0, isArabic ? "ar" : "en", currency);
 
 export default function PaymentStats() {
   const { t, i18n } = useTranslation("adminPayments");

@@ -7,6 +7,7 @@ import {
   resolveTaqnyatPlaceholders,
   buildTaqnyatPreviewContext,
 } from "@halaa/shared/utils";
+import { formatDate } from "@halaa/shared/utils/locale";
 import useAuthStore from "@/stores/authStore";
 import {
   DEFAULT_INVITATION_TYPE,
@@ -41,14 +42,7 @@ const WhatsappPreview = ({
   const formattedDate = useMemo(() => {
     const dateSource = eventDate || entryDate;
     if (!dateSource) return "";
-    try {
-      return new Date(dateSource).toLocaleDateString(
-        locale === "ar" ? "ar-EG" : "en-US",
-        { year: "numeric", month: "long", day: "numeric", calendar: "gregory" }
-      );
-    } catch {
-      return "";
-    }
+    return formatDate(dateSource, locale || "ar");
   }, [eventDate, entryDate, locale]);
 
   const resolvedMessage = useMemo(() => {

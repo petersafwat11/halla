@@ -27,7 +27,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { View, Image, Text, StyleSheet } from "react-native";
 import * as LucideIcons from "lucide-react-native";
 import { useTranslation } from "../../localization";
-import { formatTemplateDate } from "@halaa/shared/utils/formatTemplateDate";
+import { formatDate } from "@halaa/shared/utils/locale";
 import { resolveTemplateFont } from "../../utils/cairoFont";
 import { ENDPOINTS, resolveApiUrl } from "../../config/api";
 import { resolveMediaUri } from "../../utils/resolveMediaUri";
@@ -36,7 +36,7 @@ import { useAuthStore } from "../../stores/authStore";
 const cmpZ = (a, b) => (a.zIndex || 0) - (b.zIndex || 0);
 
 // Render `time`-typed values as "HH:MM" 24h.
-function formatFieldValue(field, raw, t) {
+function formatFieldValue(field, raw, locale = "ar") {
   if (raw === undefined || raw === null || raw === "") return null;
   if (field?.type === "time") {
     if (typeof raw === "string") {
@@ -57,7 +57,7 @@ function formatFieldValue(field, raw, t) {
     }
   }
   if (field?.type === "date") {
-    return formatTemplateDate(raw, t) || null;
+    return formatDate(raw, locale) || null;
   }
   return typeof raw === "string" ? raw : String(raw);
 }
@@ -213,7 +213,7 @@ export default function TemplatePreviewCanvas({
   onBackgroundReady,
   onBackgroundError,
 }) {
-  const { t } = useTranslation("common");
+  const { t, currentLanguage } = useTranslation("common");
   const token = useAuthStore((state) => state.token);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
@@ -291,7 +291,7 @@ export default function TemplatePreviewCanvas({
       {overlays.map((o, i) => {
         const field = fieldsByKey[o.fieldKey];
         const raw = data?.[o.fieldKey];
-        const formatted = formatFieldValue(field, raw, t);
+        const formatted = formatFieldValue(field, raw, currentLanguage || "ar");
         const display = formatted !== null ? formatted : (field?.labelAr ?? field?.labelEn ?? o.fieldKey);
         return (
           <OverlayItem

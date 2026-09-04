@@ -12,6 +12,7 @@ import {
 import { useTicketMutation } from "@/hooks/tickets";
 import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
+import { formatDate, formatDateTime } from "@halaa/shared/utils/locale";
 import styles from "./TicketDetailView.module.css";
 import TicketResponsePopup from "../../_components/TicketResponsePopup";
 import AssignTicketPopup from "../../_components/AssignTicketPopup";
@@ -33,7 +34,7 @@ const PRIORITY_CLASS_MAP = {
 
 const TicketDetailView = ({ ticket }) => {
   const router = useRouter();
-  const { t } = useTranslation("adminTickets");
+  const { t, i18n } = useTranslation("adminTickets");
   const [isResolvePopupOpen, setIsResolvePopupOpen] = useState(false);
   const [isAssignPopupOpen, setIsAssignPopupOpen] = useState(false);
   const [isAttachmentOpen, setIsAttachmentOpen] = useState(false);
@@ -153,7 +154,7 @@ const TicketDetailView = ({ ticket }) => {
               <p className={styles.message}>{ticket.resolution.message}</p>
               <p className={styles.meta}>
                 {t("viewResolution.resolvedBy")}: {ticket.resolution.by?.name || ticket.resolution.by}{" "}
-                {t("viewResolution.resolvedAt")}: {new Date(ticket.resolution.at).toLocaleDateString()}
+                {t("viewResolution.resolvedAt")}: {formatDate(ticket.resolution.at, i18n.language || "ar")}
               </p>
             </div>
           )}
@@ -174,7 +175,7 @@ const TicketDetailView = ({ ticket }) => {
               <FaClock className={styles.icon} />
               <div>
                 <span className={styles.label}>{t("table.columns.createdAt")}</span>
-                <p>{new Date(ticket.createdAt).toLocaleString()}</p>
+                <p>{formatDateTime(ticket.createdAt, i18n.language || "ar")}</p>
               </div>
             </div>
             {ticket.assignedTo && (

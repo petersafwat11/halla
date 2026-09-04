@@ -11,7 +11,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { Svg, Circle, G, Path, Defs, ClipPath, Rect } from "react-native-svg";
 import { useTranslation } from "../../localization";
-import { localizeDigits } from "@halaa/shared/utils/locale";
+import { formatCount } from "@halaa/shared/utils/locale";
 import { isolateLtr } from "@halaa/shared/utils/bidi";
 
 const TOTAL_STEPS = 4;
@@ -45,7 +45,7 @@ const StepIndicator = ({ progress, locale }) => {
           StepHeader): pinned LTR so the slash cannot reorder in RTL chrome. */}
       <Text style={[styles.indicatorText, { writingDirection: "ltr" }]}>
         {isolateLtr(
-          `${localizeDigits(currentStep, locale)}/${localizeDigits(totalSteps, locale)}`
+          `${formatCount(currentStep, locale)}/${formatCount(totalSteps, locale)}`
         )}
       </Text>
     </View>

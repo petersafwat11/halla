@@ -11,9 +11,10 @@ import { useMyPaymentsExport } from "@/hooks/payments";
 import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
+import { formatDateTime } from "@halaa/shared/utils/locale";
 
 const PaymentsClient = () => {
-  const { t } = useTranslation("hostPayments");
+  const { t, i18n } = useTranslation("hostPayments");
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -78,7 +79,7 @@ const PaymentsClient = () => {
         }`
       : "—",
     transactionId: item.transactionId || "—",
-    date: new Date(item.createdAt).toLocaleString(),
+    date: formatDateTime(item.createdAt, i18n?.language || "ar"),
     status: item.status,
     statusText: t(`table.status.${item.status}`, item.status),
   }));

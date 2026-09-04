@@ -7,6 +7,7 @@ import Table from "@/ui/commen/new-table/Table";
 import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
 import { getStatusVisual } from "@/utils/statusColors";
+import { formatDate } from "@halaa/shared/utils/locale";
 import styles from "./TicketsTable.module.css";
 
 export default function TicketTableContent({
@@ -15,7 +16,7 @@ export default function TicketTableContent({
   handleBulkDelete, handleBulkResolve, handleStatusChange,
   handleAssignClick, handleResponseClick, handleViewResolutionClick,
 }) {
-  const { t: tHook } = useTranslation("adminTickets");
+  const { t: tHook, i18n } = useTranslation("adminTickets");
   const i18nT = t || tHook;
 
   const getRowActions = useCallback((row) => {
@@ -77,9 +78,9 @@ export default function TicketTableContent({
         canUpdate ? <span className={styles.assignClickable} onClick={() => handleAssignClick(row)}>{i18nT("actions.assign")}</span> : <span>-</span>
       );
     }
-    if (key === "createdAt" && value) return new Date(value).toLocaleDateString();
+    if (key === "createdAt" && value) return formatDate(value, i18n?.language || "ar");
     return value;
-  }, [canUpdate, i18nT, handleResponseClick, handleAssignClick]);
+  }, [canUpdate, i18nT, i18n, handleResponseClick, handleAssignClick]);
 
   return (
     <Table

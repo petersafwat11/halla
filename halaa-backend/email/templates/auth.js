@@ -12,6 +12,7 @@ const {
   COLORS,
 } = require("../layout");
 const { getConfig } = require("../config");
+const { formatDateTime } = require("@halaa/shared/utils/locale");
 
 // ============================================
 // WELCOME EMAIL
@@ -231,8 +232,8 @@ const passwordChangedEmail = (data, lang = "ar") => {
     : "Password Changed Successfully";
 
   const changedAt = data.changedAt
-    ? new Date(data.changedAt).toLocaleString(isAr ? "ar-SA" : "en-US")
-    : new Date().toLocaleString(isAr ? "ar-SA" : "en-US");
+    ? formatDateTime(data.changedAt, lang)
+    : formatDateTime(new Date(), lang);
 
   const content = `
     ${getGreeting(data.name, lang)}
@@ -368,8 +369,8 @@ const loginAlertEmail = (data, lang = "ar") => {
     : "New Login to Your Account";
 
   const loginAt = data.loginAt
-    ? new Date(data.loginAt).toLocaleString(isAr ? "ar-SA" : "en-US")
-    : new Date().toLocaleString(isAr ? "ar-SA" : "en-US");
+    ? formatDateTime(data.loginAt, lang)
+    : formatDateTime(new Date(), lang);
 
   const content = `
     ${getGreeting(data.name, lang)}

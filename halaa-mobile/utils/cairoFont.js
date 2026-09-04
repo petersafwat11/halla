@@ -108,9 +108,9 @@ export const isIconFontFamily = (fontFamily) =>
 
 /**
  * Resolves font style overrides for a flattened style object.
- * F-14: The named Cairo font file is authoritative. Redundant native fontWeight is
- * neutralized to "normal" so iOS CoreText does not trigger faux-bold synthesis
- * that merges counters and erodes dots on Arabic letters.
+ * F-14 evidence gate: Behavioral override of fontWeight is held pending signed-device
+ * reproduction. The override only ensures non-Cairo families map to the loaded Cairo variant,
+ * preserving declared font weights and icon font exemptions.
  *
  * @param {object} flatStyle - Flattened style object
  * @returns {object|null} - Style overrides to apply, or null if style should be untouched
@@ -122,14 +122,10 @@ export const resolveFontPatch = (flatStyle = {}) => {
 
   const fontFamily = normalizeCairoFamily(flatStyle.fontFamily, flatStyle.fontWeight);
 
-  const hasRedundantWeight =
-    flatStyle.fontWeight !== undefined &&
-    flatStyle.fontWeight !== null &&
-    flatStyle.fontWeight !== "normal";
-
-  if (flatStyle.fontFamily === fontFamily && !hasRedundantWeight) {
+  // Already a loaded Cairo variant — leave the style untouched.
+  if (flatStyle.fontFamily === fontFamily) {
     return null;
   }
 
-  return { fontFamily, fontWeight: "normal" };
+  return { fontFamily };
 };

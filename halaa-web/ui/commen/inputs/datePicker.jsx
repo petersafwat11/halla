@@ -6,7 +6,7 @@ import { get } from 'lodash';
 import styles from './datePicker.module.css';
 import Image from 'next/image';
 import Calendar from './Calendar';
-import { formatTemplateDate } from '@halaa/shared/utils/formatTemplateDate';
+import { formatDate } from '@halaa/shared/utils/locale';
 import { ar } from 'date-fns/locale';
 
 // Normalize a date to midnight so time-of-day never affects day comparisons
@@ -23,6 +23,7 @@ const DatePicker = ({
   maxDate,
 }) => {
   const { t, i18n } = useTranslation('common');
+  const currentLocale = i18n?.language || 'ar';
   const { control, clearErrors } = useFormContext();
   const {
     field: { onChange, value },
@@ -100,7 +101,7 @@ const DatePicker = ({
             className={styles.calendar_icon}
           />
           <span className={styles.date_picker_text}>
-            {value ? formatTemplateDate(value, t) : placeholder}
+            {value ? formatDate(value, currentLocale) : placeholder}
           </span>
           {error && (
             <div className={styles.error_icon}>

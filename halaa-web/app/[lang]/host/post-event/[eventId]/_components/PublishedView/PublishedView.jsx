@@ -9,28 +9,10 @@ import { handleError } from "@/services/errorHandlingService";
 import PostMediaGallery from "@/components/postEvent/PostMediaGallery";
 import CommentList from "@/components/postEvent/CommentList";
 import LikesPopup from "@/components/postEvent/LikesPopup";
+import { formatDate, formatDateTime } from "@halaa/shared/utils/locale";
 import styles from "./publishedView.module.css";
 
-const formatDateTime = (raw, locale) => {
-  if (!raw) return "";
-  const d = new Date(raw);
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleString(locale || "ar", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
-};
 
-const formatDate = (raw, locale) => {
-  if (!raw) return "";
-  const d = new Date(raw);
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleDateString(locale || "ar", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-};
 
 const PublishedView = ({ eventId, content, hostName, eventDate }) => {
   const { t, i18n } = useTranslation("postEvent");

@@ -204,7 +204,7 @@ test("dropdownModal: legacy hardcoded Arabic replaced by keys and LTR step count
     "step titles/descriptions come from the home bundle"
   );
   assert.match(source, /writingDirection:\s*"ltr"/, "step counter token pinned LTR");
-  assert.match(source, /localizeDigits\(currentStep/, "counter digits localized");
+  assert.match(source, /formatCount\(currentStep/, "counter digits localized");
   assert.match(source, /isolateLtr\(/, "current/total token isolated");
 });
 

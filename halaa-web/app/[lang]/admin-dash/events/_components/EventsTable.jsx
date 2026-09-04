@@ -15,6 +15,7 @@ import { normalizeAdminFilters } from "@/utils/filterNormalizer";
 import Table from "@/ui/commen/new-table/Table";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import { getStatusVisual } from "@/utils/statusColors";
+import { formatDate } from "@halaa/shared/utils/locale";
 import styles from "./EventsTable.module.css";
 
 export default function EventsTable() {
@@ -156,7 +157,7 @@ export default function EventsTable() {
     }
 
     if (key === "date" && value) {
-      return new Date(value).toLocaleDateString("ar-SA");
+      return formatDate(value, lang);
     }
 
     if (key === "title") {

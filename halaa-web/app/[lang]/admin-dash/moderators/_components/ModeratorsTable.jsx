@@ -18,6 +18,7 @@ import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import { getStatusVisual } from "@/utils/statusColors";
 import AddModeratorPopup from "./AddModeratorPopup";
 import EditModeratorPopup from "./EditModeratorPopup";
+import { formatDate } from "@halaa/shared/utils/locale";
 import styles from "./ModeratorsTable.module.css";
 
 export default function ModeratorsTable({ showAddPopup: externalShowAdd, setShowAddPopup: externalSetShowAdd }) {
@@ -162,7 +163,7 @@ export default function ModeratorsTable({ showAddPopup: externalShowAdd, setShow
       );
     }
 
-    if (key === "createdAt" && value) return new Date(value).toLocaleDateString("ar-SA");
+    if (key === "createdAt" && value) return formatDate(value, lang);
     if (key === "phone") {
       return <span dir="ltr" style={{ unicodeBidi: "embed", display: "inline-block" }}>{value}</span>;
     }

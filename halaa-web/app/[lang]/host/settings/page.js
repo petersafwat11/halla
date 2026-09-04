@@ -87,7 +87,7 @@ const HostSettingsPage = () => {
                   user={{
                     emailVerified: user?.emailVerified || false,
                     email: user?.email || "",
-                    name: user?.name || "",",
+                    name: user?.name || "",
                     phoneNumber: user?.phoneNumber || "",
                   }}
                 />

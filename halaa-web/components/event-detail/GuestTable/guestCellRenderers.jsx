@@ -1,4 +1,5 @@
 "use client";
+import { formatDateTime as sharedFormatDateTime } from "@halaa/shared/utils/locale";
 import React from "react";
 import { getStatusVisual } from "@/utils/statusColors";
 
@@ -79,7 +80,7 @@ export function renderAutoReminderBadge(row, t, formatDateTime) {
     return <span style={{ color: "#9CA3AF" }}>—</span>;
   }
   const when = inv.autoReminderSentAt
-    ? (formatDateTime?.(inv.autoReminderSentAt) || new Date(inv.autoReminderSentAt).toLocaleString())
+    ? (formatDateTime?.(inv.autoReminderSentAt) || sharedFormatDateTime(inv.autoReminderSentAt, "ar"))
     : "";
   return reminderPill({
     tone: "success",

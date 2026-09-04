@@ -9,7 +9,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../localization";
 import AdaptiveText from "../commen/AdaptiveText";
 import LocalizedText from "../commen/LocalizedText";
-import { getLocalized, localizeDigits } from "@halaa/shared/utils/locale";
+import { getLocalized, formatCount } from "@halaa/shared/utils/locale";
 import {
   colors,
   spacing,
@@ -76,7 +76,7 @@ export const formatRelativeTime = (createdAt, locale, t) => {
   const minutes = Math.floor(diffMs / 60000);
   const hours = Math.floor(minutes / 60);
   const days = Math.floor(hours / 24);
-  const count = (n) => localizeDigits(n, locale);
+  const count = (n) => formatCount(n, locale);
   if (days > 0) return t("notifications.time.daysAgo", { count: count(days) });
   if (hours > 0) return t("notifications.time.hoursAgo", { count: count(hours) });
   if (minutes > 0)

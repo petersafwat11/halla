@@ -18,6 +18,7 @@ import StatusBadge from "./StatusBadge";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import ErrorFallback from "@/ui/common/error/ErrorFallback";
 import { useRowActions, useBulkActions } from "./useVendorRowActions";
+import { formatDate } from "@halaa/shared/utils/locale";
 import styles from "./VendorsTable.module.css";
 
 function normalizeVendorData(data) {
@@ -28,13 +29,13 @@ function normalizeVendorData(data) {
     phone: vendor.phoneNumber || vendor.phone || "-",
     category: vendor.serviceCategories?.[0] || vendor.category || "-",
     status: vendor.vendorStatus || vendor.status || "pending",
-    rating: vendor.rating || 0,
-    createdAt: vendor.createdAt || vendor.created_at,
+    rating: vendor.rating ?? vendor.ratingsAverage ?? 0,
+    createdAt: vendor.createdAt,
   }));
 }
 
 export default function VendorsTable() {
-  const { t } = useTranslation("adminVendors");
+  const { t, i18n } = useTranslation("adminVendors");
   const router = useRouter();
   const searchParams = useSearchParams();
   const { canUpdate, canDelete } = usePageAccess("vendors");
@@ -185,7 +186,7 @@ export default function VendorsTable() {
       );
     }
     if (key === "createdAt" && value) {
-      return new Date(value).toLocaleDateString("ar-SA");
+      return formatDate(value, i18n?.language || "ar");
     }
     if (key === "phone") {
       return <span dir="ltr" style={{ unicodeBidi: "embed", display: "inline-block" }}>{value}</span>;

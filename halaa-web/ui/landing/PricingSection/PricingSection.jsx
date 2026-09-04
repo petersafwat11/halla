@@ -9,10 +9,11 @@ import SarIcon from "@/ui/commen/SarIcon/SarIcon";
 import PlanCard from "@/ui/plans/PlanCard/PlanCard";
 import useCarouselSnap from "../_shared/useCarouselSnap";
 import CarouselDots from "../_shared/CarouselDots";
+import { formatNumber } from "@halaa/shared/utils/locale";
 
 const WA_LINK = "https://wa.me/966552619282";
 
-const formatPrice = (n) => (n || 0).toLocaleString();
+const formatPrice = (n, l = "ar") => formatNumber(n || 0, l);
 
 const SarSymbol = () => <SarIcon size="1.5rem" />;
 
@@ -377,7 +378,7 @@ export default function PricingSection({ lang = "ar" }) {
           <div className={styles.prHostCard}>
             <div className={styles.prHostCardTop}>
               <div className={styles.prHostPrice}>
-                <span className={styles.prHostPriceNum}>{formatPrice(bizQuarterlyPlan.pricing?.oneTime)}</span>
+                <span className={styles.prHostPriceNum}>{formatPrice(bizQuarterlyPlan.pricing?.oneTime, lang)}</span>
                 <SarSymbol />
               </div>
               {getTagline(bizQuarterlyPlan) ? (
@@ -402,7 +403,7 @@ export default function PricingSection({ lang = "ar" }) {
           <div className={styles.prHostCard}>
             <div className={styles.prHostCardTop}>
               <div className={styles.prHostPrice}>
-                <span className={styles.prHostPriceNum}>{formatPrice(bizAnnualPlan.pricing?.oneTime)}</span>
+                <span className={styles.prHostPriceNum}>{formatPrice(bizAnnualPlan.pricing?.oneTime, lang)}</span>
                 <SarSymbol />
               </div>
               {getTagline(bizAnnualPlan) ? (

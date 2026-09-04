@@ -24,13 +24,14 @@ import ReplaceLogoPopup from "./ReplaceLogoPopup";
 import AssignPlanPopup from "./AssignPlanPopup";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import { getStatusVisual } from "@/utils/statusColors";
+import { formatDate } from "@halaa/shared/utils/locale";
 import styles from "./BusinessDetailsContent.module.css";
 
 const initials = (name) =>
   (name || "?").split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase()).join("");
 
 const fmtDate = (d, locale) =>
-  d ? new Date(d).toLocaleDateString(locale, { year: "numeric", month: "short", day: "numeric" }) : "—";
+  d ? formatDate(d, locale, { year: "numeric", month: "short", day: "numeric" }) || "—" : "—";
 
 const statusMeta = (status, t) => {
   const label = ({ active: t("status.active"), suspended: t("status.suspended"), inactive: t("status.inactive") }[status]) || status || "—";

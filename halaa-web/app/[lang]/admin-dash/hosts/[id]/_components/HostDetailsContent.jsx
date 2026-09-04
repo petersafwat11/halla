@@ -11,6 +11,7 @@ import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import { FiMail, FiPhone, FiCalendar, FiClock, FiShield, FiUsers, FiCreditCard, FiAlertCircle } from "react-icons/fi";
 import { FaCrown } from "react-icons/fa";
 import { getStatusVisual } from "@/utils/statusColors";
+import { formatDate } from "@halaa/shared/utils/locale";
 import styles from "./HostDetailsContent.module.css";
 
 const initials = (name) =>
@@ -44,12 +45,12 @@ const eventStatusMeta = (status, t) => {
 };
 
 const fmtDate = (d, locale) =>
-  d ? new Date(d).toLocaleDateString(locale, { year: "numeric", month: "short", day: "numeric" }) : "—";
+  d ? formatDate(d, locale, { year: "numeric", month: "short", day: "numeric" }) || "—" : "—";
 
 export default function HostDetailsContent({ hostId }) {
   const router = useRouter();
   const { t, i18n } = useTranslation("adminHosts");
-  const locale = i18n.language === "ar" ? "ar-SA" : "en-US";
+  const locale = i18n.language || "ar";
   const { data, isLoading, error } = useAdminHost(hostId);
   const updateStatus = useAdminHostMutation("updateStatus");
   const [subOpen, setSubOpen] = useState(false);

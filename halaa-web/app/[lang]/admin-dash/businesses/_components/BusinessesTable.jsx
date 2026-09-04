@@ -15,6 +15,7 @@ import EditBusinessPopup from "../[id]/_components/EditBusinessPopup";
 import AssignPlanPopup from "../[id]/_components/AssignPlanPopup";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import { getStatusVisual } from "@/utils/statusColors";
+import { formatDate } from "@halaa/shared/utils/locale";
 import styles from "./BusinessesTable.module.css";
 
 export default function BusinessesTable({ showAddPopup, setShowAddPopup }) {
@@ -151,7 +152,7 @@ export default function BusinessesTable({ showAddPopup, setShowAddPopup }) {
     }
 
     if (key === "createdAt" && value) {
-      return new Date(value).toLocaleDateString(lang === "en" ? "en-US" : "ar-SA");
+      return formatDate(value, lang);
     }
 
     if (key === "phone") {

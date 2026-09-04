@@ -7,6 +7,7 @@ import {
   resolveTaqnyatPlaceholders,
   buildTaqnyatPreviewContext,
 } from "@halaa/shared/utils";
+import { formatDate } from "@halaa/shared/utils/locale";
 import useAuthStore from "@/stores/authStore";
 import SummaryCards from "./SummaryCards";
 import EventDataDisplay from "./EventDataDisplay";
@@ -64,20 +65,8 @@ const Summary = () => {
   const invitationText = useMemo(() => {
     const bodyText = selectedTemplate?.bodyText;
     if (!bodyText) return "";
-    const locale = i18n?.language === "en" ? "en-US" : "ar-EG";
-    let dateFormatted = "";
-    if (eventDate) {
-      try {
-        dateFormatted = new Date(eventDate).toLocaleDateString(locale, {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-          calendar: "gregory",
-        });
-      } catch {
-        dateFormatted = "";
-      }
-    }
+    const locale = i18n?.language || "ar";
+    const dateFormatted = eventDate ? formatDate(eventDate, locale) : "";
     const context = buildTaqnyatPreviewContext({
       guestName: i18n?.language === "en" ? "Dear Guest" : "ضيفنا الكريم",
       eventTitle: eventName,

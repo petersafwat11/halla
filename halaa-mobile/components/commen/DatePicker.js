@@ -12,7 +12,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { isolateAuto } from "@halaa/shared/utils/bidi";
 import { useTranslation } from "../../localization";
 import { useFieldDirection } from "../../hooks/useInputDirection";
-import { formatDate as formatLocaleDate } from "@halaa/shared/utils/locale";
+import { formatDate as formatLocaleDate, getDatePickerLocale } from "@halaa/shared/utils/locale";
 import IosDateTimePickerSheet from "./IosDateTimePickerSheet";
 
 /**
@@ -167,6 +167,7 @@ const DatePickerField = ({
           minimumDate={minimumDate}
           maximumDate={maximumDate}
           textColor="#2C2C2C"
+          locale={locale}
         />
       )}
     </View>
@@ -189,7 +190,7 @@ const DatePicker = ({
   const { currentLanguage, isRTL } = useTranslation();
   const { t } = useTranslation("common");
   const { control } = useFormContext();
-  const pickerLocale = currentLanguage === "ar" ? "ar-SA" : "en-US";
+  const pickerLocale = getDatePickerLocale(currentLanguage);
 
   return (
     <Controller

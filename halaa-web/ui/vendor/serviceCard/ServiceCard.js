@@ -4,6 +4,7 @@ import Image from "next/image";
 import styles from "./serviceCard.module.css";
 import { useTranslation } from "react-i18next";
 import { getImageUrl as resolveImageUrl } from "@/utils/vendorHelpers";
+import { formatNumber } from "@halaa/shared/utils/locale";
 
 const PLACEHOLDER_IMAGE = "/images/placeholder-service.svg";
 
@@ -15,7 +16,7 @@ const getImageUrl = (image) => {
 
 
 const ServiceCard = ({ service, onToggleStatus, onDelete, onEdit }) => {
-  const { t } = useTranslation("vendorServices");
+  const { t, i18n } = useTranslation("vendorServices");
   const isAvailable = service?.isAvailable ?? true;
 
   const handleToggle = () => {
@@ -100,7 +101,7 @@ const ServiceCard = ({ service, onToggleStatus, onDelete, onEdit }) => {
 
           <div className={styles.footer}>
             <div className={styles.price}>
-              {(service?.price || 0).toLocaleString()} {t("service.price")}
+              {formatNumber(service?.price || 0, i18n?.language || "ar")} {t("service.price")}
             </div>
 
             <div className={styles.toggleSection}>

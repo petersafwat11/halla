@@ -2,21 +2,21 @@
 import { useTranslation } from "react-i18next";
 import { useAdminPaymentDetail } from "@/hooks/admin";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
+import {
+  formatCurrency as sharedFormatCurrency,
+  formatDateTime as sharedFormatDateTime,
+} from "@halaa/shared/utils/locale";
 import styles from "./AdminPaymentsClient.module.css";
 
-const formatCurrency = (amount, currency = "SAR", isArabic) =>
-  amount === undefined || amount === null
-    ? "—"
-    : new Intl.NumberFormat(isArabic ? "ar-SA" : "en-US", {
-        style: "currency",
-        currency,
-        minimumFractionDigits: 0,
-      }).format(amount || 0);
+const formatCurrency = (amount, currency = "SAR", isArabic) => {
+  if (amount === undefined || amount === null) return "—";
+  return sharedFormatCurrency(amount || 0, isArabic ? "ar" : "en", currency) || "—";
+};
 
-const formatDateTime = (dateStr, isArabic) =>
-  dateStr
-    ? new Date(dateStr).toLocaleString(isArabic ? "ar-SA" : "en-US")
-    : "—";
+const formatDateTime = (dateStr, isArabic) => {
+  if (!dateStr) return "—";
+  return sharedFormatDateTime(dateStr, isArabic ? "ar" : "en") || "—";
+};
 
 export default function PaymentDetailModal({ paymentId, onClose }) {
   const { t, i18n } = useTranslation("adminPayments");

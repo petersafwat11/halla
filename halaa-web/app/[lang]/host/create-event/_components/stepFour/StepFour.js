@@ -21,6 +21,7 @@ import {
   resolveTaqnyatPlaceholders,
   buildTaqnyatPreviewContext,
 } from "@halaa/shared/utils";
+import { formatDate } from "@halaa/shared/utils/locale";
 import useAuthStore from "@/stores/authStore";
 import {
   INVITATION_TYPE_OPTIONS,
@@ -129,20 +130,8 @@ const StepFour = () => {
   // preview pane, mirroring the backend resolver semantics so what the host
   // sees on screen matches what the guest receives.
   const previewContext = useMemo(() => {
-    const locale = i18n?.language === "en" ? "en-US" : "ar-EG";
-    let dateFormatted = "";
-    if (eventDate) {
-      try {
-        dateFormatted = new Date(eventDate).toLocaleDateString(locale, {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-          calendar: "gregory",
-        });
-      } catch {
-        dateFormatted = "";
-      }
-    }
+    const locale = i18n?.language || "ar";
+    const dateFormatted = eventDate ? formatDate(eventDate, locale) : "";
     return buildTaqnyatPreviewContext({
       guestName:
         i18n?.language === "en" ? "Dear Guest" : "ضيفنا الكريم",

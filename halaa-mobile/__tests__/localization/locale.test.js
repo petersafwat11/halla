@@ -16,7 +16,7 @@ test("formatDate formats dates correctly in Arabic and English", async () => {
   assert.ok(enDate.includes("Jun") || enDate.includes("June"), "English date includes June");
 
   const arDate = formatDate(sampleDate, "ar");
-  assert.ok(arDate.includes("٢٠٢٦") || arDate.includes("2026"), "Arabic date includes 2026");
+  assert.ok(arDate.includes("2026"), "Arabic date includes Latin digits 2026");
 
   // Invalid date safe fallback
   assert.equal(formatDate(null), "");
@@ -100,9 +100,9 @@ test("formatGuestCount outputs correct pluralized count with Latin digits (F-15)
   assert.equal(formatGuestCount(10, "en"), "10 guests");
 });
 
-test("formatEventDate enforces explicit Gregorian calendar (F-04) and Latin digits (F-15)", async () => {
+test("formatDate enforces explicit Gregorian calendar (F-04) and Latin digits (F-15)", async () => {
   const localePath = path.join(SHARED_ROOT, "src", "utils", "locale.js");
-  const { formatEventDate } = await import(pathToFileURL(localePath).href);
+  const { formatDate } = await import(pathToFileURL(localePath).href);
 
   // Fixed civil dates including 25th, 28th, 30th, 31st
   const dates = [
@@ -113,8 +113,8 @@ test("formatEventDate enforces explicit Gregorian calendar (F-04) and Latin digi
   ];
 
   for (const item of dates) {
-    const ar = formatEventDate(item.iso, "ar");
-    const en = formatEventDate(item.iso, "en");
+    const ar = formatDate(item.iso, "ar");
+    const en = formatDate(item.iso, "en");
 
     assert.ok(ar.includes(item.day), `Arabic date must contain Latin day ${item.day}`);
     assert.ok(ar.includes(item.arMonth), `Arabic date must contain Gregorian month ${item.arMonth}`);
@@ -127,11 +127,11 @@ test("formatEventDate enforces explicit Gregorian calendar (F-04) and Latin digi
 
     // From Date object with UTC midnight
     const dateObj = new Date(`${item.iso}T00:00:00.000Z`);
-    assert.equal(formatEventDate(dateObj, "ar"), ar, "Date object at UTC midnight must match civil date string");
+    assert.equal(formatDate(dateObj, "ar", { timeZone: "UTC" }), ar, "Date object at UTC midnight must match civil date string");
   }
 
   // Null and empty safe fallback
-  assert.equal(formatEventDate(null), "");
-  assert.equal(formatEventDate(""), "");
-  assert.equal(formatEventDate("not-a-date"), "");
+  assert.equal(formatDate(null), "");
+  assert.equal(formatDate(""), "");
+  assert.equal(formatDate("not-a-date"), "");
 });

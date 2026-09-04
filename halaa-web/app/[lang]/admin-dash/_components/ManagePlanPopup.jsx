@@ -14,7 +14,7 @@ import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import Button from "@/ui/commen/button/Button";
 import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
-import { getLocalized } from "@halaa/shared/utils/locale";
+import { getLocalized, formatDate } from "@halaa/shared/utils/locale";
 import styles from "./ManagePlanPopup.module.css";
 
 const INVITE_PRESETS = [10, 25, 50, 100, 250, 500];
@@ -108,9 +108,7 @@ export default function ManagePlanPopup({
     {
       label: t("managePlan.ends", "Ends"),
       value: subscription?.currentPeriodEnd
-        ? new Date(subscription.currentPeriodEnd).toLocaleDateString(
-            i18n.language === "ar" ? "ar-SA" : "en-US"
-          )
+        ? formatDate(subscription.currentPeriodEnd, i18n.language || "ar") || "-"
         : "-",
     },
   ];

@@ -2,11 +2,12 @@
 import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { getStatusVisual } from "@/utils/statusColors";
+import { formatNumber as sharedFormatNumber, formatDate as sharedFormatDate } from "@halaa/shared/utils/locale";
 import styles from "./SubscriptionInfo.module.css";
 
 function formatNumber(num) {
   if (num === -1 || num === "unlimited") return "∞";
-  return num?.toLocaleString() || "0";
+  return sharedFormatNumber(num || 0);
 }
 
 function visualFor(status) {
@@ -36,7 +37,7 @@ function formatExpiryDate(date, locale) {
   const now = new Date();
   const daysRemaining = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
   return {
-    formatted: expiryDate.toLocaleDateString(locale || "ar", {
+    formatted: sharedFormatDate(date, locale || "ar", {
       year: "numeric",
       month: "short",
       day: "numeric",

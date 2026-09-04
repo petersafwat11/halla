@@ -10,11 +10,12 @@ import VendorImageGallery from "./VendorImageGallery";
 import VendorSocialLinks from "./VendorSocialLinks";
 import VendorServiceCategories from "./VendorServiceCategories";
 import VendorActionButtons from "./VendorActionButtons";
+import { formatDate } from "@halaa/shared/utils/locale";
 import styles from "./VendorDetailsWrapper.module.css";
 
 export default function VendorDetailsWrapper({ vendorData, error }) {
   const router = useRouter();
-  const { t } = useTranslation("adminVendorDetails");
+  const { t, i18n } = useTranslation("adminVendorDetails");
   const updateStatus = useAdminVendorMutation("updateStatus");
 
   const vendor = vendorData?.vendor || vendorData;
@@ -80,7 +81,7 @@ export default function VendorDetailsWrapper({ vendorData, error }) {
             <InfoRow label={t("identity.phone")} value={vendor?.phoneNumber} dir="ltr" />
             <InfoRow
               label={t("identity.registrationDate")}
-              value={vendor?.createdAt ? new Date(vendor.createdAt).toLocaleDateString("ar-SA") : null}
+              value={vendor?.createdAt ? formatDate(vendor.createdAt, i18n?.language || "ar") : null}
             />
           </div>
         </div>

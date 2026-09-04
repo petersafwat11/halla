@@ -31,7 +31,7 @@ import {
 } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
-import { getLocalized, formatCount, localizeDigits } from "@halaa/shared/utils/locale";
+import { getLocalized, formatCount } from "@halaa/shared/utils/locale";
 import { isolateLtr } from "@halaa/shared/utils/bidi";
 
 const INVITE_PRESETS = [10, 25, 50, 100, 250, 500];
@@ -541,7 +541,7 @@ const ManagePlanModal = ({ visible, onClose, entity, entityType = "host", onSave
                             <LocalizedText
                               style={[styles.presetText, active && styles.presetTextActive]}
                             >
-                              {localizeDigits(preset, locale)}
+                              {formatCount(preset, locale)}
                             </LocalizedText>
                           </TouchableOpacity>
                         );

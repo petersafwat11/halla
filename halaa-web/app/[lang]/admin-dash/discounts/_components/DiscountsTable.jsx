@@ -14,6 +14,7 @@ import {
   useToggleDiscount,
   useDeleteDiscount,
 } from "@/hooks/discounts";
+import { formatDate } from "@halaa/shared/utils/locale";
 import styles from "./DiscountsTable.module.css";
 
 function getDiscountStatus(discount) {
@@ -127,7 +128,7 @@ export default function DiscountsTable({ onEdit }) {
     _isActive: discount.isActive,
   }));
 
-  const dateLocale = i18n.language === "ar" ? "ar-SA" : "en-US";
+  const dateLocale = i18n.language || "ar";
 
   const renderCell = (key, value, row) => {
     if (key === "code") {
@@ -174,7 +175,7 @@ export default function DiscountsTable({ onEdit }) {
 
     if (key === "expires") {
       if (!value) return t("discounts.noExpiry", "بلا تاريخ");
-      return new Date(value).toLocaleDateString(dateLocale);
+      return formatDate(value, dateLocale);
     }
 
     if (key === "_isActive") return null;

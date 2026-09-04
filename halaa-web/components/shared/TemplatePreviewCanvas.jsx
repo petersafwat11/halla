@@ -17,7 +17,7 @@
 import React, { forwardRef, useRef, useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import OverlayItem from "./OverlayItem";
-import { formatTemplateDate } from "@halaa/shared/utils/formatTemplateDate";
+import { formatDate } from "@halaa/shared/utils/locale";
 
 const cmpZ = (a, b) => (a.zIndex || 0) - (b.zIndex || 0);
 
@@ -25,7 +25,7 @@ const cmpZ = (a, b) => (a.zIndex || 0) - (b.zIndex || 0);
 // stores "HH:MM:AMPM" strings, but template-level defaults like "20:00"
 // are already 24h; both must collapse to HH:MM here so RTL pages don't
 // flip "AM"/"PM" suffixes (which renders as e.g. "AM:03:00").
-function formatFieldValue(field, raw, t) {
+function formatFieldValue(field, raw, locale = "ar") {
   if (raw === undefined || raw === null || raw === "") return null;
   if (field?.type === "time") {
     if (typeof raw === "string") {
@@ -46,7 +46,7 @@ function formatFieldValue(field, raw, t) {
     }
   }
   if (field?.type === "date") {
-    return formatTemplateDate(raw, t) || null;
+    return formatDate(raw, locale) || null;
   }
   return typeof raw === "string" ? raw : String(raw);
 }
@@ -55,7 +55,8 @@ const TemplatePreviewCanvas = forwardRef(function TemplatePreviewCanvas(
   { template, data = {}, primaryColor, fontFamilyOverride, width, style },
   ref
 ) {
-  const { t } = useTranslation("common");
+  const { t, i18n } = useTranslation("common");
+  const currentLocale = i18n?.language || "ar";
   const innerRef = useRef(null);
   const containerRef = ref || innerRef;
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
@@ -142,7 +143,7 @@ const TemplatePreviewCanvas = forwardRef(function TemplatePreviewCanvas(
       {overlays.map((o, i) => {
         const field = fieldsByKey[o.fieldKey];
         const raw = data?.[o.fieldKey];
-        const formatted = formatFieldValue(field, raw, t);
+        const formatted = formatFieldValue(field, raw, currentLocale);
         const display = formatted !== null ? formatted : (field?.labelEn ?? o.fieldKey);
         return (
           <OverlayItem

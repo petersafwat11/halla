@@ -6,6 +6,7 @@ import {
   getPlanFamily,
   getBillingType,
 } from "@halaa/shared/constants/plans";
+import { formatNumber } from "@halaa/shared/utils/locale";
 import styles from "./planDescription.module.css";
 
 /**
@@ -128,7 +129,7 @@ export default function PlanDescription({
           {setupFee > 0 ? (
             <p className={styles.metaRow}>
               <span className={styles.metaIcon} aria-hidden>💼</span>
-              {t("setupFeeRow", { amount: setupFee.toLocaleString() })}
+              {t("setupFeeRow", { amount: formatNumber(setupFee, lang || "ar") })}
             </p>
           ) : null}
 

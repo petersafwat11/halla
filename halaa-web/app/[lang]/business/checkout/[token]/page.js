@@ -4,7 +4,7 @@ import React, { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { FaLock } from "react-icons/fa";
-import { getLocalized } from "@halaa/shared/utils/locale";
+import { getLocalized, formatNumber } from "@halaa/shared/utils/locale";
 import { validateCardExpiry, checkLuhn, buildCreditCardSource } from "@halaa/shared/utils";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import PaymentMethodSelector from "@/app/[lang]/host/plans/_components/PaymentMethodSelector";
@@ -181,7 +181,7 @@ const BusinessCheckoutPage = () => {
                       {item.quantity > 1 ? ` ×${item.quantity}` : ""}
                     </span>
                     <span className={styles.lineValue}>
-                      {Number(item.total).toLocaleString()} {currency}
+                      {formatNumber(Number(item.total), lang || "ar")} {currency}
                     </span>
                   </div>
                 ))}
@@ -192,7 +192,7 @@ const BusinessCheckoutPage = () => {
                       {t("business.checkout.setupFee")}
                     </span>
                     <span className={styles.lineValue}>
-                      {Number(summary.setupFee).toLocaleString()} {currency}
+                      {formatNumber(Number(summary.setupFee), lang || "ar")} {currency}
                     </span>
                   </div>
                 )}
@@ -202,7 +202,7 @@ const BusinessCheckoutPage = () => {
                 <div className={`${styles.lineRow} ${styles.totalRow}`}>
                   <span>{t("business.checkout.total")}</span>
                   <span>
-                    {Number(summary.total).toLocaleString()} {currency}
+                    {formatNumber(Number(summary.total), lang || "ar")} {currency}
                   </span>
                 </div>
               </div>
@@ -231,7 +231,7 @@ const BusinessCheckoutPage = () => {
               <div className={styles.payTotalRow}>
                 <span>{t("business.checkout.total")}</span>
                 <span className={styles.payTotalValue}>
-                  {Number(summary.total).toLocaleString()} {currency}
+                  {formatNumber(Number(summary.total), lang || "ar")} {currency}
                 </span>
               </div>
               <button

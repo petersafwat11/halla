@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import Image from "next/image";
+import { formatDate } from "@halaa/shared/utils/locale";
 import styles from "./scheduleSendingPopup.module.css";
 import { useForm, FormProvider } from "react-hook-form";
 import Button from "@/ui/commen/button/Button";
@@ -52,10 +53,11 @@ const ScheduleSendingPopup = ({
   const windowText = useMemo(() => {
     const fmt = (d) =>
       d
-        ? new Date(d).toLocaleDateString(
-            i18n.language === "ar" ? "ar-SA" : "en-US",
-            { year: "numeric", month: "short", day: "numeric" }
-          )
+        ? formatDate(d, i18n.language || "ar", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          })
         : null;
     const from = fmt(minDate);
     const to = fmt(maxDate);

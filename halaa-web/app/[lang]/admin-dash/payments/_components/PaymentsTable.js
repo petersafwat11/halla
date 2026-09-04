@@ -18,22 +18,22 @@ import PaymentActionModal from "./PaymentActionModal";
 import PaymentDetailModal from "./PaymentDetailModal";
 import usePaymentActions from "./usePaymentActions";
 import { getStatusVisual } from "@/utils/statusColors";
+import {
+  formatCurrency as sharedFormatCurrency,
+  formatDate as sharedFormatDate,
+} from "@halaa/shared/utils/locale";
 import styles from "./PaymentsTable.module.css";
 
 const formatCurrency = (amount, currency = "SAR", isArabic) =>
-  new Intl.NumberFormat(isArabic ? "ar-SA" : "en-US", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 0,
-  }).format(amount || 0);
+  sharedFormatCurrency(amount || 0, isArabic ? "ar" : "en", currency);
 
 const formatDate = (dateStr, isArabic) =>
   dateStr
-    ? new Date(dateStr).toLocaleDateString(isArabic ? "ar-SA" : "en-US", {
+    ? sharedFormatDate(dateStr, isArabic ? "ar" : "en", {
         year: "numeric",
         month: "short",
         day: "numeric",
-      })
+      }) || "—"
     : "—";
 
 export default function PaymentsTable() {

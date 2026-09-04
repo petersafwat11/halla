@@ -32,7 +32,7 @@ test("NotificationItem: backend title/message are adaptive; timestamps are local
   );
 
   // Relative time uses locale digits + plural interpolation, never raw toLocale*.
-  assert.ok(item.includes("localizeDigits"));
+  assert.ok(item.includes("formatCount"));
   assert.ok(!item.includes("toLocale"));
 
   // Unread accent anchors at the logical start edge, never physically.

@@ -2,6 +2,7 @@
 import React from "react";
 import Image from "next/image";
 import { useTranslation } from "react-i18next";
+import { formatDate } from "@halaa/shared/utils/locale";
 import styles from "../LastEventStats.module.css";
 
 const STATUS_KEYS = {
@@ -17,19 +18,13 @@ const STATUS_KEYS = {
 
 function formatDateTime(date, time, currentLocale) {
   if (!date) return "";
-  try {
-    const eventDate = new Date(date);
-    const locale = currentLocale === "ar" ? "ar-EG" : "en-US";
-    const dateStr = eventDate.toLocaleDateString(locale, {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-    return time ? `${dateStr} - ${time}` : dateStr;
-  } catch {
-    return "";
-  }
+  const dateStr = formatDate(date, currentLocale || "ar", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+  return time ? `${dateStr} - ${time}` : dateStr;
 }
 
 export default function LastEventHeader({ event, isMobile, currentLocale }) {

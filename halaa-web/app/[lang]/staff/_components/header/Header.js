@@ -1,5 +1,6 @@
 import React from "react";
 import styles from "./header.module.css";
+import { formatDate } from "@halaa/shared/utils/locale";
 
 const CalendarIcon = () => (
   <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
@@ -21,21 +22,8 @@ const LocationIcon = () => (
   </svg>
 );
 
-function formatDate(date) {
-  if (!date) return null;
-  try {
-    return new Date(date).toLocaleDateString("ar-SA", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
-  } catch {
-    return null;
-  }
-}
-
 export default function Header({ eventName, event }) {
-  const formattedDate = formatDate(event?.date);
+  const formattedDate = formatDate(event?.date, "ar");
   const time = event?.time;
   const location = event?.location?.address || event?.location?.city || null;
 

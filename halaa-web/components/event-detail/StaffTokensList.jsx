@@ -6,15 +6,12 @@ import {
   useEventStaffTokens,
   useRevokeStaffAccess,
 } from "@/hooks/staff";
+import { formatDateTime } from "@halaa/shared/utils/locale";
 import styles from "./staffTokensList.module.css";
 
-const formatDate = (value) => {
+const formatDate = (value, locale = "ar") => {
   if (!value) return null;
-  try {
-    return new Date(value).toLocaleString();
-  } catch {
-    return null;
-  }
+  return formatDateTime(value, locale) || null;
 };
 
 const tokenStatus = (token) => {
@@ -24,7 +21,7 @@ const tokenStatus = (token) => {
 };
 
 export default function StaffTokensList({ eventId, staffList }) {
-  const { t } = useTranslation("home-events");
+  const { t, i18n } = useTranslation("home-events");
   const { canDelete } = usePageAccess("events");
   const { data, isLoading } = useEventStaffTokens(eventId);
   const revokeMutation = useRevokeStaffAccess();
@@ -72,7 +69,7 @@ export default function StaffTokensList({ eventId, staffList }) {
               {token?.lastUsedAt ? (
                 <span className={styles.meta}>
                   {t("singleEvent.staffTokens.lastUsedAt")}:{" "}
-                  {formatDate(token.lastUsedAt)}
+                  {formatDate(token.lastUsedAt, i18n?.language || "ar")}
                 </span>
               ) : null}
               {token?.useCount ? (

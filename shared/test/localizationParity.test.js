@@ -4,7 +4,6 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-  formatEventDate,
   formatDate,
   formatTime,
   formatDateTime,
@@ -14,6 +13,7 @@ import {
   formatGuestCount,
   getLocalized,
   normalizeDigits,
+  getDatePickerLocale,
 } from "../src/utils/locale.js";
 import { formatSar, buildCheckoutQuote } from "../src/utils/money.js";
 
@@ -133,7 +133,7 @@ describe("Session 6.2: Localization & Accessibility Parity Suite", () => {
     assert.equal(formatGuestCount(150, "ar"), "150 ضيف");
   });
 
-  it("formatEventDate locks to Gregorian calendar (F-04) and Latin digits (F-15) across fixed civil dates", () => {
+  it("formatDate locks to Gregorian calendar (F-04) and Latin digits (F-15) across fixed civil dates", () => {
     const testCases = [
       { date: "2026-05-25", arDay: "25", arMonth: "مايو", enMonth: "May" },
       { date: "2026-05-28", arDay: "28", arMonth: "مايو", enMonth: "May" },
@@ -142,8 +142,8 @@ describe("Session 6.2: Localization & Accessibility Parity Suite", () => {
     ];
 
     for (const { date, arDay, arMonth, enMonth } of testCases) {
-      const ar = formatEventDate(date, "ar");
-      const en = formatEventDate(date, "en");
+      const ar = formatDate(date, "ar");
+      const en = formatDate(date, "en");
 
       // Gregorian month and year check (never Islamic months like صفر / شوال / محرم)
       assert.ok(ar.includes(arDay), `Arabic output for ${date} must contain Latin day ${arDay}: ${ar}`);
@@ -155,11 +155,15 @@ describe("Session 6.2: Localization & Accessibility Parity Suite", () => {
       assert.ok(en.includes(enMonth), `English output for ${date} must contain month ${enMonth}: ${en}`);
       assert.ok(en.includes("2026"), `English output for ${date} must contain year 2026: ${en}`);
 
-      // UTC midnight Date instance produces identical day meaning without 1-day rollover
-      const utcDate = new Date(`${date}T00:00:00.000Z`);
-      const arFromUtc = formatEventDate(utcDate, "ar");
-      assert.equal(arFromUtc, ar, `Date object at UTC midnight must match string format for ${date}`);
+      // Civil date formatting is invariant across timezones
+      const arRiyadh = formatDate(date, "ar", { timeZone: "Asia/Riyadh" });
+      const arNewYork = formatDate(date, "ar", { timeZone: "America/New_York" });
+      assert.equal(arRiyadh, ar, `Civil date in Riyadh must equal standard format for ${date}`);
+      assert.equal(arNewYork, ar, `Civil date in New York must equal standard format for ${date}`);
     }
+
+    assert.equal(getDatePickerLocale("ar"), "ar-SA-u-ca-gregory-nu-latn");
+    assert.equal(getDatePickerLocale("en"), "en-US-u-ca-gregory-nu-latn");
   });
 
   it("formatSar and buildCheckoutQuote preserve exact currency format without floating drift", () => {

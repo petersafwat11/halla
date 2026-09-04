@@ -22,7 +22,7 @@ import { Ionicons } from "@expo/vector-icons";
 import {
   resolveTaqnyatPlaceholders,
   buildTaqnyatPreviewContext,
-  formatEventDate,
+  formatDate,
 } from "@halaa/shared/utils";
 import { useHostTaqnyatTemplates } from "../../hooks/taqnyatTemplates";
 import { useTranslation } from "../../localization";
@@ -82,7 +82,7 @@ const StepFour = () => {
   // previews on screen match what the guest will receive.
   const previewContext = useMemo(() => {
     const dateFormatted = eventDate
-      ? formatEventDate(eventDate, currentLanguage || "ar")
+      ? formatDate(eventDate, currentLanguage || "ar")
       : "";
     return buildTaqnyatPreviewContext({
       guestName: t("preview_guest_placeholder"),

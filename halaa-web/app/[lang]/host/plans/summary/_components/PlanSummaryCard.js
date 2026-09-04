@@ -2,7 +2,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { FaCalendarAlt, FaUsers, FaGift, FaLayerGroup } from "react-icons/fa";
-import { getLocalized } from "@halaa/shared/utils/locale";
+import { formatNumber, getLocalized } from "@halaa/shared/utils/locale";
 import {
   COMPENSATION_PERCENTAGE,
   isPoolPlan,
@@ -147,7 +147,7 @@ const PlanSummaryCard = ({
               {t("summary.totalInvitesLabel", { defaultValue: "Total invites" })}
             </span>
             <span className={styles.totalInvitesValue}>
-              {totalInvites.toLocaleString(i18n.language === "ar" ? "ar-SA" : "en-US")}
+              {formatNumber(totalInvites, i18n?.language || "ar")}
             </span>
           </div>
           <p className={styles.totalInvitesHint}>

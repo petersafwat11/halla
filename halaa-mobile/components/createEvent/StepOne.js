@@ -10,9 +10,9 @@ import { useFormContext } from "react-hook-form";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useTranslation } from "../../localization";
 import {
-  formatEventDate,
   formatDate as formatLocaleDate,
   formatTime as formatLocaleTime,
+  getDatePickerLocale,
   normalizeDigits,
 } from "@halaa/shared/utils/locale";
 import TextInput from "../commen/TextInput";
@@ -155,10 +155,10 @@ const StepOne = () => {
 
   const formatDate = (date) => {
     if (!date) return "";
-    return formatEventDate(date, currentLanguage || "ar");
+    return formatLocaleDate(date, currentLanguage || "ar");
   };
 
-  const pickerLocale = currentLanguage === "ar" ? "ar-SA" : "en-US";
+  const pickerLocale = getDatePickerLocale(currentLanguage);
 
   const commitDate = (selectedDate) => {
     setValue("eventDate", selectedDate, {
@@ -267,6 +267,7 @@ const StepOne = () => {
           display="default"
           onChange={handleDateChange}
           minimumDate={minDate}
+          locale={pickerLocale}
         />
       )}
 
@@ -309,6 +310,7 @@ const StepOne = () => {
           mode="time"
           display="default"
           onChange={handleTimeChange}
+          locale={pickerLocale}
         />
       )}
 

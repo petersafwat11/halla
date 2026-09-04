@@ -8,6 +8,7 @@ import { normalizeDashboardFilters } from "@/utils/filterNormalizer";
 import Table from "@/ui/commen/new-table/Table";
 import Bottom from "@/ui/admin/dashboard/bottom/Bottom";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
+import { formatDate } from "@halaa/shared/utils/locale";
 import styles from "./RecentActivity.module.css";
 
 const HOST_STATUS_KEYS = {
@@ -36,14 +37,6 @@ const EVENT_STATUS_STYLES = {
   pending_scheduling: styles.statusBadgePendingScheduling,
 };
 
-function formatDate(value, locale = "ar-SA") {
-  if (!value) return value;
-  return new Intl.DateTimeFormat(locale, {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(new Date(value));
-}
 
 export default function RecentActivity() {
   const { t, i18n } = useTranslation("adminDashboard");
@@ -85,7 +78,7 @@ export default function RecentActivity() {
         );
       }
       if (key === "date" && value) {
-        return formatDate(value, i18n.language);
+        return formatDate(value, i18n.language || "ar");
       }
       return value;
     },

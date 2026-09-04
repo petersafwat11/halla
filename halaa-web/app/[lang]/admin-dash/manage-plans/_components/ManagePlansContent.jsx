@@ -12,7 +12,7 @@ import StatsCards from "@/ui/host/main-page/StatsCards";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import SearchableSelect from "@/ui/commen/inputs/SearchableSelect/SearchableSelect";
 import EditPlanPopup from "./EditPlanPopup";
-import { getLocalized } from "@halaa/shared/utils/locale";
+import { getLocalized, formatNumber } from "@halaa/shared/utils/locale";
 import SarIcon from "@/ui/commen/SarIcon/SarIcon";
 import { getStatusVisual } from "@/utils/statusColors";
 import styles from "./ManagePlansContent.module.css";
@@ -30,6 +30,7 @@ const getAccentColor = (planType) => {
 
 export default function ManagePlansContent() {
   const { t, i18n } = useTranslation("admin");
+  const currentLocale = i18n?.language || "ar";
   const [editingPlan, setEditingPlan] = useState(null);
   const [activeFilter, setActiveFilter] = useState("all");
 
@@ -140,7 +141,7 @@ export default function ManagePlansContent() {
                   <div className={styles.priceAmount}>
                     <SarIcon size="1.5rem" className={styles.currency} style={{ color: accent }} />
                     <span className={styles.price} style={{ color: accent }}>
-                      {price.toLocaleString()}
+                      {formatNumber(price, currentLocale)}
                     </span>
                   </div>
                   <span className={styles.pricePeriod}>{t("managePlans.pricePeriod.event")}</span>
@@ -150,14 +151,14 @@ export default function ManagePlansContent() {
                   <div className={styles.limitItem}>
                     <FaUsers className={styles.limitIcon} style={{ color: accent }} />
                     <span className={styles.limitValue}>
-                      {maxGuests === -1 ? "∞" : (maxGuests || 0).toLocaleString()}
+                      {maxGuests === -1 ? "∞" : formatNumber(maxGuests || 0, currentLocale)}
                     </span>
                     <span className={styles.limitLabel}>{t("managePlans.cards.invites")}</span>
                   </div>
                   <div className={styles.limitItem}>
                     <FaCalendarAlt className={styles.limitIcon} style={{ color: accent }} />
                     <span className={styles.limitValue}>
-                      {maxEvents === -1 ? "∞" : maxEvents || 0}
+                      {maxEvents === -1 ? "∞" : formatNumber(maxEvents || 0, currentLocale)}
                     </span>
                     <span className={styles.limitLabel}>{t("managePlans.cards.events")}</span>
                   </div>

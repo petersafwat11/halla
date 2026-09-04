@@ -27,7 +27,7 @@ const AdminSettingsClient = () => {
   const userRole = apiUser?.role || USER_ROLES.ADMIN;
   const user = {
     emailVerified: apiUser?.emailVerified || false,
-    email: apiUser?.email || "",",
+    email: apiUser?.email || "",
     name: apiUser?.name || "",
     phoneNumber: apiUser?.phoneNumber || "",
     profile: apiUser?.profile || {},

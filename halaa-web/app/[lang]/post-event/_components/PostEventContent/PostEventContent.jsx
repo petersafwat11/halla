@@ -7,18 +7,8 @@ import UserInfo from "../UserInfo/UserInfo";
 import PostMediaGallery from "@/components/postEvent/PostMediaGallery";
 import ActionButtons from "../ActionButtons/ActionButtons";
 import CommentSection from "../CommentSection/CommentSection";
+import { formatDate } from "@halaa/shared/utils/locale";
 import styles from "./postEventContent.module.css";
-
-const formatEventDate = (rawDate, locale) => {
-  if (!rawDate) return "";
-  const date = new Date(rawDate);
-  if (Number.isNaN(date.getTime())) return "";
-  return date.toLocaleDateString(locale || "ar", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-};
 
 const PostEventContent = ({ content, eventInfo, guestId, eventId, loading }) => {
   const { t, i18n } = useTranslation("postEvent");
@@ -37,10 +27,7 @@ const PostEventContent = ({ content, eventInfo, guestId, eventId, loading }) => 
   const hostName = content?.host?.name || "";
   const eventTitle =
     content?.event?.eventDetails?.title || eventInfo?.title || "";
-  const eventDate = formatEventDate(
-    content?.event?.eventDetails?.date,
-    i18n.language
-  );
+  const eventDate = formatDate(content?.event?.eventDetails?.date, i18n?.language || "ar");
   const caption = content?.title || "";
   const media = Array.isArray(content?.media) ? content.media : [];
 

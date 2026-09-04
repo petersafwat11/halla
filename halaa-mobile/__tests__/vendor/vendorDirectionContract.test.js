@@ -130,7 +130,7 @@ test("ImageInput (shared): no hardcoded Arabic fallback, localized chrome", () =
 test("NotificationBell (shared): localized badge accessibility + locale digits", () => {
   const source = read("components/notifications/NotificationBell.js");
 
-  assert.ok(source.includes("localizeDigits"), "badge count follows the active digit system");
+  assert.ok(source.includes("formatCount"), "badge count follows the active digit system");
   assert.match(source, /t\("notifications\.unreadBadge"/, "icon-only bell needs a localized accessibility label");
   assert.ok(!source.includes("`Notifications${"), "hardcoded English accessibility string removed");
 });

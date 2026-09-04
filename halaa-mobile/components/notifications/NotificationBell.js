@@ -3,7 +3,7 @@ import { TouchableOpacity, View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useUnreadCount } from "../../hooks/notifications";
 import { useTranslation } from "../../localization";
-import { localizeDigits } from "@halaa/shared/utils/locale";
+import { formatCount } from "@halaa/shared/utils/locale";
 import { parseUnreadCount } from "../../utils/notificationCount";
 
 export { parseUnreadCount };
@@ -21,17 +21,17 @@ const NotificationBell = ({ onPress, color = "#F9F4EF", size = 20 }) => {
   const { data: unreadData } = useUnreadCount();
   const unreadCount = parseUnreadCount(unreadData?.count);
 
-  const formatCount = (count) => {
+  const displayCount = (count) => {
     if (count > MAX_BADGE_COUNT) {
-      return `${localizeDigits(MAX_BADGE_COUNT, currentLanguage)}+`;
+      return `${formatCount(MAX_BADGE_COUNT, currentLanguage)}+`;
     }
-    return localizeDigits(count, currentLanguage);
+    return formatCount(count, currentLanguage);
   };
 
   const accessibilityLabel =
     unreadCount > 0
       ? t("notifications.unreadBadge", {
-          count: formatCount(unreadCount),
+          count: displayCount(unreadCount),
           defaultValue: t("notifications.title"),
         })
       : t("notifications.title");
@@ -49,7 +49,7 @@ const NotificationBell = ({ onPress, color = "#F9F4EF", size = 20 }) => {
           {/* Standalone numeric token: pinned LTR so the "+" suffix cannot
               reorder around digits inside RTL chrome. */}
           <Text style={[styles.badgeText, { writingDirection: "ltr" }]}>
-            {formatCount(unreadCount)}
+            {displayCount(unreadCount)}
           </Text>
         </View>
       )}
