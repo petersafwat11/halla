@@ -164,11 +164,11 @@ const createApp = () => {
       req.rawBody = buf;
     }
   };
-  // The API stays tightly capped at 10kb, but store webhooks (RevenueCat) can
-  // carry larger payloads (subscriber attributes, aliases, offering metadata),
-  // so the RC webhook route gets a higher limit to avoid 413 → infinite retries.
+  // The API stays tightly capped at 10kb, but store webhooks (RevenueCat) and
+  // event-creation payloads (with guests/details) need higher bounds.
   const standardJson = express.json({ limit: "10kb", verify: captureRawForWebhook });
   const webhookJson = express.json({ limit: "1mb", verify: captureRawForWebhook });
+  const eventJson = express.json({ limit: "5mb", verify: captureRawForWebhook });
   app.use((req, res, next) => {
     if (
       req.originalUrl &&
@@ -176,9 +176,15 @@ const createApp = () => {
     ) {
       return webhookJson(req, res, next);
     }
+    if (
+      req.originalUrl &&
+      (req.originalUrl.includes("/events") || req.originalUrl.includes("/admin/events"))
+    ) {
+      return eventJson(req, res, next);
+    }
     return standardJson(req, res, next);
   });
-  app.use(express.urlencoded({ extended: true, limit: "10kb" }));
+  app.use(express.urlencoded({ extended: true, limit: "50kb" }));
   app.use(cookieParser());
 
   // Data sanitization against NoSQL query injection

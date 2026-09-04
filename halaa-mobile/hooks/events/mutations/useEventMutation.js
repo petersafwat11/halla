@@ -221,10 +221,22 @@ const _updateReminderSettings = (eventId, reminderSettings) => {
 const ACTIONS = {
   // --------------------------------------------------------------- CRUD
   createEvent: {
-    mutationFn: async (formData) => {
+    mutationFn: async (variables) => {
+      const body =
+        variables instanceof FormData
+          ? variables
+          : variables?.formData || variables?.eventData || variables;
+      const idempotencyKey = variables?.idempotencyKey;
+
+      const headers = {};
+      if (idempotencyKey) {
+        headers["Idempotency-Key"] = idempotencyKey;
+      }
+
       const response = await apiFetch(ENDPOINTS.EVENTS.CREATE, {
         method: "POST",
-        body: formData,
+        body,
+        headers: Object.keys(headers).length > 0 ? headers : undefined,
         timeoutMs: 60 * 1000,
       });
       const responseData = await response.json().catch(() => ({}));

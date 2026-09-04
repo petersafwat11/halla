@@ -3,11 +3,23 @@ const router = express.Router();
 const adminController = require('./admin.controller');
 const { requirePageAccess } = require('../../shared/middleware/rbac');
 const { ADMIN_PAGES } = require('../../shared/constants');
-const { validateObjectId, validateZod } = require('../../shared/middleware/validation');
+const { validateObjectId, validateZod, parseFormDataJsonFields } = require('../../shared/middleware/validation');
 const { auditLog } = require('../../shared/middleware/auditLog');
 const { bulkOperationLimiter } = require('../../shared/middleware/rateLimiter');
 const adminValidation = require('./admin.validation');
-const { uploadTemplateImage } = require('../../shared/utils/fileUpload');
+const { uploadTemplateImage, deleteFile, s3Upload } = require('../../shared/utils/fileUpload');
+const { idempotency } = require('../../shared/middleware/idempotency');
+
+const cleanupRejectedTemplateUpload = (req, res, next) => {
+  res.once('finish', () => {
+    if (res.statusCode < 400 || !req.file) return;
+    const cleanup = req.file.key
+      ? s3Upload.deleteFromS3(req.file.key)
+      : deleteFile(req.file.location || req.file.path || req.file.filename);
+    Promise.resolve(cleanup).catch(() => {});
+  });
+  next();
+};
 
 // ============================================
 // EVENT MANAGEMENT (ADMIN)
@@ -42,7 +54,29 @@ const { uploadTemplateImage } = require('../../shared/utils/fileUpload');
  */
 router.post('/events/create-for-host',
   requirePageAccess(ADMIN_PAGES.EVENTS, 'create'),
+  (req, res, next) => {
+    if (!req.get("idempotency-key")) {
+      return res.status(400).json({
+        status: "error",
+        code: "IDEMPOTENCY_KEY_REQUIRED",
+        message: "Idempotency-Key header is required",
+        requestId: req.requestId || null,
+      });
+    }
+    next();
+  },
   uploadTemplateImage,
+  cleanupRejectedTemplateUpload,
+  parseFormDataJsonFields([
+    "eventDetails",
+    "guestList",
+    "staffList",
+    "visualTemplate",
+    "taqnyatTemplate",
+    "guestReplies",
+    "launchSettings",
+  ]),
+  idempotency({ scope: "admin.events.create", required: true }),
   adminController.createEventForHost
 );
 

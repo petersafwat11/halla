@@ -27,11 +27,25 @@
 const crypto = require("crypto");
 const IdempotencyKey = require("../../../models/IdempotencyKeyModel");
 
-const sha256 = (value) =>
-  crypto
-    .createHash("sha256")
-    .update(typeof value === "string" ? value : JSON.stringify(value || {}))
-    .digest("hex");
+function canonicalize(val) {
+  if (val === null || typeof val !== "object") {
+    return val;
+  }
+  if (Array.isArray(val)) {
+    return val.map(canonicalize);
+  }
+  const sorted = {};
+  for (const key of Object.keys(val).sort()) {
+    sorted[key] = canonicalize(val[key]);
+  }
+  return sorted;
+}
+
+const sha256 = (value) => {
+  const normalized =
+    typeof value === "string" ? value : JSON.stringify(canonicalize(value || {}));
+  return crypto.createHash("sha256").update(normalized).digest("hex");
+};
 
 const POLL_INTERVAL_MS = 200;
 const POLL_TIMEOUT_MS = 10_000;
@@ -97,7 +111,7 @@ async function withIdempotency(key, fn, opts = {}) {
         createdAt: new Date(),
       },
     },
-    { upsert: true, new: false, setDefaultsOnInsert: true, rawResult: true }
+    { upsert: true, new: false, setDefaultsOnInsert: true, includeResultMetadata: true }
   );
 
   const updatedExisting = reservation?.lastErrorObject?.updatedExisting === true;

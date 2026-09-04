@@ -9,3 +9,4 @@
 export { ApiError, apiErrorFromResponse, apiErrorFromTransport } from "./ApiError.js";
 export { authErrorMessage } from "./authErrorMessage.js";
 export { ErrorTypes, STATUS_CODE_MESSAGES, errorTypeFromStatus } from "./errorTypes.js";
+export { deriveSupportReference, presentError, formatErrorDisplay } from "./errorPresenter.js";

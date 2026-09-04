@@ -323,14 +323,22 @@ export const useAdminEventMutation = (action) => {
   const mutations = {
     createForHost: {
       // Accepts a FormData (admin event-creation wizard, multipart with
-      // templateImage) or a plain JSON object — apiRequest/axios pick the
-      // correct content type from the body.
-      mutationFn: (data) =>
-        apiRequest({
+      // templateImage) or a plain JSON object, optionally wrapped in
+      // { data, idempotencyKey } to carry an idempotency header.
+      mutationFn: (variables) => {
+        const data = variables?.data !== undefined ? variables.data : variables;
+        const idempotencyKey = variables?.idempotencyKey;
+        const config = {};
+        if (idempotencyKey) {
+          config.headers = { "Idempotency-Key": idempotencyKey };
+        }
+        return apiRequest({
           method: "POST",
           path: API_PATHS.admin.events.createForHost,
           data,
-        }),
+          config,
+        });
+      },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: eventsKeys.all });
         queryClient.invalidateQueries({ queryKey: dashboardAll() });

@@ -1,5 +1,7 @@
-export const INVITATION_UPLOAD_TARGET_BYTES = 9 * 1024 * 1024;
-export const INVITATION_MAX_DIMENSION = 2048;
+import { UPLOAD_LIMITS } from "@halaa/shared/constants";
+
+export const INVITATION_UPLOAD_TARGET_BYTES = UPLOAD_LIMITS.CLIENT_INVITATION_TARGET_BYTES;
+export const INVITATION_MAX_DIMENSION = UPLOAD_LIMITS.INVITATION_MAX_DIMENSION;
 
 const PASSES = [
   { maxDimension: INVITATION_MAX_DIMENSION, quality: 0.88 },
@@ -75,6 +77,8 @@ export async function normalizeInvitationImageFile(file) {
     bitmap.close?.();
   }
 
-  throw new Error("INVITATION_IMAGE_TOO_LARGE_AFTER_COMPRESSION");
+  const err = new Error("INVITATION_IMAGE_TOO_LARGE_AFTER_COMPRESSION");
+  err.code = "EVENT_IMAGE_TOO_LARGE";
+  throw err;
 }
 

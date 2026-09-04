@@ -57,14 +57,23 @@ const handleValidationErrorDB = (err) => {
  * @param {Error} err
  * @returns {AppError}
  */
-const handleMulterError = (err) => {
+const handleMulterError = (err, req) => {
+  const isEventRoute =
+    req?.originalUrl &&
+    (req.originalUrl.includes("/events") || req.originalUrl.includes("/admin/events"));
+  if (err.code === "LIMIT_FILE_SIZE") {
+    return new AppError(
+      "File too large. Maximum size is 10 MB.",
+      400,
+      isEventRoute ? "EVENT_IMAGE_TOO_LARGE" : "LIMIT_FILE_SIZE"
+    );
+  }
   const messages = {
-    LIMIT_FILE_SIZE: 'File too large. Please upload a smaller file.',
-    LIMIT_FILE_COUNT: 'Too many files uploaded.',
-    LIMIT_UNEXPECTED_FILE: 'Unexpected file field.',
+    LIMIT_FILE_COUNT: "Too many files uploaded.",
+    LIMIT_UNEXPECTED_FILE: "Unexpected file field.",
   };
-  const message = messages[err.code] || 'File upload failed.';
-  return new AppError(message, 400, err.code || 'UPLOAD_ERROR');
+  const message = messages[err.code] || "File upload failed.";
+  return new AppError(message, 400, err.code || "UPLOAD_ERROR");
 };
 
 /**
@@ -186,11 +195,26 @@ module.exports = (err, req, res, next) => {
   error.isOperational = err.isOperational;
 
   if (err.name === 'CastError') error = handleCastErrorDB(err);
-  if (err.name === 'MulterError') error = handleMulterError(err);
+  if (err.name === 'MulterError') error = handleMulterError(err, req);
   if (err.code === 11000) error = handleDuplicateFieldsDB(err);
   if (err.name === 'ValidationError' && err.errors) error = handleValidationErrorDB(err);
   if (err.name === 'JsonWebTokenError') error = handleJWTError();
   if (err.name === 'TokenExpiredError') error = handleJWTExpiredError();
+  if (err.message && err.message.includes('Only image files are allowed')) {
+    error = new AppError(err.message, 400, 'EVENT_IMAGE_UNPROCESSABLE');
+  }
+  if (err.type === 'entity.too.large') {
+    const isEvent =
+      req?.originalUrl &&
+      (req.originalUrl.includes('/events') || req.originalUrl.includes('/admin/events'));
+    error = new AppError('Payload too large', 413, isEvent ? 'EVENT_PAYLOAD_TOO_LARGE' : 'PAYLOAD_TOO_LARGE');
+  }
+  if (err.name === 'TimeoutError' || err.code === 'ECONNABORTED' || err.code === 'ETIMEDOUT') {
+    const isEvent =
+      req?.originalUrl &&
+      (req.originalUrl.includes('/events') || req.originalUrl.includes('/admin/events'));
+    error = new AppError('Request timed out', 408, isEvent ? 'EVENT_CREATE_TIMEOUT' : 'TIMEOUT');
+  }
 
   if (config.isDev) {
     sendErrorDev(error, req, res);

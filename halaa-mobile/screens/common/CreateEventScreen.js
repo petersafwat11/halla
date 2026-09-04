@@ -9,6 +9,7 @@ import { useTranslation } from "../../localization";
 import { useToast } from "../../contexts/ToastContext";
 import TopBar from "../../components/plans/TopBar";
 import { CreateEventForm } from "../../components/admin-dashboard/events";
+import { presentError, formatErrorDisplay } from "@halaa/shared/errors";
 import { backgrounds } from "../../styles/tokens";
 
 // Unified create-event screen used by every role. The two legacy screens
@@ -27,8 +28,7 @@ const CreateEventScreen = () => {
   const isHostRole = role === "host";
 
   const navigation = useNavigation();
-  const { t } = useTranslation("admin");
-  const { t: tCreate } = useTranslation("createEvent");
+  const { t, currentLanguage } = useTranslation("admin");
   const toast = useToast();
 
   const createEvent = useCreateEventForHost();
@@ -51,10 +51,10 @@ const CreateEventScreen = () => {
         },
         extra: { status: e?.status || null, validationErrors: e?.errors || null },
       });
-      const reference = e?.requestId
-        ? ` (${tCreate("error_reference")}: ${e.requestId})`
-        : "";
-      toast.error(`${e?.message || t("events.createError")}${reference}`);
+      const lang = currentLanguage === "en" ? "en" : "ar";
+      const presented = presentError(e, { language: lang });
+      const displayMsg = formatErrorDisplay(presented, lang);
+      toast.error(displayMsg);
     }
   };
 

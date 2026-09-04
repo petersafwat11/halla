@@ -26,12 +26,21 @@
 
 const IdempotencyKey = require("../../../models/IdempotencyKeyModel");
 const { _sha256 } = require("../utils/idempotency");
+const fileUpload = require("../utils/fileUpload");
 
 const HEADER = "idempotency-key";
 const POLL_INTERVAL_MS = 200;
 const POLL_TIMEOUT_MS = 10_000;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+const cleanupUploadedFile = (req) => {
+  if (!req?.file) return;
+  const cleanup = req.file.key
+    ? fileUpload.s3Upload?.deleteFromS3?.(req.file.key)
+    : fileUpload.deleteFile?.(req.file.location || req.file.path || req.file.filename);
+  Promise.resolve(cleanup).catch(() => {});
+};
 
 const idempotency = ({ scope = "", required = false } = {}) => {
   return async function idempotencyMiddleware(req, res, next) {
@@ -42,14 +51,20 @@ const idempotency = ({ scope = "", required = false } = {}) => {
     const key = req.get(HEADER);
     if (!key) {
       if (required) {
-        return res
-          .status(400)
-          .json({ status: "error", message: "Idempotency-Key header is required" });
+        return res.status(400).json({
+          status: "error",
+          code: "IDEMPOTENCY_KEY_REQUIRED",
+          message: "Idempotency-Key header is required",
+          requestId: req.requestId || null,
+        });
       }
       return next();
     }
 
-    const requestHash = _sha256(req.body || {});
+    const payloadToHash = req.file
+      ? { ...req.body, _fileMeta: { name: req.file.originalname, size: req.file.size } }
+      : (req.body || {});
+    const requestHash = _sha256(payloadToHash);
     const userId = req.user?._id || null;
     const filter = { userId, scope, key };
 
@@ -70,7 +85,7 @@ const idempotency = ({ scope = "", required = false } = {}) => {
             createdAt: new Date(),
           },
         },
-        { upsert: true, new: false, setDefaultsOnInsert: true, rawResult: true }
+        { upsert: true, new: false, setDefaultsOnInsert: true, includeResultMetadata: true }
       );
     } catch (err) {
       // Duplicate-key races against the unique index can leak through —
@@ -91,13 +106,17 @@ const idempotency = ({ scope = "", required = false } = {}) => {
     if (updatedExisting && existing) {
       // Mismatched body always 409.
       if (existing.requestHash && existing.requestHash !== requestHash) {
+        cleanupUploadedFile(req);
         return res.status(409).json({
           status: "error",
+          code: "IDEMPOTENCY_CONFLICT",
           message: "Idempotency-Key reused with a different body",
+          requestId: req.requestId || null,
         });
       }
 
       if (existing.status === "completed" && existing.response) {
+        cleanupUploadedFile(req);
         return res.status(existing.response.status).json(existing.response.body);
       }
 
@@ -116,6 +135,7 @@ const idempotency = ({ scope = "", required = false } = {}) => {
         const refreshed = await IdempotencyKey.findOne(filter);
         if (!refreshed) break; // peer failed and deleted; retry.
         if (refreshed.status === "completed" && refreshed.response) {
+          cleanupUploadedFile(req);
           return res.status(refreshed.response.status).json(refreshed.response.body);
         }
         if (refreshed.status === "failed") {
@@ -125,10 +145,13 @@ const idempotency = ({ scope = "", required = false } = {}) => {
           return idempotencyMiddleware(req, res, next);
         }
       }
+      cleanupUploadedFile(req);
       res.set("Retry-After", "1");
       return res.status(409).json({
         status: "error",
+        code: "IDEMPOTENCY_PENDING_TIMEOUT",
         message: "A duplicate request with this Idempotency-Key is still being processed",
+        requestId: req.requestId || null,
       });
     }
 
@@ -141,10 +164,16 @@ const idempotency = ({ scope = "", required = false } = {}) => {
       responded = true;
       const status = res.statusCode;
       if (status >= 200 && status < 300) {
+        let serializedBody = body;
+        try {
+          serializedBody = JSON.parse(JSON.stringify(body));
+        } catch {
+          // fallback to body if JSON serialization fails
+        }
         IdempotencyKey.updateOne(filter, {
           $set: {
             status: "completed",
-            response: { status, body },
+            response: { status, body: serializedBody },
             completedAt: new Date(),
           },
         }).catch((err) => {

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { FormProvider } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
@@ -33,6 +33,10 @@ const CreateEventV2 = () => {
   const [showMobilePreview, setShowMobilePreview] = useState(false);
   const [showStaffPopup, setShowStaffPopup] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const idempotencyKeyRef = useRef(null);
+  const isSubmittingRef = useRef(false);
   const router = useRouter();
 
   // Use unified event form hook
@@ -53,6 +57,18 @@ const CreateEventV2 = () => {
     t,
     handleSubmit,
   } = useEventForm({ mode: "create", totalSteps: 5 });
+
+  // Invalidate idempotency key whenever any field is edited
+  useEffect(() => {
+    const subscription = methods.watch(() => {
+      idempotencyKeyRef.current = null;
+    });
+    return () => subscription.unsubscribe();
+  }, [methods]);
+
+  useEffect(() => {
+    idempotencyKeyRef.current = null;
+  }, [staffList]);
 
   // React Query hooks
   const { data: subscriptionData, isLoading: subscriptionLoading } =
@@ -75,27 +91,45 @@ const CreateEventV2 = () => {
   // Submit handler using unified payload builder
   const onSubmit = useCallback(
     async (data) => {
-      try {
-        // No client-side guard for templateImage — visualTemplate
-        // selection is enforced by validateStep(3), and the backend
-        // accepts submissions with `visualTemplateRef + fieldValues`
-        // alone (no baked File required). Reference `data` so the
-        // closure tracks it for hot-reload correctness.
-        void data;
+      if (isSubmittingRef.current) return;
+      isSubmittingRef.current = true;
+      setIsSubmitting(true);
+      setIsCompleting(true);
+      setElapsedSeconds(0);
 
+      const timer = setInterval(() => {
+        setElapsedSeconds((prev) => prev + 1);
+      }, 1000);
+
+      try {
+        void data;
         const eventPayload = buildEventPayload();
-        // Once the backend accepts this submission, the subscription query can
-        // legitimately report that the plan is exhausted. Keep the wizard in
-        // its completion state until navigation unmounts it instead of letting
-        // that refresh replace the page with the limit-reached view.
-        setIsCompleting(true);
-        await createEvent.mutateAsync(eventPayload);
+
+        // One idempotency key per logical submit attempt; reused on retry unless edited
+        if (!idempotencyKeyRef.current) {
+          idempotencyKeyRef.current =
+            typeof crypto !== "undefined" && crypto.randomUUID
+              ? crypto.randomUUID()
+              : `host_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+        }
+
+        await createEvent.mutateAsync({
+          eventData: eventPayload,
+          idempotencyKey: idempotencyKeyRef.current,
+        });
 
         toastUtils.success(t("success.event_created"));
+        idempotencyKeyRef.current = null;
         router.replace(`/${locale}/host`);
       } catch (error) {
+        // Form state preserved on failure; allow retry
         setIsCompleting(false);
-        handleError(error, t, { fallbackMessage: "errors.create_failed" });
+        handleError(error, t, { fallbackMessage: "errors.create_failed", language: locale });
+      } finally {
+        clearInterval(timer);
+        isSubmittingRef.current = false;
+        setIsSubmitting(false);
+        setElapsedSeconds(0);
       }
     },
     [createEvent, router, locale, t, buildEventPayload]
@@ -291,12 +325,27 @@ const CreateEventV2 = () => {
                 <Buttons
                   onNext={onNext}
                   onPrevious={onPrevious}
-                  isNextDisabled={!isStepValid || createEvent.isPending}
+                  isNextDisabled={!isStepValid || isSubmitting || createEvent.isPending}
                   showPrevious={currentStep > 1}
-                  isLoading={createEvent.isPending}
+                  isLoading={isSubmitting || createEvent.isPending}
                   currentStep={currentStep}
                   totalSteps={5}
                 />
+                {isSubmitting && elapsedSeconds >= 5 && (
+                  <p
+                    style={{
+                      marginTop: "12px",
+                      color: "#6b7280",
+                      fontSize: "14px",
+                      textAlign: "center",
+                      lineHeight: "1.5",
+                    }}
+                  >
+                    {locale === "ar"
+                      ? "جاري معالجة الطلب، قد يستغرق إنشاء المناسبة وقتاً أطول من المعتاد... بياناتك محفوظة بأمان."
+                      : "Processing your request, creating the event may take a little longer... your data is safe."}
+                  </p>
+                )}
               </form>
             </div>
 

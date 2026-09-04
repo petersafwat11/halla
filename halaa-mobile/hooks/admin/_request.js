@@ -36,6 +36,11 @@ export const adminRequest = async (
         success: false,
         data: null,
         error: responseData.message || `HTTP error! status: ${response.status}`,
+        code: responseData.code || null,
+        status: response.status,
+        requestId:
+          responseData.requestId || response.headers?.get?.("x-request-id") || null,
+        errors: responseData.errors || null,
       };
     }
 
@@ -45,6 +50,10 @@ export const adminRequest = async (
       success: false,
       data: null,
       error: error.message || "An unexpected error occurred",
+      code: error.code || null,
+      status: error.status || null,
+      requestId: error.requestId || null,
+      errors: error.errors || null,
     };
   }
 };

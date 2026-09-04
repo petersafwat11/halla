@@ -18,6 +18,7 @@ import KeyboardAwareFormScrollView from "../commen/keyboard/KeyboardAwareFormScr
 import EventTemplates from "../home/EventTemplates";
 import PreviewInvitation from "./PreviewInvitation";
 import { useTranslation } from "../../localization";
+import { presentError } from "@halaa/shared/errors";
 import { useFieldDirection } from "../../hooks/useInputDirection";
 import AdaptiveText from "../commen/AdaptiveText";
 import {
@@ -170,12 +171,13 @@ const StepThree = () => {
       parentSetValue("templateImage", file, { shouldValidate: true });
     } catch (err) {
       console.error("[StepThree] custom upload failed", err);
+      const presented = presentError(err, { language: locale === "en" ? "en" : "ar" });
       Alert.alert(
         t("errors.upload_failed_title", "Upload failed"),
-        err?.message || t("errors.upload_failed", "Could not open the picker."),
+        presented.actionMessage || err?.message || t("errors.upload_failed", "Could not open the picker."),
       );
     }
-  }, [parentSetValue, t]);
+  }, [parentSetValue, t, locale]);
 
   // Preview URI for the upload-mode tile. File pick → uri; saved
   // backend URL → resolve relative paths via the API base URL.

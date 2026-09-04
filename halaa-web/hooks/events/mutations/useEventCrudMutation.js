@@ -16,7 +16,10 @@ const buildMutations = (queryClient) => ({
   // Create Event — wraps the multi-step wizard payload in FormData so the
   // template image (if any) rides on the same request as the JSON fields.
   createEvent: {
-    mutationFn: (eventData) => {
+    mutationFn: (variables) => {
+      const eventData = variables?.eventData || variables;
+      const idempotencyKey = variables?.idempotencyKey;
+
       const formData = new FormData();
       if (eventData.eventDetails) formData.append("eventDetails", JSON.stringify(eventData.eventDetails));
       if (eventData.guestList) formData.append("guestList", JSON.stringify(eventData.guestList));
@@ -31,11 +34,16 @@ const buildMutations = (queryClient) => ({
         formData.append("templateImage", eventData.templateImage);
       }
 
+      const headers = { "Content-Type": "multipart/form-data" };
+      if (idempotencyKey) {
+        headers["Idempotency-Key"] = idempotencyKey;
+      }
+
       return apiRequest({
         method: "POST",
         path: API_PATHS.events.createEvent,
         data: formData,
-        config: { headers: { "Content-Type": "multipart/form-data" } },
+        config: { headers },
       });
     },
     onSuccess: () => {

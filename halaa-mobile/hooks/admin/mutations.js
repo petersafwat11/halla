@@ -9,7 +9,12 @@ import { adminKeys } from "./keys";
 /** Throw a normalised error when the request returns success:false. */
 const assertOk = (response) => {
   if (!response.success) {
-    throw new Error(response.error || "Operation failed");
+    const err = new Error(response.error || "Operation failed");
+    if (response.code) err.code = response.code;
+    if (response.status) err.status = response.status;
+    if (response.requestId) err.requestId = response.requestId;
+    if (response.errors) err.errors = response.errors;
+    throw err;
   }
   return response.data;
 };
@@ -655,11 +660,20 @@ export function useUpdateAdminEvent() {
 export function useCreateEventForHost() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (eventData) => {
+    mutationFn: async (variables) => {
+      const eventData =
+        variables instanceof FormData
+          ? variables
+          : variables?.formData || variables?.eventData || variables?.data || variables;
+      const idempotencyKey = variables?.idempotencyKey;
+      const extraHeaders = idempotencyKey
+        ? { "Idempotency-Key": idempotencyKey }
+        : null;
       const response = await adminRequest(
         ENDPOINTS.ADMIN.EVENTS.CREATE_FOR_HOST,
         "POST",
         eventData,
+        extraHeaders,
       );
       return assertOk(response);
     },

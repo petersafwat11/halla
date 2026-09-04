@@ -11,21 +11,28 @@ const { generateExcel } = require('../../shared/utils/excelExport');
 const { PLATFORM_ADMIN_ROLES } = require('../../shared/constants/roles');
 
 exports.createEventForHost = catchAsync(async (req, res) => {
-  // Parse FormData JSON fields (same pattern as events.controller.createEvent)
+  // Parse FormData JSON fields (handles both string and parsed object/array)
+  const parseJsonField = (val) => {
+    if (typeof val === 'string') {
+      try {
+        return JSON.parse(val);
+      } catch (error) {
+        throw new ValidationError(`Invalid JSON format: ${error.message}`);
+      }
+    }
+    return val;
+  };
+
   let guestList = [];
   let eventData = {};
 
-  try {
-    if (req.body.guestList) guestList = JSON.parse(req.body.guestList);
-    if (req.body.eventDetails) eventData.eventDetails = JSON.parse(req.body.eventDetails);
-    if (req.body.staffList) eventData.staffList = JSON.parse(req.body.staffList);
-    if (req.body.visualTemplate) eventData.visualTemplate = JSON.parse(req.body.visualTemplate);
-    if (req.body.taqnyatTemplate) eventData.taqnyatTemplate = JSON.parse(req.body.taqnyatTemplate);
-    if (req.body.guestReplies) eventData.guestReplies = JSON.parse(req.body.guestReplies);
-    if (req.body.launchSettings) eventData.launchSettings = JSON.parse(req.body.launchSettings);
-  } catch (error) {
-    throw new ValidationError(`Invalid JSON format: ${error.message}`);
-  }
+  if (req.body.guestList !== undefined) guestList = parseJsonField(req.body.guestList) || [];
+  if (req.body.eventDetails !== undefined) eventData.eventDetails = parseJsonField(req.body.eventDetails);
+  if (req.body.staffList !== undefined) eventData.staffList = parseJsonField(req.body.staffList);
+  if (req.body.visualTemplate !== undefined) eventData.visualTemplate = parseJsonField(req.body.visualTemplate);
+  if (req.body.taqnyatTemplate !== undefined) eventData.taqnyatTemplate = parseJsonField(req.body.taqnyatTemplate);
+  if (req.body.guestReplies !== undefined) eventData.guestReplies = parseJsonField(req.body.guestReplies);
+  if (req.body.launchSettings !== undefined) eventData.launchSettings = parseJsonField(req.body.launchSettings);
   // Scalar — no JSON.parse needed.
   if (req.body.invitationType) eventData.invitationType = req.body.invitationType;
 
@@ -56,6 +63,7 @@ exports.createEventForHost = catchAsync(async (req, res) => {
     file: req.file,
     skipSubscriptionCheck,
     adminId: req.user._id,
+    requestId: req.requestId || null,
   };
 
   const result = await adminService.createEventForHost(eventData, guestList, context);

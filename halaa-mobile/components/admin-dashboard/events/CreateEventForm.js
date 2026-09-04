@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useMemo } from "react";
+import React, { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import {
   View,
   Alert,
@@ -10,6 +10,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, usePreventRemove } from "@react-navigation/native";
 import * as Sentry from "@sentry/react-native";
+import { presentError, formatErrorDisplay } from "@halaa/shared/errors";
 import EventsService from "../../../hooks/events/useEventForm";
 import { useTranslation } from "../../../localization";
 import {
@@ -84,7 +85,24 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
   const setWizardGuard = useWizardNavigationGuardStore((state) => state.setGuard);
   const clearWizardGuard = useWizardNavigationGuardStore((state) => state.clearGuard);
 
+  const idempotencyKeyRef = useRef(null);
+  const isSubmittingRef = useRef(false);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+  // Invalidate idempotency key on any form edit
+  useEffect(() => {
+    const subscription = methods.watch(() => {
+      idempotencyKeyRef.current = null;
+    });
+    return () => subscription.unsubscribe();
+  }, [methods]);
+
+  useEffect(() => {
+    idempotencyKeyRef.current = null;
+  }, [hostSelection]);
+
   const discardWizard = useCallback(() => {
+    idempotencyKeyRef.current = null;
     reset(EventsService.getDefaultFormValues());
     setCurrentStep(1);
     setShowPreview(false);
@@ -147,86 +165,116 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
 
   const handleFinalSubmit = useCallback(
     async (data) => {
-      const payload = EventsService.transformFormDataToPayload(data);
-      const formDataObj = new FormData();
+      if (isSubmittingRef.current) return;
+      isSubmittingRef.current = true;
+      setElapsedSeconds(0);
 
-      if (payload.guestList) {
-        formDataObj.append("guestList", JSON.stringify(payload.guestList));
-      }
-      if (payload.eventDetails) {
-        formDataObj.append("eventDetails", JSON.stringify(payload.eventDetails));
-      }
-      if (payload.staffList) {
-        formDataObj.append("staffList", JSON.stringify(payload.staffList));
-      }
-      if (payload.visualTemplate) {
-        formDataObj.append("visualTemplate", JSON.stringify(payload.visualTemplate));
-      }
-      if (payload.taqnyatTemplate) {
-        formDataObj.append("taqnyatTemplate", JSON.stringify(payload.taqnyatTemplate));
-      }
-      if (payload.guestReplies) {
-        formDataObj.append("guestReplies", JSON.stringify(payload.guestReplies));
-      }
-      if (payload.invitationType) {
-        // Scalar string field — backend reads it directly (no JSON parse).
-        formDataObj.append("invitationType", payload.invitationType);
-      }
-      if (payload.launchSettings) {
-        formDataObj.append("launchSettings", JSON.stringify(payload.launchSettings));
-      }
-      if (payload.templateImage && payload.templateImage.uri) {
-        formDataObj.append("templateImage", {
-          uri: payload.templateImage.uri,
-          type: payload.templateImage.type || "image/png",
-          name: payload.templateImage.name || payload.templateImage.fileName || `template-${Date.now()}.png`,
-        });
-      }
+      const timer = setInterval(() => {
+        setElapsedSeconds((prev) => prev + 1);
+      }, 1000);
 
-      if (isHostMode) {
-        // Host mode: invoke the host's createEvent mutation directly
-        // (hook signature is `mutateAsync(formData)`) and bounce back to
-        // the events list on success.
-        try {
-          // Creating the last event in a plan makes the refreshed entitlement
-          // false by design. Freeze this screen in its completion state so it
-          // cannot swap to LimitReachedView while navigation is committing.
-          setIsCompleting(true);
-          clearWizardGuard();
-          await hostCreateMutation.mutateAsync(formDataObj);
-          navigation.reset({
-            index: 0,
-            routes: [{ name: "MainTabs", params: { screen: "Home" } }],
-          });
-        } catch (err) {
-          setIsCompleting(false);
-          Sentry.captureException(err, {
-            tags: {
-              operation: "event.create",
-              requestId: err?.requestId || "missing",
-              backendCode: err?.code || "unknown",
-            },
-            extra: { status: err?.status || null, validationErrors: err?.errors || null },
-          });
-          const reference = err?.requestId
-            ? `\n${tCreate("error_reference")}: ${err.requestId}`
-            : "";
-          Alert.alert(
-            tCreate("error", "Error"),
-            `${err?.message || String(err)}${reference}`
-          );
+      try {
+        const payload = EventsService.transformFormDataToPayload(data);
+        const formDataObj = new FormData();
+
+        if (payload.guestList) {
+          formDataObj.append("guestList", JSON.stringify(payload.guestList));
         }
-        return;
-      }
+        if (payload.eventDetails) {
+          formDataObj.append("eventDetails", JSON.stringify(payload.eventDetails));
+        }
+        if (payload.staffList) {
+          formDataObj.append("staffList", JSON.stringify(payload.staffList));
+        }
+        if (payload.visualTemplate) {
+          formDataObj.append("visualTemplate", JSON.stringify(payload.visualTemplate));
+        }
+        if (payload.taqnyatTemplate) {
+          formDataObj.append("taqnyatTemplate", JSON.stringify(payload.taqnyatTemplate));
+        }
+        if (payload.guestReplies) {
+          formDataObj.append("guestReplies", JSON.stringify(payload.guestReplies));
+        }
+        if (payload.invitationType) {
+          // Scalar string field — backend reads it directly (no JSON parse).
+          formDataObj.append("invitationType", payload.invitationType);
+        }
+        if (payload.launchSettings) {
+          formDataObj.append("launchSettings", JSON.stringify(payload.launchSettings));
+        }
+        if (payload.templateImage && payload.templateImage.uri) {
+          formDataObj.append("templateImage", {
+            uri: payload.templateImage.uri,
+            type: payload.templateImage.type || "image/png",
+            name: payload.templateImage.name || payload.templateImage.fileName || `template-${Date.now()}.png`,
+          });
+        }
 
-      // Admin mode: forward host selection fields then delegate.
-      if (hostSelection.createForSelf) {
-        formDataObj.append("createForSelf", "true");
-      } else if (hostSelection.targetUserId) {
-        formDataObj.append("targetUserId", hostSelection.targetUserId);
-        formDataObj.append("targetType", hostSelection.targetType || "host");
+        // One idempotency key per logical submit attempt; reused on retry unless edited
+        if (!idempotencyKeyRef.current) {
+          idempotencyKeyRef.current =
+            typeof crypto !== "undefined" && crypto.randomUUID
+              ? crypto.randomUUID()
+              : `event_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+        }
+
+        if (isHostMode) {
+          // Host mode: invoke the host's createEvent mutation directly
+          // (hook signature supports `{ formData, idempotencyKey }`) and bounce back to
+          // the events list on success.
+          try {
+            // Creating the last event in a plan makes the refreshed entitlement
+            // false by design. Freeze this screen in its completion state so it
+            // cannot swap to LimitReachedView while navigation is committing.
+            setIsCompleting(true);
+            clearWizardGuard();
+            await hostCreateMutation.mutateAsync({
+              formData: formDataObj,
+              idempotencyKey: idempotencyKeyRef.current,
+            });
+            idempotencyKeyRef.current = null;
+            navigation.reset({
+              index: 0,
+              routes: [{ name: "MainTabs", params: { screen: "Home" } }],
+            });
+          } catch (err) {
+            setIsCompleting(false);
+            Sentry.captureException(err, {
+              tags: {
+                operation: "event.create",
+                requestId: err?.requestId || "missing",
+                backendCode: err?.code || "unknown",
+              },
+              extra: { status: err?.status || null, validationErrors: err?.errors || null },
+            });
+            const lang = currentLanguage === "en" ? "en" : "ar";
+            const presented = presentError(err, { language: lang });
+            const displayMsg = formatErrorDisplay(presented, lang);
+            Alert.alert(
+              tCreate("error", "Error"),
+              displayMsg
+            );
+          }
+          return;
+        }
+
+        // Admin mode: forward host selection fields then delegate.
+        if (hostSelection.createForSelf) {
+          formDataObj.append("createForSelf", "true");
+        } else if (hostSelection.targetUserId) {
+          formDataObj.append("targetUserId", hostSelection.targetUserId);
+          formDataObj.append("targetType", hostSelection.targetType || "host");
+        }
+        await onSubmit?.({
+          formData: formDataObj,
+          idempotencyKey: idempotencyKeyRef.current,
+        });
+        idempotencyKeyRef.current = null;
+      } finally {
+        clearInterval(timer);
+        isSubmittingRef.current = false;
+        setElapsedSeconds(0);
       }
-      await onSubmit?.(formDataObj);
     },
     [
       isHostMode,
@@ -235,6 +283,7 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
       navigation,
       onSubmit,
       tCreate,
+      currentLanguage,
       clearWizardGuard,
     ],
   );
@@ -392,6 +441,16 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
           </TouchableOpacity>
         )}
 
+        {elapsedSeconds >= 5 && (
+          <View style={styles.slowNotice}>
+            <LocalizedText style={styles.slowNoticeText}>
+              {currentLanguage === "en"
+                ? "Creating your event is taking a moment. Please keep this screen open..."
+                : "جاري إنشاء المناسبة، قد تستغرق العملية بضع لحظات. يرجى الانتظار..."}
+            </LocalizedText>
+          </View>
+        )}
+
         <PrevAndNextBtns
           onNext={onNext}
           onPrevious={onPrevious}
@@ -515,6 +574,21 @@ const styles = StyleSheet.create({
     height: 32,
     justifyContent: "center",
     alignItems: "center",
+  },
+  slowNotice: {
+    backgroundColor: "#FEF3C7",
+    borderColor: "#F59E0B",
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: spacing[12],
+    marginBottom: spacing[12],
+    alignItems: "center",
+  },
+  slowNoticeText: {
+    fontSize: 13,
+    fontFamily: "Cairo_600SemiBold",
+    color: "#92400E",
+    textAlign: "center",
   },
 });
 

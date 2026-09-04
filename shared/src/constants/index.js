@@ -5,3 +5,4 @@ export * from "./plans.js";
 export * from "./roles.js";
 export * from "./permissions.js";
 export * from "./eventCategories.js";
+export * from "./uploadLimits.js";

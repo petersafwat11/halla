@@ -289,6 +289,17 @@ router.get("/export/events", eventsController.exportEventsAsExcel);
  */
 router.post(
   "/",
+  (req, res, next) => {
+    if (!req.get("idempotency-key")) {
+      return res.status(400).json({
+        status: "error",
+        code: "IDEMPOTENCY_KEY_REQUIRED",
+        message: "Idempotency-Key header is required",
+        requestId: req.requestId || null,
+      });
+    }
+    next();
+  },
   createEventLimiter,
   requireSubscription,
   checkEventLimit,
@@ -314,6 +325,7 @@ router.post(
     "launchSettings",
   ]),
   validateZod(createEventSchema),
+  idempotency({ scope: "events.create", required: true }),
   eventsController.createEvent
 );
 

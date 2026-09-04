@@ -176,6 +176,7 @@ exports.createEvent = catchAsync(async (req, res) => {
     userRole: req.user.role,
     subscription: req.subscription,
     file: req.file,
+    requestId: req.requestId || null,
   };
 
   const result = await eventsService.createEvent(eventData, guestList, context);

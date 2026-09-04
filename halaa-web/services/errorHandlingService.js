@@ -12,22 +12,27 @@ import {
   STATUS_CODE_MESSAGES,
   errorTypeFromStatus,
   authErrorMessage as sharedAuthErrorMessage,
+  presentError,
+  formatErrorDisplay,
+  deriveSupportReference,
 } from "@halaa/shared/errors";
 
-export { ErrorTypes };
+export { ErrorTypes, presentError, formatErrorDisplay, deriveSupportReference };
 
 /**
  * Parse error and extract useful information.
  *
  * Reads the axios `error.response.{status,data}` shape.
  */
-export const parseError = (error) => {
-  if (error.response) {
+export const parseError = (error, { language = "ar" } = {}) => {
+  const presented = presentError(error, { language });
+
+  if (error?.response) {
     const { status, data } = error.response;
     return {
       type: errorTypeFromStatus(status),
       status,
-      code: data?.code || null,
+      code: data?.code || presented.code || null,
       field: data?.field || null,
       message: data?.message || data?.error || STATUS_CODE_MESSAGES[status],
       details: data?.details || data?.errors || null,
@@ -37,26 +42,37 @@ export const parseError = (error) => {
       accountStatus: data?.accountStatus || null,
       remainingMinutes: data?.remainingMinutes ?? null,
       retryAfterSeconds: data?.retryAfterSeconds ?? null,
+      requestId: presented.fullRequestId || null,
+      supportReference: presented.supportReference || null,
+      presented,
       originalError: error,
     };
   }
 
-  if (error.message === "Network Error" || (typeof navigator !== "undefined" && !navigator.onLine)) {
+  if (error?.message === "Network Error" || (typeof navigator !== "undefined" && !navigator?.onLine)) {
     return {
       type: ErrorTypes.NETWORK,
       status: 0,
+      code: presented.code || "NETWORK_ERROR",
       message: "errors.network_error",
       details: null,
+      requestId: presented.fullRequestId || null,
+      supportReference: presented.supportReference || null,
+      presented,
       originalError: error,
     };
   }
 
-  if (error.code === "ECONNABORTED" || error.message?.includes("timeout")) {
+  if (error?.code === "ECONNABORTED" || error?.message?.includes("timeout")) {
     return {
       type: ErrorTypes.TIMEOUT,
       status: 408,
+      code: presented.code || "TIMEOUT",
       message: "errors.timeout",
       details: null,
+      requestId: presented.fullRequestId || null,
+      supportReference: presented.supportReference || null,
+      presented,
       originalError: error,
     };
   }
@@ -64,8 +80,12 @@ export const parseError = (error) => {
   return {
     type: ErrorTypes.UNKNOWN,
     status: null,
-    message: error.message || "errors.unknown",
+    code: presented.code || null,
+    message: error?.message || "errors.unknown",
     details: null,
+    requestId: presented.fullRequestId || null,
+    supportReference: presented.supportReference || null,
+    presented,
     originalError: error,
   };
 };
@@ -77,24 +97,34 @@ export const handleError = (error, t, options = {}) => {
     fallbackMessage = "errors.unknown",
     showToast = true,
     logError = true,
+    language = "ar",
   } = options;
 
-  const parsed = parseError(error);
+  const parsed = parseError(error, { language });
+  const presented = parsed.presented || presentError(error, { language });
 
   if (logError) {
     console.error("[ErrorHandler]", {
       type: parsed.type,
       status: parsed.status,
+      code: presented.code,
       message: parsed.message,
+      fullRequestId: presented.fullRequestId, // Full ID preserved for telemetry/logging
+      supportReference: presented.supportReference,
       details: parsed.details,
     });
   }
 
   if (showToast) {
-    const message = t
-      ? t(parsed.message) || t(fallbackMessage)
-      : parsed.message || fallbackMessage;
-    toastUtils.error(message);
+    let displayMessage;
+    if (presented.actionMessage) {
+      displayMessage = formatErrorDisplay(presented, language);
+    } else {
+      displayMessage = t
+        ? t(parsed.message) || t(fallbackMessage)
+        : parsed.message || fallbackMessage;
+    }
+    toastUtils.error(displayMessage);
   }
 
   return parsed;

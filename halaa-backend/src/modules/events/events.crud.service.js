@@ -444,8 +444,11 @@ module.exports = {
    */
   async createEvent(eventData, guestList, context) {
     const { userId, userRole, subscription, file, skipSubscriptionCheck, adminId } = context;
+    const stageDurations = {};
+    const startTotal = Date.now();
+    let stageStart = Date.now();
 
-    // Validate event data
+    // ─── STAGE 1: VALIDATION ───
     if (!eventData.eventDetails) {
       throw new ValidationError("Event details are required");
     }
@@ -520,11 +523,35 @@ module.exports = {
       assertEventDateFloor({ eventInstant, isTrial });
     }
 
+    // Validate host-supplied fieldValues against Template.fields[]
+    // BEFORE persisting. Throws 400 with validationErrors[] on mismatch.
+    if (eventData.visualTemplate?.templateRef) {
+      await this._validateVisualTemplateFieldValues(
+        eventData.visualTemplate.templateRef,
+        eventData.visualTemplate.fieldValues || {}
+      );
+    }
+
+    // Freeze a valid Step-4 contract at creation time. Category, invitation
+    // mode, and the approved template's real WhatsApp controls must agree.
+    await taqnyatTemplatesService.assertInviteTemplateCompatible(
+      eventData.taqnyatTemplate?.templateRef,
+      {
+        category: eventData.eventDetails?.type,
+        invitationMode: eventData.invitationType || INVITATION_TYPE.REPLY_AND_QR,
+      }
+    );
+
+    stageDurations.validation = Math.max(0, Date.now() - stageStart);
+
     try {
       if (!subscription && !skipSubscriptionCheck) {
         // Attach capacity subscription to eventData for tracking
         if (!eventData.subscriptionId) eventData.subscriptionId = capacitySub._id;
       }
+
+      // ─── STAGE 2: IMAGE HANDLING ───
+      stageStart = Date.now();
 
       // Handle file upload — resolves correctly for both S3 (file.location) and local (file.path/filename)
       // Stored on the canonical `visualTemplate.bakedImagePath`. The
@@ -586,25 +613,6 @@ module.exports = {
         eventData.guestLimit = -1;
       }
 
-      // Validate host-supplied fieldValues against Template.fields[]
-      // BEFORE persisting. Throws 400 with validationErrors[] on mismatch.
-      if (eventData.visualTemplate?.templateRef) {
-        await this._validateVisualTemplateFieldValues(
-          eventData.visualTemplate.templateRef,
-          eventData.visualTemplate.fieldValues || {}
-        );
-      }
-
-      // Freeze a valid Step-4 contract at creation time. Category, invitation
-      // mode, and the approved template's real WhatsApp controls must agree.
-      await taqnyatTemplatesService.assertInviteTemplateCompatible(
-        eventData.taqnyatTemplate?.templateRef,
-        {
-          category: eventData.eventDetails?.type,
-          invitationMode: eventData.invitationType || INVITATION_TYPE.REPLY_AND_QR,
-        }
-      );
-
       // ─── Business-account branding + delivery SNAPSHOT (server-owned) ───
       // Deterministic delivery mode + (for business hosts) an immutable logo
       // copy + snapshotted business name. Pre-generate the event _id so the
@@ -630,11 +638,16 @@ module.exports = {
         eventData.invitationDeliveryMode = 'quick_reply';
       }
 
-      // Create event
+      stageDurations.imageHandling = Math.max(0, Date.now() - stageStart);
+
+      // ─── STAGE 3: EVENT WRITE ───
+      stageStart = Date.now();
       const event = await Event.create(eventData);
       createdEventId = event._id;
+      stageDurations.eventWrite = Math.max(0, Date.now() - stageStart);
 
-      // Create guests
+      // ─── STAGE 4: GUEST WRITE ───
+      stageStart = Date.now();
       const guestIds = await this.createGuestsFromList(
         guestList,
         event._id,
@@ -650,8 +663,10 @@ module.exports = {
         });
         subscriptionUsageIncremented = true;
       }
+      stageDurations.guestWrite = Math.max(0, Date.now() - stageStart);
 
-      // Populate and return
+      // ─── STAGE 5: RESPONSE ASSEMBLY ───
+      stageStart = Date.now();
       const populatedEvent = await Event.findById(event._id)
         .populate("host", "email phoneNumber name")
         .populate("guestList", "name phone category status");
@@ -668,6 +683,15 @@ module.exports = {
         targetId: event._id,
         metadata: { guestCount: guestIds.length, onBehalfOf: false },
       }).catch(() => {});
+
+      stageDurations.responseAssembly = Math.max(0, Date.now() - stageStart);
+      stageDurations.total = Math.max(0, Date.now() - startTotal);
+
+      logger.info("[event.create] stage durations", {
+        durations: stageDurations,
+        eventId: String(event._id),
+        requestId: context.requestId || null,
+      });
 
       return { event: populatedEvent };
     } catch (err) {
