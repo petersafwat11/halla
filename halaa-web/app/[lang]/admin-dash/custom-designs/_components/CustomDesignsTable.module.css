@@ -1,0 +1,92 @@
+.container {
+  width: 100%;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.8rem;
+  border-radius: 9999px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  font-family: var(--font-ar, "Cairo", sans-serif);
+}
+
+.statusPaid {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.statusQueued {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.statusInProgress {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
+.statusFulfilled {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.actionBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 1rem;
+  background: var(--c-p500, #c28e5c);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--r-md, 0.5rem);
+  font-size: 1.25rem;
+  font-weight: 600;
+  font-family: var(--font-ar, "Cairo", sans-serif);
+  cursor: pointer;
+  transition: background 150ms ease;
+  white-space: nowrap;
+}
+
+.actionBtn:hover {
+  background: var(--c-p600, #a87243);
+}
+
+.completedText {
+  color: var(--c-n400, #888);
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+.refCell {
+  font-family: monospace;
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--c-s900, #221d18);
+}
+
+.userCell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.userName {
+  font-weight: 600;
+  color: var(--c-s900, #221d18);
+}
+
+.userContact {
+  font-size: 1.15rem;
+  color: var(--c-n500, #666);
+  direction: ltr;
+  text-align: right;
+}
+
+.errorState {
+  padding: 2rem;
+  text-align: center;
+  color: #dc2626;
+  font-size: 1.4rem;
+}

@@ -6,3 +6,4 @@ export * from "./roles.js";
 export * from "./permissions.js";
 export * from "./eventCategories.js";
 export * from "./uploadLimits.js";
+export * from "./addons.js";

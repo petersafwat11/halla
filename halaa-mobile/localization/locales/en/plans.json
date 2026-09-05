@@ -153,7 +153,28 @@
     },
     "fulfillment": {
       "title": "Fulfillment status",
-      "pending": "Processing — your add-on will be applied shortly."
+      "pending": "Processing — your add-on will be applied shortly.",
+      "sectionTitle": "Custom Design Orders",
+      "customDesignsSection": "Custom Design Orders",
+      "customDesignTitle": "Custom Invitation Design",
+      "orderRef": "Order Reference",
+      "stepPaid": "Order Placed",
+      "stepQueued": "Queued",
+      "stepInProgress": "In Progress",
+      "stepFulfilled": "Design Completed & Delivered",
+      "status": {
+        "paid": "Paid",
+        "queued": "Queued",
+        "in_progress": "In Progress",
+        "fulfilled": "Fulfilled",
+        "refunded": "Refunded",
+        "refund_required": "Refund Required"
+      },
+      "expectedDeliveryPrefix": "Expected Delivery:",
+      "designerNote": "Designer Note:",
+      "refundedNotice": "This order has been refunded.",
+      "refundRequiredNotice": "This order is pending refund review.",
+      "contactSupport": "Contact Support for this Order"
     },
     "history": {
       "title": "Your add-ons",
@@ -414,7 +435,21 @@
     "oneTime": "One-time purchase. This is not a subscription and does not auto-renew.",
     "designManaged": "Design templates are a managed service prepared by our team, and are non-refundable once requested.",
     "businessManaged": "Business customization is a managed service provisioned by our team and may require a short review.",
-    "consumableNoRestore": "Consumable add-ons and event packages apply to your account and can't be restored on another device."
+    "consumableNoRestore": "Account entitlements synchronize after sign-in. Consumables and add-ons do not reappear through Store Restore. Contact support if a completed charge has not synchronized."
+  },
+  "queue": {
+    "title": "Purchase In Progress",
+    "completedTitle": "Purchases Completed",
+    "position": "Item {{current}} of {{total}}",
+    "doNotRepurchase": "Do not purchase again. Contact support if this purchase does not activate automatically.",
+    "itemFulfilled": "Item completed successfully",
+    "completed": "All purchases were successfully completed.",
+    "cancelled": "The purchase queue was cancelled.",
+    "buyItem": "Purchase {{name}}",
+    "recheck": "Check status",
+    "cancelRemaining": "Cancel remaining",
+    "continue": "Continue",
+    "close": "Close"
   },
   "legal": {
     "terms": "Terms",

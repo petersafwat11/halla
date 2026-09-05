@@ -21,10 +21,11 @@ const labelFor = (item, t, lang) => {
 };
 
 /**
- * Selected add-ons breakdown. Prices are atomic LTR-isolated tokens; labels
- * follow the UI locale (blueprint §6).
+ * Selected add-ons breakdown.
+ * On native (isNative=true), hides backend SAR add-on prices (PR5 / F-07)
+ * and only displays resolved store priceString if provided.
  */
-const AddonsSummaryCard = ({ addonItems = [], t }) => {
+const AddonsSummaryCard = ({ addonItems = [], isNative = false, t }) => {
   const { i18n } = useTranslation("plans");
   const lang = i18n.language || "ar";
   if (!addonItems.length) return null;
@@ -44,7 +45,12 @@ const AddonsSummaryCard = ({ addonItems = [], t }) => {
             <LocalizedText style={styles.label} numberOfLines={2}>
               {labelFor(item, t, lang)}
             </LocalizedText>
-            <Text style={styles.value}>{priceToken(item.price, sarLabel)}</Text>
+            {!isNative && (
+              <Text style={styles.value}>{priceToken(item.price, sarLabel)}</Text>
+            )}
+            {isNative && Boolean(item.priceString) && (
+              <Text style={styles.value}>{isolateLtr(item.priceString)}</Text>
+            )}
           </View>
         ))}
       </View>

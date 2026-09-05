@@ -48,9 +48,38 @@ const adminActivateAddon = catchAsync(async (req, res) => {
   sendSuccess(res, addon);
 });
 
+const adminListFulfillment = catchAsync(async (req, res) => {
+  const pagination = getPaginationFromQuery(req.query, 20);
+  const { status, templateType, search } = req.query;
+  const result = await addonsService.listAdminDesignFulfillment({
+    status,
+    templateType,
+    search,
+    ...pagination,
+  });
+  sendPaginated(res, result.items, result.pagination);
+});
+
+const adminTransitionFulfillment = catchAsync(async (req, res) => {
+  const { toStatus, customerNote, internalNotes, expectedDeliveryAt } = req.body;
+  const addon = await addonsService.transitionDesignFulfillment(
+    req.user,
+    req.params.id,
+    { toStatus, customerNote, internalNotes, expectedDeliveryAt }
+  );
+  res.locals.addonAudit = {
+    addonId: addon._id,
+    status: addon.status,
+    action: 'fulfillment_transition',
+  };
+  sendSuccess(res, addon);
+});
+
 module.exports = {
   getAvailableAddons,
   purchaseAddon,
   getMyAddons,
   adminActivateAddon,
+  adminListFulfillment,
+  adminTransitionFulfillment,
 };

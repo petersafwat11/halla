@@ -125,4 +125,11 @@ export {
   getScheduleWindow,
   validateScheduleSelection,
 } from "./schedulingWindow.js";
+export {
+  COMPLETION_KINDS,
+  ALLOWED_COMPLETION_KINDS,
+  parseCompletionDestination,
+  resolveWebCompletionUrl,
+  resolveMobileCompletionRoute,
+} from "../schemas/completionDestination.js";
 

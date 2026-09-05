@@ -103,14 +103,20 @@ function resolvePurchasable(entries, offerings, code) {
 /** The canonical add-on catalog code for an add-on shape (matches backend grammar). */
 function addonCatalogCode(addon) {
   if (!addon) return null;
+  if (addon.internalCode) return addon.internalCode;
+  if (addon.catalogCode) return addon.catalogCode;
+  if (addon.code && typeof addon.code === "string" && (addon.code.startsWith("extra_invites_") || addon.code.startsWith("design_template_") || addon.code === "business_customization")) {
+    return addon.code;
+  }
   const type = addon.addonType || addon.type;
   if (type === "extra_invites") {
     const qty = addon.quantity != null ? addon.quantity : addon.tier;
     return qty != null ? `extra_invites_${qty}` : null;
   }
   if (type === "design_template") {
-    const tt = addon.templateType || addon.type;
-    return tt ? `design_template_${tt}` : null;
+    const tt = addon.templateType || (addon.type !== "design_template" ? addon.type : null);
+    if (!tt) return "design_template_custom_themed";
+    return tt.startsWith("design_template_") ? tt : `design_template_${tt}`;
   }
   if (type === "business_customization") return "business_customization";
   return null;

@@ -1319,6 +1319,7 @@
     "vendors": "مزودو الخدمات",
     "plans": "الباقات",
     "discounts": "أكواد الخصم",
+    "customDesigns": "التصاميم المخصصة",
     "settings": "الإعدادات"
   },
   "validation": {
@@ -1602,5 +1603,63 @@
     "addInvites": "إضافة دعوات",
     "saving": "جارٍ الحفظ...",
     "done": "تم"
+  },
+  "customDesigns": {
+    "title": "تنفيذ التصاميم المخصصة",
+    "subtitle": "متابعة وتحديث طلبات تصاميم الدعوات المخصصة حسب اتفاقية مستوى الخدمة",
+    "searchPlaceholder": "البحث بالاسم أو رقم الطلب أو الجوال...",
+    "modalTitle": "تحديث حالة التنفيذ",
+    "orderRef": "طلب رقم",
+    "customerNoteLabel": "ملاحظة للعميل (تظهر في الجدول الزمني)",
+    "customerNotePlaceholder": "أدخل ملاحظة إضافية للعميل...",
+    "internalNotesLabel": "ملاحظات إدارية داخلية",
+    "internalNotesPlaceholder": "أدخل ملاحظات داخلية لفريق العمل...",
+    "confirmTransition": "تأكيد التحديث",
+    "saving": "جاري الحفظ...",
+    "transitionSuccess": "تم تحديث حالة الطلب بنجاح",
+    "transitionError": "تعذر تحديث حالة الطلب",
+    "unknownTier": "تصميم مخصص",
+    "empty": {
+      "title": "لا توجد طلبات تصاميم",
+      "message": "لم يتم تقديم أي طلبات تصاميم مخصصة بعد."
+    },
+    "columns": {
+      "ref": "رقم المرجع",
+      "host": "المضيف",
+      "tier": "الباقة",
+      "price": "السعر",
+      "requestedAt": "تاريخ الطلب",
+      "expectedDelivery": "التسليم المتوقع",
+      "status": "الحالة",
+      "action": "الإجراء التالي"
+    },
+    "filter": {
+      "all": "الكل",
+      "paid": "مدفوع",
+      "queued": "في الانتظار",
+      "in_progress": "قيد التنفيذ",
+      "fulfilled": "مكتمل"
+    },
+    "filters": {
+      "all": "الكل",
+      "paid": "مدفوع",
+      "queued": "في الانتظار",
+      "in_progress": "قيد التنفيذ",
+      "fulfilled": "مكتمل"
+    },
+    "status": {
+      "paid": "مدفوع",
+      "queued": "في الانتظار",
+      "in_progress": "قيد التنفيذ",
+      "fulfilled": "مكتمل",
+      "cancelled": "ملغي",
+      "refund_required": "مطلوب استرداد",
+      "refunded": "مسترد"
+    },
+    "actions": {
+      "moveToQueue": "نقل للانتظار",
+      "startWork": "بدء التنفيذ",
+      "markFulfilled": "إكمال وتوصيل"
+    }
   }
 }

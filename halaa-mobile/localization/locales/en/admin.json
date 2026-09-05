@@ -1319,6 +1319,7 @@
     "vendors": "Vendors",
     "plans": "Plans",
     "discounts": "Discount Codes",
+    "customDesigns": "Custom Designs",
     "settings": "Settings"
   },
   "validation": {
@@ -1602,5 +1603,63 @@
     "addInvites": "Add invites",
     "saving": "Saving...",
     "done": "Done"
+  },
+  "customDesigns": {
+    "title": "Custom Design Fulfillment",
+    "subtitle": "Track and update custom invitation design requests according to SLA",
+    "searchPlaceholder": "Search by name, order ref, or phone...",
+    "modalTitle": "Update Fulfillment Status",
+    "orderRef": "Order Reference",
+    "customerNoteLabel": "Customer Note (shown in timeline)",
+    "customerNotePlaceholder": "Enter an optional note for the customer...",
+    "internalNotesLabel": "Internal Notes (team only)",
+    "internalNotesPlaceholder": "Enter internal notes for the operations team...",
+    "confirmTransition": "Confirm Transition",
+    "saving": "Saving...",
+    "transitionSuccess": "Order status updated successfully",
+    "transitionError": "Failed to update order status",
+    "unknownTier": "Custom Design",
+    "empty": {
+      "title": "No Design Requests",
+      "message": "No custom design requests have been submitted yet."
+    },
+    "columns": {
+      "ref": "Reference",
+      "host": "Host",
+      "tier": "Tier",
+      "price": "Price",
+      "requestedAt": "Requested At",
+      "expectedDelivery": "Expected Delivery",
+      "status": "Status",
+      "action": "Next Action"
+    },
+    "filter": {
+      "all": "All",
+      "paid": "Paid",
+      "queued": "Queued",
+      "in_progress": "In Progress",
+      "fulfilled": "Fulfilled"
+    },
+    "filters": {
+      "all": "All",
+      "paid": "Paid",
+      "queued": "Queued",
+      "in_progress": "In Progress",
+      "fulfilled": "Fulfilled"
+    },
+    "status": {
+      "paid": "Paid",
+      "queued": "Queued",
+      "in_progress": "In Progress",
+      "fulfilled": "Fulfilled",
+      "cancelled": "Cancelled",
+      "refund_required": "Refund Required",
+      "refunded": "Refunded"
+    },
+    "actions": {
+      "moveToQueue": "Move to Queue",
+      "startWork": "Start Work",
+      "markFulfilled": "Mark Fulfilled"
+    }
   }
 }

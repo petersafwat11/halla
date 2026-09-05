@@ -71,3 +71,36 @@ export const useAddonAdminActivate = () => {
     },
   });
 };
+
+export const useAdminTransitionFulfillment = (options = {}) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      addonId,
+      toStatus,
+      customerNote,
+      internalNotes,
+      expectedDeliveryAt,
+    }) => {
+      if (!addonId) throw new Error("addonId is required");
+      const idempotencyKey = newIdempotencyKey(`fulfillment-${addonId}-${toStatus}`);
+      return addonsRequest(ENDPOINTS.ADDONS.ADMIN_TRANSITION(addonId), {
+        method: "POST",
+        body: {
+          toStatus,
+          ...(customerNote !== undefined ? { customerNote } : {}),
+          ...(internalNotes !== undefined ? { internalNotes } : {}),
+          ...(expectedDeliveryAt !== undefined ? { expectedDeliveryAt } : {}),
+        },
+        headers: { "Idempotency-Key": idempotencyKey },
+      });
+    },
+    onSuccess: (data, variables, context) => {
+      queryClient.invalidateQueries({ queryKey: addonsKeys.all });
+      queryClient.invalidateQueries({ queryKey: addonsKeys.adminFulfillment() });
+      queryClient.invalidateQueries({ queryKey: addonsKeys.my() });
+      if (options.onSuccess) options.onSuccess(data, variables, context);
+    },
+    ...options,
+  });
+};

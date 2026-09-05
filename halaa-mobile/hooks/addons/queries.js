@@ -47,3 +47,19 @@ export const useMyAddons = (params = {}, options = {}) => {
     ...options,
   });
 };
+
+export const useAdminFulfillment = (params = {}, options = {}) => {
+  const token = useAuthStore((state) => state.token);
+  return useQuery({
+    queryKey: addonsKeys.adminFulfillment(params),
+    queryFn: () => {
+      const qs = Object.keys(params).length
+        ? `?${new URLSearchParams(params).toString()}`
+        : "";
+      return _addonsRequest(`${ENDPOINTS.ADDONS.ADMIN_FULFILLMENT}${qs}`);
+    },
+    staleTime: 30 * 1000,
+    enabled: !!token,
+    ...options,
+  });
+};

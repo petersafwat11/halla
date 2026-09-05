@@ -357,5 +357,53 @@
     "valueMin": "القيمة يجب أن تكون أكبر من 0",
     "percentageMax": "النسبة لا تتجاوز 100%",
     "dateOrderInvalid": "تاريخ الانتهاء يجب أن يكون بعد تاريخ البدء"
+  },
+  "customDesigns": {
+    "title": "تنفيذ التصاميم المخصصة",
+    "subtitle": "متابعة وتحديث طلبات تصاميم الدعوات المخصصة حسب اتفاقية مستوى الخدمة",
+    "tableTitle": "قائمة طلبات التصاميم المخصصة",
+    "modalTitle": "تحديث حالة التنفيذ",
+    "orderRef": "طلب رقم",
+    "customerNoteLabel": "ملاحظة للعميل (مرئية في الجدول الزمني وإشعار التحديث)",
+    "customerNotePlaceholder": "أدخل ملاحظة إضافية للعميل...",
+    "internalNotesLabel": "ملاحظات إدارية داخلية (غير مرئية للعميل)",
+    "internalNotesPlaceholder": "أدخل ملاحظات داخلية لفريق العمل...",
+    "expectedDeliveryLabel": "تاريخ التسليم المتوقع",
+    "confirmTransition": "تأكيد التحديث",
+    "transitionSuccess": "تم تحديث حالة الطلب بنجاح",
+    "transitionError": "تعذر تحديث حالة الطلب",
+    "loadError": "تعذر تحميل طلبات التصاميم المخصصة",
+    "unknownTier": "تصميم مخصص",
+    "columns": {
+      "ref": "رقم المرجع",
+      "host": "المضيف",
+      "tier": "الباقة / النوع",
+      "price": "السعر",
+      "requestedAt": "تاريخ الطلب",
+      "expectedDelivery": "التسليم المتوقع",
+      "status": "الحالة",
+      "action": "الإجراء التالي"
+    },
+    "filter": {
+      "all": "الكل",
+      "paid": "مدفوع",
+      "queued": "في الانتظار",
+      "in_progress": "قيد التنفيذ",
+      "fulfilled": "مكتمل"
+    },
+    "status": {
+      "paid": "مدفوع",
+      "queued": "في الانتظار",
+      "in_progress": "قيد التنفيذ",
+      "fulfilled": "مكتمل",
+      "cancelled": "ملغي",
+      "refund_required": "مطلوب استرداد",
+      "refunded": "مسترد"
+    },
+    "actions": {
+      "moveToQueue": "نقل للانتظار",
+      "startWork": "بدء التنفيذ",
+      "markFulfilled": "إكمال وتوصيل"
+    }
   }
 }

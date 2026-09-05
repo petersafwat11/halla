@@ -10,7 +10,7 @@ import {
 import LocalizedText from "../../components/commen/LocalizedText";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "../../localization";
 
@@ -32,7 +32,10 @@ import {
 const PlansScreen = () => {
   const { t } = useTranslation("plans");
   const navigation = useNavigation();
+  const route = useRoute();
   const queryClient = useQueryClient();
+
+  const { origin, returnTo, eventId } = route.params || {};
 
   const [billingType, setBillingType] = useState("event");
   const [selectedInvites, setSelectedInvites] = useState(null);
@@ -128,6 +131,9 @@ const PlansScreen = () => {
       },
       addonItems,
       addonTotal,
+      origin,
+      returnTo,
+      eventId,
     });
   };
 

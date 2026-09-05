@@ -7,9 +7,12 @@ const {
   EXTRA_INVITES_TIERS,
   DESIGN_TEMPLATE_TIERS,
   BUSINESS_CUSTOMIZATION,
+  DESIGN_FULFILLMENT_STATUS,
+  isValidDesignFulfillmentTransition,
+  deriveExpectedDeliveryDate,
 } = require('../../shared/constants/addons');
-const { ROLES } = require('../../shared/constants/roles');
-const { ValidationError, NotFoundError } = require('../../shared/errors');
+const { ROLES, isAdminRole } = require('../../shared/constants/roles');
+const { ValidationError, NotFoundError, ConflictError, ForbiddenError } = require('../../shared/errors');
 const paymentProvider = require('../../infrastructure/paymentProvider');
 const { logAudit } = require('../../shared/utils/auditLog');
 const logger = require('../../shared/utils/logger');
@@ -81,7 +84,9 @@ class AddonsService {
     const initialStatus =
       addonType === ADDON_TYPES.BUSINESS_CUSTOMIZATION
         ? 'pending_provisioning'
-        : 'active';
+        : addonType === ADDON_TYPES.DESIGN_TEMPLATE
+          ? 'paid'
+          : 'active';
 
     let resolvedSubscriptionId = subscriptionId || null;
     if (!resolvedSubscriptionId && (scope === 'pool' || scope === 'org')) {
@@ -127,6 +132,13 @@ class AddonsService {
           idempotencyKey: idempotencyKey || null,
           activatedAt: initialStatus === 'active' ? new Date().toISOString() : null,
         },
+        fulfillment:
+          addonType === ADDON_TYPES.DESIGN_TEMPLATE
+            ? {
+                requestedAt: new Date(),
+                expectedDeliveryAt: deriveExpectedDeliveryDate(templateType, new Date()),
+              }
+            : undefined,
       });
 
       if (paymentRecord) {
@@ -224,6 +236,214 @@ class AddonsService {
     return addon;
   }
 
+  /**
+   * Admin-only: list custom-design addon fulfillment queue.
+   * Paginated and filterable by status, templateType, and search.
+   */
+  async listAdminDesignFulfillment({ status, templateType, search, page = 1, limit = 20, skip = 0 } = {}) {
+    const query = { addonType: ADDON_TYPES.DESIGN_TEMPLATE };
+
+    if (status && status !== 'all') {
+      query.status = status;
+    }
+
+    if (templateType) {
+      query.templateType = templateType;
+    }
+
+    if (search && search.trim()) {
+      const s = search.trim();
+      if (/^[0-9a-fA-F]{24}$/.test(s)) {
+        query.$or = [{ _id: s }, { userId: s }, { eventId: s }];
+      } else {
+        const User = require('../../../models/UserModel');
+        const users = await User.find({
+          $or: [
+            { name: { $regex: s, $options: 'i' } },
+            { email: { $regex: s, $options: 'i' } },
+            { phone: { $regex: s, $options: 'i' } },
+          ],
+        }).select('_id').lean();
+        const userIds = users.map((u) => u._id);
+        query.userId = { $in: userIds };
+      }
+    }
+
+    const [items, total] = await Promise.all([
+      Addon.find(query)
+        .sort({ 'fulfillment.requestedAt': -1, createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate('userId', 'name email phone')
+        .populate('eventId', 'title eventDate')
+        .populate('fulfillment.updatedBy', 'name')
+        .lean(),
+      Addon.countDocuments(query),
+    ]);
+
+    return {
+      items,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit) || 1,
+      },
+    };
+  }
+
+  /**
+   * Admin-only: transition custom design fulfillment status.
+   * Allowed sequence: paid -> queued -> in_progress -> fulfilled
+   * Same-state requests are idempotent.
+   * Skipped/reversed transitions return 409 Conflict.
+   */
+  async transitionDesignFulfillment(adminUser, addonId, { toStatus, customerNote, internalNotes, expectedDeliveryAt } = {}) {
+    const addon = await Addon.findById(addonId);
+    if (!addon) throw new NotFoundError('Addon');
+
+    if (addon.addonType !== ADDON_TYPES.DESIGN_TEMPLATE) {
+      throw new ValidationError('Only design_template addons participate in fulfillment workflow');
+    }
+
+    const fromStatus = addon.status;
+
+    // Idempotent same-state check
+    if (fromStatus === toStatus) {
+      let modified = false;
+      if (customerNote !== undefined && customerNote !== addon.fulfillment?.customerNote) {
+        addon.fulfillment = addon.fulfillment || {};
+        addon.fulfillment.customerNote = customerNote;
+        modified = true;
+      }
+      if (internalNotes !== undefined && internalNotes !== addon.fulfillment?.internalNotes) {
+        addon.fulfillment = addon.fulfillment || {};
+        addon.fulfillment.internalNotes = internalNotes;
+        modified = true;
+      }
+      if (expectedDeliveryAt !== undefined) {
+        addon.fulfillment = addon.fulfillment || {};
+        addon.fulfillment.expectedDeliveryAt = expectedDeliveryAt ? new Date(expectedDeliveryAt) : null;
+        modified = true;
+      }
+      if (modified) {
+        await addon.save();
+      }
+      return addon;
+    }
+
+    // State machine check: paid -> queued -> in_progress -> fulfilled
+    if (!isValidDesignFulfillmentTransition(fromStatus, toStatus)) {
+      throw new ConflictError(
+        `Cannot transition design fulfillment from '${fromStatus}' to '${toStatus}'. Allowed sequence: paid -> queued -> in_progress -> fulfilled.`
+      );
+    }
+
+    addon.status = toStatus;
+    addon.fulfillment = addon.fulfillment || {};
+    addon.fulfillment.updatedBy = adminUser?._id || null;
+
+    const now = new Date();
+    if (toStatus === DESIGN_FULFILLMENT_STATUS.QUEUED) {
+      addon.fulfillment.queuedAt = now;
+    } else if (toStatus === DESIGN_FULFILLMENT_STATUS.IN_PROGRESS) {
+      addon.fulfillment.inProgressAt = now;
+    } else if (toStatus === DESIGN_FULFILLMENT_STATUS.FULFILLED) {
+      addon.fulfillment.fulfilledAt = now;
+    }
+
+    if (customerNote !== undefined) {
+      addon.fulfillment.customerNote = customerNote;
+    }
+    if (internalNotes !== undefined) {
+      addon.fulfillment.internalNotes = internalNotes;
+    }
+    if (expectedDeliveryAt !== undefined) {
+      addon.fulfillment.expectedDeliveryAt = expectedDeliveryAt ? new Date(expectedDeliveryAt) : null;
+    }
+
+    await addon.save();
+
+    // Audit logging (non-blocking / failure-safe)
+    try {
+      await logAudit({
+        action: 'addon.fulfillment_transition',
+        actor: { _id: adminUser?._id, role: adminUser?.role || ROLES.SUPER_ADMIN },
+        targetType: 'addon',
+        targetId: addon._id,
+        metadata: {
+          addonId: addon._id,
+          addonType: addon.addonType,
+          templateType: addon.templateType,
+          fromStatus,
+          toStatus,
+          customerNote: customerNote || null,
+          internalNotes: internalNotes || null,
+        },
+      });
+    } catch (auditErr) {
+      logger.error('[addons.transitionFulfillment] audit log failed', {
+        addonId: addon._id,
+        error: auditErr?.message,
+      });
+    }
+
+    // Post-commit notification to host (non-blocking / failure-safe)
+    try {
+      if (addon.userId) {
+        const notificationsService = require('../notifications/notifications.service');
+        const NOTIFICATION_MESSAGES = {
+          [DESIGN_FULFILLMENT_STATUS.QUEUED]: {
+            titleAr: 'تم إدراج طلب التصميم في قائمة التنفيذ',
+            titleEn: 'Your custom design request is queued',
+            messageAr: customerNote || 'تم استلام طلب التصميم وإدراجه في قائمة التنفيذ لدى فريق التصميم.',
+            messageEn: customerNote || 'Your custom design request has been received and queued for execution.',
+          },
+          [DESIGN_FULFILLMENT_STATUS.IN_PROGRESS]: {
+            titleAr: 'بدأ فريق التصميم العمل على طلبك',
+            titleEn: 'Design work is now in progress',
+            messageAr: customerNote || 'بدأ مصمم هلا العمل على تصميم دعوتك المخصصة وسيتواصل معك قريباً.',
+            messageEn: customerNote || 'Our designer has started working on your custom invitation design and will reach out shortly.',
+          },
+          [DESIGN_FULFILLMENT_STATUS.FULFILLED]: {
+            titleAr: 'تم إكمال وتوصيل تصميم دعوتك بنجاح',
+            titleEn: 'Your custom design is completed and delivered',
+            messageAr: customerNote || 'تم الانتهاء من تصميم دعوتك المخصصة بنجاح. شكراً لاختيارك هلا!',
+            messageEn: customerNote || 'Your custom invitation design is completed and delivered. Thank you for choosing Halaa!',
+          },
+        };
+
+        const msg = NOTIFICATION_MESSAGES[toStatus];
+        if (msg) {
+          await notificationsService.createNotification(addon.userId, {
+            type: 'custom',
+            title: msg.titleEn,
+            titleAr: msg.titleAr,
+            message: msg.messageEn,
+            messageAr: msg.messageAr,
+            idempotencyKey: `notification:${addon.userId}:design_fulfillment:${addon._id}:${toStatus}`,
+            data: {
+              entityType: 'user',
+              entityId: addon.userId,
+              metadata: {
+                addonId: String(addon._id),
+                status: toStatus,
+              },
+            },
+            priority: 'high',
+          });
+        }
+      }
+    } catch (notifErr) {
+      logger.error('[addons.transitionFulfillment] notification dispatch failed', {
+        addonId: addon._id,
+        error: notifErr?.message,
+      });
+    }
+
+    return addon;
+  }
+
   async getMyAddons(userId, { page = 1, limit = 20, skip = 0 } = {}) {
     const [items, total] = await Promise.all([
       Addon.find({ userId })
@@ -294,7 +514,9 @@ class AddonsService {
     const initialStatus =
       addonType === ADDON_TYPES.BUSINESS_CUSTOMIZATION
         ? 'pending_provisioning'
-        : 'active';
+        : addonType === ADDON_TYPES.DESIGN_TEMPLATE
+          ? 'paid'
+          : 'active';
 
     let addon;
     try {
@@ -313,6 +535,13 @@ class AddonsService {
           paymentId: payment._id,
           activatedAt: initialStatus === 'active' ? new Date().toISOString() : null,
         },
+        fulfillment:
+          addonType === ADDON_TYPES.DESIGN_TEMPLATE
+            ? {
+                requestedAt: new Date(),
+                expectedDeliveryAt: deriveExpectedDeliveryDate(templateType, new Date()),
+              }
+            : undefined,
       });
       payment.addonId = addon._id;
       await payment.save();
@@ -468,6 +697,13 @@ class AddonsService {
       catalogVersion: catalogVersion || null,
       catalogHash: catalogHash || null,
       metadata: { source: "revenuecat", rcEventId: rcEventId || null, store: store || null },
+      fulfillment:
+        addonType === ADDON_TYPES.DESIGN_TEMPLATE
+          ? {
+              requestedAt: new Date(),
+              expectedDeliveryAt: deriveExpectedDeliveryDate(templateType, new Date()),
+            }
+          : undefined,
     };
 
     // Missing quota target is an ERROR, not a silent success (P0-10): record a

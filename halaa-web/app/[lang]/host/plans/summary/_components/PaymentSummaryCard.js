@@ -1,20 +1,32 @@
 "use client";
 import React from "react";
-import { formatSar } from "@halaa/shared/utils";
+import { formatSar, formatDate, formatTime } from "@halaa/shared/utils";
 import AddonsSummaryCard from "./AddonsSummaryCard";
 import styles from "../summary.module.css";
 
 const PaymentSummaryCard = ({
   planPrice,
-  addonItems,
-  discountAmount,
+  addonItems = [],
+  discountAmount = 0,
   finalTotal,
+  currency = "SAR",
+  quoteExpiresAt = null,
+  isExpired = false,
+  isLoading = false,
+  onRefreshQuote,
   t,
 }) => {
+  const currencyLabel = currency === "SAR" ? t("common.currency.sar") : currency;
+
   return (
     <div className={styles.card}>
       <div className={styles.cardHeader}>
         <h2 className={styles.cardTitle}>{t("summary.payment.title")}</h2>
+        {isLoading && (
+          <span className={styles.loadingTag}>
+            {t("common.loading", "Loading...")}
+          </span>
+        )}
       </div>
       <div className={styles.cardContent}>
         <div className={styles.summaryBreakdown}>
@@ -23,11 +35,11 @@ const PaymentSummaryCard = ({
               {t("summary.payment.planPrice")}
             </span>
             <span className={styles.summaryValue}>
-              {formatSar(planPrice)} {t("common.currency.sar")}
+              {planPrice != null ? `${formatSar(planPrice)} ${currencyLabel}` : "—"}
             </span>
           </div>
 
-          <AddonsSummaryCard addonItems={addonItems} t={t} />
+          <AddonsSummaryCard addonItems={addonItems} currency={currency} t={t} />
 
           {discountAmount > 0 && (
             <div className={`${styles.summaryRow} ${styles.discountRow}`}>
@@ -35,7 +47,7 @@ const PaymentSummaryCard = ({
                 {t("summary.payment.discount")}
               </span>
               <span className={styles.summaryValueDiscount}>
-                -{formatSar(discountAmount)} {t("common.currency.sar")}
+                -{formatSar(discountAmount)} {currencyLabel}
               </span>
             </div>
           )}
@@ -47,9 +59,29 @@ const PaymentSummaryCard = ({
               {t("summary.payment.total")}
             </span>
             <span className={styles.totalValue}>
-              {formatSar(finalTotal)} {t("common.currency.sar")}
+              {finalTotal != null ? `${formatSar(finalTotal)} ${currencyLabel}` : "—"}
             </span>
           </div>
+
+          {/* Expiry metadata & refresh button (PR5 / F-07) */}
+          {quoteExpiresAt && (
+            <div className={`${styles.expiryBox} ${isExpired ? styles.expiryBoxExpired : ""}`}>
+              <span className={styles.expiryText}>
+                {isExpired
+                  ? t("summary.quote.expiredNotice", "Quote has expired.")
+                  : t("summary.quote.validUntil", "Quote valid until:") + " " + formatTime(quoteExpiresAt)}
+              </span>
+              {isExpired && onRefreshQuote && (
+                <button
+                  type="button"
+                  className={styles.refreshQuoteBtn}
+                  onClick={onRefreshQuote}
+                >
+                  {t("summary.quote.refreshCta", "Refresh Quote")}
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

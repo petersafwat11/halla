@@ -28,6 +28,7 @@ import {
   useStoreCatalog,
   useRestorePurchases,
   usePurchaseFlow,
+  usePurchaseQueue,
 } from "../../hooks/purchases";
 import {
   canPurchase,
@@ -35,11 +36,12 @@ import {
   isPurchasesAvailable,
 } from "../../services/purchases";
 import { eventPreflight, reconcileGeneric } from "../../services/billingApi";
-import { getEntry } from "../../services/billing/catalog";
+import { getEntry, addonCatalogCode, resolvePurchasable } from "../../services/billing/catalog";
 import { getPurchaseReadiness, READINESS_STATES, readinessReasonKey } from "../../services/billing/purchaseReadiness";
 import { classifyChange, selectReplacementMode, isDeferredChange } from "../../services/billing/changeMode";
 import { subscriptionCode } from "../../services/billing/currentPlan";
 import { isRestorable, showsManageSubscription } from "../../services/billing/disclosures";
+import { resolveMobileCompletionRoute } from "@halaa/shared/schemas/completionDestination";
 import LocalizedText from "../../components/commen/LocalizedText";
 import { priceToken } from "@halaa/shared/utils/displayTokens";
 import TopBar from "../../components/plans/TopBar";
@@ -50,6 +52,7 @@ import PaymentSummaryCard from "../../components/plans/PaymentSummaryCard";
 import AddonsSummaryCard from "../../components/plans/AddonsSummaryCard";
 import PaymentMethodSelector from "../../components/plans/PaymentMethodSelector";
 import PurchaseStatusModal from "../../components/plans/PurchaseStatusModal";
+import PurchaseQueueModal from "../../components/plans/PurchaseQueueModal";
 import DisclosureList from "../../components/plans/DisclosureList";
 import PurchaseLegalLinks from "../../components/plans/PurchaseLegalLinks";
 import DirectionalIonicon from "../../components/common/DirectionalIonicon";
@@ -97,13 +100,36 @@ const PlansSummaryScreen = () => {
   const { data: subscriptionData } = useMySubscription();
   const restoreMutation = useRestorePurchases();
   const flow = usePurchaseFlow();
+  const queueFlow = usePurchaseQueue();
 
-  const { selectedPlan, addonItems = [], addonTotal = 0 } = route.params || {};
+  const {
+    selectedPlan,
+    addonItems = [],
+    addonTotal = 0,
+    origin = "plans",
+    returnTo = null,
+    eventId = null,
+  } = route.params || {};
 
   const billingType = selectedPlan?.billingType || "event";
 
   const catalogEntries = catalogData?.entries || [];
   const subscription = subscriptionData?.data?.subscription || null;
+
+  const resolvedAddonItems = useMemo(() => {
+    if (isWeb || !addonItems.length) return addonItems;
+    return addonItems.map((item) => {
+      const code = addonCatalogCode(item);
+      const purchasable = code ? resolvePurchasable(catalogEntries, offeringsAll, code) : null;
+      return {
+        ...item,
+        catalogCode: code,
+        priceString: purchasable?.priceString || null,
+        pkg: purchasable?.pkg || null,
+        entry: purchasable?.entry || null,
+      };
+    });
+  }, [isWeb, addonItems, catalogEntries, offeringsAll]);
 
   // Discrete 10-state purchase readiness model (Phase 5A / §5.5).
   // The display price comes ONLY from the store package; a missing package
@@ -390,12 +416,12 @@ const PlansSummaryScreen = () => {
       } else {
         toast.success(t("toasts.subscriptionCreated"));
       }
-      // Success: land on the Plans page so the active plan and add-ons are
-      // reflected immediately; reset wipes checkout out of history.
+      // Success: route to validated completion destination.
+      const dest = resolveMobileCompletionRoute({ origin, eventId, returnTo });
       navigation.dispatch(
         CommonActions.reset({
           index: 0,
-          routes: [{ name: "MainTabs", params: { screen: "Plans" } }],
+          routes: [{ name: dest.screen, params: dest.params }],
         })
       );
     } catch (error) {
@@ -420,13 +446,10 @@ const PlansSummaryScreen = () => {
     }
   };
 
-  // Native in-app purchase (iOS/Android). Buys the plan's store product via
-  // RevenueCat, then reconciles the EXACT attempted purchase (catalogCode +
-  // store transaction) — success ONLY when that exact item is fulfilled, never
-  // from generic access (P0-02). Idempotent: usePurchaseFlow ignores re-taps
-  // while a run is in flight. Add-ons are completed on the dedicated Add-ons
-  // screen after the plan is active (each with its own preflight + reconcile).
-  const runNativePurchase = () => {
+  // Native in-app purchase (iOS/Android). Persists an account-bound queue before
+  // purchase (PR5 / F-08). Buys each exact item sequentially, reconciling each
+  // transaction before advancing.
+  const runNativePurchase = async () => {
     if (!readiness.ready) {
       if (readiness.state === READINESS_STATES.LOADING) return;
       if (readiness.retryable) {
@@ -443,32 +466,68 @@ const PlansSummaryScreen = () => {
       );
       return;
     }
-    const isEvent = storeEntry.kind === "event_consumable";
-    flow.run({
-      entry: storeEntry,
-      pkg: readiness.pkg,
+
+    const planItem = {
+      catalogCode: selectedPlan.code,
       operation: changeType !== "new" ? "change" : "purchase",
-      changeInfo,
-      // A deferred downgrade won't be active until renewal — don't poll for it.
-      deferred: isDeferredChange(changeType),
-      preflight: isEvent ? () => eventPreflight(storeEntry.internalCode) : null,
+      nameAr: selectedPlan.nameAr || selectedPlan.name,
+      nameEn: selectedPlan.nameEn || selectedPlan.name,
+      priceString: readiness.priceString,
+    };
+
+    const addonQueueItems = addonItems.map((addon) => {
+      const code = addonCatalogCode(addon);
+      const purchasable = code ? resolvePurchasable(catalogEntries, offeringsAll, code) : null;
+      return {
+        catalogCode: code,
+        operation: "addon",
+        nameAr: purchasable?.entry?.nameAr || addon.nameAr || code,
+        nameEn: purchasable?.entry?.nameEn || addon.nameEn || code,
+        priceString: purchasable?.priceString || null,
+      };
     });
+
+    const items = [planItem, ...addonQueueItems];
+    await queueFlow.startQueue({ origin, items });
+    await queueFlow.purchaseCurrentItem(readiness.pkg, changeInfo);
+  };
+
+  const handleQueuePurchaseItem = async () => {
+    const item = queueFlow.currentItem;
+    if (!item) return;
+    let pkg = null;
+    if (item.catalogCode === selectedPlan?.code) {
+      pkg = readiness.pkg;
+    }
+    if (!pkg) {
+      const purchasable = resolvePurchasable(catalogEntries, offeringsAll, item.catalogCode);
+      pkg = purchasable?.pkg;
+    }
+    if (!pkg) {
+      toast.error(t("checkout.errors.planUnavailable"));
+      return;
+    }
+    await queueFlow.purchaseCurrentItem(pkg, changeInfo);
+  };
+
+  const handleQueueComplete = () => {
+    queueFlow.resetQueue();
+    const dest = resolveMobileCompletionRoute({ origin, eventId, returnTo });
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{ name: dest.screen, params: dest.params }],
+      })
+    );
   };
 
   const onPurchaseSuccessContinue = () => {
     flow.reset();
-    if (!isWeb && addonItems.length > 0) {
-      // Bundled add-ons are purchased one-by-one on the Add-ons screen; that
-      // screen now redirects to Plans itself once a purchase succeeds.
-      navigation.navigate("AddonsPurchase", { pendingAddons: addonItems });
-      return;
-    }
-    // Success: land on the Plans page so the active plan is reflected
-    // immediately; reset wipes the checkout surfaces out of history.
+    const dest = resolveMobileCompletionRoute({ origin, eventId, returnTo });
     navigation.dispatch(
       CommonActions.reset({
         index: 0,
-        routes: [{ name: "MainTabs", params: { screen: "Plans" } }],
+        routes: [{ name: dest.screen, params: dest.params }],
       })
     );
   };
@@ -488,7 +547,7 @@ const PlansSummaryScreen = () => {
     }
   };
 
-  const isProcessing = isWeb ? checkoutMutation.isPending : flow.isBusy;
+  const isProcessing = isWeb ? checkoutMutation.isPending : (flow.isBusy || queueFlow.isBusy);
   const nativeUnavailable = !isWeb && (!readiness.ready || readiness.state === READINESS_STATES.LOADING);
   const nativeLoading = !isWeb && readiness.state === READINESS_STATES.LOADING;
   const nativeRetryable = !isWeb && readiness.retryable;
@@ -520,7 +579,11 @@ const PlansSummaryScreen = () => {
             t={t}
           />
 
-          <AddonsSummaryCard addonItems={addonItems} t={t} />
+          <AddonsSummaryCard
+            addonItems={resolvedAddonItems}
+            isNative={!isWeb}
+            t={t}
+          />
 
           {/* Discount codes apply only to the web/Moyasar checkout — store
               IAPs don't support arbitrary codes (use App Store / Play offer
@@ -647,7 +710,9 @@ const PlansSummaryScreen = () => {
           <View style={styles.footer}>
             <View style={styles.footerTotal}>
               <LocalizedText style={styles.footerTotalLabel}>
-                {t("summary.paymentSummary.total")}
+                {!isWeb && addonItems.length > 0
+                  ? t("summary.paymentSummary.planPrice")
+                  : t("summary.paymentSummary.total")}
               </LocalizedText>
               <View style={styles.footerTotalAmountRow}>
                 {!isWeb ? (
@@ -726,6 +791,20 @@ const PlansSummaryScreen = () => {
             </TouchableOpacity>
           </View>
         </SafeAreaView>
+
+        {/* Native durable purchase queue modal (PR5 / F-08) */}
+        {!isWeb && queueFlow.queue && (
+          <PurchaseQueueModal
+            queue={queueFlow.queue}
+            isBusy={queueFlow.isBusy}
+            onPurchaseItem={handleQueuePurchaseItem}
+            onRetryReconcile={() => queueFlow.retryReconcileCurrentItem()}
+            onCancel={() => queueFlow.cancelQueue()}
+            onComplete={handleQueueComplete}
+            t={t}
+            lang={currentLanguage}
+          />
+        )}
 
         {/* Native purchase lifecycle: preflight → purchase → exact reconcile.
             Renders the deterministic states with safe AR/EN copy. */}

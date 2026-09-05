@@ -13,3 +13,6 @@ export * as settings from "./settings.js";
 export * as vendor from "./vendor.js";
 export * as postEvent from "./post-event.js";
 export * as invitationBalance from "./invitationBalance.js";
+export * as completionDestination from "./completionDestination.js";
+export * as purchaseQueue from "./purchaseQueue.js";
+export * as addons from "./addons.js";

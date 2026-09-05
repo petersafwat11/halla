@@ -218,6 +218,8 @@ const PATHS = {
     purchase: "/addons/purchase",
     listMine: "/addons/my",
     adminActivate: (id) => `/addons/admin/${id}/activate`,
+    adminFulfillment: "/addons/admin/fulfillment",
+    adminTransition: (id) => `/addons/admin/${id}/fulfillment-transition`,
   },
 
   // ============================================

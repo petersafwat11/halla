@@ -82,6 +82,8 @@ export const ENDPOINTS = {
     PURCHASE: API_PATHS.addons.purchase,
     MY: API_PATHS.addons.listMine,
     ADMIN_ACTIVATE: API_PATHS.addons.adminActivate,
+    ADMIN_FULFILLMENT: API_PATHS.addons.adminFulfillment,
+    ADMIN_TRANSITION: API_PATHS.addons.adminTransition,
   },
 
   PAYMENTS: {

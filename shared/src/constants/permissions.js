@@ -22,6 +22,7 @@ export const ADMIN_PAGES = Object.freeze({
   TEMPLATES: "templates",
   TEMPLATE_CATEGORIES: "template_categories",
   TAQNYAT_TEMPLATES: "taqnyat_templates",
+  CUSTOM_DESIGNS: "custom_designs",
 });
 
 export const ACCESS_LEVELS = Object.freeze({

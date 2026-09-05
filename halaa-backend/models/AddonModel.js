@@ -74,6 +74,18 @@ const addonSchema = new mongoose.Schema(
 
     notes: String,
     metadata: mongoose.Schema.Types.Mixed,
+
+    // Fulfillment tracking (PR6 / F-12 custom design managed-service workflow)
+    fulfillment: {
+      requestedAt: { type: Date, default: null },
+      queuedAt: { type: Date, default: null },
+      inProgressAt: { type: Date, default: null },
+      fulfilledAt: { type: Date, default: null },
+      expectedDeliveryAt: { type: Date, default: null },
+      updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+      customerNote: { type: String, default: null, trim: true, maxlength: 2000 },
+      internalNotes: { type: String, default: null, trim: true, maxlength: 2000 },
+    },
   },
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
@@ -81,6 +93,8 @@ const addonSchema = new mongoose.Schema(
 addonSchema.index({ userId: 1, status: 1 });
 addonSchema.index({ subscriptionId: 1 });
 addonSchema.index({ eventId: 1 });
+addonSchema.index({ addonType: 1, status: 1, createdAt: -1 });
+addonSchema.index({ 'fulfillment.requestedAt': -1 });
 // Unique store transaction id (partial: only string values collide, so the many
 // web/Moyasar add-ons with null providerTransactionId never conflict).
 addonSchema.index(

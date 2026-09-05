@@ -1,3 +1,3 @@
-export { useAvailableAddons, useMyAddons } from "./queries";
-export { usePurchaseAddon, useAdminActivateAddon } from "./mutations";
+export { useAvailableAddons, useMyAddons, useAdminFulfillment } from "./queries";
+export { usePurchaseAddon, useAdminActivateAddon, useAdminTransitionFulfillment } from "./mutations";
 export { addonsKeys } from "./keys";

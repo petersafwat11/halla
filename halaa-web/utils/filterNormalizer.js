@@ -158,3 +158,24 @@ export function normalizePaymentsFilters(input, defaults = {}) {
 
   return normalized;
 }
+
+/**
+ * Normalizes custom design fulfillment list filters.
+ */
+export function normalizeFulfillmentFilters(input, defaults = {}) {
+  const defaultPage = defaults.page ?? 1;
+  const defaultLimit = defaults.limit ?? 20;
+
+  const page = cleanInt(getParam(input, "page"), defaultPage, 1);
+  const limit = cleanInt(getParam(input, "limit"), defaultLimit, 1);
+  const search = cleanString(getParam(input, "search"));
+  const status = cleanString(getParam(input, "status"));
+  const templateType = cleanString(getParam(input, "templateType"));
+
+  const normalized = { page, limit };
+  if (status !== undefined) normalized.status = status;
+  if (search !== undefined) normalized.search = search;
+  if (templateType !== undefined) normalized.templateType = templateType;
+
+  return normalized;
+}

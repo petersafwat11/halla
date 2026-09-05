@@ -40,3 +40,20 @@ export const useMyAddons = (params = {}, options = {}) => {
     ...options,
   });
 };
+
+/**
+ * Admin fulfillment queue for custom designs. Paginated and filterable.
+ */
+export const useAdminFulfillment = (params = {}, options = {}) => {
+  return useQuery({
+    queryKey: addonsKeys.adminFulfillment(params),
+    queryFn: () =>
+      apiRequest({
+        method: "GET",
+        path: API_PATHS.addons.adminFulfillment,
+        params,
+      }),
+    staleTime: 30 * 1000,
+    ...options,
+  });
+};

@@ -145,6 +145,26 @@
       "custom_themed": "تصميم دعوات حسب ثيم المناسبة",
       "animated": "تصميم دعوات بخلفيات متحركة",
       "3d": "تصميم دعوات ثلاثية الأبعاد (3D)"
+    },
+    "fulfillment": {
+      "sectionTitle": "طلبات التصاميم المخصصة",
+      "customDesignTitle": "تصميم دعوة مخصص",
+      "orderRef": "رقم المرجع",
+      "stepPaid": "تم استلام الطلب",
+      "stepQueued": "في قائمة الانتظار",
+      "stepInProgress": "قيد التنفيذ",
+      "stepFulfilled": "تم إكمال التصميم وتوصيله",
+      "statusPaid": "مدفوع",
+      "statusQueued": "في الانتظار",
+      "statusInProgress": "قيد التنفيذ",
+      "statusFulfilled": "مكتمل ومسلّم",
+      "statusRefundRequired": "قيد المراجعة والاسترداد",
+      "statusRefunded": "مسترد",
+      "expectedDeliveryPrefix": "موعد التسليم المتوقع:",
+      "designerNote": "ملاحظة فريق التصميم:",
+      "refundedNotice": "تم استرداد هذا الطلب.",
+      "refundRequiredNotice": "هذا الطلب قيد مراجعة الاسترداد.",
+      "contactSupport": "تواصل مع الدعم بخصوص هذا الطلب"
     }
   },
   "infoNote": "سيتواصل معك فريقنا بعد الاشتراك لإتمام الدفع والبدء.",

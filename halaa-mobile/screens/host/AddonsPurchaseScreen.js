@@ -9,7 +9,7 @@
  * never presented as restorable durable entitlements (§9).
  */
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { View, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -21,22 +21,26 @@ import {
   useStoreCatalog,
   useAllOfferings,
   usePurchaseFlow,
+  usePurchaseQueue,
   useFulfillment,
 } from "../../hooks/purchases";
 import { useMyAddons, addonsKeys, subscriptionsKeys } from "../../hooks";
 import { eventsKeys } from "../../hooks/events/keys";
 import { addonPreflight } from "../../services/billingApi";
 import { canPurchase, isPurchasesAvailable } from "../../services/purchases";
-import { eligibleEntries } from "../../services/billing/catalog";
+import { eligibleEntries, addonCatalogCode, resolvePurchasable } from "../../services/billing/catalog";
 import { getPurchaseReadiness, READINESS_STATES, readinessReasonKey } from "../../services/billing/purchaseReadiness";
 import { disclosuresFor } from "../../services/billing/disclosures";
+import { resolveMobileCompletionRoute } from "@halaa/shared/schemas/completionDestination";
 import AdaptiveText from "../../components/commen/AdaptiveText";
 import LocalizedText from "../../components/commen/LocalizedText";
 import { countToken } from "@halaa/shared/utils/displayTokens";
 import { isolateLtr, isolateLtrTokens } from "@halaa/shared/utils/bidi";
 import TopBar from "../../components/plans/TopBar";
 import PurchaseStatusModal from "../../components/plans/PurchaseStatusModal";
+import PurchaseQueueModal from "../../components/plans/PurchaseQueueModal";
 import StatusBadge from "../../components/admin-dashboard/common/StatusBadge";
+import CustomDesignTimeline from "../../components/plans/CustomDesignTimeline";
 import { colors, spacing, borderRadius, typography, layout } from "../../styles/tokens";
 
 // Intrinsically LTR tokens inside disclosure copy (store names / URLs).
@@ -65,12 +69,30 @@ const AddonsPurchaseScreen = () => {
   } = useAllOfferings();
   const { data: myAddonsData } = useMyAddons();
   const flow = usePurchaseFlow();
+  const queueFlow = usePurchaseQueue();
 
   const [lastTxn, setLastTxn] = useState(null);
   const { data: fulfillment } = useFulfillment(lastTxn);
 
   const catalogEntries = catalogData?.entries || [];
   const pendingAddons = route.params?.pendingAddons || [];
+
+  useEffect(() => {
+    if (pendingAddons && pendingAddons.length > 0 && !queueFlow.queue && catalogEntries.length > 0 && offeringsAll) {
+      const items = pendingAddons.map((addon) => {
+        const code = addonCatalogCode(addon);
+        const purchasable = code ? resolvePurchasable(catalogEntries, offeringsAll, code) : null;
+        return {
+          catalogCode: code,
+          operation: "addon",
+          nameAr: purchasable?.entry?.nameAr || addon.nameAr || code,
+          nameEn: purchasable?.entry?.nameEn || addon.nameEn || code,
+          priceString: purchasable?.priceString || null,
+        };
+      });
+      queueFlow.startQueue({ origin: route.params?.origin || "plans", items });
+    }
+  }, [pendingAddons, queueFlow, catalogEntries, offeringsAll, route.params?.origin]);
 
   const byFamily = useMemo(() => {
     const groups = { extra_invites: [], design_template: [], business_customization: [] };
@@ -81,10 +103,23 @@ const AddonsPurchaseScreen = () => {
     return groups;
   }, [catalogEntries]);
 
+  const historyItems = useMemo(() => {
+    if (Array.isArray(myAddonsData?.data?.addons)) return myAddonsData.data.addons;
+    if (Array.isArray(myAddonsData?.data?.items)) return myAddonsData.data.items;
+    if (Array.isArray(myAddonsData?.data)) return myAddonsData.data;
+    if (Array.isArray(myAddonsData?.items)) return myAddonsData.items;
+    return [];
+  }, [myAddonsData]);
+
+  const customDesigns = useMemo(
+    () => historyItems.filter((a) => a.addonType === "design_template"),
+    [historyItems]
+  );
+
   const localizedName = (entry) =>
     (currentLanguage === "ar" ? entry.nameAr : entry.nameEn) || entry.internalCode;
 
-  const buyAddon = (entry) => {
+  const buyAddon = async (entry) => {
     const readiness = getPurchaseReadiness({
       isConfigured: isPurchasesAvailable(),
       isUserIdentified: canPurchase(),
@@ -112,12 +147,47 @@ const AddonsPurchaseScreen = () => {
       );
       return;
     }
-    flow.run({
-      entry,
-      pkg: readiness.pkg,
-      operation: "addon",
-      preflight: () => addonPreflight(entry.internalCode),
+    const origin = route.params?.origin || "plans";
+    await queueFlow.startQueue({
+      origin,
+      items: [
+        {
+          catalogCode: entry.internalCode,
+          operation: "addon",
+          nameAr: entry.nameAr || entry.internalCode,
+          nameEn: entry.nameEn || entry.internalCode,
+          priceString: readiness.priceString,
+        },
+      ],
     });
+    await queueFlow.purchaseCurrentItem(readiness.pkg);
+  };
+
+  const handleQueuePurchaseItem = async () => {
+    const item = queueFlow.currentItem;
+    if (!item) return;
+    const purchasable = resolvePurchasable(catalogEntries, offeringsAll, item.catalogCode);
+    if (!purchasable?.pkg) {
+      toast.error(t("checkout.errors.addonUnavailable"));
+      return;
+    }
+    await queueFlow.purchaseCurrentItem(purchasable.pkg);
+  };
+
+  const handleQueueComplete = () => {
+    const origin = queueFlow.queue?.origin || route.params?.origin || "plans";
+    queueFlow.resetQueue();
+    const dest = resolveMobileCompletionRoute({ origin });
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{ name: dest.screen, params: dest.params }],
+      })
+    );
+  };
+
+  const handleQueueCancel = async () => {
+    await queueFlow.cancelQueue();
   };
 
   const onSuccessContinue = () => {
@@ -127,18 +197,33 @@ const AddonsPurchaseScreen = () => {
     queryClient.invalidateQueries({ queryKey: addonsKeys.all });
     queryClient.invalidateQueries({ queryKey: subscriptionsKeys.all });
     queryClient.invalidateQueries({ queryKey: eventsKeys.subscriptionInfo() });
-    // The purchase is complete — leave the store surface entirely and land on
-    // the Plans page, which refetches and reflects the updated plan/add-ons.
-    // Reset wipes this screen from history so Back can't return to it.
+    const origin = route.params?.origin || "plans";
+    const dest = resolveMobileCompletionRoute({ origin });
     navigation.dispatch(
       CommonActions.reset({
         index: 0,
-        routes: [{ name: "MainTabs", params: { screen: "Plans" } }],
+        routes: [{ name: dest.screen, params: dest.params }],
       })
     );
   };
 
-  const historyItems = myAddonsData?.data?.addons || myAddonsData?.data || [];
+  if (queueFlow.queue) {
+    return (
+      <SafeAreaView style={styles.container} edges={["top"]}>
+        <TopBar title={t("queue.title", "Purchase Queue")} showBack={false} />
+        <PurchaseQueueModal
+          queue={queueFlow.queue}
+          isBusy={queueFlow.isBusy}
+          onPurchaseItem={handleQueuePurchaseItem}
+          onRetryReconcile={() => queueFlow.retryReconcileCurrentItem()}
+          onCancel={handleQueueCancel}
+          onComplete={handleQueueComplete}
+          t={t}
+          lang={currentLanguage}
+        />
+      </SafeAreaView>
+    );
+  }
 
   const renderEntry = (entry) => {
     const readiness = getPurchaseReadiness({
@@ -260,6 +345,18 @@ const AddonsPurchaseScreen = () => {
                 {t("addons.fulfillment.pending")}
               </LocalizedText>
             )}
+          </View>
+        ) : null}
+
+        {/* Custom design fulfillment timelines */}
+        {customDesigns.length > 0 ? (
+          <View style={styles.section}>
+            <LocalizedText style={styles.sectionTitle}>
+              {t("addons.fulfillment.customDesignsSection", "طلبات التصميم المخصص")}
+            </LocalizedText>
+            {customDesigns.map((addon) => (
+              <CustomDesignTimeline key={addon._id || addon.id} addon={addon} />
+            ))}
           </View>
         ) : null}
 

@@ -51,7 +51,7 @@ export default function InvitationBalanceCard({
     if (eventId) {
       query.set("eventId", String(eventId));
     }
-    router.push(`/${currentLang}/plans?${query.toString()}`);
+    router.push(`/${currentLang}/host/plans?${query.toString()}`);
   };
 
   const remainingDisplay = isUnlimited

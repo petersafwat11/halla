@@ -357,5 +357,53 @@
     "valueMin": "Value must be greater than 0",
     "percentageMax": "Percentage cannot exceed 100%",
     "dateOrderInvalid": "End date must be after start date"
+  },
+  "customDesigns": {
+    "title": "Custom Design Fulfillment",
+    "subtitle": "Track and update custom invitation design requests according to SLA",
+    "tableTitle": "Custom Design Fulfillment Queue",
+    "modalTitle": "Update Fulfillment Status",
+    "orderRef": "Order Reference",
+    "customerNoteLabel": "Customer Note (shown in timeline and notification)",
+    "customerNotePlaceholder": "Enter an optional note for the customer...",
+    "internalNotesLabel": "Internal Notes (admin only)",
+    "internalNotesPlaceholder": "Enter internal notes for the operations team...",
+    "expectedDeliveryLabel": "Expected Delivery Date",
+    "confirmTransition": "Confirm Transition",
+    "transitionSuccess": "Fulfillment status updated successfully",
+    "transitionError": "Failed to update fulfillment status",
+    "loadError": "Failed to load custom design orders",
+    "unknownTier": "Custom Design",
+    "columns": {
+      "ref": "Reference",
+      "host": "Host",
+      "tier": "Tier / Type",
+      "price": "Price",
+      "requestedAt": "Requested At",
+      "expectedDelivery": "Expected Delivery",
+      "status": "Status",
+      "action": "Next Action"
+    },
+    "filter": {
+      "all": "All",
+      "paid": "Paid",
+      "queued": "Queued",
+      "in_progress": "In Progress",
+      "fulfilled": "Fulfilled"
+    },
+    "status": {
+      "paid": "Paid",
+      "queued": "Queued",
+      "in_progress": "In Progress",
+      "fulfilled": "Fulfilled",
+      "cancelled": "Cancelled",
+      "refund_required": "Refund Required",
+      "refunded": "Refunded"
+    },
+    "actions": {
+      "moveToQueue": "Queue",
+      "startWork": "Start Work",
+      "markFulfilled": "Mark Fulfilled"
+    }
   }
 }

@@ -241,7 +241,7 @@ class NotificationsService {
   async createNotification(userId, notificationData) {
     const type = notificationData.type || "custom";
     const targetId = notificationData.data?.entityId || "none";
-    const idempotencyKey = `notification:${userId}:${type}:${targetId}`;
+    const idempotencyKey = notificationData.idempotencyKey || `notification:${userId}:${type}:${targetId}`;
 
     // Build a stable request hash from the notification payload so that a
     // retry with the same intent matches (same result returned) but a genuinely

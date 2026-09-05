@@ -15,6 +15,7 @@ import {
 import { fetchStoreCatalog, fetchFulfillment } from "../../services/billingApi";
 
 export { usePurchaseFlow } from "./usePurchaseFlow";
+export { usePurchaseQueue } from "./usePurchaseQueue";
 
 export const purchasesKeys = {
   offering: () => ["purchases", "offering"],

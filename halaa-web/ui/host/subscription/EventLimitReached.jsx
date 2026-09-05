@@ -20,7 +20,7 @@ function EventLimitReached({ subscription, onUpgrade }) {
     if (onUpgrade) {
       onUpgrade();
     } else {
-      router.push(`/${currentLocale}/host/plans`);
+      router.push(`/${currentLocale}/host/plans?origin=event_gate&returnTo=event_create`);
     }
   };
 

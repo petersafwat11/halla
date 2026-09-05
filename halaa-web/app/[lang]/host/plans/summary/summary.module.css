@@ -643,3 +643,49 @@
   .planName { font-size: 1.4rem; }
   .priceAmount { font-size: 2rem; }
 }
+
+.expiryBox {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8rem 1.2rem;
+  margin-top: 1rem;
+  background: var(--color-natural-100);
+  border: 1px solid var(--color-natural-200);
+  border-radius: var(--radius-8);
+  font-size: 1.2rem;
+  color: var(--color-secondary-600);
+}
+
+.expiryBoxExpired {
+  background: var(--color-error-50);
+  border-color: var(--color-error-200);
+  color: var(--color-error-700);
+}
+
+.expiryText {
+  font-family: var(--font-ar);
+  font-weight: 500;
+}
+
+.refreshQuoteBtn {
+  background: var(--color-primary-500);
+  color: var(--color-natural-50);
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--radius-6);
+  font-family: var(--font-ar);
+  font-size: 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.refreshQuoteBtn:hover {
+  background: var(--color-primary-600);
+}
+
+.loadingTag {
+  font-size: 1.1rem;
+  color: var(--color-secondary-500);
+  font-weight: 500;
+}

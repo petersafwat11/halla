@@ -52,6 +52,12 @@ const MENU_ITEMS = [
     screen: "AdminDiscounts",
   },
   {
+    key: PAGES.CUSTOM_DESIGNS,
+    labelKey: "more.customDesigns",
+    icon: "color-palette-outline",
+    screen: "AdminCustomDesigns",
+  },
+  {
     key: PAGES.SETTINGS,
     labelKey: "more.settings",
     icon: "settings-outline",
@@ -106,32 +112,32 @@ const AdminMoreScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: backgrounds.card[1],
-  },
-  header: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.natural[200],
-    backgroundColor: backgrounds.card[1],
-  },
-  headerTitle: {
-    ...textStyles.titleLarge,
-    color: colors.natural[900],
+    backgroundColor: backgrounds.card[8],
   },
   container: {
     flex: 1,
     backgroundColor: backgrounds.artboard,
   },
+  header: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: backgrounds.card[8],
+    borderBottomWidth: 1,
+    borderBottomColor: colors.natural[150],
+  },
+  headerTitle: {
+    ...textStyles.h2,
+    color: colors.primary[500],
+  },
   menuItem: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: backgrounds.card[1],
+    paddingHorizontal: 20,
+    backgroundColor: colors.natural[50],
     borderBottomWidth: 1,
-    borderBottomColor: colors.natural[200],
+    borderBottomColor: colors.natural[100],
   },
   menuItemLeft: {
     flexDirection: "row",
@@ -143,12 +149,13 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 10,
     backgroundColor: colors.primary[50],
-    alignItems: "center",
     justifyContent: "center",
+    alignItems: "center",
   },
   menuItemLabel: {
-    ...textStyles.titleMedium,
-    color: colors.natural[900],
+    ...textStyles.bodyLarge,
+    color: colors.secondary[800],
+    fontFamily: "Cairo_600SemiBold",
   },
 });
 

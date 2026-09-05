@@ -2,11 +2,15 @@
 
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { toastUtils } from "@/utils/toastUtils";
 import { useHostPlans } from "@/hooks/plans";
-import { useMySubscription } from "@/hooks/subscriptions";
+import { useMySubscription, subscriptionsKeys } from "@/hooks/subscriptions";
 import { useCheckout } from "@/hooks/checkout";
+import { addonsKeys } from "@/hooks/addons/keys";
+import { eventsKeys } from "@/hooks/events/keys";
+import { resolveWebCompletionUrl } from "@halaa/shared/utils";
 
 const getInviteValue = (plan, billingType) => {
   if (billingType === "monthly") return plan.invitePool ?? 0;
@@ -17,6 +21,12 @@ export const usePlansPageState = () => {
   const { t } = useTranslation("plans");
   const router = useRouter();
   const { lang } = useParams();
+  const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
+
+  const origin = searchParams?.get("origin") || undefined;
+  const returnTo = searchParams?.get("returnTo") || undefined;
+  const eventId = searchParams?.get("eventId") || undefined;
 
   const { data: plansData, isLoading: plansLoading, error: plansError } = useHostPlans();
   const { data: subscriptionData, isLoading: subLoading, error: subError } = useMySubscription();
@@ -149,7 +159,16 @@ export const usePlansPageState = () => {
       } else {
         toastUtils.success(t("toasts.subscriptionCreated"));
       }
-      router.push(`/${lang}/host`);
+
+      // Invalidate all affected queries on checkout completion (PR5)
+      queryClient.invalidateQueries({ queryKey: subscriptionsKeys.all });
+      queryClient.invalidateQueries({ queryKey: addonsKeys.all });
+      queryClient.invalidateQueries({ queryKey: eventsKeys.all });
+      queryClient.invalidateQueries({ queryKey: eventsKeys.subscriptionInfo() });
+
+      // Navigate to typed, allowlisted completion destination (PR5 / F-08)
+      const targetUrl = resolveWebCompletionUrl({ kind: origin, returnTo, eventId }, lang);
+      router.push(targetUrl);
     } catch (error) {
       const message =
         error?.response?.data?.message || error?.message || "";
@@ -164,6 +183,10 @@ export const usePlansPageState = () => {
     t,
     router,
     lang,
+    origin,
+    returnTo,
+    eventId,
+    queryClient,
   ]);
 
   const handleBack = useCallback(() => setShowSummary(false), []);

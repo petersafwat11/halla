@@ -32,4 +32,82 @@ const BUSINESS_CUSTOMIZATION = {
   descriptionEn: 'Custom webpage + 4 official WhatsApp templates + delivered in 1 week',
 };
 
-module.exports = { ADDON_TYPES, EXTRA_INVITES_TIERS, EXTRA_INVITES_PRICE_PER_INVITE, DESIGN_TEMPLATE_TIERS, BUSINESS_CUSTOMIZATION };
+/**
+ * PR6 / F-12: Custom Design Managed-Service Fulfillment Lifecycle
+ * Top-level Addon.status remains canonical.
+ * Allowed sequence: paid -> queued -> in_progress -> fulfilled
+ */
+const DESIGN_FULFILLMENT_STATUS = Object.freeze({
+  PAID: 'paid',
+  QUEUED: 'queued',
+  IN_PROGRESS: 'in_progress',
+  FULFILLED: 'fulfilled',
+});
+
+const DESIGN_FULFILLMENT_SEQUENCE = Object.freeze([
+  DESIGN_FULFILLMENT_STATUS.PAID,
+  DESIGN_FULFILLMENT_STATUS.QUEUED,
+  DESIGN_FULFILLMENT_STATUS.IN_PROGRESS,
+  DESIGN_FULFILLMENT_STATUS.FULFILLED,
+]);
+
+const DESIGN_FULFILLMENT_TRANSITIONS = Object.freeze({
+  [DESIGN_FULFILLMENT_STATUS.PAID]: Object.freeze([
+    DESIGN_FULFILLMENT_STATUS.QUEUED,
+  ]),
+  [DESIGN_FULFILLMENT_STATUS.QUEUED]: Object.freeze([
+    DESIGN_FULFILLMENT_STATUS.IN_PROGRESS,
+  ]),
+  [DESIGN_FULFILLMENT_STATUS.IN_PROGRESS]: Object.freeze([
+    DESIGN_FULFILLMENT_STATUS.FULFILLED,
+  ]),
+  [DESIGN_FULFILLMENT_STATUS.FULFILLED]: Object.freeze([]),
+});
+
+function isValidDesignFulfillmentTransition(fromStatus, toStatus) {
+  if (!fromStatus || !toStatus) return false;
+  if (fromStatus === toStatus) return true; // idempotent
+  const allowed = DESIGN_FULFILLMENT_TRANSITIONS[fromStatus];
+  return Array.isArray(allowed) && allowed.includes(toStatus);
+}
+
+function getNextFulfillmentStatus(currentStatus) {
+  const allowed = DESIGN_FULFILLMENT_TRANSITIONS[currentStatus];
+  if (Array.isArray(allowed) && allowed.length > 0) {
+    return allowed[0];
+  }
+  return null;
+}
+
+const DESIGN_FULFILLMENT_SLA_HOURS = Object.freeze({
+  ready_made: 48,
+  custom_male: 72,
+  custom_themed: 72,
+  animated: 96,
+  '3d': 120,
+});
+
+const DEFAULT_DESIGN_FULFILLMENT_SLA_HOURS = 72;
+
+function deriveExpectedDeliveryDate(templateType, fromDate = new Date()) {
+  const start = fromDate instanceof Date ? fromDate : new Date(fromDate);
+  const baseTime = isNaN(start.getTime()) ? Date.now() : start.getTime();
+  const hours = DESIGN_FULFILLMENT_SLA_HOURS[templateType] || DEFAULT_DESIGN_FULFILLMENT_SLA_HOURS;
+  return new Date(baseTime + hours * 60 * 60 * 1000);
+}
+
+module.exports = {
+  ADDON_TYPES,
+  EXTRA_INVITES_TIERS,
+  EXTRA_INVITES_PRICE_PER_INVITE,
+  DESIGN_TEMPLATE_TIERS,
+  BUSINESS_CUSTOMIZATION,
+  DESIGN_FULFILLMENT_STATUS,
+  DESIGN_FULFILLMENT_SEQUENCE,
+  DESIGN_FULFILLMENT_TRANSITIONS,
+  isValidDesignFulfillmentTransition,
+  getNextFulfillmentStatus,
+  DESIGN_FULFILLMENT_SLA_HOURS,
+  DEFAULT_DESIGN_FULFILLMENT_SLA_HOURS,
+  deriveExpectedDeliveryDate,
+};

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { FaLock } from "react-icons/fa";
 import { IoIosArrowForward } from "react-icons/io";
@@ -35,7 +35,6 @@ const Summary = ({
   const currentLocale = i18n.resolvedLanguage === "en" ? "en" : "ar";
 
   const [discountCode, setDiscountCode] = useState("");
-  const [discountAmount, setDiscountAmount] = useState(0);
   const [discountApplied, setDiscountApplied] = useState(false);
   const [discountError, setDiscountError] = useState("");
   const [appliedCode, setAppliedCode] = useState("");
@@ -59,7 +58,12 @@ const Summary = ({
     });
   }, [addonItems]);
 
-  const { data: quoteResponse } = useCheckoutQuote({
+  const {
+    data: quoteResponse,
+    isLoading: quoteLoading,
+    error: quoteError,
+    refetch: refetchQuote,
+  } = useCheckoutQuote({
     planCode: selectedPlan?.code,
     addons: formattedAddons,
     discountCode: discountApplied ? appliedCode : null,
@@ -67,43 +71,79 @@ const Summary = ({
   });
 
   const quote = quoteResponse?.data || quoteResponse || null;
-  const planPrice = quote?.planPrice ?? (parseFloat(selectedPlan?.price) || 0);
-  const effectiveDiscountAmount = quote?.discountAmount ?? discountAmount;
-  const subtotal = round2(planPrice + (quote?.addonsTotal ?? addonTotal));
-  const finalTotal = quote?.total ?? Math.max(0, round2(subtotal - effectiveDiscountAmount));
+
+  // Authoritative prices from quote exclusively (PR5 / F-07)
+  const planPrice = quote?.planPrice != null ? quote.planPrice : null;
+  const quoteAddonItems = quote?.lineItems?.filter((l) => l.type === "addon") || [];
+  const effectiveDiscountAmount = quote?.discountAmount ?? 0;
+  const finalTotal = quote?.total != null ? quote.total : null;
+  const currency = quote?.currency || "SAR";
+  const quoteExpiresAt = quote?.quoteExpiresAt ? new Date(quote.quoteExpiresAt) : null;
+
+  // Dynamic expiry tracking
+  const [isExpired, setIsExpired] = useState(false);
+  const lastTotalRef = useRef(null);
+  const [priceChangedNotice, setPriceChangedNotice] = useState(false);
+
+  useEffect(() => {
+    if (!quoteExpiresAt) {
+      setIsExpired(false);
+      return;
+    }
+    const checkExpiry = () => {
+      const expired = quoteExpiresAt.getTime() <= Date.now();
+      setIsExpired(expired);
+    };
+    checkExpiry();
+    const timer = setInterval(checkExpiry, 5000);
+    return () => clearInterval(timer);
+  }, [quoteExpiresAt]);
+
+  useEffect(() => {
+    if (finalTotal != null) {
+      if (lastTotalRef.current !== null && lastTotalRef.current !== finalTotal) {
+        setPriceChangedNotice(true);
+      }
+      lastTotalRef.current = finalTotal;
+    }
+  }, [finalTotal]);
+
+  const handleRefreshQuote = async () => {
+    setPriceChangedNotice(false);
+    await refetchQuote();
+  };
 
   const handleApplyDiscount = async () => {
     if (!discountCode.trim()) return;
     setDiscountError("");
     try {
       const planTypeKey = selectedPlan?.planType || selectedPlan?.type || null;
+      const subtotalForValidation = quote?.subtotal ?? (planPrice || 0);
       const response = await validateDiscount.mutateAsync({
         code: discountCode.trim(),
-        amount: subtotal,
+        amount: subtotalForValidation,
         planType: planTypeKey,
       });
       const result = response?.data;
       if (result?.valid) {
         const discount = result.discountAmount || 0;
-        setDiscountAmount(discount);
         setDiscountApplied(true);
         setAppliedCode(discountCode.trim().toUpperCase());
         onDiscountApply && onDiscountApply(discountCode, discount);
       } else {
         setDiscountApplied(false);
-        setDiscountAmount(0);
+        setAppliedCode("");
         setDiscountError(result?.reason || t("summary.discount.invalidDefault"));
       }
     } catch {
       setDiscountApplied(false);
-      setDiscountAmount(0);
+      setAppliedCode("");
       setDiscountError(t("summary.discount.networkError"));
     }
   };
 
   const handleRemoveDiscount = () => {
     setDiscountCode("");
-    setDiscountAmount(0);
     setDiscountApplied(false);
     setAppliedCode("");
     setDiscountError("");
@@ -157,17 +197,17 @@ const Summary = ({
 
   const handlePayment = async () => {
     if (isProcessing) return;
+    if (!quote || quoteLoading) return;
+    if (isExpired) {
+      await handleRefreshQuote();
+      return;
+    }
     if (!validateForm()) {
       return;
     }
     setIsProcessing(true);
     try {
-      await onProceedToPayment(quote || {
-        total: finalTotal,
-        planPrice,
-        addonsTotal: quote?.addonsTotal ?? addonTotal,
-        discountAmount: effectiveDiscountAmount,
-      });
+      await onProceedToPayment(quote);
     } finally {
       setIsProcessing(false);
     }
@@ -188,6 +228,21 @@ const Summary = ({
         </div>
 
         <div className={styles.content}>
+          {priceChangedNotice && (
+            <div className={styles.expiryBox}>
+              <span className={styles.expiryText}>
+                {t("summary.quote.priceUpdatedNotice", "Quote price has been updated. Please review before payment.")}
+              </span>
+              <button
+                type="button"
+                className={styles.refreshQuoteBtn}
+                onClick={() => setPriceChangedNotice(false)}
+              >
+                {t("common.ok", "OK")}
+              </button>
+            </div>
+          )}
+
           <div className={styles.layout}>
             <div className={styles.leftCol}>
               <PlanSummaryCard
@@ -240,15 +295,21 @@ const Summary = ({
             <div className={styles.rightCol}>
               <PaymentSummaryCard
                 planPrice={planPrice}
-                addonItems={addonItems}
+                addonItems={quoteAddonItems}
                 discountAmount={effectiveDiscountAmount}
                 finalTotal={finalTotal}
+                currency={currency}
+                quoteExpiresAt={quoteExpiresAt}
+                isExpired={isExpired}
+                isLoading={quoteLoading}
+                onRefreshQuote={handleRefreshQuote}
                 t={t}
               />
 
               <ProceedButton
                 onClick={handlePayment}
-                processing={isProcessing}
+                processing={isProcessing || quoteLoading}
+                disabled={!quote || quoteLoading || isExpired}
                 finalTotal={finalTotal}
                 t={t}
               />

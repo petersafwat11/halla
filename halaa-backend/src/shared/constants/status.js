@@ -330,6 +330,44 @@ const isValidTicketStatusTransition = (fromStatus, toStatus) => {
   return Array.isArray(allowed) && allowed.includes(toStatus);
 };
 
+/**
+ * Valid custom design fulfillment transitions (PR6 / F-12)
+ */
+const DESIGN_FULFILLMENT_STATUS = Object.freeze({
+  PAID: 'paid',
+  QUEUED: 'queued',
+  IN_PROGRESS: 'in_progress',
+  FULFILLED: 'fulfilled',
+});
+
+const DESIGN_FULFILLMENT_TRANSITIONS = Object.freeze({
+  [DESIGN_FULFILLMENT_STATUS.PAID]: Object.freeze([
+    DESIGN_FULFILLMENT_STATUS.QUEUED,
+  ]),
+  [DESIGN_FULFILLMENT_STATUS.QUEUED]: Object.freeze([
+    DESIGN_FULFILLMENT_STATUS.IN_PROGRESS,
+  ]),
+  [DESIGN_FULFILLMENT_STATUS.IN_PROGRESS]: Object.freeze([
+    DESIGN_FULFILLMENT_STATUS.FULFILLED,
+  ]),
+  [DESIGN_FULFILLMENT_STATUS.FULFILLED]: Object.freeze([]),
+});
+
+const isValidDesignFulfillmentTransition = (fromStatus, toStatus) => {
+  if (!fromStatus || !toStatus) return false;
+  if (fromStatus === toStatus) return true; // idempotent
+  const allowed = DESIGN_FULFILLMENT_TRANSITIONS[fromStatus];
+  return Array.isArray(allowed) && allowed.includes(toStatus);
+};
+
+const getNextFulfillmentStatus = (currentStatus) => {
+  const allowed = DESIGN_FULFILLMENT_TRANSITIONS[currentStatus];
+  if (Array.isArray(allowed) && allowed.length > 0) {
+    return allowed[0];
+  }
+  return null;
+};
+
 const EVENT_LIFECYCLE_ALLOWED = Object.freeze({
   SCHEDULE: Object.freeze([EVENT_STATUS.PENDING_SCHEDULING, EVENT_STATUS.SCHEDULED]),
   TEST_MESSAGE: Object.freeze([EVENT_STATUS.PENDING_SCHEDULING, EVENT_STATUS.SCHEDULED]),
@@ -375,6 +413,10 @@ module.exports = {
   EVENT_LIFECYCLE_ALLOWED,
   TICKET_TRANSITIONS,
   isValidTicketStatusTransition,
+  DESIGN_FULFILLMENT_STATUS,
+  DESIGN_FULFILLMENT_TRANSITIONS,
+  isValidDesignFulfillmentTransition,
+  getNextFulfillmentStatus,
   SUBSCRIPTION_STATUS,
   TICKET_STATUS,
   TICKET_PRIORITY,

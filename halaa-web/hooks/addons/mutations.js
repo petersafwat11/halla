@@ -89,3 +89,41 @@ export const useAdminActivateAddon = () => {
     },
   });
 };
+
+/**
+ * Admin-only: transition custom design fulfillment status.
+ * Allowed sequence: paid -> queued -> in_progress -> fulfilled
+ */
+export const useAdminTransitionFulfillment = (options = {}) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      addonId,
+      toStatus,
+      customerNote,
+      internalNotes,
+      expectedDeliveryAt,
+    }) => {
+      if (!addonId) throw new Error("addonId is required");
+      const idempotencyKey = newIdempotencyKey(`fulfillment-${addonId}-${toStatus}`);
+      return apiRequest({
+        method: "POST",
+        path: API_PATHS.addons.adminTransition(addonId),
+        data: {
+          toStatus,
+          ...(customerNote !== undefined ? { customerNote } : {}),
+          ...(internalNotes !== undefined ? { internalNotes } : {}),
+          ...(expectedDeliveryAt !== undefined ? { expectedDeliveryAt } : {}),
+        },
+        headers: { "Idempotency-Key": idempotencyKey },
+      });
+    },
+    onSuccess: (data, variables, context) => {
+      queryClient.invalidateQueries({ queryKey: addonsKeys.all });
+      queryClient.invalidateQueries({ queryKey: addonsKeys.adminFulfillment() });
+      queryClient.invalidateQueries({ queryKey: addonsKeys.my() });
+      if (options.onSuccess) options.onSuccess(data, variables, context);
+    },
+    ...options,
+  });
+};

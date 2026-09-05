@@ -217,6 +217,13 @@ export const adminNavItems = [
     labelKey: "adminSidebar.taqnyatTemplates",
     defaultLabel: "قوالب واتساب",
   },
+  {
+    key: "custom-designs",
+    path: "/admin-dash/custom-designs",
+    icon: IoImagesOutline,
+    labelKey: "adminSidebar.customDesigns",
+    defaultLabel: "التصاميم المخصصة",
+  },
 ];
 
 /**
@@ -279,6 +286,7 @@ const ROLE_NAV_ACCESS = {
     "templates",
     "template_categories",
     "taqnyat_templates",
+    "custom-designs",
   ],
   [USER_ROLES.ADMIN]: [
     "dashboard",
@@ -295,6 +303,7 @@ const ROLE_NAV_ACCESS = {
     "templates",
     "template_categories",
     "taqnyat_templates",
+    "custom-designs",
   ],
   [USER_ROLES.MODERATOR]: [
     "dashboard",
@@ -309,6 +318,7 @@ const ROLE_NAV_ACCESS = {
     // Moderator gets EDIT on templates, VIEW on categories
     "templates",
     "template_categories",
+    "custom-designs",
   ],
 };
 
@@ -332,6 +342,7 @@ export const ROLE_PAGE_ACCESS = {
     templates: ACCESS_LEVELS.FULL,
     template_categories: ACCESS_LEVELS.FULL,
     taqnyat_templates: ACCESS_LEVELS.FULL,
+    "custom-designs": ACCESS_LEVELS.FULL,
   },
   [USER_ROLES.ADMIN]: {
     dashboard: ACCESS_LEVELS.FULL,
@@ -349,6 +360,7 @@ export const ROLE_PAGE_ACCESS = {
     templates: ACCESS_LEVELS.FULL,
     template_categories: ACCESS_LEVELS.FULL,
     taqnyat_templates: ACCESS_LEVELS.FULL,
+    "custom-designs": ACCESS_LEVELS.FULL,
   },
   [USER_ROLES.MODERATOR]: {
     dashboard: ACCESS_LEVELS.VIEW,
@@ -365,6 +377,7 @@ export const ROLE_PAGE_ACCESS = {
     templates: ACCESS_LEVELS.EDIT,
     template_categories: ACCESS_LEVELS.VIEW,
     taqnyat_templates: ACCESS_LEVELS.NONE,
+    "custom-designs": ACCESS_LEVELS.FULL,
   },
 };
 

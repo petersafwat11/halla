@@ -145,6 +145,26 @@
       "custom_themed": "Themed custom design",
       "animated": "Animated background design",
       "3d": "3D invitation design"
+    },
+    "fulfillment": {
+      "sectionTitle": "Custom Design Orders",
+      "customDesignTitle": "Custom Invitation Design",
+      "orderRef": "Order Reference",
+      "stepPaid": "Order Placed",
+      "stepQueued": "Queued",
+      "stepInProgress": "In Progress",
+      "stepFulfilled": "Design Completed & Delivered",
+      "statusPaid": "Paid",
+      "statusQueued": "Queued",
+      "statusInProgress": "In Progress",
+      "statusFulfilled": "Completed & Delivered",
+      "statusRefundRequired": "Under Refund Review",
+      "statusRefunded": "Refunded",
+      "expectedDeliveryPrefix": "Expected Delivery:",
+      "designerNote": "Designer Note:",
+      "refundedNotice": "This order has been refunded.",
+      "refundRequiredNotice": "This order is pending refund review.",
+      "contactSupport": "Contact Support for this Order"
     }
   },
   "infoNote": "Our team will contact you after subscription to complete payment and get started.",

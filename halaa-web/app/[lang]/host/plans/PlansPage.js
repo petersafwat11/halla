@@ -11,12 +11,17 @@ import {
 import Summary from "./summary/Summary";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import { usePlansPageState } from "./_hooks/usePlansPageState";
+import { useMyAddons } from "@/hooks/addons";
+import CustomDesignTimeline from "@/components/addons/CustomDesignTimeline";
 import { subscriptionsKeys } from "@/hooks/subscriptions/keys";
 import { plansKeys } from "@/hooks/plans/keys";
 import styles from "./plans.module.css";
 
 const PlansPage = () => {
   const queryClient = useQueryClient();
+  const { data: myAddonsData } = useMyAddons();
+  const myAddons = myAddonsData?.data?.items || myAddonsData?.items || [];
+  const customDesignAddons = myAddons.filter((a) => a.addonType === "design_template");
   const {
     t,
     router,
@@ -141,6 +146,14 @@ const PlansPage = () => {
       ) : (
         <div className={styles.content}>
           <CurrentPlanCard subscription={subscription} usage={usage} />
+
+          {customDesignAddons.length > 0 && (
+            <div className={styles.customDesignsSection} data-testid="host-custom-designs-section">
+              {customDesignAddons.map((addon) => (
+                <CustomDesignTimeline key={addon.id || addon._id} addon={addon} />
+              ))}
+            </div>
+          )}
 
           <div className={styles.billingToggleWrap}>
             <BillingTypeToggle

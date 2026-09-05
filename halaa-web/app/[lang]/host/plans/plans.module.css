@@ -297,3 +297,17 @@
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(194, 142, 92, 0.4);
 }
+
+.customDesignsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  margin-top: 1rem;
+}
+
+.sectionTitle {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--color-natural-900);
+  font-family: var(--font-ar);
+}

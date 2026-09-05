@@ -12,10 +12,14 @@ const {
   purchaseAddon,
   getMyAddons,
   adminActivateAddon,
+  adminListFulfillment,
+  adminTransitionFulfillment,
 } = require('./addons.controller');
 const {
   purchaseAddonSchema,
   adminActivateSchema,
+  adminFulfillmentTransitionSchema,
+  adminFulfillmentListQuerySchema,
 } = require('./addons.validation');
 
 /**
@@ -184,6 +188,95 @@ router.post(
     }),
   }),
   adminActivateAddon
+);
+
+/**
+ * @swagger
+ * /addons/admin/fulfillment:
+ *   get:
+ *     summary: Admin — list custom design fulfillment queue
+ *     description: Returns paginated custom design template add-ons filterable by status and tier.
+ *     tags: [Addons]
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema: { type: string, enum: [all, paid, queued, in_progress, fulfilled] }
+ *       - in: query
+ *         name: templateType
+ *         schema: { type: string }
+ *       - in: query
+ *         name: search
+ *         schema: { type: string }
+ *       - $ref: '#/components/parameters/PageParam'
+ *       - $ref: '#/components/parameters/LimitParam'
+ *     responses:
+ *       200:
+ *         description: Paginated fulfillment queue
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         $ref: '#/components/responses/Forbidden'
+ */
+router.get(
+  '/admin/fulfillment',
+  authenticate,
+  restrictTo(ROLES.SUPER_ADMIN, ROLES.MODERATOR),
+  validateZod(adminFulfillmentListQuerySchema, 'query'),
+  adminListFulfillment
+);
+
+/**
+ * @swagger
+ * /addons/admin/{id}/fulfillment-transition:
+ *   post:
+ *     summary: Admin — transition custom design fulfillment status
+ *     description: |
+ *       Enforces allowed sequence: paid -> queued -> in_progress -> fulfilled.
+ *       Same-state requests are idempotent.
+ *       Skipped or reversed transitions return 409 Conflict.
+ *     tags: [Addons]
+ *     parameters:
+ *       - $ref: '#/components/parameters/IdParam'
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [toStatus]
+ *             properties:
+ *               toStatus:
+ *                 type: string
+ *                 enum: [queued, in_progress, fulfilled]
+ *               customerNote:
+ *                 type: string
+ *               internalNotes:
+ *                 type: string
+ *               expectedDeliveryAt:
+ *                 type: string
+ *                 format: date-time
+ *     responses:
+ *       200:
+ *         description: Transitioned addon
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         $ref: '#/components/responses/Forbidden'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ *       409:
+ *         description: Invalid or skipped state transition
+ */
+router.post(
+  '/admin/:id/fulfillment-transition',
+  authenticate,
+  restrictTo(ROLES.SUPER_ADMIN, ROLES.MODERATOR),
+  validateObjectId('id'),
+  validateZod(adminFulfillmentTransitionSchema),
+  idempotency({ scope: 'addons.fulfillment_transition' }),
+  adminTransitionFulfillment
 );
 
 module.exports = router;

@@ -84,4 +84,37 @@ const adminActivateSchema = z
   })
   .strict();
 
-module.exports = { purchaseAddonSchema, adminActivateSchema };
+const adminFulfillmentTransitionSchema = z
+  .object({
+    toStatus: z.enum(['queued', 'in_progress', 'fulfilled']),
+    customerNote: z.string().max(2000).optional().nullable(),
+    internalNotes: z.string().max(2000).optional().nullable(),
+    expectedDeliveryAt: z
+      .union([
+        z.string().datetime(),
+        z.date(),
+        z.string().regex(/^\d{4}-\d{2}-\d{2}(T.*)?$/),
+      ])
+      .optional()
+      .nullable(),
+  })
+  .strict();
+
+const adminFulfillmentListQuerySchema = z
+  .object({
+    status: z
+      .enum(['all', 'paid', 'queued', 'in_progress', 'fulfilled'])
+      .optional()
+      .default('all'),
+    templateType: z.string().optional(),
+    search: z.string().max(200).optional(),
+    page: z.coerce.number().int().min(1).default(1),
+    limit: z.coerce.number().int().min(1).max(100).default(20),
+  });
+
+module.exports = {
+  purchaseAddonSchema,
+  adminActivateSchema,
+  adminFulfillmentTransitionSchema,
+  adminFulfillmentListQuerySchema,
+};
