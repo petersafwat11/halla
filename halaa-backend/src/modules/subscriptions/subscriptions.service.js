@@ -26,6 +26,7 @@ const Addon = require('../../../models/AddonModel');
 const { ADDON_TYPES } = require('../../shared/constants/addons');
 const logger = require('../../shared/utils/logger');
 const subscriptionLifecycle = require('./subscriptionLifecycle.service');
+const { calculateInvitationBalance } = require('./invitationBalance.presenter');
 
 class SubscriptionsService {
   // ============================================
@@ -165,35 +166,29 @@ class SubscriptionsService {
       ? dynamicEventCount
       : (subscription.usage?.eventsCreated || 0);
 
+    const balance = calculateInvitationBalance(subscription, subscription.planId);
     if (isPoolPlan(planType)) {
-      const invitePool = subscription.invitePool ?? 0;
-      const compensationPool = subscription.compensationPool ?? 0;
-      const invitesConsumed = subscription.invitesConsumed || 0;
-      const invitesRemaining = Math.max(0, invitePool + compensationPool - invitesConsumed);
       return {
         maxEvents: -1,
         eventsUsed,
         eventsRemaining: -1,
-        invitePool,
-        compensationPool,
-        invitesConsumed,
-        invitesRemaining,
+        invitePool: subscription.invitePool ?? 0,
+        compensationPool: subscription.compensationPool ?? 0,
+        invitesConsumed: balance.consumed,
+        invitationBalance: balance,
       };
     }
 
     if (isPerEventPlan(planType)) {
       const maxEvents = subscription.limits?.maxEvents ?? 1;
       const invitePool = subscription.invitePool ?? subscription.limits?.invitePool ?? subscription.limits?.maxInvitesPerEvent ?? 0;
-      const compensationPool = subscription.compensationPool ?? (invitePool > 0 ? Math.floor(invitePool * (COMPENSATION_PERCENTAGE / 100)) : 0);
-      const invitesConsumed = subscription.invitesConsumed || 0;
-      const invitesRemaining = Math.max(0, invitePool + compensationPool - invitesConsumed);
       return {
         maxEvents,
         maxInvitesPerEvent: invitePool,
         invitePool,
-        compensationPool,
-        invitesConsumed,
-        invitesRemaining,
+        compensationPool: balance.compensation,
+        invitesConsumed: balance.consumed,
+        invitationBalance: balance,
         eventsUsed,
         eventsRemaining: maxEvents === -1 ? -1 : Math.max(0, maxEvents - eventsUsed),
       };

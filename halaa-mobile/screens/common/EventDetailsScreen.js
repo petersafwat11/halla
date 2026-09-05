@@ -577,7 +577,10 @@ const EventDetailsScreen = () => {
   // Remaining invites in the host's pool. A real number now for both pool and
   // per-event plans; `null` means truly unlimited (admin/super-admin). Used by
   // the remaining-invites badge and the bulk-action cost gate.
-  const invitesRemaining = event?.subscription?.invitesRemaining ?? null;
+  const invitationBalance = event?.invitationBalance || event?.subscription?.invitationBalance || null;
+  const invitesRemaining = invitationBalance
+    ? (invitationBalance.unlimited ? null : invitationBalance.remaining)
+    : (event?.subscription?.invitesRemaining ?? null);
 
   // Live and terminal event guest invariants (EVT-03):
   // Live events: existing guests immutable (onEdit/onDelete disabled), new guests allowed.
@@ -765,9 +768,13 @@ const EventDetailsScreen = () => {
               icon="people-outline"
               label={t("events:eventDetails.guestsRemaining")}
               value={
-                event.subscription.invitesRemaining == null
-                  ? t("events:remainingInvites.unlimited")
-                  : formatLocaleCount(event.subscription.invitesRemaining, currentLanguage)
+                invitationBalance
+                  ? (invitationBalance.unlimited
+                      ? t("events:remainingInvites.unlimited")
+                      : formatLocaleCount(invitationBalance.remaining, currentLanguage))
+                  : (event.subscription.invitesRemaining == null
+                      ? t("events:remainingInvites.unlimited")
+                      : formatLocaleCount(event.subscription.invitesRemaining, currentLanguage))
               }
               last
             />
@@ -775,8 +782,12 @@ const EventDetailsScreen = () => {
         )}
 
         {/* Remaining invites — adding guests is free; charged only on send. */}
-        {event?.subscription && (
-          <RemainingInvitesBadge remaining={invitesRemaining} />
+        {(invitationBalance || event?.subscription) && (
+          <RemainingInvitesBadge
+            remaining={invitesRemaining}
+            balance={invitationBalance}
+            eventId={eventId}
+          />
         )}
 
         <AutoReminderInfoText event={event} />
@@ -994,6 +1005,7 @@ const EventDetailsScreen = () => {
         eventId={eventId}
         guests={guests}
         invitesRemaining={invitesRemaining}
+        invitationBalance={invitationBalance}
         onClose={() => setActiveSendAction(null)}
       />
 

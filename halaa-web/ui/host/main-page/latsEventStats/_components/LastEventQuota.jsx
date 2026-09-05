@@ -1,26 +1,30 @@
 "use client";
 import React from "react";
-import { useTranslation } from "react-i18next";
-import styles from "../LastEventStats.module.css";
+import InvitationBalanceCard from "@/components/event-detail/InvitationBalanceCard";
 
-export default function LastEventQuota({ quota }) {
-  const { t } = useTranslation("home-events");
-  if (!quota) return null;
+export default function LastEventQuota({ quota, balance, eventId }) {
+  const effectiveBalance =
+    balance ||
+    quota?.invitationBalance ||
+    (quota?.remainingInvites !== undefined
+      ? {
+          unlimited: quota.remainingInvites == null,
+          base: null,
+          compensation: null,
+          consumed: 0,
+          total: null,
+          remaining: quota.remainingInvites,
+        }
+      : null);
 
-  // Backend returns null for unlimited, a number (including 0) otherwise.
-  const remaining =
-    quota.remainingInvites == null
-      ? t("lastEvent.quota.unlimited", "Unlimited")
-      : quota.remainingInvites;
+  if (!effectiveBalance) return null;
 
   return (
-    <div className={styles.subscriptionQuota}>
-      <div className={styles.quotaItem}>
-        <div className={styles.quotaLabel}>
-          {t("lastEvent.quota.remainingInvites")}
-        </div>
-        <div className={styles.quotaValue}>{remaining}</div>
-      </div>
-    </div>
+    <InvitationBalanceCard
+      balance={effectiveBalance}
+      eventId={eventId}
+      compact
+      returnTo="dashboard"
+    />
   );
 }

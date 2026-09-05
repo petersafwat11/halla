@@ -231,7 +231,9 @@ test("toSubscriptionDTO: computes remaining invites and normalizes fields", () =
   assert.equal(dto.status, "active");
   assert.equal(dto.invitePool, 500);
   assert.equal(dto.usedInvites, 120);
-  assert.equal(dto.remainingInvites, 380);
+  assert.equal(dto.invitationBalance.unlimited, false);
+  assert.equal(dto.invitationBalance.remaining, 455);
+  assert.equal(dto.invitationBalance.total, 575);
 
   // Unlimited / null pool
   const unlimitedSub = {
@@ -242,7 +244,8 @@ test("toSubscriptionDTO: computes remaining invites and normalizes fields", () =
   };
   const dtoUnlimited = toSubscriptionDTO(unlimitedSub);
   assert.equal(dtoUnlimited.invitePool, null);
-  assert.equal(dtoUnlimited.remainingInvites, null);
+  assert.equal(dtoUnlimited.invitationBalance.unlimited, true);
+  assert.equal(dtoUnlimited.invitationBalance.remaining, null);
 });
 
 // ============================================================

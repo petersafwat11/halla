@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { formatCount } from "@halaa/shared/utils/locale";
 import { useTranslation } from "../../localization";
 import LocalizedText from "../commen/LocalizedText";
+import InvitationBalanceCard from "./InvitationBalanceCard";
 
 /**
  * "Remaining invites" badge on the single-event page (blueprint §8
@@ -17,8 +18,18 @@ import LocalizedText from "../commen/LocalizedText";
  * The icon is semantic (send), not navigation — never mirrored. The row is a
  * normal logical row: icon → label → value at the logical end.
  */
-const RemainingInvitesBadge = ({ remaining }) => {
+const RemainingInvitesBadge = ({ remaining, balance, eventId, returnTo }) => {
   const { t, currentLanguage } = useTranslation("events");
+
+  if (balance) {
+    return (
+      <InvitationBalanceCard
+        balance={balance}
+        eventId={eventId}
+        returnTo={returnTo}
+      />
+    );
+  }
 
   return (
     <View style={styles.badge}>

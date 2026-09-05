@@ -69,6 +69,10 @@ const capitalize = (s) =>
 /** Locale-formatted remaining-invite count ("∞" when the pool is open). */
 const remainingInvitesValue = (sub) => {
   if (!sub) return "—";
+  if (sub.invitationBalance) {
+    if (sub.invitationBalance.unlimited) return "∞";
+    return sub.invitationBalance.remaining ?? 0;
+  }
   if (sub.invitePool === null || sub.invitePool === undefined) return "∞";
   if (sub.invitesRemaining !== undefined && sub.invitesRemaining !== null) {
     return sub.invitesRemaining;

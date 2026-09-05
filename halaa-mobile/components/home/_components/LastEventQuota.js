@@ -3,9 +3,28 @@ import { Text, View, StyleSheet } from "react-native";
 import { useTranslation } from "../../../localization";
 import { formatCount } from "@halaa/shared/utils/locale";
 
-export default function LastEventQuota({ quota }) {
+import InvitationBalanceCard from "../../events/InvitationBalanceCard";
+
+export default function LastEventQuota({ quota, balance }) {
   const { t, currentLanguage } = useTranslation("home");
   const locale = currentLanguage || "ar";
+
+  const effectiveBalance =
+    balance ||
+    (quota && (typeof quota.unlimited === "boolean" || quota.total !== undefined)
+      ? quota
+      : null);
+
+  if (effectiveBalance) {
+    return (
+      <InvitationBalanceCard
+        compact
+        balance={effectiveBalance}
+        returnTo="Home"
+      />
+    );
+  }
+
   if (!quota) return null;
 
   // Backend returns null for unlimited, a number (including 0) otherwise.

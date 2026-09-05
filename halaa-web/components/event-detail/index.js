@@ -7,6 +7,7 @@
 
 export { default as AutoReminderInfoText } from "./AutoReminderInfoText";
 export { default as RemainingInvitesBanner } from "./RemainingInvitesBanner";
+export { default as InvitationBalanceCard } from "./InvitationBalanceCard";
 export { default as EventStats } from "./EventStats";
 export { default as EventStatsAndTableWrapper } from "./EventStatsAndTableWrapper";
 export { default as EventFailureBanner } from "./EventFailureBanner";

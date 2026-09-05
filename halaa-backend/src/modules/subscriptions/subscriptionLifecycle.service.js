@@ -234,12 +234,11 @@ class SubscriptionLifecycleService {
   }
 
   _remainingInvites(subscriptions) {
+    const { calculateInvitationBalance } = require('./invitationBalance.presenter');
     return subscriptions.reduce((sum, old) => {
-      if (old.invitePool === null || old.invitePool === undefined) return sum;
-      return sum + Math.max(
-        0,
-        (old.invitePool || 0) + (old.compensationPool || 0) - (old.invitesConsumed || 0)
-      );
+      const balance = calculateInvitationBalance(old, old.planId);
+      if (balance.unlimited) return sum;
+      return sum + (balance.remaining || 0);
     }, 0);
   }
 

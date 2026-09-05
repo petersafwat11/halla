@@ -446,5 +446,17 @@
     "revokeConfirmTitle": "إلغاء صلاحية الوصول",
     "revokeConfirmBody": "سيتم إلغاء صلاحية وصول {{name}} إلى ماسح QR. لن يتمكن من تسجيل دخول الضيوف بعد ذلك.",
     "revokeAction": "إلغاء صلاحية الوصول"
+  },
+  "invitationBalance": {
+    "title": "رصيد الدعوات",
+    "remaining": "الدعوات المتبقية",
+    "remainingLabel": "دعوة متبقية",
+    "used": "المستخدم",
+    "total": "الإجمالي",
+    "unlimited": "غير محدود",
+    "unlimitedPlan": "باقة غير محدودة",
+    "addMore": "إضافة المزيد",
+    "usedOfTotal": "{{used}} من {{total}}",
+    "helper": "إضافة الضيوف مجانية؛ يتم خصم الرصيد فقط عند إرسال دعوة أو تذكير."
   }
 }

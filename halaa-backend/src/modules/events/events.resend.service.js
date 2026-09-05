@@ -23,6 +23,7 @@ const dispatchPolicy = require("../messaging/messaging.dispatchPolicy.service");
 const messagingSendService = require("../messaging/messaging.send.service");
 const { isAdminRole } = require("../../shared/constants/roles");
 const { INVITATION_TYPE } = require('../../shared/constants');
+const { assertHasInviteBudget } = require('../subscriptions/invitationBalance.presenter');
 const {
   TAQNYAT_SENDER,
   getEventBodyParams,
@@ -59,22 +60,16 @@ async function _assertDispatchAllowed(event, path) {
  * @private
  */
 async function _assertInviteBudget(subscriptionId, selectedCount) {
-  if (!subscriptionId) return;
-  const sub = await Subscription.findById(subscriptionId).select(
-    "invitePool compensationPool invitesConsumed"
-  );
-  if (!sub) return;
-  // Unlimited plan — no ceiling to enforce.
-  if (sub.invitePool === null || sub.invitePool === undefined) return;
-  const remaining =
-    (sub.invitePool || 0) + (sub.compensationPool || 0) - (sub.invitesConsumed || 0);
-  if (selectedCount > remaining) {
-    throw new AppError(
-      `Insufficient invites: ${selectedCount} to send but ${Math.max(0, remaining)} remaining in your plan.`,
-      402,
-      "INSUFFICIENT_INVITES"
-    );
+  if (!subscriptionId) {
+    throw new AppError('Event has no stamped subscription', 400, 'ORPHAN_EVENT');
   }
+  const sub = await Subscription.findById(subscriptionId)
+    .select('invitePool compensationPool invitesConsumed planId')
+    .populate('planId', 'planType code limits');
+  if (!sub) {
+    throw new AppError('Subscription not found for event', 404, 'SUBSCRIPTION_NOT_FOUND');
+  }
+  assertHasInviteBudget(sub, selectedCount, sub.planId);
 }
 
 /**

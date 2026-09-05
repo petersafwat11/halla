@@ -22,6 +22,7 @@ const { countsAgainstPlanStatusFilter } = require('../../shared/constants/events
 const { classifyRsvpBucket } = require('../../shared/constants/status');
 const { isTrialFromPlan } = require('../../shared/utils/schedulingWindow');
 const { getActiveEventGuestsFilter } = require('../../shared/utils/guestFilter');
+const { calculateInvitationBalance } = require('../subscriptions/invitationBalance.presenter');
 
 module.exports = {
   /**
@@ -107,14 +108,10 @@ module.exports = {
     }
 
     // Normalized guest limits — single source of truth for frontend
-    let guestLimit, isGuestUnlimited, invitePool, invitesRemaining;
+    const invitationBalance = calculateInvitationBalance(subscription, subscription.planId);
+    let guestLimit, isGuestUnlimited, invitePool;
     if (isPerEvent) {
-      // Unified model: per-event plans now carry an invitePool just like pool
-      // plans (they differ only by maxEvents). Surface the real pool + remaining
-      // and expose total capacity (base + 15% compensation) as guestLimit so
-      // create-event step 2 caps at total capacity for per-event plans.
       invitePool = subscription.invitePool ?? null;
-      invitesRemaining = subscription.invitesRemaining ?? null;
       if (invitePool !== null) {
         guestLimit = invitePool + (subscription.compensationPool || 0);
         isGuestUnlimited = false;
@@ -126,12 +123,10 @@ module.exports = {
       guestLimit = -1;
       isGuestUnlimited = true;
       invitePool = subscription.invitePool ?? null;
-      invitesRemaining = subscription.invitesRemaining ?? null;
     } else {
       guestLimit = limits?.maxInvitesPerEvent ?? 50;
       isGuestUnlimited = guestLimit === -1;
       invitePool = subscription.invitePool ?? null;
-      invitesRemaining = subscription.invitesRemaining ?? null;
     }
 
     const eventsRemaining = isPerEvent
@@ -151,7 +146,7 @@ module.exports = {
       guestLimit,
       isGuestUnlimited,
       invitePool,
-      invitesRemaining,
+      invitationBalance,
       eventsRemaining,
       eventsUsed: eventsThisPeriod,
     };
@@ -265,15 +260,11 @@ module.exports = {
 
     const isPerEvent = sub ? isPerEventPlan(sub.planId?.planType || sub.planType) : false;
     const isPool = sub ? isPoolPlan(sub.planId?.planType || sub.planType) : false;
+    const invitationBalance = calculateInvitationBalance(sub, sub?.planId);
     const invitePool = sub?.invitePool ?? null;
     const compensationPool = sub?.compensationPool || 0;
-    const invitesConsumed = sub?.invitesConsumed || 0;
-    const invitesRemaining =
-      sub && invitePool !== null
-        ? Math.max(0, invitePool + compensationPool - invitesConsumed)
-        : null;
 
-    const isGuestUnlimited = invitePool === null && !isPerEvent;
+    const isGuestUnlimited = invitationBalance.unlimited;
     const guestLimit =
       invitePool !== null
         ? invitePool + compensationPool
@@ -303,7 +294,7 @@ module.exports = {
       isPoolPlan: isPool,
       isTrial,
       invitePool,
-      invitesRemaining,
+      invitationBalance,
       isGuestUnlimited,
       guestLimit,
       eventStatus: event.status,

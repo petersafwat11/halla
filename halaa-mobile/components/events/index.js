@@ -5,4 +5,5 @@ export { default as GuestListItem } from "./GuestListItem";
 export { default as ModeratorListItem } from "./ModeratorListItem";
 export { default as TotalGuestsChips } from "./TotalGuestsChips";
 export { default as RemainingInvitesBadge } from "./RemainingInvitesBadge";
+export { default as InvitationBalanceCard } from "./InvitationBalanceCard";
 export { default as ReminderButton } from "./ReminderButton";

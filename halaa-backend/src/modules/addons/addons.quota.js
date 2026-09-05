@@ -60,11 +60,14 @@ async function clawbackExtraInvites(addon, { session } = {}) {
   const outstanding = granted - alreadyClawed;
   if (outstanding <= 0) return 0;
 
-  const subQ = Subscription.findById(addon.subscriptionId);
+  const { calculateInvitationBalance } = require('../subscriptions/invitationBalance.presenter');
+  const subQ = Subscription.findById(addon.subscriptionId).populate('planId');
   if (session) subQ.session(session);
   const sub = await subQ;
   if (!sub) return 0;
-  const remaining = (sub.invitePool || 0) + (sub.compensationPool || 0) - (sub.invitesConsumed || 0);
+  const balance = calculateInvitationBalance(sub, sub.planId);
+  if (balance.unlimited) return 0;
+  const remaining = balance.remaining || 0;
   // Never claw back more than is still unused in the pool.
   const reclaim = Math.max(0, Math.min(outstanding, remaining));
   if (reclaim > 0) {

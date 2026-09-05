@@ -22,6 +22,7 @@ const { ASSIGNMENT_STATUS } = require('../../../models/BusinessPlanAssignmentMod
 const { USER_STATUS, SUBSCRIPTION_STATUS } = require('../../shared/constants');
 const logger = require('../../shared/utils/logger');
 const subscriptionEventAccess = require('../subscriptions/subscriptionEventAccess.service');
+const { calculateInvitationBalance } = require('../subscriptions/invitationBalance.presenter');
 
 const TERMINAL_EVENT_STATUSES = ['cancelled', 'completed', 'deleted', 'archived'];
 
@@ -79,11 +80,11 @@ async function canDispatch(event, opts = {}) {
   }).select('_id');
   if (underRefund) return deny('assignment_under_refund');
 
-  // Invite availability (optional). `invitesRemaining` is a virtual:
-  // null = unlimited pool, otherwise base+compensation−consumed.
+  // Invite availability (optional). Canonical `invitationBalance`:
+  // unlimited = true means no ceiling; otherwise remaining > 0 required.
   if (opts.requireInvites) {
-    const remaining = sub.invitesRemaining;
-    if (remaining !== null && remaining !== undefined && remaining <= 0) {
+    const balance = calculateInvitationBalance(sub, sub.planId);
+    if (!balance.unlimited && (balance.remaining === null || balance.remaining <= 0)) {
       return deny('invites_exhausted');
     }
   }

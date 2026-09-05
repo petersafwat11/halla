@@ -29,6 +29,7 @@ const {
   PLAN_TYPES,
   COMPENSATION_PERCENTAGE,
 } = require('../../shared/constants/plans');
+const { calculateInvitationBalance } = require('../subscriptions/invitationBalance.presenter');
 
 class DashboardService {
   /**
@@ -372,53 +373,15 @@ class DashboardService {
       // events.resend, refund clawback): invitePool + compensationPool -
       // invitesConsumed. This already folds in compensation and any purchased
       // extra invites (pool/org addons $inc invitePool). invitePool null ⇒
-      // unlimited ONLY on the admin 'unlimited' plan; any OTHER plan with a
-      // null pool is stale pre-unified-pool data, so the capacity is derived
-      // from the seeded plan limits instead of showing a false "unlimited".
       let quotaSub = subscription;
       if (lastEvent.subscriptionId) {
         quotaSub = await Subscription.findById(lastEvent.subscriptionId)
-          .select('invitePool compensationPool invitesConsumed')
+          .select('invitePool compensationPool invitesConsumed planId')
           .populate('planId', 'planType code limits')
           .lean();
       }
 
-      let remainingInvites;
-      if (!quotaSub) {
-        remainingInvites = 0;
-      } else if (quotaSub.invitePool != null) {
-        remainingInvites = Math.max(
-          0,
-          (quotaSub.invitePool || 0) +
-            (quotaSub.compensationPool || 0) -
-            (quotaSub.invitesConsumed || 0)
-        );
-      } else {
-        const quotaPlan = quotaSub.planId;
-        const isUnlimitedPlan =
-          quotaPlan &&
-          (quotaPlan.planType === PLAN_TYPES.UNLIMITED ||
-            quotaPlan.code === 'unlimited');
-        if (!quotaPlan) {
-          // Orphaned plan reference ⇒ fail closed (0), never "unlimited".
-          remainingInvites = 0;
-        } else if (isUnlimitedPlan) {
-          remainingInvites = null;
-        } else {
-          const derivedPool =
-            quotaPlan?.limits?.invitePool ??
-            quotaPlan?.limits?.maxInvitesPerEvent ??
-            0;
-          const derivedCompensation =
-            quotaSub.compensationPool != null
-              ? quotaSub.compensationPool
-              : Math.floor((derivedPool * COMPENSATION_PERCENTAGE) / 100);
-          remainingInvites = Math.max(
-            0,
-            derivedPool + derivedCompensation - (quotaSub.invitesConsumed || 0)
-          );
-        }
-      }
+      const invitationBalance = calculateInvitationBalance(quotaSub, quotaSub?.planId);
 
       // Step-3 invitation image (baked template or custom upload). Stored as a
       // bare S3 key / path → sign it into a renderable URL for the dashboard card.
@@ -440,9 +403,7 @@ class DashboardService {
         guestCount: guests.length,
         responseRate: `${responseRate}%`,
         stats: guestStats,
-        quota: {
-          remainingInvites,
-        },
+        invitationBalance,
         testMessageSent: lastEvent.testMessageSent || false,
         launchSettings: lastEvent.launchSettings || null,
         templateImage,

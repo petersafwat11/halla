@@ -32,7 +32,12 @@ const LastEvent = ({
 
       <LastEventStatsRow stats={event.stats} />
 
-      {subscription && <LastEventQuota quota={event.quota} />}
+      {subscription && (
+        <LastEventQuota
+          quota={event.invitationBalance || event.quota}
+          balance={event.invitationBalance}
+        />
+      )}
 
       <LastEventActions
         canSendTest={canSendTest}

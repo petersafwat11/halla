@@ -12,3 +12,4 @@ export * as bulk from "./bulk.js";
 export * as settings from "./settings.js";
 export * as vendor from "./vendor.js";
 export * as postEvent from "./post-event.js";
+export * as invitationBalance from "./invitationBalance.js";

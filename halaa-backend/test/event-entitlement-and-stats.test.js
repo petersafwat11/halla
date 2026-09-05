@@ -117,7 +117,14 @@ describe('Session 1.5: Event Entitlement & Stats Fixes (EVT-10, EVT-16)', () => 
       assert.equal(caps.hasSubscription, true);
       assert.equal(caps.isSingleEvent, true);
       assert.equal(caps.invitePool, 300);
-      assert.equal(caps.invitesRemaining, 270);
+      assert.deepEqual(caps.invitationBalance, {
+        unlimited: false,
+        base: 300,
+        compensation: 20,
+        consumed: 50,
+        total: 320,
+        remaining: 270,
+      });
       assert.equal(caps.guestLimit, 320);
       assert.equal(caps.isLive, true);
       assert.equal(caps.allowAddOnly, true);

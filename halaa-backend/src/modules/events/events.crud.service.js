@@ -37,6 +37,7 @@ const taqnyatTemplatesService = require('../taqnyat-templates/taqnyat-templates.
 // Rewrites populated template image columns to authenticated asset-proxy URLs
 // (stored imageUrl/thumbnailUrl columns can hold stale/private bucket refs).
 const { withAssetUrls: withTemplateAssetUrls } = require('../templates/templates.service');
+const { calculateInvitationBalance } = require('../subscriptions/invitationBalance.presenter');
 
 module.exports = {
   /**
@@ -233,13 +234,9 @@ module.exports = {
           .populate("planId", "planType code limits name")
           .lean();
         if (sub) {
+          const invitationBalance = calculateInvitationBalance(sub, sub.planId);
           const invitePool = sub.invitePool ?? null;
           const compensationPool = sub.compensationPool || 0;
-          const invitesConsumed = sub.invitesConsumed || 0;
-          const invitesRemaining =
-            invitePool === null
-              ? null
-              : Math.max(0, invitePool + compensationPool - invitesConsumed);
           const planType = sub.planId?.planType || null;
           const isPerEvent = isPerEventPlan(planType);
           const isPool = isPoolPlan(planType);
@@ -250,10 +247,10 @@ module.exports = {
             status: sub.status,
             expiresAt: sub.expiresAt,
             invitePool,
-            invitesRemaining,
+            invitationBalance,
             isPoolPlan: isPool,
             isSingleEvent: isPerEvent,
-            isGuestUnlimited: invitePool === null && !isPerEvent,
+            isGuestUnlimited: invitationBalance.unlimited,
             guestLimit:
               invitePool !== null
                 ? invitePool + compensationPool
@@ -275,8 +272,8 @@ module.exports = {
             isPoolPlan: isPool,
             isTrial,
             invitePool,
-            invitesRemaining,
-            isGuestUnlimited: invitePool === null && !isPerEvent,
+            invitationBalance,
+            isGuestUnlimited: invitationBalance.unlimited,
             guestLimit:
               invitePool !== null
                 ? invitePool + compensationPool
@@ -301,6 +298,9 @@ module.exports = {
             ].includes(event.status),
             allowAddOnly: event.status === EVENT_STATUS.LIVE,
           };
+          event.invitationBalance = invitationBalance;
+        } else {
+          event.invitationBalance = calculateInvitationBalance(null);
         }
       } catch (err) {
         // Best-effort enrichment — never break the event read because of it.

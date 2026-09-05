@@ -29,6 +29,10 @@ const getCurrentPlanCode = (subscription) =>
 
 const getRemainingInvites = (subscription) => {
   if (!subscription) return "-";
+  if (subscription.invitationBalance) {
+    if (subscription.invitationBalance.unlimited) return "Unlimited";
+    return subscription.invitationBalance.remaining ?? 0;
+  }
   if (subscription.invitePool === null || subscription.invitePool === undefined) return "Unlimited";
   if (subscription.invitesRemaining !== undefined && subscription.invitesRemaining !== null) {
     return subscription.invitesRemaining;

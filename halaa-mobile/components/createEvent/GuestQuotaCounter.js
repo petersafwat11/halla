@@ -16,11 +16,12 @@ const GuestQuotaCounter = ({ currentGuests = 0, subscription }) => {
   // added to THIS event right now. ∞ is reserved for the platform-admin / unlimited
   // plan bypass.
   const isPoolPlan = subscription?.isPoolPlan === true;
-  const invitesRemaining = Number.isFinite(subscription?.invitesRemaining)
-    ? subscription.invitesRemaining
-    : null;
+  const balance = subscription?.invitationBalance;
+  const invitesRemaining = balance
+    ? (balance.unlimited ? null : balance.remaining)
+    : (Number.isFinite(subscription?.invitesRemaining) ? subscription.invitesRemaining : null);
   const rawGuestLimit = subscription?.guestLimit ?? 0;
-  const isUnlimited = subscription?.isGuestUnlimited === true && !isPoolPlan;
+  const isUnlimited = (balance?.unlimited === true) || (subscription?.isGuestUnlimited === true && !isPoolPlan);
   const guestLimit = isPoolPlan ? (invitesRemaining ?? 0) : rawGuestLimit;
   const hasSubscription = !!subscription;
 

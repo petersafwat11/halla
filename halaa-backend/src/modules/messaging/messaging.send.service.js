@@ -29,6 +29,7 @@ const {
 const taqnyatTemplatesService = require('../taqnyat-templates/taqnyat-templates.service');
 const { INVITATION_TYPE, EVENT_LIFECYCLE_ALLOWED } = require('../../shared/constants');
 const { getActiveEventGuestsFilter } = require('../../shared/utils/guestFilter');
+const { assertHasInviteBudget } = require('../subscriptions/invitationBalance.presenter');
 
 const DISPATCH_CLAIM_TTL_MS = 5 * 60 * 1000;
 
@@ -618,22 +619,16 @@ async function sendInitialLaunchBatch({
 
   if (event.subscriptionId) {
     const sub = await Subscription.findById(event.subscriptionId)
-      .select('invitePool compensationPool invitesConsumed');
-    if (sub && sub.invitePool !== null && sub.invitePool !== undefined) {
-      const remaining =
-        (sub.invitePool || 0) + (sub.compensationPool || 0) - (sub.invitesConsumed || 0);
-      const notYetSent = await Guest.countDocuments({
-        ...getActiveEventGuestsFilter(eventId, event.guestList, effectiveGuestIds),
-        'invitation.sent': { $ne: true },
-      });
-      if (notYetSent > remaining) {
-        throw new AppError(
-          `Insufficient invites: ${notYetSent} to send but ${Math.max(0, remaining)} remaining in plan pool.`,
-          402,
-          'INSUFFICIENT_INVITES'
-        );
-      }
+      .select('invitePool compensationPool invitesConsumed planId')
+      .populate('planId', 'planType code limits');
+    if (!sub) {
+      throw new AppError('Subscription not found for event', 404, 'SUBSCRIPTION_NOT_FOUND');
     }
+    const notYetSent = await Guest.countDocuments({
+      ...getActiveEventGuestsFilter(eventId, event.guestList, effectiveGuestIds),
+      'invitation.sent': { $ne: true },
+    });
+    assertHasInviteBudget(sub, notYetSent, sub.planId);
   }
 
   await Event.findByIdAndUpdate(eventId, {
@@ -765,22 +760,16 @@ async function sendBulk({
 
   if (event.subscriptionId) {
     const sub = await Subscription.findById(event.subscriptionId)
-      .select('invitePool compensationPool invitesConsumed');
-    if (sub && sub.invitePool !== null && sub.invitePool !== undefined) {
-      const remaining =
-        (sub.invitePool || 0) + (sub.compensationPool || 0) - (sub.invitesConsumed || 0);
-      const notYetSent = await Guest.countDocuments({
-        ...getActiveEventGuestsFilter(eventId, event.guestList, effectiveGuestIds),
-        'invitation.sent': { $ne: true },
-      });
-      if (notYetSent > remaining) {
-        throw new AppError(
-          `Insufficient invites: ${notYetSent} to send but ${Math.max(0, remaining)} remaining in your plan.`,
-          402,
-          'INSUFFICIENT_INVITES'
-        );
-      }
+      .select('invitePool compensationPool invitesConsumed planId')
+      .populate('planId', 'planType code limits');
+    if (!sub) {
+      throw new AppError('Subscription not found for event', 404, 'SUBSCRIPTION_NOT_FOUND');
     }
+    const notYetSent = await Guest.countDocuments({
+      ...getActiveEventGuestsFilter(eventId, event.guestList, effectiveGuestIds),
+      'invitation.sent': { $ne: true },
+    });
+    assertHasInviteBudget(sub, notYetSent, sub.planId);
   }
 
   await Event.findByIdAndUpdate(eventId, {

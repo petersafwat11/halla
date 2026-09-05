@@ -261,7 +261,9 @@ test("toSubscriptionDTO: Authoritative invitePool, 15% compensation, and remaini
   assert.equal(dto1.invitePool, 100);
   assert.equal(dto1.compensationPool, 15);
   assert.equal(dto1.invitesConsumed, 30);
-  assert.equal(dto1.remainingInvites, 85); // 100 + 15 - 30 = 85
+  assert.equal(dto1.invitationBalance.unlimited, false);
+  assert.equal(dto1.invitationBalance.remaining, 85); // 100 + 15 - 30 = 85
+  assert.equal(dto1.invitationBalance.total, 115);
   assert.equal(dto1.billingType, "event");
   assert.equal(dto1.billingInterval, "event");
 
@@ -278,7 +280,9 @@ test("toSubscriptionDTO: Authoritative invitePool, 15% compensation, and remaini
   const dto2 = toSubscriptionDTO(quarterlySub);
   assert.equal(dto2.invitePool, 500);
   assert.equal(dto2.compensationPool, 75);
-  assert.equal(dto2.remainingInvites, 455); // 500 + 75 - 120 = 455
+  assert.equal(dto2.invitationBalance.unlimited, false);
+  assert.equal(dto2.invitationBalance.remaining, 455); // 500 + 75 - 120 = 455
+  assert.equal(dto2.invitationBalance.total, 575);
   assert.equal(dto2.billingType, "quarterly");
   assert.equal(dto2.billingInterval, "quarterly");
 
@@ -294,5 +298,7 @@ test("toSubscriptionDTO: Authoritative invitePool, 15% compensation, and remaini
   const dto3 = toSubscriptionDTO(unlimitedSub);
   assert.equal(dto3.invitePool, null);
   assert.equal(dto3.compensationPool, null);
-  assert.equal(dto3.remainingInvites, null);
+  assert.equal(dto3.invitationBalance.unlimited, true);
+  assert.equal(dto3.invitationBalance.remaining, null);
+  assert.equal(dto3.invitationBalance.consumed, 1000);
 });

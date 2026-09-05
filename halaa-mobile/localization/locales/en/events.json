@@ -446,5 +446,17 @@
     "revokeConfirmTitle": "Revoke access",
     "revokeConfirmBody": "{{name}} will lose access to the QR scanner and will no longer be able to check in guests.",
     "revokeAction": "Revoke access"
+  },
+  "invitationBalance": {
+    "title": "Invitation Balance",
+    "remaining": "Remaining invites",
+    "remainingLabel": "invites left",
+    "used": "Used",
+    "total": "Total",
+    "unlimited": "Unlimited",
+    "unlimitedPlan": "Unlimited Plan",
+    "addMore": "Add More",
+    "usedOfTotal": "{{used}} of {{total}}",
+    "helper": "Adding guests is free; you're charged only when an invitation or reminder is sent."
   }
 }

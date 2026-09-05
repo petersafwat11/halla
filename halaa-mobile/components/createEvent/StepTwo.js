@@ -17,10 +17,11 @@ const StepTwo = ({
   // don't sail past their pool and get a 403 at submit. ∞ is reserved for the
   // platform-admin / unlimited plan bypass.
   const isPoolPlan = subscription?.isPoolPlan === true;
-  const invitesRemaining = Number.isFinite(subscription?.invitesRemaining)
-    ? subscription.invitesRemaining
-    : null;
-  const isUnlimited = subscription?.isGuestUnlimited === true && !isPoolPlan;
+  const balance = subscription?.invitationBalance;
+  const invitesRemaining = balance
+    ? (balance.unlimited ? null : balance.remaining)
+    : (Number.isFinite(subscription?.invitesRemaining) ? subscription.invitesRemaining : null);
+  const isUnlimited = (balance?.unlimited === true) || (subscription?.isGuestUnlimited === true && !isPoolPlan);
   const guestLimit = isPoolPlan
     ? (invitesRemaining ?? 0)
     : (subscription?.guestLimit ?? 0);

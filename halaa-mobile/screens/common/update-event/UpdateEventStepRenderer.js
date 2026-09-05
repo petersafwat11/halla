@@ -43,17 +43,19 @@ const UpdateEventStepRenderer = ({
           staffList={formData.staffList}
           allowAddOnly={allowAddOnlyOnStep2}
           subscription={{
+            ...subscription,
             guestLimit: isPool
-              ? (subscription?.invitesRemaining ?? 0)
+              ? (subscription?.invitationBalance ? (subscription.invitationBalance.unlimited ? null : subscription.invitationBalance.remaining) : (subscription?.invitesRemaining ?? 0))
               : (eventFrozenLimit ??
                   subscription?.guestLimit ??
                   subscription?.guests?.limitPerEvent ??
                   subscription?.limits?.maxInvitesPerEvent ??
                   0),
-            isGuestUnlimited: subUnlimited && !isPool,
+            isGuestUnlimited: (subscription?.invitationBalance?.unlimited ?? subUnlimited) && !isPool,
             isPoolPlan: isPool,
             invitePool: subscription?.invitePool ?? null,
-            invitesRemaining: subscription?.invitesRemaining ?? null,
+            invitesRemaining: subscription?.invitationBalance ? (subscription.invitationBalance.unlimited ? null : subscription.invitationBalance.remaining) : (subscription?.invitesRemaining ?? null),
+            invitationBalance: subscription?.invitationBalance ?? null,
           }}
         />
       );

@@ -10,6 +10,7 @@ import {
   getBillingType,
   getBillingPeriodKey,
 } from "../constants/plans.js";
+import { calculateInvitationBalance } from "../schemas/invitationBalance.js";
 
 /**
  * Canonical Boundary DTO Adapters
@@ -241,13 +242,7 @@ export const toSubscriptionDTO = (rawSub) => {
   const invitesConsumed = Number(
     rawSub.invitesConsumed ?? rawSub.usedInvites ?? rawSub.usage?.guestsUsed ?? 0
   );
-  const remainingInvites =
-    invitePool !== null
-      ? Math.max(
-          0,
-          Number(invitePool) + (compensationPool || 0) - invitesConsumed
-        )
-      : null;
+  const invitationBalance = calculateInvitationBalance(rawSub);
   const startDate = rawSub.startDate || rawSub.createdAt || null;
   const endDate = rawSub.endDate || rawSub.expiresAt || null;
 
@@ -262,7 +257,7 @@ export const toSubscriptionDTO = (rawSub) => {
     compensationPool,
     usedInvites: invitesConsumed,
     invitesConsumed,
-    remainingInvites,
+    invitationBalance,
     startDate,
     endDate,
   };

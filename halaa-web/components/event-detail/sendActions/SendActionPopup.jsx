@@ -32,6 +32,7 @@ export default function SendActionPopup({
   eventId,
   guests,
   invitesRemaining,
+  invitationBalance,
   isOpen,
   onClose,
 }) {
@@ -66,9 +67,14 @@ export default function SendActionPopup({
         : newGuestsMut;
   const isPending = mutation.isPending;
 
-  const isUnlimited = invitesRemaining == null;
+  const isUnlimited = invitationBalance
+    ? Boolean(invitationBalance.unlimited)
+    : invitesRemaining == null;
+  const effectiveRemaining = invitationBalance
+    ? (invitationBalance.unlimited ? null : invitationBalance.remaining)
+    : invitesRemaining;
   const selectedCount = selectedIds.size;
-  const overQuota = !isUnlimited && selectedCount > invitesRemaining;
+  const overQuota = !isUnlimited && selectedCount > (effectiveRemaining ?? 0);
   const canSend = selectedCount > 0 && !overQuota && !isPending;
 
   const [titleKey, titleFallback] = TITLE_KEYS[action];
@@ -95,7 +101,7 @@ export default function SendActionPopup({
     : t("singleEvent.sendActions.popup.counter", {
         defaultValue: "{{count}} selected · {{remaining}} invites left",
         count: selectedCount,
-        remaining: invitesRemaining,
+        remaining: effectiveRemaining,
       });
 
   const costText = isUnlimited

@@ -101,7 +101,12 @@
     }
   },
   "errors": {
-    "loadFailed": "Failed to load dashboard"
+    "noEventId": "Event ID not found",
+    "noToken": "Authentication token not found",
+    "eventNotFound": "Event not found or you don't have permission to delete it",
+    "unauthorized": "You are not authorized to perform this action",
+    "deleteError": "Failed to delete event. Please try again.",
+    "noGuestId": "Guest ID not found"
   },
   "staff": {
     "notifyStaff": "Notify Staff",
@@ -200,14 +205,6 @@
   },
   "confirmDelete": "Are you sure you want to delete this event? This action cannot be undone.",
   "deleteSuccess": "Event deleted successfully",
-  "errors": {
-    "noEventId": "Event ID not found",
-    "noToken": "Authentication token not found",
-    "eventNotFound": "Event not found or you don't have permission to delete it",
-    "unauthorized": "You are not authorized to perform this action",
-    "deleteError": "Failed to delete event. Please try again.",
-    "noGuestId": "Guest ID not found"
-  },
   "events": {
     "title": "Events",
     "stats": {
@@ -450,5 +447,17 @@
       "dateRequired": "Date is required",
       "timeRequired": "Time is required"
     }
+  },
+  "invitationBalance": {
+    "title": "Invitation Balance",
+    "remaining": "Remaining invites",
+    "remainingLabel": "invites left",
+    "used": "Used",
+    "total": "Total",
+    "unlimited": "Unlimited",
+    "unlimitedPlan": "Unlimited Plan",
+    "addMore": "Add More",
+    "usedOfTotal": "{{used}} of {{total}}",
+    "helper": "Adding guests is free; you're charged only when an invitation or reminder is sent."
   }
 }

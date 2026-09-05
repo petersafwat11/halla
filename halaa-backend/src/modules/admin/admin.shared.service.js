@@ -8,6 +8,7 @@ const User = require('../../../models/UserModel');
 const Subscription = require('../../../models/SubscriptionModel');
 const { NotFoundError } = require('../../shared/errors');
 const { ROLES } = require('../../shared/constants');
+const { calculateInvitationBalance } = require('../subscriptions/invitationBalance.presenter');
 
 /**
  * Build search query for users
@@ -46,27 +47,25 @@ function formatUserResponse(user) {
     status: user.status,
     profileCompleted: user.profile?.hostData?.profileCompleted || user.profile?.vendorData?.profileCompleted,
     emailVerified: user.profile?.hostData?.emailVerified || user.emailVerified || false,
-    subscription: user.subscription ? {
-      planType: user.subscription.planId?.planType || user.subscription.planType,
-      planId: user.subscription.planId,
-      status: user.subscription.status,
-      currentPeriodEnd: user.subscription.expiresAt || user.subscription.endDate || user.subscription.currentPeriodEnd,
-      billingType: user.subscription.planId?.billingType || null,
-      invitePool: user.subscription.invitePool ?? null,
-      compensationPool: user.subscription.compensationPool ?? null,
-      invitesConsumed: user.subscription.invitesConsumed || 0,
-      invitesRemaining:
-        user.subscription.invitePool === null || user.subscription.invitePool === undefined
-          ? null
-          : (user.subscription.invitePool || 0)
-            + (user.subscription.compensationPool || 0)
-            - (user.subscription.invitesConsumed || 0),
-      limits: {
-        maxEvents: user.subscription.planId?.limits?.maxEvents ?? null,
-        maxInvitesPerEvent: user.subscription.planId?.limits?.maxInvitesPerEvent ?? null,
-        invitePool: user.subscription.planId?.limits?.invitePool ?? null,
-      },
-    } : null,
+    subscription: user.subscription ? (() => {
+      const balance = calculateInvitationBalance(user.subscription, user.subscription.planId);
+      return {
+        planType: user.subscription.planId?.planType || user.subscription.planType,
+        planId: user.subscription.planId,
+        status: user.subscription.status,
+        currentPeriodEnd: user.subscription.expiresAt || user.subscription.endDate || user.subscription.currentPeriodEnd,
+        billingType: user.subscription.planId?.billingType || null,
+        invitePool: user.subscription.invitePool ?? null,
+        compensationPool: user.subscription.compensationPool ?? null,
+        invitesConsumed: balance.consumed,
+        invitationBalance: balance,
+        limits: {
+          maxEvents: user.subscription.planId?.limits?.maxEvents ?? null,
+          maxInvitesPerEvent: user.subscription.planId?.limits?.maxInvitesPerEvent ?? null,
+          invitePool: user.subscription.planId?.limits?.invitePool ?? null,
+        },
+      };
+    })() : null,
     createdAt: user.createdAt,
     lastLogin: user.lastLogin,
   };
@@ -102,25 +101,11 @@ function formatTargetSubscription(sub) {
   const planType = sub.planId?.planType;
   const isPerEvent = planType ? require('../../shared/constants/plans').isPerEventPlan(planType) : false;
   const isPool = planType ? require('../../shared/constants/plans').isPoolPlan(planType) : false;
+  const balance = calculateInvitationBalance(sub, sub.planId);
 
-  let guestLimit, isGuestUnlimited, invitePool, invitesRemaining;
-  if (isPerEvent) {
-    guestLimit = limits.maxInvitesPerEvent ?? 50;
-    isGuestUnlimited = guestLimit === -1;
-    invitePool = null;
-    invitesRemaining = null;
-  } else if (isPool) {
-    guestLimit = -1;
-    isGuestUnlimited = true;
-    invitePool = sub.invitePool ?? null;
-    const totalPool = (sub.invitePool || 0) + (sub.compensationPool || 0);
-    invitesRemaining = totalPool - (sub.invitesConsumed || 0);
-  } else {
-    guestLimit = limits.maxInvitesPerEvent ?? 50;
-    isGuestUnlimited = guestLimit === -1;
-    invitePool = sub.invitePool ?? null;
-    invitesRemaining = sub.invitesRemaining ?? null;
-  }
+  const guestLimit = isPool ? -1 : (balance.unlimited ? -1 : (balance.total || limits.maxInvitesPerEvent || 50));
+  const isGuestUnlimited = isPool || balance.unlimited;
+  const invitePool = sub.invitePool ?? null;
 
   // Plan schema field is `maxEvents` (-1 = unlimited / pool, 1 = per-event).
   const maxEvents = limits.maxEvents ?? (isPerEvent ? 1 : -1);
@@ -138,7 +123,7 @@ function formatTargetSubscription(sub) {
     guestLimit,
     isGuestUnlimited,
     invitePool,
-    invitesRemaining,
+    invitationBalance: balance,
     eventsRemaining,
     eventsUsed,
   };

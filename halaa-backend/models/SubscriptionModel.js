@@ -200,9 +200,13 @@ subscriptionSchema.virtual("isPoolSubscription").get(function () {
   return isPoolPlan(this.planId?.planType);
 });
 
+subscriptionSchema.virtual("invitationBalance").get(function () {
+  const { calculateInvitationBalance } = require("../src/modules/subscriptions/invitationBalance.presenter");
+  return calculateInvitationBalance(this, this.planId);
+});
+
 subscriptionSchema.virtual("invitesRemaining").get(function () {
-  if (this.invitePool === null) return null;
-  return (this.invitePool || 0) + (this.compensationPool || 0) - (this.invitesConsumed || 0);
+  return this.invitationBalance.remaining;
 });
 
 // Days remaining in current period
@@ -464,6 +468,7 @@ subscriptionSchema.methods.getSummary = function () {
     compensationPool: this.compensationPool,
     invitesConsumed: this.invitesConsumed,
     invitesRemaining: this.invitesRemaining,
+    invitationBalance: this.invitationBalance,
     activatedAt: this.activatedAt,
     expiresAt: this.expiresAt,
     pricePaid: this.pricePaid,

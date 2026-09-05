@@ -380,10 +380,15 @@ const swaggerOptions = {
                     checkedIn: { type: 'integer' },
                   },
                 },
-                quota: {
+                invitationBalance: {
                   type: 'object',
                   properties: {
-                    remainingInvites: { type: 'integer', nullable: true, description: "Invites remaining on the event's stamped plan (invitePool + compensationPool - invitesConsumed). null = unlimited" },
+                    unlimited: { type: 'boolean' },
+                    base: { type: 'integer', nullable: true },
+                    compensation: { type: 'integer', nullable: true },
+                    consumed: { type: 'integer' },
+                    total: { type: 'integer', nullable: true },
+                    remaining: { type: 'integer', nullable: true },
                   },
                 },
                 testMessageSent: { type: 'boolean' },

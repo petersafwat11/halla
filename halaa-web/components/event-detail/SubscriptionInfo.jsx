@@ -66,6 +66,31 @@ export default function SubscriptionInfo({ subscription }) {
     // pooled invites remaining (`null` = unlimited) — instead of three rows of
     // fabricated zeros. The rich `guests`/`events`/`compensationInvitations`
     // shape below still renders whenever the backend provides it.
+    if (subscription.invitationBalance) {
+      const b = subscription.invitationBalance;
+      return [
+        {
+          id: "invites",
+          label: t("singleEvent.subscription.remainingInvites", "الدعوات المتبقية"),
+          value: b.unlimited ? "∞" : formatNumber(b.remaining ?? 0),
+          total: b.unlimited ? null : (b.total ?? 0),
+          used: b.consumed ?? 0,
+          isUnlimited: Boolean(b.unlimited),
+          icon: (color) => (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M22 2L11 13M22 2L15 22L11 13M11 13L2 9L22 2"
+                stroke={color}
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          ),
+        },
+      ];
+    }
+
     const hasQuotaBreakdown = Boolean(
       subscription.guests ||
         subscription.events ||
