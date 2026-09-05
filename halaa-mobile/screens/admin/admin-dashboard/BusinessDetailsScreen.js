@@ -73,13 +73,7 @@ const remainingInvitesValue = (sub) => {
     if (sub.invitationBalance.unlimited) return "∞";
     return sub.invitationBalance.remaining ?? 0;
   }
-  if (sub.invitePool === null || sub.invitePool === undefined) return "∞";
-  if (sub.invitesRemaining !== undefined && sub.invitesRemaining !== null) {
-    return sub.invitesRemaining;
-  }
-  return (
-    (sub.invitePool || 0) + (sub.compensationPool || 0) - (sub.invitesConsumed || 0)
-  );
+  return "—";
 };
 
 const StatCard = ({ icon, label, value, badge }) => (

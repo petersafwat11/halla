@@ -258,6 +258,9 @@
     "invalidPlan": "Invalid plan code.",
     "processing": "Processing...",
     "priceUnavailable": "Price unavailable",
+    "quote": {
+      "priceUpdatedNotice": "The quote changed or expired. Review the refreshed amount before paying."
+    },
     "proceedButton": "Proceed to Payment"
   },
   "toasts": {
@@ -443,10 +446,16 @@
     "position": "Item {{current}} of {{total}}",
     "doNotRepurchase": "Do not purchase again. Contact support if this purchase does not activate automatically.",
     "itemFulfilled": "Item completed successfully",
+    "scheduled": "Your plan change is scheduled for the next renewal.",
     "completed": "All purchases were successfully completed.",
     "cancelled": "The purchase queue was cancelled.",
     "buyItem": "Purchase {{name}}",
     "recheck": "Check status",
+    "manualReviewTitle": "Purchase needs review",
+    "manualReviewBody": "Do not purchase again. Contact support so we can verify this store transaction safely.",
+    "contactSupport": "Contact support",
+    "startError": "We couldn't safely prepare this purchase. No purchase was started; please try again.",
+    "stateSaveError": "We couldn't save the latest purchase status. If a store sheet or charge appeared, do not purchase again; reopen the app or contact support.",
     "cancelRemaining": "Cancel remaining",
     "continue": "Continue",
     "close": "Close"

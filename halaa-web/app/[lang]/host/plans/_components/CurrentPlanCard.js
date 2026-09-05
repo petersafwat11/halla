@@ -28,22 +28,15 @@ const CurrentPlanCard = ({ subscription, usage }) => {
     getLocalized(subscription, "planName", i18n.language) ||
     subscription.planName;
 
-  // Pool plans (basic_monthly, premium_monthly, business_*) report `maxEvents: -1`
-  // (unlimited events) and `maxInvitesPerEvent: null`; capacity is tracked on the
-  // subscription itself via `invitePool` / `invitesConsumed`. Per-event plans use
-  // `usage.guestsUsed` against the plan's `maxInvitesPerEvent`.
-  const isPool = subscription.isPoolSubscription === true;
+  const invitationBalance = subscription.invitationBalance;
 
   const eventsUsed = usage?.eventsCreated || 0;
   const eventsLimit = subscription.limits?.maxEvents ?? 0;
   const eventsUnlimited = eventsLimit === -1;
 
-  const guestsUsed = isPool
-    ? (subscription.invitesConsumed ?? 0)
-    : (usage?.guestsUsed ?? 0);
-  const guestsLimit = isPool
-    ? (subscription.invitePool ?? 0)
-    : (subscription.limits?.maxInvitesPerEvent ?? 0);
+  const guestsUsed = invitationBalance?.consumed ?? 0;
+  const guestsLimit = invitationBalance?.total ?? 0;
+  const guestsUnlimited = invitationBalance?.unlimited === true;
 
   const daysRemaining = subscription.daysRemaining || 0;
 
@@ -52,7 +45,9 @@ const CurrentPlanCard = ({ subscription, usage }) => {
     : eventsLimit > 0
       ? (eventsUsed / eventsLimit) * 100
       : 0;
-  const guestsPercent = guestsLimit > 0 ? (guestsUsed / guestsLimit) * 100 : 0;
+  const guestsPercent = guestsUnlimited || guestsLimit <= 0
+    ? 0
+    : (guestsUsed / guestsLimit) * 100;
 
   return (
     <div className={styles.card}>
@@ -76,6 +71,7 @@ const CurrentPlanCard = ({ subscription, usage }) => {
           used={guestsUsed}
           limit={guestsLimit}
           percent={guestsPercent}
+          isUnlimited={guestsUnlimited}
         />
         <div className={styles.usageItem}>
           <div className={styles.usageIcon}>

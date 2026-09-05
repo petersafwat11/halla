@@ -96,8 +96,6 @@
   },
   "createTicket": {
     "title": "Create Support Ticket",
-    "username": "Username",
-    "usernamePlaceholder": "Enter username",
     "number": "Phone Number",
     "numberPlaceholder": "5xx xxx xxx",
     "type": "Ticket Type",
@@ -131,7 +129,6 @@
       "title": "Tickets",
       "columns": {
         "number": "Ticket Number",
-        "username": "Username",
         "type": "Type",
         "message": "Message",
         "status": "Status",

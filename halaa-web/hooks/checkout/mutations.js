@@ -9,13 +9,6 @@ import { eventsKeys } from "@/hooks/events/keys";
 
 const CHECKOUT_CART_STORAGE_KEY = "halla.checkout.pendingCart";
 
-const newIdempotencyKey = () => {
-  if (typeof crypto !== "undefined" && crypto.randomUUID) {
-    return `checkout-${crypto.randomUUID()}`;
-  }
-  return `checkout-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-};
-
 /**
  * Stash the pending checkout cart so a 3DS round-trip can resume the UI.
  * The backend already persists the intent on the Payment row — this client
@@ -74,7 +67,8 @@ export const useCheckout = () => {
       quoteExpiresAt,
     }) => {
       if (!planCode) throw new Error("planCode is required");
-      const idempotencyKey = newIdempotencyKey();
+      if (!quoteId || !quoteExpiresAt) throw new Error("A current checkout quote is required");
+      const idempotencyKey = `checkout-${quoteId}`;
       const data = await apiRequest({
         method: "POST",
         path: API_PATHS.hostPayments.checkout,

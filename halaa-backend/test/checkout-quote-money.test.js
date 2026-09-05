@@ -7,10 +7,11 @@ const assert = require("node:assert/strict");
 const db = require("./helpers/memoryDb");
 
 const checkoutService = require("../src/modules/payments/checkout.service");
-const { ValidationError } = require("../src/shared/errors");
+const { AppError } = require("../src/shared/errors");
 const Plan = require("../models/PlanModel");
 const User = require("../models/UserModel");
 const Payment = require("../models/PaymentModel");
+const Addon = require("../models/AddonModel");
 const Discount = require("../models/DiscountModel");
 const paymentProvider = require("../src/infrastructure/paymentProvider");
 const { toHalalas, halalasToSar } = require("../src/shared/utils/money");
@@ -133,6 +134,7 @@ test("checkoutService.checkout succeeds when expectedAmount matches server quote
     planCode: "custom_event_tier",
     expectedAmount: quote.total,
     quoteId: quote.quoteId,
+    quoteExpiresAt: quote.quoteExpiresAt,
   });
 
   assert.ok(result.subscription);
@@ -157,10 +159,11 @@ test("checkoutService.checkout rejects with ValidationError if expectedAmount mi
         planCode: "custom_event_tier",
         expectedAmount: quote.total - 10, // Stale/mismatched client price
         quoteId: quote.quoteId,
+        quoteExpiresAt: quote.quoteExpiresAt,
       });
     },
     (err) => {
-      assert.ok(err instanceof ValidationError);
+      assert.ok(err instanceof AppError);
       assert.match(err.message, /Price changed since quote was generated/);
       return true;
     }
@@ -179,13 +182,69 @@ test("checkoutService.checkout rejects with ValidationError if quote has expired
       await checkoutService.checkout(testUser._id, {
         planCode: "custom_event_tier",
         expectedAmount: quote.total,
+        quoteId: quote.quoteId,
         quoteExpiresAt: expiredDate,
       });
     },
     (err) => {
-      assert.ok(err instanceof ValidationError);
+      assert.ok(err instanceof AppError);
+      assert.equal(err.code, "QUOTE_EXPIRED");
       assert.match(err.message, /Quote has expired/);
       return true;
     }
+  );
+});
+
+test("bundled checkout creates a custom-design fulfillment request instead of activating it generically", async () => {
+  paymentProvider.charge = async ({ amount, currency }) => {
+    assert.equal(amount, 399.5);
+    assert.equal(currency, "SAR");
+    return {
+      success: true,
+      transactionId: "moyasar-design-123",
+      providerStatus: "paid",
+      paymentMethod: { type: "creditcard" },
+    };
+  };
+
+  const checkoutBody = {
+    planCode: "custom_event_tier",
+    addons: [{ addonType: "design_template", templateType: "ready_made" }],
+  };
+  const quote = await checkoutService.getQuote(testUser._id, checkoutBody);
+  const result = await checkoutService.checkout(testUser._id, {
+    ...checkoutBody,
+    expectedAmount: quote.total,
+    quoteId: quote.quoteId,
+    quoteExpiresAt: quote.quoteExpiresAt,
+  });
+
+  assert.equal(result.failedAddons.length, 0);
+  assert.equal(result.addons.length, 1);
+
+  const addon = await Addon.findById(result.addons[0]._id);
+  assert.equal(addon.addonType, "design_template");
+  assert.equal(addon.status, "paid");
+  assert.ok(addon.fulfillment.requestedAt instanceof Date);
+  assert.ok(addon.fulfillment.expectedDeliveryAt instanceof Date);
+  assert.ok(
+    addon.fulfillment.expectedDeliveryAt.getTime() > addon.fulfillment.requestedAt.getTime()
+  );
+  assert.equal(addon.metadata.activatedAt, null);
+});
+
+test("checkoutService.checkout rejects a changed cart even when a stale quote is supplied", async () => {
+  const quote = await checkoutService.getQuote(testUser._id, {
+    planCode: "custom_event_tier",
+  });
+  await assert.rejects(
+    checkoutService.checkout(testUser._id, {
+      planCode: "custom_event_tier",
+      addons: [{ addonType: "extra_invites", quantity: 50 }],
+      expectedAmount: quote.total,
+      quoteId: quote.quoteId,
+      quoteExpiresAt: quote.quoteExpiresAt,
+    }),
+    (err) => err instanceof AppError && err.code === "QUOTE_CHANGED"
   );
 });

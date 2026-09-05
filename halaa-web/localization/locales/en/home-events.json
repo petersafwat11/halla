@@ -13,7 +13,6 @@
     "logout": "Logout"
   },
   "header": {
-    "userName": "Ahmed Gamal Eldin",
     "userRole": "Event Management",
     "adminRole": "Admin",
     "vendorRole": "Vendor",

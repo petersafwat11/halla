@@ -316,14 +316,16 @@ export const formatTime = (input, locale = "ar", options) => {
     return normalizeDigits(String(input));
   }
 
+  const { numberingSystem: _ignoredNumberingSystem, calendar: _ignoredCalendar, ...callerOptions } = options || {};
   const opts = {
     hour: "numeric",
     minute: "2-digit",
+    ...callerOptions,
+    calendar: "gregory",
     numberingSystem: "latn",
-    ...(options || {}),
   };
 
-  const localeTag = lang === "ar" ? "ar-SA-u-nu-latn" : "en-US-u-nu-latn";
+  const localeTag = lang === "ar" ? "ar-SA-u-ca-gregory-nu-latn" : "en-US-u-ca-gregory-nu-latn";
 
   if (_hasIntl()) {
     try {

@@ -29,14 +29,10 @@
   "password_min_length": "يجب أن تكون كلمة المرور على الأقل 8 أحرف",
   "password_requirements": "تتكون كلمة المرور من حروف وأرقام فقط، وبها حرف ورقم على الأقل",
   "password_mismatch": "كلمات المرور غير متطابقة",
-  "username_min_length": "اسم المستخدم يجب أن يكون حرفين على الأقل",
-  "username_max_length": "اسم المستخدم يجب أن يكون أقل من 50 حرف",
   "current_password_required": "كلمة المرور الحالية مطلوبة لتعيين كلمة مرور جديدة",
   "personal_info": "المعلومات الشخصية",
   "full_name": "الاسم الكامل",
   "full_name_placeholder": "أدخل اسمك الكامل",
-  "username_label": "اسم المستخدم",
-  "username_placeholder": "أدخل اسم المستخدم",
   "email_address": "البريد الإلكتروني",
   "email_placeholder": "أدخل بريدك الإلكتروني",
   "email_verified": "تم توثيق البريد الإلكتروني",
@@ -109,8 +105,6 @@
     "eventActivity": "نشاط الفعاليات"
   },
   "errors": {
-    "usernameMinLength": "اسم المستخدم يجب أن يكون 3 أحرف على الأقل",
-    "usernameMaxLength": "اسم المستخدم يجب أن لا يتجاوز 50 حرف",
     "nameMinLength": "الاسم يجب أن يكون حرفين على الأقل",
     "nameMaxLength": "الاسم يجب أن لا يتجاوز 100 حرف",
     "invalidEmail": "البريد الإلكتروني غير صالح",

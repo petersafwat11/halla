@@ -16,6 +16,7 @@ import * as Sentry from "@sentry/react-native";
 import {
   createPurchaseQueue,
   transitionQueueItem,
+  normalizePersistedPurchaseQueue,
   QUEUE_STATUS,
   ITEM_STATUS,
 } from "@halaa/shared/schemas/purchaseQueue";
@@ -26,7 +27,11 @@ import {
 } from "../../services/billing/purchaseQueueStorage";
 import { purchasePackage } from "../../services/purchases";
 import { reconcileExact } from "../../services/billingApi";
-import { mapReconcileState, isPurchaseCancelled } from "../../services/billing/reconcileState";
+import {
+  mapReconcileState,
+  needsSupportAttention,
+  isPurchaseCancelled,
+} from "../../services/billing/reconcileState";
 import { subscriptionsKeys } from "../subscriptions/keys";
 import { addonsKeys } from "../addons/keys";
 import { eventsKeys } from "../events/keys";
@@ -45,6 +50,26 @@ export function usePurchaseQueue({
   const [queue, setQueue] = useState(null);
   const [isBusy, setIsBusy] = useState(false);
   const inFlightRef = useRef(false);
+  const queueRef = useRef(null);
+
+  const setCurrentQueue = useCallback((nextQueue) => {
+    queueRef.current = nextQueue;
+    setQueue(nextQueue);
+  }, []);
+
+  const persistQueue = useCallback(async (nextQueue, { retainOnFailure = false } = {}) => {
+    try {
+      await savePurchaseQueue(nextQueue.billingUserId, nextQueue);
+    } catch (error) {
+      // Once the native store has been invoked, retaining the most advanced
+      // in-memory state is safer than showing an earlier, purchasable state.
+      // Persistence still rejects so the caller can warn the user.
+      if (retainOnFailure) setCurrentQueue(nextQueue);
+      throw error;
+    }
+    setCurrentQueue(nextQueue);
+    return nextQueue;
+  }, [setCurrentQueue]);
 
   const markBillingCachesStale = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: subscriptionsKeys.all });
@@ -56,24 +81,40 @@ export function usePurchaseQueue({
   // Load persisted queue on mount or user change
   useEffect(() => {
     if (!billingUserId) {
-      setQueue(null);
+      setCurrentQueue(null);
       return;
     }
     let isMounted = true;
     (async () => {
       const persisted = await loadPurchaseQueue(billingUserId);
       if (isMounted && persisted) {
-        if (persisted.status === QUEUE_STATUS.IN_PROGRESS) {
-          setQueue(persisted);
-        } else if (persisted.status === QUEUE_STATUS.COMPLETED || persisted.status === QUEUE_STATUS.CANCELLED) {
-          await clearPurchaseQueue(billingUserId);
+        const resumable = normalizePersistedPurchaseQueue(persisted);
+        const wasInterrupted =
+          persisted.status === QUEUE_STATUS.IN_PROGRESS &&
+          persisted.items[persisted.currentIndex]?.status === ITEM_STATUS.PURCHASING;
+        if (wasInterrupted) {
+          try {
+            await savePurchaseQueue(billingUserId, resumable);
+          } catch (error) {
+            // Keep the in-memory state safe even when storage is temporarily
+            // unavailable. The next launch will normalize it again and will
+            // never automatically charge the interrupted item a second time.
+            Sentry.captureException(error, {
+              tags: { area: "purchase_queue", operation: "resume_persist" },
+            });
+          }
         }
+        if (isMounted) setCurrentQueue(resumable);
       }
-    })();
+    })().catch((error) => {
+      Sentry.captureException(error, {
+        tags: { area: "purchase_queue", operation: "resume" },
+      });
+    });
     return () => {
       isMounted = false;
     };
-  }, [billingUserId]);
+  }, [billingUserId, setCurrentQueue]);
 
   const pollExactReconcile = useCallback(
     async (args) => {
@@ -115,37 +156,54 @@ export function usePurchaseQueue({
         items,
       });
 
-      await savePurchaseQueue(billingUserId, newQueue);
-      setQueue(newQueue);
-      return newQueue;
+      return persistQueue(newQueue);
     },
-    [billingUserId]
+    [billingUserId, persistQueue]
   );
 
   /**
    * Purchases the current pending item in the queue.
    */
   const purchaseCurrentItem = useCallback(
-    async (pkg, changeInfo = null) => {
-      if (inFlightRef.current || !queue || queue.status !== QUEUE_STATUS.IN_PROGRESS) {
-        return queue;
+    async (pkg, changeInfo = null, { preflight = null, deferred = false } = {}) => {
+      const activeQueue = queueRef.current;
+      if (inFlightRef.current || !activeQueue || activeQueue.status !== QUEUE_STATUS.IN_PROGRESS) {
+        return activeQueue;
       }
-      const currentIndex = queue.currentIndex;
-      const item = queue.items[currentIndex];
+      const currentIndex = activeQueue.currentIndex;
+      const item = activeQueue.items[currentIndex];
       if (!item || item.status !== ITEM_STATUS.PENDING) {
-        return queue;
+        return activeQueue;
       }
 
       inFlightRef.current = true;
       setIsBusy(true);
 
-      let currentQueue = queue;
+      let currentQueue = activeQueue;
 
       try {
+        // Eligibility is checked immediately before opening the native store.
+        // A failed preflight is terminal for this queue attempt, but no charge
+        // has been started and the user may safely begin a fresh attempt.
+        if (preflight) {
+          let result;
+          try {
+            result = await preflight();
+          } catch {
+            result = { eligible: false, reason: "preflight_unavailable" };
+          }
+          if (!result?.eligible) {
+            currentQueue = transitionQueueItem(currentQueue, currentIndex, ITEM_STATUS.FAILED, {
+              error: `preflight_${result?.reason || "ineligible"}`,
+            });
+            await persistQueue(currentQueue);
+            return currentQueue;
+          }
+        }
+
         // Step 1: Transition item to PURCHASING
         currentQueue = transitionQueueItem(currentQueue, currentIndex, ITEM_STATUS.PURCHASING);
-        setQueue(currentQueue);
-        await savePurchaseQueue(billingUserId, currentQueue);
+        await persistQueue(currentQueue);
 
         // Step 2: Native store purchase
         let purchaseResult;
@@ -156,28 +214,49 @@ export function usePurchaseQueue({
             currentQueue = transitionQueueItem(currentQueue, currentIndex, ITEM_STATUS.CANCELLED, {
               error: "cancelled_by_user",
             });
-            setQueue(currentQueue);
-            await savePurchaseQueue(billingUserId, currentQueue);
+            await persistQueue(currentQueue, { retainOnFailure: true });
             return currentQueue;
           }
           currentQueue = transitionQueueItem(currentQueue, currentIndex, ITEM_STATUS.FAILED, {
-            error: err?.message || "purchase_failed",
+            error: err?.code || err?.name || "purchase_failed",
           });
-          setQueue(currentQueue);
-          await savePurchaseQueue(billingUserId, currentQueue);
+          await persistQueue(currentQueue, { retainOnFailure: true });
           return currentQueue;
         }
 
         const transactionId = purchaseResult.transactionId || null;
         const storeProductId = purchaseResult.storeProductId || null;
 
-        // Step 3: Transition to RECONCILING with store transaction ID
+        if (!transactionId || !storeProductId) {
+          currentQueue = transitionQueueItem(currentQueue, currentIndex, ITEM_STATUS.MANUAL_REVIEW, {
+            transactionId,
+            storeProductId,
+            error: "transaction_identity_missing",
+          });
+          await persistQueue(currentQueue, { retainOnFailure: true });
+          return currentQueue;
+        }
+
+        // A deferred subscription downgrade is accepted by the store now but
+        // becomes active only at renewal. Do not poll for an entitlement that
+        // correctly does not exist yet, and do not describe it as active.
+        if (deferred) {
+          currentQueue = transitionQueueItem(currentQueue, currentIndex, ITEM_STATUS.SCHEDULED, {
+            transactionId,
+            storeProductId,
+            reconcile: { state: "scheduled", reason: "deferred_change" },
+          });
+          await persistQueue(currentQueue, { retainOnFailure: true });
+          markBillingCachesStale();
+          return currentQueue;
+        }
+
+        // Step 3: Transition to RECONCILING with exact store transaction identity
         currentQueue = transitionQueueItem(currentQueue, currentIndex, ITEM_STATUS.RECONCILING, {
           transactionId,
           storeProductId,
         });
-        setQueue(currentQueue);
-        await savePurchaseQueue(billingUserId, currentQueue);
+        await persistQueue(currentQueue, { retainOnFailure: true });
 
         // Step 4: Reconcile exact transaction
         const reconcileArgs = {
@@ -197,22 +276,24 @@ export function usePurchaseQueue({
           currentQueue = transitionQueueItem(currentQueue, currentIndex, ITEM_STATUS.FULFILLED, {
             reconcile: finalReconcile,
           });
-          setQueue(currentQueue);
-
-          if (currentQueue.status === QUEUE_STATUS.COMPLETED) {
-            await clearPurchaseQueue(billingUserId);
-          } else {
-            await savePurchaseQueue(billingUserId, currentQueue);
-          }
+          await persistQueue(currentQueue, { retainOnFailure: true });
           return currentQueue;
         }
 
-        if (finalReconcile?.state === "manual_review") {
+        if (needsSupportAttention(finalReconcile?.state)) {
           currentQueue = transitionQueueItem(currentQueue, currentIndex, ITEM_STATUS.MANUAL_REVIEW, {
             reconcile: finalReconcile,
           });
-          setQueue(currentQueue);
-          await savePurchaseQueue(billingUserId, currentQueue);
+          await persistQueue(currentQueue, { retainOnFailure: true });
+          return currentQueue;
+        }
+
+        if (mapped.terminal) {
+          currentQueue = transitionQueueItem(currentQueue, currentIndex, ITEM_STATUS.FAILED, {
+            reconcile: finalReconcile,
+            error: finalReconcile?.state || "reconcile_failed",
+          });
+          await persistQueue(currentQueue, { retainOnFailure: true });
           return currentQueue;
         }
 
@@ -224,7 +305,7 @@ export function usePurchaseQueue({
         setIsBusy(false);
       }
     },
-    [queue, billingUserId, pollExactReconcile, markBillingCachesStale]
+    [persistQueue, pollExactReconcile, markBillingCachesStale]
   );
 
   /**
@@ -232,10 +313,11 @@ export function usePurchaseQueue({
    * Does NOT make a second store purchase.
    */
   const retryReconcileCurrentItem = useCallback(async () => {
-    if (inFlightRef.current || !queue) return queue;
-    const currentIndex = queue.currentIndex;
-    const item = queue.items[currentIndex];
-    if (!item || item.status !== ITEM_STATUS.RECONCILING) return queue;
+    const activeQueue = queueRef.current;
+    if (inFlightRef.current || !activeQueue) return activeQueue;
+    const currentIndex = activeQueue.currentIndex;
+    const item = activeQueue.items[currentIndex];
+    if (!item || item.status !== ITEM_STATUS.RECONCILING) return activeQueue;
 
     inFlightRef.current = true;
     setIsBusy(true);
@@ -252,46 +334,57 @@ export function usePurchaseQueue({
       markBillingCachesStale();
 
       const mapped = mapReconcileState(finalReconcile?.state);
-      let updatedQueue = queue;
+      let updatedQueue = activeQueue;
 
       if (mapped.success) {
         updatedQueue = transitionQueueItem(updatedQueue, currentIndex, ITEM_STATUS.FULFILLED, {
           reconcile: finalReconcile,
         });
-        setQueue(updatedQueue);
-
-        if (updatedQueue.status === QUEUE_STATUS.COMPLETED) {
-          await clearPurchaseQueue(billingUserId);
-        } else {
-          await savePurchaseQueue(billingUserId, updatedQueue);
-        }
+        await persistQueue(updatedQueue, { retainOnFailure: true });
+      } else if (needsSupportAttention(finalReconcile?.state)) {
+        updatedQueue = transitionQueueItem(updatedQueue, currentIndex, ITEM_STATUS.MANUAL_REVIEW, {
+          reconcile: finalReconcile,
+        });
+        await persistQueue(updatedQueue, { retainOnFailure: true });
+      } else if (mapped.terminal) {
+        updatedQueue = transitionQueueItem(updatedQueue, currentIndex, ITEM_STATUS.FAILED, {
+          reconcile: finalReconcile,
+          error: finalReconcile?.state || "reconcile_failed",
+        });
+        await persistQueue(updatedQueue, { retainOnFailure: true });
       }
       return updatedQueue;
     } finally {
       inFlightRef.current = false;
       setIsBusy(false);
     }
-  }, [queue, billingUserId, pollExactReconcile, markBillingCachesStale]);
+  }, [persistQueue, pollExactReconcile, markBillingCachesStale]);
 
   /**
    * Explicitly cancel remaining queue.
    */
   const cancelQueue = useCallback(async () => {
-    if (!queue) return;
-    const currentIndex = queue.currentIndex;
-    const updated = transitionQueueItem(queue, currentIndex, ITEM_STATUS.CANCELLED, {
+    const activeQueue = queueRef.current;
+    if (!activeQueue) return;
+    const currentIndex = activeQueue.currentIndex;
+    const currentItem = activeQueue.items[currentIndex];
+    if (currentItem?.status !== ITEM_STATUS.PENDING) {
+      setCurrentQueue(null);
+      await clearPurchaseQueue(activeQueue.billingUserId);
+      return;
+    }
+    const updated = transitionQueueItem(activeQueue, currentIndex, ITEM_STATUS.CANCELLED, {
       error: "cancelled_by_user",
     });
-    setQueue(updated);
-    await clearPurchaseQueue(billingUserId);
-  }, [queue, billingUserId]);
+    await persistQueue(updated);
+  }, [persistQueue, setCurrentQueue]);
 
   const resetQueue = useCallback(async () => {
-    setQueue(null);
+    setCurrentQueue(null);
     if (billingUserId) {
       await clearPurchaseQueue(billingUserId);
     }
-  }, [billingUserId]);
+  }, [billingUserId, setCurrentQueue]);
 
   const currentIndex = queue?.currentIndex ?? 0;
   const currentItem = queue?.items?.[currentIndex] || null;

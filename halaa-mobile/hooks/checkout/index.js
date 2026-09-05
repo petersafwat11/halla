@@ -5,3 +5,4 @@ export {
   clearPendingCheckoutCart,
 } from "./mutations";
 export { checkoutKeys } from "./keys";
+export { useCheckoutQuote } from "./queries";

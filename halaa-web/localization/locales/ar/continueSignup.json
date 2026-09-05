@@ -12,7 +12,6 @@
       "passwordComplexity": "تتكون من حروف وأرقام فقط، وبها حرف ورقم على الأقل",
       "passwordSpecialChar": "بدون رموز",
       "confirmPasswordRequired": "تأكيد كلمة المرور مطلوب",
-      "usernameMinLength": "اسم المستخدم يجب أن يكون 3 أحرف على الأقل",
       "passwordConfirmRequired": "يرجى تأكيد كلمة المرور"
     },
     "personalInfo": {

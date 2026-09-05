@@ -29,14 +29,10 @@
   "password_min_length": "Password must be at least 8 characters",
   "password_requirements": "Use letters and numbers only, with at least one of each",
   "password_mismatch": "Passwords do not match",
-  "username_min_length": "Username must be at least 2 characters",
-  "username_max_length": "Username must be less than 50 characters",
   "current_password_required": "Current password is required to set a new password",
   "personal_info": "Personal Information",
   "full_name": "Full Name",
   "full_name_placeholder": "Enter your full name",
-  "username_label": "Username",
-  "username_placeholder": "Enter your username",
   "email_address": "Email Address",
   "email_placeholder": "Enter your email address",
   "email_verified": "Email verified",
@@ -109,8 +105,6 @@
     "eventActivity": "Event Activity"
   },
   "errors": {
-    "usernameMinLength": "Username must be at least 3 characters",
-    "usernameMaxLength": "Username must not exceed 50 characters",
     "nameMinLength": "Name must be at least 2 characters",
     "nameMaxLength": "Name must not exceed 100 characters",
     "invalidEmail": "Invalid email address",

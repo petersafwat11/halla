@@ -22,9 +22,9 @@ export const completionDestinationSchema = z.object({
     COMPLETION_KINDS.EVENT_GATE,
     COMPLETION_KINDS.INVITATION_BALANCE,
   ]).default(COMPLETION_KINDS.PLANS),
-  eventId: z.string().trim().min(1).nullable().optional(),
-  returnTo: z.string().trim().min(1).nullable().optional(),
-}).passthrough();
+  eventId: z.string().trim().regex(/^[A-Za-z0-9_-]{1,64}$/).nullable().optional(),
+  returnTo: z.enum(["dashboard", "Home"]).nullable().optional(),
+}).strict();
 
 /**
  * Parses and sanitizes an incoming completion destination.
@@ -34,24 +34,18 @@ export const completionDestinationSchema = z.object({
  * @returns {{ kind: string, eventId: string|null, returnTo: string|null }}
  */
 export function parseCompletionDestination(input) {
-  if (!input || typeof input !== "object") {
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
     return { kind: COMPLETION_KINDS.PLANS, eventId: null, returnTo: null };
   }
-
-  const rawKind = input.kind || input.origin || COMPLETION_KINDS.PLANS;
-  const kind = ALLOWED_COMPLETION_KINDS.includes(rawKind)
-    ? rawKind
-    : COMPLETION_KINDS.PLANS;
-
-  const eventId = input.eventId && typeof input.eventId === "string" && input.eventId.trim()
-    ? input.eventId.trim()
-    : null;
-
-  const returnTo = input.returnTo && typeof input.returnTo === "string" && input.returnTo.trim()
-    ? input.returnTo.trim()
-    : null;
-
-  return { kind, eventId, returnTo };
+  const result = completionDestinationSchema.safeParse(input);
+  if (!result.success) {
+    return { kind: COMPLETION_KINDS.PLANS, eventId: null, returnTo: null };
+  }
+  return {
+    kind: result.data.kind,
+    eventId: result.data.eventId || null,
+    returnTo: result.data.returnTo || null,
+  };
 }
 
 /**
@@ -63,7 +57,7 @@ export function parseCompletionDestination(input) {
  */
 export function resolveWebCompletionUrl(destination, lang = "ar") {
   const parsed = parseCompletionDestination(destination);
-  const locale = lang || "ar";
+  const locale = lang === "en" ? "en" : "ar";
 
   switch (parsed.kind) {
     case COMPLETION_KINDS.EVENT_GATE:
@@ -96,24 +90,38 @@ export function resolveWebCompletionUrl(destination, lang = "ar") {
 export function resolveMobileCompletionRoute(destination) {
   const parsed = parseCompletionDestination(destination);
 
+  const hostTabRoute = (screen, params) => ({
+    screen: "MainTabs",
+    params: {
+      screen,
+      ...(params ? { params } : {}),
+    },
+  });
+
+  const hostEventsRoute = (screen, params) =>
+    hostTabRoute("Events", {
+      screen,
+      ...(params ? { params } : {}),
+    });
+
   switch (parsed.kind) {
     case COMPLETION_KINDS.EVENT_GATE:
       if (parsed.eventId) {
-        return { screen: "EventDetails", params: { eventId: parsed.eventId } };
+        return hostEventsRoute("EventDetails", { eventId: parsed.eventId });
       }
-      return { screen: "CreateEvent" };
+      return hostEventsRoute("CreateEventScreen");
 
     case COMPLETION_KINDS.INVITATION_BALANCE:
       if (parsed.returnTo === "Home") {
-        return { screen: "MainTabs", params: { screen: "Home" } };
+        return hostTabRoute("Home");
       }
       if (parsed.eventId) {
-        return { screen: "EventDetails", params: { eventId: parsed.eventId } };
+        return hostEventsRoute("EventDetails", { eventId: parsed.eventId });
       }
-      return { screen: "MainTabs", params: { screen: "Home" } };
+      return hostTabRoute("Home");
 
     case COMPLETION_KINDS.PLANS:
     default:
-      return { screen: "MainTabs", params: { screen: "Plans" } };
+      return hostTabRoute("Plans");
   }
 }

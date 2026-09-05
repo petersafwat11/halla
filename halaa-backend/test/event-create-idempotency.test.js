@@ -391,3 +391,34 @@ test("duplicate replay cleans up uploaded file", async () => {
     fileUpload.deleteFile = originalDelete;
   }
 });
+
+test("file fingerprint includes uploaded bytes, not only name and size", async () => {
+  const { getFileFingerprint } = require("../src/shared/middleware/idempotency");
+  const common = { originalname: "invitation.jpg", size: 4, mimetype: "image/jpeg" };
+  const first = await getFileFingerprint({ ...common, buffer: Buffer.from("AAAA") });
+  const second = await getFileFingerprint({ ...common, buffer: Buffer.from("BBBB") });
+  assert.notEqual(first.contentHash, second.contentHash);
+});
+
+test("client disconnect does not release a pending idempotency reservation", async () => {
+  const { idempotency } = require("../src/shared/middleware/idempotency");
+  const key = `test-disconnect-${Date.now()}`;
+  let closeHandler = null;
+  const req = {
+    method: "POST",
+    get: (name) => (name.toLowerCase() === "idempotency-key" ? key : null),
+    body: { event: "still-committing" },
+    user: { _id: hostUser._id },
+  };
+  const res = {
+    statusCode: 201,
+    json: (body) => body,
+    on: (event, handler) => { if (event === "close") closeHandler = handler; },
+  };
+  await idempotency({ scope: "test.disconnect", required: true })(req, res, () => {});
+  if (closeHandler) closeHandler();
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  const reservation = await IdempotencyKey.findOne({ key, scope: "test.disconnect" });
+  assert.ok(reservation);
+  assert.equal(reservation.status, "pending");
+});

@@ -10,19 +10,17 @@ import { isolateLtr } from "@halaa/shared/utils/bidi";
  */
 const GuestQuotaCounter = ({ currentGuests = 0, subscription }) => {
   const { t } = useTranslation("createEvent");
-  // Backend shape: { guestLimit, isGuestUnlimited, isPoolPlan, invitePool, invitesRemaining }
-  // For pool plans the effective per-event cap is `invitesRemaining` — pool plans
+  // Backend shape: { guestLimit, isGuestUnlimited, isPoolPlan, invitationBalance }
+  // For pool plans the effective per-event cap is the canonical balance — pool plans
   // have no per-event cap but the global pool constrains how many guests can be
   // added to THIS event right now. ∞ is reserved for the platform-admin / unlimited
   // plan bypass.
   const isPoolPlan = subscription?.isPoolPlan === true;
   const balance = subscription?.invitationBalance;
-  const invitesRemaining = balance
-    ? (balance.unlimited ? null : balance.remaining)
-    : (Number.isFinite(subscription?.invitesRemaining) ? subscription.invitesRemaining : null);
+  const balanceRemaining = balance?.unlimited ? null : balance?.remaining ?? 0;
   const rawGuestLimit = subscription?.guestLimit ?? 0;
-  const isUnlimited = (balance?.unlimited === true) || (subscription?.isGuestUnlimited === true && !isPoolPlan);
-  const guestLimit = isPoolPlan ? (invitesRemaining ?? 0) : rawGuestLimit;
+  const isUnlimited = balance?.unlimited === true;
+  const guestLimit = isPoolPlan ? balanceRemaining : rawGuestLimit;
   const hasSubscription = !!subscription;
 
   // Calculate percentage for progress bar

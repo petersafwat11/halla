@@ -29,13 +29,15 @@ const UpdateEventStepRenderer = ({
       // also wrong if the host changed plans between create and edit.
       // Trust subscription-info as the single source of truth.
       const isPool = subscription?.isPoolPlan === true;
-      const subUnlimited = subscription?.isGuestUnlimited === true;
       const eventFrozenLimit =
         !isPool &&
         Number.isInteger(eventData?.guestLimit) &&
         eventData.guestLimit > 0
           ? eventData.guestLimit
           : null;
+      const existingGuestCount = Array.isArray(eventData?.guestList)
+        ? eventData.guestList.length
+        : 0;
 
       return (
         <StepTwo
@@ -45,16 +47,14 @@ const UpdateEventStepRenderer = ({
           subscription={{
             ...subscription,
             guestLimit: isPool
-              ? (subscription?.invitationBalance ? (subscription.invitationBalance.unlimited ? null : subscription.invitationBalance.remaining) : (subscription?.invitesRemaining ?? 0))
+              ? existingGuestCount + (subscription?.invitationBalance?.remaining ?? 0)
               : (eventFrozenLimit ??
                   subscription?.guestLimit ??
                   subscription?.guests?.limitPerEvent ??
                   subscription?.limits?.maxInvitesPerEvent ??
                   0),
-            isGuestUnlimited: (subscription?.invitationBalance?.unlimited ?? subUnlimited) && !isPool,
+            isGuestUnlimited: subscription?.invitationBalance?.unlimited === true,
             isPoolPlan: isPool,
-            invitePool: subscription?.invitePool ?? null,
-            invitesRemaining: subscription?.invitationBalance ? (subscription.invitationBalance.unlimited ? null : subscription.invitationBalance.remaining) : (subscription?.invitesRemaining ?? null),
             invitationBalance: subscription?.invitationBalance ?? null,
           }}
         />

@@ -40,7 +40,7 @@ test("parseCompletionDestination: accepts allowlisted kinds and preserves parame
 
   assert.deepEqual(
     parseCompletionDestination({
-      origin: "invitation_balance",
+      kind: "invitation_balance",
       eventId: "evt-456",
       returnTo: "dashboard",
     }),
@@ -50,6 +50,14 @@ test("parseCompletionDestination: accepts allowlisted kinds and preserves parame
       returnTo: "dashboard",
     }
   );
+});
+
+test("parseCompletionDestination: rejects aliases, extra keys, unsafe ids, and locales", () => {
+  const fallback = { kind: COMPLETION_KINDS.PLANS, eventId: null, returnTo: null };
+  assert.deepEqual(parseCompletionDestination({ origin: "event_gate" }), fallback);
+  assert.deepEqual(parseCompletionDestination({ kind: "event_gate", eventId: "../admin" }), fallback);
+  assert.deepEqual(parseCompletionDestination({ kind: "plans", unexpected: true }), fallback);
+  assert.equal(resolveWebCompletionUrl({ kind: "plans" }, "../../admin"), "/ar/host/plans");
 });
 
 test("resolveWebCompletionUrl: produces canonical web routes", () => {
@@ -95,11 +103,26 @@ test("resolveMobileCompletionRoute: produces canonical navigation actions", () =
 
   assert.deepEqual(
     resolveMobileCompletionRoute({ kind: COMPLETION_KINDS.EVENT_GATE }),
-    { screen: "CreateEvent" }
+    {
+      screen: "MainTabs",
+      params: {
+        screen: "Events",
+        params: { screen: "CreateEventScreen" },
+      },
+    }
   );
   assert.deepEqual(
     resolveMobileCompletionRoute({ kind: COMPLETION_KINDS.EVENT_GATE, eventId: "evt-55" }),
-    { screen: "EventDetails", params: { eventId: "evt-55" } }
+    {
+      screen: "MainTabs",
+      params: {
+        screen: "Events",
+        params: {
+          screen: "EventDetails",
+          params: { eventId: "evt-55" },
+        },
+      },
+    }
   );
 
   assert.deepEqual(
@@ -108,6 +131,15 @@ test("resolveMobileCompletionRoute: produces canonical navigation actions", () =
   );
   assert.deepEqual(
     resolveMobileCompletionRoute({ kind: COMPLETION_KINDS.INVITATION_BALANCE, eventId: "evt-77" }),
-    { screen: "EventDetails", params: { eventId: "evt-77" } }
+    {
+      screen: "MainTabs",
+      params: {
+        screen: "Events",
+        params: {
+          screen: "EventDetails",
+          params: { eventId: "evt-77" },
+        },
+      },
+    }
   );
 });

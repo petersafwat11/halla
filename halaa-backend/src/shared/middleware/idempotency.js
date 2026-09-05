@@ -27,6 +27,8 @@
 const IdempotencyKey = require("../../../models/IdempotencyKeyModel");
 const { _sha256 } = require("../utils/idempotency");
 const fileUpload = require("../utils/fileUpload");
+const crypto = require("crypto");
+const fs = require("fs/promises");
 
 const HEADER = "idempotency-key";
 const POLL_INTERVAL_MS = 200;
@@ -40,6 +42,29 @@ const cleanupUploadedFile = (req) => {
     ? fileUpload.s3Upload?.deleteFromS3?.(req.file.key)
     : fileUpload.deleteFile?.(req.file.location || req.file.path || req.file.filename);
   Promise.resolve(cleanup).catch(() => {});
+};
+
+const hashBytes = (value) => crypto.createHash("sha256").update(value).digest("hex");
+
+const getFileFingerprint = async (file) => {
+  const metadata = {
+    name: file.originalname || null,
+    size: Number.isFinite(file.size) ? file.size : null,
+    mimeType: file.mimetype || null,
+  };
+  if (Buffer.isBuffer(file.buffer)) return { ...metadata, contentHash: hashBytes(file.buffer) };
+  const providerHash = file.checksum || file.checksumSHA256 || file.etag;
+  if (providerHash) return { ...metadata, contentHash: String(providerHash).replace(/"/g, "") };
+  const localPath = file.path || file.location;
+  if (localPath) {
+    try {
+      return { ...metadata, contentHash: hashBytes(await fs.readFile(localPath)) };
+    } catch {
+      // Some upload adapters expose only remote metadata. The remaining fields
+      // still keep compatibility, but production adapters should expose etag.
+    }
+  }
+  return metadata;
 };
 
 const idempotency = ({ scope = "", required = false } = {}) => {
@@ -62,7 +87,7 @@ const idempotency = ({ scope = "", required = false } = {}) => {
     }
 
     const payloadToHash = req.file
-      ? { ...req.body, _fileMeta: { name: req.file.originalname, size: req.file.size } }
+      ? { ...req.body, _fileMeta: await getFileFingerprint(req.file) }
       : (req.body || {});
     const requestHash = _sha256(payloadToHash);
     const userId = req.user?._id || null;
@@ -158,10 +183,7 @@ const idempotency = ({ scope = "", required = false } = {}) => {
     // We inserted the pending row; we own this key. Capture the response
     // payload to update the row after the handler resolves.
     const originalJson = res.json.bind(res);
-    let responded = false;
-
     res.json = (body) => {
-      responded = true;
       const status = res.statusCode;
       if (status >= 200 && status < 300) {
         let serializedBody = body;
@@ -187,12 +209,9 @@ const idempotency = ({ scope = "", required = false } = {}) => {
       return originalJson(body);
     };
 
-    // Surface handler errors so we can clean up the pending row.
-    res.on("close", () => {
-      if (!responded) {
-        IdempotencyKey.deleteOne(filter).catch(() => {});
-      }
-    });
+    // Do not release a reservation when the client disconnects. The handler
+    // can still commit after a timeout; releasing here would allow a retry to
+    // create the same resource concurrently.
 
     try {
       return next();
@@ -203,4 +222,4 @@ const idempotency = ({ scope = "", required = false } = {}) => {
   };
 };
 
-module.exports = { idempotency };
+module.exports = { idempotency, getFileFingerprint };

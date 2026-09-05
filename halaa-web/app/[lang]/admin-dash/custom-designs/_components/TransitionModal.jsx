@@ -26,7 +26,11 @@ export default function TransitionModal({ isOpen, onClose, order }) {
       if (order.fulfillment?.expectedDeliveryAt) {
         const d = new Date(order.fulfillment.expectedDeliveryAt);
         if (!isNaN(d.getTime())) {
-          setExpectedDeliveryAt(d.toISOString().slice(0, 16));
+          const pad = (value) => String(value).padStart(2, "0");
+          setExpectedDeliveryAt(
+            `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+            + `T${pad(d.getHours())}:${pad(d.getMinutes())}`
+          );
         } else {
           setExpectedDeliveryAt("");
         }
@@ -42,7 +46,7 @@ export default function TransitionModal({ isOpen, onClose, order }) {
     e.preventDefault();
     try {
       await transitionMutation.mutateAsync({
-        addonId: order.id,
+        addonId: order.id || order._id,
         toStatus: nextStatus,
         customerNote: customerNote.trim() || undefined,
         internalNotes: internalNotes.trim() || undefined,
@@ -62,7 +66,7 @@ export default function TransitionModal({ isOpen, onClose, order }) {
     fulfilled: t("customDesigns.status.fulfilled", "مكتمل"),
   };
 
-  const orderRef = (order.id || "").slice(-8).toUpperCase();
+  const orderRef = (order.id || order._id || "").slice(-8).toUpperCase();
 
   return (
     <PopupLayout isOpen={isOpen} onClose={onClose} size="medium">
@@ -128,18 +132,16 @@ export default function TransitionModal({ isOpen, onClose, order }) {
               variant="outline"
               onClick={onClose}
               disabled={transitionMutation.isPending}
-            >
-              {t("common.cancel", "إلغاء")}
-            </Button>
+              title={t("common.cancel", "إلغاء")}
+            />
             <Button
               type="submit"
               variant="primary"
               disabled={transitionMutation.isPending}
-            >
-              {transitionMutation.isPending
+              title={transitionMutation.isPending
                 ? t("common.saving", "جاري الحفظ...")
                 : t("customDesigns.confirmTransition", "تأكيد التحديث")}
-            </Button>
+            />
           </div>
         </form>
       </div>

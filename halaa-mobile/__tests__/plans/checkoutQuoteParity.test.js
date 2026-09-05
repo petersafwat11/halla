@@ -85,3 +85,23 @@ test("Mobile Mutation Parity: useCheckout mutation and PlansSummaryScreen pass e
     "PlansSummaryScreen must pass expectedAmount"
   );
 });
+
+test("Native purchase queue runs eligibility preflight before opening the store", () => {
+  const queueHook = fs.readFileSync(
+    path.resolve(__dirname, "../../hooks/purchases/usePurchaseQueue.js"),
+    "utf8"
+  );
+  const plansScreen = fs.readFileSync(
+    path.resolve(__dirname, "../../screens/host/PlansSummaryScreen.js"),
+    "utf8"
+  );
+  const addonsScreen = fs.readFileSync(
+    path.resolve(__dirname, "../../screens/host/AddonsPurchaseScreen.js"),
+    "utf8"
+  );
+
+  assert.ok(queueHook.indexOf("await preflight()") < queueHook.indexOf("await purchasePackage("));
+  assert.ok(plansScreen.includes("eventPreflight(selectedPlan.code)"));
+  assert.ok(addonsScreen.includes("addonPreflight(entry.internalCode)"));
+  assert.doesNotMatch(addonsScreen, /\.catch\([\s\S]{0,160}\)\.filter\(/);
+});

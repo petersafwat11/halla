@@ -827,8 +827,6 @@
         "passwordComplexity": "Use letters and numbers only, with at least one of each",
         "invalidPassword": "Password is incorrect, check it and try again.",
         "phoneNumberInvalid": "Phone number is incorrect, please check and try again",
-        "usernameRequired": "Username is required",
-        "usernameMinLength": "Username must be at least 3 characters",
         "passwordConfirmRequired": "Please confirm your password",
         "passwordsDoNotMatch": "Passwords do not match"
       }

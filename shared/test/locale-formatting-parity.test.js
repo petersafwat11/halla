@@ -109,6 +109,14 @@ describe("PR2R: Canonical Locale Formatting Architecture Parity", () => {
     assert.ok(currAttempt.includes("500.00"), "Currency must use Latin digits");
     assert.ok(!/[\u0660-\u0669]/.test(currAttempt));
 
+    const timeAttempt = formatTime(new Date("2026-08-31T18:30:00.000Z"), "ar", {
+      numberingSystem: "arab",
+      calendar: "islamic",
+      timeZone: "UTC",
+    });
+    assert.ok(timeAttempt.includes("6:30"), "Time must retain Latin digits");
+    assert.ok(!/[\u0660-\u0669]/.test(timeAttempt));
+
     // formatCount and formatPercent compliance
     assert.equal(formatCount(250, "ar"), "250");
     assert.equal(formatCount(250, "en"), "250");

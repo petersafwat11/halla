@@ -23,8 +23,6 @@
   },
   "addModerator": {
     "title": "Add Moderator",
-    "username": "Username",
-    "usernamePlaceholder": "Enter username",
     "email": "Email",
     "emailPlaceholder": "Enter email",
     "phoneNumber": "Phone Number",
@@ -66,7 +64,6 @@
     "selectRows": "Please select moderators to delete",
     "statusUpdated": "Status updated successfully",
     "columns": {
-      "username": "Username",
       "phoneNumber": "Phone Number",
       "email": "Email",
       "title": "Title",

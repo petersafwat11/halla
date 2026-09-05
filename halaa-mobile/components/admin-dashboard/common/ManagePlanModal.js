@@ -44,20 +44,10 @@ const getCurrentPlanCode = (subscription) =>
 
 const getRemainingInvites = (subscription, unlimitedLabel) => {
   if (!subscription) return "—";
-  if (subscription.invitePool === null || subscription.invitePool === undefined) {
-    return unlimitedLabel;
-  }
-  if (
-    subscription.invitesRemaining !== undefined &&
-    subscription.invitesRemaining !== null
-  ) {
-    return String(subscription.invitesRemaining);
-  }
-  return String(
-    (subscription.invitePool || 0) +
-      (subscription.compensationPool || 0) -
-      (subscription.invitesConsumed || 0)
-  );
+  if (subscription.invitationBalance?.unlimited) return unlimitedLabel;
+  return subscription.invitationBalance
+    ? String(subscription.invitationBalance.remaining ?? 0)
+    : "—";
 };
 
 /**

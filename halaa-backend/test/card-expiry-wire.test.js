@@ -61,6 +61,8 @@ test("Backend Card Source Schema: validates creditcard source with integer/strin
     planCode: "basic_monthly",
     addons: [],
     source: validSource,
+    quoteId: `quote_${"a".repeat(64)}`,
+    quoteExpiresAt: "2026-12-01T00:00:00.000Z",
   };
   const parsedCheckout = checkoutSchema.safeParse(fullCheckout);
   assert.equal(parsedCheckout.success, true);

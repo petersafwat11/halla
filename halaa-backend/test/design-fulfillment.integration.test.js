@@ -219,6 +219,55 @@ test("PR6 / F-12: Invalid transitions return ConflictError (409)", async () => {
   );
 });
 
+test("PR6 / F-12: concurrent identical transitions commit and notify exactly once", async () => {
+  const host = await User.create({
+    name: "Concurrent Queue Host",
+    email: "concurrent-queue@example.com",
+    role: ROLES.HOST,
+    accountType: "personal",
+  });
+  const admin = await User.create({
+    name: "Concurrent Queue Admin",
+    email: "concurrent-admin@example.com",
+    role: ROLES.ADMIN,
+  });
+  const addon = await Addon.create({
+    userId: host._id,
+    addonType: ADDON_TYPES.DESIGN_TEMPLATE,
+    templateType: "ready_made",
+    price: 200,
+    status: DESIGN_FULFILLMENT_STATUS.PAID,
+    fulfillment: { requestedAt: new Date() },
+  });
+
+  const results = await Promise.all([
+    addonsService.transitionDesignFulfillment(admin, addon._id, { toStatus: DESIGN_FULFILLMENT_STATUS.QUEUED }),
+    addonsService.transitionDesignFulfillment(admin, addon._id, { toStatus: DESIGN_FULFILLMENT_STATUS.QUEUED }),
+  ]);
+  assert.ok(results.every((item) => item.status === DESIGN_FULFILLMENT_STATUS.QUEUED));
+  assert.equal(await AuditLog.countDocuments({ action: "addon.fulfillment_transition", targetId: addon._id }), 1);
+  assert.equal(await Notification.countDocuments({
+    userId: host._id,
+    "data.metadata.addonId": String(addon._id),
+    "data.metadata.status": DESIGN_FULFILLMENT_STATUS.QUEUED,
+  }), 1);
+});
+
+test("PR6 / F-12: service rejects non-admin callers even when invoked outside the route", async () => {
+  const host = await User.create({
+    name: "Host Caller",
+    email: "host-caller@example.com",
+    role: ROLES.HOST,
+    accountType: "personal",
+  });
+  await assert.rejects(
+    addonsService.transitionDesignFulfillment(host, new mongoose.Types.ObjectId(), {
+      toStatus: DESIGN_FULFILLMENT_STATUS.QUEUED,
+    }),
+    (err) => err.statusCode === 403 && err.code === "FORBIDDEN"
+  );
+});
+
 test("PR6 / F-12: Non-design addons are rejected from fulfillment workflow", async () => {
   const admin = await User.create({
     name: "Super Admin 4",

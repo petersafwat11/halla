@@ -33,15 +33,7 @@ const getRemainingInvites = (subscription) => {
     if (subscription.invitationBalance.unlimited) return "Unlimited";
     return subscription.invitationBalance.remaining ?? 0;
   }
-  if (subscription.invitePool === null || subscription.invitePool === undefined) return "Unlimited";
-  if (subscription.invitesRemaining !== undefined && subscription.invitesRemaining !== null) {
-    return subscription.invitesRemaining;
-  }
-  return (
-    (subscription.invitePool || 0) +
-    (subscription.compensationPool || 0) -
-    (subscription.invitesConsumed || 0)
-  );
+  return "-";
 };
 
 const formatPlanMeta = (plan, t) => {

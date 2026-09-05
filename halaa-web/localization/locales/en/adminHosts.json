@@ -12,7 +12,6 @@
     "export": "Export",
     "selectRows": "Please select hosts to delete",
     "columns": {
-      "username": "Username",
       "email": "Email",
       "phoneNumber": "Phone Number",
       "events": "Events Count",
@@ -27,7 +26,6 @@
   },
   "addHost": {
     "title": "Add Host",
-    "username": "Username",
     "email": "Email",
     "phoneNumber": "Phone Number",
     "save": "Save",

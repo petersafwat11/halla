@@ -23,8 +23,6 @@
   },
   "addModerator": {
     "title": "إضافة مشرف",
-    "username": "اسم المشرف",
-    "usernamePlaceholder": "ادخل اسم المشرف",
     "email": "البريد الإلكتروني",
     "emailPlaceholder": "ادخل البريد الإلكتروني",
     "phoneNumber": "رقم الجوال",
@@ -66,7 +64,6 @@
     "selectRows": "يرجى اختيار المشرفين للحذف",
     "statusUpdated": "تم تحديث الحالة بنجاح",
     "columns": {
-      "username": "اسم المستخدم",
       "phoneNumber": "رقم الجوال",
       "email": "البريد الإلكتروني",
       "title": "المسمى الوظيفي",

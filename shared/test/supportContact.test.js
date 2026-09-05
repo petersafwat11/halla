@@ -73,6 +73,13 @@ test("buildSupportMessage formats localized messages with and without reference"
   assert.ok(arAddon.includes("رقم الطلب: 660c1234abcd"));
 });
 
+test("buildSupportMessage rejects non-canonical source aliases", () => {
+  assert.throws(
+    () => buildSupportMessage({ source: "managed_event_modal" }),
+    /Invalid support request source/
+  );
+});
+
 test("buildSupportRequest constructs compliant deepLinkUrl, webUrl, and displayNumber", () => {
   const result = buildSupportRequest({
     language: "ar",

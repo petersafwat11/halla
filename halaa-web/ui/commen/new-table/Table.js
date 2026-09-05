@@ -802,9 +802,9 @@ const Table = ({
                   </td>
                 </tr>
               ) : (
-                filteredData.map((row) => (
+                filteredData.map((row, rowIndex) => (
                   <tr
-                    key={row.id || row._id}
+                    key={row.id || row._id || `row-${rowIndex}`}
                     onClick={(e) => handleRowClick(row, e)}
                     onMouseEnter={() => onRowHover?.(row)}
                     className={onRowClick ? styles.clickableRow : ""}

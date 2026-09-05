@@ -170,6 +170,10 @@ export const usePlansPageState = () => {
       const targetUrl = resolveWebCompletionUrl({ kind: origin, returnTo, eventId }, lang);
       router.push(targetUrl);
     } catch (error) {
+      const code = error?.response?.data?.code || error?.data?.code || error?.code;
+      if (["QUOTE_REQUIRED", "QUOTE_EXPIRED", "QUOTE_CHANGED"].includes(code)) {
+        throw error;
+      }
       const message =
         error?.response?.data?.message || error?.message || "";
       toastUtils.error(message || t("toasts.subscriptionFailed"));

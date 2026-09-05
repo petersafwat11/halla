@@ -205,10 +205,6 @@ subscriptionSchema.virtual("invitationBalance").get(function () {
   return calculateInvitationBalance(this, this.planId);
 });
 
-subscriptionSchema.virtual("invitesRemaining").get(function () {
-  return this.invitationBalance.remaining;
-});
-
 // Days remaining in current period
 subscriptionSchema.virtual("daysRemaining").get(function () {
   if (!this.expiresAt) return -1; // No end date (e.g., single event)
@@ -467,7 +463,6 @@ subscriptionSchema.methods.getSummary = function () {
     invitePool: this.invitePool,
     compensationPool: this.compensationPool,
     invitesConsumed: this.invitesConsumed,
-    invitesRemaining: this.invitesRemaining,
     invitationBalance: this.invitationBalance,
     activatedAt: this.activatedAt,
     expiresAt: this.expiresAt,

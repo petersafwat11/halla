@@ -38,8 +38,7 @@ import { openSupportWhatsApp } from "../../../services/support/openSupportWhatsA
 // Both subscription sources we accept already deliver the canonical normalized shape:
 //   - useSubscriptionInfo() -> backend events.service.getSubscriptionInfo
 //   - HostSelectorStep target.subscription -> backend admin.service._formatTargetSubscription
-// Shape: { canCreateEvent, isUnlimited?, guestLimit, isGuestUnlimited, invitePool,
-//          invitesRemaining, eventsRemaining, eventsUsed, isSingleEvent, isPoolPlan }
+// Shape includes the canonical invitationBalance plus event-count/capability fields.
 
 /**
  * Unified create-event form. Works in two modes:
@@ -312,7 +311,7 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
     setShowInfoPopup(false);
     await openSupportWhatsApp({
       language: currentLanguage,
-      source: "managed_event_modal",
+      source: "managed_event",
     });
   }, [currentLanguage]);
 

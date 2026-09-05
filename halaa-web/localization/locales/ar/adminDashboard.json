@@ -96,8 +96,6 @@
   },
   "createTicket": {
     "title": "إنشاء شكوى دعم",
-    "username": "اسم المستخدم",
-    "usernamePlaceholder": "ادخل اسم المستخدم",
     "number": "رقم الجوال",
     "numberPlaceholder": "5xx xxx xxx",
     "type": "نوع الشكوى",
@@ -131,7 +129,6 @@
       "title": "الشكاوى",
       "columns": {
         "number": "رقم الشكوى",
-        "username": "اسم المستخدم",
         "type": "النوع",
         "message": "الرسالة",
         "status": "الحالة",

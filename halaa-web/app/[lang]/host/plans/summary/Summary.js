@@ -78,7 +78,10 @@ const Summary = ({
   const effectiveDiscountAmount = quote?.discountAmount ?? 0;
   const finalTotal = quote?.total != null ? quote.total : null;
   const currency = quote?.currency || "SAR";
-  const quoteExpiresAt = quote?.quoteExpiresAt ? new Date(quote.quoteExpiresAt) : null;
+  const quoteExpiresAt = useMemo(
+    () => (quote?.quoteExpiresAt ? new Date(quote.quoteExpiresAt) : null),
+    [quote?.quoteExpiresAt]
+  );
 
   // Dynamic expiry tracking
   const [isExpired, setIsExpired] = useState(false);
@@ -208,6 +211,12 @@ const Summary = ({
     setIsProcessing(true);
     try {
       await onProceedToPayment(quote);
+    } catch (error) {
+      const code = error?.response?.data?.code || error?.data?.code || error?.code;
+      if (["QUOTE_REQUIRED", "QUOTE_EXPIRED", "QUOTE_CHANGED"].includes(code)) {
+        await refetchQuote();
+        setPriceChangedNotice(true);
+      }
     } finally {
       setIsProcessing(false);
     }

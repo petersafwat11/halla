@@ -78,7 +78,7 @@ function LastEventStats() {
 
       {subscription && (
         <>
-          <LastEventQuota quota={data.quota} balance={data.invitationBalance || data.subscription?.invitationBalance} eventId={data._id || data.id} />
+          <LastEventQuota balance={data.invitationBalance} eventId={data._id || data.id} />
           {!isMobile && <Divider />}
         </>
       )}

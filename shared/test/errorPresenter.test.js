@@ -120,3 +120,12 @@ test("presentError: preserves fullRequestId for telemetry without leaking to dis
   assert.ok(display.includes("F47AC10B58CC"));
   assert.ok(!display.includes(fullUuid));
 });
+
+test("presentError: does not mislabel permission failures as package limits", () => {
+  assert.equal(presentError({ status: 401 }, { language: "en" }).code, "UNAUTHORIZED");
+  assert.equal(presentError({ status: 403 }, { language: "en" }).code, "FORBIDDEN");
+  assert.equal(
+    presentError({ status: 403, code: "PACKAGE_LIMIT_EXCEEDED" }).code,
+    "PACKAGE_LIMIT_EXCEEDED"
+  );
+});

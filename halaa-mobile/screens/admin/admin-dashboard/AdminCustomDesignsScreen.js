@@ -71,7 +71,7 @@ const AdminCustomDesignsScreen = () => {
       result = result.filter((item) => {
         const ref = (item.id || item._id || "").toLowerCase();
         const hostName = (item.userId?.name || item.user?.name || "").toLowerCase();
-        const hostPhone = (item.userId?.phoneNumber || item.user?.phoneNumber || "").toLowerCase();
+        const hostPhone = (item.userId?.phoneNumber || item.userId?.mobile || item.user?.phoneNumber || item.user?.mobile || "").toLowerCase();
         return ref.includes(q) || hostName.includes(q) || hostPhone.includes(q);
       });
     }
@@ -124,7 +124,7 @@ const AdminCustomDesignsScreen = () => {
     const orderId = item.id || item._id || "";
     const orderRef = orderId ? orderId.slice(-8).toUpperCase() : "";
     const hostName = item.userId?.name || item.user?.name || "-";
-    const hostPhone = item.userId?.phoneNumber || item.user?.phoneNumber || "";
+    const hostPhone = item.userId?.phoneNumber || item.userId?.mobile || item.user?.phoneNumber || item.user?.mobile || "";
     const tierName = tierMap.get(item.templateType) || item.templateType || t("customDesigns.unknownTier", "تصميم مخصص");
     const nextStatus = getNextFulfillmentStatus(item.status);
 
@@ -202,6 +202,8 @@ const AdminCustomDesignsScreen = () => {
   };
 
   const nextStatusForModal = selectedOrder ? getNextFulfillmentStatus(selectedOrder.status) : null;
+  const fulfillmentStatusLabel = (status) =>
+    status ? t(`customDesigns.status.${status}`, status) : "";
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
@@ -256,10 +258,12 @@ const AdminCustomDesignsScreen = () => {
         <ScrollView style={styles.modalScroll}>
           {selectedOrder ? (
             <View style={styles.statusFlow}>
-              <Text style={styles.flowStatus}>{selectedOrder.status}</Text>
+              <Text style={styles.flowStatus}>
+                {fulfillmentStatusLabel(selectedOrder.status)}
+              </Text>
               <DirectionalIonicon name="arrow-forward" size={16} color={colors.natural[500]} />
               <Text style={[styles.flowStatus, styles.flowNextStatus]}>
-                {nextStatusForModal}
+                {fulfillmentStatusLabel(nextStatusForModal)}
               </Text>
             </View>
           ) : null}

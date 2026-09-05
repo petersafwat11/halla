@@ -215,22 +215,22 @@ test("normalizeSubscriptionResponse (EVT-17): handles object, array, and API env
   assert.deepEqual(norm4.subscriptions, []);
 });
 
-test("toSubscriptionDTO: computes remaining invites and normalizes fields", () => {
+test("toSubscriptionDTO: consumes the canonical backend invitation balance", () => {
   const sub = {
     _id: "sub_100",
     planCode: "premium_monthly",
     planType: "premium_monthly",
     status: "ACTIVE",
-    invitePool: 500,
-    usedInvites: 120,
+    invitationBalance: {
+      unlimited: false, base: 500, compensation: 75, consumed: 120, total: 575, remaining: 455,
+    },
   };
 
   const dto = toSubscriptionDTO(sub);
   assert.equal(dto.id, "sub_100");
   assert.equal(dto.planCode, "premium_monthly");
   assert.equal(dto.status, "active");
-  assert.equal(dto.invitePool, 500);
-  assert.equal(dto.usedInvites, 120);
+  assert.equal(dto.invitePool, undefined);
   assert.equal(dto.invitationBalance.unlimited, false);
   assert.equal(dto.invitationBalance.remaining, 455);
   assert.equal(dto.invitationBalance.total, 575);
@@ -239,11 +239,12 @@ test("toSubscriptionDTO: computes remaining invites and normalizes fields", () =
   const unlimitedSub = {
     id: "sub_unlimited",
     planCode: "unlimited",
-    invitePool: null,
-    usedInvites: 50,
+    invitationBalance: {
+      unlimited: true, base: null, compensation: null, consumed: 50, total: null, remaining: null,
+    },
   };
   const dtoUnlimited = toSubscriptionDTO(unlimitedSub);
-  assert.equal(dtoUnlimited.invitePool, null);
+  assert.equal(dtoUnlimited.invitePool, undefined);
   assert.equal(dtoUnlimited.invitationBalance.unlimited, true);
   assert.equal(dtoUnlimited.invitationBalance.remaining, null);
 });

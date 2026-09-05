@@ -83,19 +83,16 @@ export function validateSupportReference(reference) {
   return { kind, value: stringValue };
 }
 
-const SOURCE_ALIASES = {
-  managed_event_modal: SUPPORT_SOURCE.MANAGED_EVENT,
-  contact_button: SUPPORT_SOURCE.GENERAL,
-};
-
 /**
  * Pure builder for support message text.
  * Strictly avoids arbitrary caller prose and sensitive user data.
  */
 export function buildSupportMessage({ language = "ar", source = SUPPORT_SOURCE.GENERAL, reference = null } = {}) {
   const lang = language === "en" ? "en" : "ar";
-  const resolvedSource = SOURCE_ALIASES[source] || source;
-  const normalizedSource = VALID_SOURCES.has(resolvedSource) ? resolvedSource : SUPPORT_SOURCE.GENERAL;
+  if (!VALID_SOURCES.has(source)) {
+    throw new Error(`Invalid support request source: '${source}'.`);
+  }
+  const normalizedSource = source;
 
   let message = BASE_MESSAGES[normalizedSource][lang];
 
@@ -123,7 +120,10 @@ export function buildSupportRequest({
   reference = null,
 } = {}) {
   const lang = language === "en" ? "en" : "ar";
-  const rawNumber = LEGAL_CONTACT?.whatsapp?.value || "+966552619282";
+  const rawNumber = LEGAL_CONTACT?.whatsapp?.value;
+  if (!rawNumber) {
+    throw new Error("Canonical WhatsApp support contact is not configured");
+  }
   const cleanNumber = String(rawNumber).replace(/\D/g, "");
   const displayNumber = LEGAL_CONTACT?.whatsapp?.display || rawNumber;
 

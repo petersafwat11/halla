@@ -11,18 +11,18 @@ function GuestQuotaCounter({ currentGuests = 0, subscription }) {
   const { t } = useTranslation("home-events");
 
   // Normalized subscription shape from backend:
-  // { guestLimit, isGuestUnlimited, isPoolPlan, invitePool, invitesRemaining }
-  // For pool plans the effective per-event cap is `invitesRemaining` — pool plans
+  // { guestLimit, isGuestUnlimited, isPoolPlan, invitationBalance }
+  // For pool plans the effective per-event cap is the canonical balance — pool plans
   // have no per-event cap but the global pool constrains how many guests can be
   // added to THIS event right now. ∞ is reserved for the platform-admin / unlimited
   // plan bypass where there is no cap at all.
   const isPoolPlan = subscription?.isPoolPlan === true;
-  const invitesRemaining = Number.isFinite(subscription?.invitesRemaining)
-    ? subscription.invitesRemaining
-    : null;
+  const balanceRemaining = subscription?.invitationBalance?.unlimited
+    ? null
+    : subscription?.invitationBalance?.remaining ?? 0;
   const rawGuestLimit = subscription?.guestLimit ?? 0;
-  const isUnlimited = (subscription?.isGuestUnlimited ?? false) && !isPoolPlan;
-  const effectiveLimit = isPoolPlan ? (invitesRemaining ?? 0) : rawGuestLimit;
+  const isUnlimited = subscription?.invitationBalance?.unlimited === true;
+  const effectiveLimit = isPoolPlan ? balanceRemaining : rawGuestLimit;
   const hasSubscription = !!subscription;
 
   // Calculate percentage for progress bar

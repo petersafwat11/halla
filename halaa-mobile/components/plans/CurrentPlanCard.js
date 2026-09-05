@@ -13,7 +13,6 @@ import {
 } from "../../styles/tokens";
 import { getLocalized } from "@halaa/shared/utils/locale";
 import { countRatioToken, countToken } from "@halaa/shared/utils/displayTokens";
-import { isPoolPlan } from "@halaa/shared/constants/plans";
 
 const CurrentPlanCard = ({ subscription, usage, onBuyAddons, style }) => {
   const { t, i18n } = useTranslation("plans");
@@ -37,24 +36,15 @@ const CurrentPlanCard = ({ subscription, usage, onBuyAddons, style }) => {
 
   const planName = getLocalized(subscription, "planName", i18n.language);
 
-  // Pool plans (basic_monthly, premium_monthly, business_*) report `maxEvents: -1`
-  // (unlimited events) and `maxInvitesPerEvent: null`; capacity is tracked on the
-  // subscription itself via `invitePool` / `invitesConsumed`. Per-event plans use
-  // `usage.guestsUsed` against the plan's `maxInvitesPerEvent`.
-  const planType = subscription.planType;
-  const isPool =
-    subscription.isPoolSubscription === true || isPoolPlan(planType);
+  const invitationBalance = subscription.invitationBalance;
 
   const eventsUsed = usage?.eventsCreated || 0;
   const eventsLimit = subscription.limits?.maxEvents ?? 0;
   const eventsUnlimited = eventsLimit === -1;
 
-  const guestsUsed = isPool
-    ? (subscription.invitesConsumed ?? 0)
-    : (usage?.guestsUsed ?? 0);
-  const guestsLimit = isPool
-    ? (subscription.invitePool ?? 0)
-    : (subscription.limits?.maxInvitesPerEvent ?? 0);
+  const guestsUsed = invitationBalance?.consumed ?? 0;
+  const guestsLimit = invitationBalance?.total ?? 0;
+  const guestsUnlimited = invitationBalance?.unlimited === true;
 
   const daysRemaining =
     subscription.daysRemaining === -1 || subscription.daysRemaining == null
@@ -66,7 +56,9 @@ const CurrentPlanCard = ({ subscription, usage, onBuyAddons, style }) => {
     : eventsLimit > 0
       ? (eventsUsed / eventsLimit) * 100
       : 0;
-  const guestsPercentRaw = guestsLimit > 0 ? (guestsUsed / guestsLimit) * 100 : 0;
+  const guestsPercentRaw = guestsUnlimited || guestsLimit <= 0
+    ? 0
+    : (guestsUsed / guestsLimit) * 100;
   const eventsPercent = Number.isFinite(eventsPercentRaw) ? eventsPercentRaw : 0;
   const guestsPercent = Number.isFinite(guestsPercentRaw) ? guestsPercentRaw : 0;
 
@@ -126,6 +118,7 @@ const CurrentPlanCard = ({ subscription, usage, onBuyAddons, style }) => {
           used={guestsUsed}
           limit={guestsLimit}
           percent={guestsPercent}
+          isUnlimited={guestsUnlimited}
           showProgress
         />
         <StatItem

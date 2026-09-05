@@ -186,13 +186,9 @@ const CreateEventV2 = () => {
       onPrevious();
       return;
     }
-    const shouldLeave = window.confirm(
-      locale === "ar"
-        ? "سيتم فقدان بيانات المناسبة غير المحفوظة. هل تريد الرجوع؟"
-        : "Your unsaved event details will be lost. Do you want to go back?"
-    );
+    const shouldLeave = window.confirm(t("unsaved_confirm"));
     if (shouldLeave) router.push(`/${locale}/host`);
-  }, [currentStep, locale, onPrevious, router]);
+  }, [currentStep, locale, onPrevious, router, t]);
 
   const renderStepContent = () => {
     switch (currentStep) {
@@ -341,9 +337,7 @@ const CreateEventV2 = () => {
                       lineHeight: "1.5",
                     }}
                   >
-                    {locale === "ar"
-                      ? "جاري معالجة الطلب، قد يستغرق إنشاء المناسبة وقتاً أطول من المعتاد... بياناتك محفوظة بأمان."
-                      : "Processing your request, creating the event may take a little longer... your data is safe."}
+                    {t("submission_slow")}
                   </p>
                 )}
               </form>

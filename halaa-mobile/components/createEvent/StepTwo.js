@@ -11,19 +11,17 @@ const StepTwo = ({
   const { watch } = useFormContext();
   const formData = watch();
 
-  // Backend shape: { guestLimit, isGuestUnlimited, isPoolPlan, invitePool, invitesRemaining, ... }
+  // Backend shape: { guestLimit, isGuestUnlimited, isPoolPlan, invitationBalance, ... }
   // Pool plans report `isGuestUnlimited: true` (no per-event cap) but the global
   // pool is still the effective constraint for THIS event — surface it so users
   // don't sail past their pool and get a 403 at submit. ∞ is reserved for the
   // platform-admin / unlimited plan bypass.
   const isPoolPlan = subscription?.isPoolPlan === true;
   const balance = subscription?.invitationBalance;
-  const invitesRemaining = balance
-    ? (balance.unlimited ? null : balance.remaining)
-    : (Number.isFinite(subscription?.invitesRemaining) ? subscription.invitesRemaining : null);
-  const isUnlimited = (balance?.unlimited === true) || (subscription?.isGuestUnlimited === true && !isPoolPlan);
+  const balanceRemaining = balance?.unlimited ? null : balance?.remaining ?? 0;
+  const isUnlimited = balance?.unlimited === true;
   const guestLimit = isPoolPlan
-    ? (invitesRemaining ?? 0)
+    ? balanceRemaining
     : (subscription?.guestLimit ?? 0);
   const isLimitReached = !isUnlimited && guestList.length >= guestLimit;
 

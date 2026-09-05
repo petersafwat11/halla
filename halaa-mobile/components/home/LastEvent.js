@@ -34,7 +34,6 @@ const LastEvent = ({
 
       {subscription && (
         <LastEventQuota
-          quota={event.invitationBalance || event.quota}
           balance={event.invitationBalance}
         />
       )}

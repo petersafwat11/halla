@@ -42,10 +42,13 @@ export default function InvitationBalanceCard({
   const isPurchasable = purchasable !== undefined ? purchasable : !isUnlimited;
 
   const handleAddMore = () => {
-    navigation.navigate("PlansScreen", {
-      origin: "invitation_balance",
-      returnTo,
-      eventId: eventId ? String(eventId) : null,
+    navigation.navigate("MainTabs", {
+      screen: "Plans",
+      params: {
+        origin: "invitation_balance",
+        returnTo,
+        eventId: eventId ? String(eventId) : null,
+      },
     });
   };
 

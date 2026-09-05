@@ -108,7 +108,7 @@ export const useBusinessPlansPageState = () => {
     []
   );
 
-  const handleProceedToPayment = useCallback(async () => {
+  const handleProceedToPayment = useCallback(async (quote) => {
     if (!selectedPlan) return;
     try {
       const result = await checkoutMutation.mutateAsync({
@@ -116,6 +116,10 @@ export const useBusinessPlansPageState = () => {
         addons: [],
         ...(appliedDiscountCode ? { discountCode: appliedDiscountCode } : {}),
         source: buildSource(),
+        expectedAmount: quote?.total,
+        expectedTotal: quote?.total,
+        quoteId: quote?.quoteId,
+        quoteExpiresAt: quote?.quoteExpiresAt,
       });
       if (result?.requiresAction) {
         // useCheckout already redirected to the 3DS URL; skip the toast.
@@ -124,6 +128,10 @@ export const useBusinessPlansPageState = () => {
       toastUtils.success(t("toasts.subscriptionCreated"));
       router.push(`/${lang}/host`);
     } catch (error) {
+      const code = error?.response?.data?.code || error?.data?.code || error?.code;
+      if (["QUOTE_REQUIRED", "QUOTE_EXPIRED", "QUOTE_CHANGED"].includes(code)) {
+        throw error;
+      }
       const message = error?.response?.data?.message || error?.message || "";
       toastUtils.error(message || t("toasts.subscriptionFailed"));
     }

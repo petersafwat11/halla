@@ -9,7 +9,7 @@
  * never presented as restorable durable entitlements (§9).
  */
 
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import { View, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -32,6 +32,8 @@ import { eligibleEntries, addonCatalogCode, resolvePurchasable } from "../../ser
 import { getPurchaseReadiness, READINESS_STATES, readinessReasonKey } from "../../services/billing/purchaseReadiness";
 import { disclosuresFor } from "../../services/billing/disclosures";
 import { resolveMobileCompletionRoute } from "@halaa/shared/schemas/completionDestination";
+import { SUPPORT_SOURCE } from "@halaa/shared/support";
+import { openSupportWhatsApp } from "../../services/support/openSupportWhatsApp";
 import AdaptiveText from "../../components/commen/AdaptiveText";
 import LocalizedText from "../../components/commen/LocalizedText";
 import { countToken } from "@halaa/shared/utils/displayTokens";
@@ -72,27 +74,37 @@ const AddonsPurchaseScreen = () => {
   const queueFlow = usePurchaseQueue();
 
   const [lastTxn, setLastTxn] = useState(null);
+  const autoQueueStartedRef = useRef(false);
   const { data: fulfillment } = useFulfillment(lastTxn);
 
   const catalogEntries = catalogData?.entries || [];
   const pendingAddons = route.params?.pendingAddons || [];
 
   useEffect(() => {
-    if (pendingAddons && pendingAddons.length > 0 && !queueFlow.queue && catalogEntries.length > 0 && offeringsAll) {
+    if (pendingAddons && pendingAddons.length > 0 && !queueFlow.queue && !autoQueueStartedRef.current && catalogEntries.length > 0 && offeringsAll) {
       const items = pendingAddons.map((addon) => {
         const code = addonCatalogCode(addon);
         const purchasable = code ? resolvePurchasable(catalogEntries, offeringsAll, code) : null;
         return {
           catalogCode: code,
+          kind: "addon",
           operation: "addon",
           nameAr: purchasable?.entry?.nameAr || addon.nameAr || code,
           nameEn: purchasable?.entry?.nameEn || addon.nameEn || code,
           priceString: purchasable?.priceString || null,
         };
+      }).filter((item) => item.catalogCode);
+      if (items.length === 0) {
+        toast.error(t("checkout.errors.addonUnavailable"));
+        return;
+      }
+      autoQueueStartedRef.current = true;
+      queueFlow.startQueue({ origin: route.params?.origin || "plans", items }).catch(() => {
+        autoQueueStartedRef.current = false;
+        toast.error(t("queue.startError"));
       });
-      queueFlow.startQueue({ origin: route.params?.origin || "plans", items });
     }
-  }, [pendingAddons, queueFlow, catalogEntries, offeringsAll, route.params?.origin]);
+  }, [pendingAddons, queueFlow.queue, queueFlow.startQueue, catalogEntries, offeringsAll, route.params?.origin, t, toast]);
 
   const byFamily = useMemo(() => {
     const groups = { extra_invites: [], design_template: [], business_customization: [] };
@@ -148,19 +160,31 @@ const AddonsPurchaseScreen = () => {
       return;
     }
     const origin = route.params?.origin || "plans";
-    await queueFlow.startQueue({
-      origin,
-      items: [
-        {
-          catalogCode: entry.internalCode,
-          operation: "addon",
-          nameAr: entry.nameAr || entry.internalCode,
-          nameEn: entry.nameEn || entry.internalCode,
-          priceString: readiness.priceString,
-        },
-      ],
-    });
-    await queueFlow.purchaseCurrentItem(readiness.pkg);
+    try {
+      await queueFlow.startQueue({
+        origin,
+        items: [
+          {
+            catalogCode: entry.internalCode,
+            kind: "addon",
+            operation: "addon",
+            nameAr: entry.nameAr || entry.internalCode,
+            nameEn: entry.nameEn || entry.internalCode,
+            priceString: readiness.priceString,
+          },
+        ],
+      });
+    } catch {
+      toast.error(t("queue.startError"));
+      return;
+    }
+    try {
+      await queueFlow.purchaseCurrentItem(readiness.pkg, null, {
+        preflight: () => addonPreflight(entry.internalCode),
+      });
+    } catch {
+      toast.error(t("queue.stateSaveError"));
+    }
   };
 
   const handleQueuePurchaseItem = async () => {
@@ -171,13 +195,28 @@ const AddonsPurchaseScreen = () => {
       toast.error(t("checkout.errors.addonUnavailable"));
       return;
     }
-    await queueFlow.purchaseCurrentItem(purchasable.pkg);
+    try {
+      await queueFlow.purchaseCurrentItem(purchasable.pkg, null, {
+        preflight: () => addonPreflight(item.catalogCode),
+      });
+    } catch {
+      toast.error(t("queue.stateSaveError"));
+    }
+  };
+
+  const handleQueueSupport = async () => {
+    await openSupportWhatsApp({
+      language: currentLanguage,
+      source: SUPPORT_SOURCE.GENERAL,
+    });
   };
 
   const handleQueueComplete = () => {
     const origin = queueFlow.queue?.origin || route.params?.origin || "plans";
     queueFlow.resetQueue();
-    const dest = resolveMobileCompletionRoute({ origin });
+    const dest = resolveMobileCompletionRoute(
+      typeof origin === "string" ? { kind: origin } : origin
+    );
     navigation.dispatch(
       CommonActions.reset({
         index: 0,
@@ -198,7 +237,7 @@ const AddonsPurchaseScreen = () => {
     queryClient.invalidateQueries({ queryKey: subscriptionsKeys.all });
     queryClient.invalidateQueries({ queryKey: eventsKeys.subscriptionInfo() });
     const origin = route.params?.origin || "plans";
-    const dest = resolveMobileCompletionRoute({ origin });
+    const dest = resolveMobileCompletionRoute({ kind: origin });
     navigation.dispatch(
       CommonActions.reset({
         index: 0,
@@ -216,6 +255,7 @@ const AddonsPurchaseScreen = () => {
           isBusy={queueFlow.isBusy}
           onPurchaseItem={handleQueuePurchaseItem}
           onRetryReconcile={() => queueFlow.retryReconcileCurrentItem()}
+          onSupport={handleQueueSupport}
           onCancel={handleQueueCancel}
           onComplete={handleQueueComplete}
           t={t}

@@ -93,3 +93,16 @@ test("Web Hook Inspection: usePlansPageState passes expectedAmount and quote met
     "usePlansPageState must pass quoteId to checkout mutation"
   );
 });
+
+test("Web Business Checkout: passes the same authoritative quote contract", () => {
+  const hookPath = path.resolve(
+    __dirname,
+    "../../app/[lang]/host/plans/_hooks/useBusinessPlansPageState.js"
+  );
+  const hookContent = fs.readFileSync(hookPath, "utf8");
+
+  assert.match(hookContent, /handleProceedToPayment = useCallback\(async \(quote\)/);
+  assert.ok(hookContent.includes("expectedAmount: quote?.total"));
+  assert.ok(hookContent.includes("quoteId: quote?.quoteId"));
+  assert.ok(hookContent.includes("quoteExpiresAt: quote?.quoteExpiresAt"));
+});

@@ -23,8 +23,6 @@
     "fullName": "Full Name",
     "fullNamePlaceholder": "Enter your full name",
     "email": "Email Address",
-    "usernamePlaceholder": "Enter your username",
-    "username": "Username",
     "emailVerifiedBadge": "Email verified",
     "emailPlaceholder": "Enter your email",
     "sendCode": "Send Code",
@@ -111,8 +109,6 @@
   "validation": {
     "nameMin": "Name must be at least 2 characters",
     "nameMax": "Name must be less than 100 characters",
-    "usernameMin": "Username must be at least 2 characters",
-    "usernameMax": "Username must be less than 50 characters",
     "emailInvalid": "Please enter a valid email address",
     "passwordComplexity": "Use letters and numbers only, with at least one of each",
     "passwordsDoNotMatch": "Passwords do not match",
@@ -120,8 +116,6 @@
     "newPasswordRequired": "New password is required to change the current password"
   },
   "errors": {
-    "usernameMinLength": "Username must be at least 3 characters",
-    "usernameMaxLength": "Username must not exceed 50 characters",
     "nameMinLength": "Name must be at least 2 characters",
     "nameMaxLength": "Name must not exceed 100 characters",
     "invalidEmail": "Invalid email address",

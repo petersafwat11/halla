@@ -110,7 +110,7 @@ export default function CustomDesignsTable({ onSelectOrderForTransition }) {
     id: item.id || item._id,
     orderRef: (item.id || item._id || "").slice(-8).toUpperCase(),
     host: item.userId?.name || item.user?.name || "-",
-    hostPhone: item.userId?.phoneNumber || item.user?.phoneNumber || "",
+    hostPhone: item.userId?.phoneNumber || item.userId?.mobile || item.user?.phoneNumber || item.user?.mobile || "",
     tier: tierMap.get(item.templateType) || item.templateType || t("customDesigns.unknownTier", "تصميم مخصص"),
     price: item.price,
     currency: item.currency || "SAR",

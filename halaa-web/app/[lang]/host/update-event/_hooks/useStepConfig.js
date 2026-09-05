@@ -18,7 +18,6 @@ const useStepConfig = ({ t, subscriptionInfo, eventRaw, isEventLive }) =>
       // also wrong if the host changed plans between create and edit.
       // Trust subscription-info as the single source of truth.
       const isPool = subscriptionInfo?.isPoolPlan === true;
-      const subUnlimited = subscriptionInfo?.isGuestUnlimited === true;
       // Frozen per-event cap only applies to non-pool plans where the
       // event was created with a positive numeric ceiling.
       const eventFrozenLimit =
@@ -27,6 +26,9 @@ const useStepConfig = ({ t, subscriptionInfo, eventRaw, isEventLive }) =>
         eventRaw.guestLimit > 0
           ? eventRaw.guestLimit
           : null;
+      const existingGuestCount = Array.isArray(eventRaw?.guestList)
+        ? eventRaw.guestList.length
+        : 0;
 
       return {
       1: {
@@ -43,12 +45,11 @@ const useStepConfig = ({ t, subscriptionInfo, eventRaw, isEventLive }) =>
             planCode: subscriptionInfo?.planCode ?? null,
             status: subscriptionInfo?.status ?? null,
             guestLimit: isPool
-              ? (subscriptionInfo?.invitesRemaining ?? 0)
+              ? existingGuestCount + (subscriptionInfo?.invitationBalance?.remaining ?? 0)
               : (eventFrozenLimit ?? subscriptionInfo?.guestLimit ?? 0),
-            isGuestUnlimited: subUnlimited && !isPool,
+            isGuestUnlimited: subscriptionInfo?.invitationBalance?.unlimited === true,
             isPoolPlan: isPool,
-            invitePool: subscriptionInfo?.invitePool ?? null,
-            invitesRemaining: subscriptionInfo?.invitesRemaining ?? null,
+            invitationBalance: subscriptionInfo?.invitationBalance ?? null,
           },
           allowAddOnly: isEventLive,
         },

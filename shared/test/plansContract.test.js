@@ -245,7 +245,7 @@ test("Plan Schemas: Create and Edit schemas support nullable durationDays and in
   assert.ok(cappedResult.success, "Capped plan with positive invitePool must be valid");
 });
 
-test("toSubscriptionDTO: Authoritative invitePool, 15% compensation, and remaining calculation (PLN-09)", () => {
+test("toSubscriptionDTO: consumes authoritative invitation balances without recalculation (PLN-09)", () => {
   // 1. Per-event subscription with invitePool = 100
   const perEventSub = {
     _id: "sub_100",
@@ -255,12 +255,11 @@ test("toSubscriptionDTO: Authoritative invitePool, 15% compensation, and remaini
     invitePool: 100,
     compensationPool: 15,
     invitesConsumed: 30,
+    invitationBalance: { unlimited: false, base: 100, compensation: 15, consumed: 30, total: 115, remaining: 85 },
   };
   const dto1 = toSubscriptionDTO(perEventSub);
   assert.equal(dto1.id, "sub_100");
-  assert.equal(dto1.invitePool, 100);
-  assert.equal(dto1.compensationPool, 15);
-  assert.equal(dto1.invitesConsumed, 30);
+  assert.equal(dto1.invitePool, undefined);
   assert.equal(dto1.invitationBalance.unlimited, false);
   assert.equal(dto1.invitationBalance.remaining, 85); // 100 + 15 - 30 = 85
   assert.equal(dto1.invitationBalance.total, 115);
@@ -276,10 +275,10 @@ test("toSubscriptionDTO: Authoritative invitePool, 15% compensation, and remaini
     invitePool: 500,
     compensationPool: 75,
     invitesConsumed: 120,
+    invitationBalance: { unlimited: false, base: 500, compensation: 75, consumed: 120, total: 575, remaining: 455 },
   };
   const dto2 = toSubscriptionDTO(quarterlySub);
-  assert.equal(dto2.invitePool, 500);
-  assert.equal(dto2.compensationPool, 75);
+  assert.equal(dto2.invitePool, undefined);
   assert.equal(dto2.invitationBalance.unlimited, false);
   assert.equal(dto2.invitationBalance.remaining, 455); // 500 + 75 - 120 = 455
   assert.equal(dto2.invitationBalance.total, 575);
@@ -294,10 +293,10 @@ test("toSubscriptionDTO: Authoritative invitePool, 15% compensation, and remaini
     status: "active",
     invitePool: null,
     invitesConsumed: 1000,
+    invitationBalance: { unlimited: true, base: null, compensation: null, consumed: 1000, total: null, remaining: null },
   };
   const dto3 = toSubscriptionDTO(unlimitedSub);
-  assert.equal(dto3.invitePool, null);
-  assert.equal(dto3.compensationPool, null);
+  assert.equal(dto3.invitePool, undefined);
   assert.equal(dto3.invitationBalance.unlimited, true);
   assert.equal(dto3.invitationBalance.remaining, null);
   assert.equal(dto3.invitationBalance.consumed, 1000);

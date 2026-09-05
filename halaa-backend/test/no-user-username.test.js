@@ -27,7 +27,7 @@ test("PR1R Architecture Guard: No user-domain username across production source"
   const violations = [];
 
   const codeExtensions = new Set([
-    ".js", ".jsx", ".mjs", ".ts", ".tsx"
+    ".js", ".jsx", ".json", ".mjs", ".ts", ".tsx"
   ]);
 
   // Production source directories
@@ -39,11 +39,13 @@ test("PR1R Architecture Guard: No user-domain username across production source"
     "halaa-web/components/",
     "halaa-web/hooks/",
     "halaa-web/ui/",
+    "halaa-web/localization/",
     "halaa-mobile/components/",
     "halaa-mobile/screens/",
     "halaa-mobile/hooks/",
     "halaa-mobile/services/",
     "halaa-mobile/utils/",
+    "halaa-mobile/localization/",
   ];
 
   for (const relFile of allFiles) {

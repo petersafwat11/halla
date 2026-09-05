@@ -58,7 +58,6 @@
       "passwordSpecialChar": "Do not use symbols",
       "confirmPasswordRequired": "Confirm password is required",
       "passwordsDoNotMatch": "Passwords do not match",
-      "usernameMinLength": "Username must be at least 3 characters",
       "passwordConfirmRequired": "Please confirm your password"
     }
   },

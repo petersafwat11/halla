@@ -591,6 +591,8 @@
   "map_picker_use_current": "Use my current location",
   "map_picker_drag_hint": "Click the map or drag the pin to adjust the location",
   "map_picker_not_configured": "The map is temporarily unavailable.",
+  "unsaved_confirm": "Your unsaved event details will be lost. Do you want to go back?",
+  "submission_slow": "Creating the event is taking longer than usual. Keep this page open; if the request fails, your form will remain here for retry.",
   "templates": {
     "fields": {
       "validation": {

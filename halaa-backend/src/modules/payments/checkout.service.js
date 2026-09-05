@@ -6,13 +6,14 @@ const Addon = require('../../../models/AddonModel');
 const User = require('../../../models/UserModel');
 const {
   ADDON_TYPES,
+  deriveExpectedDeliveryDate,
 } = require('../../shared/constants/addons');
 const {
   SUBSCRIPTION_STATUS,
   ROLES,
 } = require('../../shared/constants');
 const { isPerEventPlan } = require('../../shared/constants/plans');
-const { ValidationError, NotFoundError } = require('../../shared/errors');
+const { AppError, ValidationError, NotFoundError } = require('../../shared/errors');
 const paymentProvider = require('../../infrastructure/paymentProvider');
 const { logAudit } = require('../../shared/utils/auditLog');
 const logger = require('../../shared/utils/logger');
@@ -33,6 +34,56 @@ const {
 const setupFeeService = require('../business/business.setupFee.service');
 
 class CheckoutService {
+  _quoteSignaturePayload(userId, quote, expiresAt) {
+    return JSON.stringify({
+      userId: String(userId || 'anon'),
+      planCode: quote.plan?.code || null,
+      currency: quote.currency,
+      totalHalalas: quote.totalHalalas,
+      discountCode: quote.discountCode || null,
+      setupFeeHalalas: quote.setupFeeHalalas,
+      expiresAt: new Date(expiresAt).getTime(),
+      lineItems: quote.lineItems.map((item) => ({
+        type: item.type,
+        code: item.code || null,
+        addonType: item.addonType || null,
+        templateType: item.templateType || null,
+        referenceId: item.referenceId ? String(item.referenceId) : null,
+        quantity: item.quantity,
+        unitAmount: item.unitAmount,
+        subtotal: item.subtotal,
+        discountAllocation: item.discountAllocation,
+        totalHalalas: item.totalHalalas,
+      })),
+    });
+  }
+
+  _signQuote(userId, quote, expiresAt) {
+    const secret = process.env.CHECKOUT_QUOTE_SECRET || config.jwt?.secret || process.env.JWT_SECRET;
+    if (!secret) throw new Error('Checkout quote signing secret is not configured');
+    return `quote_${crypto.createHmac('sha256', secret)
+      .update(this._quoteSignaturePayload(userId, quote, expiresAt))
+      .digest('hex')}`;
+  }
+
+  _verifyQuote(userId, quote, quoteId, quoteExpiresAt) {
+    if (!quoteId || !quoteExpiresAt) {
+      throw new AppError('A current checkout quote is required. Please refresh and review the amount.', 409, 'QUOTE_REQUIRED');
+    }
+    const expiresAt = new Date(quoteExpiresAt);
+    if (Number.isNaN(expiresAt.getTime()) || expiresAt.getTime() <= Date.now()) {
+      throw new AppError('Quote has expired. Please refresh and review the updated amount.', 409, 'QUOTE_EXPIRED');
+    }
+    const expectedId = this._signQuote(userId, quote, expiresAt);
+    const supplied = Buffer.from(String(quoteId));
+    const expected = Buffer.from(expectedId);
+    if (supplied.length !== expected.length || !crypto.timingSafeEqual(supplied, expected)) {
+      throw new AppError('The selected items or price changed. Please refresh and review the updated quote.', 409, 'QUOTE_CHANGED');
+    }
+    quote.quoteId = String(quoteId);
+    quote.quoteExpiresAt = expiresAt;
+  }
+
   /**
    * Authoritative checkout quote calculation (PLN-02).
    * Computes exact plan price, addons subtotal, discount allocation, setup fee,
@@ -122,13 +173,7 @@ class CheckoutService {
       quote.discountValid = true;
     }
 
-    const payloadToHash = `${userId || 'anon'}:${plan.code}:${quote.totalHalalas}:${quote.discountCode || ''}:${quote.quoteExpiresAt.getTime()}`;
-    const quoteHash = crypto
-      .createHmac('sha256', process.env.JWT_SECRET || 'halla_quote_secret')
-      .update(payloadToHash)
-      .digest('hex')
-      .slice(0, 24);
-    quote.quoteId = `quote_${quoteHash}`;
+    quote.quoteId = this._signQuote(userId, quote, quote.quoteExpiresAt);
 
     return quote;
   }
@@ -154,6 +199,7 @@ class CheckoutService {
       callbackUrl,
       expectedAmount,
       expectedTotal,
+      quoteId,
       quoteExpiresAt,
     } = body;
 
@@ -161,6 +207,7 @@ class CheckoutService {
     if (!user) throw new NotFoundError('User');
 
     const quote = await this.getQuote(userId, body);
+    this._verifyQuote(userId, quote, quoteId, quoteExpiresAt);
 
     if (discountCode && quote.discountValid === false) {
       throw new ValidationError(`Discount code: ${quote.discountReason || 'invalid'}`);
@@ -174,17 +221,12 @@ class CheckoutService {
       );
     }
 
-    // Stale quote verification (PLN-02)
-    if (quoteExpiresAt) {
-      const expDate = new Date(quoteExpiresAt);
-      if (!isNaN(expDate.getTime()) && expDate.getTime() < Date.now()) {
-        throw new ValidationError('Quote has expired. Please refresh and review the updated amount.');
-      }
-    }
-
     const plan = await Plan.getOrCreateByCode(planCode);
     const planPrice = quote.planPrice;
-    const resolvedAddons = quote.lineItems.filter((l) => l.type === 'addon');
+    // Keep the operational add-on fields (price and resolved scope) for
+    // fulfillment. Quote line items are presentation records and intentionally
+    // do not carry every field needed to create an Addon document.
+    const resolvedAddons = this._resolveAndPriceAddons(addons, plan);
     const addonsTotal = quote.addonsTotal;
     const discountAmount = quote.discountAmount;
     const validatedDiscountCode = quote.discountCode;
@@ -822,10 +864,13 @@ class CheckoutService {
   }
 
   async _createAddonFromCheckout({ userId, item, subscriptionId, paymentRecord }) {
+    const requestedAt = new Date();
     const initialStatus =
       item.addonType === ADDON_TYPES.BUSINESS_CUSTOMIZATION
         ? 'pending_provisioning'
-        : 'active';
+        : item.addonType === ADDON_TYPES.DESIGN_TEMPLATE
+          ? 'paid'
+          : 'active';
 
     const addon = await Addon.create({
       userId,
@@ -843,6 +888,13 @@ class CheckoutService {
         viaCheckout: true,
         activatedAt: initialStatus === 'active' ? new Date().toISOString() : null,
       },
+      fulfillment:
+        item.addonType === ADDON_TYPES.DESIGN_TEMPLATE
+          ? {
+              requestedAt,
+              expectedDeliveryAt: deriveExpectedDeliveryDate(item.templateType, requestedAt),
+            }
+          : undefined,
     });
 
     if (initialStatus === 'active') {

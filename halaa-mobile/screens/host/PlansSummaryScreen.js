@@ -17,6 +17,7 @@ import { useTranslation } from "../../localization";
 import { useToast } from "../../contexts/ToastContext";
 import {
   useCheckout,
+  useCheckoutQuote,
   useValidateDiscount,
   useMySubscription,
   addonsKeys,
@@ -35,13 +36,15 @@ import {
   getPurchasesDiagnostics,
   isPurchasesAvailable,
 } from "../../services/purchases";
-import { eventPreflight, reconcileGeneric } from "../../services/billingApi";
+import { addonPreflight, eventPreflight, reconcileGeneric } from "../../services/billingApi";
 import { getEntry, addonCatalogCode, resolvePurchasable } from "../../services/billing/catalog";
 import { getPurchaseReadiness, READINESS_STATES, readinessReasonKey } from "../../services/billing/purchaseReadiness";
 import { classifyChange, selectReplacementMode, isDeferredChange } from "../../services/billing/changeMode";
 import { subscriptionCode } from "../../services/billing/currentPlan";
 import { isRestorable, showsManageSubscription } from "../../services/billing/disclosures";
 import { resolveMobileCompletionRoute } from "@halaa/shared/schemas/completionDestination";
+import { SUPPORT_SOURCE } from "@halaa/shared/support";
+import { openSupportWhatsApp } from "../../services/support/openSupportWhatsApp";
 import LocalizedText from "../../components/commen/LocalizedText";
 import { priceToken } from "@halaa/shared/utils/displayTokens";
 import TopBar from "../../components/plans/TopBar";
@@ -325,11 +328,28 @@ const PlansSummaryScreen = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const planPrice = parseFloat(selectedPlan?.price) || 0;
-  const subtotal = planPrice + (addonTotal || 0);
-  const finalTotal = Math.max(0, subtotal - discountAmount);
-
   const checkoutAddons = useMemo(() => buildCheckoutAddons(addonItems), [addonItems]);
+  const {
+    data: checkoutQuote,
+    isLoading: quoteLoading,
+    refetch: refetchQuote,
+  } = useCheckoutQuote({
+    planCode: selectedPlan?.code,
+    addons: checkoutAddons,
+    discountCode: discountApplied ? appliedCode : null,
+    enabled: isWeb,
+  });
+  const planPrice = isWeb
+    ? (checkoutQuote?.planPrice ?? 0)
+    : (parseFloat(selectedPlan?.price) || 0);
+  const subtotal = isWeb
+    ? (checkoutQuote?.subtotal ?? 0)
+    : planPrice + (addonTotal || 0);
+  const effectiveDiscountAmount = isWeb
+    ? (checkoutQuote?.discountAmount ?? 0)
+    : discountAmount;
+  const effectiveAddonTotal = isWeb ? (checkoutQuote?.addonsTotal ?? 0) : addonTotal;
+  const finalTotal = isWeb ? (checkoutQuote?.total ?? 0) : Math.max(0, subtotal - discountAmount);
 
   const handleDiscountCodeChange = (value) => {
     setDiscountCode(value);
@@ -383,6 +403,12 @@ const PlansSummaryScreen = () => {
   const handlePayment = async () => {
     if (isProcessing) return;
     if (!selectedPlan) return;
+    if (quoteLoading || !checkoutQuote) return;
+    if (new Date(checkoutQuote.quoteExpiresAt).getTime() <= Date.now()) {
+      await refetchQuote();
+      toast.error(t("summary.quote.priceUpdatedNotice"));
+      return;
+    }
 
     if (!validateSource()) {
       return;
@@ -397,8 +423,10 @@ const PlansSummaryScreen = () => {
           ? { discountCode: discountCode.trim() }
           : {}),
         source: buildSource(),
-        expectedAmount: finalTotal,
-        expectedTotal: finalTotal,
+        expectedAmount: checkoutQuote.total,
+        expectedTotal: checkoutQuote.total,
+        quoteId: checkoutQuote.quoteId,
+        quoteExpiresAt: checkoutQuote.quoteExpiresAt,
       });
       if (result?.requiresAction) {
         // useCheckout ran the 3DS step in an in-app browser that has now
@@ -417,7 +445,7 @@ const PlansSummaryScreen = () => {
         toast.success(t("toasts.subscriptionCreated"));
       }
       // Success: route to validated completion destination.
-      const dest = resolveMobileCompletionRoute({ origin, eventId, returnTo });
+      const dest = resolveMobileCompletionRoute({ kind: origin, eventId, returnTo });
       navigation.dispatch(
         CommonActions.reset({
           index: 0,
@@ -469,6 +497,7 @@ const PlansSummaryScreen = () => {
 
     const planItem = {
       catalogCode: selectedPlan.code,
+      kind: "plan",
       operation: changeType !== "new" ? "change" : "purchase",
       nameAr: selectedPlan.nameAr || selectedPlan.name,
       nameEn: selectedPlan.nameEn || selectedPlan.name,
@@ -480,16 +509,38 @@ const PlansSummaryScreen = () => {
       const purchasable = code ? resolvePurchasable(catalogEntries, offeringsAll, code) : null;
       return {
         catalogCode: code,
+        kind: "addon",
         operation: "addon",
         nameAr: purchasable?.entry?.nameAr || addon.nameAr || code,
         nameEn: purchasable?.entry?.nameEn || addon.nameEn || code,
         priceString: purchasable?.priceString || null,
       };
-    });
+    }).filter((item) => item.catalogCode);
 
     const items = [planItem, ...addonQueueItems];
-    await queueFlow.startQueue({ origin, items });
-    await queueFlow.purchaseCurrentItem(readiness.pkg, changeInfo);
+    try {
+      await queueFlow.startQueue({ origin, items });
+    } catch (error) {
+      Sentry.captureException(error, {
+        tags: { area: "purchase_queue", operation: "start" },
+      });
+      toast.error(t("queue.startError"));
+      return;
+    }
+    try {
+      await queueFlow.purchaseCurrentItem(readiness.pkg, changeInfo, {
+        preflight:
+          storeEntry?.kind === "event_consumable"
+            ? () => eventPreflight(selectedPlan.code)
+            : null,
+        deferred: isDeferredChange(changeType),
+      });
+    } catch (error) {
+      Sentry.captureException(error, {
+        tags: { area: "purchase_queue", operation: "purchase_state" },
+      });
+      toast.error(t("queue.stateSaveError"));
+    }
   };
 
   const handleQueuePurchaseItem = async () => {
@@ -507,12 +558,39 @@ const PlansSummaryScreen = () => {
       toast.error(t("checkout.errors.planUnavailable"));
       return;
     }
-    await queueFlow.purchaseCurrentItem(pkg, changeInfo);
+    const itemEntry = getEntry(catalogEntries, item.catalogCode);
+    const preflight =
+      item.kind === "addon"
+        ? () => addonPreflight(item.catalogCode)
+        : itemEntry?.kind === "event_consumable"
+          ? () => eventPreflight(item.catalogCode)
+          : null;
+    try {
+      await queueFlow.purchaseCurrentItem(pkg, changeInfo, {
+        preflight,
+        deferred:
+          item.kind === "plan" &&
+          item.catalogCode === selectedPlan?.code &&
+          isDeferredChange(changeType),
+      });
+    } catch (error) {
+      Sentry.captureException(error, {
+        tags: { area: "purchase_queue", operation: "continue_purchase" },
+      });
+      toast.error(t("queue.stateSaveError"));
+    }
+  };
+
+  const handleQueueSupport = async () => {
+    await openSupportWhatsApp({
+      language: currentLanguage,
+      source: SUPPORT_SOURCE.GENERAL,
+    });
   };
 
   const handleQueueComplete = () => {
     queueFlow.resetQueue();
-    const dest = resolveMobileCompletionRoute({ origin, eventId, returnTo });
+    const dest = resolveMobileCompletionRoute({ kind: origin, eventId, returnTo });
     navigation.dispatch(
       CommonActions.reset({
         index: 0,
@@ -523,7 +601,7 @@ const PlansSummaryScreen = () => {
 
   const onPurchaseSuccessContinue = () => {
     flow.reset();
-    const dest = resolveMobileCompletionRoute({ origin, eventId, returnTo });
+    const dest = resolveMobileCompletionRoute({ kind: origin, eventId, returnTo });
     navigation.dispatch(
       CommonActions.reset({
         index: 0,
@@ -593,7 +671,7 @@ const PlansSummaryScreen = () => {
               discountCode={discountCode}
               applied={discountApplied}
               loading={validating}
-              amount={discountAmount}
+              amount={effectiveDiscountAmount}
               appliedCode={appliedCode}
               errorMessage={discountError}
               onCodeChange={handleDiscountCodeChange}
@@ -685,10 +763,10 @@ const PlansSummaryScreen = () => {
           {isWeb && (
             <PaymentSummaryCard
               planPrice={planPrice}
-              discountAmount={discountAmount}
+              discountAmount={effectiveDiscountAmount}
               finalTotal={finalTotal}
               t={t}
-              addonTotal={addonTotal}
+              addonTotal={effectiveAddonTotal}
             />
           )}
 
@@ -799,6 +877,7 @@ const PlansSummaryScreen = () => {
             isBusy={queueFlow.isBusy}
             onPurchaseItem={handleQueuePurchaseItem}
             onRetryReconcile={() => queueFlow.retryReconcileCurrentItem()}
+            onSupport={handleQueueSupport}
             onCancel={() => queueFlow.cancelQueue()}
             onComplete={handleQueueComplete}
             t={t}

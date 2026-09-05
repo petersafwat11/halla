@@ -113,7 +113,7 @@ export default function ManagePlansContent() {
 
             return (
               <div
-                key={plan.id}
+                key={plan.id || plan._id || plan.code}
                 className={`${styles.planCard} ${!plan.isActive ? styles.inactiveCard : ""}`}
               >
                 <div className={styles.cardAccent} style={{ background: accent }} />

@@ -43,7 +43,7 @@ test("openSupportWhatsApp behavioral test: web fallback when deep link unavailab
 
   const result = await openSupportWhatsApp({
     language: "en",
-    source: "managed_event_modal",
+    source: "managed_event",
     reference: { kind: "event", value: "evt_123" },
     _linking: mockLinking,
   });
@@ -98,7 +98,7 @@ test("openSupportWhatsApp behavioral test: total failure surfaces localized Aler
 
   const result = await openSupportWhatsApp({
     language: "ar",
-    source: "managed_event_modal",
+    source: "managed_event",
     _linking: mockLinking,
     _alert: mockAlert,
   });
@@ -112,7 +112,7 @@ test("openSupportWhatsApp behavioral test: total failure surfaces localized Aler
   // English alert
   const resultEn = await openSupportWhatsApp({
     language: "en",
-    source: "managed_event_modal",
+    source: "managed_event",
     _linking: mockLinking,
     _alert: mockAlert,
   });
@@ -135,8 +135,8 @@ test("CreateEventForm and HomeScreen both integrate openSupportWhatsApp with val
     "CreateEventForm must import openSupportWhatsApp"
   );
   assert.ok(
-    createEventSource.includes('source: "managed_event_modal"'),
-    "CreateEventForm must pass source: 'managed_event_modal'"
+    createEventSource.includes('source: "managed_event"'),
+    "CreateEventForm must pass the canonical managed_event source"
   );
 
   const homeSource = read("screens", "host", "HomeScreen.js");

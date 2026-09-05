@@ -257,11 +257,13 @@ class AddonsService {
         query.$or = [{ _id: s }, { userId: s }, { eventId: s }];
       } else {
         const User = require('../../../models/UserModel');
+        const escapedSearch = s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         const users = await User.find({
           $or: [
-            { name: { $regex: s, $options: 'i' } },
-            { email: { $regex: s, $options: 'i' } },
-            { phone: { $regex: s, $options: 'i' } },
+            { name: { $regex: escapedSearch, $options: 'i' } },
+            { email: { $regex: escapedSearch, $options: 'i' } },
+            { phoneNumber: { $regex: escapedSearch, $options: 'i' } },
+            { mobile: { $regex: escapedSearch, $options: 'i' } },
           ],
         }).select('_id').lean();
         const userIds = users.map((u) => u._id);
@@ -274,7 +276,7 @@ class AddonsService {
         .sort({ 'fulfillment.requestedAt': -1, createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .populate('userId', 'name email phone')
+        .populate('userId', 'name email phoneNumber mobile')
         .populate('eventId', 'title eventDate')
         .populate('fulfillment.updatedBy', 'name')
         .lean(),
@@ -299,6 +301,9 @@ class AddonsService {
    * Skipped/reversed transitions return 409 Conflict.
    */
   async transitionDesignFulfillment(adminUser, addonId, { toStatus, customerNote, internalNotes, expectedDeliveryAt } = {}) {
+    if (!adminUser || !isAdminRole(adminUser.role)) {
+      throw new ForbiddenError('Only an administrator may transition design fulfillment');
+    }
     const addon = await Addon.findById(addonId);
     if (!addon) throw new NotFoundError('Addon');
 
@@ -310,24 +315,18 @@ class AddonsService {
 
     // Idempotent same-state check
     if (fromStatus === toStatus) {
-      let modified = false;
-      if (customerNote !== undefined && customerNote !== addon.fulfillment?.customerNote) {
-        addon.fulfillment = addon.fulfillment || {};
-        addon.fulfillment.customerNote = customerNote;
-        modified = true;
-      }
-      if (internalNotes !== undefined && internalNotes !== addon.fulfillment?.internalNotes) {
-        addon.fulfillment = addon.fulfillment || {};
-        addon.fulfillment.internalNotes = internalNotes;
-        modified = true;
-      }
+      const sameStateSet = {};
+      if (customerNote !== undefined) sameStateSet['fulfillment.customerNote'] = customerNote;
+      if (internalNotes !== undefined) sameStateSet['fulfillment.internalNotes'] = internalNotes;
       if (expectedDeliveryAt !== undefined) {
-        addon.fulfillment = addon.fulfillment || {};
-        addon.fulfillment.expectedDeliveryAt = expectedDeliveryAt ? new Date(expectedDeliveryAt) : null;
-        modified = true;
+        sameStateSet['fulfillment.expectedDeliveryAt'] = expectedDeliveryAt ? new Date(expectedDeliveryAt) : null;
       }
-      if (modified) {
-        await addon.save();
+      if (Object.keys(sameStateSet).length > 0) {
+        return Addon.findOneAndUpdate(
+          { _id: addonId, addonType: ADDON_TYPES.DESIGN_TEMPLATE, status: toStatus },
+          { $set: sameStateSet },
+          { new: true, runValidators: true }
+        );
       }
       return addon;
     }
@@ -339,30 +338,35 @@ class AddonsService {
       );
     }
 
-    addon.status = toStatus;
-    addon.fulfillment = addon.fulfillment || {};
-    addon.fulfillment.updatedBy = adminUser?._id || null;
-
     const now = new Date();
+    const transitionSet = {
+      status: toStatus,
+      'fulfillment.updatedBy': adminUser._id,
+    };
     if (toStatus === DESIGN_FULFILLMENT_STATUS.QUEUED) {
-      addon.fulfillment.queuedAt = now;
+      transitionSet['fulfillment.queuedAt'] = now;
     } else if (toStatus === DESIGN_FULFILLMENT_STATUS.IN_PROGRESS) {
-      addon.fulfillment.inProgressAt = now;
+      transitionSet['fulfillment.inProgressAt'] = now;
     } else if (toStatus === DESIGN_FULFILLMENT_STATUS.FULFILLED) {
-      addon.fulfillment.fulfilledAt = now;
+      transitionSet['fulfillment.fulfilledAt'] = now;
     }
-
-    if (customerNote !== undefined) {
-      addon.fulfillment.customerNote = customerNote;
-    }
-    if (internalNotes !== undefined) {
-      addon.fulfillment.internalNotes = internalNotes;
-    }
+    if (customerNote !== undefined) transitionSet['fulfillment.customerNote'] = customerNote;
+    if (internalNotes !== undefined) transitionSet['fulfillment.internalNotes'] = internalNotes;
     if (expectedDeliveryAt !== undefined) {
-      addon.fulfillment.expectedDeliveryAt = expectedDeliveryAt ? new Date(expectedDeliveryAt) : null;
+      transitionSet['fulfillment.expectedDeliveryAt'] = expectedDeliveryAt ? new Date(expectedDeliveryAt) : null;
     }
 
-    await addon.save();
+    const transitionedAddon = await Addon.findOneAndUpdate(
+      { _id: addonId, addonType: ADDON_TYPES.DESIGN_TEMPLATE, status: fromStatus },
+      { $set: transitionSet },
+      { new: true, runValidators: true }
+    );
+    if (!transitionedAddon) {
+      const latest = await Addon.findById(addonId);
+      if (latest?.status === toStatus) return latest;
+      throw new ConflictError('Design fulfillment status changed while this request was being processed');
+    }
+    const committedAddon = transitionedAddon;
 
     // Audit logging (non-blocking / failure-safe)
     try {
@@ -370,11 +374,11 @@ class AddonsService {
         action: 'addon.fulfillment_transition',
         actor: { _id: adminUser?._id, role: adminUser?.role || ROLES.SUPER_ADMIN },
         targetType: 'addon',
-        targetId: addon._id,
+        targetId: committedAddon._id,
         metadata: {
-          addonId: addon._id,
-          addonType: addon.addonType,
-          templateType: addon.templateType,
+          addonId: committedAddon._id,
+          addonType: committedAddon.addonType,
+          templateType: committedAddon.templateType,
           fromStatus,
           toStatus,
           customerNote: customerNote || null,
@@ -383,14 +387,14 @@ class AddonsService {
       });
     } catch (auditErr) {
       logger.error('[addons.transitionFulfillment] audit log failed', {
-        addonId: addon._id,
+        addonId: committedAddon._id,
         error: auditErr?.message,
       });
     }
 
     // Post-commit notification to host (non-blocking / failure-safe)
     try {
-      if (addon.userId) {
+      if (committedAddon.userId) {
         const notificationsService = require('../notifications/notifications.service');
         const NOTIFICATION_MESSAGES = {
           [DESIGN_FULFILLMENT_STATUS.QUEUED]: {
@@ -415,18 +419,18 @@ class AddonsService {
 
         const msg = NOTIFICATION_MESSAGES[toStatus];
         if (msg) {
-          await notificationsService.createNotification(addon.userId, {
+          await notificationsService.createNotification(committedAddon.userId, {
             type: 'custom',
             title: msg.titleEn,
             titleAr: msg.titleAr,
             message: msg.messageEn,
             messageAr: msg.messageAr,
-            idempotencyKey: `notification:${addon.userId}:design_fulfillment:${addon._id}:${toStatus}`,
+            idempotencyKey: `notification:${committedAddon.userId}:design_fulfillment:${committedAddon._id}:${toStatus}`,
             data: {
               entityType: 'user',
-              entityId: addon.userId,
+              entityId: committedAddon.userId,
               metadata: {
-                addonId: String(addon._id),
+                addonId: String(committedAddon._id),
                 status: toStatus,
               },
             },
@@ -436,12 +440,12 @@ class AddonsService {
       }
     } catch (notifErr) {
       logger.error('[addons.transitionFulfillment] notification dispatch failed', {
-        addonId: addon._id,
+        addonId: committedAddon._id,
         error: notifErr?.message,
       });
     }
 
-    return addon;
+    return committedAddon;
   }
 
   async getMyAddons(userId, { page = 1, limit = 20, skip = 0 } = {}) {

@@ -3,7 +3,7 @@
  *
  * Scans all design_template Addon documents.
  * Ensures every design template addon has:
- *   - fulfillment.requestedAt (backfilled from createdAt / activatedAt)
+ *   - fulfillment.requestedAt (backfilled only from the record's createdAt)
  *   - fulfillment.expectedDeliveryAt (derived strictly from SLA)
  *   - Does NOT invent progress (does not artificially mark queued/in_progress/fulfilled)
  *
@@ -21,7 +21,6 @@ require('dotenv').config({ path: path.join(__dirname, '../config.env') });
 
 const {
   ADDON_TYPES,
-  DESIGN_FULFILLMENT_STATUS,
   deriveExpectedDeliveryDate,
 } = require('../src/shared/constants/addons');
 
@@ -50,7 +49,9 @@ async function runBackfill(options = {}) {
     let updated = 0;
     let alreadyValid = 0;
     let errors = 0;
+    let invalidMissingCreatedAt = 0;
     const updatedIds = [];
+    const invalidIds = [];
 
     while (await cursor.hasNext()) {
       const addon = await cursor.next();
@@ -64,23 +65,23 @@ async function runBackfill(options = {}) {
         continue;
       }
 
-      // Backfill requestedAt from createdAt or activatedAt or now
-      const fallbackDate =
-        addon.createdAt ||
-        (addon.metadata && addon.metadata.activatedAt ? new Date(addon.metadata.activatedAt) : new Date());
-
-      const requestedDate = fallbackDate instanceof Date ? fallbackDate : new Date(fallbackDate);
+      if (!addon.createdAt) {
+        invalidMissingCreatedAt++;
+        invalidIds.push(String(addon._id));
+        continue;
+      }
+      const requestedDate = addon.createdAt instanceof Date ? addon.createdAt : new Date(addon.createdAt);
+      if (Number.isNaN(requestedDate.getTime())) {
+        invalidMissingCreatedAt++;
+        invalidIds.push(String(addon._id));
+        continue;
+      }
       const expectedDeliveryDate = deriveExpectedDeliveryDate(addon.templateType, requestedDate);
 
       const updateFields = {
         'fulfillment.requestedAt': requestedDate,
         'fulfillment.expectedDeliveryAt': existingFulfillment.expectedDeliveryAt || expectedDeliveryDate,
       };
-
-      // Only if the record is ALREADY in terminal fulfilled status in production, backfill fulfilledAt from updatedAt
-      if (addon.status === DESIGN_FULFILLMENT_STATUS.FULFILLED && !existingFulfillment.fulfilledAt) {
-        updateFields['fulfillment.fulfilledAt'] = addon.updatedAt || requestedDate;
-      }
 
       if (isExecute) {
         try {
@@ -106,13 +107,20 @@ async function runBackfill(options = {}) {
     console.log(`  Updated:       ${updated}`);
     console.log(`  Already Valid: ${alreadyValid}`);
     console.log(`  Errors:        ${errors}`);
+    console.log(`  Missing createdAt: ${invalidMissingCreatedAt}`);
+    if (invalidIds.length) {
+      console.error(`[backfill-design-fulfillment] Manual remediation required (IDs only):`);
+      invalidIds.forEach((id) => console.error(`  - ${id}`));
+    }
 
     return {
       scanned,
       updated,
       alreadyValid,
       errors,
+      invalidMissingCreatedAt,
       updatedIds,
+      invalidIds,
     };
   } finally {
     if (shouldCloseConnection) {

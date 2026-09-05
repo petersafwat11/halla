@@ -827,8 +827,6 @@
         "passwordComplexity": "كلمة المرور تتكون من حروف وأرقام فقط، وبها حرف ورقم على الأقل",
         "invalidPassword": "كلمة المرور غير صحيحة، تحقق منها وحاول مرة أخرى.",
         "phoneNumberInvalid": "رقم الجوال غير صحيح، يرجى التحقق والمحاولة مرة أخرى",
-        "usernameRequired": "اسم المستخدم مطلوب",
-        "usernameMinLength": "اسم المستخدم يجب أن يكون 3 أحرف على الأقل",
         "passwordConfirmRequired": "يرجى تأكيد كلمة المرور",
         "passwordsDoNotMatch": "كلمات المرور غير متطابقة"
       }

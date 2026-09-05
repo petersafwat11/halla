@@ -87,6 +87,7 @@ export const ENDPOINTS = {
   },
 
   PAYMENTS: {
+    QUOTE: API_PATHS.hostPayments.quote,
     CHECKOUT: API_PATHS.hostPayments.checkout,
     BY_ID: API_PATHS.hostPayments.getById,
     POLL_3DS: API_PATHS.hostPayments.poll3ds,

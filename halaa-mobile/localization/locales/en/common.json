@@ -107,8 +107,6 @@
     "passwordComplexity": "Use letters and numbers only, with at least one of each",
     "otpLength": "Verification code must be 6 digits",
     "otpInvalid": "Verification code must contain only digits",
-    "usernameMin": "Username must be at least 2 characters",
-    "usernameMax": "Username must be less than 50 characters",
     "nameMin": "Name must be at least 2 characters",
     "nameMax": "Name must be less than 100 characters",
     "emailInvalid": "Please enter a valid email address",
@@ -160,5 +158,7 @@
     "title": "Contact Support",
     "fallbackMessage": "Unable to open WhatsApp. You can reach us directly at:\n{{displayNumber}}",
     "accessibilityLabel": "Customer support chat on WhatsApp"
+  },
+  "queue": {
   }
 }

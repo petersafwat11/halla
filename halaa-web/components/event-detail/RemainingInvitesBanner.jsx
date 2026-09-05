@@ -20,20 +20,11 @@ export default function RemainingInvitesBanner({ eventId, balance }) {
     event?.invitationBalance ||
     event?.subscription?.invitationBalance;
 
-  if (!effectiveBalance && !event?.subscription) return null;
-
-  const resolvedBalance = effectiveBalance || {
-    unlimited: event.subscription.invitesRemaining == null,
-    base: null,
-    compensation: null,
-    consumed: 0,
-    total: null,
-    remaining: event.subscription.invitesRemaining ?? null,
-  };
+  if (!effectiveBalance) return null;
 
   return (
     <InvitationBalanceCard
-      balance={resolvedBalance}
+      balance={effectiveBalance}
       eventId={eventId}
       returnTo="event-detail"
     />

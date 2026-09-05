@@ -78,8 +78,8 @@ const checkoutSchema = z
     subscriptionId: objectId.optional(),
     expectedAmount: z.number().min(0).optional(),
     expectedTotal: z.number().min(0).optional(),
-    quoteId: z.string().optional(),
-    quoteExpiresAt: z.union([z.string(), z.date()]).optional(),
+    quoteId: z.string().regex(/^quote_[a-f0-9]{64}$/),
+    quoteExpiresAt: z.union([z.string().datetime(), z.date()]),
   })
   .strict();
 

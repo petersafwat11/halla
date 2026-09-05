@@ -27,6 +27,9 @@ test("CurrentPlanCard: counts are locale-formatted ratio tokens and progress gro
     "raw used/limit template must not come back — use countRatioToken"
   );
   assert.ok(src.includes("countRatioToken("), "stat values must be shared ratio tokens");
+  assert.ok(src.includes("invitationBalance?.consumed"), "used invites must come from the canonical balance");
+  assert.ok(src.includes("invitationBalance?.total"), "invite capacity must come from the canonical balance");
+  assert.doesNotMatch(src, /subscription\.(?:invitePool|invitesConsumed)/);
   assert.ok(src.includes("countToken(singleValue"), "single numeric values (days) must be formatted tokens");
   assert.ok(/progressBar:\s*{[\s\S]*?alignItems:\s*"flex-start"/.test(src), "progress fill origin must be the logical start");
 });

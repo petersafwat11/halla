@@ -71,6 +71,14 @@ const ACTION_MESSAGES = {
     ar: "تم تجاوز الحد المسموح به للمناسبات أو المدعوين في باقتك الحالية.",
     en: "You have reached the event or guest limit for your current subscription.",
   },
+  FORBIDDEN: {
+    ar: "ليس لديك صلاحية لإجراء هذه العملية. إذا كنت تعتقد أن هذا خطأ، تواصل مع الدعم.",
+    en: "You do not have permission to perform this action. Contact support if you believe this is a mistake.",
+  },
+  UNAUTHORIZED: {
+    ar: "انتهت جلسة تسجيل الدخول. يرجى تسجيل الدخول ثم المحاولة مرة أخرى.",
+    en: "Your sign-in session has expired. Please sign in and try again.",
+  },
   NETWORK_ERROR: {
     ar: "تعذر الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت والمحاولة مجدداً.",
     en: "Could not connect to the server. Please check your internet connection and try again.",
@@ -176,10 +184,15 @@ export function presentError(error, { language = "ar" } = {}) {
     isRetryable = false;
   } else if (
     rawCode === "PACKAGE_LIMIT_EXCEEDED" ||
-    rawCode === "PACKAGE_LIMIT" ||
-    status === 403
+    rawCode === "PACKAGE_LIMIT"
   ) {
     resolvedKey = "PACKAGE_LIMIT_EXCEEDED";
+    isRetryable = false;
+  } else if (status === 401) {
+    resolvedKey = "UNAUTHORIZED";
+    isRetryable = false;
+  } else if (status === 403) {
+    resolvedKey = "FORBIDDEN";
     isRetryable = false;
   } else if (rawCode === "NETWORK_ERROR" || status === 0) {
     resolvedKey = "NETWORK_ERROR";

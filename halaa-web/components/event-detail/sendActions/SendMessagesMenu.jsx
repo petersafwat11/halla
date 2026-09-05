@@ -45,9 +45,9 @@ export default function SendMessagesMenu({ event, eventId }) {
   const audiences = computeSendAudiences(guests);
   const states = buildSendActionStates(event, audiences);
   const invitationBalance = event?.invitationBalance || event?.subscription?.invitationBalance || null;
-  const invitesRemaining = invitationBalance
-    ? (invitationBalance.unlimited ? null : invitationBalance.remaining)
-    : (event?.subscription?.invitesRemaining ?? null);
+  const invitesRemaining = invitationBalance?.unlimited
+    ? null
+    : invitationBalance?.remaining ?? 0;
 
   const handlePick = (action) => {
     if (!states[action]?.enabled) return;

@@ -29,6 +29,7 @@ const PurchaseQueueModal = ({
   isBusy,
   onPurchaseItem,
   onRetryReconcile,
+  onSupport,
   onCancel,
   onComplete,
   t,
@@ -39,6 +40,7 @@ const PurchaseQueueModal = ({
   const isCompleted = queue.status === QUEUE_STATUS.COMPLETED;
   const isCancelled = queue.status === QUEUE_STATUS.CANCELLED;
   const isFailed = queue.status === QUEUE_STATUS.FAILED;
+  const isManualReview = queue.status === QUEUE_STATUS.MANUAL_REVIEW;
 
   const currentIndex = queue.currentIndex;
   const currentItem = queue.items[currentIndex] || queue.items[queue.items.length - 1];
@@ -53,6 +55,7 @@ const PurchaseQueueModal = ({
   const isReconciling = itemStatus === ITEM_STATUS.RECONCILING;
   const isPurchasing = itemStatus === ITEM_STATUS.PURCHASING;
   const isFulfilled = itemStatus === ITEM_STATUS.FULFILLED;
+  const isScheduled = itemStatus === ITEM_STATUS.SCHEDULED;
 
   return (
     <Modal visible transparent animationType="fade" onRequestClose={undefined}>
@@ -125,6 +128,15 @@ const PurchaseQueueModal = ({
               </View>
             )}
 
+            {isScheduled && (
+              <View style={styles.statusRow}>
+                <Ionicons name="time" size={20} color={colors.accent[700]} />
+                <LocalizedText style={styles.reconcilingTitle}>
+                  {t("queue.scheduled", "Your plan change is scheduled for the next renewal.")}
+                </LocalizedText>
+              </View>
+            )}
+
             {isCompleted && (
               <View style={styles.statusRow}>
                 <Ionicons name="checkmark-circle" size={24} color={colors.success[600]} />
@@ -147,7 +159,24 @@ const PurchaseQueueModal = ({
               <View style={styles.statusRow}>
                 <Ionicons name="alert-circle" size={20} color={colors.error[500]} />
                 <LocalizedText style={styles.errorText}>
-                  {currentItem?.error || t("iapStates.failed.title", "Purchase failed")}
+                  {t("iapStates.failed.title", "Purchase failed. No entitlement was confirmed.")}
+                </LocalizedText>
+              </View>
+            )}
+
+            {isManualReview && (
+              <View style={styles.reconcileBox}>
+                <View style={styles.statusRow}>
+                  <Ionicons name="help-circle" size={20} color={colors.accent[700]} />
+                  <LocalizedText style={styles.reconcilingTitle}>
+                    {t("queue.manualReviewTitle", "Purchase needs review")}
+                  </LocalizedText>
+                </View>
+                <LocalizedText style={styles.warningNotice}>
+                  {t(
+                    "queue.manualReviewBody",
+                    "Do not purchase again. Contact support so we can verify this store transaction safely."
+                  )}
                 </LocalizedText>
               </View>
             )}
@@ -204,7 +233,19 @@ const PurchaseQueueModal = ({
               </TouchableOpacity>
             )}
 
-            {(isCancelled || isFailed) && (
+            {isManualReview && onSupport && (
+              <TouchableOpacity
+                style={styles.primaryButton}
+                onPress={onSupport}
+                activeOpacity={0.85}
+              >
+                <LocalizedText style={styles.primaryButtonText}>
+                  {t("queue.contactSupport", "Contact support")}
+                </LocalizedText>
+              </TouchableOpacity>
+            )}
+
+            {(isCancelled || isFailed || isManualReview) && (
               <TouchableOpacity
                 style={styles.secondaryButton}
                 onPress={onCancel}
@@ -216,7 +257,7 @@ const PurchaseQueueModal = ({
               </TouchableOpacity>
             )}
 
-            {!isCompleted && !isCancelled && !isFailed && !isReconciling && !isPurchasing && totalItems > 1 && (
+            {!isCompleted && !isCancelled && !isFailed && !isManualReview && !isReconciling && !isPurchasing && totalItems > 1 && (
               <TouchableOpacity
                 style={styles.cancelLink}
                 onPress={onCancel}

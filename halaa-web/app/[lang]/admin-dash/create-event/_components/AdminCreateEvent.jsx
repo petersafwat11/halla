@@ -33,7 +33,7 @@ import { handleError } from "@/services/errorHandlingService";
  * Sources:
  *  - Platform admin self: { isUnlimited: true }
  *  - Backend getEventTargets: { status, planType, isSingleEvent, isPoolPlan, guestLimit, isGuestUnlimited, ... }
- *  - Auth store getSummary: { status, planType, limits, maxGuests, invitePool, invitesRemaining, ... }
+ *  - Auth store getSummary: { status, planType, limits, maxGuests, invitationBalance, ... }
  */
 function normalizeSubscription(sub) {
   if (!sub) return null;
@@ -44,57 +44,43 @@ function normalizeSubscription(sub) {
       isGuestUnlimited: true,
       isPoolPlan: false,
       isSingleEvent: false,
-      invitePool: null,
-      invitesRemaining: null,
+      invitationBalance: {
+        unlimited: true, base: null, compensation: null, consumed: 0, total: null, remaining: null,
+      },
       eventsRemaining: -1,
       eventsUsed: 0,
     };
   }
-  // Already normalized (from getEventTargets / getUserSubscriptionInfo)
+  if (!sub.invitationBalance) return null;
+  // Already normalized (from getEventTargets / getUserSubscriptionInfo).
+  // Quota semantics always come from invitationBalance; event-count fields
+  // remain separate because they represent event creation capability.
   if (sub.isGuestUnlimited !== undefined && sub.guestLimit !== undefined) {
     return {
       isUnlimited: false,
       guestLimit: sub.guestLimit,
-      isGuestUnlimited: sub.isGuestUnlimited,
+      isGuestUnlimited: sub.invitationBalance?.unlimited === true,
       isPoolPlan: sub.isPoolPlan ?? false,
       isSingleEvent: sub.isSingleEvent ?? false,
-      invitePool: sub.invitePool ?? null,
-      invitesRemaining: sub.invitesRemaining ?? null,
+      invitationBalance: sub.invitationBalance,
       eventsRemaining: sub.eventsRemaining ?? 0,
       eventsUsed: sub.eventsUsed ?? 0,
     };
   }
-  // From auth store getSummary() — has limits.maxInvitesPerEvent and maxGuests
-  const limits = sub.limits || {};
+  // From auth store getSummary(). Fail closed if the canonical quota is absent;
+  // clients must never reconstruct it from plan limits.
+  const balance = sub.invitationBalance;
   const isPerEvent = sub.isSingleEvent === true;
   const isPool = sub.isPoolSubscription === true;
-
-  let guestLimit, isGuestUnlimited, invitePool, invitesRemaining;
-  if (isPerEvent) {
-    guestLimit = limits.maxInvitesPerEvent ?? 50;
-    isGuestUnlimited = guestLimit === -1;
-    invitePool = null;
-    invitesRemaining = null;
-  } else if (isPool) {
-    guestLimit = -1;
-    isGuestUnlimited = true;
-    invitePool = sub.invitePool ?? null;
-    invitesRemaining = sub.invitesRemaining ?? null;
-  } else {
-    guestLimit = limits.maxInvitesPerEvent ?? 50;
-    isGuestUnlimited = guestLimit === -1;
-    invitePool = sub.invitePool ?? null;
-    invitesRemaining = sub.invitesRemaining ?? null;
-  }
+  const guestLimit = isPool ? (balance.remaining ?? 0) : (balance.total ?? 0);
 
   return {
     isUnlimited: false,
     guestLimit,
-    isGuestUnlimited,
+    isGuestUnlimited: balance.unlimited === true,
     isPoolPlan: isPool,
     isSingleEvent: isPerEvent,
-    invitePool,
-    invitesRemaining,
+    invitationBalance: balance,
     eventsRemaining: sub.eventsRemaining ?? 0,
     eventsUsed: sub.usage?.eventsCreated ?? 0,
   };
@@ -394,9 +380,7 @@ export default function AdminCreateEvent() {
                       lineHeight: "1.5",
                     }}
                   >
-                    {locale === "ar"
-                      ? "جاري معالجة الطلب، قد يستغرق إنشاء المناسبة وقتاً أطول من المعتاد... بياناتك محفوظة بأمان."
-                      : "Processing your request, creating the event may take a little longer... your data is safe."}
+                    {t("submission_slow")}
                   </p>
                 )}
               </form>

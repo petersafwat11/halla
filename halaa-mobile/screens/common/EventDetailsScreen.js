@@ -578,9 +578,9 @@ const EventDetailsScreen = () => {
   // per-event plans; `null` means truly unlimited (admin/super-admin). Used by
   // the remaining-invites badge and the bulk-action cost gate.
   const invitationBalance = event?.invitationBalance || event?.subscription?.invitationBalance || null;
-  const invitesRemaining = invitationBalance
-    ? (invitationBalance.unlimited ? null : invitationBalance.remaining)
-    : (event?.subscription?.invitesRemaining ?? null);
+  const invitesRemaining = invitationBalance?.unlimited
+    ? null
+    : invitationBalance?.remaining ?? 0;
 
   // Live and terminal event guest invariants (EVT-03):
   // Live events: existing guests immutable (onEdit/onDelete disabled), new guests allowed.
@@ -768,13 +768,9 @@ const EventDetailsScreen = () => {
               icon="people-outline"
               label={t("events:eventDetails.guestsRemaining")}
               value={
-                invitationBalance
-                  ? (invitationBalance.unlimited
-                      ? t("events:remainingInvites.unlimited")
-                      : formatLocaleCount(invitationBalance.remaining, currentLanguage))
-                  : (event.subscription.invitesRemaining == null
-                      ? t("events:remainingInvites.unlimited")
-                      : formatLocaleCount(event.subscription.invitesRemaining, currentLanguage))
+                invitationBalance?.unlimited
+                  ? t("events:remainingInvites.unlimited")
+                  : formatLocaleCount(invitationBalance?.remaining ?? 0, currentLanguage)
               }
               last
             />
@@ -782,7 +778,7 @@ const EventDetailsScreen = () => {
         )}
 
         {/* Remaining invites — adding guests is free; charged only on send. */}
-        {(invitationBalance || event?.subscription) && (
+        {invitationBalance && (
           <RemainingInvitesBadge
             remaining={invitesRemaining}
             balance={invitationBalance}

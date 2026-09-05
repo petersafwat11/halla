@@ -154,7 +154,8 @@ test("LastEventStatsRow + Quota + StatsCards: locale-formatted atomic counts", (
   );
 
   const quota = read("components", "home", "_components", "LastEventQuota.js");
-  assert.match(quota, /formatCount\(quota\.remainingInvites/);
+  assert.match(quota, /InvitationBalanceCard compact balance=\{balance\}/);
+  assert.doesNotMatch(quota, /remainingInvites|quota\?\.|quota\./);
 
   const cards = read("components", "home", "StatsCards.js");
   assert.match(cards, /formatCount\(card\.value,\s*locale\)/);

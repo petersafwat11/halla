@@ -27,6 +27,7 @@ export async function savePurchaseQueue(billingUserId, queue) {
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error("[purchaseQueueStorage] Failed to save queue:", error?.message);
+    throw error;
   }
 }
 
@@ -58,5 +59,6 @@ export async function clearPurchaseQueue(billingUserId) {
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error("[purchaseQueueStorage] Failed to clear queue:", error?.message);
+    throw error;
   }
 }

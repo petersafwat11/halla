@@ -10,7 +10,7 @@ import {
   getBillingType,
   getBillingPeriodKey,
 } from "../constants/plans.js";
-import { calculateInvitationBalance } from "../schemas/invitationBalance.js";
+import { parseInvitationBalance } from "../schemas/invitationBalance.js";
 
 /**
  * Canonical Boundary DTO Adapters
@@ -227,22 +227,9 @@ export const toSubscriptionDTO = (rawSub) => {
     null;
   const billingInterval =
     rawSub.billingInterval || billingType || "event";
-  const invitePool =
-    rawSub.invitePool !== undefined && rawSub.invitePool !== null
-      ? rawSub.invitePool
-      : (rawSub.limits?.invitePool ??
-        rawSub.plan?.limits?.invitePool ??
-        rawSub.planId?.limits?.invitePool ??
-        rawSub.limits?.maxInvitesPerEvent ??
-        null);
-  const compensationPool =
-    rawSub.compensationPool !== undefined && rawSub.compensationPool !== null
-      ? rawSub.compensationPool
-      : null;
-  const invitesConsumed = Number(
-    rawSub.invitesConsumed ?? rawSub.usedInvites ?? rawSub.usage?.guestsUsed ?? 0
-  );
-  const invitationBalance = calculateInvitationBalance(rawSub);
+  const invitationBalance = rawSub.invitationBalance
+    ? parseInvitationBalance(rawSub.invitationBalance)
+    : null;
   const startDate = rawSub.startDate || rawSub.createdAt || null;
   const endDate = rawSub.endDate || rawSub.expiresAt || null;
 
@@ -253,10 +240,6 @@ export const toSubscriptionDTO = (rawSub) => {
     status,
     billingType,
     billingInterval,
-    invitePool,
-    compensationPool,
-    usedInvites: invitesConsumed,
-    invitesConsumed,
     invitationBalance,
     startDate,
     endDate,

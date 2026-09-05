@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { parseCompletionDestination } from "./completionDestination.js";
+import { completionDestinationSchema, parseCompletionDestination } from "./completionDestination.js";
 
 /**
  * Account-bound Native Purchase Queue Contract (PR5 / F-08).
@@ -25,16 +25,18 @@ export const ITEM_STATUS = Object.freeze({
   PURCHASING: "purchasing",
   RECONCILING: "reconciling",
   FULFILLED: "fulfilled",
+  SCHEDULED: "scheduled",
   CANCELLED: "cancelled",
   MANUAL_REVIEW: "manual_review",
   FAILED: "failed",
 });
 
 const ALLOWED_ITEM_TRANSITIONS = Object.freeze({
-  [ITEM_STATUS.PENDING]: [ITEM_STATUS.PURCHASING, ITEM_STATUS.CANCELLED],
-  [ITEM_STATUS.PURCHASING]: [ITEM_STATUS.RECONCILING, ITEM_STATUS.CANCELLED, ITEM_STATUS.FAILED],
+  [ITEM_STATUS.PENDING]: [ITEM_STATUS.PURCHASING, ITEM_STATUS.CANCELLED, ITEM_STATUS.FAILED],
+  [ITEM_STATUS.PURCHASING]: [ITEM_STATUS.RECONCILING, ITEM_STATUS.SCHEDULED, ITEM_STATUS.CANCELLED, ITEM_STATUS.MANUAL_REVIEW, ITEM_STATUS.FAILED],
   [ITEM_STATUS.RECONCILING]: [ITEM_STATUS.FULFILLED, ITEM_STATUS.MANUAL_REVIEW, ITEM_STATUS.FAILED],
   [ITEM_STATUS.FULFILLED]: [],
+  [ITEM_STATUS.SCHEDULED]: [],
   [ITEM_STATUS.CANCELLED]: [],
   [ITEM_STATUS.MANUAL_REVIEW]: [],
   [ITEM_STATUS.FAILED]: [ITEM_STATUS.PENDING], // Allow retry from failed if applicable
@@ -51,6 +53,7 @@ export const queueItemSchema = z.object({
     ITEM_STATUS.PURCHASING,
     ITEM_STATUS.RECONCILING,
     ITEM_STATUS.FULFILLED,
+    ITEM_STATUS.SCHEDULED,
     ITEM_STATUS.CANCELLED,
     ITEM_STATUS.MANUAL_REVIEW,
     ITEM_STATUS.FAILED,
@@ -59,7 +62,10 @@ export const queueItemSchema = z.object({
   transactionId: z.string().nullable().optional(),
   storeProductId: z.string().nullable().optional(),
   operation: z.enum(["purchase", "change", "addon"]).default("purchase"),
-  reconcile: z.any().nullable().optional(),
+  reconcile: z.object({
+    state: z.string().min(1),
+    reason: z.string().nullable().optional(),
+  }).passthrough().nullable().optional(),
   error: z.string().nullable().optional(),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
@@ -68,7 +74,7 @@ export const queueItemSchema = z.object({
 export const purchaseQueueSchema = z.object({
   version: z.literal(1).default(1),
   billingUserId: z.string().min(1),
-  origin: z.any(),
+  origin: completionDestinationSchema,
   status: z.enum([
     QUEUE_STATUS.IDLE,
     QUEUE_STATUS.IN_PROGRESS,
@@ -81,7 +87,7 @@ export const purchaseQueueSchema = z.object({
   items: z.array(queueItemSchema).min(1),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
-});
+}).strict();
 
 /**
  * Creates a new account-bound purchase queue.
@@ -98,14 +104,14 @@ export function createPurchaseQueue({ billingUserId, origin, items = [] }) {
   const queueItems = items.map((it, idx) => ({
     id: it.id || `item_${idx}_${it.catalogCode || "unknown"}`,
     catalogCode: it.catalogCode || it.code,
-    kind: it.kind || (it.catalogType === "addon" ? "addon" : "plan"),
+    kind: it.kind || (it.catalogType === "addon" || it.operation === "addon" ? "addon" : "plan"),
     nameAr: it.nameAr || "",
     nameEn: it.nameEn || "",
     status: ITEM_STATUS.PENDING,
     priceString: it.priceString || null,
     transactionId: null,
     storeProductId: it.storeProductId || null,
-    operation: it.operation || (it.kind === "addon" ? "addon" : "purchase"),
+    operation: it.operation || (it.kind === "addon" || it.catalogType === "addon" ? "addon" : "purchase"),
     reconcile: null,
     error: null,
     createdAt: now,
@@ -115,7 +121,7 @@ export function createPurchaseQueue({ billingUserId, origin, items = [] }) {
   const queue = {
     version: 1,
     billingUserId: billingUserId.trim(),
-    origin: parseCompletionDestination(origin),
+    origin: parseCompletionDestination(typeof origin === "string" ? { kind: origin } : origin),
     status: QUEUE_STATUS.IN_PROGRESS,
     currentIndex: 0,
     items: queueItems,
@@ -164,7 +170,7 @@ export function transitionQueueItem(queue, itemIndex, nextStatus, patch = {}) {
   let newQueueStatus = queue.status;
   let newCurrentIndex = queue.currentIndex;
 
-  if (nextStatus === ITEM_STATUS.FULFILLED) {
+  if (nextStatus === ITEM_STATUS.FULFILLED || nextStatus === ITEM_STATUS.SCHEDULED) {
     if (itemIndex + 1 < newItems.length) {
       newCurrentIndex = itemIndex + 1;
       newQueueStatus = QUEUE_STATUS.IN_PROGRESS;
@@ -188,6 +194,22 @@ export function transitionQueueItem(queue, itemIndex, nextStatus, patch = {}) {
   };
 
   return purchaseQueueSchema.parse(updatedQueue);
+}
+
+/**
+ * Makes a persisted queue safe to resume after a process death. A store sheet
+ * may have completed while JavaScript was unavailable, so an interrupted
+ * `purchasing` item must never be charged again automatically.
+ */
+export function normalizePersistedPurchaseQueue(queue) {
+  const parsed = purchaseQueueSchema.parse(queue);
+  const item = parsed.items[parsed.currentIndex];
+  if (parsed.status === QUEUE_STATUS.IN_PROGRESS && item?.status === ITEM_STATUS.PURCHASING) {
+    return transitionQueueItem(parsed, parsed.currentIndex, ITEM_STATUS.MANUAL_REVIEW, {
+      error: "purchase_interrupted",
+    });
+  }
+  return parsed;
 }
 
 /**

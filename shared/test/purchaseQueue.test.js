@@ -6,6 +6,7 @@ import {
   createPurchaseQueue,
   transitionQueueItem,
   sanitizeQueueForStorage,
+  normalizePersistedPurchaseQueue,
 } from "../src/schemas/purchaseQueue.js";
 
 test("createPurchaseQueue: creates a valid account-bound queue with pending items", () => {
@@ -35,6 +36,28 @@ test("createPurchaseQueue: creates a valid account-bound queue with pending item
   assert.equal(queue.items.length, 2);
   assert.equal(queue.items[0].status, ITEM_STATUS.PENDING);
   assert.equal(queue.items[1].status, ITEM_STATUS.PENDING);
+});
+
+test("createPurchaseQueue: infers add-on kind from its operation", () => {
+  const queue = createPurchaseQueue({
+    billingUserId: "b_user_123",
+    origin: "event_gate",
+    items: [{ catalogCode: "extra_invites_50", operation: "addon" }],
+  });
+  assert.equal(queue.items[0].kind, "addon");
+  assert.equal(queue.origin.kind, "event_gate");
+});
+
+test("normalizePersistedPurchaseQueue: never re-purchases an interrupted store sheet", () => {
+  let queue = createPurchaseQueue({
+    billingUserId: "b_user_123",
+    items: [{ catalogCode: "plan_1", kind: "plan" }],
+  });
+  queue = transitionQueueItem(queue, 0, ITEM_STATUS.PURCHASING);
+  const resumed = normalizePersistedPurchaseQueue(queue);
+  assert.equal(resumed.status, QUEUE_STATUS.MANUAL_REVIEW);
+  assert.equal(resumed.items[0].status, ITEM_STATUS.MANUAL_REVIEW);
+  assert.equal(resumed.items[0].error, "purchase_interrupted");
 });
 
 test("createPurchaseQueue: rejects missing billingUserId or empty items", () => {
@@ -140,6 +163,21 @@ test("transitionQueueItem: cancellation halts the queue", () => {
   q = transitionQueueItem(q, 0, ITEM_STATUS.CANCELLED);
   assert.equal(q.items[0].status, ITEM_STATUS.CANCELLED);
   assert.equal(q.status, QUEUE_STATUS.CANCELLED);
+});
+
+test("transitionQueueItem: a deferred plan change completes as scheduled without claiming activation", () => {
+  let q = createPurchaseQueue({
+    billingUserId: "b_user_123",
+    items: [{ catalogCode: "plan_annual", kind: "plan", operation: "change" }],
+  });
+  q = transitionQueueItem(q, 0, ITEM_STATUS.PURCHASING);
+  q = transitionQueueItem(q, 0, ITEM_STATUS.SCHEDULED, {
+    transactionId: "txn_scheduled",
+    storeProductId: "com.halaa.plan_annual",
+    reconcile: { state: "scheduled", reason: "deferred_change" },
+  });
+  assert.equal(q.items[0].status, ITEM_STATUS.SCHEDULED);
+  assert.equal(q.status, QUEUE_STATUS.COMPLETED);
 });
 
 test("sanitizeQueueForStorage: excludes receipts, tokens, and sensitive PII", () => {

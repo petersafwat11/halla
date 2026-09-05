@@ -13,7 +13,6 @@
     "logout": "تسجيل الخروج"
   },
   "header": {
-    "userName": "أحمد جمال الدين",
     "userRole": "إدارة المناسبات",
     "adminRole": "مدير النظام",
     "vendorRole": "تاجر",

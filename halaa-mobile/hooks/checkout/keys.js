@@ -2,4 +2,11 @@
 // mutation. Factory for symmetry.
 export const checkoutKeys = {
   all: ["checkout"],
+  quote: ({ planCode, addons, discountCode }) => [
+    "checkout",
+    "quote",
+    planCode || null,
+    addons || [],
+    discountCode || null,
+  ],
 };

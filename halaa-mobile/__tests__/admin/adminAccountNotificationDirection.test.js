@@ -195,8 +195,6 @@ const USED_KEYS = [
   ["settings", "account.personalInfo"],
   ["settings", "account.fullName"],
   ["settings", "account.fullNamePlaceholder"],
-  ["settings", "account.username"],
-  ["settings", "account.usernamePlaceholder"],
   ["settings", "account.email"],
   ["settings", "account.emailPlaceholder"],
   ["settings", "account.changePassword"],
