@@ -36,8 +36,17 @@ test("settings and editable full-screen pages use one shared keyboard-aware owne
     "components/settings/AccountSettings.js",
     "screens/host/PlansSummaryScreen.js",
     "screens/common/ManagePostEventScreen.js",
-    "screens/common/EventDetailsScreen.js",
   ].forEach(assertSingleAwareOwner);
+});
+
+test("event details keeps the paginated guest list as its sole vertical owner", () => {
+  const source = read("screens/common/EventDetailsScreen.js");
+  assert.equal(countJsx(source, "FlatList"), 1);
+  assert.equal(countJsx(source, "ScrollView"), 0);
+  assert.equal(countJsx(source, "KeyboardAwareFormScrollView"), 0);
+  assert.match(source, /keyboardShouldPersistTaps="handled"/);
+  assert.match(source, /ListHeaderComponent=/);
+  assert.match(source, /onEndReached=/);
 });
 
 test("vendor account setup owns scrolling and child sections never nest vertical owners", () => {

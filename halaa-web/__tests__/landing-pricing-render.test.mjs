@@ -21,9 +21,9 @@ test('actual pricing first-render handles unavailable, expired, empty, and parti
   let query = {}, receivedOptions;
   const compile = path => {
     const code = transform(fs.readFileSync(new URL(path, import.meta.url), 'utf8'), { transforms: ['jsx', 'imports'], jsxRuntime: 'automatic', production: true }).code;
-    const module = { exports: {} };
-    new Function('require', 'module', 'exports', code)(resolve, module, module.exports);
-    return module.exports.default;
+    const compiledModule = { exports: {} };
+    new Function('require', 'module', 'exports', code)(resolve, compiledModule, compiledModule.exports);
+    return compiledModule.exports.default;
   };
   const resolve = name => {
     if (name.endsWith('.css')) return {};
@@ -34,7 +34,9 @@ test('actual pricing first-render handles unavailable, expired, empty, and parti
     if (name === '@halaa/shared/brand') return brand;
     if (name === '@halaa/shared/utils/locale') return locale;
     if (name === '../_shared/useCarouselSnap') return () => ({ trackRef: React.useRef(null) });
-    if (name.includes('PlanCard')) return ({ matchedPlan }) => React.createElement('div', { 'data-card': matchedPlan?.code }, matchedPlan?.pricing?.oneTime);
+    if (name.includes('PlanCard')) return function MockPlanCard({ matchedPlan }) {
+      return React.createElement('div', { 'data-card': matchedPlan?.code }, matchedPlan?.pricing?.oneTime);
+    };
     if (name.includes('PlanDescription') || name.includes('SarIcon') || name.includes('CarouselDots')) return () => null;
     return require(name);
   };

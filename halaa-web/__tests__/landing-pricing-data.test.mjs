@@ -38,7 +38,7 @@ test('server loader has bounded fetches, validates before caching, and fails hon
   const code = transform(source, { transforms: ['imports'] }).code;
   let callback, options, fetchOptions, response = { ok: true, json: async () => fixture() };
   let cached;
-  const module = { exports: {} };
+  const compiledModule = { exports: {} };
   const resolver = specifier => {
     if (specifier === 'server-only') return {};
     if (specifier === './landingPlansData') return data;
@@ -49,23 +49,23 @@ test('server loader has bounded fetches, validates before caching, and fails hon
     throw new Error(specifier);
   };
   const fetchMock = async (url, opts) => { fetchOptions = opts; assert.equal(url, 'http://internal/api/v2/plans/landing'); return response; };
-  new Function('require', 'module', 'exports', 'fetch', 'process', code)(resolver, module, module.exports, fetchMock,
+  new Function('require', 'module', 'exports', 'fetch', 'process', code)(resolver, compiledModule, compiledModule.exports, fetchMock,
     { env: { INTERNAL_API_URL: 'http://internal/api/v2/' } });
-  const result = await module.exports.getLandingPlans();
+  const result = await compiledModule.exports.getLandingPlans();
   assert.equal(result.data.host.basic.event[0].pricing.oneTime, 95);
   assert.equal(options.revalidate, 300);
   assert.equal(fetchOptions.cache, 'no-store');
   assert.ok(fetchOptions.signal instanceof AbortSignal);
   response = { ok: false };
   await assert.rejects(callback('http://internal/api/v2'));
-  assert.equal(await module.exports.getLandingPlans(), null);
+  assert.equal(await compiledModule.exports.getLandingPlans(), null);
   cached = result;
-  assert.deepEqual(await module.exports.getLandingPlans(), result);
+  assert.deepEqual(await compiledModule.exports.getLandingPlans(), result);
   cached = { ...result, fetchedAt: Date.now() - data.PLAN_MAX_AGE_MS - 1 };
-  assert.equal(await module.exports.getLandingPlans(), null);
+  assert.equal(await compiledModule.exports.getLandingPlans(), null);
   cached = undefined;
   response = { ok: true, json: async () => ({ data: {} }) };
-  assert.equal(await module.exports.getLandingPlans(), null);
+  assert.equal(await compiledModule.exports.getLandingPlans(), null);
   response = { ok: true, json: async () => { throw new SyntaxError('bad JSON'); } };
-  assert.equal(await module.exports.getLandingPlans(), null);
+  assert.equal(await compiledModule.exports.getLandingPlans(), null);
 });

@@ -6,6 +6,7 @@
 # Dependencies & build artifacts (installed/built inside the image)
 **/node_modules
 **/.next
+**/.next-*
 **/.expo
 **/.turbo
 **/coverage

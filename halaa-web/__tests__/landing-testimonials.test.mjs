@@ -17,9 +17,9 @@ test('reviews stay hidden by default; malformed/empty translations and rerenders
   const compile = (path, resolver) => {
     const source = fs.readFileSync(new URL(path, import.meta.url), 'utf8');
     const code = transform(source, { transforms: ['jsx', 'imports'], jsxRuntime: 'automatic', production: true }).code;
-    const module = { exports: {} };
-    new Function('require', 'module', 'exports', code)(resolver, module, module.exports);
-    return module.exports.default;
+    const compiledModule = { exports: {} };
+    new Function('require', 'module', 'exports', code)(resolver, compiledModule, compiledModule.exports);
+    return compiledModule.exports.default;
   };
   const carousel = compile('../ui/landing/_shared/useCarouselSnap.js', require);
   let items;

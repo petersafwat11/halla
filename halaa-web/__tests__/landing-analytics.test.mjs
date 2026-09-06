@@ -23,15 +23,15 @@ test('analytics requires consent, records safe clicks, and stops after withdrawa
   const require = createRequire(import.meta.url);
   const source = fs.readFileSync(new URL('../ui/landing/LandingAnalytics.jsx', import.meta.url), 'utf8');
   const code = transform(source, { transforms: ['jsx', 'imports'], jsxRuntime: 'automatic', production: true }).code;
-  const module = { exports: {} };
+  const compiledModule = { exports: {} };
   const mockedRequire = (specifier) => {
     if (specifier === 'next/script') return ScriptMock;
     if (specifier.endsWith('.css')) return {};
     if (specifier === './analyticsProperties') return properties;
     return require(specifier);
   };
-  new Function('require', 'module', 'exports', 'process', code)(mockedRequire, module, module.exports, { env: { NODE_ENV: 'production', NEXT_PUBLIC_GA4_MEASUREMENT_ID: 'G-TEST123' } });
-  const Component = module.exports.default;
+  new Function('require', 'module', 'exports', 'process', code)(mockedRequire, compiledModule, compiledModule.exports, { env: { NODE_ENV: 'production', NEXT_PUBLIC_GA4_MEASUREMENT_ID: 'G-TEST123' } });
+  const Component = compiledModule.exports.default;
   const root = createRoot(document.getElementById('root'));
   const click = async (text) => {
     const button = [...document.querySelectorAll('button')].find(node => node.textContent === text);

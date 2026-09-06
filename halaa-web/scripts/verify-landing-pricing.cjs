@@ -5,7 +5,9 @@ const base = process.env.BASE_URL || 'http://localhost:3100';
 
 (async () => {
   const { formatNumber } = await import('@halaa/shared/utils/locale');
-  const { data } = await (await fetch('http://localhost:8000/api/v2/plans/landing')).json();
+  const { API_PATHS } = await import('@halaa/shared/api/paths');
+  const apiBase = process.env.INTERNAL_API_URL || 'http://localhost:8000/api/v2';
+  const { data } = await (await fetch(`${apiBase.replace(/\/$/, '')}${API_PATHS.plans.getLandingPlans}`)).json();
   const price = p => p.pricing?.oneTime ?? p.price;
   const browser = await chromium.launch({ channel: 'msedge', headless: true });
   try {

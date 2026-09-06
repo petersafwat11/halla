@@ -113,6 +113,7 @@ const eslintConfig = [
   {
     ignores: [
       '.next/**',
+      '.next-*/**',
       'node_modules/**',
       'out/**',
       'public/**',
@@ -128,6 +129,12 @@ const eslintConfig = [
     // match itself. The Next config also embeds `/api/v2/*` as a route rewrite
     // source. These files are the legitimate edge between code and the URL prefix.
     files: ['eslint.config.mjs', 'next.config.mjs'],
+    rules: { 'no-restricted-syntax': 'off' },
+  },
+  {
+    // These tests deliberately supply independent absolute URL fixtures to
+    // exercise server-origin/prefix normalization at the HTTP boundary.
+    files: ['__tests__/landing-pricing-data.test.mjs', '__tests__/landing-remaining.test.mjs'],
     rules: { 'no-restricted-syntax': 'off' },
   },
 ];

@@ -29,7 +29,7 @@ This report records the implemented remediation, not a claim that the audit's en
 - Backend remediation/creation/lifecycle/scheduling/subscription integration suites: **68 tests passed**.
 - Web suite: **206 tests passed**.
 - Mobile event/regression suites: **82 tests passed**.
-- Shared suite: **204 of 205 passed**. The existing localization-parity test fails on untouched `landing.json` and `plans.json` Arabic compensation plural keys missing from English. The new section, pagination, and location tests pass.
+- Shared suite: **205 tests passed** after the deployment follow-up supplied the missing English compensation plural variants in `landing.json` and `plans.json`.
 - Web production build passed. It reports existing metadata/lint warnings and an invitation-preview image optimization advisory.
 - Changed JavaScript/JSX received syntax and undefined-variable checks; modified native surfaces passed their ESLint checks.
 
@@ -38,16 +38,26 @@ Regression coverage includes canonical `-1` events, concurrent capacity exhausti
 ## Database and deployment procedure
 
 1. Use a Mongo replica set/sharded deployment for transactional quick-add, removal, and bulk operations. These paths fail rather than silently degrading to non-atomic writes. The existing step-2 standalone compensation path remains for compatibility.
-2. From `halaa-backend`, set the intended database's `MONGODB_URI` and run `node scripts/audit-active-guests.js`. The default reports normalized duplicate IDs, invalid-phone IDs, and stale event-reference counts without changing data.
+2. From `halaa-backend`, use the intended database's production `DATABASE`/X.509 configuration or `MONGODB_URI` and run `node scripts/audit-active-guests.js`. The default reports normalized duplicate IDs, invalid-phone IDs, and stale event-reference counts without changing data.
 3. Review duplicate histories and stale references with the data owner. The script deliberately does not choose a guest history to delete or merge.
 4. Pause guest writes for normalization/index installation, then run `node scripts/audit-active-guests.js --apply`. It refuses to apply when duplicates/invalid phones remain, normalizes active phones, fills legacy `deleted: false`, and installs `active_event_phone_unique`.
 5. Deploy the additive backend endpoints/contracts before the clients. Keep the index after a client rollback; do not restore physical guest deletion. New bulk/audience calls must not be enabled against an older backend.
 
-No production database migration, deployment, provider send, or live guest mutation was performed during implementation.
+No provider messages were sent during implementation or the deployment follow-up.
+
+### Production migration follow-up — September 7, 2026
+
+- Backed up VPS deployment configuration and the complete guest/event collections under `/opt/halaa/backups/2026-09-07-host-flow/`; sensitive backup files have mode 600.
+- Confirmed production MongoDB supports transactions. Paused API writers, normalized active phone values, and installed `active_event_phone_unique`.
+- Reconciled 11 missing references in one event from canonical active `Guest.event` membership using `--apply --repair-links`. No guest record or delivery/RSVP history was deleted.
+- Post-migration audit: **24 active guests, zero duplicate phones, zero invalid phones, zero stale event references**. API service resumed healthy.
+- Fixed a pre-existing Docker packaging failure by retaining workspace-local dependencies; recent CI deployments had failed to resolve `@hookform/resolvers/zod`.
+- Configured the local browser Maps key as a GitHub Actions secret and passed it into the web image build. Backend credentials already matched production; production-specific origins, certificate paths, and sender settings were preserved.
+- `GOOGLE_MAPS_SERVER_API_KEY` is absent locally and on the VPS. Server-side Maps lookup requires a separate server key; Maps billing activation is not verified and remains tracked in the reseller contact document.
 
 ## Remaining release work / roadmap
 
-- Execute duplicate/stale-reference review and index installation against the intended database; the local replica-set tests are not a production-data audit.
+- Repeat the read-only production guest audit after future data imports or restoration; the initial production migration is complete.
 - Run authenticated browser/device E2E and visual checks across the audit's viewport, RTL/LTR, keyboard, text scaling, offline, permissions, and native iOS/Android matrix. A production build and source tests do not establish these results.
 - Test canonical image generation against the configured media/provider environment, including CORS/network failures. This implementation repairs the existing preview/bake path; it does not introduce a separate server renderer/media service.
 - The audit's wholesale responsive card redesign, exhaustive field-schema migration, broad accessibility/literal sweep, persisted offline drafts, feature-flag rollout, and performance telemetry comparison remain separate work. They are not represented as completed by the targeted functional remediation above.
