@@ -458,5 +458,16 @@
     "addMore": "إضافة المزيد",
     "usedOfTotal": "{{used}} من {{total}}",
     "helper": "إضافة الضيوف مجانية؛ يتم خصم الرصيد فقط عند إرسال دعوة أو تذكير."
-  }
+  },
+  "peopleRetry": "تعذر تحميل الضيوف. اضغط لإعادة المحاولة.",
+  "peopleBulkTitle": "تحديث الضيوف المحددين",
+  "peopleBulkConfirm": "تطبيق هذا التغيير على {{count}} من الضيوف المحددين؟",
+  "peopleCancel": "إلغاء",
+  "peopleApply": "تطبيق",
+  "peopleSelected": "تم تحديد {{count}} من الضيوف",
+  "peopleClear": "إلغاء التحديد",
+  "peopleCategory": "تغيير الفئة",
+  "peopleRemove": "إزالة الضيوف",
+  "peopleFailed": "عرض المستلمين الذين فشل الإرسال إليهم",
+  "peopleClearFilter": "{{count}} من الضيوف المطابقين · مسح التصفية"
 }

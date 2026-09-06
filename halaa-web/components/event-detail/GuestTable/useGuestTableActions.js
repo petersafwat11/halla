@@ -1,6 +1,5 @@
 "use client";
 import { toast } from "react-toastify";
-import { useQueryClient } from "@tanstack/react-query";
 import { handleError } from "@/services/errorHandlingService";
 import { downloadExportFile } from "@/services/http";
 import { API_PATHS } from "@halaa/shared/api/paths";
@@ -17,7 +16,6 @@ export default function useGuestTableActions({
   setShowEditPopup,
   setEditingGuest,
 }) {
-  const queryClient = useQueryClient();
 
   const handleExportGuests = async () => {
     try {
@@ -55,21 +53,10 @@ export default function useGuestTableActions({
     if (!deleteModal.guest) return;
     const guestId = deleteModal.guest.id;
 
-    // Optimistic update
-    const previousGuests = queryClient.getQueryData(["guests", "events", eventId]);
-    queryClient.setQueryData(["guests", "events", eventId], (old) => {
-      if (!old) return old;
-      return {
-        ...old,
-        data: (old.data || []).filter((g) => g.id !== guestId),
-      };
-    });
-
     try {
       await deleteGuestMutation.mutateAsync({ eventId, guestId });
       toast.success(t("singleEvent.guestTable.deleteSuccess"));
     } catch (error) {
-      queryClient.setQueryData(["guests", "events", eventId], previousGuests);
       handleError(error, t, {
         fallbackMessage: "singleEvent.guestTable.deleteError",
       });

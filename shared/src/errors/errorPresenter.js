@@ -39,6 +39,14 @@ export function deriveSupportReference(fullId) {
 }
 
 const ACTION_MESSAGES = {
+  EVENT_IMAGE_REQUIRED: {
+    ar: "أعد تجهيز صورة الدعوة بعد تغيير بيانات القالب، ثم احفظ التغييرات.",
+    en: "Prepare the invitation preview again after changing template fields, then save.",
+  },
+  GUEST_ALREADY_EXISTS: {
+    ar: "رقم الجوال موجود بالفعل في قائمة ضيوف هذه المناسبة.",
+    en: "This phone number is already on this event's guest list.",
+  },
   EVENT_IMAGE_TOO_LARGE: {
     ar: "حجم صورة الدعوة كبير جداً. يرجى اختيار صورة أصغر من 10 ميجابايت والمحاولة مجدداً.",
     en: "The invitation image is too large. Please select an image under 10 MB and try again.",

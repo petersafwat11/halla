@@ -1,14 +1,15 @@
-import React, { useCallback, useMemo, useState, useRef } from "react";
+import PartialFailureBanner from "../../components/home/PartialFailureBanner";
+import React, { useCallback, useMemo, useState, useRef, useEffect } from "react";
 import {
   View,
   StyleSheet,
   RefreshControl,
+  FlatList,
   Alert,
   ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
 import DirectionalTextInput from "../../components/commen/DirectionalTextInput";
-import KeyboardAwareFormScrollView from "../../components/commen/keyboard/KeyboardAwareFormScrollView";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
@@ -18,13 +19,14 @@ import {
   useDeleteAdminEvent,
 } from "../../hooks";
 import { useSingleEventStats } from "../../hooks/events/queries";
-import { useEventGuests } from "../../hooks/guests";
+import { useEventGuests, useInfiniteEventGuests } from "../../hooks/guests";
 import {
   useUpdateGuest,
   useDeleteGuest,
   useRotateGuestQr,
   useRevokeGuestAccess,
   useAddGuest,
+  useBulkGuests,
   useExportGuests,
 } from "../../hooks/guests";
 import {
@@ -146,7 +148,9 @@ const EventDetailsScreen = () => {
   // `event.guestList` only leaves hosts with an empty list when
   // the backend `getEventById` populator hasn't shipped to the env yet
   // (which is exactly the "guests don't load" symptom the user reported).
-  const { data: guestsResp, refetch: refetchGuests } = useEventGuests(eventId);
+  const [showSendSheet, setShowSendSheet] = useState(false);
+  const [activeSendAction, setActiveSendAction] = useState(null);
+  const { data: guestsResp, refetch: refetchGuests, isPending: audienceLoading, error: audienceError } = useEventGuests(eventId, { enabled: showSendSheet || !!activeSendAction });
 
   const updateStatus = useUpdateAdminEventStatus();
   const deleteEvent = useDeleteAdminEvent();
@@ -155,6 +159,9 @@ const EventDetailsScreen = () => {
   const rotateGuestQrMutation = useRotateGuestQr();
   const revokeGuestAccessMutation = useRevokeGuestAccess();
   const addGuestMutation = useAddGuest();
+  const bulkGuestsMutation = useBulkGuests();
+  const [selectedGuestIds, setSelectedGuestIds] = useState([]);
+  const [bulkCategory, setBulkCategory] = useState("");
   const exportGuestsMutation = useExportGuests();
   const sendReminderMutation = useSendReminder();
   const addStaffMutation = useAddEventStaff();
@@ -181,15 +188,11 @@ const EventDetailsScreen = () => {
     ? guestsResp
     : [];
   const guests = useMemo(() => {
-    if (guestsFromList.length) return guestsFromList;
+    if (Array.isArray(guestsResp?.data)) return guestsFromList;
     if (Array.isArray(event?.guestList) && event.guestList.length) return event.guestList;
     return guestsFromStats;
-  }, [guestsFromList, event, guestsFromStats]);
+  }, [guestsFromList, guestsResp, event, guestsFromStats]);
 
-  const handleRefresh = useCallback(() => {
-    refetch();
-    refetchGuests();
-  }, [refetch, refetchGuests]);
 
   // Actually retry the failed launch (POST /events/:id/retry-launch) instead of
   // just refetching stats. The EventFailureBanner owns the retrying/error UI and
@@ -206,8 +209,7 @@ const EventDetailsScreen = () => {
   const [statusFilter, setStatusFilter] = useState(null);
   // Consolidated send actions (resend / extra reminder / new guests) live behind
   // the "Send messages" sheet on the guests tab.
-  const [showSendSheet, setShowSendSheet] = useState(false);
-  const [activeSendAction, setActiveSendAction] = useState(null);
+
   const scrollViewRef = useRef(null);
   const tabsRef = useRef(null);
   const tabsYRef = useRef(null);
@@ -226,7 +228,7 @@ const EventDetailsScreen = () => {
   const handleFilterPress = useCallback((filterKey) => {
     setStatusFilter((prev) => (prev === filterKey ? null : filterKey));
     if (scrollViewRef.current && tabsYRef.current !== null) {
-      scrollViewRef.current.scrollTo({ y: tabsYRef.current - 20, animated: true });
+      scrollViewRef.current.scrollToOffset({ offset: tabsYRef.current - 20, animated: true });
     }
   }, []);
 
@@ -237,24 +239,31 @@ const EventDetailsScreen = () => {
     checkedIn: ["checked_in"],
   }), []);
 
-  const filteredGuests = useMemo(() => {
-    let result = guests;
-    const matchStatuses = statusFilter && statusFilter !== "totalGuests"
-      ? STATUS_FILTER_MAP[statusFilter]
-      : null;
-    if (matchStatuses) {
-      result = result.filter((g) =>
-        matchStatuses.includes(g.status || "invited")
-      );
-    }
-    const q = search.trim().toLowerCase();
-    if (!q) return result;
-    return result.filter(
-      (g) =>
-        (g.name || "").toLowerCase().includes(q) ||
-        (g.phone || "").includes(q)
-    );
-  }, [guests, search, statusFilter, STATUS_FILTER_MAP]);
+  const [guestSearch, setGuestSearch] = useState(search);
+  useEffect(() => { setSelectedGuestIds([]); }, [search, statusFilter, activeTab]);
+  const confirmBulk = (action) => {
+    const data = { action, category: bulkCategory, guestIds: selectedGuestIds };
+    const idempotencyKey = "bulk-" + eventId + "-" + Date.now() + "-" + Math.random().toString(36).slice(2);
+    Alert.alert(t("events:peopleBulkTitle"), t("events:peopleBulkConfirm", { count: selectedGuestIds.length }), [
+      { text: t("events:peopleCancel"), style: "cancel" },
+      { text: t("events:peopleApply"), onPress: async () => {
+        try {
+          await bulkGuestsMutation.mutateAsync({ eventId, data, idempotencyKey });
+          setSelectedGuestIds([]);
+        } catch (error) { Alert.alert(t("events:peopleBulkTitle"), error.message); }
+      } },
+    ]);
+  };
+  useEffect(() => { const timer = setTimeout(() => setGuestSearch(search), 300); return () => clearTimeout(timer); }, [search]);
+  const guestPages = useInfiniteEventGuests(eventId, { search: guestSearch,
+    status: STATUS_FILTER_MAP[statusFilter]?.join(","), deliveryStatus: statusFilter === "failedDelivery" ? "failed" : undefined });
+  const filteredGuests = useMemo(() => guestPages.data?.pages.flatMap(page => page.data) || [], [guestPages.data]);
+  const [refreshingAll, setRefreshingAll] = useState(false);
+  const handleRefresh = useCallback(async () => {
+    setRefreshingAll(true);
+    try { await Promise.all([refetch(), guestPages.refetch(), ...(showSendSheet || activeSendAction ? [refetchGuests()] : [])]); }
+    finally { setRefreshingAll(false); }
+  }, [refetch, guestPages.refetch, refetchGuests, showSendSheet, activeSendAction]);
 
   const filteredStaff = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -586,8 +595,8 @@ const EventDetailsScreen = () => {
   // Live events: existing guests immutable (onEdit/onDelete disabled), new guests allowed.
   // Terminal events: all guest additions and mutations disabled.
   const isLive = event?.status === "live" || event?.status === EVENT_STATUS.LIVE;
-  const isTerminal = isTerminalEvent(event);
-  const allowGuestMutations = !isLive && !isTerminal;
+  const isTerminal = isTerminalEvent(event) || ["failed", "archived", "deleted"].includes(event?.status);
+  const allowGuestMutations = event?.capabilities?.canEditGuest ?? ["pending_review", "pending_scheduling", "scheduled"].includes(event?.status);
 
   // The RSVP reminder nudge is free and targets SENT, UNANSWERED guests during LIVE events.
   const hasUnansweredSentGuests = isLive && Boolean(resp?.hasUnansweredSentGuests || resp?.unansweredSentCount > 0);
@@ -610,19 +619,63 @@ const EventDetailsScreen = () => {
         onBack={() => navigation.goBack()}
       />
 
-      <KeyboardAwareFormScrollView
+      <FlatList
         ref={scrollViewRef}
         style={styles.scroll}
         contentContainerStyle={styles.content}
         refreshControl={
           <RefreshControl
-            refreshing={isRefetching}
+            refreshing={refreshingAll || isRefetching}
             onRefresh={handleRefresh}
             tintColor={colors.primary[500]}
           />
         }
         showsVerticalScrollIndicator={false}
-      >
+        keyboardShouldPersistTaps="handled"
+        data={activeTab === "guests" ? filteredGuests : filteredStaff}
+        keyExtractor={(item) => String(item._id || item.guestId || item.id)}
+        initialNumToRender={12}
+        windowSize={7}
+        onEndReached={() => { if (activeTab === "guests" && guestPages.hasNextPage && !guestPages.isFetchingNextPage && !guestPages.isError) guestPages.fetchNextPage(); }}
+        onEndReachedThreshold={0.5}
+        renderItem={({ item: g }) => activeTab === "guests" ? (
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <TouchableOpacity accessibilityRole="checkbox" accessibilityState={{ checked: selectedGuestIds.includes(String(g.id || g._id)) }} accessibilityLabel={g.name}
+              style={{ padding: 12 }} onPress={() => { const id = String(g.id || g._id); setSelectedGuestIds(previous => previous.includes(id) ? previous.filter(value => value !== id) : [...previous, id].slice(0, 200)); }}>
+              <Ionicons name={selectedGuestIds.includes(String(g.id || g._id)) ? "checkbox" : "square-outline"} size={24} color="#6B4E33" />
+            </TouchableOpacity>
+            <View style={{ flex: 1 }}>
+                  <GuestListItem
+                    guest={{
+                      ...g,
+                      responseDate: g.rsvp?.respondedAt
+                        ? formatDateTime(g.rsvp.respondedAt, currentLanguage)
+                        : g.respondedAt
+                        ? formatDateTime(g.respondedAt, currentLanguage)
+                        : null,
+                      autoReminderDate: g.invitation?.autoReminderSentAt
+                        ? formatDateTime(g.invitation.autoReminderSentAt, currentLanguage)
+                        : null,
+                    }}
+                    onEdit={allowGuestMutations ? handleEditGuest : null}
+                    onDelete={allowGuestMutations ? handleDeleteGuest : null}
+                    onRotateQr={event?.status === "completed" ? handleRotateQr : null}
+                    onRevokeAccess={event?.status === "completed" ? handleRevokeAccess : null}
+                  />
+            </View>
+          </View>
+        ) : (
+                <ModeratorListItem
+                  moderator={g}
+                  onEdit={isTerminal ? null : handleEditModerator}
+                  onDelete={isTerminal ? null : handleDeleteModerator}
+                  onRevoke={isTerminal ? null : handleRevokeModerator}
+                />
+        )}
+        ListEmptyComponent={<View style={styles.emptyState}>{guestPages.isPending && <ActivityIndicator />}<LocalizedText center>{t(activeTab === "guests" ? "eventDetails.noGuests" : "events:eventDetails.noModerators")}</LocalizedText></View>}
+        ListFooterComponent={<View style={{ minHeight: spacing[32] }}>{guestPages.isFetchingNextPage && <ActivityIndicator />}{guestPages.isError && <TouchableOpacity onPress={() => guestPages.refetch()}><LocalizedText>{t("events:peopleRetry")}</LocalizedText></TouchableOpacity>}</View>}
+        ListHeaderComponent={<View>
+
         {/* Title heading — plain h2 styling, no bordered card. Only render
             the status pill when the event status is a real value (skip
             the noisy "unknown" fallback). */}
@@ -681,6 +734,7 @@ const EventDetailsScreen = () => {
         ) : null}
 
         {/* Failure / retry banner */}
+        <PartialFailureBanner event={event} currentUser={currentUser} onViewFailures={() => { setActiveTab("guests"); setStatusFilter("failedDelivery"); }} />
         <EventFailureBanner
           event={event}
           currentUser={currentUser}
@@ -829,7 +883,7 @@ const EventDetailsScreen = () => {
                 ]}
               >
                 {t("events:eventDetails.guestsTabCount", {
-                  count: formatLocaleCount(guests.length, currentLanguage),
+                  count: formatLocaleCount(resp?.totalGuests ?? guestPages.data?.pages[0]?.pagination?.total ?? 0, currentLanguage),
                 })}
               </LocalizedText>
             </TouchableOpacity>
@@ -895,6 +949,17 @@ const EventDetailsScreen = () => {
             )}
           </View>
 
+          {activeTab === "guests" && statusFilter && <TouchableOpacity onPress={() => setStatusFilter(null)} style={{ padding: 12 }}><LocalizedText>{t("events:peopleClearFilter", { count: guestPages.data?.pages[0]?.pagination?.total || 0 })}</LocalizedText></TouchableOpacity>}
+          {activeTab === "guests" && selectedGuestIds.length > 0 && <View style={{ padding: 12, gap: 8 }}>
+            <LocalizedText>{t("events:peopleSelected", { count: selectedGuestIds.length })}</LocalizedText>
+            <TouchableOpacity onPress={() => setSelectedGuestIds([])}><LocalizedText>{t("events:peopleClear")}</LocalizedText></TouchableOpacity>
+            {allowGuestMutations && <>
+              <DirectionalTextInput value={bulkCategory} onChangeText={setBulkCategory} maxLength={60} placeholder={t("events:peopleCategory")} />
+              <TouchableOpacity disabled={bulkGuestsMutation.isPending} onPress={() => confirmBulk("category")}><LocalizedText>{t("events:peopleCategory")}</LocalizedText></TouchableOpacity>
+              <TouchableOpacity disabled={bulkGuestsMutation.isPending} onPress={() => confirmBulk("remove")}><LocalizedText>{t("events:peopleRemove")}</LocalizedText></TouchableOpacity>
+            </>}
+            {isLive && <TouchableOpacity onPress={() => setActiveSendAction("resend")}><LocalizedText>{t("events:sendActions.items.resend")}</LocalizedText></TouchableOpacity>}
+          </View>}
           {activeTab === "guests" && (
             <View style={styles.guestActionsRow}>
               {hasUnansweredSentGuests && (
@@ -929,63 +994,14 @@ const EventDetailsScreen = () => {
             </View>
           )}
 
-          <View style={styles.listWrapper}>
-            {activeTab === "guests" ? (
-              filteredGuests.length === 0 ? (
-                <View style={styles.emptyState}>
-                  <Ionicons name="people-outline" size={32} color={colors.natural[400]} />
-                  <LocalizedText style={styles.emptyStateText} center>
-                    {t("eventDetails.noGuests")}
-                  </LocalizedText>
-                </View>
-              ) : (
-                filteredGuests.map((g, idx) => (
-                  <GuestListItem
-                    key={g._id || g.guestId || g.id || idx}
-                    guest={{
-                      ...g,
-                      responseDate: g.rsvp?.respondedAt
-                        ? formatDateTime(g.rsvp.respondedAt, currentLanguage)
-                        : g.respondedAt
-                        ? formatDateTime(g.respondedAt, currentLanguage)
-                        : null,
-                      autoReminderDate: g.invitation?.autoReminderSentAt
-                        ? formatDateTime(g.invitation.autoReminderSentAt, currentLanguage)
-                        : null,
-                    }}
-                    onEdit={allowGuestMutations ? handleEditGuest : null}
-                    onDelete={allowGuestMutations ? handleDeleteGuest : null}
-                    onRotateQr={isTerminal ? null : handleRotateQr}
-                    onRevokeAccess={isTerminal ? null : handleRevokeAccess}
-                  />
-                ))
-              )
-            ) : filteredStaff.length === 0 ? (
-              <View style={styles.emptyState}>
-                <Ionicons name="shield-outline" size={32} color={colors.natural[400]} />
-                <LocalizedText style={styles.emptyStateText} center>
-                  {t("events:eventDetails.noModerators")}
-                </LocalizedText>
-              </View>
-            ) : (
-              filteredStaff.map((m, idx) => (
-                <ModeratorListItem
-                  key={m._id || m.id || idx}
-                  moderator={m}
-                  onEdit={handleEditModerator}
-                  onDelete={handleDeleteModerator}
-                  onRevoke={handleRevokeModerator}
-                />
-              ))
-            )}
-          </View>
         </View>
+        </View>}
+      />
 
-        <View style={{ height: spacing[32] }} />
-      </KeyboardAwareFormScrollView>
-
+      {showSendSheet && audienceLoading && <ActivityIndicator />}
+      {showSendSheet && audienceError && <TouchableOpacity onPress={() => refetchGuests()}><LocalizedText>{t("events:peopleRetry")}</LocalizedText></TouchableOpacity>}
       <SendActionsSheet
-        visible={showSendSheet}
+        visible={showSendSheet && !audienceLoading && !audienceError}
         event={event}
         guests={guests}
         onPick={(a) => {
@@ -999,7 +1015,7 @@ const EventDetailsScreen = () => {
         visible={!!activeSendAction}
         action={activeSendAction}
         eventId={eventId}
-        guests={guests}
+        guests={selectedGuestIds.length ? filteredGuests.filter(guest => selectedGuestIds.includes(String(guest.id || guest._id))) : guests}
         invitesRemaining={invitesRemaining}
         invitationBalance={invitationBalance}
         onClose={() => setActiveSendAction(null)}

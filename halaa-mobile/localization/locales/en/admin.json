@@ -336,7 +336,10 @@
     }
   },
   "vendorDetails": {
-    "languages": { "ar": "Arabic", "en": "English" },
+    "languages": {
+      "ar": "Arabic",
+      "en": "English"
+    },
     "openOriginal": "Open original file",
     "taglineAr": "Short tagline in Arabic",
     "taglineEn": "Short tagline in English",
@@ -696,8 +699,8 @@
     },
     "update": {
       "title": "Update Event",
-      "saveStep": "Save & Next",
-      "saveAll": "Save Changes",
+      "saveStep": "Save and continue",
+      "saveAll": "Save and return to event",
       "loadError": "Failed to load event data",
       "noEventId": "No event selected",
       "notAllowed": "You don't have permission to edit this event",

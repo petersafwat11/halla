@@ -19,7 +19,6 @@ const { protect } = require('../../shared/middleware/auth');
 const { apiLimiter } = require('../../shared/middleware/rateLimiter');
 const { validateObjectId, validateZod } = require('../../shared/middleware/validation');
 const { idempotency } = require('../../shared/middleware/idempotency');
-const { requireSubscription, checkGuestLimit } = require('../../shared/middleware/subscription');
 const {
   addGuestSchema,
   updateGuestSchema,
@@ -149,6 +148,9 @@ router.post(
 // ============================================
 
 router.use(protect);
+router.get('/events/:eventId/audience-preview', validateObjectId('eventId'), guestsController.previewAudience);
+router.post('/events/:eventId/bulk', validateObjectId('eventId'),
+  idempotency({ scope: 'guests.bulk', required: true }), guestsController.bulkUpdate);
 
 /**
  * @swagger
@@ -273,9 +275,8 @@ router.get('/events/:eventId', validateObjectId('eventId'), guestsController.get
 router.post(
   '/events/:eventId',
   validateObjectId('eventId'),
-  requireSubscription,
-  checkGuestLimit(1),
   validateZod(addGuestSchema),
+  idempotency({ scope: 'guests.add' }),
   guestsController.addGuest
 );
 

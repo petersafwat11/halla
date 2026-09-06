@@ -16,6 +16,7 @@ export function computeEventActionGate({
       canSendTest: false,
       canSchedule: false,
       hasStaff: false,
+      canNotifyStaff: false,
       isCompleted: false,
       isLive: false,
       isFailed: false,
@@ -54,12 +55,7 @@ export function computeEventActionGate({
     hasTemplate,
     canSendTest:
       hasTemplate &&
-      !isScheduled &&
-      !isLive &&
-      !isCompleted &&
-      !isFailed &&
-      status !== "cancelled" &&
-      status !== "archived",
+      (event.capabilities?.canSendTest ?? ["pending_scheduling", "scheduled"].includes(status)),
     canSchedule:
       hasTemplate &&
       testMessageSent &&
@@ -68,6 +64,7 @@ export function computeEventActionGate({
       !isCompleted &&
       !isFailed,
     hasStaff,
+    canNotifyStaff: hasStaff && (event.capabilities?.canNotifyStaff ?? ["scheduled", "live"].includes(status)),
     isCompleted,
     isLive,
     isFailed,

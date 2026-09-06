@@ -1,6 +1,7 @@
-export { useEventGuests, useMyContacts, default } from "./queries";
+export { useEventGuests, useInfiniteEventGuests, useMyContacts, default } from "./queries";
 export {
   useAddGuest,
+  useBulkGuests,
   useUpdateGuest,
   useDeleteGuest,
   useRotateGuestQr,

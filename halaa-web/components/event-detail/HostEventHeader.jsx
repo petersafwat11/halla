@@ -1,4 +1,5 @@
 "use client";
+import { useLocalizedDate } from "@/utils/date/useLocalizedDate";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useRouter } from "next/navigation";
@@ -14,6 +15,7 @@ export default function HostEventHeader({ eventId }) {
   const { t } = useTranslation("home-events");
   const { lang } = useParams();
   const router = useRouter();
+  const { formatDate } = useLocalizedDate();
   const [showStaffPopup, setShowStaffPopup] = useState(false);
 
   // React Query hooks
@@ -72,9 +74,10 @@ export default function HostEventHeader({ eventId }) {
   return (
     <>
       <div className={styles.header}>
+        <div>
         <h1 className={styles.title}>
+          <button type="button" aria-label={t("singleEvent.header.back")} onClick={() => router.push(`/${lang}/host/events`)} style={{ minWidth: 44, minHeight: 44, border: 0, background: "transparent" }}>
           <IoIosArrowForward
-            onClick={() => router.push(`/${lang}/host/events`)}
             className={styles.backButton}
             style={{
               transform: lang === "ar" ? "rotate(0deg)" : "rotate(180deg)",
@@ -82,20 +85,23 @@ export default function HostEventHeader({ eventId }) {
               fontSize: "2.4rem",
             }}
           />
+          </button>
           {eventTitle}
         </h1>
+        <p dir="auto">{formatDate(event?.eventDetails?.date)} · {event?.eventDetails?.time} · {event?.eventDetails?.location?.address}</p>
+        </div>
         <div className={styles.actions}>
           <EventActionsHeader event={event} isAdmin={false} />
-          <Button
+          {event?.capabilities?.canAddGuest && <Button
             variant="secondary"
             title={t("singleEvent.header.editGuests")}
             onClick={handleEditGuests}
-          />
-          <Button
+          />}
+          {event?.capabilities?.canManageStaff && <Button
             variant="secondary"
             title={t("singleEvent.header.staffDetails")}
             onClick={() => setShowStaffPopup(true)}
-          />
+          />}
         </div>
       </div>
 

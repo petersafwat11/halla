@@ -147,7 +147,7 @@ const StepFour = () => {
   // not the visual template picked in step 3.
   const category = watch("eventType") || "";
 
-  const { data, isLoading, error } = useHostTaqnyatTemplates(
+  const { data, isLoading, error, refetch } = useHostTaqnyatTemplates(
     {
       category: category || undefined,
       type: "invite",

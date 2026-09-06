@@ -9,9 +9,9 @@ import React from "react";
 import { View, StyleSheet } from "react-native";
 import CreateStepOne from "../../../components/createEvent/StepOne";
 
-const StepOne = ({ disabled = false }) => (
+const StepOne = ({ disabled = false, constraints }) => (
   <View style={[styles.container, disabled && styles.disabled]} pointerEvents={disabled ? "none" : "auto"}>
-    <CreateStepOne />
+    <CreateStepOne constraints={constraints} />
   </View>
 );
 

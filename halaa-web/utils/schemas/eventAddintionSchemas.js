@@ -26,6 +26,7 @@ export const createEventAdditionSchemas = (t) => {
     id: z.number().optional(),
     name: requiredStringSchema,
     phone: requiredPhoneSchema,
+    category: z.string().trim().max(60).optional(),
   });
 
   // Staff schema - name and phone required

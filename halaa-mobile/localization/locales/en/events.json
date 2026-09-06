@@ -458,5 +458,16 @@
     "addMore": "Add More",
     "usedOfTotal": "{{used}} of {{total}}",
     "helper": "Adding guests is free; you're charged only when an invitation or reminder is sent."
-  }
+  },
+  "peopleRetry": "Could not load guests. Tap to retry.",
+  "peopleBulkTitle": "Update selected guests",
+  "peopleBulkConfirm": "Apply this change to {{count}} selected guests?",
+  "peopleCancel": "Cancel",
+  "peopleApply": "Apply",
+  "peopleSelected": "{{count}} guests selected",
+  "peopleClear": "Clear selection",
+  "peopleCategory": "Change category",
+  "peopleRemove": "Remove guests",
+  "peopleFailed": "View failed recipients",
+  "peopleClearFilter": "{{count}} matching guests · Clear filter"
 }

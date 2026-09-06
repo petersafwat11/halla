@@ -39,9 +39,11 @@ const CreateEventScreen = () => {
 
   const handleSubmit = async (eventData) => {
     try {
-      await createEvent.mutateAsync(eventData);
+      const created = await createEvent.mutateAsync(eventData);
       toast.success(t("events.createSuccess"));
-      navigation.goBack();
+      const createdId = created?.data?.event?._id || created?.data?.event?.id || created?.event?._id || created?.event?.id;
+      if (createdId) navigation.replace("EventDetails", { eventId: createdId });
+      else navigation.goBack();
     } catch (e) {
       Sentry.captureException(e, {
         tags: {

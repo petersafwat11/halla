@@ -113,14 +113,15 @@ const CreateEventV2 = () => {
               : `host_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
         }
 
-        await createEvent.mutateAsync({
+        const created = await createEvent.mutateAsync({
           eventData: eventPayload,
           idempotencyKey: idempotencyKeyRef.current,
         });
 
         toastUtils.success(t("success.event_created"));
         idempotencyKeyRef.current = null;
-        router.replace(`/${locale}/host`);
+        const createdId = created?.data?.event?._id || created?.data?.event?.id || created?.event?._id || created?.event?.id;
+        router.replace(createdId ? `/${locale}/host/events/${createdId}` : `/${locale}/host/events`);
       } catch (error) {
         // Form state preserved on failure; allow retry
         setIsCompleting(false);

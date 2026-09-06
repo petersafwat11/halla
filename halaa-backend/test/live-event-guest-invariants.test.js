@@ -74,6 +74,7 @@ async function createEventWithGuests(status, guestCount = 2) {
         longitude: 46.6753,
       },
     },
+    guestLimit: -1,
     guestList: [],
     staffList: [],
   });
@@ -407,4 +408,108 @@ test("Scheduled Event: allows full CRUD on guests", async () => {
 
   const reloaded = await Event.findById(event._id);
   assert.equal(reloaded.guestList.length, 2);
+});
+
+
+test("Canonical pool: concurrent quick-add cannot exceed capacity", async () => {
+  const { event } = await createEventWithGuests("scheduled", 2);
+  await Subscription.updateOne({ _id: poolSub._id }, { $set: { invitePool: 3 } });
+  const results = await Promise.allSettled([
+    guestsService.addGuest(event.id, { name: "A", phone: "0500000091" }, hostUser),
+    guestsService.addGuest(event.id, { name: "B", phone: "0500000092" }, hostUser),
+  ]);
+  assert.equal(results.filter(r => r.status === "fulfilled").length, 1);
+  assert.equal(await Guest.countDocuments({ event: event._id, deleted: { $ne: true } }), 3);
+  assert.equal((await Event.findById(event._id)).guestList.length, 3);
+});
+
+test("Canonical pool: normalized concurrent duplicates create one guest", async () => {
+  const { event } = await createEventWithGuests("scheduled", 0);
+  const results = await Promise.allSettled([
+    guestsService.addGuest(event.id, { name: "A", phone: "0500000091" }, hostUser),
+    guestsService.addGuest(event.id, { name: "A", phone: "+966500000091" }, hostUser),
+  ]);
+  assert.equal(results.filter(r => r.status === "fulfilled").length, 1);
+  assert.equal(results.find(r => r.status === "rejected").reason.code, "GUEST_ALREADY_EXISTS");
+  assert.equal(await Guest.countDocuments({ event: event._id }), 1);
+});
+
+test("Guest removal preserves history and excludes tombstones from list and stats", async () => {
+  const { event, guests } = await createEventWithGuests("scheduled", 2);
+  await guestsService.deleteGuest(event.id, guests[1].id, hostUser);
+  assert.equal((await Guest.findById(guests[1]._id)).deleted, true);
+  assert.equal((await guestsService.getEventGuests(event.id, hostUser)).pagination.total, 1);
+  assert.equal((await Guest.getEventStats(event.id)).total, 1);
+});
+
+test("Failed and archived events reject quick-add", async () => {
+  for (const status of ["failed", "archived"]) {
+    const { event } = await createEventWithGuests(status, 0);
+    await assert.rejects(guestsService.addGuest(event.id, { name: "A", phone: "0500000091" }, hostUser), /Cannot add/);
+  }
+});
+
+
+test("Bulk changes are scoped, preserve history and reject live edits", async () => {
+  const { event, guests } = await createEventWithGuests("scheduled", 2);
+  const result = await guestsService.bulkUpdate(event.id, { action: "category", category: "VIP", guestIds: guests.map(g => g.id) }, hostUser);
+  assert.equal(result.updated, 2);
+  assert.equal(await Guest.countDocuments({ event: event._id, category: "VIP" }), 2);
+  await Event.updateOne({ _id: event._id }, { $set: { status: "live" } });
+  await assert.rejects(guestsService.bulkUpdate(event.id, { action: "remove", guestIds: guests.map(g => g.id) }, hostUser), /Cannot bulk/);
+  assert.equal(await Guest.countDocuments({ event: event._id, deleted: false }), 2);
+});
+
+test("Pagination and authoritative audience retain guests beyond page 50", async () => {
+  const { event } = await createEventWithGuests("live", 0);
+  await Guest.insertMany(Array.from({ length: 201 }, (_, i) => ({
+    name: 'Guest ' + String(i).padStart(3, '0'), phone: '+9665' + String(10000000 + i),
+    event: event._id, status: 'invited', addedBy: hostUser._id,
+  })));
+  const page = await guestsService.getEventGuests(event.id, hostUser, {}, { page: 2, limit: 50 });
+  assert.equal(page.data.length, 50);
+  assert.equal(page.data[0].name, 'Guest 050');
+  assert.equal(page.pagination.total, 201);
+  const found = await guestsService.getEventGuests(event.id, hostUser, { search: 'Guest 200' });
+  assert.equal(found.data.length, 1);
+  const preview = await guestsService.previewAudience(event.id, hostUser);
+  assert.equal(preview.audiences.newGuests.count, 201);
+  const { guestAudienceFilter } = require('../src/modules/guests/guestAudience');
+  assert.equal(await Guest.countDocuments(guestAudienceFilter(event.id, 'newGuests', [])), 0);
+});
+
+test("Unique active-phone index rejects insertion races but permits tombstone history", async () => {
+  await Guest.collection.createIndex({ event: 1, phone: 1 }, { name: 'active_event_phone_unique', unique: true, partialFilterExpression: { deleted: false } });
+  const { event } = await createEventWithGuests("scheduled", 0);
+  const make = phone => Guest.create({ event: event._id, name: 'Guest', phone });
+  const results = await Promise.allSettled([make('0500000091'), make('+966500000091')]);
+  assert.equal(results.filter(result => result.status === 'fulfilled').length, 1);
+  assert.equal(results.find(result => result.status === 'rejected').reason.code, 11000);
+  await Guest.updateMany({ event: event._id }, { $set: { deleted: true } });
+  await make('0500000091');
+  assert.equal(await Guest.countDocuments({ event: event._id }), 2);
+});
+
+
+test("Unchanged event date survives the moving creation floor", async () => {
+  const { event } = await createEventWithGuests('pending_scheduling', 0);
+  const stored = new Date(Date.now() + 86400000);
+  await Event.updateOne({ _id: event._id }, { $set: { 'eventDetails.date': stored } });
+  const saved = await eventsService.updateEventDetails(event.id, { title: 'Renamed', date: stored.toISOString(), time: '20:00' }, hostUser);
+  assert.equal(saved.event.eventDetails.title, 'Renamed');
+});
+
+test("Invalid changed date does not unschedule an event", async () => {
+  const { event } = await createEventWithGuests('scheduled', 0);
+  await assert.rejects(eventsService.updateEventDetails(event.id, { date: new Date(Date.now() + 86400000) }, hostUser), /too soon/);
+  assert.equal((await Event.findById(event._id)).status, 'scheduled');
+});
+
+
+test("Changed template fields require a fresh image before unscheduling", async () => {
+  const { event } = await createEventWithGuests('scheduled', 0);
+  await assert.rejects(eventsService.updateInvitationSettings(event.id,
+    { visualTemplate: { fieldValues: { title: 'Changed' }, isCustomUpload: false } }, hostUser),
+    error => error.code === 'EVENT_IMAGE_REQUIRED');
+  assert.equal((await Event.findById(event._id)).status, 'scheduled');
 });

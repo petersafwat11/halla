@@ -147,3 +147,14 @@ export function useExportGuests() {
     },
   });
 }
+
+export function useBulkGuests() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ eventId, data, idempotencyKey }) => guestsFetch(
+      ENDPOINTS.GUESTS.EVENT_GUESTS(eventId) + "/bulk",
+      { method: "POST", body: data, headers: { "Idempotency-Key": idempotencyKey } }, "Failed to update guests",
+    ),
+    onSuccess: (_, { eventId }) => _invalidateGuests(queryClient, eventId),
+  });
+}

@@ -4,6 +4,11 @@
  * @module modules/guests/guests.service
  */
 
+const mongoose = require('mongoose');
+const { assertEventGuestCapacity } = require('./eventGuestCapacity');
+const { eventActionCapabilities } = require('../events/eventActionCapabilities');
+const { normalizePhoneNumber } = require('../../shared/utils/phone');
+const AppError = require('../../shared/errors/AppError');
 const config = require('../../config');
 const jwt = require('jsonwebtoken');
 const { NotFoundError, ValidationError, ForbiddenError } = require('../../shared/errors');
@@ -31,6 +36,53 @@ const GuestAccessToken = require('../../../models/GuestAccessTokenModel');
 const { logAudit } = require('../../shared/utils/auditLog');
 
 class GuestsService {
+  async previewAudience(eventId, actor) {
+    const event = await Event.findOne(this._eventScope(eventId, actor));
+    if (!event) throw new NotFoundError('Event');
+    const { guestAudienceFilter } = require('./guestAudience');
+    const audiences = {};
+    for (const action of ['newGuests', 'resend', 'extraReminder']) {
+      const rows = await Guest.find(guestAudienceFilter(eventId, action)).select('_id').lean();
+      audiences[action] = { count: rows.length, guestIds: rows.map(row => String(row._id)) };
+    }
+    return { audiences, canSend: eventActionCapabilities(event).canSendLiveMessages };
+  }
+
+  async bulkUpdate(eventId, body, actor) {
+    const { action, category } = body;
+    if (!['remove', 'category'].includes(action) || !Array.isArray(body.guestIds) ||
+        !body.guestIds.length || body.guestIds.length > 200 ||
+        body.guestIds.some(id => !mongoose.isValidObjectId(id))) {
+      throw new ValidationError('Choose between 1 and 200 guest IDs and a valid bulk action');
+    }
+    if (action === 'category' && (typeof category !== 'string' || category.length > 60)) {
+      throw new ValidationError('Invalid guest category');
+    }
+    const ids = [...new Set(body.guestIds.map(String))];
+    const session = await mongoose.startSession();
+    let result;
+    try {
+      await session.withTransaction(async () => {
+        const event = await Event.findOneAndUpdate(this._eventScope(eventId, actor),
+          { $inc: { __v: 1 } }, { new: true, session });
+        if (!event) throw new NotFoundError('Event');
+        if (!eventActionCapabilities(event).canEditGuest) throw new ValidationError('Cannot bulk modify guests in this event');
+        const filter = { event: eventId, _id: { $in: ids }, deleted: { $ne: true } };
+        const eligible = await Guest.find(filter).select('_id').session(session);
+        const update = action === 'remove'
+          ? { deleted: true, deletedAt: new Date(), deletedBy: this._actorId(actor), deletionReason: 'host_bulk_removed' }
+          : { category: category.trim() };
+        await Guest.updateMany(filter, { $set: update }, { session });
+        if (action === 'remove') await Event.updateOne({ _id: eventId }, { $pull: { guestList: { $in: eligible.map(g => g._id) } } }, { session });
+        result = { requested: ids.length, eligible: eligible.length, updated: eligible.length,
+          skipped: ids.length - eligible.length, failed: 0, failedIds: [] };
+      });
+    } finally { await session.endSession(); }
+    await logAudit({ action: 'guest.bulk_updated', actor: this._actorRef(actor), targetType: 'event', targetId: eventId,
+      metadata: { action, guestIds: ids, result } }).catch(() => {});
+    return result;
+  }
+
   /**
    * Get guest by invitation code/QR
    * @param {string} code - Invitation code or QR code
@@ -63,6 +115,7 @@ class GuestsService {
 
     const guest = await Guest.findOne({
       qrcode: code,
+      deleted: { $ne: true },
     }).populate({
       path: 'event',
       select: 'eventDetails status host branding invitationDeliveryMode invitationType',
@@ -97,7 +150,7 @@ class GuestsService {
     }
 
     const guest = await Guest.findById(guestId).populate('event');
-    if (!guest) {
+    if (!guest || guest.deleted) {
       throw new NotFoundError('Guest');
     }
 
@@ -190,8 +243,9 @@ class GuestsService {
    * @returns {Promise<{data: Array, pagination: Object}>}
    */
   async getEventGuests(eventId, userContext, filters = {}, options = {}) {
-    const { search, status } = filters;
-    const { page = 1, limit = 50 } = options;
+    const { search, status, category, deliveryStatus, sort = "name", direction = "asc" } = filters;
+    const page = Math.max(1, Number(options.page) || 1);
+    const limit = Math.max(1, Math.min(200, Number(options.limit) || 50));
     const skip = (page - 1) * limit;
 
     const role = userContext?.role;
@@ -225,15 +279,15 @@ class GuestsService {
       ];
     }
 
-    if (status) {
-      query.status = status;
-    }
+    if (status) query.status = { $in: String(status).split(",") };
+    if (category) query.category = category;
+    if (deliveryStatus === "failed") query["invitation.status"] = "failed";
 
     const [guests, total] = await Promise.all([
       Guest.find(query)
         .select('name phone category status rsvp checkIn invitation addedBy createdAt')
         .populate('addedBy', 'name')
-        .sort({ name: 1 })
+        .sort({ [["name", "createdAt", "status", "category"].includes(sort) ? sort : "name"]: direction === "desc" ? -1 : 1, _id: 1 })
         .skip(skip)
         .limit(limit),
       Guest.countDocuments(query),
@@ -254,35 +308,36 @@ class GuestsService {
    */
   async addGuest(eventId, guestData, actor) {
     const userId = this._actorId(actor);
-    const event = await Event.findOne(this._eventScope(eventId, actor));
-    if (!event) {
-      throw new NotFoundError('Event');
-    }
-
-    if (['cancelled', 'completed'].includes(event.status)) {
-      throw new ValidationError(`Cannot add guests to a ${event.status} event`);
-    }
-
-    // Check guest limit from event's guestLimit field
-    if (event.guestLimit) {
-      const currentGuestCount = await Guest.countDocuments({
-        event: eventId,
-        deleted: { $ne: true },
+    const session = await mongoose.startSession();
+    let guest;
+    try {
+      await session.withTransaction(async () => {
+        // Write the event first: concurrent additions/replacements conflict and
+        // retry with a fresh snapshot before counting active guests.
+        const event = await Event.findOneAndUpdate(this._eventScope(eventId, actor),
+          { $inc: { __v: 1 } }, { new: true, session });
+        if (!event) throw new NotFoundError('Event');
+        if (!eventActionCapabilities(event).canAddGuest) {
+          throw new ValidationError(`Cannot add guests to a ${event.status} event`);
+        }
+        const phone = normalizePhoneNumber(guestData.phone);
+        if (!phone) throw new ValidationError('Invalid guest phone');
+        const duplicate = await Guest.exists({ event: eventId, phone, deleted: { $ne: true } }).session(session);
+        if (duplicate) throw new AppError('Guest already exists in this event', 409, 'GUEST_ALREADY_EXISTS');
+        const count = await Guest.countDocuments({ event: eventId, deleted: { $ne: true } }).session(session);
+        await assertEventGuestCapacity(event, actor, count + 1, session);
+        [guest] = await Guest.create([{
+          name: guestData.name, phone, category: guestData.category,
+          event: eventId, status: 'invited', addedBy: userId,
+        }], { session });
+        await Event.updateOne({ _id: eventId }, { $addToSet: { guestList: guest._id } }, { session });
       });
-      if (currentGuestCount >= event.guestLimit) {
-        throw new ValidationError(`Guest limit reached (max ${event.guestLimit} guests)`);
-      }
+    } catch (error) {
+      if (error.code === 11000) throw new AppError('Guest already exists in this event', 409, 'GUEST_ALREADY_EXISTS');
+      throw error;
+    } finally {
+      await session.endSession();
     }
-
-    const guest = await Guest.create({
-      ...guestData,
-      event: eventId,
-      status: 'invited',
-      addedBy: userId,
-    });
-
-    event.guestList.push(guest._id);
-    await event.save();
 
     logAudit({
       action: 'guest.added',
@@ -309,7 +364,7 @@ class GuestsService {
       throw new NotFoundError('Event');
     }
 
-    if (['cancelled', 'completed'].includes(event.status)) {
+    if (!eventActionCapabilities(event).canEditGuest && event.status !== "live") {
       throw new ValidationError(`Cannot modify guests of a ${event.status} event`);
     }
 
@@ -317,7 +372,7 @@ class GuestsService {
       throw new ValidationError('Cannot modify existing guests on a live event');
     }
 
-    const guest = await Guest.findOne({ _id: guestId, event: eventId });
+    const guest = await Guest.findOne({ _id: guestId, event: eventId, deleted: { $ne: true } });
     if (!guest) {
       throw new NotFoundError('Guest');
     }
@@ -330,10 +385,20 @@ class GuestsService {
       }
     });
 
+    if (updateObj.phone !== undefined) {
+      updateObj.phone = normalizePhoneNumber(updateObj.phone);
+      if (!updateObj.phone) throw new ValidationError('Invalid guest phone');
+      if (await Guest.exists({ event: eventId, phone: updateObj.phone, deleted: { $ne: true }, _id: { $ne: guestId } })) {
+        throw new AppError('Guest already exists in this event', 409, 'GUEST_ALREADY_EXISTS');
+      }
+    }
     const previousStatus = guest.status;
     const updatedGuest = await Guest.findByIdAndUpdate(guestId, updateObj, {
       new: true,
       runValidators: true,
+    }).catch(error => {
+      if (error.code === 11000) throw new AppError("Guest already exists in this event", 409, "GUEST_ALREADY_EXISTS");
+      throw error;
     });
 
     // Notify host if status changed
@@ -367,7 +432,7 @@ class GuestsService {
       throw new NotFoundError('Event');
     }
 
-    if (['cancelled', 'completed'].includes(event.status)) {
+    if (!eventActionCapabilities(event).canEditGuest) {
       throw new ValidationError(`Cannot delete guests from a ${event.status} event`);
     }
 
@@ -375,14 +440,27 @@ class GuestsService {
       throw new ValidationError('Cannot delete guests from a live event');
     }
 
-    const guest = await Guest.findOne({ _id: guestId, event: eventId });
+    const guest = await Guest.findOne({ _id: guestId, event: eventId, deleted: { $ne: true } });
     if (!guest) {
       throw new NotFoundError('Guest');
     }
 
-    event.guestList = event.guestList.filter((id) => id.toString() !== guestId);
-    await event.save();
-    await Guest.findByIdAndDelete(guestId);
+    const session = await mongoose.startSession();
+    try {
+      await session.withTransaction(async () => {
+        const current = await Event.findOneAndUpdate(this._eventScope(eventId, actor),
+          { $inc: { __v: 1 } }, { new: true, session });
+        if (!current || !eventActionCapabilities(current).canDeleteGuest) {
+          throw new ValidationError('Cannot delete guests from this event');
+        }
+        await Guest.updateOne({ _id: guestId, event: eventId }, {
+          $set: { deleted: true, deletedAt: new Date(), deletedBy: this._actorId(actor), deletionReason: 'host_removed' },
+        }, { session });
+        await Event.updateOne({ _id: eventId }, { $pull: { guestList: guest._id } }, { session });
+      });
+    } finally {
+      await session.endSession();
+    }
 
     logAudit({
       action: 'guest.deleted',
@@ -403,6 +481,7 @@ class GuestsService {
     const event = await Event.findOne(this._eventScope(eventId, actor))
       .populate({
         path: 'guestList',
+        match: { deleted: { $ne: true } },
         select: 'name phone category status rsvp checkIn invitation addedBy',
         populate: { path: 'addedBy', select: 'name' },
       });
@@ -461,7 +540,7 @@ class GuestsService {
       throw new ForbiddenError('Not authorized to rotate this QR');
     }
 
-    const guest = await Guest.findOne({ _id: guestId, event: eventId });
+    const guest = await Guest.findOne({ _id: guestId, event: eventId, deleted: { $ne: true } });
     if (!guest) throw new NotFoundError('Guest');
 
     await GuestAccessToken.updateMany(
@@ -559,7 +638,7 @@ class GuestsService {
       throw new ForbiddenError('Not authorized to revoke this QR');
     }
 
-    const guest = await Guest.findOne({ _id: guestId, event: eventId });
+    const guest = await Guest.findOne({ _id: guestId, event: eventId, deleted: { $ne: true } });
     if (!guest) throw new NotFoundError('Guest');
 
     const result = await GuestAccessToken.updateMany(

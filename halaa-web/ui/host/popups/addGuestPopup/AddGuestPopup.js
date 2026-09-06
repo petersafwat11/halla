@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
@@ -22,6 +22,7 @@ const AddGuestPopup = ({ onConfirm, onCancel, eventId, editGuest = null }) => {
     defaultValues: {
       name: editGuest?.name || "",
       phone: editGuest?.phone || "",
+      category: editGuest?.category || "",
     },
   });
 
@@ -33,6 +34,7 @@ const AddGuestPopup = ({ onConfirm, onCancel, eventId, editGuest = null }) => {
   } = methods;
 
   const watchedFields = watch();
+  const attempt = useRef(null);
 
   const onSubmit = async (data) => {
     try {
@@ -44,7 +46,9 @@ const AddGuestPopup = ({ onConfirm, onCancel, eventId, editGuest = null }) => {
         );
       } else {
         // Add new guest
-        await onConfirm(data);
+        const fingerprint = JSON.stringify(data);
+        if (attempt.current?.fingerprint !== fingerprint) attempt.current = { fingerprint, key: crypto.randomUUID() };
+        await onConfirm(data, attempt.current.key);
         toast.success(
           t("singleEvent.addGuest.success") || "Guest added successfully"
         );
@@ -121,6 +125,7 @@ const AddGuestPopup = ({ onConfirm, onCancel, eventId, editGuest = null }) => {
             </div>
           </div>
 
+          <InputGroup name="category" label={t("people.categoryLabel")} error={errors.category?.message} />
           <div className={styles.footer}>
             <Button
               variant="secondary"

@@ -161,12 +161,11 @@ test("DETAILS-02: send action modal formats counters and keeps the sent ratio at
   );
 });
 
-test("DETAILS-03: add-guest modal interpolates a locale-formatted roster count", () => {
+test("DETAILS-03: add modal excludes the roster and the people workspace owns virtualization", () => {
   const source = read("components/events/AddGuestOrmoderatorPopup.js");
-  assert.ok(
-    source.includes("formatCount(itemsList.length, currentLanguage)"),
-    "roster counts are locale-formatted inside the interpolation key"
-  );
+  assert.ok(!source.includes("itemsList.map("));
+  const screen = read("screens/common/EventDetailsScreen.js");
+  assert.ok(screen.includes("<FlatList") && screen.includes("useInfiniteEventGuests"));
 });
 
 test("DETAILS-04: auto reminder banner localizes stored HH:mm via shared formatter", () => {

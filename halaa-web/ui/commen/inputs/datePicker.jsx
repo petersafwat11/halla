@@ -20,6 +20,7 @@ const DatePicker = ({
   ServerErrors,
   disabled = false,
   minDate,
+  allowedDate,
   maxDate,
 }) => {
   const { t, i18n } = useTranslation('common');
@@ -72,6 +73,7 @@ const DatePicker = ({
   const isDateDisabled = (date) => {
     if (disabled) return true;
     const d = toDay(date);
+    if (allowedDate && d.getTime() === toDay(new Date(allowedDate)).getTime()) return false;
     if (minDate && d < toDay(minDate)) return true;
     if (maxDate && d > toDay(maxDate)) return true;
     return false;

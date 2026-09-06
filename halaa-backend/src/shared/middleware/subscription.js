@@ -195,8 +195,8 @@ exports.checkGuestLimit = (getGuestCount) => {
     // incorrectly rejects edits to that same event.
     let capacitySub = null;
     let hasAttachedSubscription = false;
-    if (req.params?.id) {
-      const event = await Event.findById(req.params.id)
+    if (req.params?.id || req.params?.eventId) {
+      const event = await Event.findById(req.params.id || req.params.eventId)
         .select("subscriptionId guestLimit guestList host")
         .lean();
       const attachedSubscriptionId = event?.subscriptionId;

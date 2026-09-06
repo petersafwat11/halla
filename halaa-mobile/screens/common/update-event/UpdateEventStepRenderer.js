@@ -21,7 +21,7 @@ const UpdateEventStepRenderer = ({
 }) => {
   switch (currentStep) {
     case 1:
-      return <StepOne disabled={lockoutActive} />;
+      return <StepOne disabled={lockoutActive} constraints={eventData?.constraints} />;
     case 2: {
       // Pool-plan events are saved with `guestLimit: -1` (no per-event
       // cap; the cap is the global invitePool). Inferring "unlimited"

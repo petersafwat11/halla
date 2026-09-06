@@ -1,0 +1,8 @@
+.workspace { min-width: 0; }
+.toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; padding: 12px; margin-block: 12px; border: 1px solid #e6d7c9; border-radius: 12px; background: #faf6f1; }
+.toolbar button, .addButton, .bulkForm button { min-height: 44px; padding: 8px 16px; border: 1px solid #b99a7d; border-radius: 8px; background: #fff; color: #583c29; font: inherit; cursor: pointer; }
+.addButton { background: #6b4e33; color: #fff; margin-block-end: 12px; }
+.toolbar button:focus-visible, .addButton:focus-visible, .bulkForm input:focus-visible { outline: 3px solid #b98249; outline-offset: 3px; }
+.bulkForm { display: grid; gap: 16px; padding: 24px; width: min(420px, 88vw); }
+.bulkForm input { min-height: 44px; padding: 10px; border: 1px solid #b99a7d; border-radius: 8px; font: inherit; }
+@media (max-width: 600px) { .toolbar { align-items: stretch; } .toolbar span { flex-basis: 100%; } .toolbar button { flex: 1; } }

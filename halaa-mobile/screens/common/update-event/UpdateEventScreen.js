@@ -184,7 +184,7 @@ const UpdateEventScreen = () => {
           setAllowLeave(true);
           clearWizardGuard();
           Alert.alert("✓", t("events.update.updateSuccess"), [
-            { text: t("events.update.successOk"), onPress: () => navigation.goBack() },
+            { text: t("events.update.successOk"), onPress: () => navigation.replace("EventDetails", { eventId }) },
           ]);
         }
       } catch (error) {

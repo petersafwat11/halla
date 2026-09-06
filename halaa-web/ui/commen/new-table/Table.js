@@ -223,7 +223,7 @@ const Table = ({
 
   const handleSelectAll = (e) => {
     if (e.target.checked) {
-      setSelectedRows(data.map((item) => item.id || item._id).filter(Boolean));
+      setSelectedRows(filteredData.map((item) => item.id || item._id).filter(Boolean));
     } else {
       setSelectedRows([]);
     }
@@ -390,6 +390,15 @@ const Table = ({
       });
     });
   }, [data, internalSearchQuery, mode]);
+
+  const visibleIdsKey = filteredData.map(row => String(row.id || row._id)).join(",");
+  useEffect(() => {
+    const visible = new Set(visibleIdsKey.split(","));
+    setSelectedRows(previous => {
+      const next = previous.filter(id => visible.has(String(id)));
+      return next.length === previous.length ? previous : next;
+    });
+  }, [visibleIdsKey]);
 
   const handleBulkActionsClick = (e) => {
     e.preventDefault();
@@ -782,7 +791,8 @@ const Table = ({
                       checked={
                         selectedRows.length === filteredData.length && filteredData.length > 0
                       }
-                      aria-label={t("selectAll", "تحديد الكل")}
+                      aria-label={t("selectThisPage")}
+                      ref={(node) => { if (node) node.indeterminate = selectedRows.length > 0 && selectedRows.length < filteredData.length; }}
                     />
                   </th>
                 )}

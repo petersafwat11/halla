@@ -1,4 +1,5 @@
 "use client";
+import { normalizeEventLocation } from "@halaa/shared/utils/eventLocation";
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter, usePathname } from "next/navigation";
@@ -9,8 +10,8 @@ import { DEFAULT_INVITATION_TYPE } from "@/utils/invitationTypes";
 // Constants
 const DEFAULT_ADDRESS = {
   address: "",
-  latitude: 24.7136,
-  longitude: 46.6753,
+  latitude: null,
+  longitude: null,
   city: "",
   country: "",
   placeId: null,
@@ -59,7 +60,7 @@ export const transformStaffList = (staff = []) =>
   staff.map((s) => ({
     id: s._id || s.id || Date.now() + Math.random(),
     name: s.name || "",
-    mobile: s.phone || "",
+    phone: s.phone || s.mobile || "",
   }));
 
 const populatedVisualTemplate = (event) => {
@@ -113,7 +114,7 @@ export const mapEventToFormValues = (event) => ({
   eventName: event.eventDetails?.title || "",
   eventDate: event.eventDetails?.date || "",
   eventTime: event.eventDetails?.time || "12:00:AM",
-  address: event.eventDetails?.location || DEFAULT_ADDRESS,
+  address: normalizeEventLocation(event.eventDetails?.location),
   guestList: transformGuestList(event.guestList),
   staffList: transformStaffList(event.staffList),
   templateImage:

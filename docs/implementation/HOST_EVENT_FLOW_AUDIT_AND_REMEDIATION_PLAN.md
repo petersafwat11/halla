@@ -1,5 +1,11 @@
 # Host Event Flow Audit and Remediation Plan
 
+> Implementation update (2026-09-06): the functional remediation is recorded in
+> [HOST_EVENT_FLOW_IMPLEMENTATION_REPORT.md](HOST_EVENT_FLOW_IMPLEMENTATION_REPORT.md).
+> The findings below describe the pre-implementation snapshot. Read the report
+> before treating a finding as still open; its remaining-release-work section
+> explicitly identifies work and device checks that are not yet complete.
+
 Date: 2026-09-06  
 Scope: host event creation, update, single-event management, guest/staff operations, messaging launch/recovery, responsive web, native mobile, shared contracts, and backend integrity.
 

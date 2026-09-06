@@ -33,7 +33,9 @@ async function findForEvent(event, ownerId, options = {}) {
   const allowFallback = options.allowFallback !== false;
 
   if (event?.subscriptionId) {
-    const sub = await Subscription.findById(event.subscriptionId).populate('planId');
+    const query = Subscription.findById(event.subscriptionId).populate('planId');
+    if (options.session) query.session(options.session);
+    const sub = await query;
     if (!sub) return null;
     if (ownerId && String(sub.userId) !== String(ownerId)) return null;
     return isUsableForEvent(sub, event) ? sub : null;

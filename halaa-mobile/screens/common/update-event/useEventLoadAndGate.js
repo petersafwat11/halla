@@ -1,3 +1,4 @@
+import { normalizeEventLocation } from "@halaa/shared/utils/eventLocation";
 import { useEffect, useMemo, useState } from "react";
 
 import useEventActionGate from "@halaa/shared/hooks/useEventActionGate";
@@ -84,13 +85,7 @@ const mapApiToFormValues = (eventData) => {
     eventType: details.type || "",
     eventDate: details.date || null,
     eventTime: details.time || "",
-    address: details.location || {
-      address: details.locationText || "",
-      latitude: 24.7136,
-      longitude: 46.6753,
-      city: "",
-      country: "",
-    },
+    address: normalizeEventLocation(details.location || details.locationText),
     description: details.description || "",
     guestList,
     staffList,
@@ -211,7 +206,8 @@ const useEventLoadAndGate = ({ eventId, currentStep }) => {
   const isCompleted = actionGate.isCompleted;
   // Step 2 stays interactive on live events (allow-add-only); every
   // other step is frozen. If event is completed, all steps are frozen.
-  const lockoutActive = (isLive && currentStep !== 2) || isCompleted;
+  const sectionCapability = { 1: "canEditDetails", 2: "canAddGuest", 3: "canEditDesign", 4: "canEditMessages" }[currentStep];
+  const lockoutActive = eventData?.capabilities?.[sectionCapability] === false || (isLive && currentStep !== 2) || isCompleted;
   const allowAddOnlyOnStep2 = isLive && currentStep === 2;
 
   return {

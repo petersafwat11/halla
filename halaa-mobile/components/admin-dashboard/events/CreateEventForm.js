@@ -227,15 +227,14 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
             // cannot swap to LimitReachedView while navigation is committing.
             setIsCompleting(true);
             clearWizardGuard();
-            await hostCreateMutation.mutateAsync({
+            const created = await hostCreateMutation.mutateAsync({
               formData: formDataObj,
               idempotencyKey: idempotencyKeyRef.current,
             });
             idempotencyKeyRef.current = null;
-            navigation.reset({
-              index: 0,
-              routes: [{ name: "MainTabs", params: { screen: "Home" } }],
-            });
+            const createdId = created?.data?.event?._id || created?.data?.event?.id || created?.event?._id || created?.event?.id;
+            if (createdId) navigation.replace("EventDetails", { eventId: createdId });
+            else navigation.reset({ index: 0, routes: [{ name: "MainTabs", params: { screen: "Home" } }] });
           } catch (err) {
             setIsCompleting(false);
             Sentry.captureException(err, {

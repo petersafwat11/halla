@@ -155,3 +155,10 @@ exports.exportGuests = catchAsync(async (req, res) => {
   );
   res.send(buffer);
 });
+
+exports.previewAudience = catchAsync(async (req, res) => {
+  sendSuccess(res, await guestsService.previewAudience(req.params.eventId, req.user));
+});
+exports.bulkUpdate = catchAsync(async (req, res) => {
+  sendSuccess(res, await guestsService.bulkUpdate(req.params.eventId, req.body, req.user));
+});

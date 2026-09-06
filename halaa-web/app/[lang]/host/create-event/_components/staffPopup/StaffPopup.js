@@ -207,7 +207,8 @@ const StaffPopup = ({
             <div className={styles.tableSection}>
               <Table
                 title={t("staff_popup_title", title)}
-                headers={[t("staff_phone", "رقم الجوال"), t("name", "الاسم")]}
+                headers={[t("name", "الاسم"), t("staff_phone", "رقم الجوال")]}
+                headerKeys={["name", "phone"]}
                 data={staffList}
                 actions={[
                   {

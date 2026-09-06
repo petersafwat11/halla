@@ -10,7 +10,7 @@ import MapInput from "@/ui/commen/inputs/MapInput";
 import { useEventSubscriptionInfo } from "@/hooks/events";
 import { EVENT_CATEGORIES } from "@halaa/shared/constants/eventCategories";
 
-const StepOne = () => {
+const StepOne = ({ constraints } = {}) => {
   const { t } = useTranslation("createEvent");
   const { data: subscriptionData } = useEventSubscriptionInfo();
   const isTrial = subscriptionData?.data?.planCode === "trial";
@@ -21,12 +21,13 @@ const StepOne = () => {
   //   to the calendar day; the backend (assertEventDateFloor) is the source
   //   of truth and rejects EVENT_DATE_TOO_SOON for boundary cases.
   const minDate = useMemo(() => {
+    if (constraints?.minEventDate) return new Date(constraints.minEventDate);
     const days = isTrial ? 3 : 4;
     const d = new Date();
     d.setDate(d.getDate() + days);
     d.setHours(0, 0, 0, 0);
     return d;
-  }, [isTrial]);
+  }, [isTrial, constraints]);
 
   // Event type options with translations
   const eventTypeOptions = useMemo(
@@ -68,6 +69,7 @@ const StepOne = () => {
             placeholder={t("event_date_placeholder")}
             required={true}
             minDate={minDate}
+            allowedDate={constraints?.canKeepExistingDate ? constraints.existingDate : undefined}
           />
         </div>
         <p className={styles.date_hint}>

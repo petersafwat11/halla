@@ -35,6 +35,7 @@ const useStepConfig = ({ t, subscriptionInfo, eventRaw, isEventLive }) =>
         title: t("step1_title"),
         description: t("step1_description"),
         Component: StepOne,
+        props: { constraints: eventRaw?.constraints },
       },
       2: {
         title: t("step2_title"),

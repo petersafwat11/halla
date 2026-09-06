@@ -40,9 +40,16 @@ export default function SendMessagesMenu({ event, eventId }) {
   const guests = guestsData?.data || [];
 
   // Only meaningful once a send has started; never on terminal events.
-  if (!event || isTerminalEvent(event) || !hasSendStarted(event)) return null;
+  if (!event || isTerminalEvent(event) || !hasSendStarted(event) || event.status !== "live") return null;
 
   const audiences = computeSendAudiences(guests);
+  const preview = guestsData?.audiencePreview;
+  if (preview?.audiences) {
+    for (const action of SEND_ACTIONS) {
+      const ids = new Set(preview.audiences[action]?.guestIds || []);
+      audiences[action] = guests.filter(guest => ids.has(String(guest.id)));
+    }
+  }
   const states = buildSendActionStates(event, audiences);
   const invitationBalance = event?.invitationBalance || event?.subscription?.invitationBalance || null;
   const invitesRemaining = invitationBalance?.unlimited
@@ -50,7 +57,7 @@ export default function SendMessagesMenu({ event, eventId }) {
     : invitationBalance?.remaining ?? 0;
 
   const handlePick = (action) => {
-    if (!states[action]?.enabled) return;
+    if (!states[action]?.enabled || preview?.canSend === false) return;
     setActiveAction(action);
     setOpen(false);
   };
@@ -92,7 +99,7 @@ export default function SendMessagesMenu({ event, eventId }) {
                   state.enabled ? "" : styles.itemDisabled
                 }`}
                 onClick={() => handlePick(action)}
-                disabled={!state.enabled}
+                disabled={!state.enabled || preview?.canSend === false}
                 title={reason || undefined}
               >
                 <span>{t(labelKey, labelFallback)}</span>

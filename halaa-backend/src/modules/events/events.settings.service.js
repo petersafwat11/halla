@@ -155,6 +155,12 @@ module.exports = {
     // 24h pre-launch edit lock
     this._checkEditLock(event, details);
 
+    const previousInstant = eventInstantOf(event);
+    const requestedInstant = eventInstantOf(event, details.date, details.time);
+    if (requestedInstant?.getTime() !== previousInstant?.getTime()) {
+      assertEventDateFloor({ eventInstant: requestedInstant, isTrial: isTrialFromPlan(event.planId) });
+    }
+
     // If the event was scheduled, modifying details invalidates the test fingerprint and auto-unschedules
     const unscheduled = await Event.updateOne(
       { _id: event._id, status: 'scheduled' },
@@ -199,7 +205,6 @@ module.exports = {
     }
 
     // Does this edit touch the event date/time? Floor validation only runs when it does.
-    const dateTimeChanging = details.date !== undefined || details.time !== undefined;
     const previousCategory = event.eventDetails?.type;
 
     event.eventDetails = { ...event.eventDetails, ...details };
@@ -209,14 +214,6 @@ module.exports = {
     // the host to choose a compatible replacement before launch.
     if (details.type && details.type !== previousCategory) {
       event.taqnyatTemplate = { templateRef: null };
-    }
-
-    if (dateTimeChanging) {
-      const isTrial = isTrialFromPlan(event.planId);
-      const newEventInstant = eventInstantOf(event);
-
-      // Event-date floor: a valid send window must still exist for the new date.
-      assertEventDateFloor({ eventInstant: newEventInstant, isTrial });
     }
 
     // Rescheduling edge case: if custom reminder exists and new event start time occurs before it, reset customReminderTime to false
@@ -264,6 +261,14 @@ module.exports = {
         409,
         'EVENT_LIFECYCLE_CONFLICT'
       );
+    }
+    if (settings.visualTemplate && !settings.visualTemplate.isCustomUpload) {
+      const serializeFields = fields => JSON.stringify(Object.entries(fields || {}).sort(([a], [b]) => a.localeCompare(b)));
+      const fieldsChanged = settings.visualTemplate.fieldValues !== undefined &&
+        serializeFields(settings.visualTemplate.fieldValues) !== serializeFields(event.visualTemplate?.fieldValues);
+      if (fieldsChanged && !file) {
+        throw new AppError('Prepare a new invitation image after changing template fields.', 422, 'EVENT_IMAGE_REQUIRED');
+      }
     }
     const wasScheduled = event.status === 'scheduled';
 
@@ -541,7 +546,12 @@ module.exports = {
     if (event.status !== EVENT_STATUS.SCHEDULED) return;
 
     const LOCK_FIELDS = ['date', 'time', 'location'];
-    const changingLockedField = LOCK_FIELDS.some(f => changes[f] !== undefined);
+    const changingLockedField = LOCK_FIELDS.some(f => {
+      if (changes[f] === undefined) return false;
+      if (f === 'date' || f === 'time') return eventInstantOf(event, changes.date, changes.time)?.getTime() !== eventInstantOf(event)?.getTime();
+      return ['address', 'latitude', 'longitude', 'city', 'country'].some(key =>
+        (changes.location?.[key] ?? '') !== (event.eventDetails?.location?.[key] ?? ''));
+    });
     if (!changingLockedField) return;
 
     const launchDate = event.launchSettings?.scheduledDate || event.eventDetails?.date;

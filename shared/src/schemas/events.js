@@ -42,8 +42,8 @@ export const staffSchema = (t = idT) =>
 export const locationSchema = (t = idT) =>
   z.object({
     address: requiredString(t),
-    latitude: z.number().min(-90).max(90).optional(),
-    longitude: z.number().min(-180).max(180).optional(),
+    latitude: z.number().min(-90).max(90).nullable().optional(),
+    longitude: z.number().min(-180).max(180).nullable().optional(),
     city: z.string().optional(),
     country: z.string().optional(),
     placeId: z.string().max(300).optional().nullable(),

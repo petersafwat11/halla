@@ -21,6 +21,7 @@ const guestSchema = new mongoose.Schema(
     phone: {
       type: String,
       required: [true, "Phone number is required"],
+      set: (value) => normalizePhoneNumber(value) || value,
       trim: true,
       validate: {
         validator: mongoosePhoneValidator,
@@ -213,6 +214,8 @@ const guestSchema = new mongoose.Schema(
     // Soft-delete tombstone — set instead of deleteMany on guest removal
     deleted: { type: Boolean, default: false },
     deletedAt: { type: Date },
+    deletedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    deletionReason: { type: String },
   },
   {
     timestamps: true,
@@ -255,6 +258,12 @@ guestSchema.pre("save", function (next) {
 guestSchema.index({ event: 1 });
 guestSchema.index({ status: 1 });
 guestSchema.index({ phone: 1 });
+// Installed explicitly by audit-active-guests.js after legacy normalization and
+// duplicate resolution. Do not auto-build this index on an unreviewed database.
+guestSchema.index({ event: 1, phone: 1 }, {
+  name: 'active_event_phone_unique', unique: true,
+  partialFilterExpression: { deleted: false }, _autoIndex: false,
+});
 // Note: qrcode has unique: true in schema, no separate index needed
 guestSchema.index({ "checkIn.checkedIn": 1 });
 guestSchema.index({ createdAt: -1 });
@@ -278,12 +287,12 @@ guestSchema.virtual("hasResponded").get(function () {
 
 // Static method to find guests by event
 guestSchema.statics.findByEvent = function (eventId) {
-  return this.find({ event: eventId }).populate("event", "title startDate");
+  return this.find({ event: eventId, deleted: { $ne: true } }).populate("event", "title startDate");
 };
 
 // Static method to find guests by status
 guestSchema.statics.findByStatus = function (status, eventId = null) {
-  const query = { status };
+  const query = { status, deleted: { $ne: true } };
   if (eventId) query.event = eventId;
   return this.find(query).populate("event", "title startDate");
 };
@@ -291,7 +300,7 @@ guestSchema.statics.findByStatus = function (status, eventId = null) {
 // Static method to get guest statistics for an event
 guestSchema.statics.getEventStats = async function (eventId) {
   const stats = await this.aggregate([
-    { $match: { event: new mongoose.Types.ObjectId(eventId) } },
+    { $match: { event: new mongoose.Types.ObjectId(eventId), deleted: { $ne: true } } },
     {
       $group: {
         _id: "$status",

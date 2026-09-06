@@ -179,6 +179,7 @@ module.exports = {
       status: eventObj.status,
       event: {
         id: eventObj._id,
+        capabilities: require("./eventActionCapabilities").eventActionCapabilities(eventObj),
         title: eventObj.eventDetails?.title || "",
         type: eventObj.eventDetails?.type || "",
         date: eventObj.eventDetails?.date,
@@ -283,6 +284,7 @@ module.exports = {
     ].includes(event.status);
 
     return {
+      ...require("./eventActionCapabilities").eventActionCapabilities(event),
       eventId: event._id,
       hostId: event.host?._id || event.host,
       subscriptionId: sub?._id || null,

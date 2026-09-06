@@ -71,7 +71,7 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete
 
   // Shared gate. Visibility rules require an active template before
   // test/schedule, and an actual staff entry before Notify Staff.
-  const { canSendTest, canSchedule, hasStaff, isCompleted } =
+  const { canSendTest, canSchedule, canNotifyStaff, isCompleted } =
     useEventActionGate({ event, testMessageSent });
 
   const handleEditStep = (step) => {
@@ -123,7 +123,7 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete
     );
   };
 
-  const hasAnyOutlineAction = canSendTest || canSchedule || hasStaff || isCompleted;
+  const hasAnyOutlineAction = canSendTest || canSchedule || canNotifyStaff || isCompleted;
 
   return (
     <>
@@ -156,7 +156,7 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete
               </TouchableOpacity>
             )}
 
-            {hasStaff && (
+            {canNotifyStaff && (
               <TouchableOpacity
                 style={[
                   styles.outlineButton,
@@ -231,7 +231,7 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete
         <Pressable style={styles.menuBackdrop} onPress={() => setShowManageMenu(false)}>
           <Pressable style={styles.menuCard} onPress={(e) => e.stopPropagation()}>
             <Text style={styles.menuTitle}>{t("lastEvent.buttons.editEvent", "تعديل المناسبة")}</Text>
-            {EVENT_EDIT_STEPS.map((item) => (
+            {EVENT_EDIT_STEPS.filter(item => event?.capabilities?.[{ 1: "canEditDetails", 2: "canAddGuest", 3: "canEditDesign", 4: "canEditMessages" }[item.step]] ?? ["pending_review", "pending_scheduling", "scheduled"].includes(event?.status)).map((item) => (
               <TouchableOpacity
                 key={item.step}
                 style={styles.menuItem}

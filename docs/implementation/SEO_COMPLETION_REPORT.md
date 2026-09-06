@@ -24,6 +24,8 @@ Owner-requested palette follow-up: restored inherited brand caramel `#c28e5c` an
 
 ## Google services — verified in the Halaa account
 
+Google Maps billing outreach is tracked separately in [GOOGLE_MAPS_RESELLER_CONTACT_TRACKER.md](GOOGLE_MAPS_RESELLER_CONTACT_TRACKER.md), covering the original CNTXT request and subsequent iSolutions, OniGroup, Searce and SoftwareOne inquiries. Outreach does not mean Maps billing is activated.
+
 - [x] Used existing `halaa.events@gmail.com` / `halaa.com.sa` Search Console domain property.
 - [x] Submitted `https://halaa.com.sa/sitemap.xml`. Google reported **Sitemap processed successfully**, last read September 6, 2026, **16 discovered public pages**. The initial transient “Couldn't fetch” status resolved; no duplicate resubmission was necessary.
 - [x] URL inspection: English homepage and Arabic marketplace both show **URL is on Google / Page is indexed** and HTTPS. No redundant indexing request was sent.

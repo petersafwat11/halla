@@ -333,8 +333,8 @@ export const getDefaultFormValues = () => ({
   eventTime: "",
   address: {
     address: "",
-    latitude: 24.7136,
-    longitude: 46.6753,
+    latitude: null,
+    longitude: null,
     city: "",
     country: "",
     placeId: null,

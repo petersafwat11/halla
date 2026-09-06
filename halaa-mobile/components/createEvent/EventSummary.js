@@ -1,3 +1,4 @@
+import { hasEventCoordinates } from "@halaa/shared/utils/eventLocation";
 import React, { useRef, useEffect, useMemo } from "react";
 import {
   View,
@@ -7,6 +8,7 @@ import {
   Animated,
   TouchableOpacity,
   Linking,
+  Image,
 } from "react-native";
 import { useFormContext } from "react-hook-form";
 import { Ionicons } from "@expo/vector-icons";
@@ -189,8 +191,10 @@ const EventSummary = () => {
     t,
     currentLanguage,
   ]);
+  const visual = watch("templateImage");
+  const visualUri = typeof visual === "string" ? visual : visual?.uri;
   const mapLink =
-    address?.latitude && address?.longitude
+    hasEventCoordinates(address)
       ? `https://maps.google.com/?q=${address.latitude},${address.longitude}`
       : "";
 
@@ -201,6 +205,7 @@ const EventSummary = () => {
   return (
     <ScrollView showsVerticalScrollIndicator={false}>
       <Animated.View style={{ opacity: fadeAnim }}>
+        {!!visualUri && <Image source={{ uri: visualUri }} resizeMode="contain" style={{ width: "100%", height: 360 }} accessibilityLabel={t("invitation_visual")} />}
         {/* Stat cards row — mirrors web SummaryCards */}
         <View style={styles.statsCards}>
           <StatCard

@@ -1,4 +1,5 @@
 "use client";
+import { eventUpdateSection } from "@halaa/shared/utils/eventUpdateSection";
 import { useCallback } from "react";
 import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
@@ -19,6 +20,7 @@ const useUpdateEventActions = ({
   buildStepPayload,
   isStepValid,
   isEventLive,
+  eventStatus,
   setIsSaving,
   router,
   buildReturnUrl,
@@ -30,25 +32,19 @@ const useUpdateEventActions = ({
   const updateInvitationSettings = useUpdateInvitationSettings();
 
   const updateEventSection = useCallback(async () => {
-    if (!eventId) return;
-
-    const payload = buildStepPayload(currentStep);
-    if (!payload) return;
+    if (!eventId) throw new Error("Missing event ID");
 
     setIsSaving(true);
 
     try {
-      if (payload.type === "eventDetails") {
-        await updateEventDetails.mutateAsync({ eventId, data: payload.data });
-      } else if (payload.type === "step2") {
-        await updateEventStep2.mutateAsync({ eventId, data: payload.data });
-      } else if (payload.type === "invitationSettings") {
-        await updateInvitationSettings.mutateAsync({
-          eventId,
-          data: payload.data,
-        });
-      }
-      toastUtils.success(payload.successMessage);
+      const { section, data } = eventUpdateSection(buildStepPayload(currentStep));
+      const mutation = section === "details" ? updateEventDetails
+        : section === "people" ? updateEventStep2 : updateInvitationSettings;
+      const result = await mutation.mutateAsync({ eventId, data });
+      if (!result || result.success === false) throw new Error("Event update was not confirmed");
+      const updatedEvent = result?.data?.event || result?.event;
+      toastUtils.success(t(eventStatus === "scheduled" && updatedEvent?.status === "pending_scheduling" ? "changes_saved_unscheduled" : "changes_saved"));
+      return result;
     } catch (error) {
       handleError(error, t, { fallbackMessage: "errors.update_failed" });
       throw error;
@@ -59,6 +55,7 @@ const useUpdateEventActions = ({
     eventId,
     currentStep,
     buildStepPayload,
+    eventStatus,
     updateEventDetails,
     updateEventStep2,
     updateInvitationSettings,

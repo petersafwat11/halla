@@ -1,3 +1,4 @@
+import { normalizeEventLocation as normalizeLocation, hasEventCoordinates as isFiniteCoordinate } from "@halaa/shared/utils/eventLocation";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator, Alert, FlatList, Keyboard, Modal, Platform, StyleSheet,
@@ -18,16 +19,7 @@ import DirectionalTextInput from "./DirectionalTextInput";
 const DEFAULT_COORDINATE = { latitude: 24.7136, longitude: 46.6753 };
 const DEFAULT_REGION = { ...DEFAULT_COORDINATE, latitudeDelta: 0.08, longitudeDelta: 0.08 };
 const newSessionToken = () => `${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
-const isFiniteCoordinate = (value) => Number.isFinite(Number(value?.latitude)) && Number.isFinite(Number(value?.longitude));
-const normalizeLocation = (value, coordinate = DEFAULT_COORDINATE) => ({
-  address: value?.address || "",
-  latitude: Number(value?.latitude ?? coordinate.latitude),
-  longitude: Number(value?.longitude ?? coordinate.longitude),
-  city: value?.city || "",
-  country: value?.country || "",
-  placeId: value?.placeId || "",
-  provider: value?.provider || "google",
-});
+
 
 function MapPickerInner({
   onChange,
@@ -63,8 +55,8 @@ function MapPickerInner({
     return Platform.OS === "ios" ? maps.iosConfigured : maps.androidConfigured;
   }, []);
   const region = useMemo(() => ({
-    latitude: Number(draft.latitude) || DEFAULT_REGION.latitude,
-    longitude: Number(draft.longitude) || DEFAULT_REGION.longitude,
+    latitude: isFiniteCoordinate(draft) ? Number(draft.latitude) : DEFAULT_REGION.latitude,
+    longitude: isFiniteCoordinate(draft) ? Number(draft.longitude) : DEFAULT_REGION.longitude,
     latitudeDelta: 0.025,
     longitudeDelta: 0.025,
   }), [draft.latitude, draft.longitude]);
@@ -155,7 +147,7 @@ function MapPickerInner({
   const useTypedAddress = () => {
     const address = query.trim();
     if (address.length < 3) return;
-    setDraft((previous) => ({ ...previous, address, city: "", country: "", placeId: "", provider: "manual" }));
+    setDraft((previous) => ({ ...previous, address, latitude: null, longitude: null, city: "", country: "", placeId: "", provider: "manual" }));
     setResults([]); Keyboard.dismiss();
   };
   const openPicker = () => {
@@ -168,7 +160,7 @@ function MapPickerInner({
     setOpen(false);
   };
   const confirm = () => {
-    if (!draft.address.trim() || !isFiniteCoordinate(draft)) return;
+    if (!draft.address.trim()) return;
     Keyboard.dismiss();
     onChange(normalizeLocation(draft));
     setOpen(false);
@@ -226,8 +218,8 @@ function MapPickerInner({
               <MapView ref={mapRef} provider={PROVIDER_GOOGLE} style={StyleSheet.absoluteFill}
                 initialRegion={region} onPress={(event) => reverseCoordinate(event.nativeEvent.coordinate)}
                 showsCompass showsMyLocationButton={false}>
-                <Marker coordinate={{ latitude: region.latitude, longitude: region.longitude }} draggable
-                  onDragEnd={(event) => reverseCoordinate(event.nativeEvent.coordinate)} />
+                {isFiniteCoordinate(draft) && <Marker coordinate={{ latitude: region.latitude, longitude: region.longitude }} draggable
+                  onDragEnd={(event) => reverseCoordinate(event.nativeEvent.coordinate)} />}
               </MapView>
             ) : (
               <View style={styles.mapUnavailable}>
@@ -263,8 +255,8 @@ function MapPickerInner({
 
           <View style={styles.footer}>
             <TouchableOpacity onPress={closePicker} style={styles.cancelButton}><Text style={styles.cancelText}>{t("cancel", { ns: "common" })}</Text></TouchableOpacity>
-            <TouchableOpacity onPress={confirm} disabled={!draft.address.trim() || !isFiniteCoordinate(draft)}
-              style={[styles.confirmButton, (!draft.address.trim() || !isFiniteCoordinate(draft)) && styles.confirmDisabled]}>
+            <TouchableOpacity onPress={confirm} disabled={!draft.address.trim()}
+              style={[styles.confirmButton, (!draft.address.trim()) && styles.confirmDisabled]}>
               <Text style={styles.confirmText}>{t("map_picker_confirm")}</Text>
             </TouchableOpacity>
           </View>

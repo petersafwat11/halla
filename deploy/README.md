@@ -81,6 +81,23 @@ Pick one:
 
 ## Rollback
 
+The web image preserves workspace-local dependencies as well as root dependencies.
+Configure `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` as a GitHub Actions secret and
+`NEXT_PUBLIC_GA4_MEASUREMENT_ID` as a repository variable: both are compiled into
+the browser bundle, so changing VPS runtime variables alone has no effect.
+Use a browser-restricted Maps key; the backend Places proxy separately requires
+`GOOGLE_MAPS_SERVER_API_KEY` in `/opt/halaa/config.env`. A configured key does not
+activate Google Maps billing.
+
+Before the host-flow guest migration, back up the `guests` and `events`
+collections and pause API writers. Run `node scripts/audit-active-guests.js`
+inside the API environment first. It supports production `DATABASE`, password,
+and X.509 certificate settings and checks transaction-capable topology.
+After a clean duplicate/phone audit, `--apply` normalizes active phones and creates
+the partial unique index. Optional `--repair-links` with `--apply` rebuilds event
+guest references from active guest membership without deleting guest records.
+Keep writers paused until the migration completes, then resume and audit again.
+
 Re-run the **deploy** workflow via *Run workflow* → set **image_tag** to a previous git SHA.
 It skips the build and rolls the VPS back to that image. Or on the VPS:
 ```bash

@@ -1,3 +1,4 @@
+const { guestAudienceFilter } = require("../guests/guestAudience");
 /**
  * Events Service — Resend-invite + Extra-reminder sub-module
  * Composed onto EventsService via prototype mixin in events.service.js
@@ -169,14 +170,7 @@ module.exports = {
 
     // Audience: never-sent guests only. Explicit guestIds may narrow, never
     // widen (the gate is server-enforced).
-    const guestQuery = {
-      event: eventId,
-      deleted: { $ne: true },
-      "invitation.sent": { $ne: true },
-    };
-    if (Array.isArray(body.guestIds) && body.guestIds.length > 0) {
-      guestQuery._id = { $in: body.guestIds };
-    }
+    const guestQuery = guestAudienceFilter(eventId, 'newGuests', body.guestIds);
 
     const targetGuests = await Guest.find(guestQuery).select("_id");
 
@@ -310,15 +304,7 @@ module.exports = {
     // `guestIds` may only NARROW the audience, never bypass the status gate
     // (UI filtering is not authorization). A crafted request can therefore
     // not resend to confirmed/declined guests.
-    const guestQuery = {
-      event: eventId,
-      deleted: { $ne: true },
-      "invitation.sent": true,
-      status: { $in: ["invited", "pending"] },
-    };
-    if (Array.isArray(body.guestIds) && body.guestIds.length > 0) {
-      guestQuery._id = { $in: body.guestIds };
-    }
+    const guestQuery = guestAudienceFilter(eventId, 'resend', body.guestIds);
 
     const targetGuests = await Guest.find(guestQuery);
 
@@ -495,20 +481,7 @@ module.exports = {
     // ---------- Confirmed audience ----------
     // A guest is "confirmed" via either the guest status (confirmed/checked_in)
     // or the RSVP response. Optional guestIds narrows to that subset.
-    const confirmedClause = {
-      $or: [
-        { status: { $in: ["confirmed", "checked_in"] } },
-        { "rsvp.response": "confirmed" },
-      ],
-    };
-    const guestQuery = {
-      event: eventId,
-      deleted: { $ne: true },
-      ...confirmedClause,
-    };
-    if (Array.isArray(body.guestIds) && body.guestIds.length > 0) {
-      guestQuery._id = { $in: body.guestIds };
-    }
+    const guestQuery = guestAudienceFilter(eventId, 'extraReminder', body.guestIds);
 
     const targetGuests = await Guest.find(guestQuery);
 

@@ -28,12 +28,20 @@ export const useGuestMutation = (action) => {
   };
 
   const mutations = {
+    bulk: {
+      mutationFn: ({ eventId, data, idempotencyKey }) => apiRequest({
+        method: "POST", path: API_PATHS.guests.getEventGuests(eventId) + "/bulk", data,
+        config: { headers: { "Idempotency-Key": idempotencyKey } },
+      }),
+      onSuccess: (_, { eventId }) => invalidateEventGuests(eventId),
+    },
     add: {
-      mutationFn: ({ eventId, data, guestData }) =>
+      mutationFn: ({ eventId, data, guestData, idempotencyKey }) =>
         apiRequest({
           method: "POST",
           path: API_PATHS.guests.addGuest(eventId),
           data: data ?? guestData,
+          config: idempotencyKey ? { headers: { "Idempotency-Key": idempotencyKey } } : {},
         }),
       onSuccess: (_, { eventId }) => invalidateEventGuests(eventId),
     },

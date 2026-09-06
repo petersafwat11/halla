@@ -115,7 +115,7 @@ const toStoredEventTime = (date) => {
   return `${hours % 12 || 12}:${minutes} ${period}`;
 };
 
-const StepOne = () => {
+const StepOne = ({ constraints } = {}) => {
   const { setValue, watch } = useFormContext();
   const { t, currentLanguage, isRTL } = useTranslation("createEvent");
   const fieldDirection = useFieldDirection("localized");
@@ -133,12 +133,17 @@ const StepOne = () => {
   //   (assertEventDateFloor) is the source of truth and rejects
   //   EVENT_DATE_TOO_SOON for boundary cases.
   const minDate = useMemo(() => {
+    if (constraints?.minEventDate) {
+      const floor = new Date(constraints.minEventDate);
+      const saved = constraints.canKeepExistingDate && constraints.existingDate ? new Date(constraints.existingDate) : floor;
+      return saved < floor ? saved : floor;
+    }
     const days = isTrial ? 3 : 4;
     const d = new Date();
     d.setDate(d.getDate() + days);
     d.setHours(0, 0, 0, 0);
     return d;
-  }, [isTrial]);
+  }, [isTrial, constraints]);
 
   const eventDate = watch("eventDate");
   const eventTime = watch("eventTime");

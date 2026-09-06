@@ -38,7 +38,7 @@ export default function EventActionsHeader({ event, isAdmin = false }) {
   // visibility identically. (Manual-retry RBAC stays in
   // `EventFailureBanner`; here we only need the test/schedule/staff
   // gates so the existing `event` prop is enough.)
-  const { canSendTest, canSchedule, hasStaff, isCompleted } =
+  const { canSendTest, canSchedule, canNotifyStaff, isCompleted } =
     useEventActionGate({ event, testMessageSent });
 
   const dropdownItems = [
@@ -46,7 +46,7 @@ export default function EventActionsHeader({ event, isAdmin = false }) {
     { label: t("lastEvent.dropdown.guestList"), step: 2 },
     { label: t("lastEvent.dropdown.invitationDesign"), step: 3 },
     { label: t("lastEvent.dropdown.invitationCustomization"), step: 4 },
-  ];
+  ].filter(item => event?.capabilities?.[{ 1: "canEditDetails", 2: "canAddGuest", 3: "canEditDesign", 4: "canEditMessages" }[item.step]]);
 
   const handleEditClick = (step) => {
     const basePath = isAdmin ? "admin-dash" : "host";
@@ -108,7 +108,7 @@ export default function EventActionsHeader({ event, isAdmin = false }) {
         {/* Consolidated send actions (resend / extra reminder / new guests).
             Self-hides until a send has started and on terminal events. */}
         <SendMessagesMenu event={event} eventId={effectiveEventId} />
-        {hasStaff && (
+        {canNotifyStaff && (
           <button
             className={styles.outlineButton}
             onClick={handleNotifyStaff}

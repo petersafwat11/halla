@@ -10,6 +10,11 @@ import {
 
 export default function GuestRows({
   guests,
+  searchValue,
+  onSearchChange,
+  pagination,
+  emptyMessage,
+  onSelectionChange,
   t,
   formatDate,
   formatDateTime,
@@ -29,6 +34,7 @@ export default function GuestRows({
     { label: t("singleEvent.stats.declined"), value: "declined" },
     { label: t("singleEvent.stats.noResponse"), value: "noResponse" },
     { label: t("singleEvent.stats.checkedIn"), value: "checkedIn" },
+    { label: t("people.failed"), value: "failedDelivery" },
   ].map((opt) => ({
     ...opt,
     onClick: () => onStatusFilterChange(opt.value),
@@ -49,6 +55,13 @@ export default function GuestRows({
 
   return (
     <Table
+      mode="server"
+      searchValue={searchValue}
+      onSearchChange={onSearchChange}
+      pagination={pagination}
+      emptyMessage={emptyMessage}
+      showCheckboxes={true}
+      onSelectionChange={onSelectionChange}
       title={t("singleEvent.guestTable.title", "قائمة الضيوف")}
       headers={[
         t("table.columns.guestName", "اسم الضيف"),
@@ -74,7 +87,7 @@ export default function GuestRows({
         responseTime: guest.rsvp?.respondedAt,
       }))}
       actions={[
-        {
+        ...(onEditGuest ? [{
           type: "dropdown",
           icon: <FiEdit2 size={16} />,
           text: t("table.actions.edit", "تعديل"),
@@ -82,8 +95,8 @@ export default function GuestRows({
             const guest = guestsList.find((g) => g.id === row.id);
             if (guest) onEditGuest(guest);
           },
-        },
-        {
+        }] : []),
+        ...(onDeleteGuest ? [{
           type: "dropdown",
           icon: <FiTrash2 size={16} />,
           text: t("table.actions.delete", "حذف"),
@@ -91,7 +104,7 @@ export default function GuestRows({
             const guest = guestsList.find((g) => g.id === row.id);
             if (guest) onDeleteGuest(guest);
           },
-        },
+        }] : []),
         ...(onRotateQr
           ? [
               {

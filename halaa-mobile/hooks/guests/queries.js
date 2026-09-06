@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { fetchCompleteGuestList, guestQueryString } from "@halaa/shared/utils/guestPagination";
+import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { ENDPOINTS } from "../../config/api";
 import { apiFetch } from "../../services/http";
 import { useAuthStore } from "../../stores/authStore";
@@ -52,22 +53,37 @@ export function useMyContacts(params = {}, options = {}) {
   });
 }
 
-export function useEventGuests(eventId) {
+export function useEventGuests(eventId, options = {}) {
   const token = useAuthStore((state) => state.token);
 
   return useQuery({
     queryKey: guestsKeys.forEvent(eventId),
-    queryFn: () => {
+    queryFn: ({ signal }) => {
       if (!eventId) throw new Error("eventId is required");
-      return guestsFetch(
-        ENDPOINTS.GUESTS.EVENT_GUESTS(eventId),
-        { method: "GET" },
-        "Failed to load guests",
-      );
+      return fetchCompleteGuestList(params => guestsFetch(
+        ENDPOINTS.GUESTS.EVENT_GUESTS(eventId) + "?" + guestQueryString(params),
+        { method: "GET", signal }, "Failed to load guests",
+      ));
     },
-    enabled: !!eventId && !!token,
+    enabled: !!eventId && !!token && options.enabled !== false,
     staleTime: 3 * 60 * 1000,
   });
 }
 
 export default useEventGuests;
+
+
+export function useInfiniteEventGuests(eventId, params = {}) {
+  const token = useAuthStore(state => state.token);
+  return useInfiniteQuery({
+    queryKey: [...guestsKeys.forEvent(eventId), "infinite", params],
+    initialPageParam: 1,
+    queryFn: ({ pageParam, signal }) => guestsFetch(
+      ENDPOINTS.GUESTS.EVENT_GUESTS(eventId) + "?" + guestQueryString({ ...params, page: pageParam, limit: 50 }),
+      { method: "GET", signal }, "Failed to load guests",
+    ),
+    getNextPageParam: (last) => last.pagination?.page < last.pagination?.pages ? last.pagination.page + 1 : undefined,
+    enabled: !!eventId && !!token,
+    staleTime: 60 * 1000,
+  });
+}

@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import useEventActionGate from "@halaa/shared/hooks/useEventActionGate";
@@ -11,7 +11,7 @@ import useEventActionGate from "@halaa/shared/hooks/useEventActionGate";
  * completed) but `messagingStatus.failedCount > 0` — i.e. the bulk
  * send didn't deliver to every guest.
  */
-const PartialFailureBanner = ({ event, currentUser = null }) => {
+const PartialFailureBanner = ({ event, currentUser = null, onViewFailures }) => {
   const { t } = useTranslation("events");
   const { hasFailedSends, failedCount } = useEventActionGate({
     event,
@@ -31,6 +31,7 @@ const PartialFailureBanner = ({ event, currentUser = null }) => {
         <Text style={styles.message}>
           {t("partialFailure.message", { failed: failedCount, total, sent })}
         </Text>
+        {onViewFailures && <TouchableOpacity onPress={onViewFailures}><Text style={styles.title}>{t("peopleFailed")}</Text></TouchableOpacity>}
       </View>
     </View>
   );

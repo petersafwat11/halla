@@ -101,15 +101,15 @@ module.exports = {
     const eventIds = events.map(e => e._id);
     const [guestCounts, confirmedCounts, declinedCounts] = await Promise.all([
       Guest.aggregate([
-        { $match: { event: { $in: eventIds } } },
+        { $match: { deleted: { $ne: true }, event: { $in: eventIds } } },
         { $group: { _id: '$event', count: { $sum: 1 } } },
       ]),
       Guest.aggregate([
-        { $match: { event: { $in: eventIds }, status: { $in: ['confirmed', 'checked_in'] } } },
+        { $match: { deleted: { $ne: true }, event: { $in: eventIds }, status: { $in: ['confirmed', 'checked_in'] } } },
         { $group: { _id: '$event', count: { $sum: 1 } } },
       ]),
       Guest.aggregate([
-        { $match: { event: { $in: eventIds }, status: 'declined' } },
+        { $match: { deleted: { $ne: true }, event: { $in: eventIds }, status: 'declined' } },
         { $group: { _id: '$event', count: { $sum: 1 } } },
       ]),
     ]);
@@ -191,7 +191,7 @@ module.exports = {
       // by rsvp.response / rsvp.responded) and by the guest-table reminder
       // badges. Without them, the picker shows zero eligible guests for the
       // confirmed bucket and the badges never light up.
-      .populate("guestList", "name phone category status rsvp invitation")
+      .populate({ path: "guestList", match: { deleted: { $ne: true } }, select: "name phone category status rsvp invitation" })
       .populate("host", "email phoneNumber name")
       // Populate the canonical refs so the wizard can highlight the
       // saved template (Step 3) and show body text (Step 4) on edit.
@@ -298,6 +298,10 @@ module.exports = {
             ].includes(event.status),
             allowAddOnly: event.status === EVENT_STATUS.LIVE,
           };
+          const { minLeadMs, maxLeadMs } = require('../../shared/utils/schedulingWindow');
+          event.constraints = { minEventDate: new Date(Date.now() + minLeadMs(isTrial) + maxLeadMs()).toISOString(),
+            canKeepExistingDate: true, existingDate: event.eventDetails?.date,
+            subscriptionId: sub._id, isTrial };
           event.invitationBalance = invitationBalance;
         } else {
           event.invitationBalance = calculateInvitationBalance(null);
@@ -311,6 +315,10 @@ module.exports = {
       }
     }
 
+    event.capabilities = {
+      ...event.capabilities,
+      ...require('./eventActionCapabilities').eventActionCapabilities(event),
+    };
     return { event };
   },
 
@@ -397,11 +405,11 @@ module.exports = {
     const eventIds = events.map(e => e._id);
     const [guestCounts, confirmedCounts] = await Promise.all([
       Guest.aggregate([
-        { $match: { event: { $in: eventIds } } },
+        { $match: { deleted: { $ne: true }, event: { $in: eventIds } } },
         { $group: { _id: '$event', count: { $sum: 1 } } },
       ]),
       Guest.aggregate([
-        { $match: { event: { $in: eventIds }, status: { $in: ['confirmed', 'checked_in'] } } },
+        { $match: { deleted: { $ne: true }, event: { $in: eventIds }, status: { $in: ['confirmed', 'checked_in'] } } },
         { $group: { _id: '$event', count: { $sum: 1 } } },
       ]),
     ]);

@@ -134,6 +134,12 @@
     "includesBasic": "All Basic features +",
     "compensationTitle": "Free Compensation Invites",
     "compensationRow": "{{count}} compensation invites ({{percent}}% of {{base}})",
+    "compensationRow_zero": "No compensation invites ({{percent}}% of {{base}})",
+    "compensationRow_one": "1 compensation invite ({{percent}}% of {{base}})",
+    "compensationRow_two": "{{count}} compensation invites ({{percent}}% of {{base}})",
+    "compensationRow_few": "{{count}} compensation invites ({{percent}}% of {{base}})",
+    "compensationRow_many": "{{count}} compensation invites ({{percent}}% of {{base}})",
+    "compensationRow_other": "{{count}} compensation invites ({{percent}}% of {{base}})",
     "popular": "Most Popular",
     "contactNote": "Our team will contact you to complete payment.",
     "loading": "Loading plans..."

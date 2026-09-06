@@ -75,11 +75,11 @@ const MapInputInner = ({
   useEffect(() => {
     const lat = Number(value?.latitude);
     const lng = Number(value?.longitude);
-    if (Number.isFinite(lat) && Number.isFinite(lng)) {
+    if (value?.latitude != null && value?.longitude != null && Number.isFinite(lat) && Number.isFinite(lng)) {
       const next = { lat, lng };
       setMarkerPos(next);
       setPanTarget(next);
-    }
+    } else { setMarkerPos(null); }
     setSearchQuery(value?.address || "");
   }, [value?.address, value?.latitude, value?.longitude]);
 
@@ -530,6 +530,7 @@ const MapInputInner = ({
 const MapInput = ({ name, label, required, hintMessage }) => {
   const { i18n, t } = useTranslation("createEvent");
   const { control, clearErrors } = useFormContext();
+  const [manual, setManual] = useState(!API_KEY);
   const {
     field: { value, onChange },
     fieldState: { error },
@@ -538,8 +539,8 @@ const MapInput = ({ name, label, required, hintMessage }) => {
     control,
     defaultValue: {
       address: "",
-      latitude: DEFAULT_CENTER.lat,
-      longitude: DEFAULT_CENTER.lng,
+      latitude: null,
+      longitude: null,
       city: "",
       country: "",
       placeId: null,
@@ -547,11 +548,15 @@ const MapInput = ({ name, label, required, hintMessage }) => {
     },
   });
 
-  if (!API_KEY) {
+  if (manual) {
     return (
       <div className={styles.input_group}>
-        {label && <label className={styles.label}>{label}</label>}
-        <p className={styles.error}>
+        {label && <label htmlFor={name + "-manual"} className={styles.label}>{label}</label>}
+        <input id={name + "-manual"} value={value?.address || ""} required={required}
+          onChange={(e) => { onChange({ address: e.target.value, latitude: null, longitude: null, provider: "manual", placeId: null }); clearErrors(name); }} />
+        {API_KEY && <button type="button" onClick={() => setManual(false)}>{t("map_retry")}</button>}
+        {error && <p role="alert">{error.message}</p>}
+        <p className={styles.hint}>
           {t("map_picker_not_configured", "The map is temporarily unavailable.")}
         </p>
       </div>
@@ -559,6 +564,8 @@ const MapInput = ({ name, label, required, hintMessage }) => {
   }
 
   return (
+    <>
+    <button type="button" onClick={() => setManual(true)}>{t("map_manual")}</button>
     <APIProvider
       apiKey={API_KEY}
       libraries={["places"]}
@@ -576,6 +583,7 @@ const MapInput = ({ name, label, required, hintMessage }) => {
         hintMessage={hintMessage}
       />
     </APIProvider>
+    </>
   );
 };
 

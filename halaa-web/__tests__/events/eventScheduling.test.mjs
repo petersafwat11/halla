@@ -51,15 +51,13 @@ describe('Session 1.6 Web: Event Action Gate & Scheduling Tests (EVT-09)', () =>
     assert.equal(gate4.canSchedule, false);
     assert.equal(gate4.isLive, true);
 
-    // 5. Scheduled event -> canSendTest = false even when the client-side
-    //    testMessageSent flag is missing/stale (auto-send is queued; a
-    //    preview send is pointless).
+    // Scheduled events permit another test, matching backend TEST_MESSAGE.
     const gate5 = computeEventActionGate({
       event: scheduledEvent,
       testMessageSent: false,
     });
     assert.equal(gate5.isScheduled, true);
-    assert.equal(gate5.canSendTest, false);
+    assert.equal(gate5.canSendTest, true);
 
     // 6. Live event -> canSendTest = false (invitations already delivered).
     const gate6 = computeEventActionGate({

@@ -16,7 +16,7 @@ const { EVENT_LIFECYCLE_ALLOWED } = require("../../shared/constants/status");
 const Event = require("../../../models/EventModel");
 const Guest = require("../../../models/GuestModel");
 const Subscription = require("../../../models/SubscriptionModel");
-const subscriptionEventAccess = require('../subscriptions/subscriptionEventAccess.service');
+const { assertEventGuestCapacity } = require('../guests/eventGuestCapacity');
 
 const { normalizePhoneNumber } = require('../../shared/utils/phone');
 // Post-review polish — extracted error codes shared between
@@ -58,6 +58,13 @@ module.exports = {
     const event = await Event.findOne(this._buildScopedEventQuery(eventId, userContext))
       .populate('guestList', 'name phone status category');
     if (!event) throw new NotFoundError("Event");
+    if (payload.expectedVersion != null && event.__v !== payload.expectedVersion) {
+      throw new AppError('Event changed. Refresh before saving guests.', 409, 'EVENT_LIFECYCLE_CONFLICT');
+    }
+    // Include the observed version on every save, including the compensation
+    // path, so a stale replacement cannot unlink a concurrent quick-add.
+    event.$where = { __v: event.__v };
+
 
     if (!EVENT_LIFECYCLE_ALLOWED.STAFF_MUTATION.includes(event.status)) {
       throw new AppError(
@@ -73,26 +80,7 @@ module.exports = {
     // per-event and pool plans alike. Unlimited plans (invitePool null) have
     // no cap.
     const newCount = guestList.length;
-    if (event.subscriptionId) {
-      const ownerId = event.host?._id || event.host || userId;
-      const capSub = await subscriptionEventAccess.findForEvent(event, ownerId, {
-        allowFallback: false,
-      });
-      if (!capSub) {
-        throw new PackageLimitError(
-          'subscription',
-          0,
-          'This event subscription is no longer available'
-        );
-      }
-      if (capSub && capSub.invitePool !== null && capSub.invitePool !== undefined) {
-        const capacity = (capSub.invitePool || 0) + (capSub.compensationPool || 0);
-        if (newCount > capacity) {
-          throw new PackageLimitError("guests", capacity,
-            `Guest list (${newCount}) exceeds your plan capacity of ${capacity} invites.`);
-        }
-      }
-    }
+    await assertEventGuestCapacity(event, userContext, newCount);
 
     // Floor — never drop below confirmed/checked-in count.
     const confirmedCount = (event.guestList || []).filter((g) =>
@@ -128,6 +116,9 @@ module.exports = {
 
     for (const incoming of guestList) {
       const normPhone = normalizePhoneNumber(incoming.phone);
+      if (incomingPhones.has(normPhone)) {
+        throw new AppError('Guest already exists in this event', 409, 'GUEST_ALREADY_EXISTS');
+      }
       incomingPhones.add(normPhone);
       const existing = existingByPhone.get(normPhone);
       if (existing) {
@@ -231,6 +222,7 @@ module.exports = {
         event.guestList = [...keptGuestIds, ...newGuestIds];
         event.staffList = normalisedStaff;
         await event.save({ session });
+        event.$where = { __v: event.__v };
 
         if (event.subscriptionId && newGuestIds.length > 0) {
           await Subscription.findByIdAndUpdate(
@@ -370,6 +362,7 @@ module.exports = {
         try {
           event.guestList = [...keptGuestIds, ...newGuestIds];
           await event.save();
+          event.$where = { __v: event.__v };
         } catch (firstSaveErr) {
           await runCompensation('first-event-save');
           throw firstSaveErr;

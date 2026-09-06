@@ -1,5 +1,6 @@
 "use client";
-import React, { useMemo } from "react";
+import { hasEventCoordinates } from "@halaa/shared/utils/eventLocation";
+import React, { useMemo, useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import styles from "./summary.module.css";
@@ -7,7 +8,7 @@ import {
   resolveTaqnyatPlaceholders,
   buildTaqnyatPreviewContext,
 } from "@halaa/shared/utils";
-import { formatDate } from "@halaa/shared/utils/locale";
+import { formatDate as formatLocaleDate } from "@halaa/shared/utils/locale";
 import useAuthStore from "@/stores/authStore";
 import SummaryCards from "./SummaryCards";
 import EventDataDisplay from "./EventDataDisplay";
@@ -36,16 +37,7 @@ const Summary = () => {
   const scheduleDate = watch("scheduleDate") || launchSettings.scheduledDate || "";
   const scheduleTime = watch("scheduleTime") || launchSettings.scheduledTime || "";
 
-  // Format date helper
-  const formatDate = (date) => {
-    if (!date) return "";
-    const dateObj = typeof date === "string" ? new Date(date) : date;
-    if (Number.isNaN(dateObj.getTime())) return "";
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, "0");
-    const day = String(dateObj.getDate()).padStart(2, "0");
-    return `${year}/${month}/${day}`;
-  };
+  const formatDate = (date) => date ? formatLocaleDate(date, i18n.language) : "";
 
   // Format event type
   const formatEventType = (type) => {
@@ -66,7 +58,7 @@ const Summary = () => {
     const bodyText = selectedTemplate?.bodyText;
     if (!bodyText) return "";
     const locale = i18n?.language || "ar";
-    const dateFormatted = eventDate ? formatDate(eventDate, locale) : "";
+    const dateFormatted = eventDate ? formatLocaleDate(eventDate, locale) : "";
     const context = buildTaqnyatPreviewContext({
       guestName: i18n?.language === "en" ? "Dear Guest" : "ضيفنا الكريم",
       eventTitle: eventName,
@@ -102,17 +94,21 @@ const Summary = () => {
       eventDate && eventTime ? `${formatDate(eventDate)} - ${eventTime}` : "",
     location: address.address || "",
     mapLink:
-      address.latitude && address.longitude
+      hasEventCoordinates(address)
         ? `https://maps.google.com/?q=${address.latitude},${address.longitude}`
         : "",
     scheduleDate: formatDate(scheduleDate),
     scheduleTime: scheduleTime,
   };
 
+  const templateImage = watch("templateImage");
+  const imageUrl = useMemo(() => templateImage instanceof Blob ? URL.createObjectURL(templateImage) : templateImage, [templateImage]);
+  useEffect(() => () => { if (templateImage instanceof Blob && imageUrl) URL.revokeObjectURL(imageUrl); }, [templateImage, imageUrl]);
   return (
     <div className={styles.summary}>
       <div className={styles.content}>
         <SummaryCards eventData={eventData} />
+        {imageUrl && <img src={imageUrl} alt={t("invitation_visual")} style={{ maxWidth: "100%", maxHeight: 440, objectFit: "contain" }} />}
 
         <EventDataDisplay eventData={eventData} />
 
@@ -120,15 +116,15 @@ const Summary = () => {
 
         <div className={styles.checkboxSection}>
           <div className={styles.checkboxRow}>
-            <div
+            <input type="checkbox" id="confirm-reviewed" checked={confirmChecked}
               className={`${styles.checkbox} ${
                 confirmChecked ? styles.checkboxChecked : ""
               }`}
-              onClick={() => setValue("confirmReviewed", !confirmChecked)}
+              onChange={(e) => setValue("confirmReviewed", e.target.checked, { shouldValidate: true })}
             />
-            <span className={styles.checkboxLabel}>
+            <label htmlFor="confirm-reviewed" className={styles.checkboxLabel}>
               {t("confirm_reviewed")}
-            </span>
+            </label>
           </div>
         </div>
       </div>

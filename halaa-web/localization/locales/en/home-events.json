@@ -288,7 +288,8 @@
       "ourInvitationDesc": "Let us handle all your event details",
       "staffDetails": "Staff Details",
       "sendReminder": "Send Reminder",
-      "addGuest": "Add Guest"
+      "addGuest": "Add Guest",
+      "back": "Back to events"
     },
     "stats": {
       "attendanceTracking": "Statistics",
@@ -458,5 +459,19 @@
     "addMore": "Add More",
     "usedOfTotal": "{{used}} of {{total}}",
     "helper": "Adding guests is free; you're charged only when an invitation or reminder is sent."
+  },
+  "people": {
+    "loading": "Loading guests…",
+    "retry": "Could not load guests. Retry",
+    "selected": "{{count}} selected on this page",
+    "category": "Change category",
+    "remove": "Remove guests",
+    "cancel": "Cancel",
+    "save": "Save changes",
+    "confirmRemove": "Remove the {{count}} selected guests? Their history will be retained.",
+    "bulkResult": "Updated {{updated}}; skipped {{skipped}}; failed {{failed}}.",
+    "clear": "Clear selection",
+    "categoryLabel": "Category (optional)",
+    "failed": "Failed delivery"
   }
 }

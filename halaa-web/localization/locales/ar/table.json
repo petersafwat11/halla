@@ -5,5 +5,6 @@
   "export": "تصدير البيانات",
   "moreOptions": "خيارات إضافية",
   "selected": "{{count}} محدد",
-  "clearSelection": "إلغاء التحديد"
+  "clearSelection": "إلغاء التحديد",
+  "selectThisPage": "تحديد هذه الصفحة"
 }

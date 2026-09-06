@@ -74,6 +74,7 @@ jobs:
           file: halaa-web/Dockerfile
           build-args: |
             NEXT_PUBLIC_GA4_MEASUREMENT_ID=${{ vars.NEXT_PUBLIC_GA4_MEASUREMENT_ID }}
+            NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${{ secrets.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }}
           push: true
           tags: |
             ghcr.io/${{ env.OWNER }}/halaa-web:${{ steps.meta.outputs.tag }}

@@ -4,7 +4,7 @@ import { FormProvider } from "react-hook-form";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "../../create-event/page.module.css";
 import Header from "../../create-event/_components/header/Header";
-import Stepper from "../../create-event/_components/stepper/Stepper";
+import DeleteConfirmation from "@/ui/vendor/modals/DeleteConfirmation";
 import StepTitleAndDesc from "../../create-event/_components/stepTitleAndDesc/StepTitleAndDesc";
 import UpdateButtons from "./UpdateButtons";
 import WhatsappPreview from "../../create-event/_components/whatsappPreview/WhatsappPreview";
@@ -48,6 +48,7 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
   const currentStep = parseUpdateEventStep(searchParams);
 
   const [isSaving, setIsSaving] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState(null);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
   const [showStaffPopup, setShowStaffPopup] = useState(false);
 
@@ -65,9 +66,24 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
     deleteStaffMember,
   } = useEventForm({ mode: "update", eventId, totalSteps: 4 });
 
+  const navigateWhenClean = (url) => {
+    if (methods.formState.isDirty) setPendingNavigation(url);
+    else router.push(url);
+  };
+  useEffect(() => {
+    const onUnload = (event) => { if (methods.formState.isDirty) { event.preventDefault(); event.returnValue = ""; } };
+    window.addEventListener("beforeunload", onUnload);
+    return () => window.removeEventListener("beforeunload", onUnload);
+  }, [methods.formState.isDirty]);
+
   const buildReturnUrl = useCallback(
-    () => `/${locale}/${returnPath}`,
-    [locale, returnPath]
+    () => {
+      const base = `/${locale}/${returnPath}`;
+      const requested = searchParams.get("returnTo");
+      if (requested && requested.startsWith(base + "/") && !requested.includes(String.fromCharCode(92))) return requested;
+      return eventId ? base + (returnPath === "host" ? "/events/" : "/") + eventId : base;
+    },
+    [locale, returnPath, eventId, searchParams]
   );
 
   const {
@@ -107,12 +123,13 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
     }
   }, [eventId, router, buildReturnUrl, t]);
 
-  const { handleSave, handleCancel } = useUpdateEventActions({
+  const { handleSave } = useUpdateEventActions({
     eventId,
     currentStep,
     buildStepPayload,
     isStepValid,
     isEventLive,
+    eventStatus: eventRaw?.status,
     setIsSaving,
     router,
     buildReturnUrl,
@@ -135,10 +152,14 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
   // The lockout banner appears at the top of every step on a live
   // event. Step 2 stays interactive (allow-add-only); other steps
   // render the banner above the disabled form.
-  const lockoutActive = (isEventLive && currentStep !== 2) || isEventCompleted;
+  const sectionCapability = { 1: "canEditDetails", 2: "canAddGuest", 3: "canEditDesign", 4: "canEditMessages" }[currentStep];
+  const lockoutActive = eventRaw?.capabilities?.[sectionCapability] === false || (isEventLive && currentStep !== 2) || isEventCompleted;
 
   return (
     <FormProvider {...methods}>
+      <DeleteConfirmation isOpen={!!pendingNavigation} onClose={() => setPendingNavigation(null)}
+        onConfirm={() => { const target = pendingNavigation; setPendingNavigation(null); reset(); router.push(target); }}
+        title={t("unsaved_title")} message={t("unsaved_body")} confirmText={t("discard_changes")} cancelText={t("keep_editing")} />
       <div className={styles.page_container}>
         <div className={styles.main_content}>
           <div className={styles.header_wrapper}>
@@ -150,7 +171,14 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
           </div>
 
           <div className={styles.stepper_wrapper}>
-            <Stepper currentStep={currentStep} totalSteps={4} />
+            <nav aria-label={t("update_sections")} style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+              {["details", "people", "design", "messages"].map((section, index) => (
+                <button type="button" key={section} aria-current={currentStep === index + 1 ? "page" : undefined}
+                  onClick={() => { const query = new URLSearchParams(searchParams.toString()); query.delete("step"); query.set("section", section); navigateWhenClean("?" + query.toString()); }}>
+                  {t("step" + (index + 1) + "_title")}
+                </button>
+              ))}
+            </nav>
           </div>
 
           {(isEventLive || isEventCompleted) && (
@@ -190,7 +218,7 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
                 </fieldset>
                 <UpdateButtons
                   onSave={handleSave}
-                  onCancel={handleCancel}
+                  onCancel={() => navigateWhenClean(buildReturnUrl())}
                   isSaveDisabled={!isStepValid || lockoutActive}
                   isSaving={isSaving}
                   currentStep={currentStep}

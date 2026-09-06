@@ -9,6 +9,7 @@ export const EVENT_UPDATE_SECTION_TO_STEP = Object.freeze({
   "1": 1,
   "guest-list": 2,
   "guests": 2,
+  "people": 2,
   "2": 2,
   "invitation-design": 3,
   "design": 3,
@@ -18,6 +19,7 @@ export const EVENT_UPDATE_SECTION_TO_STEP = Object.freeze({
   "invitation-customization": 4,
   "customization": 4,
   "settings": 4,
+  "messages": 4,
   "4": 4,
 });
 

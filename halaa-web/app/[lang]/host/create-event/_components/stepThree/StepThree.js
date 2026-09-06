@@ -45,6 +45,7 @@ const StepThree = () => {
   const [activeTemplate, setActiveTemplate] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("");
   const fileInputRef = useRef(null);
+  const modeDrafts = useRef({});
 
   const { data: catData } = useTemplateCategories({ admin: false });
   const { data: tplData, isLoading } = useHostTemplates({
@@ -95,8 +96,7 @@ const StepThree = () => {
       fieldValues: existingValues || {},
       data: existingValues || {},
     });
-    // Never let a newly selected template inherit the prior template's bake.
-    setValue("templateImage", "", { shouldValidate: true });
+    // Keep the committed selection until the customization is saved.
     setShowTemplateForm(true);
   };
 
@@ -115,30 +115,16 @@ const StepThree = () => {
   };
 
   // ── Mode switching ─────────────────────────────────────────────────
-  const switchToTemplateMode = () => {
-    if (mode === "template") return;
-    setMode("template");
-    // Wipe any uploaded asset so the host re-picks from the grid.
-    setValue(
-      "visualTemplate",
-      null,
-      { shouldValidate: true },
-    );
-    setValue("templateImage", "", { shouldValidate: true });
+  const switchMode = (nextMode) => {
+    if (mode === nextMode) return;
+    modeDrafts.current[mode] = { visualTemplate, templateImage };
+    const saved = modeDrafts.current[nextMode];
+    setMode(nextMode);
+    setValue("visualTemplate", saved?.visualTemplate || (nextMode === "upload" ? { isCustomUpload: true, fieldValues: {} } : null), { shouldValidate: true });
+    setValue("templateImage", saved?.templateImage || "", { shouldValidate: true });
   };
-
-  const switchToUploadMode = () => {
-    if (mode === "upload") return;
-    setMode("upload");
-    // Discard any prior predefined template selection so the wizard's
-    // step-3 validator falls back to the uploaded image alone.
-    setValue(
-      "visualTemplate",
-      { isCustomUpload: true, fieldValues: {} },
-      { shouldValidate: true },
-    );
-    setValue("templateImage", "", { shouldValidate: true });
-  };
+  const switchToTemplateMode = () => switchMode("template");
+  const switchToUploadMode = () => switchMode("upload");
 
   // ── File handling ──────────────────────────────────────────────────
   const validateFile = (file) => {
