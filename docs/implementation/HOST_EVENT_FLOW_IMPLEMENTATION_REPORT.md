@@ -28,10 +28,10 @@ This report records the implemented remediation, not a claim that the audit's en
 
 - Backend remediation/creation/lifecycle/scheduling/subscription integration suites: **68 tests passed**.
 - Web suite: **206 tests passed**.
-- Mobile event/regression suites: **82 tests passed**.
+- Mobile full suite after deployment follow-up: **539 tests passed**. GitHub Actions also passed shared/mobile lint, Expo configuration validation, and the Android production Metro export.
 - Shared suite: **205 tests passed** after the deployment follow-up supplied the missing English compensation plural variants in `landing.json` and `plans.json`.
 - Web production build passed. It reports existing metadata/lint warnings and an invitation-preview image optimization advisory.
-- Changed JavaScript/JSX received syntax and undefined-variable checks; modified native surfaces passed their ESLint checks.
+- Changed JavaScript/JSX received syntax and undefined-variable checks; full web lint passed with zero errors (32 existing warnings). The web build/test workflow and mobile validation workflow are green after updating the obsolete scroll-owner test and correcting test-fixture lint failures.
 
 Regression coverage includes canonical `-1` events, concurrent capacity exhaustion, normalized duplicates, a real partial unique index, soft-delete counts/history, 201-row pagination and audience calculation, bulk lifecycle rejection, unchanged dates, invalid-date schedule preservation, and stale template-image rejection.
 
@@ -47,6 +47,7 @@ No provider messages were sent during implementation or the deployment follow-up
 
 ### Production migration follow-up — September 7, 2026
 
+- Application commit `756a1b09018bfa98ddc3d698b530cd0e94797ad4` deployed successfully to both API and web containers. [Production deployment run](https://github.com/petersafwat11/halla/actions/runs/34060885635), [web CI](https://github.com/petersafwat11/halla/actions/runs/34060885636), and [mobile CI](https://github.com/petersafwat11/halla/actions/runs/34060885658) passed. Mobile source and its validated bundle are pushed; this VPS release does not publish a new App Store or Play Store binary.
 - Backed up VPS deployment configuration and the complete guest/event collections under `/opt/halaa/backups/2026-09-07-host-flow/`; sensitive backup files have mode 600.
 - Confirmed production MongoDB supports transactions. Paused API writers, normalized active phone values, and installed `active_event_phone_unique`.
 - Reconciled 11 missing references in one event from canonical active `Guest.event` membership using `--apply --repair-links`. No guest record or delivery/RSVP history was deleted.
@@ -54,6 +55,8 @@ No provider messages were sent during implementation or the deployment follow-up
 - Fixed a pre-existing Docker packaging failure by retaining workspace-local dependencies; recent CI deployments had failed to resolve `@hookform/resolvers/zod`.
 - Configured the local browser Maps key as a GitHub Actions secret and passed it into the web image build. Backend credentials already matched production; production-specific origins, certificate paths, and sender settings were preserved.
 - `GOOGLE_MAPS_SERVER_API_KEY` is absent locally and on the VPS. Server-side Maps lookup requires a separate server key; Maps billing activation is not verified and remains tracked in the reseller contact document.
+- Public smoke checks passed for both homepages, both marketplace pages, both vendor-signup pages, public pricing, robots, sitemap, and `/health`. The audience endpoint rejects unauthenticated access with HTTP 401. Production browser assets contain the expected Maps and Analytics configuration, verified without logging either value.
+- `/health/ready` returns HTTP 503 solely for missing `GOOGLE_MAPS_SERVER_API_KEY`; database, allowed origins, and native billing/catalog checks pass. General container health is green, but full dependency readiness must not be represented as complete.
 
 ## Remaining release work / roadmap
 
