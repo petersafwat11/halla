@@ -190,7 +190,7 @@ const CreateEventPopup = ({ onClose }) => {
               value={phoneNumber}
               onChange={handleInputChange}
               onFocus={handleInputFocus}
-              placeholder={t("createEvent.phonePlaceholder", "05XXXXXXXX")}
+              placeholder="05xxxxxxxx"
               className={`${styles.input} ${error ? styles.inputError : ""}`}
               dir="ltr"
               disabled={isLoading}

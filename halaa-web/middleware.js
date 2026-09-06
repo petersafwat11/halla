@@ -97,6 +97,8 @@ export async function middleware(request) {
   }
 
   // Parse locale from path
+  // This overwritten hint controls dictionary size, never authorization.
+  request.headers.set("x-halaa-pathname", pathname);
   const segments = pathname.split("/").filter(Boolean);
   const isValidLocale =
     segments[0] && i18nRouterConfig.locales.includes(segments[0]);

@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import styles from './imageCarousel.module.css';
 import Image from 'next/image';
-import { tajawal } from '@/app/[lang]/fonts';
+import { tajawal } from './fonts';
 
 const SLIDES = [
   '/landing/4.png',

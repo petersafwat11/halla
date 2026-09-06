@@ -41,91 +41,12 @@ export const loginWithEmail = async ({ email, password }) => {
   };
 };
 
-const _buildVendorFormData = (vendorData) => {
-  if (vendorData instanceof FormData) return vendorData;
-  const formData = new FormData();
-  const {
-    identity,
-    serviceData,
-    samplesAndPackages,
-    commercialVerification,
-    socialLinks,
-  } = vendorData;
+import { normalizeRNFile } from "../../utils/fileUtils";
+import { buildVendorFormData } from "../../utils/vendorSignupSerializer";
 
-  if (identity?.email) formData.append("email", identity.email);
-  if (identity?.phoneNumber) formData.append("phoneNumber", identity.phoneNumber);
-  if (identity?.password) formData.append("password", identity.password);
-  if (identity?.brandName) formData.append("brandName", identity.brandName);
-  if (identity?.ownerFullName) formData.append("ownerFullName", identity.ownerFullName);
+export { normalizeRNFile };
 
-  if (serviceData?.serviceDescription) {
-    formData.append("serviceDescription", serviceData.serviceDescription);
-  }
-  ["taglineAr", "taglineEn", "aboutAr", "aboutEn"].forEach((field) => {
-    if (serviceData?.[field]) formData.append(field, serviceData[field]);
-  });
-  if (serviceData?.otherData) formData.append("otherData", serviceData.otherData);
-  if (serviceData?.serviceLocation && serviceData.serviceLocation.regionId) {
-    formData.append("serviceLocation", JSON.stringify(serviceData.serviceLocation));
-  }
-
-  const categoryFields = [
-    "eventPlanning", "mediaProduction", "giftsAndGiveaways", "foodAndBeverages",
-    "beautyAndFashion", "logisticsAndDelivery", "corporateServices",
-    "supportServices", "technicalServices", "soundLightingEntertainment", "hallsAndVenues",
-  ];
-  const serviceCategories = {};
-  categoryFields.forEach((field) => {
-    if (serviceData?.[field] && serviceData[field].length > 0) {
-      serviceCategories[field] = serviceData[field];
-    }
-  });
-  if (Object.keys(serviceCategories).length > 0) {
-    formData.append("serviceCategories", JSON.stringify(serviceCategories));
-  }
-
-  if (commercialVerification?.commercialRecordNumber) {
-    formData.append("commercialRecordNumber", commercialVerification.commercialRecordNumber);
-  }
-  if (commercialVerification?.nationalId) {
-    formData.append("nationalId", commercialVerification.nationalId);
-  }
-
-  if (socialLinks) {
-    formData.append("socialLinks", JSON.stringify({
-      instagram: socialLinks.instagram || "",
-      facebook: socialLinks.facebook || "",
-      tiktok: socialLinks.tiktok || "",
-      twitter: socialLinks.twitter || "",
-      website: socialLinks.website || "",
-    }));
-  }
-
-  (samplesAndPackages?.portfolioImages || []).forEach((file) => {
-    if (file) formData.append("portfolioImages", file);
-  });
-  const businessLogo = samplesAndPackages?.businessLogo;
-  if (businessLogo) {
-    if (Array.isArray(businessLogo) && businessLogo[0]) {
-      formData.append("businessLogo", businessLogo[0]);
-    } else if (typeof businessLogo === "object" && businessLogo.uri) {
-      formData.append("businessLogo", businessLogo);
-    }
-  }
-  (samplesAndPackages?.pricePackages || []).forEach((file) => {
-    if (file) formData.append("pricePackages", file);
-  });
-  if (commercialVerification?.commercialRecordImage) {
-    formData.append("commercialRecordImage", commercialVerification.commercialRecordImage);
-  }
-  if (commercialVerification?.nationalIdImage) {
-    formData.append("nationalIdImage", commercialVerification.nationalIdImage);
-  }
-  const profileFile = samplesAndPackages?.profileFile || commercialVerification?.cv;
-  if (profileFile) formData.append("profileFile", profileFile);
-
-  return formData;
-};
+export const _buildVendorFormData = buildVendorFormData;
 
 export const signupVendor = async (vendorData) => {
   dlog(
@@ -135,9 +56,12 @@ export const signupVendor = async (vendorData) => {
   const formData = _buildVendorFormData(vendorData);
   const data = await postForm(ENDPOINTS.AUTH.SIGNUP_VENDOR, formData);
   return {
-    token: data.token,
-    refreshToken: data.refreshToken,
+    token: data.token || null,
+    refreshToken: data.refreshToken || null,
     user: data.data?.user,
+    applicationId: data.data?.applicationId || data.applicationId || data.data?.user?._id,
+    status: data.data?.status || data.status || "pending",
+    pendingApproval: true,
   };
 };
 

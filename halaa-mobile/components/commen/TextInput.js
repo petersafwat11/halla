@@ -9,6 +9,7 @@ import {
 import { useFormContext, Controller } from "react-hook-form";
 import { isolateLtr } from "@halaa/shared/utils/bidi";
 import { useFieldDirection } from "../../hooks/useInputDirection";
+import { DEFAULT_PHONE_PLACEHOLDER, clampPhoneInput, getPhoneMaxLength } from "@halaa/shared/utils/phone";
 
 /**
  * Inner field renderer. Hoisted out of the Controller `render` prop so the
@@ -35,13 +36,16 @@ const TextInputField = ({
   maxLength,
   showCounter,
   contentDirection,
+  labelDirection,
   sanitize,
   onChange,
   onBlur,
+  fieldRef,
   style,
   extraProps,
 }) => {
   const [isFocused, setIsFocused] = React.useState(false);
+  const labelStyle = useFieldDirection(labelDirection || "localized");
   const inputRef = React.useRef(null);
   // The raw value is required so `adaptive` mode recomputes its first-strong
   // writing direction on every controlled change (blueprint §5.1).
@@ -66,7 +70,7 @@ const TextInputField = ({
       {/* The required marker is a nested run, never string-concatenated,
           so punctuation stays inside the localized label's direction. */}
       {!!label && (
-        <Text style={[styles.label, fieldDirection.text]}>
+        <Text style={[styles.label, labelDirection ? { ...labelStyle.input, textAlign: labelDirection === "rtl" ? "right" : "left" } : fieldDirection.text]}>
           {label}
           {required ? <Text> *</Text> : null}
         </Text>
@@ -86,12 +90,15 @@ const TextInputField = ({
         {icon && <View style={styles.iconContainer}>{icon}</View>}
         <RNTextInput
           {...extraProps}
-          ref={inputRef}
+          ref={(node) => {
+            inputRef.current = node;
+            fieldRef?.(node);
+          }}
           style={[styles.input, fieldDirection.input, multiline && styles.inputMultiline, style]}
           placeholder={placeholder}
           placeholderTextColor="#999"
           value={value ?? ""}
-          onChangeText={(text) => onChange(sanitize ? sanitize(text) : text)}
+          onChangeText={(text) => onChange(keyboardType === "phone-pad" ? clampPhoneInput(text) : sanitize ? sanitize(text) : text)}
           onBlur={() => {
             setIsFocused(false);
             onBlur?.();
@@ -103,8 +110,8 @@ const TextInputField = ({
           editable={!isDisabled}
           multiline={multiline}
           numberOfLines={numberOfLines}
-          maxLength={maxLength}
-          textAlign="auto"
+          maxLength={maxLength ?? (keyboardType === "phone-pad" ? getPhoneMaxLength(value) : undefined)}
+          textAlign={fieldDirection.input.writingDirection === "rtl" ? "right" : "left"}
         />
       </Pressable>
       {error && (
@@ -139,6 +146,7 @@ const TextInput = ({
   maxLength,
   showCounter = false,
   contentDirection = "localized",
+  labelDirection,
   sanitize,
   rules,
   style,
@@ -146,6 +154,11 @@ const TextInput = ({
 }) => {
   const { control } = useFormContext();
   const isDisabled = disabled || !editable;
+  const resolvedPlaceholder = keyboardType === "email-address"
+    ? "ahmed@gmail.com"
+    : keyboardType === "phone-pad"
+      ? DEFAULT_PHONE_PLACEHOLDER
+      : placeholder;
 
   return (
     <Controller
@@ -153,13 +166,13 @@ const TextInput = ({
       name={name}
       rules={rules}
       render={({
-        field: { onChange, onBlur, value },
+        field: { onChange, onBlur, value, ref },
         fieldState: { error },
       }) => (
         <TextInputField
           label={label}
           required={required}
-          placeholder={placeholder}
+          placeholder={resolvedPlaceholder}
           isDisabled={isDisabled}
           multiline={multiline}
           numberOfLines={numberOfLines}
@@ -173,9 +186,11 @@ const TextInput = ({
           maxLength={maxLength}
           showCounter={showCounter}
           contentDirection={contentDirection}
+          labelDirection={labelDirection}
           sanitize={sanitize}
           onChange={onChange}
           onBlur={onBlur}
+          fieldRef={ref}
           style={style}
           extraProps={props}
         />

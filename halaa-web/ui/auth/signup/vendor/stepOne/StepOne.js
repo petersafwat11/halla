@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import styles from "./stepOne.module.css";
 import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
 import MobileInputGroup from "@/ui/commen/inputs/mobileInputGroup/MobileInputGroup";
@@ -8,16 +8,6 @@ import { useTranslation } from "react-i18next";
 
 const StepOne = () => {
   const { t } = useTranslation("signup");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
-  const toggleConfirmPasswordVisibility = () => {
-    setShowConfirmPassword(!showConfirmPassword);
-  };
 
   return (
     <div className={styles.container}>
@@ -55,18 +45,6 @@ const StepOne = () => {
               name="identity.ownerFullName"
               iconPath="auth/profile-circle.svg"
             />
-            <InputGroup
-              label={t(
-                "signupForm.vendor.commercialVerification.nationalId.label"
-              )}
-              type="text"
-              placeholder={t(
-                "signupForm.vendor.commercialVerification.nationalId.placeholder"
-              )}
-              required
-              name="commercialVerification.nationalId"
-              iconPath="auth/document.svg"
-            />
           </div>
         </div>
 
@@ -101,26 +79,25 @@ const StepOne = () => {
           <div className={styles.inputs}>
             <InputGroup
               label={t("signupForm.vendor.identity.password.label")}
-              type={showPassword ? "text" : "password"}
+              type="password"
               placeholder={t("signupForm.vendor.identity.password.placeholder")}
               required
               name="identity.password"
               iconPath="auth/password.svg"
-              iconPath2="auth/eye.svg"
-              onIconClick={togglePasswordVisibility}
+              hintMessage={t("signupForm.vendor.identity.password.hint", {
+                defaultValue: "At least 8 characters with letters and numbers",
+              })}
             />
 
             <InputGroup
               label={t("signupForm.vendor.identity.passwordConfirm.label")}
-              type={showConfirmPassword ? "text" : "password"}
+              type="password"
               placeholder={t(
                 "signupForm.vendor.identity.passwordConfirm.placeholder"
               )}
               required
               name="identity.passwordConfirm"
               iconPath="auth/password.svg"
-              iconPath2="auth/eye.svg"
-              onIconClick={toggleConfirmPasswordVisibility}
             />
           </div>
         </div>

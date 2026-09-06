@@ -129,6 +129,8 @@ const vendorDataSchema = new mongoose.Schema(
       facebook: String,
       tiktok: String,
       twitter: String,
+      linkedin: String,
+      youtube: String,
       website: String,
       whatsapp: String,
     },
@@ -734,7 +736,7 @@ userSchema.methods.softDelete = async function (deletedBy) {
  *
  * @returns {Promise<Object>}
  */
-userSchema.methods.toPublicJSON = async function () {
+userSchema.methods.toPublicJSON = async function (options = {}) {
   const obj = this.toObject();
 
   // Remove sensitive fields
@@ -780,12 +782,20 @@ userSchema.methods.toPublicJSON = async function () {
     const rd = obj.roleData;
     if (obj.role === ROLES.VENDOR) {
       rd.businessLogo = await signStoredImage(rd.businessLogo);
-      rd.nationalIdImage = await signStoredImage(rd.nationalIdImage);
-      rd.commercialRecordImage = await signStoredImage(rd.commercialRecordImage);
       rd.profileFile = await signStoredImage(rd.profileFile);
-      rd.cv = await signStoredImage(rd.cv);
       rd.portfolioImages = await signStoredImages(rd.portfolioImages);
       rd.pricePackages = await signStoredImages(rd.pricePackages);
+
+      if (options && options.includePrivateDocuments) {
+        rd.nationalIdImage = await signStoredImage(rd.nationalIdImage);
+        rd.commercialRecordImage = await signStoredImage(rd.commercialRecordImage);
+      } else {
+        delete rd.nationalId;
+        delete rd.nationalIdImage;
+        delete rd.commercialRecordNumber;
+        delete rd.commercialRecordImage;
+        delete rd.cv;
+      }
     }
   }
 

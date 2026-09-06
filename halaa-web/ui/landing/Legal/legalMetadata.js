@@ -9,9 +9,10 @@
  * manifest.
  */
 
-import { LEGAL_ROUTES } from "@halaa/shared/legal";
+import { LEGAL_ROUTES } from "@halaa/shared/legal/manifest";
+import { CANONICAL_ORIGIN, BRAND_ASSETS } from '@halaa/shared/brand';
 
-const ORIGIN = "https://halaa.com.sa";
+const ORIGIN = CANONICAL_ORIGIN;
 
 /**
  * @param {object} args
@@ -30,7 +31,7 @@ export function buildLegalMetadata({ documentType, lang, titleAr, titleEn, descA
   const canonical = `${ORIGIN}/${lang}/${slug}`;
 
   return {
-    title,
+    title: { absolute: title },
     description,
     alternates: {
       canonical,
@@ -48,6 +49,8 @@ export function buildLegalMetadata({ documentType, lang, titleAr, titleEn, descA
       siteName: "Halaa",
       locale: isAr ? "ar_SA" : "en_US",
       type: "website",
+      images: [`${ORIGIN}${BRAND_ASSETS.ogImagePath}`],
     },
+    twitter: { card: 'summary_large_image', title, description, images: [`${ORIGIN}${BRAND_ASSETS.ogImagePath}`] },
   };
 }

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
 import ConfirmBtn from "@/ui/commen/confirmButton/ConfirmBtn";
 import { useTranslation } from "react-i18next";
@@ -14,12 +14,15 @@ import styles from "./continueSignupForm.module.css";
 import { getAuthErrorMessage } from "@/services/errorHandlingService";
 import { FaArrowRightLong, FaArrowLeftLong } from "react-icons/fa6";
 
+import { PASSWORD_COMPLEXITY_REGEX } from "@halaa/shared/schemas/_shared";
+
 const ContinueSignupForm = () => {
   const { t, i18n } = useTranslation("signup");
+  const { t: tContinue } = useTranslation("continueSignup");
   const { t: tCommon } = useTranslation("common");
   const { currentLocale } = useLanguageChange();
   const router = useRouter();
-  const isRTL = i18n.language === 'ar';
+  const isRTL = i18n.language === "ar";
 
   // Auth mutation
   const {
@@ -35,9 +38,7 @@ const ContinueSignupForm = () => {
   // Auth store for auth state
   const isAuthenticated = useAuthStore((s) => s.status === "authenticated");
 
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [localError, setLocalError] = useState("");
+  const [localError, setLocalError] = React.useState("");
 
   const error = mutationErrorMsg || localError;
 
@@ -61,6 +62,39 @@ const ContinueSignupForm = () => {
   } = methods;
 
   const formValues = watch();
+  const password = formValues?.password || "";
+  const passwordConfirm = formValues?.passwordConfirm || "";
+
+  // Password live validation pills
+  const passwordValidations = [
+    {
+      text: tContinue(
+        "continueSignup.errors.passwordMinLength",
+        isRTL ? "على الأقل 8 أحرف" : "At least 8 characters"
+      ),
+      isValid: Boolean(password && password.length >= 8),
+    },
+    {
+      text: tContinue(
+        "continueSignup.errors.passwordComplexity",
+        isRTL
+          ? "استخدم حرفاً واحداً ورقماً واحداً على الأقل، ويمكن استخدام الرموز"
+          : "Use at least one letter and one number; symbols are allowed"
+      ),
+      isValid: Boolean(password && PASSWORD_COMPLEXITY_REGEX.test(password)),
+    },
+  ];
+
+  const confirmValidations = password
+    ? [
+        {
+          text: isRTL ? "كلمتا المرور متطابقتان" : "Passwords match",
+          isValid: Boolean(
+            passwordConfirm && password === passwordConfirm
+          ),
+        },
+      ]
+    : undefined;
 
   // Check if user is authenticated
   useEffect(() => {
@@ -68,14 +102,6 @@ const ContinueSignupForm = () => {
       router.push(`/${currentLocale}/signup`);
     }
   }, [isAuthenticated, currentLocale, router]);
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
-  const toggleConfirmPasswordVisibility = () => {
-    setShowConfirmPassword(!showConfirmPassword);
-  };
 
   const onSubmit = async (formData) => {
     setLocalError("");
@@ -94,99 +120,121 @@ const ContinueSignupForm = () => {
       // path returns { code: 'DUPLICATE_FIELD' | 'CONFLICT', field }.
       const parsed = error?.parsedError;
       const resolved = getAuthErrorMessage(parsed, tCommon);
-      if (parsed && (parsed.code === "CONFLICT" || parsed.code === "DUPLICATE_FIELD")) {
-        const fieldMap = { email: "email", phoneNumber: "email", name: "name" };
+      if (
+        parsed &&
+        (parsed.code === "CONFLICT" || parsed.code === "DUPLICATE_FIELD")
+      ) {
+        const fieldMap = {
+          email: "email",
+          phoneNumber: "email",
+          name: "name",
+        };
         const target = fieldMap[parsed.field] || "email";
-        setError(target, { type: "server", message: resolved?.message || error.message });
+        setError(target, {
+          type: "server",
+          message: resolved?.message || error.message,
+        });
         return;
       }
       setLocalError(
         resolved?.message ||
-        error.message ||
-        t("errors.complete_profile_failed", "Failed to complete profile. Please try again.")
+          error.message ||
+          t(
+            "errors.complete_profile_failed",
+            "Failed to complete profile. Please try again."
+          )
       );
     }
   };
 
   return (
     <div className={styles.container}>
-      <div
-        className={styles.backButton}
-        onClick={() => router.back()}
-        style={{ cursor: "pointer" }}
-      >
-        {isRTL ? (
-          <FaArrowRightLong className={styles.backArrow} />
-        ) : (
-          <FaArrowLeftLong className={styles.backArrow} />
-        )}
+      <div className={styles.topNav}>
+        <button
+          type="button"
+          className={styles.backButton}
+          onClick={() => router.back()}
+          aria-label={isRTL ? "رجوع" : "Back"}
+        >
+          {isRTL ? (
+            <FaArrowRightLong className={styles.backArrow} />
+          ) : (
+            <FaArrowLeftLong className={styles.backArrow} />
+          )}
+        </button>
+
+        <span className={styles.stepBadge}>
+          {isRTL ? "الخطوة ٢ من ٢" : "Step 2 of 2"}
+        </span>
       </div>
-      <h1 className={styles.mainTitle}>
-        {t("signupForm.continueSignup.title")}
-      </h1>
-      {/* <p className={styles.mainDescription}>
-        {t("signupForm.continueSignup.description")}
-      </p> */}
+
+      <div className={styles.header}>
+        <h1 className={styles.mainTitle}>
+          {t("signupForm.continueSignup.title")}
+        </h1>
+        <p className={styles.mainDescription}>
+          {t("signupForm.continueSignup.description")}
+        </p>
+      </div>
 
       <FormProvider {...methods}>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div className={styles.section}>
-            {/* <h2 className={styles.sectionTitle}>
-              {t("signupForm.continueSignup.personalInfo.title")}
-            </h2> */}
-            <div className={styles.inputsGroup}>
-              <div className={styles.row}>
-                <InputGroup
-                  label={t(
-                    "signupForm.continueSignup.personalInfo.fullName.label"
-                  )}
-                  type="text"
-                  placeholder={t(
-                    "signupForm.continueSignup.personalInfo.fullName.placeholder"
-                  )}
-                  name="name"
-                  iconPath="auth/profile.svg"
-                />
-                <InputGroup
-                  label={t(
-                    "signupForm.continueSignup.personalInfo.email.label"
-                  )}
-                  type="email"
-                  placeholder={t(
-                    "signupForm.continueSignup.personalInfo.email.placeholder"
-                  )}
-                  name="email"
-                  iconPath="auth/email.svg"
-                />
-              </div>
-              <div className={styles.row}>
-                <InputGroup
-                  label={t(
-                    "signupForm.continueSignup.personalInfo.newPassword.label"
-                  )}
-                  type={showPassword ? "text" : "password"}
-                  placeholder={t(
-                    "signupForm.continueSignup.personalInfo.newPassword.placeholder"
-                  )}
-                  name="password"
-                  iconPath="auth/password.svg"
-                  iconPath2="auth/eye.svg"
-                  onIconClick={togglePasswordVisibility}
-                />
-                <InputGroup
-                  label={t(
-                    "signupForm.continueSignup.personalInfo.confirmPassword.label"
-                  )}
-                  type={showConfirmPassword ? "text" : "password"}
-                  placeholder={t(
-                    "signupForm.continueSignup.personalInfo.confirmPassword.placeholder"
-                  )}
-                  name="passwordConfirm"
-                  iconPath="auth/password.svg"
-                  iconPath2="auth/eye.svg"
-                  onIconClick={toggleConfirmPasswordVisibility}
-                />
-              </div>
+        <form noValidate dir={i18n.dir()} onSubmit={handleSubmit(onSubmit)} className={styles.formCard}>
+          <div className={styles.inputsGroup}>
+            <div className={styles.row}>
+              <InputGroup
+                label={t(
+                  "signupForm.continueSignup.personalInfo.fullName.label"
+                )}
+                type="text"
+                placeholder={t(
+                  "signupForm.continueSignup.personalInfo.fullName.placeholder"
+                )}
+                name="name"
+                direction="auto"
+                disabled={isLoading}
+                iconPath="auth/profile.svg"
+              />
+              <InputGroup
+                label={t(
+                  "signupForm.continueSignup.personalInfo.email.label"
+                )}
+                type="email"
+                placeholder={t(
+                  "signupForm.continueSignup.personalInfo.email.placeholder"
+                )}
+                name="email"
+                direction="ltr"
+                disabled={isLoading}
+                iconPath="auth/email.svg"
+              />
+            </div>
+            <div className={styles.row}>
+              <InputGroup
+                label={t(
+                  "signupForm.continueSignup.personalInfo.newPassword.label"
+                )}
+                type="password"
+                placeholder={t(
+                  "signupForm.continueSignup.personalInfo.newPassword.placeholder"
+                )}
+                name="password"
+                disabled={isLoading}
+                iconPath="auth/password.svg"
+                validations={passwordValidations}
+              />
+              <InputGroup
+                label={t(
+                  "signupForm.continueSignup.personalInfo.confirmPassword.label"
+                )}
+                type="password"
+                placeholder={t(
+                  "signupForm.continueSignup.personalInfo.confirmPassword.placeholder"
+                )}
+                name="passwordConfirm"
+                disabled={isLoading}
+                iconPath="auth/password.svg"
+                validations={confirmValidations}
+              />
             </div>
           </div>
 
@@ -198,6 +246,8 @@ const ContinueSignupForm = () => {
               active={isValid && !isLoading}
               clickHandler={handleSubmit(onSubmit)}
               disabled={isLoading}
+              isLoading={isLoading}
+              className={styles.submitBtn}
             />
           </div>
         </form>

@@ -1,59 +1,134 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   TouchableOpacity,
   Image,
   StyleSheet,
   ScrollView,
+  Alert,
 } from "react-native";
 import { useFormContext, Controller } from "react-hook-form";
 import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import * as DocumentPicker from "expo-document-picker";
 import LocalizedText from "./LocalizedText";
 import { useTranslation } from "../../localization";
+import { normalizeRNFile } from "../../utils/fileUtils";
 
 /**
- * Shared multi-image-picker form field (blueprint §5.2 field anatomy).
- *
- * The picker trigger is physical artwork (camera glyph over a dashed canvas),
- * so nothing here is mirrored; the preview strip and its remove buttons are
- * equal hit-targets in a logical row. All chrome — label, placeholder, hint,
- * add-more caption and validation error — is application copy rendered
- * through the localized text-role contract: it follows the UI locale in both
- * languages and never embeds language literals.
+ * Shared multi-image/document-picker form field (blueprint §5.2 field anatomy).
  */
 const MultiImageInput = ({
   name,
   label,
   placeholder,
   multiple = true,
+  allowDocuments = false,
+  maxFiles = 10,
   rules,
 }) => {
   const { control } = useFormContext();
   const { t } = useTranslation("common");
+  const [pickerError, setPickerError] = useState("");
 
-  const pickImages = async (onChange, currentValues) => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      allowsMultipleSelection: multiple,
-      allowsEditing: !multiple,
-      quality: 0.8,
-    });
-
-    if (!result.canceled && result.assets?.length > 0) {
-      if (multiple) {
-        const newAssets = result.assets;
-        const merged = [...(currentValues || []), ...newAssets];
-        onChange(merged);
-      } else {
-        onChange([result.assets[0]]);
+  const mergeValidatedFiles = (assets, fieldKind, onChange, currentValues) => {
+    try {
+      const normalized = assets.map((asset) => normalizeRNFile(asset, fieldKind));
+      const nextValues = multiple
+        ? [...(currentValues || []), ...normalized]
+        : normalized.slice(0, 1);
+      if (nextValues.length > maxFiles) {
+        setPickerError(t("imagePicker.maxFiles", { count: maxFiles }));
+        return;
       }
+      setPickerError("");
+      onChange(nextValues);
+    } catch (_error) {
+      setPickerError(t("imagePicker.invalidFile"));
     }
+  };
+
+  const pickImagesFromGallery = async (onChange, currentValues) => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsMultipleSelection: multiple,
+        allowsEditing: !multiple,
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets?.length > 0) {
+        const selectedAssets = multiple ? result.assets : [result.assets[0]];
+        // Price-package fields share the stricter mixed-file contract with the
+        // API (JPG/PNG/PDF); portfolio-only fields may additionally use WebP.
+        mergeValidatedFiles(
+          selectedAssets,
+          allowDocuments ? "mixed" : "image",
+          onChange,
+          currentValues,
+        );
+      }
+    } catch (_error) {
+      setPickerError(t("imagePicker.pickFailed"));
+    }
+  };
+
+  const pickDocuments = async (onChange, currentValues) => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ["application/pdf"],
+        multiple,
+        copyToCacheDirectory: true,
+      });
+
+      if (!result.canceled && result.assets?.length > 0) {
+        mergeValidatedFiles(result.assets, "mixed", onChange, currentValues);
+      }
+    } catch (_error) {
+      setPickerError(t("imagePicker.pickFailed"));
+    }
+  };
+
+  const handlePick = (onChange, currentValues) => {
+    if (allowDocuments) {
+      Alert.alert(
+        label || t("imagePicker.chooseFile"),
+        "",
+        [
+          {
+            text: t("imagePicker.chooseImage"),
+            onPress: () => pickImagesFromGallery(onChange, currentValues),
+          },
+          {
+            text: t("imagePicker.chooseDocument"),
+            onPress: () => pickDocuments(onChange, currentValues),
+          },
+          {
+            text: t("buttons.cancel"),
+            style: "cancel",
+          },
+        ]
+      );
+      return;
+    }
+    pickImagesFromGallery(onChange, currentValues);
   };
 
   const removeImage = (onChange, currentValues, index) => {
     const newValues = currentValues.filter((_, i) => i !== index);
     onChange(newValues.length > 0 ? newValues : []);
+  };
+
+  const isDoc = (val) => {
+    if (!val) return false;
+    const mime = val.type || val.mimeType || "";
+    const name = val.fileName || val.name || "";
+    return (
+      mime.includes("pdf") ||
+      mime.includes("word") ||
+      mime.includes("document") ||
+      /\.(pdf|docx?)$/i.test(name)
+    );
   };
 
   return (
@@ -72,38 +147,54 @@ const MultiImageInput = ({
               </LocalizedText>
             )}
 
-            {/* Image Previews */}
+            {/* Image & Document Previews */}
             {images.length > 0 && (
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.previewList}
               >
-                {images.map((img, index) => (
-                  <View key={index} style={styles.previewWrapper}>
-                    <Image
-                      source={{ uri: img.uri }}
-                      style={styles.preview}
-                    />
-                    <TouchableOpacity
-                      style={styles.removeButton}
-                      onPress={() => removeImage(onChange, images, index)}
-                      accessibilityRole="button"
-                      accessibilityLabel={t("buttons.delete")}
-                    >
-                      {/* Close is a semantic glyph — never mirrored. */}
-                      <Ionicons name="close" size={14} color="#fff" />
-                    </TouchableOpacity>
-                  </View>
-                ))}
+                {images.map((img, index) => {
+                  const doc = isDoc(img);
+                  return (
+                    <View key={index} style={styles.previewWrapper}>
+                      {doc ? (
+                        <View style={styles.docPreview}>
+                          <MaterialCommunityIcons
+                            name="file-pdf-box"
+                            size={36}
+                            color="#e74c3c"
+                          />
+                          <LocalizedText style={styles.docFileName} numberOfLines={1}>
+                            {img.fileName || img.name || "File.pdf"}
+                          </LocalizedText>
+                        </View>
+                      ) : (
+                        <Image
+                          source={{ uri: img.uri }}
+                          style={styles.preview}
+                        />
+                      )}
+                      <TouchableOpacity
+                        style={styles.removeButton}
+                        onPress={() => removeImage(onChange, images, index)}
+                        accessibilityRole="button"
+                        accessibilityLabel={t("buttons.delete")}
+                      >
+                        <Ionicons name="close" size={14} color="#fff" />
+                      </TouchableOpacity>
+                    </View>
+                  );
+                })}
 
-                {multiple && (
+                {multiple && images.length < maxFiles && (
                   <TouchableOpacity
                     style={styles.addMore}
-                    onPress={() => pickImages(onChange, images)}
+                    onPress={() => handlePick(onChange, images)}
                     activeOpacity={0.7}
+                    accessibilityRole="button"
+                    accessibilityLabel={t("imagePicker.add")}
                   >
-                    {/* Plus is a semantic glyph — never mirrored. */}
                     <MaterialCommunityIcons
                       name="plus"
                       size={28}
@@ -121,18 +212,25 @@ const MultiImageInput = ({
             {images.length === 0 && (
               <TouchableOpacity
                 style={[styles.picker, error && styles.pickerError]}
-                onPress={() => pickImages(onChange, images)}
+                onPress={() => handlePick(onChange, images)}
                 activeOpacity={0.7}
                 accessibilityRole="button"
                 accessibilityLabel={placeholder || label}
               >
                 <MaterialCommunityIcons
-                  name="camera-plus-outline"
+                  name={allowDocuments ? "file-upload-outline" : "camera-plus-outline"}
                   size={36}
                   color="#C28E5C"
                 />
                 <LocalizedText style={styles.placeholderText}>
-                  {placeholder || t(multiple ? "imagePicker.chooseImages" : "imagePicker.chooseImage")}
+                  {placeholder ||
+                    t(
+                      allowDocuments
+                        ? "imagePicker.chooseFiles"
+                        : multiple
+                        ? "imagePicker.chooseImages"
+                        : "imagePicker.chooseImage"
+                    )}
                 </LocalizedText>
                 {multiple && (
                   <LocalizedText role="hint" style={styles.subText}>
@@ -142,10 +240,9 @@ const MultiImageInput = ({
               </TouchableOpacity>
             )}
 
-            {error && (
-              // Validation copy follows the UI locale (blueprint §5.3).
+            {(error || pickerError) && (
               <LocalizedText role="error" style={styles.errorText}>
-                {error.message}
+                {error?.message || error?.root?.message || (Array.isArray(error) ? error.find((item) => item?.message)?.message : null) || pickerError}
               </LocalizedText>
             )}
           </View>
@@ -207,6 +304,24 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     resizeMode: "cover",
+  },
+  docPreview: {
+    width: "100%",
+    height: "100%",
+    backgroundColor: "#f5f5f5",
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 6,
+    gap: 4,
+  },
+  docFileName: {
+    fontSize: 11,
+    fontFamily: "Cairo_500Medium",
+    color: "#333",
+    textAlign: "center",
   },
   removeButton: {
     position: "absolute",

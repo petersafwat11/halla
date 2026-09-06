@@ -31,6 +31,8 @@ const authController = require("./auth.controller");
 const { protect } = require("../../shared/middleware/auth");
 const {
   validateZod,
+  parseFormDataJsonFields,
+  requireMultipartFiles,
 } = require("../../shared/middleware/validation");
 const {
   loginSchema,
@@ -56,7 +58,7 @@ const {
 } = require("../../shared/middleware/rateLimiter");
 
 // File upload (using shared utils)
-const { uploadVendorFiles } = require("../../shared/utils/fileUpload");
+const { uploadVendorFiles, cleanupUploadedFiles } = require("../../shared/utils/fileUpload");
 
 const { AppError } = require("../../shared/errors");
 const catchAsync = require("../../shared/utils/catchAsync");
@@ -169,9 +171,24 @@ router.post(
   "/signup/vendor",
   authLimiter,
   uploadVendorFiles,
+  requireMultipartFiles({
+    portfolioImages: { min: 1, message: "At least one portfolio image is required" },
+    pricePackages: { min: 1, message: "At least one price package is required" },
+    commercialRecordImage: { min: 1, message: "Commercial registration document is required" },
+    nationalIdImage: { min: 1, message: "National ID document is required" },
+  }),
+  parseFormDataJsonFields(["serviceCategories", "serviceLocation", "location", "socialLinks"]),
   validateZod(vendorSignupSchema),
   checkDuplicates,
-  authController.vendorSignup
+  authController.vendorSignup,
+  async (err, req, res, next) => {
+    if (req.files) {
+      await cleanupUploadedFiles(req.files).catch((cleanErr) => {
+        console.error("[vendorSignup cleanup error]:", cleanErr);
+      });
+    }
+    next(err);
+  }
 );
 
 // ============================================

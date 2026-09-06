@@ -1,4 +1,9 @@
 {
+  "openOriginal": "فتح الملف الأصلي",
+  "review": { "title": "مراجعة الطلب", "preferredLanguage": "اللغة المفضلة", "adminNotes": "ملاحظات الإدارة", "rejectionReason": "سبب الرفض", "approvedAt": "تاريخ الموافقة", "rejectedAt": "تاريخ الرفض" },
+  "descriptionFields": { "taglineAr": "النبذة القصيرة بالعربية", "taglineEn": "النبذة القصيرة بالإنجليزية", "aboutAr": "الوصف التفصيلي بالعربية", "aboutEn": "الوصف التفصيلي بالإنجليزية" },
+  "coverage": { "city": "المدينة", "region": "المنطقة", "districts": "الأحياء المحددة" },
+  "openDocument": "فتح المستند",
   "loading": {
     "vendorData": "جاري تحميل بيانات التاجر..."
   },

@@ -57,6 +57,33 @@
   color: var(--error-color, #ef4444);
 }
 
+.loadError {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.2rem;
+  border: 1px solid #f3c6c6;
+  border-radius: 0.8rem;
+  background: #fff5f5;
+}
+
+.retryButton {
+  border: 1px solid currentColor;
+  border-radius: 0.7rem;
+  padding: 0.6rem 1rem;
+  background: #fff;
+  color: var(--error-color, #b42318);
+  font: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.retryButton:focus-visible {
+  outline: 2px solid var(--color-primary, #c28e5c);
+  outline-offset: 2px;
+}
+
 /* Multi-select dropdown wrapper */
 .multiSelectWrapper {
   position: relative;

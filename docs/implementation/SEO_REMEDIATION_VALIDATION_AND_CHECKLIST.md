@@ -1,11 +1,23 @@
 # SEO Remediation Plan — Validation and Implementation Checklist
 
+> **Current scope review (September 6, 2026):** See [SEO_REMAINING_SIMPLIFIED_PLAN.md](SEO_REMAINING_SIMPLIFIED_PLAN.md) before implementing more work. It reconciles completed work and outdated paths/baselines, separates launch requirements from deferred growth projects, and lists the two owner decisions needed. Historical unchecked items below are not all outstanding launch requirements.
+
 **Prepared:** 2026-09-03  
 **Audit source:** `SEO Report.pdf`, dated 2026-08-28  
 **Code reviewed:** `master` at `b2ab14b5dab0275fb240f7086bcc0433ac282f66`  
 **Validation environment:** Local Next.js production build and raw server-rendered HTML
 
 ## Outcome
+
+### Implementation update — 2026-09-06
+
+F-04 code is implemented: production GA4 integration, optional visitor consent with withdrawal, landing page/CTA/pricing/vendor/WhatsApp events, sanitized campaign attribution, and basic JavaScript error counts. Google account setup is complete under `halaa.events@gmail.com`; measurement ID `G-W5K5N7TL0D` is configured locally and in the repository Actions variable. Enhanced Measurement and optional account sharing are off. Deployment and live collection verification remain pending. See `LANDING_SEO_SETUP.md` for connection and stream settings.
+
+F-05 is implemented: optimized hero WebP files total 209,406 bytes instead of 1,990,642 (89% smaller), with no mobile hero downloads and no hero preloads. Existing composition is preserved.
+
+Structured data is implemented: Organization, SoftwareApplication, visible-plan Offers, and FAQPage. Pricing and schema use the same server-loaded plans and update together on client selections. This also resolves the original absent-pricing server response on successful API requests; no stale fallback prices are invented.
+
+Titles are implemented: specific localized landing titles and absolute legal titles prevent repeated branding. Browser verification confirmed both languages, prices in initial HTML, matching schema, and one brand occurrence in privacy titles. Existing root `metadataBase` configuration is preserved.
 
 The remediation plan is directionally sound, but it should not be implemented unchanged. Most of the audit's commercial, content-integrity, structured-data, performance, caching, and security findings still apply. Several implementation assumptions are now inaccurate, and a few audit findings have already been fixed or no longer reproduce on the current branch.
 
@@ -35,15 +47,16 @@ The highest-priority work is:
 | Report item | Current status | Validation and required adjustment |
 |---|---|---|
 | F-01 — Pricing absent from server response | **Confirmed** | `PricingSection` fetches with `useLandingPlans()` after hydration and initially renders a loading state. Server-load the plans and pass them as query `initialData`. |
-| F-02 — App-store links do not work | **Confirmed** | `AppStoreButtons` defaults both destinations to `#`; the component appears in the hero and footer. No public production-store URLs are evidenced in the repo. Use configured production URLs only; otherwise show a non-link status or the web signup CTA. Never publish internal-test URLs. |
-| F-03 — Fabricated marketplace listings | **Confirmed** | The landing page still contains hardcoded vendor names, repeated temporary imagery, ratings, and review counts. Remove the cards immediately or replace them with approved vendors from the public API. Do not display review counts or ratings without a genuine source. |
-| F-04 — No marketing measurement | **Confirmed** | There is no GA4/GTM, advertising pixel, session-replay, or web error-monitoring integration. Backend marketplace analytics are not a substitute for landing-page analytics. |
-| F-05 — Oversized hero media | **Confirmed** | The eight PNGs total 1,990,642 bytes and all receive preload hints. Convert/composite the artwork and prioritize only the measured LCP asset. Decorative images should retain empty alt text. |
-| F-06 — Contradictory facts between locales | **Confirmed, with nuance** | English says 48 hours while Arabic says 24. Paid-event reminder defaults to 48 hours and can be configured no later than 24 hours before the event; trial reminder behavior is different. Copy must distinguish these cases instead of making a universal claim. The page also says four steps while rendering five. |
-| Structured data absent | **Confirmed** | No JSON-LD is present on the landing page. Reuse the repository's `safeJsonLd` and `pruneEmpty` helpers. Offers must use the same plan snapshot shown to users. Do not add aggregate ratings or reviews. |
-| Weak/duplicated titles | **Confirmed** | The landing title is broad. Legal pages can render duplicate brand suffixes such as `Privacy Policy – Halaa | Halaa`. Pass unbranded page titles into the layout template or use an absolute title. |
+| F-02 — App-store links do not work | **Implemented locally** | The store badges are now non-link buttons marked unavailable, with localized “Coming soon” tooltips. They no longer fall back to `#` or expose internal-test URLs. |
+| F-03 — Fabricated marketplace listings | **Implemented locally** | The landing page now loads approved vendors from the existing public marketplace API and renders the existing marketplace `VendorCard`. Fabricated vendor records, review counts, and temporary card imagery were removed. |
+| F-04 — No marketing measurement | **Implemented and configured; deployment pending** | The landing analytics component is restored with user approval. The real measurement ID is configured locally and in GitHub Actions. Collection requires visitor consent; deployment and live collection verification remain pending. |
+| F-05 — Oversized hero media | **Implemented locally** | WebP artwork totals 209,406 bytes (89% reduction). Mobile requests no hero artwork; desktop tiles have no preload hints. Decorative alt text remains empty. |
+| F-06 — Contradictory facts between locales | **Reminder copy implemented locally** | Both locales now state that the automatic reminder is scheduled 48 hours before the event and can be adjusted. Per the product-owner decision, the landing copy does not discuss a separate trial case. The separate four-versus-five-step inconsistency remains to be corrected. |
+| Structured data absent | **Implemented locally** | Organization, SoftwareApplication, visible-plan Offers and FAQPage use the existing safe serializer. Pricing/schema share the server response and update together on selections. No ratings/reviews are invented. |
+| Weak/duplicated titles | **Implemented locally** | Localized landing titles describe WhatsApp invitations and event management. Absolute legal titles prevent duplicate brand suffixes; verified in both languages. |
 | Invitation gallery absent from SSR | **Does not reproduce** | All 16 gallery images are in the current initial HTML despite the component being marked `use client`. Do not rewrite the gallery solely to make it server-rendered. Fix its empty localized alt text and remove eager/high priority from the first below-the-fold image. |
-| Image alt deficiencies | **Partially confirmed** | There are 24 empty alts: eight decorative hero layers and 16 meaningful gallery thumbnails. Keep decorative alts empty; add concise localized descriptions to gallery images. |
+| 
+Image alt deficiencies | **Partially confirmed** | There are 24 empty alts: eight decorative hero layers and 16 meaningful gallery thumbnails. Keep decorative alts empty; add concise localized descriptions to gallery images.|
 | Fourteen font files preloaded | **Does not reproduce exactly** | The current response has no font preload links, but global CSS still declares an excessive set of Tajawal, Cairo, Amiri, and Great Vibes faces. Remove unused global families and route-scope editor/template fonts. Re-measure actual downloads. |
 | Large HTML and JS/CSS payload | **Confirmed** | The provider loads 37 translation namespaces and preloads both locales, serializing a large resource object into the route. Route-scoped namespaces and current-locale-only initialization are higher-value changes than a general client-component rewrite. |
 | Private/no-store caching | **Confirmed; plan assumption incorrect** | The page does not currently export `revalidate`; the build marks `/[lang]` dynamic. Responses set `Cache-Control: no-store...private`, and middleware always sets `NEXT_LOCALE`. Public-page static/ISR behavior must be deliberately implemented and tested. |
@@ -84,41 +97,43 @@ The checkboxes are ordered by dependency and risk. Complete the release gates at
 #### Store badges and footer links
 
 - [ ] Add validated public configuration for Apple and Google production-store URLs in `halaa-web/shared/src/brand/brand.js` or a single equivalent brand/config module.
-- [ ] Update `halaa-web/ui/landing/AppStoreButtons/AppStoreButtons.jsx`:
-  - [ ] Render a real anchor only when the corresponding production URL is valid.
-  - [ ] Otherwise render a localized non-link “Coming soon” state or the existing web signup CTA.
-  - [ ] Never fall back to `#` and never expose internal-test URLs.
+- [x] Update `halaa-web/ui/commen/AppStoreButtons/AppStoreButtons.jsx` to render localized, unavailable “Coming soon” buttons and tooltips.
+  - [x] Use no anchor or placeholder `#` destination.
+  - [x] Keep the unavailable controls keyboard discoverable and expose their state through `aria-disabled` and an accessible label.
+  - [x] Never expose internal-test URLs.
 - [ ] Update `halaa-web/ui/landing/Footer/Footer.jsx` to render only approved social profiles from shared brand configuration.
 - [ ] Hide the social group when no profile is approved; do not render placeholder anchors.
 
 #### Vendor preview
 
-- [ ] Immediately remove or hide the hardcoded vendor cards in `halaa-web/ui/landing/VendorSearchSection/VendorSearchSection.jsx` until real data is wired.
-- [ ] Remove all invented ratings, review counts, vendor claims, and repeated temporary imagery.
-- [ ] Server-load a small landing preview from `GET /api/v2/vendors/public`.
-- [ ] Ensure preview eligibility requires an active, approved public vendor with at least one active public service.
-- [ ] Pass server-loaded vendors into the interactive carousel/search UI as initial data.
-- [ ] If no eligible vendors exist, render an honest marketplace CTA or omit the cards.
+- [x] Remove the hardcoded vendor cards from `halaa-web/ui/landing/VendorSearchSection/VendorSearchSection.jsx`.
+- [x] Remove invented review counts, vendor claims, and repeated temporary card imagery.
+- [x] Server-load a three-vendor landing preview from the existing `GET /api/v2/vendors/public` endpoint.
+- [x] Reuse the marketplace page's existing `VendorCard` component rather than maintaining a second card implementation.
+- [x] Pass server-loaded vendors into the interactive carousel.
+- [x] Omit the section when the API is unavailable or returns no approved vendors; never restore fabricated fallback data.
 - [ ] Do not expose private contact data or show ratings until a verified review source exists.
 
 #### Arabic, English, and product facts
 
-- [ ] Correct the Arabic source copy in `halaa-web/public/locales/ar/landing.json`, including:
-  - [ ] `أبدا` → `ابدأ`.
-  - [ ] `بأرسال` → `بإرسال`.
-  - [ ] `جاهز لارسال` → `جاهز لإرسال`.
-  - [ ] `فى` → `في` and the affected definite-article grammar.
-  - [ ] `إدارة الإستقبال` → `إدارة الاستقبال`.
-  - [ ] `اضافة` → `إضافة` and `وادارة` → `وإدارة`.
-  - [ ] Correct the plural form for three complimentary invitations.
-  - [ ] Localize the QR label and normalize numeral/punctuation style.
+- [x] Correct the targeted Arabic source copy in `halaa-web/localization/locales/ar/landing.json`, including:
+  - [x] `أبدا` → `ابدأ`.
+  - [x] `بأرسال` → `بإرسال`.
+  - [x] `جاهز لارسال` → `جاهز لإرسال`.
+  - [x] `فى` → `في` and the affected definite-article grammar.
+  - [x] Normalize reception wording to `إدارة موظفي الاستقبال`.
+  - [x] Correct `إضافة` and rewrite the business description with correct `إدارة` spelling.
+  - [x] Correct complimentary-invitation plurals in landing and plans namespaces; test all six Arabic plural categories with i18next.
+  - [x] Localize the QR label and normalize numerals/punctuation in the edited reminder and pricing copy.
 - [ ] Have a native Saudi Arabic reviewer check the full landing namespace; avoid blind global replacements.
-- [ ] Change the FAQ/process claim from four steps to the canonical five steps in both locales.
-- [ ] Make reminder copy accurate for paid events and explicitly separate trial behavior.
-- [ ] Reconcile the Arabic Coffee Service/vendor-category omission and normalize staff/reception wording to the actual feature.
+- [x] Change the FAQ/process claim from four steps to the canonical five steps in both locales, retaining guest/design preparation in the first step.
+- [x] State that reminders default to 48 hours before the event and can be adjusted; do not discuss a separate trial case in landing-page copy.
+- [x] Reconcile coffee-service wording in both locales and normalize staff/reception wording.
 - [ ] Verify the trial provisioning behavior, then publish the canonical trial quantity: one event, five guests, 90 days.
-- [ ] Do not claim “no card required” until the signup flow confirms it.
-- [ ] Delete or clearly gate dormant fabricated testimonials and unverified “200+”, “98%”, “thousands”, or equivalent claims.
+- [x] Do not claim “no card required” until the signup flow confirms it.
+- [x] Delete dormant fabricated testimonials and unverified “200+”, “98%”, “thousands”, “hundreds”, or equivalent claims. Reviews remain unmounted and the component defaults to disabled; array normalization and unconditional hooks safely handle empty/malformed translations.
+
+Implementation note: the trial FAQ remains general. Seed defaults specify one event, five guests and 90 days, but current auth callers pass `trialPlan._id` to `Subscription.createForUser`, whose implementation reads a full plan object's limits. Resolve and verify provisioning before publishing exact trial terms; no backend/auth edits were made in this copy workstream. Native Saudi review remains open. Mobile download copy now explicitly says Coming soon.
 
 **Release gate:** Both locales pass editorial/product-owner review; raw HTML contains no placeholder links, fake listings, or unsupported claims.
 
@@ -126,14 +141,16 @@ The checkboxes are ordered by dependency and risk. Complete the release gates at
 
 #### Pricing server data
 
-- [ ] Add a server-side plans loader for `app/[lang]/page.js` using the internal API and an explicit timeout/error policy.
-- [ ] Pass the returned snapshot into `PricingSection`/TanStack Query as `initialData`; preserve client refresh and tab interaction.
-- [ ] Render the Basic, Premium, and Business pathways in the initial HTML.
-- [ ] Use one plan snapshot for visible prices and structured-data offers.
-- [ ] Define the first-render failure behavior:
-  - [ ] Prefer a last-known ISR page when one exists.
-  - [ ] On a cold failure, fail honestly or render a contact CTA instead of stale invented prices.
-- [ ] Do not duplicate plan prices into multiple frontend constants. If a static fallback catalog is required, assign an owner and update process because database plans are editable.
+- [x] Add a server-side plans loader for `app/[lang]/page.js` using the internal API, a three-second timeout and validated response/error policy.
+- [x] Pass the returned snapshot into `PricingSection`/TanStack Query as `initialData` with its original timestamp; refresh every five minutes and preserve tab interaction.
+- [x] Render the Basic, Premium, and Business pathways in initial HTML through native expandable catalog groups; retain the interactive cards.
+- [x] Use one plan snapshot for cards, the complete expandable catalog and structured-data offers. Include applicable setup fees in the catalog.
+- [x] Define the first-render failure behavior:
+  - [x] Prefer a last-known cached public pricing snapshot. The locale page is dynamic, not full-page ISR; use Next Data Cache revalidation (five minutes) for public plans only and reject snapshots older than one hour. Failed refreshes throw inside the cache callback to retain the last good snapshot.
+  - [x] On cold failure, expiration or an empty catalog, render localized contact pathways with no invented prices and no schema offers. Client refresh can recover without reloading the page.
+- [x] Do not duplicate plan prices into frontend constants. No static fallback catalog was introduced; editable database plans remain authoritative.
+
+Verification: production Arabic/English browser checks found all 32 current plans in the original HTML, matching schema prices and working Business billing tabs. Automated rendering tests cover unavailable/expired/empty/partial catalogs. Staging verification of cache persistence across replicas/deployments and timed revalidation remains part of the release checks below.
 
 #### Rendering and caching
 
@@ -289,7 +306,7 @@ The checkboxes are ordered by dependency and risk. Complete the release gates at
 ## Owner decisions and external dependencies
 
 - [ ] Provide production Apple App Store and Google Play URLs when public releases exist. Until then, approve the non-link/website-signup treatment.
-- [ ] Approve the exact paid-reminder and trial-reminder wording in both locales.
+- [x] Approve the landing-page reminder wording: 48 hours before the event and adjustable, without mentioning a separate trial case.
 - [ ] Confirm that the database/default trial entitlement matches actual signup provisioning.
 - [ ] Approve which real vendors may appear on the landing page and whether the public endpoint should require active services.
 - [ ] Choose the analytics/error-monitoring stack and approve consent/privacy requirements.

@@ -24,6 +24,7 @@ const PasswordInputField = ({
   helper,
   onChange,
   onBlur,
+  fieldRef,
   extraProps,
 }) => {
   const [isFocused, setIsFocused] = useState(false);
@@ -56,7 +57,10 @@ const PasswordInputField = ({
         />
         <RNTextInput
           {...extraProps}
-          ref={inputRef}
+          ref={(node) => {
+            inputRef.current = node;
+            fieldRef?.(node);
+          }}
           style={[styles.input, fieldDirection.input]}
           placeholder={placeholder}
           placeholderTextColor="#999"
@@ -70,7 +74,8 @@ const PasswordInputField = ({
           secureTextEntry={isSecure}
           autoCapitalize="none"
           editable={!disabled}
-          textAlign="auto"
+          textAlign={fieldDirection.input.writingDirection === "rtl" ? "right" : "left"}
+          autoCorrect={false}
         />
         <TouchableOpacity
           onPress={() => setIsSecure(!isSecure)}
@@ -117,7 +122,7 @@ const PasswordInput = ({
       name={name}
       rules={rules}
       render={({
-        field: { onChange, onBlur, value },
+        field: { onChange, onBlur, value, ref },
         fieldState: { error },
       }) => (
         <PasswordInputField
@@ -129,6 +134,7 @@ const PasswordInput = ({
           helper={helper}
           onChange={onChange}
           onBlur={onBlur}
+          fieldRef={ref}
           extraProps={props}
         />
       )}
@@ -150,6 +156,7 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     flexDirection: "row",
+    direction: "ltr",
     alignItems: "center",
     borderWidth: 1,
     borderColor: "#e0e0e0",

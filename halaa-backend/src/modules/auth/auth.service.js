@@ -496,7 +496,7 @@ class AuthService {
 
     // Create trial subscription
     const trialPlan = await Plan.getOrCreateByCode('trial');
-    const subscription = await Subscription.createForUser(host._id, trialPlan._id, {
+    const subscription = await Subscription.createForUser(host._id, trialPlan, {
       status: SUBSCRIPTION_STATUS.TRIAL,
     });
 
@@ -559,118 +559,160 @@ class AuthService {
    * @param {Object} files - Uploaded files
    * @returns {Promise<{user: Object, token: string}>}
    */
-   async signupVendor(userData, files = {}) {
-     const { email, phoneNumber, password, brandName, ownerFullName } = userData;
+  async signupVendor(userData, files = {}) {
+      const { email, phoneNumber, password, brandName, ownerFullName } = userData;
 
-     if (!phoneNumber || !email) {
-       throw new ValidationError('Email and phone number are required');
-     }
-
-     if (!brandName || !ownerFullName) {
-       throw new ValidationError('Brand name and owner name are required');
-     }
-
-     const normalizedPhone = normalizePhoneNumber(phoneNumber);
-     await this._checkDuplicates(email, normalizedPhone);
-
-    // Parse JSON fields
-    const serviceCategories = this._parseJsonField(userData.serviceCategories);
-    const serviceLocation = this._parseJsonField(userData.serviceLocation);
-    const socialLinks = this._parseJsonField(userData.socialLinks);
-
-    // validate serviceCategories keys against allowed enum
-    const ALLOWED_CATEGORY_KEYS = new Set([
-      'eventPlanning', 'mediaProduction', 'giftsAndGiveaways', 'foodAndBeverages',
-      'beautyAndFashion', 'logisticsAndDelivery', 'corporateServices', 'supportServices',
-      'technicalServices', 'soundLightingEntertainment', 'hallsAndVenues',
-    ]);
-    if (serviceCategories && typeof serviceCategories === 'object') {
-      const invalidKeys = Object.keys(serviceCategories).filter(k => !ALLOWED_CATEGORY_KEYS.has(k));
-      if (invalidKeys.length > 0) {
-        throw new ValidationError(`Invalid service category keys: ${invalidKeys.join(', ')}`);
+      if (!phoneNumber || !email) {
+        throw new ValidationError('Email and phone number are required', [
+          { field: !email ? 'email' : 'phoneNumber', message: 'Email and phone number are required' },
+        ]);
       }
-    }
 
-    // Validate social links as URLs; WhatsApp is a phone number, not a URL.
-    if (socialLinks && typeof socialLinks === 'object') {
-      const URL_FIELDS = ['instagram', 'facebook', 'tiktok', 'twitter', 'website'];
-      const urlRegex = /^https?:\/\/.+/i;
-      for (const field of URL_FIELDS) {
-        if (socialLinks[field] && !urlRegex.test(socialLinks[field])) {
-          throw new ValidationError(`Invalid URL for social link: ${field}`);
+      if (!brandName || !ownerFullName) {
+        throw new ValidationError('Brand name and owner name are required', [
+          { field: !brandName ? 'brandName' : 'ownerFullName', message: 'Brand name and owner name are required' },
+        ]);
+      }
+
+      const normalizedPhone = normalizePhoneNumber(phoneNumber);
+      await this._checkDuplicates(email, normalizedPhone);
+
+      // Parse JSON fields
+      const serviceCategories = this._parseJsonField(userData.serviceCategories);
+      const serviceLocation = this._parseJsonField(userData.serviceLocation || userData.location);
+      const socialLinks = this._parseJsonField(userData.socialLinks);
+
+      // validate serviceCategories keys against allowed enum
+      const ALLOWED_CATEGORY_KEYS = new Set([
+        'eventPlanning', 'mediaProduction', 'giftsAndGiveaways', 'foodAndBeverages',
+        'beautyAndFashion', 'logisticsAndDelivery', 'corporateServices', 'supportServices',
+        'technicalServices', 'soundLightingEntertainment', 'hallsAndVenues',
+      ]);
+      if (serviceCategories && typeof serviceCategories === 'object') {
+        const invalidKeys = Object.keys(serviceCategories).filter(k => !ALLOWED_CATEGORY_KEYS.has(k));
+        if (invalidKeys.length > 0) {
+          throw new ValidationError(`Invalid service category keys: ${invalidKeys.join(', ')}`, [
+            { field: 'serviceCategories', message: `Invalid service category keys: ${invalidKeys.join(', ')}` },
+          ]);
         }
       }
-      if (socialLinks.whatsapp) {
-        const parsedWhatsApp = validateAndFormatPhone(socialLinks.whatsapp);
-        if (!parsedWhatsApp.isValid) {
-          throw new ValidationError(parsedWhatsApp.error || 'Invalid WhatsApp number');
+
+      // Validate social links as URLs; WhatsApp is a phone number, not a URL.
+      if (socialLinks && typeof socialLinks === 'object') {
+        const URL_FIELDS = ['instagram', 'facebook', 'tiktok', 'twitter', 'linkedin', 'youtube', 'website'];
+        const urlRegex = /^https?:\/\/.+/i;
+        for (const field of URL_FIELDS) {
+          if (socialLinks[field] && !urlRegex.test(socialLinks[field])) {
+            throw new ValidationError(`Invalid URL for social link: ${field}`, [
+              { field: `socialLinks.${field}`, message: `Invalid URL for social link: ${field}` },
+            ]);
+          }
         }
-        socialLinks.whatsapp = parsedWhatsApp.formatted;
+        if (socialLinks.whatsapp) {
+          const parsedWhatsApp = validateAndFormatPhone(socialLinks.whatsapp);
+          if (!parsedWhatsApp.isValid) {
+            throw new ValidationError(parsedWhatsApp.error || 'Invalid WhatsApp number', [
+              { field: 'socialLinks.whatsapp', message: parsedWhatsApp.error || 'Invalid WhatsApp number' },
+            ]);
+          }
+          socialLinks.whatsapp = parsedWhatsApp.formatted;
+        }
       }
-    }
 
-    const vendorData = {
-      brandName,
-      ownerFullName,
-      vendorStatus: VENDOR_STATUS.PENDING,
-      serviceDescription: userData.serviceDescription || '',
-      taglineAr: userData.taglineAr || '',
-      taglineEn: userData.taglineEn || '',
-      aboutAr: userData.aboutAr || '',
-      aboutEn: userData.aboutEn || '',
-      serviceCategories,
-      serviceLocation,
-      socialLinks,
-      otherData: userData.otherData || '',
-      nationalId: userData.nationalId || '',
-      commercialRecordNumber: userData.commercialRecordNumber || '',
-    };
+      const preferredLanguage = userData.preferredLanguage === 'en' ? 'en' : 'ar';
 
-    // Handle file uploads via S3 utility
-    const uploadedPaths = processUploadedFiles(files);
-    if (uploadedPaths.businessLogo) vendorData.businessLogo = uploadedPaths.businessLogo;
-    if (uploadedPaths.nationalIdImage) vendorData.nationalIdImage = uploadedPaths.nationalIdImage;
-    if (uploadedPaths.commercialRecordImage) vendorData.commercialRecordImage = uploadedPaths.commercialRecordImage;
-    if (uploadedPaths.portfolioImages) vendorData.portfolioImages = uploadedPaths.portfolioImages;
-
-     const vendor = await User.create({
-       email: email.toLowerCase(),
-       phoneNumber: normalizedPhone,
-       password,
-       name: ownerFullName,
-       role: ROLES.VENDOR,
-       status: USER_STATUS.PENDING,
-       profile: { vendorData },
-     });
-
-    // Notifications
-    this._notifyAdminsNewVendor(vendor, brandName, ownerFullName).catch((err) =>
-      logger.error('vendor signup: notify admins failed', err)
-    );
-    if (email) {
-      emailModule.send.vendorApplicationPending(email, {
-        vendorName: ownerFullName,
+      const vendorData = {
         brandName,
-        email,
-      }).catch((err) =>
-        logger.error('vendor signup: pending email failed', err)
+        ownerFullName,
+        vendorStatus: VENDOR_STATUS.PENDING,
+        serviceDescription: userData.serviceDescription || '',
+        taglineAr: userData.taglineAr || '',
+        taglineEn: userData.taglineEn || '',
+        aboutAr: userData.aboutAr || '',
+        aboutEn: userData.aboutEn || '',
+        serviceCategories,
+        serviceLocation,
+        socialLinks,
+        otherData: userData.otherData || '',
+        nationalId: userData.nationalId || '',
+        commercialRecordNumber: userData.commercialRecordNumber || userData.commercialRegistrationNumber || '',
+      };
+
+      // Handle file uploads via S3 utility
+      const uploadedPaths = processUploadedFiles(files);
+      if (uploadedPaths.businessLogo) vendorData.businessLogo = uploadedPaths.businessLogo;
+      if (uploadedPaths.nationalIdImage) vendorData.nationalIdImage = uploadedPaths.nationalIdImage;
+      if (uploadedPaths.commercialRecordImage) vendorData.commercialRecordImage = uploadedPaths.commercialRecordImage;
+      if (uploadedPaths.portfolioImages) vendorData.portfolioImages = uploadedPaths.portfolioImages;
+      if (uploadedPaths.pricePackages) vendorData.pricePackages = uploadedPaths.pricePackages;
+      if (uploadedPaths.profileFile) vendorData.profileFile = uploadedPaths.profileFile;
+
+      const vendor = await User.create({
+        email: email.toLowerCase(),
+        phoneNumber: normalizedPhone,
+        password,
+        name: ownerFullName,
+        role: ROLES.VENDOR,
+        status: USER_STATUS.PENDING,
+        preferredLanguage,
+        profile: { vendorData },
+      });
+
+      // Notifications
+      this._notifyAdminsNewVendor(vendor, brandName, ownerFullName).catch((err) =>
+        logger.error('vendor signup: notify admins failed', err)
       );
-    }
+      if (email) {
+        emailModule.send.vendorApplicationPending(
+          email,
+          {
+            vendorName: ownerFullName,
+            brandName,
+            email,
+            applicationId: vendor._id.toString(),
+          },
+          preferredLanguage
+        ).catch((err) =>
+          logger.error('vendor signup: pending email failed', err)
+        );
+      }
 
-    logAudit({
-      action: 'vendor_signup',
-      actor: vendor._id,
-      targetType: 'User',
-      targetId: vendor._id,
-      metadata: { brandName, ownerFullName, email },
-      status: 'success',
-    }).catch((err) => logger.error('vendor signup: audit log failed', err));
+      logAudit({
+        action: 'vendor_signup',
+        actor: vendor._id,
+        targetType: 'User',
+        targetId: vendor._id,
+        metadata: { brandName, ownerFullName, email },
+        status: 'success',
+      }).catch((err) => logger.error('vendor signup: audit log failed', err));
 
-    return {
-      user: await this.sanitizeUser(vendor),
-      token: null,
-      pendingApproval: true,
-    };
+      let safeVendor;
+      try {
+        safeVendor = await this.sanitizeUser(vendor);
+      } catch (error) {
+        // The application is already durable at this point. A secondary
+        // projection/signing failure must not turn a successful create into a
+        // client-visible failure (which would invite a duplicate retry and
+        // cause the route cleanup middleware to delete persisted documents).
+        logger.error('vendor signup: response sanitization failed', error);
+        safeVendor = {
+          _id: vendor._id,
+          email: vendor.email,
+          phoneNumber: vendor.phoneNumber,
+          name: vendor.name,
+          role: vendor.role,
+          status: vendor.status,
+          preferredLanguage: vendor.preferredLanguage,
+        };
+      }
+
+      return {
+        user: safeVendor,
+        applicationId: vendor._id.toString(),
+        status: 'pending',
+        token: null,
+        pendingApproval: true,
+      };
   }
 
 
@@ -860,7 +902,7 @@ class AuthService {
       let subscription = await this.getUserSubscription(user._id);
       if (!subscription) {
         const trialPlan = await Plan.getOrCreateByCode('trial');
-        subscription = await Subscription.createForUser(user._id, trialPlan._id, {
+        subscription = await Subscription.createForUser(user._id, trialPlan, {
           status: SUBSCRIPTION_STATUS.TRIAL,
         });
         user.subscription = subscription._id;
@@ -911,7 +953,7 @@ class AuthService {
 
     // Create trial subscription
     const trialPlan = await Plan.getOrCreateByCode('trial');
-    const subscription = await Subscription.createForUser(user._id, trialPlan._id, {
+    const subscription = await Subscription.createForUser(user._id, trialPlan, {
       status: SUBSCRIPTION_STATUS.TRIAL,
     });
 

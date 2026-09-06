@@ -149,7 +149,7 @@
   font-size: 12px;
   font-weight: 400;
   line-height: 16px;
-  color: var(--color-primary-500);
+  color: var(--landing-accent-text, var(--color-primary-500));
   margin: 0;
   text-align: center;
 }
@@ -172,25 +172,17 @@
 }
 .vendorCards::-webkit-scrollbar { display: none; }
 
-.vendorCard {
+.vendorCardItem {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
   flex-shrink: 0;
   width: 360px;
   min-width: unset;
   max-width: unset;
   scroll-snap-align: start;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px -1px color-mix(in srgb, var(--color-secondary-500) 8%, transparent),
-    0 2px 4px -2px color-mix(in srgb, var(--color-secondary-500) 8%, transparent);
-  overflow: hidden;
-  transition: all 0.3s ease;
 }
 
-.vendorCard:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 20px color-mix(in srgb, var(--color-secondary-500) 16%, transparent);
+.vendorCardItem > * {
+  height: 100%;
 }
 
 .vendorImage {
@@ -325,7 +317,7 @@
   font-size: 20px;
   font-weight: 700;
   line-height: 28px;
-  color: var(--color-primary-500);
+  color: var(--landing-accent-text, var(--color-primary-500));
 }
 
 .moreButton {
@@ -384,9 +376,8 @@
 
 /* ── 900px: medium card size ── */
 @media (max-width: 900px) {
-  .vendorCards { gap: 20px; padding: 4px 2rem 12px; }
-  .vendorCard { width: 300px; }
-  .vendorImage { height: 220px; }
+  .vendorCards { gap: 20px; padding: 4px 2rem 12px; justify-content: flex-start; }
+  .vendorCardItem { width: 300px; }
 }
 
 @media (max-width: 768px) {
@@ -473,7 +464,7 @@
   .categoryCount {
     font-size: 12px;
     font-weight: 600;
-    color: var(--color-primary-500);
+    color: var(--landing-accent-text, var(--color-primary-500));
   }
 
   .countSuffix { display: none; }
@@ -484,14 +475,7 @@
     padding: 4px 0 8px;
   }
 
-  .vendorCard { width: min(76vw, 208px); }
-  .vendorImage { height: 128px; }
-  .vendorInfo { padding: 10px; gap: 8px; }
-  .vendorName { font-size: 12px; line-height: 18px; }
-  .vendorLocation span { font-size: 11px; }
-  .tag { font-size: 9px; padding: 2px 5px; }
-  .vendorPrice { font-size: 12px; }
-  .callButton { font-size: 10px; height: 24px; padding: 6px 8px; }
+  .vendorCardItem { width: min(76vw, 260px); }
   .controls { margin-top: 1.2rem; padding: 0; }
 
   .moreButton {

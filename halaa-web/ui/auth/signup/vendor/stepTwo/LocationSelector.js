@@ -12,9 +12,9 @@ const LocationSelector = () => {
   const { setValue, watch, formState: { errors } } = useFormContext();
   const isArabic = i18n.language === "ar";
 
-  const { data: regionsData, isLoading: regionsLoading, error: regionsError } = useRegions();
-  const { data: citiesData, isLoading: citiesLoading, error: citiesError } = useCitiesByRegion(watch("serviceData.serviceLocation.regionId"));
-  const { data: districtsData, isLoading: districtsLoading, error: districtsError } = useDistrictsByCity(watch("serviceData.serviceLocation.cityId"));
+  const { data: regionsData, isLoading: regionsLoading, error: regionsError, refetch: refetchRegions } = useRegions();
+  const { data: citiesData, isLoading: citiesLoading, error: citiesError, refetch: refetchCities } = useCitiesByRegion(watch("serviceData.serviceLocation.regionId"));
+  const { data: districtsData, isLoading: districtsLoading, error: districtsError, refetch: refetchDistricts } = useDistrictsByCity(watch("serviceData.serviceLocation.cityId"));
 
   const regions = regionsData?.data?.regions || [];
   const cities = citiesData?.data?.cities || [];
@@ -33,9 +33,16 @@ const LocationSelector = () => {
   const coverageType = watch("serviceData.serviceLocation.coverageType");
   const selectedDistrictIds = watch("serviceData.serviceLocation.districtIds") || [];
 
-  const renderError = (error) => {
+  const renderError = (error, retry) => {
     if (!error) return null;
-    return <span className={styles.error}>{t("common.errors.locationLoadFailed", "Couldn't load locations")}</span>;
+    return (
+      <div className={styles.loadError} role="alert">
+        <span className={styles.error}>{t("signupForm.vendor.serviceData.location.loadFailed")}</span>
+        <button type="button" className={styles.retryButton} onClick={() => retry()}>
+          {t("signupForm.vendor.serviceData.location.retry")}
+        </button>
+      </div>
+    );
   };
 
   const regionOptions = regions.map((r) => ({
@@ -53,7 +60,7 @@ const LocationSelector = () => {
 
   return (
     <div className={styles.container}>
-      {renderError(regionsError) && <div className={styles.selectGroup}>{renderError(regionsError)}</div>}
+      {regionsError && <div className={styles.selectGroup}>{renderError(regionsError, refetchRegions)}</div>}
       <div className={styles.selectGroup}>
         <label className={styles.label}>
           {t("signupForm.vendor.serviceData.location.region", "المنطقة")} *
@@ -97,21 +104,28 @@ const LocationSelector = () => {
               ))
             )}
           </select>
+          {citiesError && renderError(citiesError, refetchCities)}
         </div>
       )}
 
-      {selectedCityId && selectedCityId !== "all" && districts.length > 0 && (
+      {selectedCityId && selectedCityId !== "all" && (
         <div className={styles.selectGroup}>
           <label className={styles.label}>
             {t("signupForm.vendor.serviceData.location.districts", "الأحياء")}
           </label>
-          <DistrictsMultiSelect
-            districts={districts}
-            selectedDistrictIds={selectedDistrictIds}
-            onToggleDistrict={(id) => handleDistrictToggle(id, districts)}
-            isDropdownOpen={isDistrictsDropdownOpen}
-            onToggleDropdown={setIsDistrictsDropdownOpen}
-          />
+          {districtsError ? (
+            renderError(districtsError, refetchDistricts)
+          ) : districtsLoading ? (
+            <span>{t("signupForm.vendor.serviceData.location.loading")}</span>
+          ) : districts.length > 0 ? (
+            <DistrictsMultiSelect
+              districts={districts}
+              selectedDistrictIds={selectedDistrictIds}
+              onToggleDistrict={(id) => handleDistrictToggle(id, districts)}
+              isDropdownOpen={isDistrictsDropdownOpen}
+              onToggleDropdown={setIsDistrictsDropdownOpen}
+            />
+          ) : null}
         </div>
       )}
 

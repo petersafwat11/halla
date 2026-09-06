@@ -61,7 +61,7 @@
 }
 
 .contactLink:hover {
-  color: var(--color-primary-500);
+  color: var(--landing-accent-text, var(--color-primary-500));
 }
 
 .contactIcon {
@@ -116,7 +116,7 @@
 .socialIcon:hover {
   transform: translateY(-3px);
   background: rgba(255, 255, 255, 0.15);
-  color: var(--color-primary-500);
+  color: var(--landing-accent-text, var(--color-primary-500));
 }
 
 /* ── Quick Links Section ── */
@@ -150,7 +150,7 @@
 }
 
 .footerLink:hover {
-  color: var(--color-primary-500);
+  color: var(--landing-accent-text, var(--color-primary-500));
   transform: translateX(-4px);
 }
 

@@ -4,6 +4,7 @@ import { TextInput, ImageInput } from '../../commen';
 import SectionCard from '../../commen/SectionCard';
 import LocalizedText from '../../commen/LocalizedText';
 import { useTranslation } from '../../../localization';
+import { normalizeDigitsOnly } from '@halaa/shared/utils/locale';
 
 /**
  * Vendor signup — commercial verification step.
@@ -27,14 +28,16 @@ const VendorStep4CommercialVerification = () => {
         <TextInput
           name="commercialVerification.commercialRecordNumber"
           label={t('signupForm.vendor.commercialVerification.commercialRecordNumber')}
-          placeholder={t('signupForm.vendor.commercialVerification.commercialRecordNumberPlaceholder')}
+          placeholder="1xxxxxxxxx"
           keyboardType="numeric"
           maxLength={10}
           contentDirection="ltr"
+          sanitize={normalizeDigitsOnly}
         />
         <ImageInput
           name="commercialVerification.commercialRecordImage"
           label={t('signupForm.vendor.commercialVerification.commercialRecordImage')}
+          allowDocuments={true}
         />
       </SectionCard>
 
@@ -42,14 +45,16 @@ const VendorStep4CommercialVerification = () => {
         <TextInput
           name="commercialVerification.nationalId"
           label={t('signupForm.vendor.commercialVerification.nationalId.label')}
-          placeholder={t('signupForm.vendor.commercialVerification.nationalIdPlaceholder')}
+          placeholder="1xxxxxxxxx"
           keyboardType="numeric"
           maxLength={10}
           contentDirection="ltr"
+          sanitize={normalizeDigitsOnly}
         />
         <ImageInput
           name="commercialVerification.nationalIdImage"
           label={t('signupForm.vendor.commercialVerification.nationalIdImage')}
+          allowDocuments={true}
         />
       </SectionCard>
     </View>

@@ -1,5 +1,5 @@
 import React from "react";
-import { View, StyleSheet, ScrollView } from "react-native";
+import { View, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import LocalizedText from "./LocalizedText";
 
@@ -12,7 +12,7 @@ import LocalizedText from "./LocalizedText";
  * stay pinned LTR so multi-digit indexes cannot split under RTL (blueprint
  * §4.1 StepHeader pattern).
  */
-const SignupStepper = ({ steps, currentStep }) => {
+const SignupStepper = ({ steps, currentStep, onStepPress }) => {
   return (
     <View style={styles.wrapper}>
       <ScrollView
@@ -38,7 +38,18 @@ const SignupStepper = ({ steps, currentStep }) => {
               )}
 
               {/* Step Circle + Label */}
-              <View style={styles.stepItem}>
+              <TouchableOpacity
+                style={styles.stepItem}
+                onPress={() => {
+                  if (onStepPress) {
+                    onStepPress(stepNum);
+                  }
+                }}
+                disabled={!onStepPress}
+                accessibilityRole="button"
+                accessibilityLabel={`${stepNum}. ${step.desc}`}
+                accessibilityState={{ selected: isActive, disabled: !onStepPress }}
+              >
                 <View
                   style={[
                     styles.circle,
@@ -71,7 +82,7 @@ const SignupStepper = ({ steps, currentStep }) => {
                 >
                   {step.desc}
                 </LocalizedText>
-              </View>
+              </TouchableOpacity>
             </View>
           );
         })}

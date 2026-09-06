@@ -15,7 +15,6 @@ import {
   DEFAULT_PHONE_PLACEHOLDER,
 } from "@halaa/shared/utils/phone";
 import { useFieldDirection } from "../../hooks/useInputDirection";
-import { useTranslation } from "../../localization";
 
 /**
  * Hoisted field renderer to satisfy Rules-of-Hooks and stabilize focus state.
@@ -30,16 +29,16 @@ export const MobileInputField = ({
   helper,
   onChange,
   onBlur,
+  fieldRef,
   extraProps,
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = React.useRef(null);
-  const { isRTL } = useTranslation();
-
   const hasValue = !!value && String(value).length > 0;
-  // "phone": localized (RTL) placeholder while empty, LTR digits once non-empty
-  const fieldDirection = useFieldDirection("phone", { hasValue });
-  const resolvedPlaceholder = placeholder || DEFAULT_PHONE_PLACEHOLDER;
+  // Both the numeric example and the entered phone number are LTR tokens.
+  const fieldDirection = useFieldDirection("ltr", { hasValue });
+  const labelDirection = useFieldDirection("localized");
+  const resolvedPlaceholder = DEFAULT_PHONE_PLACEHOLDER;
 
   // Phone digits are intrinsically LTR: keep the chrome (icon + country-code
   // prefix) on the visual left in both locales. RTL rows mirror child order,
@@ -49,18 +48,21 @@ export const MobileInputField = ({
       name="call-outline"
       size={20}
       color="#999"
-      style={[styles.icon, isRTL ? styles.iconRtl : null]}
+      style={styles.icon}
     />
   );
   const prefixEl = (
-    <View style={[styles.countryCode, isRTL ? styles.countryCodeRtl : null]}>
+    <View style={styles.countryCode}>
       <Text style={styles.countryCodeText}>{isolateLtr(countryCode)}</Text>
     </View>
   );
   const inputEl = (
     <RNTextInput
       {...extraProps}
-      ref={inputRef}
+      ref={(node) => {
+        inputRef.current = node;
+        fieldRef?.(node);
+      }}
       style={[styles.input, fieldDirection.input]}
       placeholder={resolvedPlaceholder}
       placeholderTextColor="#999"
@@ -73,13 +75,14 @@ export const MobileInputField = ({
       }}
       onFocus={() => setIsFocused(true)}
       keyboardType="phone-pad"
+      textAlign="left"
       editable={!disabled}
     />
   );
 
   return (
     <View style={styles.container}>
-      {label && <Text style={[styles.label, fieldDirection.text]}>{label}</Text>}
+      {label && <Text style={[styles.label, labelDirection.text]}>{label}</Text>}
       <Pressable
         onPress={() => !disabled && inputRef.current?.focus()}
         style={[
@@ -89,13 +92,15 @@ export const MobileInputField = ({
           disabled && styles.inputContainerDisabled,
         ]}
       >
-        {isRTL ? [inputEl, prefixEl, iconEl] : [iconEl, prefixEl, inputEl]}
+        {iconEl}
+        {prefixEl}
+        {inputEl}
       </Pressable>
       {error && (
-        <Text style={[styles.errorText, fieldDirection.text]}>{error.message}</Text>
+        <Text style={[styles.errorText, labelDirection.text]}>{error.message}</Text>
       )}
       {!error && helper ? (
-        <Text style={[styles.helperText, fieldDirection.text]}>{helper}</Text>
+        <Text style={[styles.helperText, labelDirection.text]}>{helper}</Text>
       ) : null}
     </View>
   );
@@ -138,7 +143,7 @@ const MobileInput = ({
       name={name}
       rules={rules}
       render={({
-        field: { onChange, onBlur, value },
+        field: { onChange, onBlur, value, ref },
         fieldState: { error },
       }) => (
         <MobileInputField
@@ -151,6 +156,7 @@ const MobileInput = ({
           helper={helper}
           onChange={onChange}
           onBlur={onBlur}
+          fieldRef={ref}
           extraProps={props}
         />
       )}
@@ -175,6 +181,7 @@ const styles = StyleSheet.create({
     // icon/prefix styles carry logical LTR/RTL variants so the divider always
     // sits between the prefix and the digits in both locales.
     flexDirection: "row",
+    direction: "ltr",
     alignItems: "center",
     borderWidth: 1,
     borderColor: "#e0e0e0",

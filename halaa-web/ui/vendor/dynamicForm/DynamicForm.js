@@ -266,7 +266,7 @@ const DynamicForm = ({
               className={`${styles.input} ${error ? styles.inputError : ""}`}
               value={value}
               onChange={(e) => handleInputChange(name, e.target.value)}
-              placeholder={getPlaceholder(field)}
+              placeholder="05xxxxxxxx"
               dir="ltr"
             />
             {error && <span className={styles.error}>{error}</span>}
@@ -285,7 +285,7 @@ const DynamicForm = ({
               className={`${styles.input} ${error ? styles.inputError : ""}`}
               value={value}
               onChange={(e) => handleInputChange(name, e.target.value)}
-              placeholder={getPlaceholder(field)}
+              placeholder="ahmed@gmail.com"
               dir="ltr"
             />
             {error && <span className={styles.error}>{error}</span>}

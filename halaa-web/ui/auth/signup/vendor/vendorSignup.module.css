@@ -1,10 +1,11 @@
 /* ========== MAIN CONTAINER ========== */
 .container {
+  --app-header-height: 9rem;
   display: flex;
   justify-content: flex-start;
   max-width: 100%;
-  margin: 7.6rem auto 0;
-  min-height: 100vh;
+  margin: 0 auto;
+  min-height: calc(100vh - var(--app-header-height));
   position: relative;
 }
 
@@ -56,29 +57,26 @@
 
 /* Desktop 900px+ - Add padding to avoid fixed stepper */
 @media (min-width: 900px) {
-  /* LTR: Stepper on left, add left padding */
-  [dir="ltr"] .page_content {
-    padding-left: clamp(28rem, 22vw, 32rem);
-    padding-right: clamp(2rem, 4vw, 4rem);
+  .container {
+    display: grid;
+    grid-template-columns: clamp(28rem, 22vw, 32rem) minmax(0, 1fr);
+    align-items: start;
   }
 
-  /* RTL: Stepper on right, add right padding */
-  [dir="rtl"] .page_content {
-    padding-right: clamp(28rem, 22vw, 32rem);
-    padding-left: clamp(2rem, 4vw, 4rem);
+  .page_content {
+    min-width: 0;
+    padding-inline: clamp(2rem, 4vw, 4rem);
   }
 }
 
 /* Large screens 1200px+ - Increase padding for better spacing */
 @media (min-width: 1200px) {
-  [dir="ltr"] .page_content {
-    padding-left: clamp(32rem, 25vw, 39.6rem);
-    padding-right: clamp(4rem, 6vw, 8rem);
+  .container {
+    grid-template-columns: clamp(32rem, 25vw, 39.6rem) minmax(0, 1fr);
   }
 
-  [dir="rtl"] .page_content {
-    padding-right: clamp(32rem, 25vw, 39.6rem);
-    padding-left: clamp(4rem, 6vw, 8rem);
+  .page_content {
+    padding-inline: clamp(4rem, 6vw, 8rem);
   }
 }
 
@@ -121,38 +119,24 @@
 @media (min-width: 900px) {
   .stepper_desk {
     display: block;
-    position: fixed;
-    top: 7.6rem;
-    width: clamp(28rem, 22vw, 32rem);
-    height: calc(100vh - 7.6rem);
+    position: sticky;
+    top: var(--app-header-height, 9rem);
+    width: 100%;
+    height: calc(100vh - var(--app-header-height, 9rem));
     flex-shrink: 0;
     background: #fff;
     overflow-y: auto;
-    z-index: 100;
+    z-index: 90;
   }
 
   /* LTR: Stepper on left side */
   [dir="ltr"] .stepper_desk {
-    left: 0;
     border-right: 1px solid #f2f2f2;
   }
 
   /* RTL: Stepper on right side */
   [dir="rtl"] .stepper_desk {
-    right: 0;
     border-left: 1px solid #f2f2f2;
-  }
-}
-
-@media (min-width: 1200px) {
-  .stepper_desk {
-    width: clamp(32rem, 25vw, 39.6rem);
-  }
-}
-
-@media (min-width: 1440px) {
-  .stepper_desk {
-    width: 39.6rem;
   }
 }
 
@@ -161,7 +145,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: start;
+  justify-content: flex-start;
   gap: 0.8rem;
   margin: 2rem auto 3.2rem;
   padding: 0 5%;
@@ -190,7 +174,7 @@
 
 @media (min-width: 768px) {
   .top_text_title {
-    text-align: right;
+    text-align: center;
   }
 }
 

@@ -27,7 +27,7 @@ function normalizeVendorData(data) {
     name: vendor.brandName || vendor.name || "-",
     email: vendor.email || "-",
     phone: vendor.phoneNumber || vendor.phone || "-",
-    category: vendor.serviceCategories?.[0] || vendor.category || "-",
+    category: Array.isArray(vendor.serviceCategories) ? vendor.serviceCategories : Object.entries(vendor.serviceCategories || {}).filter(([, values]) => Array.isArray(values) && values.length).map(([key]) => key),
     status: vendor.vendorStatus || vendor.status || "pending",
     rating: vendor.rating ?? vendor.ratingsAverage ?? 0,
     createdAt: vendor.createdAt,
@@ -36,6 +36,7 @@ function normalizeVendorData(data) {
 
 export default function VendorsTable() {
   const { t, i18n } = useTranslation("adminVendors");
+  const { t: tDetails } = useTranslation("adminVendorDetails");
   const router = useRouter();
   const searchParams = useSearchParams();
   const { canUpdate, canDelete } = usePageAccess("vendors");
@@ -188,11 +189,12 @@ export default function VendorsTable() {
     if (key === "createdAt" && value) {
       return formatDate(value, i18n?.language || "ar");
     }
-    if (key === "phone") {
+    if (key === "category") return Array.isArray(value) && value.length ? value.map((category) => tDetails(`categories.${category}`, { defaultValue: category })).join("، ") : "—";
+    if (key === "phone" || key === "email") {
       return <span dir="ltr" style={{ unicodeBidi: "embed", display: "inline-block" }}>{value}</span>;
     }
     return value;
-  }, [statusTextMap, canUpdate, handleRatingClick, t]);
+  }, [statusTextMap, canUpdate, handleRatingClick, t, tDetails, i18n.language]);
 
   const tableData = useMemo(() => normalizeVendorData(data), [data]);
 

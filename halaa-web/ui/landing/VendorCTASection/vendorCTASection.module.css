@@ -83,7 +83,7 @@
 }
 
 .highlight {
-  color: var(--color-primary-500);
+  color: var(--landing-accent-text, var(--color-primary-500));
 }
 
 .description {

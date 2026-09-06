@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, ScrollView, ActivityIndicator, TouchableOpacity, Alert, StyleSheet, Image, Modal, Pressable, Linking } from "react-native";
+import { View, ScrollView, ActivityIndicator, TouchableOpacity, Alert, StyleSheet, Image, Modal, Pressable, Linking, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRoute, useNavigation } from "@react-navigation/native";
@@ -13,13 +13,17 @@ import TopBar from "../../../components/plans/TopBar";
 import DirectionalIonicon from "../../../components/common/DirectionalIonicon";
 import LocalizedText from "../../../components/commen/LocalizedText";
 import AdaptiveText from "../../../components/commen/AdaptiveText";
-import { SectionCard, InfoRow } from "../../../components/admin-dashboard/hosts/HostSectionCard";
+import { SectionCard, InfoRow as BaseInfoRow } from "../../../components/admin-dashboard/hosts/HostSectionCard";
+import { API_BASE_URL } from "../../../config/api";
+import { resolveAdminVendor, vendorApplicationStatus, isVendorDocument } from "../../../utils/adminVendorPresentation";
 import VendorHeroCard from "../../../components/admin-dashboard/vendors/VendorHeroCard";
 import { colors, spacing, borderRadius, typography, backgrounds, textStyles } from "../../../styles/tokens";
 
-const IMAGE_BASE = "https://halaa-backendproduction.up.railway.app";
+const InfoRow = (props) => <BaseInfoRow {...props} multiline />;
+const IMAGE_BASE = API_BASE_URL.replace(/\/api(?:\/v\d+)?\/?$/, "");
 const getImageUrl = (path) => {
-  if (!path) return null;
+  if (typeof path !== "string" || !path) return null;
+  if (/^[a-z][a-z0-9+.-]*:/i.test(path) && !/^https?:\/\//i.test(path)) return null;
   if (path.startsWith("http://") || path.startsWith("https://")) return path;
   return `${IMAGE_BASE}${path.startsWith("/") ? path : `/${path}`}`;
 };
@@ -35,6 +39,7 @@ const IdentitySection = ({ vendor, roleData, t, currentLanguage }) => (
     <InfoRow icon="mail-outline" label={t("common.email")} value={vendor.email || roleData?.email} mode="ltr" />
     <InfoRow icon="call-outline" label={t("common.phone")} value={vendor.phoneNumber || roleData?.phone} mode="phone" />
     <InfoRow icon="calendar-outline" label={t("vendorDetails.registrationDate")} value={fmtDate(vendor.createdAt, currentLanguage)} mode="localized" last />
+    <InfoRow icon="language-outline" label={t("vendorDetails.preferredLanguage")} value={vendor.preferredLanguage ? t(`vendorDetails.languages.${vendor.preferredLanguage}`, vendor.preferredLanguage) : "—"} mode="localized" />
   </SectionCard>
 );
 
@@ -57,6 +62,12 @@ const DescriptionSection = ({ roleData, t }) => {
           <AdaptiveText style={descStyles.text}>{other}</AdaptiveText>
         </View>
       ) : null}
+      {["taglineAr", "taglineEn", "aboutAr", "aboutEn"].map((field) => (
+        <View key={field} style={[descStyles.block, descStyles.blockBorder]}>
+          <LocalizedText style={descStyles.label}>{t(`vendorDetails.${field}`)}</LocalizedText>
+          <AdaptiveText style={[descStyles.text, { writingDirection: field.endsWith("Ar") ? "rtl" : "ltr" }]}>{roleData?.[field] || "—"}</AdaptiveText>
+        </View>
+      ))}
     </SectionCard>
   );
 };
@@ -67,10 +78,10 @@ const descStyles = StyleSheet.create({
   text: { fontSize: typography.fontSize.body.small, color: colors.natural[800], lineHeight: 20 },
 });
 
-const LocationSection = ({ roleData, t }) => {
+const LocationSection = ({ roleData, t, currentLanguage }) => {
   const sl = roleData?.serviceLocation;
-  const region = sl?.regionNameAr || sl?.regionNameEn || sl?.region;
-  const city = sl?.cityNameAr || sl?.cityNameEn || sl?.city;
+  const region = sl?.[currentLanguage === "ar" ? "regionNameAr" : "regionNameEn"] || sl?.regionNameAr || sl?.regionNameEn || sl?.region;
+  const city = sl?.[currentLanguage === "ar" ? "cityNameAr" : "cityNameEn"] || sl?.cityNameAr || sl?.cityNameEn || sl?.city;
   // `coverageType` is an app-owned enum (region | city | districts), so its
   // label follows the UI locale through translation keys; unknown backend
   // values fall back to the raw token instead of rendering a key path.
@@ -88,6 +99,7 @@ const LocationSection = ({ roleData, t }) => {
           <InfoRow icon="map-outline" label={t("vendorDetails.region")} value={region} />
           <InfoRow icon="business-outline" label={t("vendorDetails.city")} value={city} />
           <InfoRow icon="navigate-outline" label={t("vendorDetails.coverageType")} value={coverageLabel} mode="localized" last />
+          {coverage === "districts" && <InfoRow icon="map-outline" label={t("vendorDetails.coverage.districts")} value={sl.districtNames?.map((district) => district[currentLanguage === "ar" ? "nameAr" : "nameEn"] || district.nameAr || district.nameEn).filter(Boolean).join("، ") || sl.districtIds?.join(", ")} />}
         </>
       )}
     </SectionCard>
@@ -109,15 +121,20 @@ const SocialLinksSection = ({ roleData, t }) => {
     { key: "facebook", icon: "logo-facebook", label: "Facebook" },
     { key: "tiktok", icon: "musical-notes-outline", label: "TikTok" },
     { key: "twitter", icon: "logo-twitter", label: "Twitter / X" },
+    { key: "linkedin", icon: "logo-linkedin", label: "LinkedIn" },
+    { key: "youtube", icon: "logo-youtube", label: "YouTube" },
+    { key: "whatsapp", icon: "logo-whatsapp", label: "WhatsApp" },
     { key: "website", icon: "globe-outline", label: t("vendorDetails.domain") },
-  ].filter((e) => links[e.key]);
+  ].map((entry) => ({ ...entry, url: entry.key === "whatsapp" && /^(?:\+?966|0)?5\d{8}$/.test(links.whatsapp || "")
+    ? `https://wa.me/966${links.whatsapp.replace(/^(?:\+?966|0)/, "")}` : links[entry.key] }))
+    .filter((entry) => /^https?:\/\//i.test(entry.url || ""));
 
   return (
     <SectionCard title={t("vendorDetails.socialLinks")} icon="share-social-outline">
       {!entries.length ? (
         <View style={emptyStyles.row}><LocalizedText style={emptyStyles.text}>{t("vendorDetails.noLinks")}</LocalizedText></View>
       ) : entries.map((e, i) => (
-        <TouchableOpacity key={e.key} onPress={() => Linking.openURL(links[e.key]).catch(() => {})} activeOpacity={0.7}>
+        <TouchableOpacity key={e.key} onPress={() => Linking.openURL(e.url).catch(() => Alert.alert(t("vendorDetails.openFailed")))} activeOpacity={0.7} accessibilityRole="link" accessibilityLabel={e.label}>
           {/* Social targets are URLs — intrinsic LTR tokens. */}
           <InfoRow icon={e.icon} label={e.label} value={links[e.key]} mode="ltr" last={i === entries.length - 1} />
         </TouchableOpacity>
@@ -127,6 +144,7 @@ const SocialLinksSection = ({ roleData, t }) => {
 };
 
 const CategoriesSection = ({ vendor, roleData, t }) => {
+  const { t: tAuth } = useTranslation("auth");
   const cats = vendor?.serviceCategories || roleData?.serviceCategories;
   const entries = cats ? Object.entries(cats).filter(([, v]) => Array.isArray(v) && v.length) : [];
   return (
@@ -139,7 +157,10 @@ const CategoriesSection = ({ vendor, roleData, t }) => {
           <View style={catStyles.wrap}>
             {vals.map((v, i) => (
               <View key={i} style={catStyles.chip}>
-                <LocalizedText style={catStyles.chipText}>{t(`vendorDetails.serviceLabels.${v}`, v)}</LocalizedText>
+                <LocalizedText style={catStyles.chipText}>{(() => {
+                  const options = tAuth(`signupForm.vendor.serviceData.${cat}.options`, { returnObjects: true });
+                  return (Array.isArray(options) ? options.find((option) => option.value === v)?.label : null) || t(`vendorDetails.serviceLabels.${v}`, v);
+                })()}</LocalizedText>
               </View>
             ))}
           </View>
@@ -187,9 +208,12 @@ const GallerySection = ({ roleData, t, currentLanguage }) => {
       ) : (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={gallStyles.row}>
           {items.map((item, idx) => (
-            <TouchableOpacity key={idx} style={gallStyles.thumb} onPress={() => setPreviewUrl(item.url)} activeOpacity={0.8}>
-              <Image source={{ uri: item.url }} style={gallStyles.thumbImg} resizeMode="cover" />
-              <LocalizedText style={gallStyles.thumbTitle} numberOfLines={1}>{item.title}</LocalizedText>
+            <TouchableOpacity key={idx} style={gallStyles.thumb} onPress={() => isVendorDocument(item.url)
+              ? Linking.openURL(item.url).catch(() => Alert.alert(t("vendorDetails.openFailed"))) : setPreviewUrl(item.url)} activeOpacity={0.8} accessibilityRole="button" accessibilityLabel={item.title}>
+              {isVendorDocument(item.url)
+                ? <View style={[gallStyles.thumbImg, { alignItems: "center", justifyContent: "center" }]}><Ionicons name="document-text-outline" size={36} color={colors.primary[500]} /></View>
+                : <Image source={{ uri: item.url }} style={gallStyles.thumbImg} resizeMode="cover" />}
+              <LocalizedText style={gallStyles.thumbTitle}>{item.title}</LocalizedText>
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -207,6 +231,9 @@ const GallerySection = ({ roleData, t, currentLanguage }) => {
               <Ionicons name="close-circle" size={32} color="#fff" />
             </TouchableOpacity>
             <Image source={{ uri: previewUrl }} style={gallStyles.fullImg} resizeMode="contain" />
+            <TouchableOpacity accessibilityRole="link" onPress={() => previewUrl && Linking.openURL(previewUrl).catch(() => Alert.alert(t("vendorDetails.openFailed")))}>
+              <LocalizedText style={{ color: "#fff", padding: spacing[16] }}>{t("vendorDetails.openOriginal")}</LocalizedText>
+            </TouchableOpacity>
           </View>
         </Pressable>
       </Modal>
@@ -268,7 +295,7 @@ const VendorDetailsScreen = () => {
   const toast = useToast();
   const role = useAuthStore((state) => state.user?.role);
   const { vendorId } = route.params || {};
-  const { data, isLoading, error, refetch } = useAdminVendorById(vendorId);
+  const { data, isLoading, isFetching, error, refetch } = useAdminVendorById(vendorId);
   const updateStatus = useUpdateVendorStatus();
   const canEdit = canEditPage(role, PAGES.VENDORS);
 
@@ -276,9 +303,9 @@ const VendorDetailsScreen = () => {
     if (error) toast.error(t("vendorDetails.loadFailed"));
   }, [error, t, toast]);
 
-  const vendor = data?.data?.vendor || data?.data || null;
-  const roleData = vendor?.roleData || vendor?.vendorData || {};
-  const status = vendor?.status;
+  const vendor = resolveAdminVendor(data);
+  const roleData = vendor?.vendorData || vendor?.roleData || vendor?.profile?.vendorData || {};
+  const status = vendorApplicationStatus(vendor);
 
   const callMutation = async (next, successKey, failKey) => {
     try {
@@ -321,17 +348,23 @@ const VendorDetailsScreen = () => {
             )}
           </View>
         ) : (
-          <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={isFetching && !isLoading} onRefresh={refetch} />}>
             <VendorHeroCard vendor={vendor} />
 
             <View style={styles.sections}>
               <IdentitySection vendor={vendor} roleData={roleData} t={t} currentLanguage={currentLanguage} />
               <DescriptionSection roleData={roleData} t={t} />
-              <LocationSection roleData={roleData} t={t} />
+              <LocationSection roleData={roleData} t={t} currentLanguage={currentLanguage} />
               <CommercialSection roleData={roleData} t={t} />
               <SocialLinksSection roleData={roleData} t={t} />
               <CategoriesSection vendor={vendor} roleData={roleData} t={t} />
               <GallerySection roleData={roleData} t={t} currentLanguage={currentLanguage} />
+              <SectionCard title={t("vendorDetails.reviewTitle")} icon="clipboard-outline">
+                <InfoRow icon="document-text-outline" label={t("vendorDetails.adminNotes")} value={roleData.adminNotes} />
+                <InfoRow icon="alert-circle-outline" label={t("vendorDetails.rejectionReason")} value={roleData.rejectionReason} />
+                <InfoRow icon="calendar-outline" label={t("vendorDetails.approvedAt")} value={fmtDate(roleData.approvedAt, currentLanguage)} mode="localized" />
+                <InfoRow icon="calendar-outline" label={t("vendorDetails.rejectedAt")} value={fmtDate(roleData.rejectedAt, currentLanguage)} mode="localized" last />
+              </SectionCard>
 
               {canEdit && (() => {
                 const isPendingOrRejected = status === "pending" || status === "rejected";

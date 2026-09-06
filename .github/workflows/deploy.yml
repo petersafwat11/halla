@@ -72,6 +72,8 @@ jobs:
         with:
           context: .
           file: halaa-web/Dockerfile
+          build-args: |
+            NEXT_PUBLIC_GA4_MEASUREMENT_ID=${{ vars.NEXT_PUBLIC_GA4_MEASUREMENT_ID }}
           push: true
           tags: |
             ghcr.io/${{ env.OWNER }}/halaa-web:${{ steps.meta.outputs.tag }}

@@ -26,6 +26,10 @@ import {
   VENDOR_CATEGORY_KEYS,
 } from "../../utils/vendorHelpers";
 import { getImageUrl } from "../../utils/imageUtils";
+import {
+  sanitizeArabicText,
+  sanitizeEnglishText,
+} from "@halaa/shared/utils/languageInput";
 
 /**
  * Tile that owns BOTH ends of the single-image flow for a document field:
@@ -294,10 +298,10 @@ const ServiceDetailsForm = ({ data, onSave, onRefetch, loading }) => {
           </View>
 
           <View style={styles.inputGroup}>
-            <TextInput name="taglineAr" label={t("settings.serviceDetails.taglineAr", "النبذة القصيرة بالعربية")} maxLength={160} />
-            <TextInput name="taglineEn" label={t("settings.serviceDetails.taglineEn", "Short tagline in English")} maxLength={160} autoCapitalize="sentences" />
-            <TextAreaInput name="aboutAr" label={t("settings.serviceDetails.aboutAr", "نبذة تفصيلية بالعربية")} numberOfLines={5} maxLength={2000} />
-            <TextAreaInput name="aboutEn" label={t("settings.serviceDetails.aboutEn", "Detailed description in English")} numberOfLines={5} maxLength={2000} />
+            <TextInput name="taglineAr" label="النبذة القصيرة بالعربية" placeholder="مثال: نصنع لحظات تستحق أن تُروى" maxLength={160} contentDirection="rtl" sanitize={sanitizeArabicText} />
+            <TextInput name="taglineEn" label="Short tagline in English" placeholder="e.g. We turn moments into lasting memories" maxLength={160} contentDirection="ltr" sanitize={sanitizeEnglishText} autoCapitalize="sentences" />
+            <TextAreaInput name="aboutAr" label="نبذة تفصيلية بالعربية" placeholder="عرّف العملاء بخبرتك وخدماتك" numberOfLines={5} maxLength={2000} contentDirection="rtl" sanitize={sanitizeArabicText} />
+            <TextAreaInput name="aboutEn" label="Detailed description in English" placeholder="Tell customers about your experience and services" numberOfLines={5} maxLength={2000} contentDirection="ltr" sanitize={sanitizeEnglishText} />
           </View>
 
           <View style={styles.inputGroup}>

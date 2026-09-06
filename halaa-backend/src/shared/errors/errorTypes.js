@@ -41,12 +41,21 @@ class ValidationError extends AppError {
   constructor(message = 'Validation failed', errors = []) {
     super(message, 400, 'VALIDATION_ERROR');
     this.errors = errors;
+    this.fieldErrors = {};
+    if (Array.isArray(errors)) {
+      for (const err of errors) {
+        if (err && err.field && !this.fieldErrors[err.field]) {
+          this.fieldErrors[err.field] = err.message;
+        }
+      }
+    }
   }
 
   toJSON() {
     return {
       ...super.toJSON(),
       errors: this.errors,
+      fieldErrors: this.fieldErrors,
     };
   }
 }

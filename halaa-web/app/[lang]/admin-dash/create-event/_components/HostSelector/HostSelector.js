@@ -249,10 +249,8 @@ const HostSelector = ({
                   type="tel"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
-                  placeholder={
-                    t("createEvent.selectHost.phonePlaceholder") ||
-                    "+966 XX XXX XXXX"
-                  }
+                  placeholder="05xxxxxxxx"
+                  dir="ltr"
                   className={styles.searchInput}
                   onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                 />

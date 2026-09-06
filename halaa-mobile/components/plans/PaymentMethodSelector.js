@@ -302,7 +302,7 @@ const PaymentMethodSelector = ({
             <Text style={[fieldChrome.text, styles.label]}>{t("checkout.stcpay.mobile")}</Text>
             <TextInput
               style={[styles.input, styles.ltrInput, errors.stcMobile && styles.inputError]}
-              placeholder={t("checkout.stcpay.mobilePlaceholder", DEFAULT_PHONE_PLACEHOLDER)}
+              placeholder={DEFAULT_PHONE_PLACEHOLDER}
               placeholderTextColor={colors.natural[350]}
               keyboardType="phone-pad"
               value={mobileText}

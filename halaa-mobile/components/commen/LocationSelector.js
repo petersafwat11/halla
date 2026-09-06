@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useFormContext } from 'react-hook-form';
 import { DropdownInput } from './index';
 import CheckboxGroup from './CheckboxGroup';
@@ -14,9 +14,9 @@ const LocationSelector = ({ basePath = 'serviceData.serviceLocation' } = {}) => 
   const regionId = watch(`${basePath}.regionId`);
   const cityId = watch(`${basePath}.cityId`);
 
-  const { data: regionsData, isLoading: regionsLoading } = useRegions();
-  const { data: citiesData, isLoading: citiesLoading } = useCitiesByRegion(regionId);
-  const { data: districtsData } = useDistrictsByCity(cityId);
+  const { data: regionsData, isLoading: regionsLoading, isError: regionsError, refetch: refetchRegions } = useRegions();
+  const { data: citiesData, isLoading: citiesLoading, isError: citiesError, refetch: refetchCities } = useCitiesByRegion(regionId);
+  const { data: districtsData, isLoading: districtsLoading, isError: districtsError, refetch: refetchDistricts } = useDistrictsByCity(cityId);
 
   const regions = (regionsData?.data?.regions || []).map((r) => ({
     value: r.region_id,
@@ -38,6 +38,36 @@ const LocationSelector = ({ basePath = 'serviceData.serviceLocation' } = {}) => 
     nameAr: d.name_ar,
     nameEn: d.name_en,
   }));
+
+  // Drafts may reference location IDs removed from the server catalog.
+  // Clear only after each catalog has loaded successfully so transient
+  // network/loading states never erase a valid selection.
+  useEffect(() => {
+    if (!regionsLoading && !regionsError && regionId && !regions.some((r) => String(r.value) === String(regionId))) {
+      setValue(`${basePath}.regionId`, 0, { shouldValidate: true });
+      setValue(`${basePath}.cityId`, null);
+      setValue(`${basePath}.districtIds`, []);
+      setValue(`${basePath}.coverageType`, 'city');
+    }
+  }, [basePath, regionId, regions, regionsError, regionsLoading, setValue]);
+
+  useEffect(() => {
+    if (!citiesLoading && !citiesError && cityId && !cities.some((c) => String(c.value) === String(cityId))) {
+      setValue(`${basePath}.cityId`, null, { shouldValidate: true });
+      setValue(`${basePath}.districtIds`, []);
+      setValue(`${basePath}.coverageType`, 'region');
+    }
+  }, [basePath, cities, citiesError, citiesLoading, cityId, setValue]);
+
+  useEffect(() => {
+    if (districtsLoading || districtsError || !cityId) return;
+    const currentIds = watch(`${basePath}.districtIds`) || [];
+    const validIds = currentIds.filter((id) => districts.some((d) => String(d.value) === String(id)));
+    if (validIds.length !== currentIds.length) {
+      setValue(`${basePath}.districtIds`, validIds, { shouldValidate: true });
+      setValue(`${basePath}.coverageType`, validIds.length > 0 ? 'districts' : 'city');
+    }
+  }, [basePath, cityId, districts, districtsError, districtsLoading, setValue, watch]);
 
   const handleRegionChange = (regionValue) => {
     const region = regions.find((r) => r.value === regionValue);
@@ -83,11 +113,28 @@ const LocationSelector = ({ basePath = 'serviceData.serviceLocation' } = {}) => 
 
   return (
     <View style={styles.container}>
+      {regionsError && (
+        <View style={styles.errorRow}>
+          <Text style={styles.errorText}>
+            {t('signupForm.vendor.serviceData.location.regionsLoadError', {
+              defaultValue: 'تعذر تحميل المناطق',
+            })}
+          </Text>
+          <TouchableOpacity onPress={() => refetchRegions()} style={styles.retryBtn}>
+            <Text style={styles.retryText}>{t('signupForm.vendor.serviceData.location.retry')}</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       <View style={styles.pickerWrap}>
         <DropdownInput
           name={`${basePath}.regionId`}
           label={t('signupForm.vendor.serviceData.locationRegion')}
-          placeholder={t('signupForm.vendor.serviceData.locationRegionPlaceholder')}
+          placeholder={
+            regionsLoading
+              ? t('signupForm.vendor.serviceData.location.loading', { defaultValue: 'جاري التحميل...' })
+              : t('signupForm.vendor.serviceData.locationRegionPlaceholder')
+          }
           options={regionsLoading ? [] : regions}
           modalTitle={t('signupForm.vendor.serviceData.locationRegion')}
           rules={{ onChange: (e) => handleRegionChange(e.target?.value ?? e) }}
@@ -95,43 +142,120 @@ const LocationSelector = ({ basePath = 'serviceData.serviceLocation' } = {}) => 
       </View>
 
       {regionId ? (
-        <View style={styles.pickerWrap}>
-          <DropdownInput
-            name={`${basePath}.cityId`}
-            label={t('signupForm.vendor.serviceData.locationCity')}
-            placeholder={t('signupForm.vendor.serviceData.locationCityPlaceholder')}
-            options={citiesLoading ? [] : cities}
-            modalTitle={t('signupForm.vendor.serviceData.locationCity')}
-            rules={{ onChange: (e) => handleCityChange(e.target?.value ?? e) }}
-          />
-        </View>
+        <>
+          {citiesError && (
+            <View style={styles.errorRow}>
+              <Text style={styles.errorText}>
+                {t('signupForm.vendor.serviceData.location.citiesLoadError', {
+                  defaultValue: 'تعذر تحميل المدن',
+                })}
+              </Text>
+              <TouchableOpacity onPress={() => refetchCities()} style={styles.retryBtn}>
+                <Text style={styles.retryText}>{t('signupForm.vendor.serviceData.location.retry')}</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          <View style={styles.pickerWrap}>
+            <DropdownInput
+              name={`${basePath}.cityId`}
+              label={t('signupForm.vendor.serviceData.locationCity')}
+              placeholder={
+                citiesLoading
+                  ? t('signupForm.vendor.serviceData.location.loading', { defaultValue: 'جاري التحميل...' })
+                  : t('signupForm.vendor.serviceData.locationCityPlaceholder')
+              }
+              options={citiesLoading ? [] : cities}
+              modalTitle={t('signupForm.vendor.serviceData.locationCity')}
+              rules={{ onChange: (e) => handleCityChange(e.target?.value ?? e) }}
+            />
+          </View>
+        </>
       ) : null}
 
-      {cityId && districts.length > 0 ? (
-        <View>
-          <Text style={styles.districtLabel}>{t('signupForm.vendor.serviceData.locationDistricts')}</Text>
-          <Text style={styles.districtHint}>{t('signupForm.vendor.serviceData.locationDistrictsHint')}</Text>
-          <CheckboxGroup
-            name={`${basePath}.districtIds`}
-            items={districts}
-            columns={2}
-            rules={{ onChange: (e) => {
-              const newIds = e.target?.value ?? e;
-              handleDistrictsChange(Array.isArray(newIds) ? newIds : []);
-            }}}
-          />
-        </View>
-      ) : null}
+      {cityId && (
+        <>
+          {districtsError && (
+            <View style={styles.errorRow}>
+              <Text style={styles.errorText}>
+                {t('signupForm.vendor.serviceData.location.districtsLoadError', {
+                  defaultValue: 'تعذر تحميل الأحياء',
+                })}
+              </Text>
+              <TouchableOpacity onPress={() => refetchDistricts()} style={styles.retryBtn}>
+                <Text style={styles.retryText}>{t('signupForm.vendor.serviceData.location.retry')}</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {districts.length > 0 ? (
+            <View>
+              <Text style={styles.districtLabel}>{t('signupForm.vendor.serviceData.locationDistricts')}</Text>
+              <Text style={styles.districtHint}>{t('signupForm.vendor.serviceData.locationDistrictsHint')}</Text>
+              <CheckboxGroup
+                name={`${basePath}.districtIds`}
+                items={districts}
+                columns={2}
+                rules={{
+                  onChange: (e) => {
+                    const newIds = e.target?.value ?? e;
+                    handleDistrictsChange(Array.isArray(newIds) ? newIds : []);
+                  },
+                }}
+              />
+            </View>
+          ) : !districtsLoading && !districtsError ? (
+            <Text style={styles.emptyDistrictsText}>
+              {t('signupForm.vendor.serviceData.location.allCitiesCovered', {
+                defaultValue: 'تغطية المدينة بالكامل',
+              })}
+            </Text>
+          ) : null}
+        </>
+      )}
     </View>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: { width: '100%' },
   pickerWrap: { marginBottom: 4 },
   districtLabel: { fontSize: 14, fontFamily: 'Cairo_600SemiBold', color: '#2c2c2c', marginBottom: 4 },
   districtHint: { fontSize: 12, fontFamily: 'Cairo_400Regular', color: '#888', marginBottom: 10 },
+  errorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFF0F0',
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#FFD4D4',
+  },
+  errorText: {
+    fontSize: 12,
+    fontFamily: 'Cairo_400Regular',
+    color: '#D32F2F',
+    flex: 1,
+  },
+  retryBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    backgroundColor: '#D32F2F',
+    borderRadius: 6,
+    marginStart: 8,
+  },
+  retryText: {
+    fontSize: 11,
+    fontFamily: 'Cairo_600SemiBold',
+    color: '#fff',
+  },
+  emptyDistrictsText: {
+    fontSize: 12,
+    fontFamily: 'Cairo_400Regular',
+    color: '#888',
+    paddingVertical: 6,
+  },
 });
 
 export default LocationSelector;

@@ -280,10 +280,11 @@ export const apiRequest = async ({
   const isBrowserFormData =
     typeof FormData !== 'undefined' && data instanceof FormData;
   if (isBrowserFormData) {
-    if (requestConfig.headers) {
-      delete requestConfig.headers['Content-Type'];
-      delete requestConfig.headers['content-type'];
-    }
+    // Override the instance's JSON default as well as caller headers.
+    // Merely deleting the request header restores that default during merge,
+    // causing Axios to serialize File entries to JSON instead of multipart.
+    requestConfig.headers = { ...requestConfig.headers, 'Content-Type': undefined };
+    delete requestConfig.headers['content-type'];
   }
 
   // Server-side token handling

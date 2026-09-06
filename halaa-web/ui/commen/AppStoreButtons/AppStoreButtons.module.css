@@ -10,6 +10,11 @@
   align-items: flex-start;
 }
 
+.buttonWithTooltip {
+  position: relative;
+  display: inline-flex;
+}
+
 .btn {
   display: flex;
   min-width: 182px;
@@ -20,7 +25,10 @@
   padding: 0 1.6rem;
   border-radius: 8.4px;
   background: #000;
+  border: 0;
   text-decoration: none;
+  font: inherit;
+  text-align: start;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
@@ -43,6 +51,52 @@
 .btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.disabled {
+  opacity: 0.72;
+  cursor: not-allowed;
+}
+
+.disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.disabled:hover::before {
+  opacity: 0;
+}
+
+.disabled:focus-visible {
+  outline: 3px solid var(--color-primary-300);
+  outline-offset: 3px;
+}
+
+.tooltip {
+  position: absolute;
+  z-index: 10;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--color-secondary-800, #2b2724);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-50%) translateY(4px);
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s ease;
+}
+
+.buttonWithTooltip:hover .tooltip,
+.buttonWithTooltip:focus-within .tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
 }
 
 .content {
@@ -71,8 +125,13 @@
 }
 
 @media (max-width: 576px) {
+  .buttonWithTooltip {
+    flex: 1;
+  }
+
   .btn {
     flex: 1;
+    width: 100%;
     min-width: 130px;
     height: 48px;
   }

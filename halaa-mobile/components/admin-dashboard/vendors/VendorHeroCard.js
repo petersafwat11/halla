@@ -1,4 +1,5 @@
 import React from "react";
+import { vendorApplicationStatus } from "../../../utils/adminVendorPresentation";
 import { View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { isolateLtr } from "@halaa/shared/utils/bidi";
@@ -21,7 +22,7 @@ const STATUS_LABEL_KEY = {
 
 const VendorHeroCard = ({ vendor }) => {
   const { t, currentLanguage } = useTranslation("admin");
-  const status = vendor?.status || "pending";
+  const status = vendorApplicationStatus(vendor);
   const statusVisual = getStatusVisual(status);
   const labelKey = STATUS_LABEL_KEY[status] || STATUS_LABEL_KEY.pending;
   const statusLabel = t(`vendorDetails.statuses.${labelKey}`, labelKey);
@@ -38,10 +39,10 @@ const VendorHeroCard = ({ vendor }) => {
         <Ionicons name="storefront-outline" size={32} color={colors.primary[500]} />
       </View>
 
-      <AdaptiveText style={styles.brandName} numberOfLines={1}>
+      <AdaptiveText style={styles.brandName}>
         {displayName}
       </AdaptiveText>
-      <AdaptiveText style={styles.ownerName} numberOfLines={1}>
+      <AdaptiveText style={styles.ownerName}>
         {ownerName}
       </AdaptiveText>
 

@@ -861,6 +861,124 @@ const generalFilter = (req, file, cb) => {
   }
 };
 
+const vendorSignupFilter = (req, file, cb) => {
+  const field = file.fieldname;
+  const mime = file.mimetype;
+  const name = file.originalname;
+
+  const allowedImageMimes = [
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/webp",
+  ];
+  const imageExts = [".jpg", ".jpeg", ".png", ".webp"];
+
+  const allowedDocMimes = [
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ];
+  const docExts = [".pdf", ".doc", ".docx"];
+  const normalizedExt = path.extname(name || "").toLowerCase();
+  const mimeMatchesExtension = (() => {
+    const expected = {
+      ".jpg": ["image/jpeg", "image/jpg"],
+      ".jpeg": ["image/jpeg", "image/jpg"],
+      ".png": ["image/png"],
+      ".webp": ["image/webp"],
+      ".pdf": ["application/pdf"],
+      ".doc": ["application/msword"],
+      ".docx": ["application/vnd.openxmlformats-officedocument.wordprocessingml.document"],
+    };
+    return Boolean(expected[normalizedExt]?.includes(mime));
+  })();
+
+  // Image-only fields: businessLogo, portfolioImages
+  if (field === "businessLogo" || field === "portfolioImages") {
+    if (allowedImageMimes.includes(mime) && extAllowed(name, imageExts) && mimeMatchesExtension) {
+      return cb(null, true);
+    }
+    const err = new Error(`Field "${field}" only accepts JPEG, PNG, and WebP images`);
+    err.code = "INVALID_FILE_TYPE";
+    err.field = field;
+    return cb(err, false);
+  }
+
+  // Mixed PDF / Image fields: pricePackages, commercialRecordImage, nationalIdImage
+  if (
+    field === "pricePackages" ||
+    field === "commercialRecordImage" ||
+    field === "nationalIdImage"
+  ) {
+    const mixedImageMimes = ["image/jpeg", "image/jpg", "image/png"];
+    const mixedImageExts = [".jpg", ".jpeg", ".png"];
+    const isImage = mixedImageMimes.includes(mime) && extAllowed(name, mixedImageExts) && mimeMatchesExtension;
+    const isPdf = mime === "application/pdf" && extAllowed(name, [".pdf"]) && mimeMatchesExtension;
+    if (isImage || isPdf) {
+      return cb(null, true);
+    }
+    const err = new Error(`Field "${field}" only accepts PDF, JPEG, and PNG files`);
+    err.code = "INVALID_FILE_TYPE";
+    err.field = field;
+    return cb(err, false);
+  }
+
+  // Document-only fields: profileFile
+  if (field === "profileFile") {
+    if (allowedDocMimes.includes(mime) && extAllowed(name, docExts) && mimeMatchesExtension) {
+      return cb(null, true);
+    }
+    const err = new Error(`Field "profileFile" only accepts PDF, DOC, and DOCX documents`);
+    err.code = "INVALID_FILE_TYPE";
+    err.field = field;
+    return cb(err, false);
+  }
+
+  const err = new Error(`Unexpected file field: ${field}`);
+  err.code = "LIMIT_UNEXPECTED_FILE";
+  err.field = field;
+  return cb(err, false);
+};
+
+/**
+ * Clean up uploaded files from S3 or local disk (e.g. after validation or DB failure)
+ * @param {Object|Array} files - Multer req.files object or array
+ * @returns {Promise<void>}
+ */
+const cleanupUploadedFiles = async (files) => {
+  if (!files || typeof files !== "object") return;
+  const deletePromises = [];
+
+  const fileList = Array.isArray(files)
+    ? files
+    : Object.values(files).flat();
+
+  for (const file of fileList) {
+    if (!file) continue;
+    const key =
+      file.key ||
+      (file.path ? localRefFromAbsolutePath(file.path) : null) ||
+      resolveDeletableS3Key(file.location);
+    if (key) {
+      deletePromises.push(deleteFromS3(key));
+    } else if (file.path) {
+      deletePromises.push(deleteFile(file.path));
+    }
+  }
+
+  const results = await Promise.allSettled(deletePromises);
+  const failures = results.filter(
+    (result) => result.status === "rejected" || result.value === false,
+  );
+  if (failures.length > 0) {
+    const error = new Error(`Failed to clean up ${failures.length} uploaded file(s)`);
+    error.code = "UPLOAD_CLEANUP_FAILED";
+    error.failures = failures;
+    throw error;
+  }
+};
+
 /**
  * Malware-scan hook point (§6 · UGC-04). When called with an in-memory buffer it
  * runs the quarantine-first magic-byte + malware pipeline (`uploadScan`):
@@ -942,14 +1060,19 @@ const uploadGeneral = multer({
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
 });
 
+const uploadVendor = multer({
+  storage: s3Storage,
+  fileFilter: vendorSignupFilter,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+});
+
 // Pre-configured upload middlewares
-const uploadVendorFiles = uploadGeneral.fields([
+const uploadVendorFiles = uploadVendor.fields([
   { name: "portfolioImages", maxCount: 10 },
   { name: "businessLogo", maxCount: 1 },
   { name: "pricePackages", maxCount: 5 },
   { name: "commercialRecordImage", maxCount: 1 },
   { name: "nationalIdImage", maxCount: 1 },
-  { name: "cv", maxCount: 1 },
   { name: "profileFile", maxCount: 1 },
 ]);
 
@@ -964,7 +1087,6 @@ const uploadUserProfile = uploadGeneral.fields([
   { name: "portfolioImages", maxCount: 10 },
   { name: "pricePackages", maxCount: 10 },
   { name: "profileFile", maxCount: 1 },
-  { name: "cv", maxCount: 1 },
 ]);
 
 const uploadPostEventMedia = uploadMedia.fields([
@@ -1011,6 +1133,8 @@ module.exports = {
   mediaFilter,
   documentFilter,
   generalFilter,
+  vendorSignupFilter,
+  cleanupUploadedFiles,
   scanUploadHook,
 
   // Pre-configured multer instances

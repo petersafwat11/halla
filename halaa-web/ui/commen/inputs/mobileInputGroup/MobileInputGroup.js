@@ -1,6 +1,6 @@
 import React from "react";
 import styles from "./inputGroup.module.css";
-import Image from "next/image";
+import { FiPhone } from "react-icons/fi";
 import { get, useFormContext } from "react-hook-form";
 import {
   clampPhoneInput,
@@ -31,7 +31,8 @@ const MobileInputGroup = ({
   const formError = errors ? get(errors, name)?.message : undefined;
   const isControlled = inputValue !== undefined && onChange !== undefined;
 
-  const resolvedPlaceholder = placeholder || DEFAULT_PHONE_PLACEHOLDER;
+  // This is a product-wide token, not localized copy.
+  const resolvedPlaceholder = DEFAULT_PHONE_PLACEHOLDER;
 
   if (isControlled) {
     const handleControlledChange = (e) => {
@@ -42,25 +43,26 @@ const MobileInputGroup = ({
 
     return (
       <div className={styles.input_group}>
-        <label className={styles.label}>
+        <label className={styles.label} htmlFor={name}>
           {label}
           {required && <span className={styles.required}>*</span>}
         </label>
         <div className={styles.input_container}>
+          <span className={styles.code} dir="ltr">
+            <FiPhone size={20} aria-hidden="true" />
+            <span className={styles.code_text}>+966</span>
+          </span>
           <input
+            id={name}
             className={externalError ? styles.input_error : styles.input}
             type={type || "tel"}
             placeholder={resolvedPlaceholder}
             name={name}
             value={inputValue}
             maxLength={getPhoneMaxLength(inputValue)}
+            inputMode="numeric"
+            autoComplete="tel"
             onChange={handleControlledChange}
-          />
-          <Image
-            src={"/svg/auth/country-code.svg"}
-            alt="country-code"
-            width={104}
-            height={48}
           />
         </div>
         {externalError && (
@@ -89,12 +91,17 @@ const MobileInputGroup = ({
 
   return (
     <div className={styles.input_group}>
-      <label className={styles.label}>
+      <label className={styles.label} htmlFor={name}>
         {label}
         {required && <span className={styles.required}>*</span>}
       </label>
       <div className={styles.input_container}>
+        <span className={styles.code} dir="ltr">
+          <FiPhone size={20} aria-hidden="true" />
+          <span className={styles.code_text}>+966</span>
+        </span>
         <input
+          id={name}
           className={
             formError || externalError ? styles.input_error : styles.input
           }
@@ -102,13 +109,9 @@ const MobileInputGroup = ({
           placeholder={resolvedPlaceholder}
           name={name}
           maxLength={getPhoneMaxLength(currentVal)}
+          inputMode="numeric"
+          autoComplete="tel"
           {...regProps}
-        />
-        <Image
-          src={"/svg/auth/country-code.svg"}
-          alt="country-code"
-          width={104}
-          height={48}
         />
       </div>
       {(externalError || formError) && (

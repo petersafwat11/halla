@@ -107,6 +107,11 @@
 /* ── Header-specific button overrides ── */
 /* Login: deeper warm brown — darker shade of the header's own family */
 .headerBtnLogin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  text-align: center;
   background: var(--color-primary-700) !important;
   border: none !important;
   color: var(--color-natural-50) !important;
@@ -120,6 +125,13 @@
 
 /* Signup: warm cream — lighter shade of the header's own family, invites action */
 .headerBtnSignup {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  text-align: center;
+  padding: 1.08rem 1.44rem;
+  font-size: 1.44rem;
   background: var(--color-primary-100) !important;
   color: var(--color-primary-800) !important;
   border: none !important;

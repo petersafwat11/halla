@@ -46,18 +46,20 @@ const InvitationsCarousel = ({ lang = "ar" }) => {
         <div
           className={styles.carousel}
           ref={trackRef}
+          tabIndex={0}
+          role="region"
+          aria-label={t('invitations.title')}
           onScroll={handleScroll}
         >
           {TEMPLATE_IMAGES.map((file, i) => (
             <div key={i} className={styles.invitationCard}>
               <Image
                 src={`/template-card-thumbnails/${file.replace(/\.(png|jpe?g)$/i, ".webp")}`}
-                alt=""
+                alt={t(`invitations.imageAlts.${i}`)}
                 width={208}
                 height={288}
                 sizes="(max-width: 480px) 138px, (max-width: 768px) 164px, 208px"
-                loading={i === 0 ? "eager" : "lazy"}
-                fetchPriority={i === 0 ? "high" : "auto"}
+                loading="lazy"
                 decoding="async"
                 draggable={false}
                 quality={78}

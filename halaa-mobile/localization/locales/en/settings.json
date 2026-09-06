@@ -110,7 +110,7 @@
     "nameMin": "Name must be at least 2 characters",
     "nameMax": "Name must be less than 100 characters",
     "emailInvalid": "Please enter a valid email address",
-    "passwordComplexity": "Use letters and numbers only, with at least one of each",
+    "passwordComplexity": "Use at least one letter and one number; symbols are allowed",
     "passwordsDoNotMatch": "Passwords do not match",
     "currentPasswordRequired": "Current password is required to set a new password",
     "newPasswordRequired": "New password is required to change the current password"
@@ -122,7 +122,7 @@
     "invalidPhone": "Invalid phone number",
     "currentPasswordRequired": "Current password is required",
     "passwordMinLength": "Password must be at least 8 characters",
-    "passwordComplexity": "Password must contain only letters and numbers, with at least one letter and one number",
+    "passwordComplexity": "Use at least one letter and one number; symbols are allowed",
     "confirmPasswordRequired": "Password confirmation is required",
     "passwordsDoNotMatch": "Passwords do not match",
     "passwordRequired": "Password is required for confirmation",

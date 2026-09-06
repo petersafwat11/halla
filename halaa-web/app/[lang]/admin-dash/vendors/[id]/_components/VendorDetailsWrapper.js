@@ -43,21 +43,21 @@ export default function VendorDetailsWrapper({ vendorData, error }) {
   const currentStatus = roleData?.vendorStatus || vendor?.status;
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} dir={i18n.dir()}>
       <div className={styles.header}>
         <button onClick={() => router.back()} className={styles.backBtn}>
           {t("actions.backToList")}
         </button>
         <div className={styles.headerContent}>
           <div className={styles.headerInfo}>
-            <h1>{roleData?.brandName || t("defaults.vendor")}</h1>
-            <p className={styles.ownerName}>
+            <h1 dir="auto">{roleData?.brandName || t("defaults.vendor")}</h1>
+            <p className={styles.ownerName} dir="auto">
               {roleData?.ownerFullName || vendor?.name}
             </p>
           </div>
           <div className={styles.statusContainer}>
             <VendorStatusBadge status={currentStatus} />
-            {roleData?.rating && (
+            {roleData?.rating != null && (
               <span className={styles.rating}>
                 {t("rating.display", { rating: roleData.rating })}
               </span>
@@ -77,8 +77,9 @@ export default function VendorDetailsWrapper({ vendorData, error }) {
           <div className={styles.cardContent}>
             <InfoRow label={t("identity.brandName")} value={roleData?.brandName} />
             <InfoRow label={t("identity.ownerName")} value={roleData?.ownerFullName || vendor?.name} />
-            <InfoRow label={t("identity.email")} value={vendor?.email} />
+            <InfoRow label={t("identity.email")} value={vendor?.email} dir="ltr" />
             <InfoRow label={t("identity.phone")} value={vendor?.phoneNumber} dir="ltr" />
+            <InfoRow label={t("review.preferredLanguage")} value={vendor?.preferredLanguage === "ar" ? "العربية" : vendor?.preferredLanguage === "en" ? "English" : null} />
             <InfoRow
               label={t("identity.registrationDate")}
               value={vendor?.createdAt ? formatDate(vendor.createdAt, i18n?.language || "ar") : null}
@@ -89,12 +90,15 @@ export default function VendorDetailsWrapper({ vendorData, error }) {
         <div className={styles.card}>
           <h2 className={styles.cardTitle}>{t("sections.serviceDescription")}</h2>
           <div className={styles.cardContent}>
-            <p className={styles.description}>
+            <p className={styles.description} dir="auto">
               {roleData?.serviceDescription || t("defaults.noDescription")}
             </p>
             {roleData?.otherData && (
               <InfoRow label={t("identity.additionalInfo")} value={roleData.otherData} />
             )}
+            {["taglineAr", "taglineEn", "aboutAr", "aboutEn"].map((field) => (
+              <InfoRow key={field} label={t(`descriptionFields.${field}`)} value={roleData?.[field]} dir={field.endsWith("Ar") ? "rtl" : "ltr"} />
+            ))}
           </div>
         </div>
 
@@ -103,9 +107,12 @@ export default function VendorDetailsWrapper({ vendorData, error }) {
           <div className={styles.cardContent}>
             {roleData?.serviceLocation ? (
               <>
-                <InfoRow label={t("location.region")} value={roleData.serviceLocation.regionNameAr} />
-                <InfoRow label={t("location.city")} value={roleData.serviceLocation.cityNameAr} />
-                <InfoRow label={t("location.coverageType")} value={roleData.serviceLocation.coverageType} />
+                <InfoRow label={t("location.region")} value={roleData.serviceLocation[i18n.dir() === "rtl" ? "regionNameAr" : "regionNameEn"] || roleData.serviceLocation.regionNameAr} />
+                <InfoRow label={t("location.city")} value={roleData.serviceLocation[i18n.dir() === "rtl" ? "cityNameAr" : "cityNameEn"] || roleData.serviceLocation.cityNameAr} />
+                <InfoRow label={t("location.coverageType")} value={t(`coverage.${roleData.serviceLocation.coverageType}`, { defaultValue: roleData.serviceLocation.coverageType || "—" })} />
+                {roleData.serviceLocation.coverageType === "districts" && (
+                  <InfoRow label={t("coverage.districts")} value={roleData.serviceLocation.districtNames?.map((district) => district[i18n.dir() === "rtl" ? "nameAr" : "nameEn"] || district.nameAr).filter(Boolean).join("، ")} />
+                )}
               </>
             ) : (
               <p className={styles.noData}>{t("location.noLocation")}</p>
@@ -116,8 +123,8 @@ export default function VendorDetailsWrapper({ vendorData, error }) {
         <div className={styles.card}>
           <h2 className={styles.cardTitle}>{t("sections.commercialVerification")}</h2>
           <div className={styles.cardContent}>
-            <InfoRow label={t("verification.commercialRecordNumber")} value={roleData?.commercialRecordNumber} />
-            <InfoRow label={t("verification.nationalIdNumber")} value={roleData?.nationalId} />
+            <InfoRow label={t("verification.commercialRecordNumber")} value={roleData?.commercialRecordNumber} dir="ltr" />
+            <InfoRow label={t("verification.nationalIdNumber")} value={roleData?.nationalId} dir="ltr" />
           </div>
         </div>
 
@@ -141,18 +148,27 @@ export default function VendorDetailsWrapper({ vendorData, error }) {
             <VendorImageGallery roleData={roleData} />
           </div>
         </div>
+        <div className={`${styles.card} ${styles.fullWidth}`}>
+          <h2 className={styles.cardTitle}>{t("review.title")}</h2>
+          <div className={styles.cardContent}>
+            <InfoRow label={t("review.adminNotes")} value={roleData.adminNotes} />
+            <InfoRow label={t("review.rejectionReason")} value={roleData.rejectionReason} />
+            <InfoRow label={t("review.approvedAt")} value={roleData.approvedAt ? formatDate(roleData.approvedAt, i18n.language) : null} />
+            <InfoRow label={t("review.rejectedAt")} value={roleData.rejectedAt ? formatDate(roleData.rejectedAt, i18n.language) : null} />
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
-function InfoRow({ label, value, dir }) {
+function InfoRow({ label, value, dir = "auto" }) {
   const { t } = useTranslation("adminVendorDetails");
   return (
     <div className={styles.infoRow}>
       <span className={styles.label}>{label}</span>
       <span className={styles.value} dir={dir}>
-        {value || t("defaults.notAvailable")}
+        {value === undefined || value === null || value === "" ? t("defaults.notAvailable") : value}
       </span>
     </div>
   );

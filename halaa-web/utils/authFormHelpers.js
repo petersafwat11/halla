@@ -58,8 +58,9 @@ export const validateFormStep = ({
     partialSchema.parse(stepData);
     return true;
   } catch (error) {
-    if (error.errors) {
-      error.errors.forEach((err) => {
+    const issues = error.issues || error.errors || [];
+    if (issues.length > 0) {
+      issues.forEach((err) => {
         const path = err.path.join(".");
         setError?.(path, { type: "manual", message: err.message });
       });
@@ -182,26 +183,32 @@ export const flattenVendorData = (formValues) => {
     passwordConfirm: identity?.passwordConfirm,
     brandName: identity?.brandName,
     ownerFullName: identity?.ownerFullName,
+    preferredLanguage: identity?.preferredLanguage || "ar",
 
     // Service data (flat)
     serviceDescription: serviceData?.serviceDescription,
-    categories: serviceData?.categories || [],
+    taglineAr: serviceData?.taglineAr || "",
+    taglineEn: serviceData?.taglineEn || "",
+    aboutAr: serviceData?.aboutAr || "",
+    aboutEn: serviceData?.aboutEn || "",
     serviceCategories,
-    city: serviceData?.city,
-    coverageArea: serviceData?.coverageArea,
+    location: serviceData?.serviceLocation,
     otherData: serviceData?.otherData,
 
     // Commercial verification (flat)
-    commercialRecordNumber: commercialVerification?.commercialRecordNumber,
+    commercialRegistrationNumber: commercialVerification?.commercialRecordNumber,
     nationalId: commercialVerification?.nationalId,
 
-    // Social links (nested is OK)
+    // Social links (nested)
     socialLinks: {
-      instagram: socialLinks?.instagram || socialLinks?.instagramLink || "",
-      facebook: socialLinks?.facebook || socialLinks?.facebookLink || "",
-      tiktok: socialLinks?.tiktok || socialLinks?.tiktokLink || "",
-      twitter: socialLinks?.twitter || socialLinks?.twitterLink || "",
-      website: socialLinks?.website || socialLinks?.websiteLink || "",
+      instagram: socialLinks?.instagram || "",
+      facebook: socialLinks?.facebook || "",
+      tiktok: socialLinks?.tiktok || "",
+      twitter: socialLinks?.twitter || "",
+      linkedin: socialLinks?.linkedin || "",
+      youtube: socialLinks?.youtube || "",
+      website: socialLinks?.website || "",
+      whatsapp: socialLinks?.whatsapp || "",
     },
   };
 };
@@ -220,7 +227,6 @@ export const buildVendorFormData = (formValues) => {
     samplesAndPackages,
     commercialVerification,
     socialLinks,
-    otherLinksAndData,
   } = formValues;
 
   // Core user fields - MUST be flat at root level
@@ -228,9 +234,13 @@ export const buildVendorFormData = (formValues) => {
   if (identity?.phoneNumber)
     formData.append("phoneNumber", identity.phoneNumber);
   if (identity?.password) formData.append("password", identity.password);
+  if (identity?.passwordConfirm)
+    formData.append("passwordConfirm", identity.passwordConfirm);
   if (identity?.brandName) formData.append("brandName", identity.brandName);
   if (identity?.ownerFullName)
     formData.append("ownerFullName", identity.ownerFullName);
+  if (identity?.preferredLanguage)
+    formData.append("preferredLanguage", identity.preferredLanguage);
 
   // Service data - flat fields
   if (serviceData?.serviceDescription)
@@ -241,10 +251,10 @@ export const buildVendorFormData = (formValues) => {
   if (serviceData?.otherData)
     formData.append("otherData", serviceData.otherData);
 
-  // Service location - as JSON object
+  // Service location - as JSON string
   if (serviceData?.serviceLocation) {
     formData.append(
-      "serviceLocation",
+      "location",
       JSON.stringify(serviceData.serviceLocation)
     );
   }
@@ -276,7 +286,7 @@ export const buildVendorFormData = (formValues) => {
   // Commercial verification - flat fields
   if (commercialVerification?.commercialRecordNumber) {
     formData.append(
-      "commercialRecordNumber",
+      "commercialRegistrationNumber",
       commercialVerification.commercialRecordNumber
     );
   }
@@ -284,20 +294,22 @@ export const buildVendorFormData = (formValues) => {
     formData.append("nationalId", commercialVerification.nationalId);
   }
 
-  // Social links - as JSON object (check both socialLinks and otherLinksAndData)
-  const links = socialLinks || otherLinksAndData || {};
+  // Social links - as JSON object
+  const links = socialLinks || {};
   const socialLinksData = {
-    instagram: links.instagram || links.instagramLink || "",
-    facebook: links.facebook || links.facebookLink || "",
-    tiktok: links.tiktok || links.tiktokLink || "",
-    twitter: links.twitter || links.twitterLink || "",
-    website: links.website || links.websiteLink || "",
-    whatsapp: links.whatsapp || links.whatsappNumber || "",
+    instagram: links.instagram || "",
+    facebook: links.facebook || "",
+    tiktok: links.tiktok || "",
+    twitter: links.twitter || "",
+    linkedin: links.linkedin || "",
+    youtube: links.youtube || "",
+    website: links.website || "",
+    whatsapp: links.whatsapp || "",
   };
   formData.append("socialLinks", JSON.stringify(socialLinksData));
 
   // Add files
-  // Portfolio images
+  // Portfolio images (1-10)
   const portfolioImages = samplesAndPackages?.portfolioImages || [];
   portfolioImages.forEach((file) => {
     if (file instanceof File) {
@@ -305,7 +317,7 @@ export const buildVendorFormData = (formValues) => {
     }
   });
 
-  // Business logo
+  // Business logo (single)
   const businessLogo = samplesAndPackages?.businessLogo;
   if (businessLogo instanceof File) {
     formData.append("businessLogo", businessLogo);
@@ -313,7 +325,7 @@ export const buildVendorFormData = (formValues) => {
     formData.append("businessLogo", businessLogo[0]);
   }
 
-  // Price packages
+  // Price packages (1-5)
   const pricePackages = samplesAndPackages?.pricePackages || [];
   pricePackages.forEach((file) => {
     if (file instanceof File) {
@@ -321,7 +333,15 @@ export const buildVendorFormData = (formValues) => {
     }
   });
 
-  // Commercial record image - use correct field name for backend
+  // Profile file (single)
+  const profileFile = samplesAndPackages?.profileFile;
+  if (profileFile instanceof File) {
+    formData.append("profileFile", profileFile);
+  } else if (Array.isArray(profileFile) && profileFile[0] instanceof File) {
+    formData.append("profileFile", profileFile[0]);
+  }
+
+  // Commercial record image (single)
   const commercialRecordImage = commercialVerification?.commercialRecordImage;
   if (commercialRecordImage instanceof File) {
     formData.append("commercialRecordImage", commercialRecordImage);
@@ -332,7 +352,7 @@ export const buildVendorFormData = (formValues) => {
     formData.append("commercialRecordImage", commercialRecordImage[0]);
   }
 
-  // National ID image
+  // National ID image (single)
   const nationalIdImage = commercialVerification?.nationalIdImage;
   if (nationalIdImage instanceof File) {
     formData.append("nationalIdImage", nationalIdImage);
@@ -341,23 +361,6 @@ export const buildVendorFormData = (formValues) => {
     nationalIdImage[0] instanceof File
   ) {
     formData.append("nationalIdImage", nationalIdImage[0]);
-  }
-
-  // CV file (if exists)
-  const cvFile = commercialVerification?.cv || otherLinksAndData?.cv;
-  if (cvFile instanceof File) {
-    formData.append("cv", cvFile);
-  } else if (Array.isArray(cvFile) && cvFile[0] instanceof File) {
-    formData.append("cv", cvFile[0]);
-  }
-
-  // Profile file
-  const profileFile =
-    otherLinksAndData?.profileFile || samplesAndPackages?.profileFile;
-  if (profileFile instanceof File) {
-    formData.append("profileFile", profileFile);
-  } else if (Array.isArray(profileFile) && profileFile[0] instanceof File) {
-    formData.append("profileFile", profileFile[0]);
   }
 
   return formData;

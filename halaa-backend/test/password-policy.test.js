@@ -13,13 +13,13 @@ test("profile completion accepts a simple lowercase alphanumeric password", () =
   assert.equal(result.success, true);
 });
 
-test("profile completion rejects symbols", () => {
+test("profile completion allows symbols", () => {
   const result = completeProfileSchema.safeParse({
     name: "Valid User",
     password: "Simple123!",
     passwordConfirm: "Simple123!",
   });
-  assert.equal(result.success, false);
+  assert.equal(result.success, true);
 });
 
 test("profile completion requires both a letter and a number", () => {
@@ -56,6 +56,6 @@ test("password updates use the same policy", () => {
       newPassword: "Updated123!",
       passwordConfirm: "Updated123!",
     }).success,
-    false
+    true
   );
 });

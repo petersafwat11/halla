@@ -34,6 +34,7 @@ const SERVICE_LABELS = {
 
 export default function VendorServiceCategories({ serviceCategories }) {
   const { t } = useTranslation("adminVendorDetails");
+  const { t: tSignup } = useTranslation("signup");
 
   if (!serviceCategories || Object.keys(serviceCategories).length === 0) {
     return <p className={styles.noData}>{t("services.noServices")}</p>;
@@ -42,7 +43,8 @@ export default function VendorServiceCategories({ serviceCategories }) {
   return (
     <div className={styles.servicesContainer}>
       {Object.entries(serviceCategories).map(([category, values]) => {
-        if (!values || values.length === 0) return null;
+        if (!Array.isArray(values) || values.length === 0) return null;
+        const options = tSignup(`signupForm.vendor.serviceData.${category}.options`, { returnObjects: true });
         return (
           <div key={category} className={styles.serviceCategory}>
             <h3 className={styles.serviceCategoryTitle}>
@@ -51,7 +53,7 @@ export default function VendorServiceCategories({ serviceCategories }) {
             <ul className={styles.serviceList}>
               {values.map((value, idx) => (
                 <li key={idx} className={styles.serviceItem}>
-                  {t(SERVICE_LABELS[value] || "", value)}
+                  {(Array.isArray(options) ? options.find((option) => option.value === value)?.label : null) || t(SERVICE_LABELS[value] || "", value)}
                 </li>
               ))}
             </ul>

@@ -21,3 +21,19 @@
   background: #f5ece4;
   color: #cea57d;
 }
+.spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 2.5px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: confirmBtnSpin 0.75s linear infinite;
+  display: inline-block;
+  box-sizing: border-box;
+}
+
+@keyframes confirmBtnSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}

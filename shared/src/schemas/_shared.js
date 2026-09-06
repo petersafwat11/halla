@@ -19,11 +19,9 @@ import { SAUDI_PHONE_REGEX, clampPhoneInput } from "../utils/phone.js";
 // Accepts: 5XXXXXXXX (9 digits), 05XXXXXXXX (10 digits), 9665XXXXXXXX, +9665XXXXXXXX.
 export { SAUDI_PHONE_REGEX };
 
-// Canonical password policy (mirrors auth.validation.js): 8-128 ASCII
-// letters/digits, with at least one letter and one digit. Uppercase and
-// symbols are intentionally not required; symbols are rejected so the rule
-// shown during onboarding is also the rule enforced by every client.
-export const PASSWORD_COMPLEXITY_REGEX = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+$/;
+// Canonical password policy (mirrors auth.validation.js): 8-128 characters,
+// with at least one letter and one digit. Symbols are allowed.
+export const PASSWORD_COMPLEXITY_REGEX = /^(?=.*[A-Za-z])(?=.*\d)/;
 
 // OTP pattern (6 digits).
 export const OTP_REGEX = /^\d{6}$/;
@@ -37,40 +35,40 @@ export const SAUDI_COMMERCIAL_REG_REGEX = /^\d{10}$/;
 const idT = (k) => k;
 
 export const saudiPhone = (t = idT) =>
-  z
-    .string()
-    .trim()
-    .transform((val) => clampPhoneInput(val))
-    .refine((val) => SAUDI_PHONE_REGEX.test(val), {
+  z.preprocess(
+    (value) => value ?? "",
+    z.string().trim().transform((val) => clampPhoneInput(val)).refine((val) => SAUDI_PHONE_REGEX.test(val), {
       message: t("validation.invalidSaudiPhone"),
-    });
+    })
+  );
 
 // Optional form variant shared by web/mobile guest and staff editors.
 export const optionalSaudiPhone = (t = idT) =>
   saudiPhone(t).optional().or(z.literal(""));
 
 export const email = (t = idT) =>
-  z
-    .string()
-    .trim()
-    .toLowerCase()
-    .email(t("validation.invalidEmail"));
+  z.preprocess(
+    (value) => value ?? "",
+    z.string().trim().toLowerCase().email(t("validation.invalidEmail"))
+  );
 
 export const requiredString = (t = idT, minMessageKey = "validation.required") =>
-  z.string().trim().min(1, t(minMessageKey));
+  z.preprocess((value) => value ?? "", z.string().trim().min(1, t(minMessageKey)));
 
 export const password = (t = idT) =>
-  z
-    .string()
-    .min(8, t("validation.passwordMinLength"))
-    .max(128, t("validation.passwordMaxLength"))
-    .regex(PASSWORD_COMPLEXITY_REGEX, t("validation.passwordComplexity"));
+  z.preprocess(
+    (value) => value ?? "",
+    z.string()
+      .min(8, t("validation.passwordMinLength"))
+      .max(128, t("validation.passwordMaxLength"))
+      .regex(PASSWORD_COMPLEXITY_REGEX, t("validation.passwordComplexity"))
+  );
 
 export const otpCode = (t = idT) =>
-  z
-    .string()
-    .length(6, t("validation.otpLength"))
-    .regex(/^\d+$/, t("validation.otpInvalid"));
+  z.preprocess(
+    (value) => value ?? "",
+    z.string().length(6, t("validation.otpLength")).regex(/^\d+$/, t("validation.otpInvalid"))
+  );
 
 export const optionalUrl = () =>
   z.string().url().optional().or(z.literal(""));

@@ -1,5 +1,7 @@
 import initTranslations from "@/localization/i18n";
 import ClientComponentsTranslationsProvider from "./ClientCompTrans";
+import { headers } from "next/headers";
+import { publicNamespacesForPath } from "@/localization/publicNamespaces";
 
 const i18nNamespaces = [
   "common",
@@ -40,11 +42,13 @@ const i18nNamespaces = [
 ];
 
 export default async function GlobalProvider({ children, lang }) {
-  const { t, resources } = await initTranslations(lang, i18nNamespaces);
+  const pathname = (await headers()).get("x-halaa-pathname");
+  const namespaces = publicNamespacesForPath(pathname) || i18nNamespaces;
+  const { resources } = await initTranslations(lang, namespaces);
 
   return (
     <ClientComponentsTranslationsProvider
-      namespaces={i18nNamespaces}
+      namespaces={namespaces}
       locale={lang}
       resources={resources}
     >

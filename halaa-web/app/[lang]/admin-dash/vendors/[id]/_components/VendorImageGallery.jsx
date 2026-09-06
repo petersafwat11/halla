@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import Image from "next/image";
+import { FiFileText, FiExternalLink } from "react-icons/fi";
 import { useTranslation } from "react-i18next";
 import styles from "./VendorDetailsWrapper.module.css";
 
@@ -9,7 +10,8 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/ap
 const BASE_URL = BACKEND_URL.replace("/api/v2", "").replace("/api", "");
 
 export function getImageUrl(imagePath) {
-  if (!imagePath) return null;
+  if (typeof imagePath !== "string" || !imagePath) return null;
+  if (/^[a-z][a-z0-9+.-]*:/i.test(imagePath) && !/^https?:\/\//i.test(imagePath)) return null;
   if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
     return imagePath;
   }
@@ -95,13 +97,22 @@ export default function VendorImageGallery({ roleData }) {
             className={styles.imageWrapperCard}
           >
             {img.title && <h4 className={styles.imageTitle}>{img.title}</h4>}
-            <div
+            {/\.(pdf|docx?)(?:[?#]|$)/i.test(img.src || "") ? (
+              <a href={img.src} target="_blank" rel="noopener noreferrer" className={styles.documentLink}>
+                <FiFileText size={36} aria-hidden="true" />
+                {t("openDocument")} <FiExternalLink aria-hidden="true" />
+              </a>
+            ) : <button
+              type="button"
+              aria-label={img.title}
+              style={{ border: 0, padding: 0, width: "100%" }}
               className={styles.imageBox}
               onClick={() => img.src && setSelectedImage(img.src)}
             >
               {img.src ? (
                 <Image
                   src={img.src}
+                  unoptimized
                   alt={img.alt}
                   width={300}
                   height={250}
@@ -117,7 +128,7 @@ export default function VendorImageGallery({ roleData }) {
                   className={styles.galleryImage}
                 />
               )}
-            </div>
+            </button>}
           </div>
         ))}
       </div>
@@ -140,12 +151,14 @@ export default function VendorImageGallery({ roleData }) {
             </button>
             <Image
               src={selectedImage}
+              unoptimized
               alt={t("gallery.previewAlt")}
               width={800}
               height={600}
               className={styles.popupImage}
               onError={handleImageError}
             />
+            <a href={selectedImage} target="_blank" rel="noopener noreferrer" className={styles.originalLink}>{t("openOriginal")}</a>
           </div>
         </div>
       )}

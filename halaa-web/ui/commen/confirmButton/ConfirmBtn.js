@@ -7,17 +7,25 @@ const ConfirmBtn = ({
   active,
   disabled,
   type = "submit",
+  className = "",
+  isLoading = false,
 }) => {
   return (
     <button
       type={type}
       onClick={clickHandler}
-      className={
-        active && !disabled ? styles.confirm_btn : styles.confirm_btn_disabled
-      }
-      disabled={disabled}
+      className={`${
+        active && !disabled && !isLoading
+          ? styles.confirm_btn
+          : styles.confirm_btn_disabled
+      } ${className}`.trim()}
+      disabled={disabled || isLoading}
     >
-      {text}
+      {isLoading ? (
+        <span className={styles.spinner} aria-label="Loading..." />
+      ) : (
+        text
+      )}
     </button>
   );
 };

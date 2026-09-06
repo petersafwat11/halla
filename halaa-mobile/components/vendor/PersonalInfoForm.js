@@ -22,6 +22,7 @@ import { mobilePersonalInfoSchema as personalInfoSchema } from "@halaa/shared/sc
 import { usersApi } from "../../hooks/users/_api";
 import PhoneChangeOtpModal from "./PhoneChangeOtpModal";
 import { getImageUrl } from "../../utils/imageUtils";
+import { normalizeDigitsOnly } from "@halaa/shared/utils/locale";
 
 /**
  * Personal Info — single consolidated section.
@@ -248,10 +249,10 @@ const PersonalInfoForm = ({ data, onSave, onPhoneChanged, onRefetch, loading }) 
             </Text>
             <RNTextInput
               style={styles.phoneInput}
-              placeholder="+966 5XX XXX XXXX"
+              placeholder="05xxxxxxxx"
               keyboardType="phone-pad"
               value={phoneNumber}
-              onChangeText={setPhoneNumber}
+              onChangeText={(value) => setPhoneNumber(normalizeDigitsOnly(value))}
               placeholderTextColor="#999"
             />
           </View>

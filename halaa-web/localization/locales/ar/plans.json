@@ -108,11 +108,17 @@
   "duration": {
     "event": "مدة الصلاحية {{days}} يومًا",
     "monthly": "اشتراك شهري — مناسبات غير محدودة",
-    "quarterly": "اشتراك 3 اشهر",
-    "annual": "اشتراك سنوى"
+    "quarterly": "اشتراك 3 أشهر",
+    "annual": "اشتراك سنوي"
   },
   "includes": { "basic": "جميع مميزات باقة هلا بيسك +" },
-  "compensationRow": "{{count}} دعوة تعويضية ({{percent}}٪ من {{base}})",
+  "compensationRow": "{{count}} دعوة تعويضية ({{percent}}% من {{base}})",
+  "compensationRow_zero": "لا توجد دعوات تعويضية ({{percent}}% من {{base}})",
+  "compensationRow_one": "دعوة تعويضية واحدة ({{percent}}% من {{base}})",
+  "compensationRow_two": "دعوتان تعويضيتان ({{percent}}% من {{base}})",
+  "compensationRow_few": "{{count}} دعوات تعويضية ({{percent}}% من {{base}})",
+  "compensationRow_many": "{{count}} دعوة تعويضية ({{percent}}% من {{base}})",
+  "compensationRow_other": "{{count}} دعوة تعويضية ({{percent}}% من {{base}})",
   "setupFeeRow": "رسوم تأسيس لمرة واحدة: {{amount}} ر.س",
   "freeInvitesRow": "يشمل {{count}} دعوة مجانية خلال مدة الاشتراك",
   "whatsappTemplates": "{{count}} قوالب واتساب مخصصة",

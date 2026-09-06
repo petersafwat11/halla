@@ -1,21 +1,50 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-const SectionCard = ({ title, icon, children, style, contentStyle }) => {
+const SectionCard = ({
+  title,
+  icon,
+  rightAction,
+  children,
+  style,
+  contentStyle,
+  collapsed = false,
+  onToggle,
+  accessibilityLabel,
+}) => {
+  const Header = onToggle ? TouchableOpacity : View;
   return (
     <View style={[styles.card, style]}>
-      {(title || icon) && (
-        <View style={styles.header}>
+      {(title || icon || rightAction) && (
+        <Header
+          style={[styles.header, collapsed && styles.headerCollapsed]}
+          {...(onToggle
+            ? {
+                onPress: onToggle,
+                accessibilityRole: "button",
+                accessibilityLabel: accessibilityLabel || title,
+                accessibilityState: { expanded: !collapsed },
+              }
+            : {})}
+        >
           {icon && (
             <View style={styles.iconContainer}>
               <Ionicons name={icon} size={20} color="#C28E5C" />
             </View>
           )}
           {title && <Text style={styles.title}>{title}</Text>}
-        </View>
+          {rightAction}
+          {onToggle && (
+            <Ionicons
+              name={collapsed ? "chevron-down" : "chevron-up"}
+              size={20}
+              color="#777"
+            />
+          )}
+        </Header>
       )}
-      <View style={[styles.content, contentStyle]}>{children}</View>
+      {!collapsed && <View style={[styles.content, contentStyle]}>{children}</View>}
     </View>
   );
 };
@@ -37,6 +66,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 16,
     gap: 10,
+  },
+  headerCollapsed: {
+    marginBottom: 0,
   },
   iconContainer: {
     width: 36,

@@ -17,10 +17,23 @@
   background-color: #fcfcfd;
   cursor: pointer;
   transition: border-color 0.2s;
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+}
+
+.hiddenInput {
+  display: none;
 }
 
 .dropzone.dragOver {
   border-color: var(--color-primary);
+}
+
+.dropzone:focus-visible {
+  outline: 2px solid var(--color-primary, #c28e5c);
+  outline-offset: 2px;
 }
 
 .placeholder {

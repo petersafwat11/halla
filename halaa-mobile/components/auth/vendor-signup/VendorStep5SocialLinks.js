@@ -4,6 +4,7 @@ import { TextInput } from '../../commen';
 import SectionCard from '../../commen/SectionCard';
 import LocalizedText from '../../commen/LocalizedText';
 import { useTranslation } from '../../../localization';
+import { normalizeDigitsOnly } from '@halaa/shared/utils/locale';
 
 /**
  * Vendor signup — social links step.
@@ -27,9 +28,10 @@ const VendorStep5SocialLinks = () => {
         <TextInput
           name="socialLinks.whatsapp"
           label={t('signupForm.vendor.socialLinks.whatsapp')}
-          placeholder={t('signupForm.vendor.socialLinks.whatsappPlaceholder')}
+          placeholder="05xxxxxxxx"
           keyboardType="phone-pad"
-          contentDirection="phone"
+          contentDirection="ltr"
+          sanitize={normalizeDigitsOnly}
         />
         <TextInput
           name="socialLinks.instagram"
@@ -59,6 +61,22 @@ const VendorStep5SocialLinks = () => {
           name="socialLinks.twitter"
           label={t('signupForm.vendor.socialLinks.twitter')}
           placeholder={t('signupForm.vendor.socialLinks.twitterPlaceholder')}
+          autoCapitalize="none"
+          keyboardType="url"
+          contentDirection="ltr"
+        />
+        <TextInput
+          name="socialLinks.linkedin"
+          label={t('signupForm.vendor.socialLinks.linkedin')}
+          placeholder={t('signupForm.vendor.socialLinks.linkedinPlaceholder')}
+          autoCapitalize="none"
+          keyboardType="url"
+          contentDirection="ltr"
+        />
+        <TextInput
+          name="socialLinks.youtube"
+          label={t('signupForm.vendor.socialLinks.youtube')}
+          placeholder={t('signupForm.vendor.socialLinks.youtubePlaceholder')}
           autoCapitalize="none"
           keyboardType="url"
           contentDirection="ltr"

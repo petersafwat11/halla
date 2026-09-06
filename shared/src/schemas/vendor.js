@@ -6,8 +6,14 @@
  */
 import { z } from "zod";
 import { saudiPhone } from "./_shared.js";
+import {
+  containsOnlyArabicText,
+  containsOnlyEnglishText,
+} from "../utils/languageInput.js";
 
 const idT = (k) => k;
+const optionalLanguageText = (max, predicate, message) =>
+  z.string().trim().max(max).refine(predicate, { message }).optional();
 
 // ============================================================
 // PRIMITIVES (vendor-local; mirrors the regex backend accepts)
@@ -105,10 +111,10 @@ export const serviceDetailsZodSchema = (t = idT) =>
       .trim()
       .max(1000, t("validation.descriptionMaxLength"))
       .optional(),
-    taglineAr: z.string().trim().max(160).optional(),
-    taglineEn: z.string().trim().max(160).optional(),
-    aboutAr: z.string().trim().max(2000).optional(),
-    aboutEn: z.string().trim().max(2000).optional(),
+    taglineAr: optionalLanguageText(160, containsOnlyArabicText, t("validation.arabicOnly")),
+    taglineEn: optionalLanguageText(160, containsOnlyEnglishText, t("validation.englishOnly")),
+    aboutAr: optionalLanguageText(2000, containsOnlyArabicText, t("validation.arabicOnly")),
+    aboutEn: optionalLanguageText(2000, containsOnlyEnglishText, t("validation.englishOnly")),
   });
 
 export const socialLinksZodSchema = (t = idT) =>
@@ -153,10 +159,10 @@ export const mobileServiceDetailsSchema = (t = idT) =>
       .trim()
       .max(1000, t("validation.descriptionMaxLength"))
       .optional(),
-    taglineAr: z.string().trim().max(160).optional(),
-    taglineEn: z.string().trim().max(160).optional(),
-    aboutAr: z.string().trim().max(2000).optional(),
-    aboutEn: z.string().trim().max(2000).optional(),
+    taglineAr: optionalLanguageText(160, containsOnlyArabicText, t("validation.arabicOnly")),
+    taglineEn: optionalLanguageText(160, containsOnlyEnglishText, t("validation.englishOnly")),
+    aboutAr: optionalLanguageText(2000, containsOnlyArabicText, t("validation.arabicOnly")),
+    aboutEn: optionalLanguageText(2000, containsOnlyEnglishText, t("validation.englishOnly")),
     nationalId: z
       .string()
       .trim()

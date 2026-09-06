@@ -1,14 +1,14 @@
 const { z } = require("zod");
 const { clampPhoneInput, SAUDI_PHONE_REGEX } = require("../../shared/utils/phone");
 
-const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+$/;
+const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)/;
 const newPassword = z
   .string()
   .min(8, "New password must be at least 8 characters")
   .max(128, "New password must be at most 128 characters")
   .regex(
     passwordPattern,
-    "New password may contain letters and numbers only and must include at least one of each"
+    "New password must contain at least one letter and one number"
   );
 
 // ============================================================================

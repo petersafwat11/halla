@@ -24,12 +24,12 @@ export default async function initTranslations(
     showSupportNotice: false,
     lng: locale,
     resources,
-    fallbackLng: i18nRouterConfig.defaultLocale,
+    fallbackLng: locale,
     supportedLngs: i18nRouterConfig.locales,
     defaultNS: namespaces[0],
     fallbackNS: namespaces[0],
     ns: namespaces,
-    preload: resources ? [] : i18nRouterConfig.locales,
+    preload: resources ? [] : [locale],
     interpolation: {
       escapeValue: false, // React already escapes by default
     },

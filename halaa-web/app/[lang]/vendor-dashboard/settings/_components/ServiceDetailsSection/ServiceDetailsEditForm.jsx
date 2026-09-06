@@ -13,6 +13,10 @@ import { apiRequest } from "@/services/http";
 import { API_PATHS } from "@halaa/shared/api/paths";
 import { normalizeDigitsOnly } from "@halaa/shared/utils/locale";
 import {
+  sanitizeArabicText,
+  sanitizeEnglishText,
+} from "@halaa/shared/utils/languageInput";
+import {
   VENDOR_CATEGORY_KEYS,
   buildServiceCategoriesPayload,
 } from "@/utils/vendorHelpers";
@@ -256,16 +260,20 @@ const ServiceDetailsEditForm = ({
           ["taglineEn", t("serviceDetails.taglineEn", "Short tagline in English"), 160, false, "ltr"],
           ["aboutAr", t("serviceDetails.aboutAr", "نبذة تفصيلية بالعربية"), 2000, true, "rtl"],
           ["aboutEn", t("serviceDetails.aboutEn", "Detailed description in English"), 2000, true, "ltr"],
-        ].map(([key, label, maxLength, multiline, dir]) => (
+        ].map(([key, label, maxLength, multiline, dir]) => {
+          const sanitize = dir === "rtl" ? sanitizeArabicText : sanitizeEnglishText;
+          const update = (value) => setFormData({ ...formData, [key]: sanitize(value) });
+          return (
           <div className={styles.editFormField} key={key} dir={dir}>
             <label className={styles.editFormLabel}>{label}</label>
             {multiline ? (
-              <textarea className={styles.editFormTextarea} value={formData[key]} maxLength={maxLength} rows={5} onChange={(e) => setFormData({ ...formData, [key]: e.target.value })} />
+              <textarea className={styles.editFormTextarea} value={formData[key]} maxLength={maxLength} rows={5} onChange={(e) => update(e.target.value)} />
             ) : (
-              <input className={styles.editFormInput} value={formData[key]} maxLength={maxLength} onChange={(e) => setFormData({ ...formData, [key]: e.target.value })} />
+              <input className={styles.editFormInput} value={formData[key]} maxLength={maxLength} onChange={(e) => update(e.target.value)} />
             )}
           </div>
-        ))}
+          );
+        })}
 
         <div className={styles.editFormSection}>
           <label className={styles.editFormSectionLabel}>

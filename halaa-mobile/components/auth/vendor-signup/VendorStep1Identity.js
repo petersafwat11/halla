@@ -46,7 +46,12 @@ const VendorStep1Identity = () => {
       </SectionCard>
 
       <SectionCard title={t('signupForm.vendor.identity.passwordSection')} icon="lock-closed-outline">
-        <PasswordInput name="identity.password" label={t('signupForm.vendor.identity.password.label')} placeholder={t('signupForm.vendor.identity.passwordPlaceholder')} />
+        <PasswordInput
+          name="identity.password"
+          label={t('signupForm.vendor.identity.password.label')}
+          placeholder={t('signupForm.vendor.identity.passwordPlaceholder')}
+          helper={t('signupForm.vendor.identity.passwordHint')}
+        />
         <PasswordInput name="identity.passwordConfirm" label={t('signupForm.vendor.identity.passwordConfirm.label')} placeholder={t('signupForm.vendor.identity.passwordConfirmPlaceholder')} />
       </SectionCard>
     </View>

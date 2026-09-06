@@ -6,6 +6,29 @@
   margin: 0;
   padding: 0;
 }
+
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: 3.2rem;
+  padding: 2.4rem;
+  background: #fff;
+}
+
+@media screen and (min-width: 1024px) {
+  .sections {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2.4rem;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .sections {
+    gap: 2.4rem;
+    padding: 2rem;
+  }
+}
 .section {
   display: flex;
   flex-direction: column;

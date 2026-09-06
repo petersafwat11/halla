@@ -30,6 +30,10 @@
   margin-inline-start: 1rem;
 }
 
+[dir="ltr"] .step_arrow_icon {
+  transform: rotate(180deg);
+}
+
 @media (min-width: 1024px) {
   .step_arrow_icon {
     font-size: 16px;
@@ -74,6 +78,10 @@
   display: flex;
   align-items: center;
   gap: 0.8rem;
+}
+.section_icon {
+  flex: 0 0 auto;
+  color: var(--color-primary-bg, #c28e5c);
 }
 .arrow_icon {
   margin-inline-start: 0.5rem;

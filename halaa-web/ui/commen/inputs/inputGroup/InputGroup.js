@@ -1,9 +1,14 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import styles from "./inputGroup.module.css";
-import Image from "next/image";
+import AuthIcon from "../../icons/AuthIcon";
 import { get, useFormContext } from "react-hook-form";
 import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
+import { useTranslation } from "react-i18next";
+import {
+  clampPhoneInput,
+  DEFAULT_PHONE_PLACEHOLDER,
+} from "@halaa/shared/utils/phone";
 
 const InputGroup = ({
   label,
@@ -20,7 +25,14 @@ const InputGroup = ({
   onChange,
   disabled = false,
   maxLength,
+  direction,
+  labelDirection,
+  sanitize,
+  inputMode,
+  pattern,
+  lang,
 }) => {
+  const { t, i18n } = useTranslation("common");
   const [showPassword, setShowPassword] = useState(false);
   const [inputType, setInputType] = useState(type);
 
@@ -33,6 +45,20 @@ const InputGroup = ({
   const formError = get(errors, name)?.message;
   const formValue = watch?.(name);
   const isControlled = inputValue !== undefined && onChange !== undefined;
+  // Password alignment follows the selected UI language, even when revealed.
+  const resolvedDirection = type === "password" ? i18n.dir() : direction ||
+    (["email", "tel", "url"].includes(type) ? "ltr" : i18n.dir());
+  const resolvedPlaceholder = type === "email"
+    ? "ahmed@gmail.com"
+    : type === "tel"
+      ? DEFAULT_PHONE_PLACEHOLDER
+      : placeholder;
+  const effectiveSanitize = sanitize || (type === "tel" ? clampPhoneInput : undefined);
+
+  const controlledChange = (event) => {
+    if (effectiveSanitize) event.target.value = effectiveSanitize(event.target.value);
+    onChange(event);
+  };
 
   // Handle password visibility toggle
   useEffect(() => {
@@ -83,7 +109,7 @@ const InputGroup = ({
   return (
     <div className={styles.inputGroup}>
       {label && (
-        <label className={styles.label} htmlFor={name}>
+        <label className={styles.label} dir={labelDirection || i18n.dir()} htmlFor={name}>
           {label}
           {required && <span className={styles.required}>*</span>}
         </label>
@@ -94,25 +120,34 @@ const InputGroup = ({
           id={name}
           className={getInputClasses()}
           type={inputType}
-          placeholder={placeholder}
+          placeholder={resolvedPlaceholder}
           name={name}
           disabled={disabled}
           maxLength={maxLength}
+          inputMode={inputMode}
+          pattern={pattern}
+          lang={lang}
+          dir={resolvedDirection}
+          aria-invalid={Boolean(formError || externalError)}
           {...(isControlled 
-            ? { value: inputValue, onChange } 
+            ? { value: inputValue, onChange: controlledChange }
             : register ? register(name) : {}
           )}
+          onInput={effectiveSanitize ? (event) => {
+            const sanitized = effectiveSanitize(event.currentTarget.value);
+            if (sanitized !== event.currentTarget.value) {
+              event.currentTarget.value = sanitized;
+            }
+          } : undefined}
           style={{
-            // Email/password are intrinsically LTR tokens; everything else
-            // inherits the page direction instead of forcing RTL (English
-            // pages previously rendered their text fields right-aligned).
-            direction:
-              type === "email" || type === "password" ? "ltr" : undefined,
+            // Use the original field type so visibility does not change alignment.
+            direction: resolvedDirection,
+            textAlign: "start",
           }}
         />
 
         {iconPath && (
-          <Image
+          <AuthIcon
             className={styles.icon}
             src={`/svg/${iconPath}`}
             alt="icon"
@@ -126,7 +161,7 @@ const InputGroup = ({
             type="button"
             className={styles.passwordToggle}
             onClick={togglePasswordVisibility}
-            aria-label={showPassword ? "Hide password" : "Show password"}
+            aria-label={showPassword ? t("hidePassword") : t("showPassword")}
           >
             {showPassword ? (
               <IoEyeOffOutline className={styles.passwordIcon} />

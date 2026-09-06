@@ -173,8 +173,7 @@ test("vendor signup steps: explicit content modes per field class", () => {
 
   // Step 5 — links
   const step5 = read(VENDOR_STEPS[4]);
-  assert.ok(step5.includes('contentDirection="phone"'), "WhatsApp keeps localized placeholder → LTR digits");
-  assert.equal(count(step5, 'contentDirection="ltr"'), 5, "every social URL is intrinsically LTR");
+  assert.equal(count(step5, 'contentDirection="ltr"'), 8, "WhatsApp and every social URL are intrinsically LTR");
 });
 
 test("VendorStep6Summary: values are AdaptiveText; alignment is logical, not locale-branched", () => {

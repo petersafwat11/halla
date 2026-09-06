@@ -6,7 +6,6 @@
   margin: 0;
   padding: 0;
 }
-
 .sections {
   display: flex;
   flex-direction: column;
@@ -79,4 +78,41 @@
     border-radius: 1.2rem;
     border: 1px solid #f0f0f0;
   }
+}
+
+.accordionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-align: inherit;
+  font-family: inherit;
+}
+
+.accordionTitleWrapper {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2rem 0.8rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #1a6b54;
+  background: #e8f5f1;
+  border-radius: 9999px;
+}
+
+.chevron {
+  font-size: 2rem;
+  color: #666;
+  transition: transform 0.2s ease;
 }

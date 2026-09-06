@@ -41,8 +41,8 @@
       }
     },
     "vendor": {
-      "welcomeTitle": "مرحبا عزيزى التاجر",
-      "welcomeDescription": "اكمل ملفك الشخصى",
+      "welcomeTitle": "مرحبًا بك، عزيزي مقدم الخدمة",
+      "welcomeDescription": "أكمل ملفك الشخصي",
       "title": "أكمل ملفك الشخصي",
       "description": "اتبع هذه الخطوات لإنشاء حسابك كمقدم خدمة وبدء عرض خدماتك على منصة هلا.",
       "steps": {
@@ -53,6 +53,7 @@
         "commercialVerificationDescription": "يرجى رفع المستندات المطلوبة للتحقق التجاري.",
         "paymentData": "سياسة التعامل والدفع",
         "otherLinksAndData": "روابط وبيانات إضافية (اختياري)",
+        "socialLinks": "روابط التواصل (اختياري)",
         "summary": "ملخص التسجيل"
       },
       "identity": {
@@ -122,7 +123,8 @@
         },
         "password": {
           "label": "كلمة المرور",
-          "placeholder": "أدخل كلمة المرور"
+          "placeholder": "أدخل كلمة المرور",
+          "hint": "8 أحرف على الأقل، تتضمن حرفًا ورقمًا، ويمكن استخدام الرموز"
         },
         "passwordConfirm": {
           "label": "تأكيد كلمة المرور",
@@ -131,7 +133,7 @@
         "errors": {
           "brandNameRequired": "اسم العلامة التجارية مطلوب",
           "brandNameMinLength": "يجب أن يتكون اسم العلامة التجارية من حرفين على الأقل",
-          "brandNameMaxLength": "يجب أن يتكون اسم العلامة التجارية من أقل من 50 حرفًا",
+          "brandNameMaxLength": "يجب ألا يتجاوز اسم العلامة التجارية 100 حرف",
           "ownerFullNameRequired": "الاسم الكامل للمالك مطلوب",
           "ownerFullNameMinLength": "يجب أن يتكون الاسم الكامل من حرفين على الأقل",
           "ownerFullNameMaxLength": "يجب أن يتكون الاسم الكامل من أقل من 100 حرف",
@@ -141,7 +143,7 @@
           "emailRequired": "البريد الإلكتروني مطلوب",
           "emailInvalid": "يرجى إدخال عنوان بريد إلكتروني صحيح",
           "passwordRequired": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
-          "passwordComplexity": "كلمة المرور تتكون من حروف وأرقام فقط، وبها حرف ورقم على الأقل",
+          "passwordComplexity": "استخدم حرفاً واحداً ورقماً واحداً على الأقل، ويمكن استخدام الرموز",
           "passwordConfirmRequired": "يرجى تأكيد كلمة المرور",
           "passwordsDoNotMatch": "كلمات المرور غير متطابقة"
         }
@@ -154,6 +156,14 @@
           "label": "وصف مختصر للخدمة",
           "placeholder": "أدخل وصفًا مختصرًا"
         },
+        "taglineAr": "النبذة القصيرة بالعربية",
+        "taglineEn": "Short tagline in English",
+        "aboutAr": "نبذة تفصيلية بالعربية",
+        "aboutEn": "Detailed description in English",
+        "taglineArPlaceholder": "مثال: نصنع لحظات تستحق أن تُروى",
+        "taglineEnPlaceholder": "e.g. We turn moments into lasting memories",
+        "aboutArPlaceholder": "عرّف العملاء بخبرتك وخدماتك",
+        "aboutEnPlaceholder": "Tell customers about your experience and services",
         "eventPlanning": {
           "title": "خدمات تنظيم الفعاليات والمناسبات",
           "options": [
@@ -424,7 +434,9 @@
           "selectedDistricts": "{{count}} حي محدد",
           "allDistricts": "جميع الأحياء",
           "districtsSelected": "{{count}} حي محدد",
-          "searchDistrict": "بحث في الأحياء..."
+          "searchDistrict": "بحث في الأحياء...",
+          "loadFailed": "تعذر تحميل بيانات الموقع. تحقق من اتصالك وحاول مرة أخرى.",
+          "retry": "إعادة المحاولة"
         },
         "otherInfo": {
           "title": "معلومات إضافية"
@@ -440,14 +452,16 @@
           "cityRequired": "المدينة مطلوبة",
           "cityMinLength": "يجب أن تتكون المدينة من حرفين على الأقل",
           "coverageAreaRequired": "يرجى اختيار منطقة تغطية واحدة على الأقل",
-          "regionRequired": "المنطقة مطلوبة"
+          "regionRequired": "المنطقة مطلوبة",
+          "arabicOnly": "استخدم الحروف العربية فقط",
+          "englishOnly": "استخدم الحروف الإنجليزية فقط"
         }
       },
       "samplesAndPackages": {
         "title": "الصور والعروض والأسعار",
         "description": "ارفع صور أعمالك وحدد حزم خدماتك وأسعارك.",
         "portfolioImages": {
-          "label": "رفع 3 صور من اعمالك السابقة",
+          "label": "صور الأعمال السابقة (1–10 صور)",
           "placeholder": "ارفع صور الأعمال"
         },
         "businessLogo": {
@@ -456,13 +470,21 @@
         },
         "pricePackages": {
           "label": "قوائم الأسعار أو الباقات",
-          "placeholder": "صف حزم خدماتك وأسعارك"
+          "placeholder": "ارفع ملفات PDF أو JPG أو PNG للباقات (1–5 ملفات)"
+        },
+        "profileFile": {
+          "label": "الملف التعريفي للشركة (اختياري)",
+          "placeholder": "ارفع ملف PDF أو DOC أو DOCX"
         },
         "errors": {
           "portfolioImagesRequired": "صورة عمل واحدة على الأقل مطلوبة",
-          "businessLogoRequired": "شعار العمل مطلوب",
-          "pricePackagesRequired": "وصف حزم الأسعار مطلوب",
-          "pricePackagesMinLength": "يجب أن يتكون وصف حزم الأسعار من 10 أحرف على الأقل"
+          "portfolioImagesMax": "يمكن رفع 10 صور أعمال كحد أقصى",
+          "pricePackagesRequired": "ملف واحد على الأقل لقائمة الأسعار أو الباقات مطلوب",
+          "pricePackagesMax": "يمكن رفع 5 ملفات باقات كحد أقصى",
+          "invalidPortfolioFile": "يجب أن تكون صور الأعمال بصيغة JPG أو PNG أو WebP وبحجم لا يتجاوز 10 ميجابايت",
+          "invalidLogoFile": "يجب أن يكون الشعار بصيغة JPG أو PNG أو WebP وبحجم لا يتجاوز 10 ميجابايت",
+          "invalidPricePackageFile": "يجب أن تكون الباقات بصيغة PDF أو JPG أو PNG وبحجم لا يتجاوز 10 ميجابايت",
+          "invalidProfileFile": "يجب أن يكون الملف التعريفي بصيغة PDF أو DOC أو DOCX وبحجم لا يتجاوز 10 ميجابايت"
         }
       },
       "commercialVerification": {
@@ -482,7 +504,9 @@
           "placeholder": "ارفع السجل التجاري",
           "numberPlaceholder": "أدخل رقم السجل التجارى",
           "hint": "يجب أن يكون 10 أرقام (مثال: 1234567890)",
-          "invalidFormat": "رقم السجل التجاري يجب أن يكون 10 أرقام"
+          "invalidFormat": "رقم السجل التجاري يجب أن يكون 10 أرقام",
+          "imageRequired": "وثيقة السجل التجاري مطلوبة",
+          "invalidFile": "يجب أن تكون وثيقة السجل بصيغة PDF أو JPG أو PNG وبحجم لا يتجاوز 10 ميجابايت"
         },
         "nationalId": {
           "title": "الهوية الوطنية",
@@ -490,7 +514,9 @@
           "placeholder": "أدخل رقم الهوية الوطنية",
           "imagePlaceholder": "ارفع صورة الهوية الوطنية",
           "hint": "يجب أن يكون 10 أرقام ويبدأ بـ 1 (مواطن) أو 2 (مقيم)",
-          "invalidFormat": "رقم الهوية يجب أن يكون 10 أرقام ويبدأ بـ 1 أو 2"
+          "invalidFormat": "رقم الهوية يجب أن يكون 10 أرقام ويبدأ بـ 1 أو 2",
+          "imageRequired": "وثيقة الهوية الوطنية مطلوبة",
+          "invalidFile": "يجب أن تكون وثيقة الهوية بصيغة PDF أو JPG أو PNG وبحجم لا يتجاوز 10 ميجابايت"
         },
         "otherData": {
           "label": "مستندات أخرى",
@@ -694,13 +720,44 @@
           "profileFileRequired": "ملف الملف الشخصي مطلوب"
         }
       },
+      "socialLinks": {
+        "title": "روابط التواصل",
+        "description": "أضف روابط التواصل المتاحة لنشاطك (اختياري).",
+        "whatsapp": { "label": "واتساب", "placeholder": "05XXXXXXXX" },
+        "instagram": { "label": "إنستغرام" },
+        "twitter": { "label": "إكس (تويتر)" },
+        "facebook": { "label": "فيسبوك" },
+        "tiktok": { "label": "تيك توك" },
+        "linkedin": { "label": "لينكد إن" },
+        "youtube": { "label": "يوتيوب" },
+        "website": { "label": "الموقع الإلكتروني" },
+        "errors": { "invalidWhatsApp": "أدخل رقم واتساب صحيحاً" }
+      },
       "summary": {
         "title": "ملخص الطلب",
         "description": "يرجى مراجعة جميع المعلومات التي قدمتها قبل إرسال طلبك",
         "submit": "إرسال الطلب"
       },
       "submitting": "جاري الإرسال...",
-      "successMessage": "تم إنشاء الحساب بنجاح",
+      "successMessage": "تم استلام طلبك بنجاح وهو قيد المراجعة",
+      "pendingApproval": {
+        "title": "تم استلام طلب الانضمام بنجاح",
+        "badge": "طلبك قيد المراجعة",
+        "description": "شكراً لاهتمامك بالانضمام إلى منصة هلا كمزود خدمة. طلبك الآن قيد المراجعة والتحقق من البيانات والمستندات المرفقة.",
+        "applicationIdLabel": "رقم الطلب",
+        "reviewTimeTitle": "مدة المراجعة المتوقعة",
+        "reviewTimeDescription": "تتم مراجعة الطلبات والتحقق من المستندات خلال 1 إلى 3 أيام عمل.",
+        "nextStepsTitle": "الخطوات التالية",
+        "nextStepsDescription": "سنقوم بإرسال رسالة بريد إلكتروني تحتوي على نتيجة مراجعة الطلب وتفاصيل تفعيل الحساب بمجرد اعتماده لتتمكن من تسجيل الدخول إلى لوحة التحكم.",
+        "actions": {
+          "home": "العودة للرئيسية",
+          "marketplace": "تصفح الخدمات",
+          "contactSupport": "تواصل مع الدعم الفني"
+        }
+      },
+      "errors": {
+        "correctErrorsBeforeSubmit": "راجع الحقول المطلوبة وصححها قبل إرسال الطلب"
+      },
       "errorMessage": "حدث خطأ أثناء إنشاء الحساب. يرجى المحاولة مرة أخرى."
     },
     "host": {
@@ -824,7 +881,7 @@
         "emailRequired": "البريد الإلكتروني مطلوب",
         "invalidEmail": "عنوان بريد إلكتروني غير صحيح",
         "passwordMinLength": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
-        "passwordComplexity": "كلمة المرور تتكون من حروف وأرقام فقط، وبها حرف ورقم على الأقل",
+        "passwordComplexity": "استخدم حرفاً واحداً ورقماً واحداً على الأقل، ويمكن استخدام الرموز",
         "invalidPassword": "كلمة المرور غير صحيحة، تحقق منها وحاول مرة أخرى.",
         "phoneNumberInvalid": "رقم الجوال غير صحيح، يرجى التحقق والمحاولة مرة أخرى",
         "passwordConfirmRequired": "يرجى تأكيد كلمة المرور",
@@ -886,8 +943,8 @@
         "emailRequired": "البريد الالكتروني مطلوب",
         "invalidEmail": "قم بإدخال بريد إلكتروني صحيح مثال example@domain.com",
         "passwordMinLength": "على الاقل 8احرف",
-        "passwordComplexity": "تتكون من حروف وأرقام فقط، وبها حرف ورقم على الأقل",
-        "passwordSpecialChar": "بدون رموز",
+        "passwordComplexity": "استخدم حرفاً واحداً ورقماً واحداً على الأقل، ويمكن استخدام الرموز",
+        "passwordSpecialChar": "يمكن استخدام الرموز",
         "confirmPasswordRequired": "تأكيد كلمة المرور مطلوب",
         "passwordsDoNotMatch": "كلمات المرور غير متطابقة"
       }
@@ -899,7 +956,7 @@
     "invalidSaudiPhone": "رقم الجوال يجب أن يتكون من 10 أرقام (يبدأ بـ 05) أو 9 أرقام (يبدأ بـ 5)",
     "passwordMinLength": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
     "passwordMaxLength": "كلمة المرور يجب أن تكون أقل من 128 حرف",
-    "passwordComplexity": "كلمة المرور تتكون من حروف وأرقام فقط، وبها حرف ورقم على الأقل",
+    "passwordComplexity": "استخدم حرفاً واحداً ورقماً واحداً على الأقل، ويمكن استخدام الرموز",
     "passwordMismatch": "كلمات المرور غير متطابقة",
     "nameMinLength": "الاسم يجب أن يكون حرفين على الأقل",
     "otpLength": "رمز التحقق يجب أن يكون 6 أرقام",

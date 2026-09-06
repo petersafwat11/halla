@@ -44,10 +44,36 @@
   }
 }
 
-@media (max-width: 480px) {
-  .section {
-    padding: 1.2rem;
-  }
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.editBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1.4rem;
+  border-radius: 0.8rem;
+  border: 1px solid #e8d7c7;
+  background: #fff;
+  color: var(--color-primary, #c28e5c);
+  font-size: 1.3rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.editBtn:hover {
+  background: #fdf9f5;
+  border-color: var(--color-primary, #c28e5c);
+}
+
+.editBtn:focus-visible {
+  outline: 2px solid var(--color-primary, #c28e5c);
+  outline-offset: 2px;
 }
 
 /* ─── Summary Grid ───────────────────────────────────────────────────────── */
@@ -139,4 +165,60 @@
   height: 2rem;
   border-radius: 0.4rem;
   border: 1px solid #ddd;
+}
+
+.fileList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  width: 100%;
+}
+
+.fileCard {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.6rem 1rem;
+  background: #f9f9f9;
+  border: 1px solid #eee;
+  border-radius: 0.8rem;
+  max-width: 100%;
+}
+
+.fileDetails {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.fileName {
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 18rem;
+}
+
+.fileSize {
+  font-size: 1.1rem;
+  color: #888;
+}
+
+.badgeList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: flex-end;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.3rem 0.8rem;
+  background: #f3ece6;
+  color: #8f5c2c;
+  border-radius: 9999px;
+  font-size: 1.2rem;
+  font-weight: 500;
 }

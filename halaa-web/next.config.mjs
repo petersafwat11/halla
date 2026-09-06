@@ -5,6 +5,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Allow verification builds alongside an active development server.
+  distDir: process.env.NEXT_DIST_DIR || '.next',
   // Standalone server output for a minimal Docker runtime image. Trace from the
   // monorepo root so the in-repo workspace package (@halaa/shared) is included.
   output: "standalone",

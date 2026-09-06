@@ -3,16 +3,9 @@ import React from "react";
 import styles from "./footer.module.css";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  IoLogoWhatsapp,
-  IoLogoTwitter,
-  IoLogoInstagram,
-  IoLogoYoutube,
-  IoLogoSnapchat,
-} from "react-icons/io";
 import AppStoreButtons from "../../commen/AppStoreButtons/AppStoreButtons";
 import { useTranslation } from "react-i18next";
-import { LEGAL_CONTACT } from "@halaa/shared/legal";
+import { LEGAL_CONTACT } from "@halaa/shared/legal/contact";
 
 // Single source of truth for owner-approved contact facts.
 const SUPPORT_EMAIL = LEGAL_CONTACT.supportEmail.value;
@@ -34,19 +27,19 @@ const Footer = ({ lang = "ar" }) => {
           <h3 className={styles.sectionTitle}>{t("footer.contactTitle")}</h3>
           <div className={styles.contactInfo}>
             <a href={`tel:${PHONE_DIGITS}`} className={styles.contactLink}>
-              <Image src="/svg/phone.svg" alt="phone" width={18} height={18} className={styles.contactIcon} />
+              <Image src="/svg/phone.svg" alt="" width={18} height={18} className={styles.contactIcon} />
               <span dir="ltr" style={{ unicodeBidi: "embed", display: "inline-block" }}>{PHONE_DISPLAY}</span>
             </a>
 
             <a href={`mailto:${SUPPORT_EMAIL}`} className={styles.contactLink}>
-              <Image src="/svg/email.svg" alt="email" width={18} height={18} className={styles.contactIcon} />
+              <Image src="/svg/email.svg" alt="" width={18} height={18} className={styles.contactIcon} />
               <span>{SUPPORT_EMAIL}</span>
             </a>
 
             <address className={styles.addressLink}>
               <Image
                 src="/svg/location.svg"
-                alt="location"
+                alt=""
                 width={18}
                 height={18}
                 className={styles.contactIcon}
@@ -54,23 +47,7 @@ const Footer = ({ lang = "ar" }) => {
               <span>{address}</span>
             </address>
 
-            <div className={styles.socialLinks}>
-              <a href="#" className={styles.socialIcon} aria-label="WhatsApp">
-                <IoLogoWhatsapp />
-              </a>
-              <a href="#" className={styles.socialIcon} aria-label="Twitter">
-                <IoLogoTwitter />
-              </a>
-              <a href="#" className={styles.socialIcon} aria-label="Instagram">
-                <IoLogoInstagram />
-              </a>
-              <a href="#" className={styles.socialIcon} aria-label="YouTube">
-                <IoLogoYoutube />
-              </a>
-              <a href="#" className={styles.socialIcon} aria-label="Snapchat">
-                <IoLogoSnapchat />
-              </a>
-            </div>
+            {/* Social profiles stay hidden until owner-approved URLs exist. */}
           </div>
         </div>
 
@@ -81,7 +58,7 @@ const Footer = ({ lang = "ar" }) => {
               <Link key={index} href={`/${lang}${link.href}`} className={styles.footerLink}>
                 <Image
                   src="/svg/page-arrow.svg"
-                  alt="arrow"
+                  alt=""
                   width={14}
                   height={14}
                   className={styles.footerLinkArrow}

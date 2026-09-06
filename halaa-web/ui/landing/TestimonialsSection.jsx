@@ -7,13 +7,21 @@ import CarouselDots from "./_shared/CarouselDots";
 const avBg = ["#c47a6d", "#9e5e53", "#4d3d39", "#d39285", "#7d4b43", "#3a2e2b"];
 const GAP = 16;
 
-export default function TestimonialsSection({ lang = "ar" }) {
+// Remains opt-in until genuine, approved customer feedback is available.
+export default function TestimonialsSection({ enabled = false }) {
   const { t } = useTranslation("landing");
-  const items = t("testimonials.items", { returnObjects: true });
+  const translatedItems = t("testimonials.items", { returnObjects: true });
+  const items = Array.isArray(translatedItems)
+    ? translatedItems.filter((item) => item && typeof item.name === "string" && item.name.trim()
+      && typeof item.text === "string" && item.text.trim())
+    : [];
   const { trackRef, idx, maxIdx, scrollToIdx, goPrev, goNext, handleScroll } = useCarouselSnap({
     gap: GAP,
-    totalItems: items.length,
+    totalItems: enabled ? items.length : 0,
   });
+
+  // Keep hooks unconditional, including when translations change after loading.
+  if (!enabled || items.length === 0) return null;
 
   return (
     <>
@@ -29,7 +37,9 @@ export default function TestimonialsSection({ lang = "ar" }) {
             <div className={styles.testTrack} ref={trackRef} onScroll={handleScroll}>
               {items.map((r, i) => (
                 <div key={i} className={styles.testCard}>
-                  <div className={styles.testStars} aria-label={`${r.rating || 5} stars`}>{"★".repeat(r.rating || 5)}</div>
+                  {Number.isInteger(r.rating) && r.rating >= 1 && r.rating <= 5 && (
+                    <div className={styles.testStars} aria-label={t('testimonials.ratingLabel', { count: r.rating })}>{"★".repeat(r.rating)}</div>
+                  )}
                   <p className={styles.testText}>{r.text}</p>
                   <div className={styles.testAuthor}>
                     <div className={styles.testAvatar} style={{ background: avBg[i % avBg.length] }}>
@@ -37,7 +47,7 @@ export default function TestimonialsSection({ lang = "ar" }) {
                     </div>
                     <div>
                       <div className={styles.testName}>{r.name}</div>
-                      <div className={styles.testRole}>{r.role}</div>
+                      {typeof r.role === 'string' && <div className={styles.testRole}>{r.role}</div>}
                     </div>
                   </div>
                 </div>

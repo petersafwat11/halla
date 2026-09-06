@@ -228,7 +228,11 @@ exports.vendorSignup = catchAsync(async (req, res) => {
     user: result.user,
     accessToken: null,
     refreshToken: null,
-    additionalData: { pendingApproval: result.pendingApproval },
+    additionalData: {
+      applicationId: result.applicationId,
+      status: result.status || "pending",
+      pendingApproval: result.pendingApproval,
+    },
     statusCode: 201,
     message: "Vendor application submitted successfully",
   });

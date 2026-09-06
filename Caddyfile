@@ -4,7 +4,6 @@
 # Caddy's public ACME challenge can be intercepted. For the cutover either set
 # the record to DNS-only (grey cloud) so Caddy can obtain a Let's Encrypt cert,
 # or switch to the Cloudflare DNS-01 challenge / a Cloudflare Origin certificate.
-
 {
 	email admin@halaa.com.sa
 }
@@ -20,6 +19,18 @@ halaa.com.sa {
 
 	# Everything else → Next.js web container
 	handle {
+		header {
+			X-Content-Type-Options nosniff
+			Referrer-Policy strict-origin-when-cross-origin
+			X-Frame-Options SAMEORIGIN
+			# Leave camera, geolocation and payment available to existing features.
+			Permissions-Policy "microphone=(), usb=()"
+			# Canonical HTTPS verified; deliberately no preload/includeSubDomains.
+			Strict-Transport-Security "max-age=86400"
+			# Observe first. HTTPS covers variable payment/3DS and upload hosts;
+			# narrow after reviewing real signup, map, upload and payment traffic.
+			Content-Security-Policy-Report-Only "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://maps.googleapis.com https://maps.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' https: data: blob:; connect-src 'self' https:; frame-src 'self' https:; media-src 'self' https: blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'self'"
+		}
 		reverse_proxy web:3000
 	}
 }

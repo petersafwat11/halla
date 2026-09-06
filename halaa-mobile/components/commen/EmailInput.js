@@ -2,10 +2,8 @@ import React from "react";
 import { Ionicons } from "@expo/vector-icons";
 import TextInput from "./TextInput";
 
-// Emails are intrinsically LTR ASCII tokens: drop anything that is not an
-// allowed address character (Arabic script, spaces, symbols) so the field can
-// never hold RTL content that would flip its alignment on iOS.
-const sanitizeEmail = (text) => text.replace(/[^A-Za-z0-9@._+-]/g, "");
+// Preserve the address as entered, as on web; the schema validates it.
+// Direction is explicit, so invalid text cannot change field alignment.
 
 const EmailInput = ({
   name,
@@ -19,14 +17,14 @@ const EmailInput = ({
     <TextInput
       name={name}
       label={label}
-      placeholder={placeholder}
+      placeholder="ahmed@gmail.com"
       disabled={disabled}
       rules={rules}
       keyboardType="email-address"
       autoCapitalize="none"
       autoComplete="email"
       contentDirection="ltr"
-      sanitize={sanitizeEmail}
+      autoCorrect={false}
       icon={<Ionicons name="mail-outline" size={20} color="#999" />}
       {...props}
     />

@@ -19,7 +19,7 @@
 
 .required {
   color: #e74c3c;
-  margin-left: 0.2rem;
+  margin-inline-start: 0.2rem;
 }
 
 /* Input Container */
@@ -52,20 +52,28 @@
 
 /* Input Padding Classes */
 .inputWithPrefix {
-  padding-left: 9rem;
+  padding-inline-start: 9rem;
+}
+
+.label[dir="ltr"] {
+  text-align: left;
+}
+
+.label[dir="rtl"] {
+  text-align: right;
 }
 
 .inputWithRightIcon {
-  padding-right: 4.8rem;
-}
-
-.inputWithPasswordToggle {
   padding-left: 4.8rem;
 }
 
-.inputWithPrefixAndRightIcon {
-  padding-left: 9rem;
+.inputWithPasswordToggle {
   padding-right: 4.8rem;
+}
+
+.inputWithPrefixAndRightIcon {
+  padding-inline-start: 9rem;
+  padding-inline-end: 4.8rem;
 }
 
 .input:focus {
@@ -103,15 +111,16 @@
 .prefixText {
   position: absolute;
   top: 0;
-  left: 0;
+  inset-inline-start: 0;
   height: 100%;
   display: flex;
   align-items: center;
   padding: 0 1.6rem;
   background: #f9f6f2;
   border: 1.5px solid #e0e0e0;
-  border-radius: 1.2rem 0 0 1.2rem;
-  border-right: none;
+  border-start-start-radius: 1.2rem;
+  border-end-start-radius: 1.2rem;
+  border-inline-end: none;
   color: #666;
   font-size: 1.4rem;
   font-weight: 500;
@@ -119,40 +128,38 @@
 }
 
 .prefixLTR {
-  left: 0;
-  border-radius: 1.2rem 0 0 1.2rem;
-  border-right: none;
+  inset-inline-start: 0;
 }
 
 .prefixRTL {
-  right: 0;
-  border-radius: 0 1.2rem 1.2rem 0;
-  border-left: none;
+  inset-inline-start: 0;
 }
 
 /* Icons */
 .icon {
   position: absolute;
   top: 50%;
-  right: 1.6rem;
+  left: 1.6rem;
+  right: auto;
   transform: translateY(-50%);
   opacity: 0.6;
   transition: opacity 0.2s ease;
 }
 
 .iconLTR {
-  right: 1.6rem;
+  inset-inline-end: 1.6rem;
 }
 
 .iconRTL {
-  left: 1.6rem;
+  inset-inline-end: 1.6rem;
 }
 
 /* Password Toggle Button */
 .passwordToggle {
   position: absolute;
   top: 50%;
-  left: 1.2rem;
+  right: 1.2rem;
+  left: auto;
   transform: translateY(-50%);
   background: none;
   border: none;
@@ -264,12 +271,22 @@
 }
 
 [dir="rtl"] .input[type="email"],
-[dir="rtl"] .input[type="password"] {
+[dir="rtl"] .input[type="tel"],
+[dir="rtl"] .input[type="url"] {
   text-align: left;
 }
 
 [dir="ltr"] .input {
   text-align: left;
+}
+
+/* A field's explicit data direction outranks the page locale. */
+.input[dir="ltr"] {
+  text-align: left;
+}
+
+.input[dir="rtl"] {
+  text-align: right;
 }
 
 /* Responsive Design */
@@ -286,20 +303,20 @@
 
   /* Mobile Padding Classes */
   .inputWithPrefix {
-    padding-left: 7.5rem;
+    padding-inline-start: 7.5rem;
   }
 
   .inputWithRightIcon {
-    padding-right: 4rem;
-  }
-
-  .inputWithPasswordToggle {
     padding-left: 4rem;
   }
 
-  .inputWithPrefixAndRightIcon {
-    padding-left: 7.5rem;
+  .inputWithPasswordToggle {
     padding-right: 4rem;
+  }
+
+  .inputWithPrefixAndRightIcon {
+    padding-inline-start: 7.5rem;
+    padding-inline-end: 4rem;
   }
 
   .passwordIcon {
@@ -307,12 +324,12 @@
   }
 
   .passwordToggle {
-    left: 1rem;
+    right: 1rem;
     padding: 0.6rem;
   }
 
   .icon {
-    right: 1.4rem;
+    left: 1.4rem;
   }
 
   .prefixText {

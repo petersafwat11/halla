@@ -48,6 +48,7 @@ import VendorServicesScreen from "../screens/vendor/VendorServicesScreen";
 import VendorSettingsScreen from "../screens/vendor/VendorSettingsScreen";
 import VendorAccountSetupScreen from "../screens/vendor/VendorAccountSetupScreen";
 import VendorSignupScreen from "../screens/auth/VendorSignupScreen";
+import VendorApplicationPendingScreen from "../screens/auth/VendorApplicationPendingScreen";
 import PostEventScreen from "../screens/host/PostEventScreen";
 import StaffPortalScreen from "../screens/common/StaffPortalScreen";
 import ManagePostEventScreen from "../screens/common/ManagePostEventScreen";
@@ -424,6 +425,7 @@ function AuthStack() {
       <Stack.Screen name="ForgetPassword" component={ForgetPasswordScreen} />
       <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
       <Stack.Screen name="VendorSignup" component={VendorSignupScreen} />
+      <Stack.Screen name="VendorApplicationPending" component={VendorApplicationPendingScreen} />
       <Stack.Screen name="PostEvent" component={PostEventScreen} />
       <Stack.Screen name="StaffPortal" component={StaffPortalScreen} />
       {/* Guest invitation & marketplace — public, deep-linkable.

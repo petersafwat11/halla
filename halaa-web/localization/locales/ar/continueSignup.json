@@ -9,8 +9,8 @@
       "emailRequired": "البريد الالكتروني مطلوب",
       "invalidEmail": "قم بإدخال بريد إلكتروني صحيح مثال example@domain.com",
       "passwordMinLength": "على الاقل 8احرف",
-      "passwordComplexity": "تتكون من حروف وأرقام فقط، وبها حرف ورقم على الأقل",
-      "passwordSpecialChar": "بدون رموز",
+      "passwordComplexity": "استخدم حرفاً واحداً ورقماً واحداً على الأقل، ويمكن استخدام الرموز",
+      "passwordSpecialChar": "يمكن استخدام الرموز",
       "confirmPasswordRequired": "تأكيد كلمة المرور مطلوب",
       "passwordConfirmRequired": "يرجى تأكيد كلمة المرور"
     },

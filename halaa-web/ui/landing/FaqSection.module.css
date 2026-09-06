@@ -16,7 +16,7 @@
   display: inline-block;
   font-size: 1.3rem;
   font-weight: 700;
-  color: var(--color-primary-500);
+  color: var(--landing-accent-text, var(--color-primary-500));
   text-transform: uppercase;
   letter-spacing: .08em;
   margin-bottom: 3rem;
@@ -83,7 +83,7 @@
 }
 
 .faqItem.open .faqQ {
-  color: var(--color-primary-500);
+  color: var(--landing-accent-text, var(--color-primary-500));
 }
 
 .faqIcon {
@@ -101,7 +101,7 @@
 
 .faqItem.open .faqIcon {
   background: color-mix(in srgb, var(--color-primary-500) 18%, transparent);
-  color: var(--color-primary-500);
+  color: var(--landing-accent-text, var(--color-primary-500));
   transform: rotate(45deg);
 }
 

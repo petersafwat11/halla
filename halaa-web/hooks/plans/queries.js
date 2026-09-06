@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/services/http";
 import { API_PATHS } from "@halaa/shared/api/paths";
 import { plansKeys } from "./keys";
+import { normalizeLandingPlans } from '@/ui/landing/landingPlansData';
 
 export const usePlans = (options = {}) => {
   return useQuery({
@@ -37,7 +38,11 @@ export const useHostPlans = (options = {}) => {
 export const useLandingPlans = (options = {}) => {
   return useQuery({
     queryKey: plansKeys.landing(),
-    queryFn: () => apiRequest({ method: "GET", path: API_PATHS.plans.getLandingPlans }),
+    queryFn: async () => {
+      const payload = normalizeLandingPlans(await apiRequest({ method: "GET", path: API_PATHS.plans.getLandingPlans }));
+      if (!payload) throw new Error('Public pricing unavailable');
+      return { ...payload, fetchedAt: Date.now() };
+    },
     staleTime: 5 * 60 * 1000,
     ...options,
   });

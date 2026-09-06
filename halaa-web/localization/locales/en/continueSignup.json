@@ -54,8 +54,8 @@
       "emailRequired": "Email is required",
       "invalidEmail": "Please enter a valid email address",
       "passwordMinLength": "Password must be at least 8 characters",
-      "passwordComplexity": "Use letters and numbers only, with at least one of each",
-      "passwordSpecialChar": "Do not use symbols",
+      "passwordComplexity": "Use at least one letter and one number; symbols are allowed",
+      "passwordSpecialChar": "Symbols are allowed",
       "confirmPasswordRequired": "Confirm password is required",
       "passwordsDoNotMatch": "Passwords do not match",
       "passwordConfirmRequired": "Please confirm your password"

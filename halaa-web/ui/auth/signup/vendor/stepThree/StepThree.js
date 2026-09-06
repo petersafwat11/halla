@@ -51,7 +51,8 @@ const StepThree = ({ goToPreviousStep }) => {
         <div className={styles.section}>
           <SectionTitle
             title={t(
-              "signupForm.vendor.samplesAndPackages.pricePackages.label"
+              "signupForm.vendor.samplesAndPackages.pricePackages.label",
+              "باقات الأسعار (1-5 ملفات)"
             )}
             height={24}
             width={24}
@@ -59,10 +60,38 @@ const StepThree = ({ goToPreviousStep }) => {
 
           <UploadFile
             name="samplesAndPackages.pricePackages"
-            multiple={false}
+            multiple={true}
             acceptImages={true}
+            acceptDocuments={true}
+            maxFiles={5}
             placeholder={t(
-              "signupForm.vendor.samplesAndPackages.pricePackages.placeholder"
+              "signupForm.vendor.samplesAndPackages.pricePackages.placeholder",
+              "رفع صور أو ملفات PDF لباقات الأسعار (حتى 5 ملفات)"
+            )}
+          />
+        </div>
+
+        <div className={styles.section}>
+          <SectionTitle
+            title={t(
+              "signupForm.vendor.samplesAndPackages.profileFile.label",
+              "الملف التعريفي للشركة (اختياري)"
+            )}
+            icon="/svg/auth/document.svg"
+            height={24}
+            width={24}
+          />
+
+          <UploadFile
+            name="samplesAndPackages.profileFile"
+            multiple={false}
+            acceptImages={false}
+            acceptDocuments={true}
+            acceptOfficeDocuments={true}
+            maxFiles={1}
+            placeholder={t(
+              "signupForm.vendor.samplesAndPackages.profileFile.placeholder",
+              "رفع ملف PDF أو DOC أو DOCX (حتى 10 ميجابايت)"
             )}
           />
         </div>

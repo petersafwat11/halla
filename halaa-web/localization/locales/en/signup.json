@@ -53,6 +53,7 @@
         "commercialVerificationDescription": "Upload required documents for commercial verification.",
         "paymentData": "Dealing & Payment Policy",
         "otherLinksAndData": "Additional Links (Optional)",
+        "socialLinks": "Social Links (Optional)",
         "summary": "Application Summary"
       },
       "identity": {
@@ -122,7 +123,8 @@
         },
         "password": {
           "label": "Password",
-          "placeholder": "Enter password"
+          "placeholder": "Enter password",
+          "hint": "At least 8 characters with one letter and one number; symbols are allowed"
         },
         "passwordConfirm": {
           "label": "Confirm Password",
@@ -131,7 +133,7 @@
         "errors": {
           "brandNameRequired": "Brand name is required",
           "brandNameMinLength": "Brand name must be at least 2 characters",
-          "brandNameMaxLength": "Brand name must be less than 50 characters",
+          "brandNameMaxLength": "Brand name must not exceed 100 characters",
           "ownerFullNameRequired": "Owner full name is required",
           "ownerFullNameMinLength": "Owner full name must be at least 2 characters",
           "ownerFullNameMaxLength": "Owner full name must be less than 100 characters",
@@ -141,7 +143,7 @@
           "emailRequired": "Email is required",
           "emailInvalid": "Please enter a valid email address",
           "passwordRequired": "Password must be at least 8 characters",
-          "passwordComplexity": "Use letters and numbers only, with at least one of each",
+          "passwordComplexity": "Use at least one letter and one number; symbols are allowed",
           "passwordConfirmRequired": "Please confirm your password",
           "passwordsDoNotMatch": "Passwords do not match"
         }
@@ -154,11 +156,19 @@
           "label": "Brief Service Description",
           "placeholder": "Enter brief description"
         },
+        "taglineAr": "النبذة القصيرة بالعربية",
+        "taglineEn": "Short tagline in English",
+        "aboutAr": "نبذة تفصيلية بالعربية",
+        "aboutEn": "Detailed description in English",
+        "taglineArPlaceholder": "مثال: نصنع لحظات تستحق أن تُروى",
+        "taglineEnPlaceholder": "e.g. We turn moments into lasting memories",
+        "aboutArPlaceholder": "عرّف العملاء بخبرتك وخدماتك",
+        "aboutEnPlaceholder": "Tell customers about your experience and services",
         "eventPlanning": {
           "title": "Event Planning & Occasion Services",
           "options": [
             {
-              "value": "HalaandLoungeRentals",
+              "value": "hallAndLoungeRentals",
               "label": "Hall and Lounge Rentals"
             },
             {
@@ -424,7 +434,9 @@
           "selectedDistricts": "{{count}} district selected",
           "allDistricts": "All Districts",
           "districtsSelected": "{{count}} districts selected",
-          "searchDistrict": "Search districts..."
+          "searchDistrict": "Search districts...",
+          "loadFailed": "Location data could not be loaded. Check your connection and try again.",
+          "retry": "Try again"
         },
         "otherInfo": {
           "title": "Additional Information"
@@ -440,14 +452,16 @@
           "cityRequired": "City is required",
           "cityMinLength": "City must be at least 2 characters",
           "coverageAreaRequired": "Please select at least one coverage area",
-          "regionRequired": "Region is required"
+          "regionRequired": "Region is required",
+          "arabicOnly": "Use Arabic letters only",
+          "englishOnly": "Use English letters only"
         }
       },
       "samplesAndPackages": {
         "title": "Images, Offers & Prices",
         "description": "Upload your portfolio images and define your service packages and pricing.",
         "portfolioImages": {
-          "label": "Portfolio Images",
+          "label": "Portfolio images (1–10 images)",
           "placeholder": "Upload portfolio images"
         },
         "businessLogo": {
@@ -456,13 +470,21 @@
         },
         "pricePackages": {
           "label": "Price Packages",
-          "placeholder": "Describe your service packages and pricing"
+          "placeholder": "Upload PDF, JPG, or PNG package files (1–5 files)"
+        },
+        "profileFile": {
+          "label": "Company profile (optional)",
+          "placeholder": "Upload a PDF, DOC, or DOCX file"
         },
         "errors": {
           "portfolioImagesRequired": "At least one portfolio image is required",
-          "businessLogoRequired": "Business logo is required",
-          "pricePackagesRequired": "Price packages description is required",
-          "pricePackagesMinLength": "Price packages description must be at least 10 characters"
+          "portfolioImagesMax": "A maximum of 10 portfolio images is allowed",
+          "pricePackagesRequired": "At least one price package file is required",
+          "pricePackagesMax": "A maximum of 5 price package files is allowed",
+          "invalidPortfolioFile": "Portfolio files must be JPG, PNG, or WebP images up to 10 MB",
+          "invalidLogoFile": "Logo must be a JPG, PNG, or WebP image up to 10 MB",
+          "invalidPricePackageFile": "Price packages must be PDF, JPG, or PNG files up to 10 MB",
+          "invalidProfileFile": "Company profile must be a PDF, DOC, or DOCX file up to 10 MB"
         }
       },
       "commercialVerification": {
@@ -482,7 +504,9 @@
           "placeholder": "Upload commercial record",
           "numberPlaceholder": "Enter commercial registration number",
           "hint": "Must be 10 digits (e.g., 1234567890)",
-          "invalidFormat": "Commercial registration number must be 10 digits"
+          "invalidFormat": "Commercial registration number must be 10 digits",
+          "imageRequired": "Commercial registration document is required",
+          "invalidFile": "Commercial registration document must be PDF, JPG, or PNG up to 10 MB"
         },
         "nationalId": {
           "title": "National ID",
@@ -490,7 +514,9 @@
           "placeholder": "Enter your national ID number",
           "imagePlaceholder": "Upload national ID image",
           "hint": "Must be 10 digits starting with 1 (citizen) or 2 (resident)",
-          "invalidFormat": "National ID must be 10 digits starting with 1 or 2"
+          "invalidFormat": "National ID must be 10 digits starting with 1 or 2",
+          "imageRequired": "National ID document is required",
+          "invalidFile": "National ID document must be PDF, JPG, or PNG up to 10 MB"
         },
         "otherData": {
           "label": "Other Documents",
@@ -694,13 +720,44 @@
           "profileFileRequired": "Profile file is required"
         }
       },
+      "socialLinks": {
+        "title": "Social links",
+        "description": "Add the social links available for your business (optional).",
+        "whatsapp": { "label": "WhatsApp", "placeholder": "05XXXXXXXX" },
+        "instagram": { "label": "Instagram" },
+        "twitter": { "label": "X (Twitter)" },
+        "facebook": { "label": "Facebook" },
+        "tiktok": { "label": "TikTok" },
+        "linkedin": { "label": "LinkedIn" },
+        "youtube": { "label": "YouTube" },
+        "website": { "label": "Website" },
+        "errors": { "invalidWhatsApp": "Enter a valid WhatsApp number" }
+      },
       "summary": {
         "title": "Application Summary",
         "description": "Please review all the information you've provided before submitting your application.",
         "submit": "Submit Application"
       },
       "submitting": "Submitting...",
-      "successMessage": "Account created successfully",
+      "successMessage": "Your application has been received and is pending review",
+      "pendingApproval": {
+        "title": "Application Received Successfully",
+        "badge": "Application Under Review",
+        "description": "Thank you for your interest in joining Halaa as a service provider. Your application and submitted documents are currently being reviewed by our team.",
+        "applicationIdLabel": "Application ID",
+        "reviewTimeTitle": "Estimated Review Time",
+        "reviewTimeDescription": "Applications and verification documents are reviewed within 1–3 business days.",
+        "nextStepsTitle": "What's Next?",
+        "nextStepsDescription": "You will receive an email notification once your application is reviewed and approved, after which you can log in to your vendor dashboard.",
+        "actions": {
+          "home": "Back to Home",
+          "marketplace": "Explore Marketplace",
+          "contactSupport": "Contact Support"
+        }
+      },
+      "errors": {
+        "correctErrorsBeforeSubmit": "Review and correct the required fields before submitting"
+      },
       "errorMessage": "An error occurred while creating your account. Please try again."
     },
     "host": {
@@ -824,7 +881,7 @@
         "emailRequired": "Email is required",
         "invalidEmail": "Invalid email address",
         "passwordMinLength": "Password must be at least 8 characters",
-        "passwordComplexity": "Use letters and numbers only, with at least one of each",
+        "passwordComplexity": "Use at least one letter and one number; symbols are allowed",
         "invalidPassword": "Password is incorrect, check it and try again.",
         "phoneNumberInvalid": "Phone number is incorrect, please check and try again",
         "passwordConfirmRequired": "Please confirm your password",
@@ -886,8 +943,8 @@
         "emailRequired": "Email is required",
         "invalidEmail": "Please enter a valid email address",
         "passwordMinLength": "Password must be at least 8 characters",
-        "passwordComplexity": "Use letters and numbers only, with at least one of each",
-        "passwordSpecialChar": "Do not use symbols",
+        "passwordComplexity": "Use at least one letter and one number; symbols are allowed",
+        "passwordSpecialChar": "Symbols are allowed",
         "confirmPasswordRequired": "Confirm password is required",
         "passwordsDoNotMatch": "Passwords do not match"
       }
@@ -899,7 +956,7 @@
     "invalidSaudiPhone": "Phone number must be 10 digits (starting with 05) or 9 digits (starting with 5)",
     "passwordMinLength": "Password must be at least 8 characters",
     "passwordMaxLength": "Password must be less than 128 characters",
-    "passwordComplexity": "Use letters and numbers only, with at least one of each",
+    "passwordComplexity": "Use at least one letter and one number; symbols are allowed",
     "passwordMismatch": "Passwords do not match",
     "nameMinLength": "Name must be at least 2 characters",
     "otpLength": "Verification code must be 6 digits",

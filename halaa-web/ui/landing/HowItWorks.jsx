@@ -35,14 +35,17 @@ export default function HowItWorks({ lang = "ar" }) {
   };
 
   const handleKeyDown = (event) => {
-    if (event.key === "ArrowLeft") {
-      selectStep(activeStep + (isRtl ? 1 : -1));
-    }
-    if (event.key === "ArrowRight") {
-      selectStep(activeStep + (isRtl ? -1 : 1));
-    }
-    if (event.key === "Home") selectStep(0);
-    if (event.key === "End") selectStep(lastStep);
+    if (event.target.getAttribute('role') !== 'tab') return;
+    let next;
+    if (event.key === 'ArrowLeft') next = activeStep + (isRtl ? 1 : -1);
+    if (event.key === 'ArrowRight') next = activeStep + (isRtl ? -1 : 1);
+    if (event.key === 'Home') next = 0;
+    if (event.key === 'End') next = lastStep;
+    if (next === undefined) return;
+    event.preventDefault();
+    next = Math.min(Math.max(next, 0), lastStep);
+    selectStep(next);
+    event.currentTarget.querySelectorAll('[role="tab"]')[next]?.focus();
   };
 
   const handleTouchEnd = (event) => {
@@ -96,6 +99,7 @@ export default function HowItWorks({ lang = "ar" }) {
                     type="button"
                     role="tab"
                     aria-selected={isActive}
+                    aria-label={`${t('howItWorks.shortStep', { number: index + 1 })}: ${step.title}`}
                     aria-controls={`how-it-works-panel-${index}`}
                     tabIndex={isActive ? 0 : -1}
                     className={`${styles.stepButton} ${isActive ? styles.stepButtonActive : ""}`}

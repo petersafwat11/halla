@@ -17,7 +17,7 @@
 .prSegSub { font-size: .95rem; color: var(--color-accent-300); transition: color 260ms ease; line-height: 1.2; }
 .prSegBtn.active { background: var(--color-natural-50); box-shadow: 0 2px 14px color-mix(in srgb, var(--color-secondary-600) 14%, transparent), 0 1px 4px color-mix(in srgb, var(--color-secondary-600) 7%, transparent); }
 .prSegBtn.active .prSegLabel { color: var(--color-secondary-700); }
-.prSegBtn.active .prSegSub { color: var(--color-primary-500); }
+.prSegBtn.active .prSegSub { color: var(--landing-accent-text, var(--color-primary-500)); }
 .prSegBtn:hover:not(.active) .prSegLabel { color: var(--color-secondary-400); }
 
 .prSep { height: 1px; background: var(--color-primary-100); margin: 0 1.2rem; }
@@ -27,7 +27,7 @@
 .prBillTrack { display: flex; border: 1.5px solid color-mix(in srgb, var(--color-primary-500) 40%, transparent); border-radius: 1rem; overflow: hidden; width: 100%; }
 .prBillBtn { flex: 1; display: flex; align-items: center; justify-content: center; gap: .65rem; padding: .85rem 1.2rem; border: none; background: var(--color-natural-50); cursor: pointer; font-size: 1.35rem; font-weight: 600; color: var(--color-accent-500); transition: all 220ms ease; white-space: nowrap; }
 .prBillBtn + .prBillBtn { border-inline-start: 1.5px solid color-mix(in srgb, var(--color-primary-500) 40%, transparent); }
-.prBillBtn.active { background: var(--color-primary-500); color: var(--color-natural-50); }
+.prBillBtn.active { background: var(--color-primary-500); color: var(--color-secondary-700); }
 .prBillBtn:hover:not(.active) { background: var(--color-primary-100); color: var(--color-secondary-400); }
 
 /* ── Host single card ── */
@@ -44,10 +44,10 @@
 .prGuestTrack { display: grid; grid-template-columns: repeat(5, 1fr); gap: .55rem; }
 .prGuestBtn { display: flex; flex-direction: column; align-items: center; gap: .2rem; padding: .55rem .35rem; border: 2px solid var(--color-primary-200); border-radius: .8rem; background: var(--color-natural-50); cursor: pointer; transition: all 220ms ease; }
 .prGuestBtn.active { border-color: var(--color-primary-500); background: var(--color-primary-100); }
-.prGuestNum { font-size: 1.5rem; font-weight: 800; color: var(--color-primary-500); line-height: 1; }
+.prGuestNum { font-size: 1.5rem; font-weight: 800; color: var(--landing-accent-text, var(--color-primary-500)); line-height: 1; }
 .prGuestUnit { font-size: .95rem; font-weight: 500; color: var(--color-accent-500); }
-.prGuestBtn.active .prGuestNum { color: var(--color-primary-700); }
-.prGuestBtn.active .prGuestUnit { color: var(--color-primary-700); }
+.prGuestBtn.active .prGuestNum { color: var(--landing-accent-text, var(--color-primary-700)); }
+.prGuestBtn.active .prGuestUnit { color: var(--landing-accent-text, var(--color-primary-700)); }
 .prGuestBtn:hover:not(.active) { border-color: var(--color-primary-300); background: var(--color-primary-50); }
 
 /* ── Host card price ── */
@@ -72,7 +72,7 @@
   font-size: 1.5rem;
   font-weight: 600;
   line-height: 1.55;
-  color: var(--color-primary-500);
+  color: var(--landing-accent-text, var(--color-primary-500));
 }
 
 /* ── Grid ── */

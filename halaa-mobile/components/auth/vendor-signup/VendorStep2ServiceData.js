@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { TextAreaInput, TextInput } from '../../commen';
 import SectionCard from '../../commen/SectionCard';
@@ -6,6 +6,11 @@ import CheckboxGroup from '../../commen/CheckboxGroup';
 import LocationSelector from '../../commen/LocationSelector';
 import LocalizedText from '../../commen/LocalizedText';
 import { useTranslation } from '../../../localization';
+import { useFormContext } from 'react-hook-form';
+import {
+  sanitizeArabicText,
+  sanitizeEnglishText,
+} from '@halaa/shared/utils/languageInput';
 
 /**
  * Vendor signup — service data step.
@@ -32,6 +37,8 @@ const CATEGORY_KEYS = [
 
 const VendorStep2ServiceData = () => {
   const { t } = useTranslation('auth');
+  const { watch } = useFormContext();
+  const [openCategories, setOpenCategories] = useState({ eventPlanning: true });
 
   return (
     <View style={styles.container}>
@@ -48,6 +55,7 @@ const VendorStep2ServiceData = () => {
           label={t('signupForm.vendor.serviceData.serviceDescription.label')}
           placeholder={t('signupForm.vendor.serviceData.serviceDescription.placeholder')}
           numberOfLines={4}
+          maxLength={500}
           contentDirection="adaptive"
         />
       </SectionCard>
@@ -55,17 +63,28 @@ const VendorStep2ServiceData = () => {
       {/* Public-profile copy fields are script-contracted, not adaptive:
           each value must render in the language its name promises. */}
       <SectionCard title={t('signupForm.vendor.serviceData.publicProfileTitle')} icon="language-outline">
-        <TextInput name="serviceData.taglineAr" label={t('signupForm.vendor.serviceData.taglineAr')} maxLength={160} contentDirection="rtl" />
-        <TextInput name="serviceData.taglineEn" label={t('signupForm.vendor.serviceData.taglineEn')} maxLength={160} contentDirection="ltr" autoCapitalize="sentences" />
-        <TextAreaInput name="serviceData.aboutAr" label={t('signupForm.vendor.serviceData.aboutAr')} numberOfLines={5} maxLength={2000} contentDirection="rtl" />
-        <TextAreaInput name="serviceData.aboutEn" label={t('signupForm.vendor.serviceData.aboutEn')} numberOfLines={5} maxLength={2000} contentDirection="ltr" />
+        <TextInput name="serviceData.taglineAr" label={t('signupForm.vendor.serviceData.taglineAr')} placeholder={t('signupForm.vendor.serviceData.taglineArPlaceholder')} maxLength={160} contentDirection="rtl" labelDirection="rtl" sanitize={sanitizeArabicText} helper={t('signupForm.vendor.serviceData.errors.arabicOnly')} />
+        <TextInput name="serviceData.taglineEn" label={t('signupForm.vendor.serviceData.taglineEn')} placeholder={t('signupForm.vendor.serviceData.taglineEnPlaceholder')} maxLength={160} contentDirection="ltr" labelDirection="ltr" sanitize={sanitizeEnglishText} helper={t('signupForm.vendor.serviceData.errors.englishOnly')} autoCapitalize="sentences" />
+        <TextAreaInput name="serviceData.aboutAr" label={t('signupForm.vendor.serviceData.aboutAr')} placeholder={t('signupForm.vendor.serviceData.aboutArPlaceholder')} numberOfLines={5} maxLength={2000} contentDirection="rtl" labelDirection="rtl" sanitize={sanitizeArabicText} />
+        <TextAreaInput name="serviceData.aboutEn" label={t('signupForm.vendor.serviceData.aboutEn')} placeholder={t('signupForm.vendor.serviceData.aboutEnPlaceholder')} numberOfLines={5} maxLength={2000} contentDirection="ltr" labelDirection="ltr" sanitize={sanitizeEnglishText} />
       </SectionCard>
 
       {CATEGORY_KEYS.map((key) => {
         const options = t(`signupForm.vendor.serviceData.${key}.options`, { returnObjects: true });
         if (!Array.isArray(options) || options.length === 0) return null;
+        const selected = watch(`serviceData.${key}`) || [];
+        const selectedCount = Array.isArray(selected) ? selected.length : 0;
+        const title = t(`signupForm.vendor.serviceData.${key}.title`);
+        const isOpen = Boolean(openCategories[key]);
         return (
-          <SectionCard key={key} title={t(`signupForm.vendor.serviceData.${key}.title`)} icon="grid-outline">
+          <SectionCard
+            key={key}
+            title={`${title}${selectedCount > 0 ? ` (${selectedCount})` : ''}`}
+            icon="grid-outline"
+            collapsed={!isOpen}
+            onToggle={() => setOpenCategories((current) => ({ ...current, [key]: !current[key] }))}
+            accessibilityLabel={`${title}${selectedCount > 0 ? `, ${selectedCount}` : ''}`}
+          >
             <CheckboxGroup
               name={`serviceData.${key}`}
               items={options}

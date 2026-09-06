@@ -42,7 +42,7 @@
 }
 
 .titleBrand {
-  color: var(--color-primary-500);
+  color: var(--landing-accent-text, var(--color-primary-500));
 }
 
 .description {
@@ -121,6 +121,8 @@
 }
 
 .img5 {
+  left: 0;
+  top: 0;
   width: 312px;
   height: 129px;
   border-radius: 8.58px;

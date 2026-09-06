@@ -20,7 +20,7 @@ const Stepper = ({ step, setStep, steps, isCurrentStepValid }) => {
           </div>
         </div>
       </div>
-      <div className={styles.container}>
+      <nav aria-label={t("signupForm.vendor.stepperLabel", { defaultValue: "خطوات التسجيل" })} className={styles.container}>
         <div className={styles.steps}>
           {steps.map((item, index) => {
             const isCompleted = item.id < step;
@@ -28,8 +28,14 @@ const Stepper = ({ step, setStep, steps, isCurrentStepValid }) => {
 
             return (
               <div style={{ width: "100%" }} key={index}>
-                <div className={styles.step}>
-                  <p
+                <button
+                  type="button"
+                  onClick={() => setStep?.(item.id)}
+                  aria-current={isCurrent ? "step" : undefined}
+                  aria-label={`${index + 1}. ${item.desc}`}
+                  className={`${styles.step} ${isCurrent ? styles.active_step : ""} ${isCompleted ? styles.completed_step : ""}`}
+                >
+                  <span
                     className={`${styles.step_number} ${
                       isCompleted
                         ? styles.completed_step_number
@@ -39,23 +45,10 @@ const Stepper = ({ step, setStep, steps, isCurrentStepValid }) => {
                     }`}
                   >
                     {isCompleted ? <FaCheck /> : index + 1}
-                  </p>
+                  </span>
 
                   <div className={styles.step_text}>
-                    <p
-                      className={`${styles.step_title} ${
-                        isCompleted
-                          ? styles.completed_step_title
-                          : isCurrent
-                          ? styles.current_step_title
-                          : ""
-                      }`}
-                    >
-                      {" "}
-                      {/* {t('signupForm.step')} */}
-                      {/* {index + 1} */}
-                    </p>
-                    <p
+                    <span
                       className={`${styles.step_description} ${
                         isCompleted
                           ? styles.completed_step_description
@@ -65,9 +58,9 @@ const Stepper = ({ step, setStep, steps, isCurrentStepValid }) => {
                       }`}
                     >
                       {item.desc}
-                    </p>
+                    </span>
                   </div>
-                </div>
+                </button>
                 {index !== steps.length - 1 && (
                   <div
                     className={`${styles.step_line} ${
@@ -79,7 +72,7 @@ const Stepper = ({ step, setStep, steps, isCurrentStepValid }) => {
             );
           })}
         </div>
-      </div>
+      </nav>
     </>
   );
 };

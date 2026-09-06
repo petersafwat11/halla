@@ -1,10 +1,10 @@
 import React from "react";
-import { View, StyleSheet, ScrollView } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { completeProfileSchema } from "../../utils/schemas/authSchemas";
 import { TextInput, EmailInput, PasswordInput, Button } from "../commen";
-import { useTranslation, useLanguage } from "../../localization";
+import { useTranslation } from "../../localization";
 import FormHeader from "./FormHeader";
 
 const CompleteProfileForm = ({ onSubmit, loading = false }) => {
@@ -23,6 +23,7 @@ const CompleteProfileForm = ({ onSubmit, loading = false }) => {
   const { handleSubmit, setError } = methods;
 
   const onFormSubmit = async (data) => {
+    if (loading) return;
     if (onSubmit) {
       const result = await onSubmit(data);
       if (result && !result.success && result.fieldErrors) {
@@ -59,7 +60,7 @@ const CompleteProfileForm = ({ onSubmit, loading = false }) => {
           <EmailInput
             name="email"
             label={t("signup.email")}
-            placeholder={t("signup.emailPlaceholder")}
+            placeholder="ahmed@gmail.com"
             disabled={loading}
           />
 
@@ -67,6 +68,7 @@ const CompleteProfileForm = ({ onSubmit, loading = false }) => {
             name="password"
             label={t("signup.password")}
             placeholder={t("signup.passwordPlaceholder")}
+            helper={t("signupForm.vendor.identity.passwordHint")}
             disabled={loading}
           />
 
@@ -82,6 +84,7 @@ const CompleteProfileForm = ({ onSubmit, loading = false }) => {
               text={t("signup.completeButton")}
               onPress={handleSubmit(onFormSubmit)}
               loading={loading}
+              disabled={loading}
             />
           </View>
         </View>

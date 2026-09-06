@@ -145,10 +145,10 @@ exports.validatePassword = (fieldName = "password", options = {}) => {
       );
     }
 
-    if (!/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+$/.test(password)) {
+    if (!/^(?=.*[A-Za-z])(?=.*\d)/.test(password)) {
       return next(
         new AppError(
-          "Password may contain letters and numbers only and must include at least one of each",
+          "Password must include at least one letter and one number; symbols are allowed",
           400
         )
       );
@@ -383,12 +383,40 @@ exports.parseFormDataJsonFields = (fields = []) => {
         req.body[key] = JSON.parse(trimmed);
       } catch (err) {
         return next(
-          new AppError(`Invalid JSON in field "${key}": ${err.message}`, 400)
+          new ValidationError(`Invalid JSON in field "${key}": ${err.message}`, [
+            { field: key, message: `Invalid JSON in field "${key}"` },
+          ])
         );
       }
     }
     next();
   };
+};
+
+/**
+ * Enforce required multipart fields after Multer has populated req.files.
+ * Keeping this at the HTTP boundary prevents direct API clients from
+ * bypassing the document requirements enforced by the web/mobile schemas.
+ */
+exports.requireMultipartFiles = (requirements = {}) => (req, res, next) => {
+  const errors = [];
+
+  for (const [field, rule] of Object.entries(requirements)) {
+    const files = Array.isArray(req.files?.[field]) ? req.files[field] : [];
+    const min = typeof rule === "number" ? rule : rule?.min ?? 1;
+    if (files.length < min) {
+      errors.push({
+        field,
+        code: "required_file",
+        message: rule?.message || `${field} requires at least ${min} file${min === 1 ? "" : "s"}`,
+      });
+    }
+  }
+
+  if (errors.length > 0) {
+    return next(new ValidationError("Required vendor documents are missing", errors));
+  }
+  return next();
 };
 
 /**

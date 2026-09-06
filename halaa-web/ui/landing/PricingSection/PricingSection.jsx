@@ -1,6 +1,5 @@
 "use client";
 import { useState, useMemo, useEffect } from "react";
-import Link from "next/link";
 import styles from "./pricingSection.module.css";
 import { useTranslation } from "react-i18next";
 import { useLandingPlans } from "@/hooks/plans";
@@ -10,6 +9,9 @@ import PlanCard from "@/ui/plans/PlanCard/PlanCard";
 import useCarouselSnap from "../_shared/useCarouselSnap";
 import CarouselDots from "../_shared/CarouselDots";
 import { formatNumber } from "@halaa/shared/utils/locale";
+import { safeJsonLd } from '@halaa/shared/brand';
+import { buildLandingSchema, planOffers } from '../landingSchema';
+import { planPrice, usablePlanSnapshot, PLAN_REFRESH_SECONDS } from '../landingPlansData';
 
 const WA_LINK = "https://wa.me/966552619282";
 
@@ -32,7 +34,7 @@ const getInviteValue = (plan, billingType) => {
 const PLAN_CAROUSEL_GAP = 20;
 const PLAN_CAROUSEL_ITEMS = 2;
 
-export default function PricingSection({ lang = "ar" }) {
+export default function PricingSection({ lang = "ar", initialPlans = null }) {
   const { t } = useTranslation("landing");
   const { t: tPlans } = useTranslation("plans");
   const getTagline = (plan) => {
@@ -41,8 +43,20 @@ export default function PricingSection({ lang = "ar" }) {
     return tPlans(`taglines.${family}`, { defaultValue: "" });
   };
 
-  const { data: landingData, isLoading, error } = useLandingPlans();
-  const plans = landingData?.data ?? null;
+  const [now, setNow] = useState(() => Date.now());
+  const setupFeeLine = (plan) => plan?.setupFeeAmount > 0
+    ? <p className={styles.prCardTagline}>{t('pricing.setupFeeRow', { amount: formatNumber(plan.setupFeeAmount, lang) })}</p>
+    : null;
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 30000);
+    return () => clearInterval(timer);
+  }, []);
+  const { data: landingData, error } = useLandingPlans({
+    initialData: initialPlans || undefined,
+    initialDataUpdatedAt: initialPlans?.fetchedAt,
+    refetchInterval: PLAN_REFRESH_SECONDS * 1000,
+  });
+  const plans = usablePlanSnapshot(landingData, Math.max(now, landingData?.fetchedAt || 0)) ? landingData.data : null;
   const hostPlans = plans?.host ?? null;
   const businessPlans = plans?.business ?? null;
 
@@ -54,14 +68,16 @@ export default function PricingSection({ lang = "ar" }) {
   const bizQuarterlyPlans = businessPlans?.quarterly ?? [];
   const bizAnnualPlans = businessPlans?.annual ?? [];
 
-  const hasHost = basicEvent.length > 0 || premiumEvent.length > 0;
+  const hasHostEvent = basicEvent.length > 0 || premiumEvent.length > 0;
+  const hasHostMonthly = basicMonthly.length > 0 || premiumMonthly.length > 0;
+  const hasHost = hasHostEvent || hasHostMonthly;
   const hasBusiness = bizEventPlans.length > 0 || bizQuarterlyPlans.length > 0 || bizAnnualPlans.length > 0;
 
-  const [audience, setAudience] = useState("host");
-  const [billingType, setBillingType] = useState("event");
+  const [audience, setAudience] = useState(!hasHost && hasBusiness ? 'business' : 'host');
+  const [billingType, setBillingType] = useState(hasHostEvent ? 'event' : 'monthly');
   const [selInvites, setSelInvites] = useState(null);
   const [selPool, setSelPool] = useState(null);
-  const [bizType, setBizType] = useState("event");
+  const [bizType, setBizType] = useState(bizEventPlans.length ? 'event' : bizQuarterlyPlans.length ? 'quarterly' : 'annual');
   const [selBizInvites, setSelBizInvites] = useState(null);
 
   const resetToHost = (next) => { setAudience(next); };
@@ -70,6 +86,13 @@ export default function PricingSection({ lang = "ar" }) {
     if (!hasHost && hasBusiness) setAudience("business");
     else if (hasHost) setAudience("host");
   }, [hasHost, hasBusiness]);
+
+  useEffect(() => {
+    if (billingType === 'event' && !hasHostEvent && hasHostMonthly) setBillingType('monthly');
+    if (billingType === 'monthly' && !hasHostMonthly && hasHostEvent) setBillingType('event');
+    const available = { event: bizEventPlans.length, quarterly: bizQuarterlyPlans.length, annual: bizAnnualPlans.length };
+    if (!available[bizType]) setBizType(available.event ? 'event' : available.quarterly ? 'quarterly' : 'annual');
+  }, [billingType, hasHostEvent, hasHostMonthly, bizType, bizEventPlans.length, bizQuarterlyPlans.length, bizAnnualPlans.length]);
 
   useEffect(() => {
     const ref = basicEvent[0];
@@ -109,34 +132,32 @@ export default function PricingSection({ lang = "ar" }) {
 
   const bizQuarterlyPlan = bizQuarterlyPlans[0] || null;
   const bizAnnualPlan = bizAnnualPlans[0] || null;
+  // Describe exactly the cards rendered for the current audience, billing
+  // period and invitation selection, using the same server/query snapshot.
+  const visiblePlans = audience === 'host'
+    ? (billingType === 'event'
+      ? [currentHostEventPlan, currentPremiumEventPlan]
+      : [currentHostMonthlyPlan, currentPremiumMonthlyPlan])
+    : [bizType === 'event' ? currentBizEventPlan : bizType === 'quarterly' ? bizQuarterlyPlan : bizAnnualPlan];
+  const schema = <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(buildLandingSchema({
+    lang, faq: t('faq.items', { returnObjects: true }), offers: planOffers(visiblePlans, lang),
+  })) }} />;
 
   const { trackRef, idx, maxIdx, scrollToIdx, goPrev, goNext, handleScroll } = useCarouselSnap({
     gap: PLAN_CAROUSEL_GAP,
     totalItems: PLAN_CAROUSEL_ITEMS,
   });
 
-  if (isLoading) {
+  if ((error && !plans) || (!hasHost && !hasBusiness)) {
     return (
       <section id="pricing" className={styles.prRoot}>
+        {schema}
         <div className={styles.prInner}>
           <div className={styles.prHdr}>
             <h2 className={styles.prTitle}>{t("pricing.title")}</h2>
           </div>
-          <div style={{ textAlign: "center", padding: "2rem" }}>
-            <p>{t("pricing.loading", "Loading plans...")}</p>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  if (error || (!hasHost && !hasBusiness)) {
-    return (
-      <section id="pricing" className={styles.prRoot}>
-        <div className={styles.prInner}>
-          <div className={styles.prHdr}>
-            <h2 className={styles.prTitle}>{t("pricing.title")}</h2>
-          </div>
+          <p role="status">{t('pricing.unavailable')}</p>
+          <a href={WA_LINK} className={`${styles.prBtn} ${styles.prBtnDark}`}>{t('pricing.contact')}</a>
         </div>
       </section>
     );
@@ -144,11 +165,13 @@ export default function PricingSection({ lang = "ar" }) {
 
   return (
     <section id="pricing" className={styles.prRoot}>
+      {schema}
       <div className={styles.prInner}>
 
         <div className={styles.prHdr}>
           <h2 className={styles.prTitle}>{t("pricing.title")}</h2>
         </div>
+        {(error || now - landingData.fetchedAt > PLAN_REFRESH_SECONDS * 1000) && <p role="status">{t('pricing.refreshUnavailable')}</p>}
 
         <div className={styles.prSelector}>
 
@@ -219,12 +242,14 @@ export default function PricingSection({ lang = "ar" }) {
               <div className={styles.prBillTrack}>
                 <button
                   className={`${styles.prBillBtn}${billingType === "event" ? ` ${styles.active}` : ""}`}
+                  disabled={!hasHostEvent}
                   onClick={() => setBillingType("event")}
                 >
                   {t("pricing.perEventTab")}
                 </button>
                 <button
                   className={`${styles.prBillBtn}${billingType === "monthly" ? ` ${styles.active}` : ""}`}
+                  disabled={!hasHostMonthly}
                   onClick={() => setBillingType("monthly")}
                 >
                   {t("pricing.monthlyTab")}
@@ -238,7 +263,7 @@ export default function PricingSection({ lang = "ar" }) {
         {audience === "host" && billingType === "event" && (
           <div className={styles.carouselWrapper}>
             <div className={styles.prGrid} ref={trackRef} onScroll={handleScroll}>
-              <PlanCard
+              {currentHostEventPlan && <PlanCard
                 planFamily="basic"
                 matchedPlan={currentHostEventPlan}
                 plans={basicEvent}
@@ -248,8 +273,8 @@ export default function PricingSection({ lang = "ar" }) {
                 lang={lang}
                 ctaLabel={t("pricing.subscribe")}
                 ctaHref={`/${lang}/signup`}
-              />
-              <PlanCard
+              />}
+              {currentPremiumEventPlan && <PlanCard
                 planFamily="premium"
                 matchedPlan={currentPremiumEventPlan}
                 plans={premiumEvent}
@@ -260,7 +285,7 @@ export default function PricingSection({ lang = "ar" }) {
                 lang={lang}
                 ctaLabel={t("pricing.subscribe")}
                 ctaHref={`/${lang}/signup`}
-              />
+              />}
             </div>
             <CarouselDots
               idx={idx}
@@ -283,7 +308,7 @@ export default function PricingSection({ lang = "ar" }) {
         {audience === "host" && billingType === "monthly" && (
           <div className={styles.carouselWrapper}>
             <div className={styles.prGrid} ref={trackRef} onScroll={handleScroll}>
-              <PlanCard
+              {currentHostMonthlyPlan && <PlanCard
                 planFamily="basic"
                 matchedPlan={currentHostMonthlyPlan}
                 plans={basicMonthly}
@@ -293,8 +318,8 @@ export default function PricingSection({ lang = "ar" }) {
                 lang={lang}
                 ctaLabel={t("pricing.subscribe")}
                 ctaHref={`/${lang}/signup`}
-              />
-              <PlanCard
+              />}
+              {currentPremiumMonthlyPlan && <PlanCard
                 planFamily="premium"
                 matchedPlan={currentPremiumMonthlyPlan}
                 plans={premiumMonthly}
@@ -305,7 +330,7 @@ export default function PricingSection({ lang = "ar" }) {
                 lang={lang}
                 ctaLabel={t("pricing.subscribe")}
                 ctaHref={`/${lang}/signup`}
-              />
+              />}
             </div>
             <CarouselDots
               idx={idx}
@@ -329,7 +354,7 @@ export default function PricingSection({ lang = "ar" }) {
           <div className={styles.prHostCard}>
             <div className={styles.prHostCardTop}>
               <div className={styles.prHostPrice}>
-                <span className={styles.prHostPriceNum}>{formatPrice(currentBizEventPlan.pricing?.oneTime)}</span>
+                <span className={styles.prHostPriceNum}>{formatPrice(planPrice(currentBizEventPlan), lang)}</span>
                 <SarSymbol />
               </div>
               {getTagline(currentBizEventPlan) ? (
@@ -354,6 +379,7 @@ export default function PricingSection({ lang = "ar" }) {
             </div>
 
             <div className={styles.prFeatSection}>
+              {setupFeeLine(currentBizEventPlan)}
               <PlanDescription
                 plan={currentBizEventPlan}
                 lang={lang}
@@ -378,7 +404,7 @@ export default function PricingSection({ lang = "ar" }) {
           <div className={styles.prHostCard}>
             <div className={styles.prHostCardTop}>
               <div className={styles.prHostPrice}>
-                <span className={styles.prHostPriceNum}>{formatPrice(bizQuarterlyPlan.pricing?.oneTime, lang)}</span>
+                <span className={styles.prHostPriceNum}>{formatPrice(planPrice(bizQuarterlyPlan), lang)}</span>
                 <SarSymbol />
               </div>
               {getTagline(bizQuarterlyPlan) ? (
@@ -387,6 +413,7 @@ export default function PricingSection({ lang = "ar" }) {
             </div>
 
             <div className={styles.prFeatSection}>
+              {setupFeeLine(bizQuarterlyPlan)}
               <PlanDescription plan={bizQuarterlyPlan} lang={lang} showTagline={false} showDuration={false} size="large" inlineExtras />
             </div>
 
@@ -403,7 +430,7 @@ export default function PricingSection({ lang = "ar" }) {
           <div className={styles.prHostCard}>
             <div className={styles.prHostCardTop}>
               <div className={styles.prHostPrice}>
-                <span className={styles.prHostPriceNum}>{formatPrice(bizAnnualPlan.pricing?.oneTime, lang)}</span>
+                <span className={styles.prHostPriceNum}>{formatPrice(planPrice(bizAnnualPlan), lang)}</span>
                 <SarSymbol />
               </div>
               {getTagline(bizAnnualPlan) ? (
@@ -412,6 +439,7 @@ export default function PricingSection({ lang = "ar" }) {
             </div>
 
             <div className={styles.prFeatSection}>
+              {setupFeeLine(bizAnnualPlan)}
               <PlanDescription plan={bizAnnualPlan} lang={lang} showTagline={false} showDuration={false} size="large" inlineExtras />
             </div>
 

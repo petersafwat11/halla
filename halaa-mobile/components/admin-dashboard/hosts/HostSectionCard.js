@@ -41,7 +41,7 @@ export const SectionCard = ({ title, icon, children }) => (
  *   - "localized"  locale-formatted app values (dates, counts) that follow
  *                  the UI locale.
  */
-export const InfoRow = ({ icon, label, value, badge, last, mode = "adaptive" }) => {
+export const InfoRow = ({ icon, label, value, badge, last, mode = "adaptive", multiline = false }) => {
   const { isRTL } = useTranslation();
 
   if (badge || mode === "adaptive") {
@@ -52,7 +52,7 @@ export const InfoRow = ({ icon, label, value, badge, last, mode = "adaptive" }) 
           <LocalizedText style={styles.rowLabel}>{label}</LocalizedText>
         </View>
         {badge ?? (
-          <AdaptiveText style={styles.rowValue} numberOfLines={1}>
+          <AdaptiveText style={styles.rowValue} numberOfLines={multiline ? undefined : 1}>
             {value ?? "—"}
           </AdaptiveText>
         )}
@@ -69,7 +69,7 @@ export const InfoRow = ({ icon, label, value, badge, last, mode = "adaptive" }) 
       </View>
       <LocalizedText
         style={[styles.rowValue, isLtrValue ? styles.ltrValue : null]}
-        numberOfLines={1}
+        numberOfLines={multiline ? undefined : 1}
       >
         {isLtrValue ? isolateLtr(value ?? "—") : (value ?? "—")}
       </LocalizedText>

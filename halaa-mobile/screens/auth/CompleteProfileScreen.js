@@ -33,7 +33,9 @@ export default function CompleteProfileScreen() {
   const fieldKeyFor = (apiField) => {
     if (apiField === "email") return "email";
     if (apiField === "phoneNumber" || apiField === "phone") return "mobile";
-    if (apiField === "fullName") return "fullName";
+    if (apiField === "fullName" || apiField === "name") return "fullName";
+    if (apiField === "password") return "password";
+    if (apiField === "passwordConfirm" || apiField === "confirmPassword") return "confirmPassword";
     return null;
   };
 

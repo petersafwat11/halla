@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import styles from "./header.module.css";
-import Button from "../../commen/button/Button";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -68,16 +67,16 @@ const Header = ({ lang = "ar", variant = "primary" }) => {
 
   const renderAuthCtas = ({ onClick } = {}) =>
     dashboardHref ? (
-      <Link href={dashboardHref} onClick={onClick} className={styles.mobileBtnLink}>
-        <Button title={t("header.dashboard")} variant="primary" className={styles.headerBtnLogin} />
+      <Link href={dashboardHref} onClick={onClick} className={`${styles.mobileBtnLink} ${styles.headerBtnLogin}`}>
+        {t("header.dashboard")}
       </Link>
     ) : (
       <>
-        <Link href={`/${lang}/login`} onClick={onClick} className={styles.mobileBtnLink}>
-          <Button title={t("header.login")} variant="primary" className={styles.headerBtnLogin} />
+        <Link href={`/${lang}/login`} onClick={onClick} className={`${styles.mobileBtnLink} ${styles.headerBtnLogin}`}>
+          {t("header.login")}
         </Link>
-        <Link href={`/${lang}/signup`} onClick={onClick} className={styles.mobileBtnLink}>
-          <Button title={t("header.signup")} variant="secondary" className={styles.headerBtnSignup} />
+        <Link href={`/${lang}/signup`} onClick={onClick} className={`${styles.mobileBtnLink} ${styles.headerBtnSignup}`}>
+          {t("header.signup")}
         </Link>
       </>
     );
@@ -88,7 +87,7 @@ const Header = ({ lang = "ar", variant = "primary" }) => {
 
         {/* Logo */}
         <div className={styles.logo}>
-          <Image src="/logo.png" alt="Logo" width={50} height={50} className={styles.logoImg} />
+          <Image src="/logo.png" alt={lang === 'ar' ? 'هلا' : 'Halaa'} width={50} height={50} className={styles.logoImg} />
         </div>
 
         {/* Desktop centered nav */}
@@ -116,7 +115,8 @@ const Header = ({ lang = "ar", variant = "primary" }) => {
           <button
             className={styles.hamburger}
             onClick={() => setMenuOpen(!menuOpen)}
-            aria-label="Toggle menu"
+            aria-label={t(menuOpen ? 'header.closeMenu' : 'header.openMenu')}
+            aria-controls="mobile-navigation"
             aria-expanded={menuOpen}
           >
             <span className={`${styles.bar} ${menuOpen ? styles.barOpen1 : ""}`} />
@@ -127,7 +127,7 @@ const Header = ({ lang = "ar", variant = "primary" }) => {
       </div>
 
       {/* Mobile dropdown */}
-      <div className={`${styles.mobileMenu} ${menuOpen ? styles.mobileMenuOpen : ""}`}>
+      <div id="mobile-navigation" inert={!menuOpen} className={`${styles.mobileMenu} ${menuOpen ? styles.mobileMenuOpen : ""}`}>
         <ul className={styles.mobileMenuItems}>
           {menuItems.map((item, index) => (
             <li key={index}>

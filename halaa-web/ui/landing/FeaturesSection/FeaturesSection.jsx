@@ -40,7 +40,7 @@ const FeaturesSection = ({ lang = "ar" }) => {
       </div>
 
       <div className={styles.carouselWrapper}>
-        <div className={styles.featuresGrid} ref={trackRef} onScroll={handleScroll}>
+        <div className={styles.featuresGrid} ref={trackRef} onScroll={handleScroll} tabIndex={0} role="region" aria-label={t('features.heading')}>
           {items.map((feature, index) => (
             <FeatureCard
               key={index}

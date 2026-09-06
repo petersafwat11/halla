@@ -25,16 +25,6 @@ const VendorCTASection = ({ lang = "ar" }) => {
           </Link>
         </div>
 
-        <div className={styles.imageWrapper}>
-          <div className={styles.imageContainer}>
-            <img
-              src="https://api.builder.io/api/v1/image/assets/TEMP/87f2f30bbbccdfbe5323362a8f98b68b4473b7dd?width=850"
-              alt="Vendors collaborating with event planners"
-              className={styles.vendorImage}
-            />
-            <div className={styles.gradient}></div>
-          </div>
-        </div>
       </div>
     </section>
   );

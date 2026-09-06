@@ -111,6 +111,7 @@ const sendErrorDev = (err, req, res) => {
   // otpErrorType/etc.) end up nested under `error` only in dev, and any
   // client logic that reads them silently breaks.
   if (err.errors) response.errors = err.errors;
+  if (err.fieldErrors) response.fieldErrors = err.fieldErrors;
   if (err.field) response.field = err.field;
   if (err.feature) response.feature = err.feature;
   if (err.otpErrorType) response.otpErrorType = err.otpErrorType;
@@ -143,6 +144,7 @@ const sendErrorProd = (err, req, res) => {
 
     // Include additional error data if present
     if (err.errors) response.errors = err.errors;
+    if (err.fieldErrors) response.fieldErrors = err.fieldErrors;
     if (err.field) response.field = err.field;
     if (err.feature) response.feature = err.feature;
     if (err.otpErrorType) response.otpErrorType = err.otpErrorType;

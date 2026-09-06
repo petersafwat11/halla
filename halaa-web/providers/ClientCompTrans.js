@@ -2,6 +2,7 @@
 
 import { I18nextProvider, initReactI18next } from "react-i18next";
 import { createInstance } from "i18next";
+import resourcesToBackend from "i18next-resources-to-backend";
 import React, { useEffect, useMemo } from "react";
 
 export default function ClientComponentsTranslationsProvider({
@@ -16,7 +17,9 @@ export default function ClientComponentsTranslationsProvider({
   // t(..., { returnObjects: true }) and get the array back, not the key string.
   const i18n = useMemo(() => {
     const instance = createInstance();
-    instance.use(initReactI18next).init({
+    instance.use(resourcesToBackend((language, namespace) =>
+      import(`../localization/locales/${language}/${namespace}.json`)
+    )).use(initReactI18next).init({
       showSupportNotice: false,
       lng: locale,
       fallbackLng: locale,
@@ -25,6 +28,7 @@ export default function ClientComponentsTranslationsProvider({
       fallbackNS: namespaces[0],
       ns: namespaces,
       resources: resources || {},
+      partialBundledLanguages: true,
       initImmediate: false,
       interpolation: {
         escapeValue: false,

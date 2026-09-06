@@ -23,6 +23,7 @@ const VendorStep3SamplesPackages = () => {
           label={t('signupForm.vendor.samplesAndPackages.portfolioLabel')}
           placeholder={t('signupForm.vendor.samplesAndPackages.portfolioPlaceholder')}
           multiple={true}
+          maxFiles={10}
         />
       </SectionCard>
 
@@ -40,6 +41,8 @@ const VendorStep3SamplesPackages = () => {
           label={t('signupForm.vendor.samplesAndPackages.packagesLabel')}
           placeholder={t('signupForm.vendor.samplesAndPackages.packagesPlaceholder')}
           multiple={true}
+          allowDocuments={true}
+          maxFiles={5}
         />
       </SectionCard>
 
@@ -48,6 +51,9 @@ const VendorStep3SamplesPackages = () => {
           name="samplesAndPackages.profileFile"
           label={t('signupForm.vendor.samplesAndPackages.profileFileLabel')}
           placeholder={t('signupForm.vendor.samplesAndPackages.profileFilePlaceholder')}
+          allowDocuments={true}
+          documentOnly={true}
+          allowOfficeDocuments={true}
         />
       </SectionCard>
     </View>

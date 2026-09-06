@@ -175,6 +175,8 @@ export default function DeleteAccountPage() {
             <input
               style={S.input}
               type="email"
+              placeholder="ahmed@gmail.com"
+              dir="ltr"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"

@@ -3,8 +3,8 @@ import styles from "./stepFive.module.css";
 import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
 import { StepTitle } from "../../../../commen/title/SectionTitle";
 import SectionTitle from "../../../../commen/title/SectionTitle";
-import UploadFile from "@/ui/commen/inputs/uploadFile/UploadFile";
 import { useTranslation } from "react-i18next";
+import { normalizeDigitsOnly } from "@halaa/shared/utils/locale";
 
 const StepFive = ({ goToPreviousStep }) => {
   const { t } = useTranslation("signup");
@@ -12,88 +12,85 @@ const StepFive = ({ goToPreviousStep }) => {
   return (
     <div className={styles.container}>
       <StepTitle
-        title={t("signupForm.vendor.otherLinksAndData.title")}
-        description={t("signupForm.vendor.otherLinksAndData.description")}
+        title={t("signupForm.vendor.socialLinks.title")}
+        description={t("signupForm.vendor.socialLinks.description")}
         onArrowClick={goToPreviousStep}
       />
       <div className={styles.sections}>
         {/* Social Media and Links Section */}
         <div className={styles.section}>
           <SectionTitle
-            title={t("signupForm.vendor.otherLinksAndData.socialLinksTitle")}
+            title={t("signupForm.vendor.socialLinks.title")}
             icon="/svg/auth/link.svg"
             height={24}
             width={24}
           />
           <div className={styles.inputs}>
             <InputGroup
-              label={t("signupForm.vendor.otherLinksAndData.whatsapp.label", "WhatsApp number")}
+              label={t("signupForm.vendor.socialLinks.whatsapp.label", { defaultValue: "WhatsApp" })}
               type="tel"
-              placeholder={t("signupForm.vendor.otherLinksAndData.whatsapp.placeholder", "+966 5XX XXX XXXX")}
-              name="otherLinksAndData.whatsapp"
+              placeholder={t("signupForm.vendor.socialLinks.whatsapp.placeholder", { defaultValue: "05xxxxxxxx" })}
+              name="socialLinks.whatsapp"
               iconPath="auth/link.svg"
+              direction="ltr"
+              inputMode="numeric"
+              sanitize={normalizeDigitsOnly}
             />
             <InputGroup
-              label={t(
-                "signupForm.vendor.otherLinksAndData.instagramLink.label"
-              )}
+              label={t("signupForm.vendor.socialLinks.instagram.label", { defaultValue: "Instagram" })}
               type="url"
-              placeholder={t(
-                "signupForm.vendor.otherLinksAndData.instagramLink.placeholder"
-              )}
-              name="otherLinksAndData.instagramLink"
+              placeholder="https://instagram.com/yourbrand"
+              name="socialLinks.instagram"
               iconPath="auth/instagram.svg"
+              direction="ltr"
             />
             <InputGroup
-              label={t("signupForm.vendor.otherLinksAndData.facebookLink.label")}
+              label={t("signupForm.vendor.socialLinks.twitter.label", { defaultValue: "Twitter / X" })}
               type="url"
-              placeholder={t("signupForm.vendor.otherLinksAndData.facebookLink.placeholder")}
-              name="otherLinksAndData.facebookLink"
+              placeholder="https://x.com/yourbrand"
+              name="socialLinks.twitter"
               iconPath="auth/link.svg"
+              direction="ltr"
             />
             <InputGroup
-              label={t("signupForm.vendor.otherLinksAndData.tiktokLink.label")}
+              label={t("signupForm.vendor.socialLinks.facebook.label", { defaultValue: "Facebook" })}
               type="url"
-              placeholder={t("signupForm.vendor.otherLinksAndData.tiktokLink.placeholder")}
-              name="otherLinksAndData.tiktokLink"
+              placeholder="https://facebook.com/yourbrand"
+              name="socialLinks.facebook"
               iconPath="auth/link.svg"
+              direction="ltr"
             />
             <InputGroup
-              label={t("signupForm.vendor.otherLinksAndData.websiteLink.label")}
+              label={t("signupForm.vendor.socialLinks.tiktok.label", { defaultValue: "TikTok" })}
               type="url"
-              placeholder={t(
-                "signupForm.vendor.otherLinksAndData.websiteLink.placeholder"
-              )}
-              name="otherLinksAndData.websiteLink"
+              placeholder="https://tiktok.com/@yourbrand"
+              name="socialLinks.tiktok"
               iconPath="auth/link.svg"
+              direction="ltr"
             />
-          </div>
-        </div>
-
-        {/* File Uploads Section */}
-        <div className={styles.section}>
-          <SectionTitle
-            title={t("signupForm.vendor.otherLinksAndData.filesAndDocumentsTitle")}
-            icon="/svg/auth/document.svg"
-            height={24}
-            width={24}
-          />
-          <div className={styles.inputs}>
-            {/* <UploadFile
-              name="otherLinksAndData.cv"
-              multiple={false}
-              placeholder={t(
-                "signupForm.vendor.otherLinksAndData.cv.placeholder"
-              )}
-            /> */}
-
-            <UploadFile
-              name="otherLinksAndData.profileFile"
-              multiple={false}
-              acceptImages={true}
-              placeholder={t(
-                "signupForm.vendor.otherLinksAndData.profileFile.placeholder"
-              )}
+            <InputGroup
+              label={t("signupForm.vendor.socialLinks.linkedin.label", { defaultValue: "LinkedIn" })}
+              type="url"
+              placeholder="https://linkedin.com/in/yourbrand"
+              name="socialLinks.linkedin"
+              iconPath="auth/link.svg"
+              direction="ltr"
+            />
+            <InputGroup
+              label={t("signupForm.vendor.socialLinks.youtube.label", { defaultValue: "YouTube" })}
+              type="url"
+              placeholder="https://youtube.com/@yourbrand"
+              name="socialLinks.youtube"
+              iconPath="auth/link.svg"
+              direction="ltr"
+            />
+            <InputGroup
+              label={t("signupForm.vendor.socialLinks.website.label", { defaultValue: "Website" })}
+              type="url"
+              placeholder="https://yourwebsite.com"
+              name="socialLinks.website"
+              iconPath="auth/link.svg"
+              direction="ltr"
             />
           </div>
         </div>

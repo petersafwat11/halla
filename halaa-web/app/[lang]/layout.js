@@ -1,20 +1,10 @@
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { amiri, cairo, greatVibes } from "@/app/[lang]/fonts";
+import { cairo } from "@/app/[lang]/fonts";
 import GlobalProvider from "@/providers";
 import ReactQueryProvider from "@/providers/ReactQueryProvider";
 import { i18nRouterConfig } from "@/localization/i18nRouterConfig";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import "swiper/css";
-import "swiper/css/free-mode";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
-import "swiper/css/scrollbar";
-import "swiper/css/effect-fade";
-import "swiper/css/effect-coverflow";
-import "swiper/css/effect-flip";
-import "swiper/css/effect-cube";
 import {
   CANONICAL_ORIGIN,
   BRAND_NAME,
@@ -87,7 +77,7 @@ export default async function RootLayout(props) {
         <GlobalProvider lang={lang}>
           <body
             // style={{ backgroundColor: "#f4efe9" }}
-            className={`${cairo.className} ${cairo.variable} ${amiri.variable} ${greatVibes.variable}`}
+            className={`${cairo.className} ${cairo.variable}`}
           >
             <ToastContainer
               position="top-center"

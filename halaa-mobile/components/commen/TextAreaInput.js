@@ -28,10 +28,13 @@ const TextAreaField = ({
   maxLength,
   helper,
   contentDirection,
+  labelDirection,
   value,
   error,
   onChange,
   onBlur,
+  fieldRef,
+  sanitize,
   style,
   extraProps,
 }) => {
@@ -44,10 +47,11 @@ const TextAreaField = ({
     hasValue: formValue.length > 0,
     value: formValue,
   });
+  const labelStyle = useFieldDirection(labelDirection || "localized");
 
   return (
     <View style={styles.container}>
-      {!!label && <LocalizedText role="label" style={styles.label}>{label}</LocalizedText>}
+      {!!label && <Text style={[styles.label, labelDirection ? { ...labelStyle.input, textAlign: labelDirection === "rtl" ? "right" : "left" } : fieldDirection.text]}>{label}</Text>}
       {/* The whole box is pressable so a tap anywhere inside (padding included,
           not just the text node) focuses the input. */}
       <Pressable
@@ -61,12 +65,15 @@ const TextAreaField = ({
       >
         <RNTextInput
           {...extraProps}
-          ref={inputRef}
+          ref={(node) => {
+            inputRef.current = node;
+            fieldRef?.(node);
+          }}
           style={[styles.textArea, fieldDirection.input, style]}
           placeholder={placeholder}
           placeholderTextColor="#999"
           value={formValue}
-          onChangeText={onChange}
+          onChangeText={(text) => onChange(sanitize ? sanitize(text) : text)}
           onBlur={() => {
             setIsFocused(false);
             onBlur?.();
@@ -76,7 +83,7 @@ const TextAreaField = ({
           editable={!isDisabled}
           multiline
           numberOfLines={numberOfLines}
-          textAlign="auto"
+          textAlign={fieldDirection.input.writingDirection === "rtl" ? "right" : "left"}
           textAlignVertical="top"
           maxLength={maxLength}
         />
@@ -107,6 +114,8 @@ const TextAreaInput = ({
   maxLength,
   helper,
   contentDirection = "localized",
+  labelDirection,
+  sanitize,
   rules,
   style,
   ...props
@@ -120,7 +129,7 @@ const TextAreaInput = ({
       name={name}
       rules={rules}
       render={({
-        field: { onChange, onBlur, value },
+        field: { onChange, onBlur, value, ref },
         fieldState: { error },
       }) => (
         <TextAreaField
@@ -132,10 +141,13 @@ const TextAreaInput = ({
           maxLength={maxLength}
           helper={helper}
           contentDirection={contentDirection}
+          labelDirection={labelDirection}
           value={value}
           error={error}
           onChange={onChange}
           onBlur={onBlur}
+          fieldRef={ref}
+          sanitize={sanitize}
           style={style}
           extraProps={props}
         />
@@ -177,6 +189,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f5f5f5",
   },
   textArea: {
+    padding: 0,
     flex: 1,
     fontSize: 15,
     fontFamily: "Cairo_400Regular",

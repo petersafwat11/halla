@@ -72,7 +72,8 @@ export default function CarouselDots({
             aria-selected={dotRole === "tablist" ? i === idx : undefined}
             className={`${classes.dot}${i === idx ? ` ${classes.dotActive}` : ""}`}
             onClick={() => onChange(i)}
-            aria-label={`${i + 1}`}
+            aria-label={t('carousel.goTo', { number: i + 1 })}
+            aria-current={dotRole !== 'tablist' && i === idx ? 'true' : undefined}
           />
         ))}
       </div>

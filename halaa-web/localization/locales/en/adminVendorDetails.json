@@ -1,4 +1,9 @@
 {
+  "openOriginal": "Open original file",
+  "review": { "title": "Application review", "preferredLanguage": "Preferred language", "adminNotes": "Admin notes", "rejectionReason": "Rejection reason", "approvedAt": "Approval date", "rejectedAt": "Rejection date" },
+  "descriptionFields": { "taglineAr": "Short tagline in Arabic", "taglineEn": "Short tagline in English", "aboutAr": "Detailed description in Arabic", "aboutEn": "Detailed description in English" },
+  "coverage": { "city": "City", "region": "Region", "districts": "Selected districts" },
+  "openDocument": "Open document",
   "loading": {
     "vendorData": "Loading vendor data..."
   },

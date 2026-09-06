@@ -12,13 +12,27 @@
   "confirm": "تأكيد",
   "cancel": "إلغاء",
   "loading": "جاري التحميل...",
+  "selected": "محدد",
+  "showPassword": "إظهار كلمة المرور",
+  "hidePassword": "إخفاء كلمة المرور",
+  "actions": {
+    "edit": "تعديل"
+  },
   "uploadFile": {
-    "dragAndDrop": "اسحب الصور هنا أو انقر للتحديد",
+    "dragAndDrop": "اسحب الملفات هنا أو انقر للتحديد",
     "acceptedFormats": "الصيغ المقبولة",
     "clickToView": "انقر للعرض",
     "delete": "حذف",
     "replace": "تبديل",
-    "kb": "كيلوبايت"
+    "kb": "كيلوبايت",
+    "maxSize": "الحد الأقصى 10 ميجابايت لكل ملف",
+    "maxCount": "حتى {{count}} ملفات",
+    "errors": {
+      "noSvg": "ملفات SVG غير مدعومة",
+      "invalidType": "الصيغ المقبولة: {{formats}}",
+      "fileTooLarge": "حجم الملف يتجاوز الحد الأقصى 10 ميجابايت",
+      "maxFilesExceeded": "الحد الأقصى {{count}} ملفات"
+    }
   },
   "sidebar": {
     "dashboard": "لوحة التحكم",
@@ -206,7 +220,7 @@
     "required": "هذا الحقل مطلوب",
     "passwordMinLength": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
     "passwordMaxLength": "كلمة المرور يجب أن لا تتجاوز 128 حرف",
-    "passwordComplexity": "كلمة المرور تتكون من حروف وأرقام فقط، وبها حرف ورقم على الأقل",
+    "passwordComplexity": "استخدم حرفاً واحداً ورقماً واحداً على الأقل، ويمكن استخدام الرموز",
     "otpInvalid": "رمز التحقق يجب أن يحتوي على أرقام فقط",
     "otpLength": "رمز التحقق يجب أن يكون 6 أرقام"
   },

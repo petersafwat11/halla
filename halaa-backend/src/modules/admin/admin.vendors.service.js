@@ -120,7 +120,6 @@ async function getVendorById(vendorId) {
     nationalIdImage: await signStoredImage(vd.nationalIdImage),
     commercialRecordImage: await signStoredImage(vd.commercialRecordImage),
     profileFile: await signStoredImage(vd.profileFile),
-    cv: await signStoredImage(vd.cv),
     portfolioImages: await signStoredImages(vd.portfolioImages),
     pricePackages: await signStoredImages(vd.pricePackages),
   };
@@ -129,6 +128,7 @@ async function getVendorById(vendorId) {
     ...formatUserResponse(vendor),
     avatar: await signStoredImage(vendor.avatar),
     vendorData: signedVendorData,
+    preferredLanguage: vendor.preferredLanguage,
   };
 }
 
@@ -196,24 +196,33 @@ async function updateVendorStatus(vendorId, vendorStatus, actorId = null) {
     // the vendor needs to receive regardless of in-app delivery, and they
     // intentionally bypass the (removed) vendor notification preferences.
     if (vendor.email) {
+      const lang = vendor.preferredLanguage === 'en' ? 'en' : 'ar';
       const frontendUrl = config.frontendUrl || process.env.FRONTEND_URL || '';
       const brandName = vendor.profile?.vendorData?.brandName || vendor.name;
       const ownerName = vendor.profile?.vendorData?.ownerFullName || vendor.name;
       if (isApproved) {
-        email.send.vendorApproval(vendor.email, {
-          vendorName: ownerName,
-          brandName,
-          status: vendorStatus,
-          dashboardUrl: `${frontendUrl}/ar/vendor-dashboard`,
-        }).catch((err) => logger.error('admin.updateVendorStatus approval email failed', err));
+        email.send.vendorApproval(
+          vendor.email,
+          {
+            vendorName: ownerName,
+            brandName,
+            status: vendorStatus,
+            dashboardUrl: `${frontendUrl}/${lang}/vendor-dashboard`,
+          },
+          lang
+        ).catch((err) => logger.error('admin.updateVendorStatus approval email failed', err));
       } else {
-        email.send.vendorRejection(vendor.email, {
-          vendorName: ownerName,
-          brandName,
-          status: vendorStatus,
-          reapplyUrl: `${frontendUrl}/ar/vendor-onboarding`,
-          supportEmail: config.supportEmail || process.env.SUPPORT_EMAIL || '',
-        }).catch((err) => logger.error('admin.updateVendorStatus rejection email failed', err));
+        email.send.vendorRejection(
+          vendor.email,
+          {
+            vendorName: ownerName,
+            brandName,
+            status: vendorStatus,
+            reapplyUrl: `${frontendUrl}/${lang}/signup-vendor`,
+            supportEmail: config.supportEmail || process.env.SUPPORT_EMAIL || '',
+          },
+          lang
+        ).catch((err) => logger.error('admin.updateVendorStatus rejection email failed', err));
       }
     }
   } else if (vendorStatus === VENDOR_STATUS.SUSPENDED) {

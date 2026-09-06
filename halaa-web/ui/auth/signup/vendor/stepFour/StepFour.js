@@ -4,6 +4,7 @@ import SectionTitle, { StepTitle } from "@/ui/commen/title/SectionTitle";
 import { useTranslation } from "react-i18next";
 import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
 import UploadFile from "@/ui/commen/inputs/uploadFile/UploadFile";
+import { normalizeDigitsOnly } from "@halaa/shared/utils/locale";
 
 const StepFour = ({ goToPreviousStep }) => {
   const { t } = useTranslation("signup");
@@ -21,9 +22,9 @@ const StepFour = ({ goToPreviousStep }) => {
         {/* Commercial Record Section */}
         <div className={styles.section}>
           <SectionTitle
-            title={t(
+            title={`${t(
               "signupForm.vendor.commercialVerification.commercialRecord.title"
-            )}
+            )} *`}
             icon="/svg/auth/building-1.svg"
             height={24}
             width={24}
@@ -32,6 +33,7 @@ const StepFour = ({ goToPreviousStep }) => {
             name="commercialVerification.commercialRecordImage"
             multiple={false}
             acceptImages={true}
+            acceptDocuments={true}
             placeholder={t(
               "signupForm.vendor.commercialVerification.commercialRecord.placeholder"
             )}
@@ -43,14 +45,16 @@ const StepFour = ({ goToPreviousStep }) => {
                 "signupForm.vendor.commercialVerification.commercialRecord.label",
                 "رقم السجل التجارى"
               )}
-              placeholder={t(
-                "signupForm.vendor.commercialVerification.commercialRecord.numberPlaceholder",
-                "أدخل رقم السجل التجارى"
-              )}
+              placeholder="1xxxxxxxxx"
               type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              direction="ltr"
+              maxLength={10}
+              sanitize={normalizeDigitsOnly}
               required
               iconPath="auth/document.svg"
-              hint={t(
+              hintMessage={t(
                 "signupForm.vendor.commercialVerification.commercialRecord.hint",
                 "يجب أن يكون 10 أرقام (مثال: 1234567890)"
               )}
@@ -61,10 +65,10 @@ const StepFour = ({ goToPreviousStep }) => {
         {/* National ID Section */}
         <div className={styles.section}>
           <SectionTitle
-            title={t(
+            title={`${t(
               "signupForm.vendor.commercialVerification.nationalId.title",
               "صورة الهوية الوطنية"
-            )}
+            )} *`}
             icon="/svg/auth/document.svg"
             height={24}
             width={24}
@@ -73,6 +77,7 @@ const StepFour = ({ goToPreviousStep }) => {
             name="commercialVerification.nationalIdImage"
             multiple={false}
             acceptImages={true}
+            acceptDocuments={true}
             placeholder={t(
               "signupForm.vendor.commercialVerification.nationalId.imagePlaceholder",
               "ارفع صورة الهوية الوطنية"
@@ -85,14 +90,16 @@ const StepFour = ({ goToPreviousStep }) => {
                 "signupForm.vendor.commercialVerification.nationalId.label",
                 "رقم الهوية الوطنية"
               )}
-              placeholder={t(
-                "signupForm.vendor.commercialVerification.nationalId.placeholder",
-                "أدخل رقم الهوية الوطنية"
-              )}
+              placeholder="1xxxxxxxxx"
               type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              direction="ltr"
+              maxLength={10}
+              sanitize={normalizeDigitsOnly}
               required
               iconPath="auth/document.svg"
-              hint={t(
+              hintMessage={t(
                 "signupForm.vendor.commercialVerification.nationalId.hint",
                 "يجب أن يكون 10 أرقام ويبدأ بـ 1 (مواطن) أو 2 (مقيم)"
               )}

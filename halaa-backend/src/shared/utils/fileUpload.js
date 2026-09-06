@@ -20,8 +20,12 @@ module.exports = {
   getFileUrl: s3Upload.getFileUrl,
   getRelativeFilePath: s3Upload.getFileUrl,
   deleteFile: s3Upload.deleteFile,
+  cleanupUploadedFiles: s3Upload.cleanupUploadedFiles,
   processVendorFiles: s3Upload.processUploadedFiles,
   processUploadedFiles: s3Upload.processUploadedFiles,
+
+  // File filters
+  vendorSignupFilter: s3Upload.vendorSignupFilter,
 
   // Pre-configured upload middlewares
   uploadLogo: s3Upload.uploadLogo,

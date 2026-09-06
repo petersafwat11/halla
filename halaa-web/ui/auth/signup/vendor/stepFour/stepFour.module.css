@@ -6,7 +6,6 @@
   margin: 0;
   padding: 0;
 }
-
 .sections {
   display: flex;
   flex-direction: column;
@@ -96,53 +95,6 @@
   display: flex;
   flex-direction: column;
   gap: 1.6rem;
-}
-
-.refund_policy {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-.policy_text {
-  padding: 1.6rem;
-  border-radius: 0.8rem;
-  background: #fafafa;
-  border: 1px solid #e5e5e5;
-}
-
-.policy_text p {
-  color: var(--color-title);
-  font-size: clamp(1.3rem, 2.5vw, 1.4rem);
-  font-weight: 400;
-  line-height: 1.43;
-  letter-spacing: 0.014px;
-  text-align: right;
-  margin: 0;
-}
-
-.terms_checkbox {
-  display: flex;
-  align-items: center;
-  gap: 1.2rem;
-}
-
-.checkbox {
-  width: 2.4rem;
-  height: 2.4rem;
-  accent-color: #c28e5c;
-  cursor: pointer;
-}
-
-.checkbox_label {
-  color: var(--color-title);
-  font-size: clamp(1.4rem, 2.8vw, 1.6rem);
-  font-weight: 500;
-  line-height: 1.5;
-  letter-spacing: 0.08px;
-  text-align: right;
-  cursor: pointer;
-  flex: 1;
 }
 
 @media screen and (max-width: 899px) {

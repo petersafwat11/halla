@@ -11,6 +11,20 @@
   letter-spacing: 0.014px;
   text-align: start;
 }
+.label[dir="ltr"] {
+  text-align: left;
+}
+.label[dir="rtl"] {
+  text-align: right;
+}
+.input[dir="ltr"],
+.input_error[dir="ltr"] {
+  text-align: left;
+}
+.input[dir="rtl"],
+.input_error[dir="rtl"] {
+  text-align: right;
+}
 .input_container {
   position: relative;
   width: 100%;
@@ -21,7 +35,7 @@
 .prefix_text {
   border-color: #b5b0b0;
   position: absolute;
-  left: 0;
+  inset-inline-start: 0;
 
   font-size: 1.6rem;
   font-weight: 400;
@@ -32,14 +46,17 @@
   display: flex;
   align-items: center;
   padding: 0 1.2rem;
-  border-radius: 1.2rem 0 0 1.2rem;
-  border-right: 1.5px solid #dfdfdf;
+  border-start-start-radius: 1.2rem;
+  border-end-start-radius: 1.2rem;
+  border-inline-end: 1.5px solid #dfdfdf;
 }
 
 .input,
 .input_error {
   display: flex;
-  padding: 1.2rem 1.2rem 1.2rem 9rem;
+  padding: 1.2rem;
+  box-sizing: border-box;
+  min-width: 0;
   justify-content: center;
   align-items: center;
   border-radius: 1.2rem;
@@ -54,7 +71,10 @@
   min-height: 10rem;
 }
 .input_with_prefix {
-  padding-left: 9rem;
+  padding-inline-start: 9rem;
+}
+.input_with_icon {
+  padding-inline-end: 4.4rem;
 }
 .input_error {
   border: 1.5px solid #c0392b;
@@ -103,9 +123,10 @@
 
 .icon {
   position: absolute;
-  right: 1.2rem;
-  top: 50%;
-  transform: translateY(-50%);
+  inset-inline-end: 1.2rem;
+  top: 1.2rem;
+  pointer-events: none;
+  color: #c18e59;
 }
 .icon_2 {
   position: absolute;

@@ -1,0 +1,26 @@
+.skipLink {
+  position: fixed;
+  inset-block-start: 8px;
+  inset-inline-start: 8px;
+  z-index: 10000;
+  padding: 12px 20px;
+  background: var(--color-secondary-700);
+  color: white;
+  font-size: 1.6rem;
+  transform: translateY(-200%);
+}
+.skipLink:focus { transform: translateY(0); }
+.landing section[id] { scroll-margin-top: 100px; }
+.landing :is(a, button, summary, input, [tabindex]):focus-visible {
+  outline: 3px solid var(--color-secondary-700);
+  outline-offset: 4px;
+}
+.landing {
+  /* Keep brand fills inherited; readable text must not recolor buttons/nav. */
+  --landing-accent-text: #805b3a;
+  --color-secondary-300: #71665d;
+  --color-accent-500: #71665d;
+  --color-accent-300: #71665d;
+  --plan-badge-text: #3a3028;
+  --vendor-muted-text: #656565;
+}
