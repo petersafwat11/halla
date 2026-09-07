@@ -1,12 +1,12 @@
 # EAS Build Ignore Configuration for Halaa Monorepo
 
-# Monorepo Workspaces: Ignore implementation of non-mobile workspaces
+# Monorepo Workspaces: Exclude implementation of non-mobile workspaces
 # NOTE: package.json files MUST be kept for npm workspaces resolution!
-halaa-web/*
-!halaa-web/package.json
+/halaa-web/*
+!/halaa-web/package.json
 
-halaa-backend/*
-!halaa-backend/package.json
+/halaa-backend/*
+!/halaa-backend/package.json
 
 # Build outputs & caches
 **/.next/
@@ -28,29 +28,29 @@ halaa-backend/*
 **/.pnp.js
 
 # Git & CI/CD
+.git
 .git/
-.github/
-.claude/
-.playwright-mcp/
-deploy/
-scripts/
-Caddyfile
-docker-compose.yml
-deploy-*.sh
+**/.git
+**/.git/**
+/.github/
+/.claude/
+/.playwright-mcp/
+/deploy/
+/scripts/
+/Caddyfile
+/docker-compose.yml
+/deploy-*.sh
 
 # Documentation, reports & media at root
-docs/
-*.pdf
-*.docx
-*.jpeg
-*.jpg
-*.png
-# Allow images in halaa-mobile and shared
-!halaa-mobile/**
-!shared/**
+/docs/
+/*.pdf
+/*.docx
+/*.jpeg
+/*.jpg
+/*.png
 
-# Raw design & templates
-template-cards/
+# Raw design & templates at root
+/template-cards/
 *.psd
 *.ai
 *.sketch
@@ -67,13 +67,13 @@ template-cards/
 **/*.orig
 
 # Mobile non-build files
-halaa-mobile/__tests__/
-halaa-mobile/.maestro/
-halaa-mobile/RTL_ALIGNMENT_REPORT.md
-halaa-mobile/IAP_SETUP.md
+/halaa-mobile/__tests__/
+/halaa-mobile/.maestro/
+/halaa-mobile/RTL_ALIGNMENT_REPORT.md
+/halaa-mobile/IAP_SETUP.md
 
 # Shared test files
-shared/test/
+/shared/test/
 
 # Logs & temp
 **/*.log*
@@ -84,4 +84,4 @@ Thumbs.db
 .vscode/
 
 # Ensure required submission service account is included
-!halaa-mobile/play-service-account.json
+!/halaa-mobile/play-service-account.json

@@ -45,6 +45,9 @@ Thumbs.db
 # Local DB logical backups
 **/_db-backup-*/
 
+# Archive & test artifacts
+.archive*/
+
 # Secrets & credentials (NEVER commit real values — examples only)
 # NOTE: existing tracked copies must be removed with `git rm --cached` and the
 # history purged as part of the credential-rotation step (see
