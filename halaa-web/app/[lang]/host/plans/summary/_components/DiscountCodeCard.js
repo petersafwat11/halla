@@ -2,6 +2,8 @@
 import React from "react";
 import { FaTag, FaTimes } from "react-icons/fa";
 import styles from "../summary.module.css";
+import { useTranslation } from "react-i18next";
+import MoneyAmount from "@/ui/commen/MoneyAmount/MoneyAmount";
 
 const DiscountCodeCard = ({
   discountCode,
@@ -15,6 +17,7 @@ const DiscountCodeCard = ({
   errorMessage,
   t,
 }) => {
+  const { i18n } = useTranslation("plans");
   return (
     <div className={styles.card}>
       <div className={styles.cardHeader}>
@@ -56,9 +59,13 @@ const DiscountCodeCard = ({
         </div>
         {applied && (
           <p className={styles.discountSuccess}>
-            {t("summary.discount.success", {
+            {t("summary.discount.successBeforeAmount", {
               code: appliedCode,
-              amount: typeof amount === "number" ? amount.toFixed(2).replace(/\.00$/, "") : amount,
+              defaultValue: i18n.language === "ar" ? `✓ كود "${appliedCode}" — خصم` : `✓ Code "${appliedCode}" —`,
+            })}
+            {" "}<MoneyAmount amount={amount} locale={i18n.language} />{" "}
+            {t("summary.discount.successAfterAmount", {
+              defaultValue: i18n.language === "ar" ? "" : "off",
             })}
           </p>
         )}

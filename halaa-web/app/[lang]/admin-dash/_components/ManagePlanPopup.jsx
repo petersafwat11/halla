@@ -16,6 +16,7 @@ import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
 import { getLocalized, formatDate } from "@halaa/shared/utils/locale";
 import styles from "./ManagePlanPopup.module.css";
+import MoneyAmount from "@/ui/commen/MoneyAmount/MoneyAmount";
 
 const INVITE_PRESETS = [10, 25, 50, 100, 250, 500];
 
@@ -36,14 +37,12 @@ const getRemainingInvites = (subscription) => {
   return "-";
 };
 
-const formatPlanMeta = (plan, t) => {
-  const price = plan?.price ?? plan?.pricing?.oneTime ?? 0;
-  const currency = plan?.currency || "SAR";
+const formatPlanInviteMeta = (plan, t) => {
   const totalInvites =
     plan?.invitePool === null || plan?.invitePool === undefined
       ? t("managePlan.unlimited", "Unlimited")
       : (plan.invitePool || 0) + (plan.compensationPool || 0);
-  return `${price} ${currency} - ${totalInvites} ${t("managePlan.invites", "invites")}`;
+  return `${totalInvites} ${t("managePlan.invites", "invites")}`;
 };
 
 export default function ManagePlanPopup({
@@ -306,7 +305,7 @@ export default function ManagePlanPopup({
                     <option value="">{t("managePlan.selectPlan", "Select a plan")}</option>
                     {plans.map((plan) => (
                       <option key={plan.code} value={plan.code}>
-                        {getLocalized(plan, "name", i18n.language) || plan.code} - {formatPlanMeta(plan, t)}
+                        {getLocalized(plan, "name", i18n.language) || plan.code} - {formatPlanInviteMeta(plan, t)}
                       </option>
                     ))}
                   </select>
@@ -327,7 +326,14 @@ export default function ManagePlanPopup({
                 {selectedPlan && (
                   <div className={styles.planPreview}>
                     <strong>{getLocalized(selectedPlan, "name", i18n.language) || selectedPlan.code}</strong>
-                    <span>{formatPlanMeta(selectedPlan, t)}</span>
+                    <span>
+                      <MoneyAmount
+                        amount={selectedPlan?.price ?? selectedPlan?.pricing?.oneTime ?? 0}
+                        currency={selectedPlan?.currency || "SAR"}
+                        locale={i18n.language}
+                      />
+                      {" — "}{formatPlanInviteMeta(selectedPlan, t)}
+                    </span>
                   </div>
                 )}
 

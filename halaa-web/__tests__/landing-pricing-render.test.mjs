@@ -37,6 +37,9 @@ test('actual pricing first-render handles unavailable, expired, empty, and parti
     if (name.includes('PlanCard')) return function MockPlanCard({ matchedPlan }) {
       return React.createElement('div', { 'data-card': matchedPlan?.code }, matchedPlan?.pricing?.oneTime);
     };
+    if (name.includes('MoneyAmount')) return function MockMoneyAmount({ amount }) {
+      return React.createElement('span', { 'data-money': true }, locale.formatNumber(amount, i18n.language));
+    };
     if (name.includes('PlanDescription') || name.includes('SarIcon') || name.includes('CarouselDots')) return () => null;
     return require(name);
   };

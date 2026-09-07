@@ -119,7 +119,7 @@
   "compensationRow_few": "{{count}} compensation invites ({{percent}}% of {{base}})",
   "compensationRow_many": "{{count}} compensation invites ({{percent}}% of {{base}})",
   "compensationRow_other": "{{count}} compensation invites ({{percent}}% of {{base}})",
-  "setupFeeRow": "One-time setup fee: {{amount}} SAR",
+  "setupFeeLabel": "One-time setup fee:",
   "freeInvitesRow": "Includes {{count}} free invitations during the subscription period",
   "whatsappTemplates": "{{count}} custom WhatsApp templates",
   "compensation": { "title": "Free Compensation Invites", "invites": "invites" },
@@ -222,7 +222,8 @@
       "placeholder": "Enter discount code",
       "apply": "Apply",
       "remove": "Remove",
-      "success": "✓ Code \"{{code}}\" — {{amount}} SAR off",
+      "successBeforeAmount": "✓ Code \"{{code}}\" —",
+      "successAfterAmount": "off",
       "invalidDefault": "Invalid discount code",
       "networkError": "Could not verify code. Please try again"
     },

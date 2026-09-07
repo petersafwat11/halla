@@ -3,15 +3,10 @@ import { useTranslation } from "react-i18next";
 import { useAdminPaymentDetail } from "@/hooks/admin";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import {
-  formatCurrency as sharedFormatCurrency,
   formatDateTime as sharedFormatDateTime,
 } from "@halaa/shared/utils/locale";
+import MoneyAmount from "@/ui/commen/MoneyAmount/MoneyAmount";
 import styles from "./AdminPaymentsClient.module.css";
-
-const formatCurrency = (amount, currency = "SAR", isArabic) => {
-  if (amount === undefined || amount === null) return "—";
-  return sharedFormatCurrency(amount || 0, isArabic ? "ar" : "en", currency) || "—";
-};
 
 const formatDateTime = (dateStr, isArabic) => {
   if (!dateStr) return "—";
@@ -55,15 +50,11 @@ export default function PaymentDetailModal({ paymentId, onClose }) {
                 {t("detail.amount", "Amount")}
               </span>
               <span className={styles.detailValue}>
-                {formatCurrency(payment.amount, payment.currency, isArabic)}
+                <MoneyAmount amount={payment.amount} currency={payment.currency || "SAR"} locale={isArabic ? "ar" : "en"} />
                 {payment.refundedAmount > 0 && (
                   <span className={styles.refundedTag}>
                     ({t("table.refundedTag", "refunded")}{" "}
-                    {formatCurrency(
-                      payment.refundedAmount,
-                      payment.currency,
-                      isArabic
-                    )}
+                    <MoneyAmount amount={payment.refundedAmount} currency={payment.currency || "SAR"} locale={isArabic ? "ar" : "en"} />
                     )
                   </span>
                 )}
@@ -142,7 +133,7 @@ export default function PaymentDetailModal({ paymentId, onClose }) {
                     className={styles.refundRow}
                   >
                     <span>
-                      {formatCurrency(r.amount, payment.currency, isArabic)}
+                      <MoneyAmount amount={r.amount} currency={payment.currency || "SAR"} locale={isArabic ? "ar" : "en"} />
                       {r.reason ? ` — ${r.reason}` : ""}
                     </span>
                     <span className={styles.detailMono}>

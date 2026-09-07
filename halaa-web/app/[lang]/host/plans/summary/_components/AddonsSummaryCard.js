@@ -1,9 +1,9 @@
 "use client";
 import React from "react";
-import { formatSar } from "@halaa/shared/utils";
+import MoneyAmount from "@/ui/commen/MoneyAmount/MoneyAmount";
 import styles from "../summary.module.css";
 
-const AddonsSummaryCard = ({ addonItems = [], currency = "SAR", t }) => {
+const AddonsSummaryCard = ({ addonItems = [], currency = "SAR", locale = "ar", t }) => {
   if (!addonItems.length) return null;
 
   const labelFor = (item) => {
@@ -17,8 +17,6 @@ const AddonsSummaryCard = ({ addonItems = [], currency = "SAR", t }) => {
     return item.label || type;
   };
 
-  const currencyLabel = currency === "SAR" ? t("common.currency.sar") : currency;
-
   return (
     <>
       {addonItems.map((item, idx) => {
@@ -27,7 +25,7 @@ const AddonsSummaryCard = ({ addonItems = [], currency = "SAR", t }) => {
           <div key={idx} className={styles.summaryRow}>
             <span className={styles.summaryLabel}>{labelFor(item)}</span>
             <span className={styles.summaryValue}>
-              {formatSar(amount)} {currencyLabel}
+              <MoneyAmount amount={amount} currency={currency} locale={locale} />
             </span>
           </div>
         );

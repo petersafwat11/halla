@@ -9,6 +9,7 @@ import ToggleInput from "@/ui/commen/inputs/toggelInput/ToggelInput";
 import CheckBoxItems from "@/ui/commen/inputs/checkboxItems/CheckBoxItems";
 import { PLAN_TYPES } from "./discountsFormUtils";
 import styles from "./DiscountsFormPopup.module.css";
+import SarIcon from "@/ui/commen/SarIcon/SarIcon";
 
 export default function DiscountsFormFields({ editingDiscount }) {
   const { t } = useTranslation("adminDiscounts");
@@ -19,7 +20,7 @@ export default function DiscountsFormFields({ editingDiscount }) {
 
   const discountTypeOptions = [
     { value: "percentage", label: t("discounts.type.percentage", "نسبة مئوية (%)") },
-    { value: "fixed", label: t("discounts.type.fixed", "مبلغ ثابت (ر.س)") },
+    { value: "fixed", label: t("discounts.type.fixed", "مبلغ ثابت") },
   ];
 
   const planTypeOptions = PLAN_TYPES.map((value) => ({
@@ -73,8 +74,9 @@ export default function DiscountsFormFields({ editingDiscount }) {
           label={
             discountType === "percentage"
               ? t("discounts.fields.percent", "النسبة (%) *")
-              : t("discounts.fields.amount", "المبلغ (ر.س) *")
+              : t("discounts.fields.amount", "المبلغ *")
           }
+          prefixText={discountType === "fixed" ? <SarIcon size="1em" /> : null}
           type="number"
           name="value"
           required
@@ -91,7 +93,8 @@ export default function DiscountsFormFields({ editingDiscount }) {
 
       <div className={styles.field}>
         <InputGroup
-          label={t("discounts.fields.minAmount", "الحد الأدنى للمبلغ (ر.س)")}
+          label={t("discounts.fields.minAmount", "الحد الأدنى للمبلغ")}
+          prefixText={<SarIcon size="1em" />}
           type="number"
           name="minimumAmount"
         />

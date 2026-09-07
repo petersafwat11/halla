@@ -10,6 +10,7 @@ import {
   getBillingType,
 } from "@halaa/shared/constants/plans";
 import styles from "../summary.module.css";
+import MoneyAmount from "@/ui/commen/MoneyAmount/MoneyAmount";
 
 const PlanSummaryCard = ({
   selectedPlan,
@@ -88,10 +89,12 @@ const PlanSummaryCard = ({
             </p>
           </div>
           <div className={styles.planPrice}>
-            <span className={styles.priceAmount}>{planPrice}</span>
-            <span className={styles.priceCurrency}>
-              {t("common.currency.sar")}
-            </span>
+            <MoneyAmount
+              amount={planPrice}
+              locale={i18n?.language || "ar"}
+              className={styles.priceAmount}
+              symbolSize="1em"
+            />
           </div>
         </div>
 

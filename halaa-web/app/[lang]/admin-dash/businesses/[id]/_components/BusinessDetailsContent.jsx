@@ -26,6 +26,7 @@ import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import { getStatusVisual } from "@/utils/statusColors";
 import { formatDate } from "@halaa/shared/utils/locale";
 import styles from "./BusinessDetailsContent.module.css";
+import MoneyAmount from "@/ui/commen/MoneyAmount/MoneyAmount";
 
 const initials = (name) =>
   (name || "?").split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase()).join("");
@@ -283,7 +284,7 @@ export default function BusinessDetailsContent({ businessId }) {
                   <div className={styles.subItem}>
                     <span className={styles.subLabel}>{t("details.setupFee")}</span>
                     <span className={styles.subValue}>
-                      {setupFee.amount != null ? setupFee.amount : "—"}
+                      <MoneyAmount amount={setupFee.amount} currency={setupFee.currency || "SAR"} locale={locale} />
                     </span>
                   </div>
                 )}
@@ -340,9 +341,7 @@ export default function BusinessDetailsContent({ businessId }) {
                           </span>
                         </td>
                         <td>
-                          {a.total != null
-                            ? `${a.total}${a.currency ? ` ${a.currency}` : ""}`
-                            : "—"}
+                          <MoneyAmount amount={a.total} currency={a.currency || "SAR"} locale={locale} />
                         </td>
                         <td>{fmtDate(a.expiresAt, locale)}</td>
                         <td>{fmtDate(a.createdAt, locale)}</td>

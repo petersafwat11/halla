@@ -4,6 +4,7 @@ import { Controller, useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
 import styles from "../EditPlanPopup.module.css";
+import SarIcon from "@/ui/commen/SarIcon/SarIcon";
 
 const PlanFeatureNumericsSection = () => {
   const { t } = useTranslation("admin");
@@ -54,6 +55,7 @@ const PlanFeatureNumericsSection = () => {
               error={!!errors.setupFeeAmount}
               type="number"
               name="setupFeeAmount"
+              prefixText={<SarIcon size="1em" />}
               value={field.value ?? ""}
               onChange={(e) => {
                 const v = e.target.value;

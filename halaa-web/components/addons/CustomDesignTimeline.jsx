@@ -12,7 +12,8 @@ import {
   SUPPORT_SOURCE,
   buildSupportRequest,
 } from "@halaa/shared/support";
-import { formatDateTime, formatCurrency } from "@halaa/shared/utils/locale";
+import { formatDateTime } from "@halaa/shared/utils/locale";
+import MoneyAmount from "@/ui/commen/MoneyAmount/MoneyAmount";
 import styles from "./CustomDesignTimeline.module.css";
 
 const STATUS_CLASS = {
@@ -113,7 +114,11 @@ export default function CustomDesignTimeline({ addon }) {
           </span>
           {addon.price != null && (
             <span className={styles.priceTag}>
-              {formatCurrency(addon.price, locale, addon.currency || "SAR")}
+              <MoneyAmount
+                amount={addon.price}
+                currency={addon.currency || "SAR"}
+                locale={locale}
+              />
             </span>
           )}
         </div>

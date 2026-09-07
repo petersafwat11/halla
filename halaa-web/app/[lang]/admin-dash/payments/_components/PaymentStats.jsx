@@ -8,10 +8,7 @@ import { normalizePaymentsFilters } from "@/utils/filterNormalizer";
 import StatsCards from "@/ui/host/main-page/StatsCards";
 import { FaMoneyBillWave, FaCheckCircle, FaClock, FaTimesCircle } from "react-icons/fa";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
-import { formatCurrency as sharedFormatCurrency } from "@halaa/shared/utils/locale";
-
-const formatCurrency = (amount, isArabic, currency = "SAR") =>
-  sharedFormatCurrency(amount || 0, isArabic ? "ar" : "en", currency);
+import MoneyAmount from "@/ui/commen/MoneyAmount/MoneyAmount";
 
 export default function PaymentStats() {
   const { t, i18n } = useTranslation("adminPayments");
@@ -29,7 +26,7 @@ export default function PaymentStats() {
         src: <FaMoneyBillWave style={{ color: "#2a8c5b", fontSize: "2.4rem" }} />,
         alt: "total-revenue",
         title: t("stats.currentMonthRevenue", "Total Revenue"),
-        value: formatCurrency(stats.totalRevenue, isArabic),
+        value: <MoneyAmount amount={stats.totalRevenue || 0} locale={isArabic ? "ar" : "en"} />,
         subtitle: t("dateRange.all", "All"),
       },
       {

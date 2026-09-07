@@ -4,20 +4,15 @@ import styles from "./pricingSection.module.css";
 import { useTranslation } from "react-i18next";
 import { useLandingPlans } from "@/hooks/plans";
 import PlanDescription from "@/ui/plans/PlanDescription/PlanDescription";
-import SarIcon from "@/ui/commen/SarIcon/SarIcon";
+import MoneyAmount from "@/ui/commen/MoneyAmount/MoneyAmount";
 import PlanCard from "@/ui/plans/PlanCard/PlanCard";
 import useCarouselSnap from "../_shared/useCarouselSnap";
 import CarouselDots from "../_shared/CarouselDots";
-import { formatNumber } from "@halaa/shared/utils/locale";
 import { safeJsonLd } from '@halaa/shared/brand';
 import { buildLandingSchema, planOffers } from '../landingSchema';
 import { planPrice, usablePlanSnapshot, PLAN_REFRESH_SECONDS } from '../landingPlansData';
 
 const WA_LINK = "https://wa.me/966552619282";
-
-const formatPrice = (n, l = "ar") => formatNumber(n || 0, l);
-
-const SarSymbol = () => <SarIcon size="1.5rem" />;
 
 const WaIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"
@@ -45,7 +40,7 @@ export default function PricingSection({ lang = "ar", initialPlans = null }) {
 
   const [now, setNow] = useState(() => Date.now());
   const setupFeeLine = (plan) => plan?.setupFeeAmount > 0
-    ? <p className={styles.prCardTagline}>{t('pricing.setupFeeRow', { amount: formatNumber(plan.setupFeeAmount, lang) })}</p>
+    ? <p className={styles.prCardTagline}>{t('pricing.setupFeeLabel', { defaultValue: lang === 'ar' ? 'رسوم تأسيس لمرة واحدة:' : 'One-time setup fee:' })} <MoneyAmount amount={plan.setupFeeAmount} locale={lang} /></p>
     : null;
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 30000);
@@ -354,8 +349,7 @@ export default function PricingSection({ lang = "ar", initialPlans = null }) {
           <div className={styles.prHostCard}>
             <div className={styles.prHostCardTop}>
               <div className={styles.prHostPrice}>
-                <span className={styles.prHostPriceNum}>{formatPrice(planPrice(currentBizEventPlan), lang)}</span>
-                <SarSymbol />
+                <MoneyAmount amount={planPrice(currentBizEventPlan)} locale={lang} className={styles.prHostPriceNum} symbolSize="1.5rem" />
               </div>
               {getTagline(currentBizEventPlan) ? (
                 <p className={styles.prCardTagline}>{getTagline(currentBizEventPlan)}</p>
@@ -404,8 +398,7 @@ export default function PricingSection({ lang = "ar", initialPlans = null }) {
           <div className={styles.prHostCard}>
             <div className={styles.prHostCardTop}>
               <div className={styles.prHostPrice}>
-                <span className={styles.prHostPriceNum}>{formatPrice(planPrice(bizQuarterlyPlan), lang)}</span>
-                <SarSymbol />
+                <MoneyAmount amount={planPrice(bizQuarterlyPlan)} locale={lang} className={styles.prHostPriceNum} symbolSize="1.5rem" />
               </div>
               {getTagline(bizQuarterlyPlan) ? (
                 <p className={styles.prCardTagline}>{getTagline(bizQuarterlyPlan)}</p>
@@ -430,8 +423,7 @@ export default function PricingSection({ lang = "ar", initialPlans = null }) {
           <div className={styles.prHostCard}>
             <div className={styles.prHostCardTop}>
               <div className={styles.prHostPrice}>
-                <span className={styles.prHostPriceNum}>{formatPrice(planPrice(bizAnnualPlan), lang)}</span>
-                <SarSymbol />
+                <MoneyAmount amount={planPrice(bizAnnualPlan)} locale={lang} className={styles.prHostPriceNum} symbolSize="1.5rem" />
               </div>
               {getTagline(bizAnnualPlan) ? (
                 <p className={styles.prCardTagline}>{getTagline(bizAnnualPlan)}</p>

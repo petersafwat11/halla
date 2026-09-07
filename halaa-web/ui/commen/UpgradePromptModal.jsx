@@ -3,6 +3,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import styles from "./UpgradePromptModal.module.css";
 import useLanguageChange from "@/hooks/UseLanguageChange";
+import MoneyAmount from "@/ui/commen/MoneyAmount/MoneyAmount";
 
 /**
  * UpgradePromptModal Component
@@ -77,7 +78,7 @@ const UpgradePromptModal = ({
           </div>
           <div className={styles.plan_name}>{currentPlan.name}</div>
           <div className={styles.plan_price}>
-            {currentPlan.price} {currentLocale === "ar" ? "ر.س" : "SAR"}
+            <MoneyAmount amount={currentPlan.price} locale={currentLocale} />
             <span className={styles.price_period}>
               /{currentLocale === "ar" ? "شهر" : "month"}
             </span>
@@ -139,7 +140,7 @@ const UpgradePromptModal = ({
           </div>
           <div className={styles.plan_name}>{suggestedPlan.name}</div>
           <div className={styles.plan_price}>
-            {suggestedPlan.price} {currentLocale === "ar" ? "ر.س" : "SAR"}
+            <MoneyAmount amount={suggestedPlan.price} locale={currentLocale} />
             <span className={styles.price_period}>
               /{currentLocale === "ar" ? "شهر" : "month"}
             </span>

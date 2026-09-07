@@ -12,6 +12,7 @@ import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import { formatDateTime } from "@halaa/shared/utils/locale";
+import MoneyAmount from "@/ui/commen/MoneyAmount/MoneyAmount";
 
 const PaymentsClient = () => {
   const { t, i18n } = useTranslation("hostPayments");
@@ -69,10 +70,14 @@ const PaymentsClient = () => {
   const tableData = payments.map((item) => ({
     id: item.id,
     service: item.service,
-    amount:
-      item.refundedAmount && item.refundedAmount > 0
-        ? `${item.amount} ${item.currency} (- ${item.refundedAmount})`
-        : `${item.amount} ${item.currency}`,
+    amount: (
+      <span>
+        <MoneyAmount amount={item.amount} currency={item.currency || "SAR"} locale={i18n.language} />
+        {item.refundedAmount > 0 ? (
+          <> (- <MoneyAmount amount={item.refundedAmount} currency={item.currency || "SAR"} locale={i18n.language} />)</>
+        ) : null}
+      </span>
+    ),
     method: item.paymentMethod
       ? `${t(`table.method.${item.paymentMethod}`, item.paymentMethod)}${
           item.paymentMethodLast4 ? ` •••• ${item.paymentMethodLast4}` : ""

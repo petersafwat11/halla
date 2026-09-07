@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { FaPaperPlane, FaPalette, FaCheck, FaTimes, FaInfoCircle } from "react-icons/fa";
 import { useAvailableAddons } from "@/hooks/addons";
 import styles from "./AddonsSection.module.css";
+import MoneyAmount from "@/ui/commen/MoneyAmount/MoneyAmount";
 
 /**
  * Addon picker. Selections are bubbled up via `onAddonsChange` — purchases
@@ -123,6 +124,7 @@ const AddonsSection = ({ onAddonsChange }) => {
           description={t("addons.extraInvites.description")}
           isActive={extraInvites.length > 0}
           activePrice={extraInvites.length > 0 ? extraInvitesTotal : null}
+          locale={i18n.language}
           t={t}
         >
           <div className={styles.tierGrid}>
@@ -133,7 +135,7 @@ const AddonsSection = ({ onAddonsChange }) => {
                 onClick={() => toggleInv(tier)}
                 quantity={tier.quantity}
                 price={tier.price}
-                t={t}
+                locale={i18n.language}
               />
             ))}
           </div>
@@ -160,6 +162,7 @@ const AddonsSection = ({ onAddonsChange }) => {
         description={t("addons.designTemplate.description")}
         isActive={!!designTemplate}
         activePrice={designTemplate?.price}
+        locale={i18n.language}
         t={t}
       >
         <div className={styles.designList}>
@@ -182,8 +185,7 @@ const AddonsSection = ({ onAddonsChange }) => {
                 </span>
                 <span className={styles.designName}>{label}</span>
                 <span className={styles.designPrice}>
-                  {tier.price}
-                  <small>{t("common.currency.sar")}</small>
+                  <MoneyAmount amount={tier.price} locale={i18n.language} />
                 </span>
               </button>
             );
@@ -195,6 +197,7 @@ const AddonsSection = ({ onAddonsChange }) => {
         t={t}
         selectedCount={selectedCount}
         total={total}
+        locale={i18n.language}
         onClear={clearAll}
       />
     </section>
@@ -212,7 +215,7 @@ const SectionHeader = ({ t }) => (
 
 // Selected count + running total, shown at the bottom of the section (just
 // above the page's continue button) so the user sees the tally where they act.
-const SummaryBar = ({ t, selectedCount, total, onClear }) =>
+const SummaryBar = ({ t, selectedCount, total, locale, onClear }) =>
   selectedCount > 0 ? (
     <div className={styles.summaryBar}>
       <div className={styles.summaryChip}>
@@ -224,8 +227,7 @@ const SummaryBar = ({ t, selectedCount, total, onClear }) =>
         </span>
         <span className={styles.summaryDivider} aria-hidden="true" />
         <span className={styles.summaryTotal}>
-          {total}
-          <small>{t("common.currency.sar")}</small>
+          <MoneyAmount amount={total} locale={locale} />
         </span>
         {onClear ? (
           <button
@@ -250,6 +252,7 @@ const AddonCard = ({
   activePrice,
   children,
   wide,
+  locale,
   t,
 }) => (
   <article
@@ -264,10 +267,9 @@ const AddonCard = ({
         <p className={styles.cardDesc}>{description}</p>
       </div>
       {isActive && activePrice != null ? (
-        <span className={styles.selectedChip} aria-hidden="true">
+        <span className={styles.selectedChip}>
           <FaCheck />
-          {activePrice}
-          <small>{t("common.currency.sar")}</small>
+          <MoneyAmount amount={activePrice} locale={locale} />
         </span>
       ) : null}
     </header>
@@ -275,7 +277,7 @@ const AddonCard = ({
   </article>
 );
 
-const TierTile = ({ active, onClick, quantity, price, t }) => (
+const TierTile = ({ active, onClick, quantity, price, locale }) => (
   <button
     type="button"
     className={`${styles.tile} ${active ? styles.tileActive : ""}`}
@@ -284,8 +286,7 @@ const TierTile = ({ active, onClick, quantity, price, t }) => (
   >
     <span className={styles.tileQty}>+{quantity}</span>
     <span className={styles.tilePrice}>
-      {price}
-      <small>{t("common.currency.sar")}</small>
+      <MoneyAmount amount={price} locale={locale} />
     </span>
   </button>
 );

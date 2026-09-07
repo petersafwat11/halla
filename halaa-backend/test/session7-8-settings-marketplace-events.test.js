@@ -7,7 +7,7 @@
 const { describe, it, before, after, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
 const mongoose = require('mongoose');
-const { MongoMemoryServer } = require('mongodb-memory-server');
+const { MongoMemoryReplSet } = require('mongodb-memory-server');
 
 // Register Mongoose models
 const User = require('../models/UserModel');
@@ -36,7 +36,10 @@ let mongoServer;
 
 describe('Session 7 & 8: Settings, Marketplace, and Event Lifecycle Cross-Client Suite', () => {
   before(async () => {
-    mongoServer = await MongoMemoryServer.create();
+    // Guest quota writes are transactional. Use a replica set so this
+    // cross-client integration suite exercises the same MongoDB guarantees as
+    // production instead of failing on a standalone test server.
+    mongoServer = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
     const uri = mongoServer.getUri();
     await mongoose.connect(uri);
   });

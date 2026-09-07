@@ -1,6 +1,7 @@
 import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 import styles from "./pieChart.module.css";
 import { useTranslation } from "react-i18next";
+import MoneyAmount from "@/ui/commen/MoneyAmount/MoneyAmount";
 
 const RADIAN = Math.PI / 180;
 const COLORS = ["#C28E5C", "#D6B392"];
@@ -38,7 +39,7 @@ const renderCustomizedLabel = ({
 };
 
 export default function PieChartComponent({ data, title, type = "revenue", colors }) {
-  const { t } = useTranslation("adminDashboard");
+  const { t, i18n } = useTranslation("adminDashboard");
 
   // Transform data based on type
   let chartData = [];
@@ -63,7 +64,7 @@ export default function PieChartComponent({ data, title, type = "revenue", color
     // Build stats items with proper labels
     statsItems = numericEntries.map(([key, value], index) => ({
       label: t(`charts.${key.toLowerCase()}`, key),
-      value: `${value}${data.currency ? ` ${data.currency}` : ""}`,
+      value: <MoneyAmount amount={value} currency={data.currency || "SAR"} locale={i18n.language} />,
       colorIndex: index,
     }));
 
@@ -127,7 +128,11 @@ export default function PieChartComponent({ data, title, type = "revenue", color
     <div className={styles.container}>
       <div className={styles.header}>
         <h3 className={styles.title}>{title || t(`charts.${type}`)}</h3>
-        <p className={styles.totalGuests}>{total}</p>
+        <p className={styles.totalGuests}>
+          {type === "revenue" ? (
+            <MoneyAmount amount={total} currency={data?.currency || "SAR"} locale={i18n.language} />
+          ) : total}
+        </p>
       </div>
       <div className={styles.body}>
         <div className={styles.stats}>

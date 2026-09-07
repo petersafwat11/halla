@@ -19,13 +19,10 @@ import PaymentDetailModal from "./PaymentDetailModal";
 import usePaymentActions from "./usePaymentActions";
 import { getStatusVisual } from "@/utils/statusColors";
 import {
-  formatCurrency as sharedFormatCurrency,
   formatDate as sharedFormatDate,
 } from "@halaa/shared/utils/locale";
+import MoneyAmount from "@/ui/commen/MoneyAmount/MoneyAmount";
 import styles from "./PaymentsTable.module.css";
-
-const formatCurrency = (amount, currency = "SAR", isArabic) =>
-  sharedFormatCurrency(amount || 0, isArabic ? "ar" : "en", currency);
 
 const formatDate = (dateStr, isArabic) =>
   dateStr
@@ -185,7 +182,7 @@ export default function PaymentsTable() {
       if (key === "amount") {
         return (
           <span>
-            {formatCurrency(value, row.currency, isArabic)}
+            <MoneyAmount amount={value} currency={row.currency || "SAR"} locale={isArabic ? "ar" : "en"} />
             {row.refundedAmount > 0 && (
               <span
                 style={{
@@ -195,7 +192,7 @@ export default function PaymentsTable() {
                 }}
               >
                 ({t("table.refundedTag", "refunded")}{" "}
-                {formatCurrency(row.refundedAmount, row.currency, isArabic)})
+                <MoneyAmount amount={row.refundedAmount} currency={row.currency || "SAR"} locale={isArabic ? "ar" : "en"} />)
               </span>
             )}
           </span>

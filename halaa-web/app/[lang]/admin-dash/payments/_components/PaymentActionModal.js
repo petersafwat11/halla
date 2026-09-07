@@ -9,7 +9,7 @@ import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
 import TextArea from "@/ui/commen/inputs/inputGroup/TextArea";
 import Button from "@/ui/commen/button/Button";
-import { formatCurrency } from "@halaa/shared/utils/locale";
+import MoneyAmount from "@/ui/commen/MoneyAmount/MoneyAmount";
 import styles from "./PaymentActionModal.module.css";
 
 const buildSchema = (type, remainingAmount) => {
@@ -44,9 +44,6 @@ const buildSchema = (type, remainingAmount) => {
 
   return base;
 };
-
-const renderCurrency = (amount, currency = "SAR", isArabic = true) =>
-  formatCurrency(amount || 0, isArabic ? "ar" : "en", currency);
 
 export default function PaymentActionModal({
   actionPayment,
@@ -157,7 +154,7 @@ export default function PaymentActionModal({
               {t("detail.amount", "Amount")}
             </span>
             <span className={styles.infoValue}>
-              {renderCurrency(payment.amount, payment.currency, isArabic)}
+              <MoneyAmount amount={payment.amount} currency={payment.currency || "SAR"} locale={isArabic ? "ar" : "en"} />
             </span>
           </div>
           {type === "refund" && payment.refundedAmount > 0 && (
@@ -166,11 +163,7 @@ export default function PaymentActionModal({
                 {t("detail.alreadyRefunded", "Already refunded")}
               </span>
               <span className={styles.infoValue}>
-                {renderCurrency(
-                  payment.refundedAmount,
-                  payment.currency,
-                  isArabic
-                )}
+                <MoneyAmount amount={payment.refundedAmount} currency={payment.currency || "SAR"} locale={isArabic ? "ar" : "en"} />
               </span>
             </div>
           )}
@@ -180,7 +173,7 @@ export default function PaymentActionModal({
                 {t("detail.remaining", "Remaining")}
               </span>
               <span className={styles.infoValue}>
-                {renderCurrency(remainingAmount, payment.currency, isArabic)}
+                <MoneyAmount amount={remainingAmount} currency={payment.currency || "SAR"} locale={isArabic ? "ar" : "en"} />
               </span>
             </div>
           )}

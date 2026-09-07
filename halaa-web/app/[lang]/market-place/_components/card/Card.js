@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, ArrowRight, MapPin, Star } from "lucide-react";
 import styles from "./card.module.css";
+import MoneyAmount from "@/ui/commen/MoneyAmount/MoneyAmount";
 
 const MAX_VISIBLE_TAGS = 3;
 
@@ -81,7 +82,7 @@ const VendorCard = ({ vendor, href }) => {
             <span className={styles.priceLabel}>{vendor.startingPrice ? t("vendor.startsFrom") : ""}</span>
             <span className={styles.price}>
               {vendor.startingPrice
-                ? `${vendor.startingPrice.amount} ${vendor.startingPrice.currency}`
+                ? <MoneyAmount amount={vendor.startingPrice.amount} currency={vendor.startingPrice.currency || "SAR"} locale={i18n.language} />
                 : t("card.priceOnRequest")}
             </span>
           </div>

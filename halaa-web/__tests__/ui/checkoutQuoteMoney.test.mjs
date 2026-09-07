@@ -66,14 +66,14 @@ test("Web UI Code Inspection: Eliminates toFixed(0) truncation in summary subcom
     "DiscountCodeCard must not contain .toFixed(0)"
   );
 
-  // Verify formatSar is imported and used in summary components
+  // Verify the canonical web money renderer preserves halalas and the SAR mark.
   assert.ok(
-    summaryContent.includes("formatSar"),
-    "PaymentSummaryCard must use formatSar"
+    summaryContent.includes("MoneyAmount"),
+    "PaymentSummaryCard must use MoneyAmount"
   );
   assert.ok(
-    proceedContent.includes("formatSar"),
-    "ProceedButton must use formatSar"
+    proceedContent.includes("MoneyAmount"),
+    "ProceedButton must use MoneyAmount"
   );
 });
 

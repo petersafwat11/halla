@@ -119,7 +119,7 @@
   "compensationRow_few": "{{count}} دعوات تعويضية ({{percent}}% من {{base}})",
   "compensationRow_many": "{{count}} دعوة تعويضية ({{percent}}% من {{base}})",
   "compensationRow_other": "{{count}} دعوة تعويضية ({{percent}}% من {{base}})",
-  "setupFeeRow": "رسوم تأسيس لمرة واحدة: {{amount}} ر.س",
+  "setupFeeLabel": "رسوم تأسيس لمرة واحدة:",
   "freeInvitesRow": "يشمل {{count}} دعوة مجانية خلال مدة الاشتراك",
   "whatsappTemplates": "{{count}} قوالب واتساب مخصصة",
   "compensation": { "title": "دعوات تعويضية مجانية", "invites": "دعوة" },
@@ -222,7 +222,8 @@
       "placeholder": "أدخل كود الخصم",
       "apply": "تطبيق",
       "remove": "إزالة",
-      "success": "✓ كود \"{{code}}\" — خصم {{amount}} ر.س",
+      "successBeforeAmount": "✓ كود \"{{code}}\" — خصم",
+      "successAfterAmount": "",
       "invalidDefault": "كود الخصم غير صالح",
       "networkError": "تعذر التحقق من الكود. حاول مرة أخرى"
     },

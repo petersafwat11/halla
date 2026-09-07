@@ -4,7 +4,7 @@ import React, { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { FaLock } from "react-icons/fa";
-import { getLocalized, formatNumber } from "@halaa/shared/utils/locale";
+import { getLocalized } from "@halaa/shared/utils/locale";
 import { validateCardExpiry, checkLuhn, buildCreditCardSource } from "@halaa/shared/utils";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import PaymentMethodSelector from "@/app/[lang]/host/plans/_components/PaymentMethodSelector";
@@ -14,6 +14,7 @@ import {
 } from "@/hooks/business";
 import { toastUtils } from "@/utils/toastUtils";
 import LegalSurfaceLinks from "@/ui/common/LegalSurfaceLinks";
+import MoneyAmount from "@/ui/commen/MoneyAmount/MoneyAmount";
 import styles from "./checkout.module.css";
 
 const PENDING_STATUS = "pending_payment";
@@ -152,7 +153,7 @@ const BusinessCheckoutPage = () => {
   const planName = getLocalized(summary.plan, "name", i18n.language) ||
     summary.plan?.nameEn ||
     summary.plan?.nameAr;
-  const currency = summary.currency || t("currency");
+  const currency = summary.currency || "SAR";
   const lineItems = Array.isArray(summary.lineItems) ? summary.lineItems : [];
 
   return (
@@ -181,7 +182,7 @@ const BusinessCheckoutPage = () => {
                       {item.quantity > 1 ? ` ×${item.quantity}` : ""}
                     </span>
                     <span className={styles.lineValue}>
-                      {formatNumber(Number(item.total), lang || "ar")} {currency}
+                      <MoneyAmount amount={item.total} currency={currency} locale={lang || "ar"} />
                     </span>
                   </div>
                 ))}
@@ -192,7 +193,7 @@ const BusinessCheckoutPage = () => {
                       {t("business.checkout.setupFee")}
                     </span>
                     <span className={styles.lineValue}>
-                      {formatNumber(Number(summary.setupFee), lang || "ar")} {currency}
+                      <MoneyAmount amount={summary.setupFee} currency={currency} locale={lang || "ar"} />
                     </span>
                   </div>
                 )}
@@ -202,7 +203,7 @@ const BusinessCheckoutPage = () => {
                 <div className={`${styles.lineRow} ${styles.totalRow}`}>
                   <span>{t("business.checkout.total")}</span>
                   <span>
-                    {formatNumber(Number(summary.total), lang || "ar")} {currency}
+                    <MoneyAmount amount={summary.total} currency={currency} locale={lang || "ar"} />
                   </span>
                 </div>
               </div>
@@ -231,7 +232,7 @@ const BusinessCheckoutPage = () => {
               <div className={styles.payTotalRow}>
                 <span>{t("business.checkout.total")}</span>
                 <span className={styles.payTotalValue}>
-                  {formatNumber(Number(summary.total), lang || "ar")} {currency}
+                  <MoneyAmount amount={summary.total} currency={currency} locale={lang || "ar"} />
                 </span>
               </div>
               <button

@@ -311,7 +311,7 @@
         "durationDays": { "label": "Duration (days)", "placeholder": "90" },
         "maxHosts": { "label": "Max Hosts", "placeholder": "1", "help": "Toggle to leave uncapped" },
         "whatsAppTemplates": { "label": "WhatsApp Templates", "placeholder": "0", "help": "Number of custom WhatsApp templates (0 / 1 / 3 / 5)" },
-        "setupFeeAmount": { "label": "Setup Fee (SAR)", "placeholder": "0", "help": "One-time fee charged at activation. 1,200 for Business event tiers, 0 otherwise." },
+        "setupFeeAmount": { "label": "Setup Fee", "placeholder": "0", "help": "One-time fee charged at activation. 1,200 for Business event tiers, 0 otherwise." },
         "featureBulletsAr": { "label": "Feature Bullets (Arabic)", "placeholder": "One bullet per line", "help": "Lines rendered verbatim as feature bullets in Arabic" },
         "featureBulletsEn": { "label": "Feature Bullets (English)", "placeholder": "One bullet per line", "help": "Lines rendered verbatim as feature bullets in English" },
         "isPopular": { "label": "Mark as Popular", "description": "Highlight this plan in customer-facing lists" },

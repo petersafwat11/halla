@@ -2,11 +2,8 @@
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import PlanDescription from "@/ui/plans/PlanDescription/PlanDescription";
-import SarIcon from "@/ui/commen/SarIcon/SarIcon";
-import { formatNumber } from "@halaa/shared/utils/locale";
+import MoneyAmount from "@/ui/commen/MoneyAmount/MoneyAmount";
 import styles from "./planCard.module.css";
-
-const formatPrice = (n, l = "ar") => formatNumber(n || 0, l);
 
 const getInviteValue = (plan, billingType) => {
   if (!plan) return 0;
@@ -75,8 +72,7 @@ export default function PlanCard({
         <div className={styles.cardTopRow}>
           <h3 className={styles.cardName}>{name}</h3>
           <div className={styles.price}>
-            <span className={styles.priceNum}>{formatPrice(price, lang)}</span>
-            <SarIcon size="1.5rem" />
+            <MoneyAmount amount={price} locale={lang} className={styles.priceNum} symbolSize="1.5rem" />
           </div>
         </div>
         {tagline ? <p className={styles.cardTagline}>{tagline}</p> : null}

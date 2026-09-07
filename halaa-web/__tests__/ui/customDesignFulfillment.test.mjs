@@ -53,7 +53,7 @@ describe("PR6 Web: Custom Design Fulfillment Queue & Host Timeline (F-12)", () =
     assert.match(tableSource, /mode=["']server["']/, "Table must be configured with server mode");
     assert.match(tableSource, /getNextFulfillmentStatus/, "Table must import getNextFulfillmentStatus");
     assert.match(tableSource, /formatDateTime/, "Table must use formatDateTime");
-    assert.match(tableSource, /formatCurrency/, "Table must use formatCurrency");
+    assert.match(tableSource, /MoneyAmount/, "Table must use the canonical money renderer");
     assert.match(tableSource, /orderRef/, "Table must display order reference");
     assert.match(tableSource, /nextAction/, "Table must display nextAction column");
   });

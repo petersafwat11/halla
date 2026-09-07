@@ -5,12 +5,18 @@
  * and inherit the surrounding text color via parent context. Use alongside
  * the numeric price instead of textual "ر.س"/"SAR".
  */
-const SarIcon = ({ size = "0.9em", className = "", style = {} }) => {
+const SarIcon = ({
+  size = "0.9em",
+  className = "",
+  style = {},
+  decorative = false,
+}) => {
   // eslint-disable-next-line @next/next/no-img-element
   return (
     <img
       src="/svg/sar.svg"
-      alt="SAR"
+      alt={decorative ? "" : "Saudi Riyal"}
+      aria-hidden={decorative ? "true" : undefined}
       className={className}
       style={{
         width: size,

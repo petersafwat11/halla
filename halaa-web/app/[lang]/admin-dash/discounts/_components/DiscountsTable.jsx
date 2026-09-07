@@ -16,6 +16,7 @@ import {
 } from "@/hooks/discounts";
 import { formatDate } from "@halaa/shared/utils/locale";
 import styles from "./DiscountsTable.module.css";
+import MoneyAmount from "@/ui/commen/MoneyAmount/MoneyAmount";
 
 function getDiscountStatus(discount) {
   if (discount.validUntil && new Date(discount.validUntil) < new Date())
@@ -156,7 +157,7 @@ export default function DiscountsTable({ onEdit }) {
       const discount = discounts.find((d) => d.id === row.id);
       return discount?.discountType === "percentage"
         ? `${value}%`
-        : `${value} ${t("discounts.sar", "ر.س")}`;
+        : <MoneyAmount amount={value} locale={dateLocale} />;
     }
 
     if (key === "status") {

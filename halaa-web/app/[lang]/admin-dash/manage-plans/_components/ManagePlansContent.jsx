@@ -13,7 +13,7 @@ import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import SearchableSelect from "@/ui/commen/inputs/SearchableSelect/SearchableSelect";
 import EditPlanPopup from "./EditPlanPopup";
 import { getLocalized, formatNumber } from "@halaa/shared/utils/locale";
-import SarIcon from "@/ui/commen/SarIcon/SarIcon";
+import MoneyAmount from "@/ui/commen/MoneyAmount/MoneyAmount";
 import { getStatusVisual } from "@/utils/statusColors";
 import styles from "./ManagePlansContent.module.css";
 
@@ -139,10 +139,12 @@ export default function ManagePlansContent() {
 
                 <div className={styles.priceSection}>
                   <div className={styles.priceAmount}>
-                    <SarIcon size="1.5rem" className={styles.currency} style={{ color: accent }} />
-                    <span className={styles.price} style={{ color: accent }}>
-                      {formatNumber(price, currentLocale)}
-                    </span>
+                    <MoneyAmount
+                      amount={price}
+                      locale={currentLocale}
+                      className={styles.price}
+                      symbolSize="1.5rem"
+                    />
                   </div>
                   <span className={styles.pricePeriod}>{t("managePlans.pricePeriod.event")}</span>
                 </div>

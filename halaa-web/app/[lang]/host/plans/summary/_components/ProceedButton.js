@@ -1,9 +1,11 @@
 "use client";
 import React from "react";
-import { formatSar } from "@halaa/shared/utils";
+import { useTranslation } from "react-i18next";
+import MoneyAmount from "@/ui/commen/MoneyAmount/MoneyAmount";
 import styles from "../summary.module.css";
 
 const ProceedButton = ({ onClick, processing, finalTotal, t }) => {
+  const { i18n } = useTranslation("plans");
   return (
     <button
       className={styles.proceedButton}
@@ -19,7 +21,7 @@ const ProceedButton = ({ onClick, processing, finalTotal, t }) => {
         <>
           <span>{t("summary.proceed.cta")}</span>
           <span className={styles.totalBadge}>
-            {formatSar(finalTotal)} {t("common.currency.sar")}
+            <MoneyAmount amount={finalTotal} locale={i18n?.language || "ar"} />
           </span>
         </>
       )}

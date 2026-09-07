@@ -60,7 +60,7 @@ export default function MarketplaceView({ vendorRoutePrefix = "market-place" }) 
       ...vendor,
       categories: (vendor.categories || vendor.serviceCategories || []).map((key) => categoryLabels.get(key) || key),
       location: [city, region].filter(Boolean).join(i18n.language === "ar" ? "، " : ", ") || t("services.defaultLocation"),
-      startingPrice: vendor.startingPrice || (vendor.minPrice != null ? { amount: vendor.minPrice, currency: t("currency") } : null),
+      startingPrice: vendor.startingPrice || (vendor.minPrice != null ? { amount: vendor.minPrice, currency: "SAR" } : null),
     };
   });
 

@@ -6,7 +6,7 @@ import {
   getPlanFamily,
   getBillingType,
 } from "@halaa/shared/constants/plans";
-import { formatNumber } from "@halaa/shared/utils/locale";
+import MoneyAmount from "@/ui/commen/MoneyAmount/MoneyAmount";
 import styles from "./planDescription.module.css";
 
 /**
@@ -129,7 +129,8 @@ export default function PlanDescription({
           {setupFee > 0 ? (
             <p className={styles.metaRow}>
               <span className={styles.metaIcon} aria-hidden>💼</span>
-              {t("setupFeeRow", { amount: formatNumber(setupFee, lang || "ar") })}
+              <span>{t("setupFeeLabel", { defaultValue: lang === "ar" ? "رسوم تأسيس لمرة واحدة:" : "One-time setup fee:" })}</span>{" "}
+              <MoneyAmount amount={setupFee} locale={lang || "ar"} />
             </p>
           ) : null}
 

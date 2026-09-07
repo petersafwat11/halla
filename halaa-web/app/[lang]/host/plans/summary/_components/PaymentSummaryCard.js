@@ -1,6 +1,8 @@
 "use client";
 import React from "react";
-import { formatSar, formatDate, formatTime } from "@halaa/shared/utils";
+import { useTranslation } from "react-i18next";
+import { formatTime } from "@halaa/shared/utils";
+import MoneyAmount from "@/ui/commen/MoneyAmount/MoneyAmount";
 import AddonsSummaryCard from "./AddonsSummaryCard";
 import styles from "../summary.module.css";
 
@@ -16,7 +18,8 @@ const PaymentSummaryCard = ({
   onRefreshQuote,
   t,
 }) => {
-  const currencyLabel = currency === "SAR" ? t("common.currency.sar") : currency;
+  const { i18n } = useTranslation("plans");
+  const locale = i18n?.language || "ar";
 
   return (
     <div className={styles.card}>
@@ -35,11 +38,11 @@ const PaymentSummaryCard = ({
               {t("summary.payment.planPrice")}
             </span>
             <span className={styles.summaryValue}>
-              {planPrice != null ? `${formatSar(planPrice)} ${currencyLabel}` : "—"}
+              <MoneyAmount amount={planPrice} currency={currency} locale={locale} />
             </span>
           </div>
 
-          <AddonsSummaryCard addonItems={addonItems} currency={currency} t={t} />
+          <AddonsSummaryCard addonItems={addonItems} currency={currency} locale={locale} t={t} />
 
           {discountAmount > 0 && (
             <div className={`${styles.summaryRow} ${styles.discountRow}`}>
@@ -47,7 +50,7 @@ const PaymentSummaryCard = ({
                 {t("summary.payment.discount")}
               </span>
               <span className={styles.summaryValueDiscount}>
-                -{formatSar(discountAmount)} {currencyLabel}
+                -<MoneyAmount amount={discountAmount} currency={currency} locale={locale} />
               </span>
             </div>
           )}
@@ -59,7 +62,7 @@ const PaymentSummaryCard = ({
               {t("summary.payment.total")}
             </span>
             <span className={styles.totalValue}>
-              {finalTotal != null ? `${formatSar(finalTotal)} ${currencyLabel}` : "—"}
+              <MoneyAmount amount={finalTotal} currency={currency} locale={locale} />
             </span>
           </div>
 

@@ -11,7 +11,8 @@ import {
   DESIGN_FULFILLMENT_STATUS,
   getNextFulfillmentStatus,
 } from "@halaa/shared/constants/addons";
-import { formatDateTime, formatCurrency } from "@halaa/shared/utils/locale";
+import { formatDateTime } from "@halaa/shared/utils/locale";
+import MoneyAmount from "@/ui/commen/MoneyAmount/MoneyAmount";
 import { normalizeFulfillmentFilters } from "@/utils/filterNormalizer";
 import styles from "./CustomDesignsTable.module.css";
 
@@ -136,7 +137,7 @@ export default function CustomDesignsTable({ onSelectOrderForTransition }) {
     }
 
     if (key === "price") {
-      return formatCurrency(value, locale, row.currency);
+      return <MoneyAmount amount={value} currency={row.currency} locale={locale} />;
     }
 
     if (key === "requestedAt") {

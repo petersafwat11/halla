@@ -14,6 +14,7 @@ import ShareButton from "./ShareButton";
 import ReportVendorButton from "./ReportVendorButton";
 import SafeImage from "./SafeImage";
 import styles from "./page.module.css";
+import MoneyAmount from "@/ui/commen/MoneyAmount/MoneyAmount";
 
 const SOCIAL_ICONS = { instagram: Instagram, facebook: Facebook, twitter: Twitter };
 
@@ -186,7 +187,7 @@ export default function VendorProfile({
                         {service.price != null ? (
                           <>
                             <span>{copy.vendor?.startsFrom}</span>
-                            <strong>{service.price} {service.currency}</strong>
+                            <strong><MoneyAmount amount={service.price} currency={service.currency || "SAR"} locale={lang} /></strong>
                           </>
                         ) : <strong>{copy.card?.priceOnRequest}</strong>}
                       </div>
