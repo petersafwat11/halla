@@ -15,9 +15,11 @@ export const useGuestByToken = (token, options = {}) => {
       apiRequest({
         method: "GET",
         path: API_PATHS.guests.getByInvitationCode(token),
+        params: { lang: options.language },
       }),
     enabled: !!token,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    gcTime: 0,
     ...options,
   });
 };
@@ -57,7 +59,8 @@ export const useGuestInvitation = (invitationToken, options = {}) => {
         path: API_PATHS.guests.getByInvitationCode(invitationToken),
       }),
     enabled: !!invitationToken,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    gcTime: 0,
     ...options,
   });
 };

@@ -1,3 +1,4 @@
+const { resolveInvitationDelivery } = require('./invitationDelivery');
 /**
  * Messaging formatting helpers.
  * Pure / DB-only utilities shared by the send / reminder / schedule splits.
@@ -105,8 +106,8 @@ function getEventBodyParams(event, guestName, taqnyatTemplate = null, extraConte
     guest: { name: guestName || 'ضيفنا الكريم' },
     eventDetails: {
       ...ed,
-      dayFormatted: formatDay(ed.date),
-      dateFormatted: formatDate(ed.date),
+      dayFormatted: formatDay(ed.date, taqnyatTemplate?.language),
+      dateFormatted: formatDate(ed.date, taqnyatTemplate?.language),
       location: { ...loc, mapUrl },
     },
     host:
@@ -142,7 +143,7 @@ function buildSmsBody(event, guestName, rsvpLink) {
   const time = event.eventDetails?.time || '';
   const location = event.eventDetails?.location?.address || '';
   const name = guestName ? `${guestName}، ` : '';
-  const responseLink = invitationAllowsReply(event?.invitationType) && rsvpLink
+  const responseLink = (resolveInvitationDelivery(event) === 'portal_link' || invitationAllowsReply(event?.invitationType)) && rsvpLink
     ? `\n${rsvpLink}`
     : '';
   return `${name}أنت مدعو لحضور ${title}\nبتاريخ ${date} الساعة ${time}\n${location}${responseLink}`;
@@ -229,8 +230,8 @@ function getPostEventBodyParams(event, guestName, taqnyatTemplate, accessCtx = {
     guest: { name: guestName || 'ضيفنا الكريم' },
     eventDetails: {
       ...ed,
-      dayFormatted: formatDay(ed.date),
-      dateFormatted: formatDate(ed.date),
+      dayFormatted: formatDay(ed.date, taqnyatTemplate?.language),
+      dateFormatted: formatDate(ed.date, taqnyatTemplate?.language),
       location: { ...loc, mapUrl },
     },
     host:
@@ -313,6 +314,7 @@ function computeInvitationFingerprint(event, resolvedTemplate = null) {
   const resolvedImageUrl = getEventImageUrl(event, resolvedTemplate);
 
   const payload = {
+    deliveryMode: resolveInvitationDelivery(event),
     templateRef: event.taqnyatTemplate?.templateRef?.toString?.() || null,
     templateName: resolvedTemplate?.templateName || null,
     templateLanguage: resolvedTemplate?.language || 'ar',

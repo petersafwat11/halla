@@ -22,7 +22,7 @@ const createTemplateSchema = z
     language: z.enum(['ar', 'en']).default('ar'),
     headerText: z.string().max(60).optional(),
     bodyText: z.string().min(1).max(1024),
-    bodyExamples: z.array(z.string().max(60)).optional().default([]),
+    bodyExamples: z.array(z.string().max(1024)).optional().default([]),
     footerText: z.string().max(60).optional(),
   })
   .strict()
@@ -51,6 +51,8 @@ const assignMappingSchema = z
     category: z.string().nullable().optional(),
     type: z.enum(TEMPLATE_TYPES).nullable().optional(),
     invitationMode: z.enum(INVITATION_MODES).nullable().optional(),
+    deliveryMode: z.enum(["quick_reply", "portal_link"]).optional(),
+    compatibleInvitationModes: z.array(z.enum(INVITATION_MODES)).min(1).optional(),
     varMapping: z.array(varMappingEntry).optional(),
     active: z.boolean().optional(),
     sortOrder: z.number().int().min(0).optional(),
@@ -80,6 +82,7 @@ const listForHostQuerySchema = z
     category: z.string().optional(),
     type: z.enum(TEMPLATE_TYPES).optional(),
     invitationMode: z.enum(INVITATION_MODES).optional(),
+    deliveryMode: z.enum(["quick_reply", "portal_link"]).optional(),
   })
   .strict();
 

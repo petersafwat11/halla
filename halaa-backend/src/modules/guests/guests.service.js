@@ -1,3 +1,4 @@
+const { isOpen, businessPass, resolveInvitationDelivery } = require('./businessGuestPolicy');
 /**
  * Guests Service
  * Business logic for guest portal operations - NO HTTP concerns
@@ -88,7 +89,7 @@ class GuestsService {
    * @param {string} code - Invitation code or QR code
    * @returns {Promise<Object>}
    */
-  async getGuestByCode(code) {
+  async getGuestByCode(code, lang = 'ar') {
     if (String(code).startsWith('preview_')) {
       try {
         const decoded = jwt.verify(String(code).slice('preview_'.length), config.jwt.secret);
@@ -96,8 +97,8 @@ class GuestsService {
           throw new Error('invalid preview token');
         }
         const event = await Event.findById(decoded.eventId)
-          .select('eventDetails status host branding invitationDeliveryMode invitationType')
-          .populate('host', 'name');
+          .select('eventDetails status host branding invitationDeliveryMode invitationType guestReplies')
+          .populate('host', 'name accountType');
         if (!event) throw new Error('preview event not found');
         return {
           guest: {
@@ -106,7 +107,8 @@ class GuestsService {
             status: 'invited',
             rsvp: { response: null, plusOnes: 0 },
           },
-          event: await this._formatEventForGuest(event),
+          event: { ...(await this._formatEventForGuest(event)), canRespond: false },
+          preview: true,
         };
       } catch (_) {
         throw new NotFoundError('Invitation preview');
@@ -118,17 +120,19 @@ class GuestsService {
       deleted: { $ne: true },
     }).populate({
       path: 'event',
-      select: 'eventDetails status host branding invitationDeliveryMode invitationType',
-      populate: { path: 'host', select: 'name' },
+      select: 'eventDetails status host branding invitationDeliveryMode invitationType guestReplies',
+      populate: { path: 'host', select: 'name accountType' },
     });
 
-    if (!guest) {
+    if (!guest || !guest.event) {
       throw new NotFoundError('Invitation not found');
     }
 
     return {
       guest: this._formatGuestPortal(guest),
       event: await this._formatEventForGuest(guest.event),
+      pass: resolveInvitationDelivery(guest.event) === "portal_link" ? businessPass(guest.event, guest) : null,
+      message: getReplyMessage(guest.rsvp?.response, guest.event, lang),
     };
   }
 
@@ -173,18 +177,26 @@ class GuestsService {
       throw new ValidationError('This event is no longer accepting RSVPs');
     }
 
+    if (resolveInvitationDelivery(guest.event) === 'portal_link' && (!Number.isInteger(additionalInfo.revision) || additionalInfo.revision !== (guest.__v || 0))) throw new AppError('Reload your invitation before responding.', 409, 'RSVP_STATE_CHANGED');
     const previousStatus = guest.status;
 
     guest.status = response;
     guest.rsvp = {
       response,
       respondedAt: new Date(),
-      message: additionalInfo.message || '',
-      dietaryRestrictions: additionalInfo.dietaryRestrictions || '',
-      plusOnes: Math.max(0, parseInt(additionalInfo.plusOnes) || 0),
+      responded: true,
+      message: additionalInfo.message ?? guest.rsvp?.message ?? '',
+      dietaryRestrictions: additionalInfo.dietaryRestrictions ?? guest.rsvp?.dietaryRestrictions ?? '',
+      plusOnes: additionalInfo.plusOnes ?? guest.rsvp?.plusOnes ?? 0,
     };
 
-    await guest.save();
+    if (resolveInvitationDelivery(guest.event) === 'portal_link') {
+      const updated = await Guest.updateOne({ _id: guest._id, qrcode: additionalInfo.invitationCode, __v: additionalInfo.revision, deleted: { $ne: true } }, { $set: { status: response, rsvp: guest.rsvp.toObject?.() || guest.rsvp }, $inc: { __v: 1 } });
+      if (updated.modifiedCount !== 1) throw new AppError('Your response changed. Reload and try again.', 409, 'RSVP_STATE_CHANGED');
+      guest.__v = (guest.__v || 0) + 1;
+    } else {
+      await guest.save();
+    }
 
     // Notify host of RSVP — fire-and-forget
     this._notifyHostRSVP(guest, response, previousStatus).catch((err) =>
@@ -207,7 +219,7 @@ class GuestsService {
     // The entry-pass QR is only issued for QR-bearing invitation types
     // (reply_and_qr). A reply_only confirmation returns a message with no pass.
     if (response === 'confirmed' && invitationIncludesQr(event.invitationType)) {
-      result.pass = buildEntryPass(event, guest, lang, this._brandForPass());
+      result.pass = resolveInvitationDelivery(event) === 'portal_link' ? businessPass(event, guest) : buildEntryPass(event, guest, lang, this._brandForPass());
     }
 
     return result;
@@ -483,7 +495,7 @@ class GuestsService {
         path: 'guestList',
         match: { deleted: { $ne: true } },
         select: 'name phone category status rsvp checkIn invitation addedBy',
-        populate: { path: 'addedBy', select: 'name' },
+        populate: { path: 'addedBy', select: 'name accountType' },
       });
 
     if (!event) {
@@ -818,6 +830,7 @@ class GuestsService {
 
   _formatGuestPortal(guest) {
     return {
+      revision: guest.__v || 0,
       id: guest._id,
       name: guest.name,
       status: guest.status,
@@ -839,6 +852,7 @@ class GuestsService {
       branding = {
         logoUrl: b.logoKey ? await signStoredImage(b.logoKey) : null,
         businessName: b.businessName || null,
+        coverUrl: b.coverImageKey ? await signStoredImage(b.coverImageKey) : null,
       };
     }
 
@@ -850,7 +864,10 @@ class GuestsService {
       location: event.eventDetails?.location,
       description: event.eventDetails?.description,
       hostName: event.host?.name || '',
-      deliveryMode: event.invitationDeliveryMode || null,
+      deliveryMode: resolveInvitationDelivery(event),
+      status: event.status,
+      canRespond: isOpen(event) && invitationAllowsReply(event.invitationType),
+      actions: require("./guestEventActions").guestEventActions(event),
       // Drives the portal's mode: reply types render the RSVP form; plain
       // invitations show an information-only card.
       invitationType: event.invitationType || null,

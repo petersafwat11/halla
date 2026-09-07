@@ -109,6 +109,13 @@ export async function middleware(request) {
     ? `/${segments.slice(1).join("/")}`
     : pathname;
 
+  if (routePath.startsWith('/business-invitation/')) {
+    const response = i18nRouter(request, i18nRouterConfig);
+    response.headers.set('Cache-Control', 'private, no-store');
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive');
+    response.headers.set('Referrer-Policy', 'no-referrer');
+    return response;
+  }
   // Check route types
   const isAuthRoute = isRouteMatch(routePath, AUTH_ROUTES);
   const isPublicRoute = isRouteMatch(routePath, PUBLIC_ROUTES);

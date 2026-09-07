@@ -1,3 +1,4 @@
+const { resolveInvitationDelivery } = require('./invitationDelivery');
 /**
  * Messaging webhook service.
  * Handles delivery-status updates and WhatsApp button (RSVP) replies
@@ -221,6 +222,7 @@ async function handleButtonResponse({
 
   const event = guest.event;
 
+  if (resolveInvitationDelivery(event) === 'portal_link') return { ignored: true, reason: 'website_rsvp_only' };
   if (!invitationAllowsReply(event.invitationType)) {
     logger.info('[Messaging] Reply ignored — event mode does not collect RSVPs', {
       eventId: event._id,

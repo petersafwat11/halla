@@ -61,6 +61,7 @@ exports.createEventForHost = catchAsync(async (req, res) => {
     userId: targetUserId,
     userRole: req.user.role,
     file: req.file,
+    coverFile: req.coverFile,
     skipSubscriptionCheck,
     adminId: req.user._id,
     requestId: req.requestId || null,

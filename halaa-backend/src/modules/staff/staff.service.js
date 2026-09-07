@@ -197,13 +197,24 @@ class StaffService {
    * `_performIdempotentCheckIn` (see helper for rationale).
    */
   async checkInByQR(eventId, qrCode, staffUser) {
-    const guest = await Guest.findOne({ event: eventId, qrcode: qrCode });
+    const policy = require('../guests/businessGuestPolicy');
+    const event = await Event.findById(eventId);
+    let guest;
+    if (policy.resolveInvitationDelivery(event) === 'portal_link') {
+      let token;
+      try { token = require('jsonwebtoken').verify(qrCode, require('../../config').jwt.secret); } catch (_) { throw new ForbiddenError('Invalid entry pass'); }
+      if (token.purpose !== 'business_entry' || token.eventId !== String(eventId)) throw new ForbiddenError('Invalid entry pass');
+      guest = await Guest.findOne({ _id: token.guestId, event: eventId, deleted: { $ne: true } });
+      if (!policy.canShowPass(event, guest)) throw new ForbiddenError('This guest has no eligible entry pass');
+    } else {
+      guest = await Guest.findOne({ event: eventId, qrcode: qrCode });
+    }
 
     if (!guest) {
       throw new NotFoundError('Guest not found with this QR code');
     }
 
-    return this._performIdempotentCheckIn(eventId, guest, staffUser);
+    return this._performIdempotentCheckIn(eventId, guest, staffUser, policy.resolveInvitationDelivery(event) === 'portal_link');
   }
 
   /**
@@ -380,7 +391,7 @@ class StaffService {
    * return the first call's body verbatim — `alreadyCheckedIn: false` — on
    * every replay, defeating the UX.
    */
-  async _performIdempotentCheckIn(eventId, guest, staffUser) {
+  async _performIdempotentCheckIn(eventId, guest, staffUser, requireConfirmed = false) {
     const now = new Date();
 
     // staffUser may be a User document (host self-check-in / admin) OR a
@@ -403,6 +414,7 @@ class StaffService {
         _id: guest._id,
         event: eventId,
         status: { $ne: 'checked_in' },
+        ...(requireConfirmed && { 'rsvp.response': 'confirmed', deleted: { $ne: true } }),
       },
       {
         $set: {
@@ -453,6 +465,7 @@ class StaffService {
     const existing = await Guest.findOne({ _id: guest._id, event: eventId })
       .populate('checkIn.checkedInBy', 'name email');
     if (!existing) throw new NotFoundError('Guest');
+    if (requireConfirmed && (existing.deleted || existing.rsvp?.response !== 'confirmed')) throw new ForbiddenError('This guest has no eligible entry pass');
     const originalActor =
       existing.checkIn?.checkedInBy?.name ||
       existing.checkIn?.checkedInByStaff?.name ||

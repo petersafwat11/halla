@@ -1,3 +1,4 @@
+import BusinessCoverInput from "./BusinessCoverInput";
 import React, { useState, useMemo } from "react";
 import {
   View,
@@ -115,7 +116,7 @@ const toStoredEventTime = (date) => {
   return `${hours % 12 || 12}:${minutes} ${period}`;
 };
 
-const StepOne = ({ constraints } = {}) => {
+const StepOne = ({ constraints, owner } = {}) => {
   const { setValue, watch } = useFormContext();
   const { t, currentLanguage, isRTL } = useTranslation("createEvent");
   const fieldDirection = useFieldDirection("localized");
@@ -218,6 +219,7 @@ const StepOne = ({ constraints } = {}) => {
 
   return (
     <View style={styles.container}>
+      {!constraints && <BusinessCoverInput owner={owner} />}
       {/* Event Name — arbitrary host content: the empty placeholder follows
           the UI locale while a filled value follows its first strong Arabic
           or Latin character (blueprint §5.3). */}

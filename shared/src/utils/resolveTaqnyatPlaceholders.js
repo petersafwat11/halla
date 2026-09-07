@@ -94,6 +94,7 @@ export function buildTaqnyatPreviewContext({
   hostName,
 }) {
   return {
+    invitation: { url: "https://halaa.com.sa/ar/business-invitation/preview" },
     guest: { name: guestName || "" },
     eventDetails: {
       title: eventTitle || "",

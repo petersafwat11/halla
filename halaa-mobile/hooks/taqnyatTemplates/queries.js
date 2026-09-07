@@ -20,14 +20,14 @@ const buildQuery = (params = {}) => {
  * `type` defaults to no filter on the backend; the create-event wizard
  * passes `type: 'invite'` so the host only sees invitation templates.
  */
-export function useHostTaqnyatTemplates({ category, type, invitationMode } = {}, opts = {}) {
+export function useHostTaqnyatTemplates({ category, type, invitationMode, deliveryMode } = {}, opts = {}) {
   const token = useAuthStore((state) => state.token);
 
   return useQuery({
-    queryKey: taqnyatTemplatesKeys.hostList({ category, type, invitationMode }),
+    queryKey: taqnyatTemplatesKeys.hostList({ category, type, invitationMode, deliveryMode }),
     queryFn: async () => {
       const res = await apiFetch(
-        `${ENDPOINTS.TAQNYAT_TEMPLATES.LIST}${buildQuery({ category, type, invitationMode })}`
+        `${ENDPOINTS.TAQNYAT_TEMPLATES.LIST}${buildQuery({ category, type, invitationMode, deliveryMode })}`
       );
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.message || "Request failed");

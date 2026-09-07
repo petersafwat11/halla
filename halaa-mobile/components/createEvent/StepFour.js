@@ -99,6 +99,7 @@ const StepFour = () => {
       category: category || undefined,
       type: "invite",
       invitationMode: invitationType,
+      deliveryMode: watch("isBusinessEvent") ? "portal_link" : "quick_reply",
     },
     { enabled: Boolean(category) }
   );
@@ -223,7 +224,7 @@ const StepFour = () => {
                             isSelected && styles.inviteTypeTitleSelected,
                           ]}
                         >
-                          {t(opt.labelKey)}
+                          {t(watch("isBusinessEvent") && opt.value === "reply_and_qr" ? "business_invitation_type_reply_and_qr_label" : opt.labelKey)}
                         </Text>
                         {opt.badgeKey && (
                           <View style={styles.featureBadge}>
@@ -234,7 +235,7 @@ const StepFour = () => {
                         )}
                       </View>
                       <Text style={[styles.inviteTypeDesc, fieldDirection.text]}>
-                        {t(opt.descKey)}
+                        {t(watch("isBusinessEvent") ? `business_${opt.descKey}` : opt.descKey)}
                       </Text>
                     </View>
 
@@ -251,9 +252,9 @@ const StepFour = () => {
                   </View>
 
                   {/* Feature chips */}
-                  {opt.features && opt.features.length > 0 && (
+                  {!watch("isBusinessEvent") && opt.features && opt.features.length > 0 && (
                     <View style={styles.featureChipsRow}>
-                      {opt.features.map((feat) => (
+                      {opt.features.filter(() => !watch("isBusinessEvent")).map((feat) => (
                         <View
                           key={feat.key}
                           style={[

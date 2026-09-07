@@ -17,6 +17,7 @@ import { detectPlaceholders } from "../_utils/detectPlaceholders";
 import styles from "./AssignTaqnyatTemplatePopup.module.css";
 
 const SOURCE_KEYS = [
+  "invitation.url",
   "guest.name",
   "eventDetails.title",
   "eventDetails.dayFormatted",
@@ -139,6 +140,7 @@ export default function AssignTaqnyatTemplatePopup({ template, categories, onClo
       category: template.category || "",
       type: template.type || "",
       invitationMode: initialInvitationMode,
+      deliveryMode: template.deliveryMode || "quick_reply",
       active: template.active !== false,
       sortOrder: template.sortOrder || 0,
       varMapping: initialMapping,
@@ -147,9 +149,11 @@ export default function AssignTaqnyatTemplatePopup({ template, categories, onClo
 
   const selectedType = methods.watch("type");
   const selectedInvitationMode = methods.watch("invitationMode");
+  const deliveryMode = methods.watch("deliveryMode");
   const modeMismatch =
+    deliveryMode !== "portal_link" &&
     selectedType === "invite" &&
-    Boolean(template.buttonCapability || template.invitationModeLegacy) &&
+    deliveryMode !== "portal_link" && Boolean(template.buttonCapability || template.invitationModeLegacy) &&
     !compatibleModes.includes(selectedInvitationMode);
 
   useEffect(() => {
@@ -157,6 +161,7 @@ export default function AssignTaqnyatTemplatePopup({ template, categories, onClo
       category: template.category || "",
       type: template.type || "",
       invitationMode: initialInvitationMode,
+      deliveryMode: template.deliveryMode || "quick_reply",
       active: template.active !== false,
       sortOrder: template.sortOrder || 0,
       varMapping: initialMapping,
@@ -181,6 +186,8 @@ export default function AssignTaqnyatTemplatePopup({ template, categories, onClo
           category: data.category || null,
           type: data.type || null,
           invitationMode: data.type === "invite" ? data.invitationMode : null,
+          deliveryMode: data.deliveryMode,
+          ...(data.deliveryMode === "portal_link" && { compatibleInvitationModes: INVITATION_MODES }),
           active: data.active,
           sortOrder: data.sortOrder,
           varMapping: cleaned,
@@ -207,6 +214,14 @@ export default function AssignTaqnyatTemplatePopup({ template, categories, onClo
 
         <FormProvider {...methods}>
           <form onSubmit={methods.handleSubmit(onSubmit)} className={styles.form}>
+          <label>{t("taqnyat.deliveryMode", "Delivery mode")}
+            <select {...methods.register("deliveryMode")}>
+              <option value="quick_reply">{t("taqnyat.personalDelivery", "Personal — WhatsApp replies")}</option>
+              <option value="portal_link">{t("taqnyat.businessDelivery", "Business — body link, zero buttons")}</option>
+            </select>
+          </label>
+          {deliveryMode === "portal_link" && <p>{t("taqnyat.bodyLinkHelp", "Map a body variable to invitation.url. The approved template must contain zero buttons. Website modes are independent.")}</p>}
+
             <CategorySelect
               label={t("taqnyat.fieldCategory", "الفئة")}
               options={categoryOptions}
@@ -255,7 +270,7 @@ export default function AssignTaqnyatTemplatePopup({ template, categories, onClo
                       key={mode}
                       value={mode}
                       disabled={
-                        Boolean(template.buttonCapability || template.invitationModeLegacy) &&
+                        deliveryMode !== "portal_link" && Boolean(template.buttonCapability || template.invitationModeLegacy) &&
                         !compatibleModes.includes(mode)
                       }
                     >

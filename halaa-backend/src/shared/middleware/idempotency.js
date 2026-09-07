@@ -89,6 +89,7 @@ const idempotency = ({ scope = "", required = false } = {}) => {
     const payloadToHash = req.file
       ? { ...req.body, _fileMeta: await getFileFingerprint(req.file) }
       : (req.body || {});
+    if (req.coverFile) payloadToHash._coverMeta = await getFileFingerprint(req.coverFile);
     const requestHash = _sha256(payloadToHash);
     const userId = req.user?._id || null;
     const filter = { userId, scope, key };

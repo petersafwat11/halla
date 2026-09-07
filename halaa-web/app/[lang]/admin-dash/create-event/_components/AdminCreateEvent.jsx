@@ -166,6 +166,7 @@ export default function AdminCreateEvent() {
     try {
       const payload = buildEventPayload(formData);
       const fd = new FormData();
+      if (formData.coverImage instanceof File) fd.append("coverImage", formData.coverImage);
       fd.append("eventDetails", JSON.stringify(payload.eventDetails));
       fd.append("guestList", JSON.stringify(payload.guestList));
       fd.append("staffList", JSON.stringify(payload.staffList));
@@ -293,7 +294,7 @@ export default function AdminCreateEvent() {
         return (
           <>
             <StepTitleAndDesc title={t("step1_title")} description={t("step1_description")} />
-            <StepOne />
+            <StepOne owner={selectedHost || user} />
           </>
         );
       case 2:

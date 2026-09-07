@@ -210,6 +210,7 @@ export const validateStepData = (stepNumber, formData) => {
         formData.address.address.trim() !== "";
 
       return !!(
+        (!formData.isBusinessEvent || (formData.coverImage && !formData.businessLogoMissing)) &&
         formData.eventType &&
         hasValidEventName &&
         formData.eventDate &&
@@ -315,6 +316,7 @@ export const transformFormDataToPayload = (formData) => ({
   },
   invitationType: formData.invitationType || DEFAULT_INVITATION_TYPE,
   templateImage: formData.templateImage,
+  coverImage: formData.coverImage,
   launchSettings: {
     scheduledDate: formData.scheduleDate || undefined,
     scheduledTime: formData.scheduleTime || undefined,

@@ -30,6 +30,7 @@ const buildMutations = (queryClient) => ({
       // Scalar string field — backend reads it directly (no JSON parse).
       if (eventData.invitationType) formData.append("invitationType", eventData.invitationType);
       if (eventData.launchSettings) formData.append("launchSettings", JSON.stringify(eventData.launchSettings));
+      if (eventData.coverImage instanceof File) formData.append("coverImage", eventData.coverImage);
       if (eventData.templateImage instanceof File) {
         formData.append("templateImage", eventData.templateImage);
       }

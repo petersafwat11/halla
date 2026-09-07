@@ -1,3 +1,4 @@
+const { uploadEventImages } = require('../events/eventCover');
 /**
  * Events Routes
  * Route definitions for event management module
@@ -313,7 +314,7 @@ router.post(
       return 0;
     }
   }),
-  uploadTemplateImage,
+  uploadEventImages,
   cleanupRejectedTemplateUpload,
   parseFormDataJsonFields([
     "eventDetails",

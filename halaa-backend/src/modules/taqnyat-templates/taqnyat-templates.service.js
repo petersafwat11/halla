@@ -25,6 +25,7 @@ const {
 const decorateTemplate = (template) => {
   const invitationModeLegacy = template.type === 'invite' && !template.invitationMode;
   const buttonCapability = getButtonCapability(template.buttons || []);
+  if (template.deliveryMode === 'portal_link') buttonCapability.compatibleInvitationModes = require('../messaging/invitationDelivery').isBusinessTemplate(template) ? template.compatibleInvitationModes || [] : [];
   const legacyUnverified = template.type === 'invite' && template.buttonsSynced !== true;
   return {
     ...template,
@@ -227,7 +228,7 @@ async function syncFromTaqnyat({ actor } = {}) {
   };
 }
 
-async function listForHost({ category, type = 'invite', invitationMode } = {}) {
+async function listForHost({ category, type = 'invite', invitationMode, deliveryMode = 'quick_reply' } = {}) {
   const query = {
     active: true,
     status: 'APPROVED',
@@ -235,7 +236,7 @@ async function listForHost({ category, type = 'invite', invitationMode } = {}) {
     type,
   };
   if (category) {
-    if (GENERAL_EVENT_FALLBACK_CATEGORIES.has(category)) {
+    if (deliveryMode !== 'portal_link' && GENERAL_EVENT_FALLBACK_CATEGORIES.has(category)) {
       query.category = 'other';
       query.templateName = /^halaa_general_event_/i;
     } else {
@@ -243,7 +244,8 @@ async function listForHost({ category, type = 'invite', invitationMode } = {}) {
     }
   }
 
-  if (type === 'invite' && invitationMode) {
+  query.deliveryMode = deliveryMode === 'portal_link' ? 'portal_link' : { $ne: 'portal_link' };
+  if (type === 'invite' && invitationMode && deliveryMode !== 'portal_link') {
     query.$or = invitationMode === INVITATION_TYPE.REPLY_AND_QR
       ? [
           { invitationMode },
@@ -258,10 +260,11 @@ async function listForHost({ category, type = 'invite', invitationMode } = {}) {
     .select('-createdBy -updatedBy -__v')
     .lean();
   return templates
+    .filter(template => deliveryMode !== "portal_link" || require("../messaging/invitationDelivery").isBusinessTemplate(template))
     .filter((template) =>
       type !== 'invite' ||
       !invitationMode ||
-      isTemplateCompatibleWithInvitationMode(template, invitationMode)
+      isTemplateCompatibleWithInvitationMode(template, invitationMode, deliveryMode)
     )
     .map(decorateTemplate);
 }
@@ -271,7 +274,7 @@ async function listForHost({ category, type = 'invite', invitationMode } = {}) {
  * `staff_access` is global — category is ignored. Used by the auto-reminder
  * cron, the scheduled-extra-reminder dispatcher, and the staff notify flow.
  */
-async function findActiveByCategoryAndType(category, type) {
+async function findActiveByCategoryAndType(category, type, deliveryMode = 'quick_reply') {
   const filter =
     type === 'staff_access'
       ? { type: 'staff_access', active: true, status: 'APPROVED', removedFromMeta: { $ne: true } }
@@ -282,6 +285,7 @@ async function findActiveByCategoryAndType(category, type) {
           status: 'APPROVED',
           removedFromMeta: { $ne: true },
         };
+  if (type === 'reminder_confirmed') filter.deliveryMode = deliveryMode === 'portal_link' ? 'portal_link' : { $ne: 'portal_link' };
   return TaqnyatTemplate.findOne(filter).lean();
 }
 
@@ -313,17 +317,24 @@ async function assignMapping(id, updates, actor) {
   const doc = await TaqnyatTemplate.findById(id);
   if (!doc) throw new NotFoundError('TaqnyatTemplate');
 
+  if (updates.varMapping !== undefined) doc.varMapping = updates.varMapping;
+  if (updates.deliveryMode !== undefined) doc.deliveryMode = updates.deliveryMode;
+  if (updates.compatibleInvitationModes !== undefined) doc.compatibleInvitationModes = updates.compatibleInvitationModes;
+  if (doc.deliveryMode === 'portal_link') {
+    if (!require('../messaging/invitationDelivery').isBusinessTemplate(doc)) throw new AppError('Business templates require verified zero buttons and a mapped invitation.url body variable.', 400, 'BUSINESS_LINK_TEMPLATE_REQUIRED');
+    if (!doc.compatibleInvitationModes?.length) doc.compatibleInvitationModes = Object.values(INVITATION_TYPE);
+  }
   const nextType = updates.type !== undefined ? updates.type || null : doc.type;
   const requestedMode = updates.invitationMode !== undefined
     ? updates.invitationMode || null
     : doc.invitationMode;
   const nextMode = nextType === 'invite'
-    ? requestedMode || effectiveInvitationMode(doc)
+    ? requestedMode || (doc.deliveryMode === 'portal_link' ? INVITATION_TYPE.REPLY_AND_QR : effectiveInvitationMode(doc))
     : null;
 
   if (
     nextType === 'invite' &&
-    !isTemplateCompatibleWithInvitationMode(doc.toObject(), nextMode)
+    !isTemplateCompatibleWithInvitationMode(doc.toObject(), nextMode, doc.deliveryMode || 'quick_reply')
   ) {
     const capability = getButtonCapability(doc.buttons || []);
     throw new AppError(
@@ -348,6 +359,7 @@ async function assignMapping(id, updates, actor) {
       doc.type === 'staff_access'
         ? { _id: { $ne: doc._id }, type: 'staff_access', active: true }
         : { _id: { $ne: doc._id }, category: doc.category, type: doc.type, active: true };
+    if (doc.type === 'reminder_confirmed') filter.deliveryMode = doc.deliveryMode === 'portal_link' ? 'portal_link' : { $ne: 'portal_link' };
     await TaqnyatTemplate.updateMany(filter, { $set: { active: false } });
   }
 
@@ -371,7 +383,7 @@ async function assignMapping(id, updates, actor) {
   return doc;
 }
 
-function assertResolvedInviteTemplateCompatible(template, { category, invitationMode } = {}) {
+function assertResolvedInviteTemplateCompatible(template, { category, invitationMode, deliveryMode = 'quick_reply' } = {}) {
   if (
     !template ||
     template.type !== 'invite' ||
@@ -392,7 +404,7 @@ function assertResolvedInviteTemplateCompatible(template, { category, invitation
       'TAQNYAT_TEMPLATE_CATEGORY_MISMATCH'
     );
   }
-  if (!isTemplateCompatibleWithInvitationMode(template, invitationMode)) {
+  if (!isTemplateCompatibleWithInvitationMode(template, invitationMode, deliveryMode)) {
     throw new AppError(
       'The selected WhatsApp template does not match the invitation mode',
       400,

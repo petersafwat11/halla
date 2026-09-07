@@ -495,5 +495,9 @@
   "summary_date_time": "{{date}} - {{time}}",
   "guest_list_title_count": "قائمة الضيوف ({{count}})",
   "import_error_row": "• الصف {{row}}: {{message}}",
-  "invitation_visual": "معاينة الدعوة"
+  "invitation_visual": "معاينة الدعوة",
+  "business_invitation_type_reply_and_qr_label": "تأكيد الحضور مع رمز دخول",
+  "business_invitation_type_reply_and_qr_desc": "يؤكد الضيف أو يعتذر في الموقع. يظهر رمز الدخول بعد التأكيد. رسالة واتساب تحتوي على رابط فقط دون أزرار.",
+  "business_invitation_type_reply_only_desc": "يؤكد الضيف أو يعتذر في الموقع دون رمز دخول. رسالة واتساب تحتوي على رابط فقط دون أزرار.",
+  "business_invitation_type_none_desc": "يعرض الموقع معلومات المناسبة دون ردود أو رمز دخول. رسالة واتساب تحتوي على رابط فقط دون أزرار."
 }

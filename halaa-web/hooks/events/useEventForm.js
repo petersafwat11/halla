@@ -110,6 +110,7 @@ const populatedSelectedTemplate = (event) => {
 };
 
 export const mapEventToFormValues = (event) => ({
+  isBusinessEvent: event.invitationDeliveryMode === 'portal_link',
   eventType: event.eventDetails?.type || "",
   eventName: event.eventDetails?.title || "",
   eventDate: event.eventDetails?.date || "",
@@ -179,6 +180,7 @@ export const buildEventPayload = (data = {}) => ({
   },
   invitationType: data.invitationType || DEFAULT_INVITATION_TYPE,
   templateImage: data.templateImage,
+  coverImage: data.coverImage,
   launchSettings: {
     scheduledDate: data.scheduleDate || undefined,
     scheduledTime: data.scheduleTime || undefined,

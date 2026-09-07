@@ -89,6 +89,8 @@ const taqnyatTemplateSchema = new mongoose.Schema(
      * invite rows with null mode are treated as `reply_and_qr` until an admin
      * explicitly re-saves them.
      */
+    deliveryMode: { type: String, enum: ["quick_reply", "portal_link"], default: "quick_reply", index: true },
+    compatibleInvitationModes: { type: [String], enum: ["reply_and_qr", "reply_only", "none"], default: [] },
     invitationMode: {
       type: String,
       enum: ['reply_and_qr', 'reply_only', 'none'],

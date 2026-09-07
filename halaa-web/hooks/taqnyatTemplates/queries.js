@@ -4,14 +4,14 @@ import { apiRequest } from "@/services/http";
 import { API_PATHS } from "@halaa/shared/api/paths";
 import { taqnyatTemplatesKeys } from "./keys";
 
-export function useHostTaqnyatTemplates({ category, type, invitationMode } = {}, opts = {}) {
+export function useHostTaqnyatTemplates({ category, type, invitationMode, deliveryMode } = {}, opts = {}) {
   return useQuery({
-    queryKey: taqnyatTemplatesKeys.hostList({ category, type, invitationMode }),
+    queryKey: taqnyatTemplatesKeys.hostList({ category, type, invitationMode, deliveryMode }),
     queryFn: () =>
       apiRequest({
         method: "GET",
         path: API_PATHS.taqnyatTemplates.list,
-        params: { category, type, invitationMode },
+        params: { category, type, invitationMode, deliveryMode },
       }),
     staleTime: 5 * 60 * 1000,
     ...opts,

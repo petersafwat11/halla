@@ -339,6 +339,7 @@ const eventSchema = new mongoose.Schema(
     // immutable S3 key and the business NAME is snapshotted too, so a later
     // rename/logo-swap does not change already-issued invitations.
     branding: {
+      coverImageKey: { type: String, default: null },
       logoKey: { type: String, default: null }, // event-owned S3 key (signed on read)
       businessName: { type: String, default: null },
     },

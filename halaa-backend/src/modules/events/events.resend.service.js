@@ -1,3 +1,4 @@
+const { resolveInvitationDelivery, buildGuestInvitationUrl } = require('../messaging/invitationDelivery');
 const { guestAudienceFilter } = require("../guests/guestAudience");
 /**
  * Events Service — Resend-invite + Extra-reminder sub-module
@@ -30,7 +31,6 @@ const {
   getEventBodyParams,
   getRequiredEventImageUrl,
   buildSmsBody,
-  buildInvitationUrlButton,
 } = require("../messaging/messaging.formatting");
 
 /**
@@ -160,7 +160,7 @@ module.exports = {
    */
   async sendToNewGuests(eventId, body = {}, user) {
     const query = this._buildScopedEventQuery(eventId, user);
-    const event = await Event.findOne(query).populate("host", "name");
+    const event = await Event.findOne(query).populate("host", "name accountType");
 
     if (!event) {
       throw new NotFoundError("Event");
@@ -282,7 +282,7 @@ module.exports = {
         path: "taqnyatTemplate.templateRef",
         select: "templateName bodyText hasImageHeader language category varMapping",
       })
-      .populate("host", "name");
+      .populate("host", "name accountType");
 
     if (!event) {
       throw new NotFoundError("Event");
@@ -335,17 +335,17 @@ module.exports = {
           {
             category: event.eventDetails?.type,
             invitationMode: event.invitationType || INVITATION_TYPE.REPLY_AND_QR,
+        deliveryMode: resolveInvitationDelivery(event),
           }
         )
       : event.taqnyatTemplate?.templateRef || null;
-    const rsvpBaseUrl = config.frontend?.url || "https://halaa.sa";
 
     const batched = await runBatched(
       targetGuests,
       async (guest) => {
         // Match the initial-send link shape (the old /rsvp/:eventId/:guestId
         // path 404s — the live guest portal is /invitation/:qrcode).
-        const rsvpLink = `${rsvpBaseUrl.replace(/\/$/, "")}/ar/invitation/${guest.qrcode}`;
+        const rsvpLink = buildGuestInvitationUrl(event, guest.qrcode, template?.language);
         const logOptions = {
           logContext: {
             eventId: event._id,
@@ -357,9 +357,8 @@ module.exports = {
         };
 
         if (channel === "whatsapp" && template) {
-          const bodyParams = getEventBodyParams(event, guest.name, template);
+          const bodyParams = getEventBodyParams(event, guest.name, template, { invitation: { url: rsvpLink } });
           const imageUrl = getRequiredEventImageUrl(event, template);
-          const urlButton = buildInvitationUrlButton(event, template, guest.qrcode, 'ar');
           const components = [
             {
               type: "body",
@@ -368,7 +367,6 @@ module.exports = {
                 text: p,
               })),
             },
-            urlButton,
           ].filter(Boolean);
           const smsFallback = {
             sender: TAQNYAT_SENDER,
@@ -384,7 +382,7 @@ module.exports = {
                 bodyParams,
                 smsFallback,
                 logOptions,
-                urlButton ? [urlButton] : []
+                []
               )
             : await taqnyat.sendWhatsAppTemplate(
                 guest.phone,
@@ -402,6 +400,7 @@ module.exports = {
         const smsBody = buildSmsBody(event, guest.name, rsvpLink);
         const result = await taqnyat.sendSMS(guest.phone, smsBody, {
           sender: TAQNYAT_SENDER,
+          sensitive: true,
           logContext: logOptions.logContext,
         });
 
@@ -470,7 +469,7 @@ module.exports = {
    */
   async extraReminder(eventId, body = {}, user) {
     const query = this._buildScopedEventQuery(eventId, user);
-    const event = await Event.findOne(query).populate("host", "name");
+    const event = await Event.findOne(query).populate("host", "name accountType");
 
     if (!event) {
       throw new NotFoundError("Event");
@@ -498,7 +497,7 @@ module.exports = {
     // ---------- Resolve the approved reminder_confirmed template ----------
     const category = event.eventDetails?.type || null;
     const template = await taqnyatTemplatesService
-      .findActiveByCategoryAndType(category, "reminder_confirmed")
+      .findActiveByCategoryAndType(category, "reminder_confirmed", resolveInvitationDelivery(event))
       .catch(() => null);
 
     if (!template) {

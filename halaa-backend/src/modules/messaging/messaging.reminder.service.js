@@ -1,3 +1,4 @@
+const { resolveInvitationDelivery, buildGuestInvitationUrl, assertBusinessTemplate } = require('./invitationDelivery');
 /**
  * Messaging reminder service.
  * Sends reminders to pending (unanswered) guests or auto/extra reminder batches.
@@ -24,7 +25,7 @@ const { withIdempotency, sha256 } = require('../../shared/utils/idempotency');
 const logger = require('../../shared/utils/logger');
 
 async function sendSMS(phoneNumber, message, logContext = {}) {
-  return taqnyat.sendSMS(phoneNumber, message, { sender: TAQNYAT_SENDER, logContext });
+  return taqnyat.sendSMS(phoneNumber, message, { sender: TAQNYAT_SENDER, logContext, sensitive: true });
 }
 
 /**
@@ -40,7 +41,7 @@ async function sendReminder({
   isAdmin = false,
   actorRole,
 }) {
-  const event = await Event.findById(eventId).populate('host', 'name');
+  const event = await Event.findById(eventId).populate('host', 'name accountType');
   if (!event) {
     throw new NotFoundError('Event');
   }
@@ -72,6 +73,8 @@ async function sendReminder({
   const templateName =
     reminderTemplateName || config.taqnyat?.reminderTemplateName;
 
+  const businessTemplate = resolveInvitationDelivery(event) === 'portal_link' && channel === 'whatsapp'
+    ? assertBusinessTemplate(await require('../taqnyat-templates/taqnyat-templates.service').findActiveByCategoryAndType(event.eventDetails?.type, 'reminder_confirmed', 'portal_link')) : null;
   const query = {
     ...getActiveEventGuestsFilter(
       eventId,
@@ -97,7 +100,6 @@ async function sendReminder({
     date: formatDate(event.eventDetails?.date),
   };
 
-  const frontendUrl = (config.frontend?.url || 'https://halaa.sa').replace(/\/$/, '');
 
   const batched = await runBatched(
     pendingGuests,
@@ -110,12 +112,18 @@ async function sendReminder({
           purpose: 'guest_reminder_manual',
         },
       };
-      const rsvpLink = `${frontendUrl}/ar/invitation/${guest.qrcode}`;
+      const rsvpLink = buildGuestInvitationUrl(event, guest.qrcode, businessTemplate?.language);
       const defaultMessage = `تذكير: ${eventData.hostName} بانتظار ردك على دعوة "${eventData.title}". للرد: ${rsvpLink}`;
-      const message = customMessage || defaultMessage;
+      const message = resolveInvitationDelivery(event) === 'portal_link' ? `${customMessage || eventData.title}\n${rsvpLink}` : customMessage || defaultMessage;
 
       let result;
-      if (channel === 'whatsapp') {
+      if (businessTemplate) {
+        const params = getEventBodyParams(event, guest.name, businessTemplate, { invitation: { url: rsvpLink } });
+        const sms = { sender: TAQNYAT_SENDER, body: message };
+        const image = getRequiredEventImageUrl(event, businessTemplate);
+        result = image ? await taqnyat.sendWhatsAppTemplateWithImage(guest.phone, businessTemplate.templateName, businessTemplate.language || 'ar', image, params, sms, { ...logOptions, sensitive: true }, [])
+          : await taqnyat.sendWhatsAppTemplate(guest.phone, businessTemplate.templateName, businessTemplate.language || 'ar', [{ type: 'body', parameters: params.map(text => ({ type: 'text', text })) }], sms, { ...logOptions, sensitive: true });
+      } else if (channel === 'whatsapp') {
         result = await taqnyat.sendWhatsAppTemplate(
           guest.phone,
           templateName,
@@ -199,12 +207,12 @@ async function sendAutoReminderBatch({
     return { successful: 0, failed: guests.length, rateLimited: 0, details: [] };
   }
 
-  const frontendUrl = (config.frontend?.url || 'https://halaa.sa').replace(/\/$/, '');
+  if (resolveInvitationDelivery(event) === 'portal_link') assertBusinessTemplate(template);
 
   const batched = await runBatched(
     guests,
     async (guest) => {
-      const rsvpLink = `${frontendUrl}/ar/invitation/${guest.qrcode}`;
+      const rsvpLink = buildGuestInvitationUrl(event, guest.qrcode, template.language);
       const attemptToken =
         attemptKey || attemptId || `${event._id}:${reminderType}:48h`;
       const key = `${idempotencyPrefix}:${event._id}:${guest._id}:${reminderType}:${attemptToken}`;
@@ -221,6 +229,7 @@ async function sendAutoReminderBatch({
         key,
         async () => {
           const logOptions = {
+            sensitive: true,
             logContext: {
               eventId: event._id,
               guestId: guest._id,
@@ -228,7 +237,7 @@ async function sendAutoReminderBatch({
               metadata: { reminderType },
             },
           };
-          const bodyParams = getEventBodyParams(event, guest.name, template);
+          const bodyParams = getEventBodyParams(event, guest.name, template, { invitation: { url: rsvpLink } });
           const imageUrl = getRequiredEventImageUrl(event, template);
           const smsFallback = {
             sender: TAQNYAT_SENDER,

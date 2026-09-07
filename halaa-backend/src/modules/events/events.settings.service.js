@@ -1,3 +1,4 @@
+const { resolveInvitationDelivery } = require('../messaging/invitationDelivery');
 /**
  * Events Service — Settings sub-module
  * Composed onto EventsService via prototype mixin in events.service.js
@@ -417,6 +418,7 @@ module.exports = {
       {
         category: event.eventDetails?.type,
         invitationMode: event.invitationType || INVITATION_TYPE.REPLY_AND_QR,
+        deliveryMode: resolveInvitationDelivery(event),
       }
     );
 

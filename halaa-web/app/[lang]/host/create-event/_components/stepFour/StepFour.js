@@ -152,6 +152,7 @@ const StepFour = () => {
       category: category || undefined,
       type: "invite",
       invitationMode: invitationType,
+      deliveryMode: watch("isBusinessEvent") ? "portal_link" : "quick_reply",
     },
     { enabled: Boolean(category) }
   );
@@ -278,13 +279,13 @@ const StepFour = () => {
                   </div>
 
                   <div className={styles.cardContent}>
-                    <p className={styles.inviteTypeTitle}>{t(opt.labelKey)}</p>
-                    <p className={styles.inviteTypeDesc}>{t(opt.descKey)}</p>
+                    <p className={styles.inviteTypeTitle}>{t(watch("isBusinessEvent") && opt.value === "reply_and_qr" ? "business_invitation_type_reply_and_qr_label" : opt.labelKey)}</p>
+                    <p className={styles.inviteTypeDesc}>{t(watch("isBusinessEvent") ? `business_${opt.descKey}` : opt.descKey)}</p>
                   </div>
 
-                  {opt.features && opt.features.length > 0 && (
+                  {!watch("isBusinessEvent") && opt.features && opt.features.length > 0 && (
                     <div className={styles.featureChipsList}>
-                      {opt.features.map((feat) => (
+                      {opt.features.filter(() => !watch("isBusinessEvent")).map((feat) => (
                         <span
                           key={feat.key}
                           className={`${styles.featureChip} ${

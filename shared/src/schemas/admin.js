@@ -131,6 +131,7 @@ export const TAQNYAT_INVITATION_MODES = [
 ];
 
 export const assignTaqnyatSchema = z.object({
+  deliveryMode: z.enum(["quick_reply", "portal_link"]).default("quick_reply"),
   category: z.string().optional().or(z.literal("")),
   type: z.enum(TAQNYAT_TEMPLATE_TYPES).optional().or(z.literal("")),
   invitationMode: z

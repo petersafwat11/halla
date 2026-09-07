@@ -37,7 +37,7 @@ const WhatsappPreview = ({
   const hostName = useAuthStore(
     (state) => state.user?.name || ""
   );
-  const showReplyActions = invitationAllowsReply(invitationType);
+  const showReplyActions = selectedTemplate?.deliveryMode !== "portal_link" && invitationAllowsReply(invitationType);
 
   const formattedDate = useMemo(() => {
     const dateSource = eventDate || entryDate;

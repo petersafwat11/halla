@@ -216,7 +216,7 @@ const createApp = () => {
 
   if (config.isDev) {
     const morgan = require("morgan");
-    app.use(morgan("dev"));
+    app.use(morgan("dev", { skip: req => /\/guests\/(invitation\/|[^/]+\/rsvp)/.test(req.originalUrl || "") }));
   }
 
   // ============================================

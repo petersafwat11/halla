@@ -32,6 +32,9 @@ export async function GET() {
           // unprefixed + /ar + /en variants so the link opens the app
           // regardless of locale. Invitation paths mirror the same shape.
           paths: [
+            "NOT /business-invitation/*",
+            "NOT /ar/business-invitation/*",
+            "NOT /en/business-invitation/*",
             "/change-password*",
             "/ar/change-password*",
             "/en/change-password*",

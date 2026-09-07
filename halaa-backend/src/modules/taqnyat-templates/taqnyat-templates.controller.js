@@ -8,8 +8,8 @@ const { sendSuccess } = require('../../shared/utils/responseHelper');
 const service = require('./taqnyat-templates.service');
 
 exports.listForHost = catchAsync(async (req, res) => {
-  const { category, type, invitationMode } = req.query;
-  const templates = await service.listForHost({ category, type, invitationMode });
+  const { category, type, invitationMode, deliveryMode } = req.query;
+  const templates = await service.listForHost({ category, type, invitationMode, deliveryMode });
   sendSuccess(res, { templates });
 });
 
@@ -33,6 +33,8 @@ exports.assignMapping = catchAsync(async (req, res) => {
     category: req.body.category,
     type: req.body.type,
     invitationMode: req.body.invitationMode,
+    deliveryMode: req.body.deliveryMode,
+    compatibleInvitationModes: req.body.compatibleInvitationModes,
     varMapping: req.body.varMapping,
     active: req.body.active,
     sortOrder: req.body.sortOrder,

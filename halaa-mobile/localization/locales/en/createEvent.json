@@ -495,5 +495,9 @@
   "summary_date_time": "{{date}} - {{time}}",
   "guest_list_title_count": "Guest list ({{count}})",
   "import_error_row": "• Row {{row}}: {{message}}",
-  "invitation_visual": "Invitation preview"
+  "invitation_visual": "Invitation preview",
+  "business_invitation_type_reply_and_qr_label": "Confirm + QR pass",
+  "business_invitation_type_reply_and_qr_desc": "Guests confirm or decline on the website. Confirmation reveals an entry pass. WhatsApp contains a link and no buttons.",
+  "business_invitation_type_reply_only_desc": "Guests confirm or decline on the website without a QR pass. WhatsApp contains a link and no buttons.",
+  "business_invitation_type_none_desc": "The website shows event information without responses or QR. WhatsApp contains a link and no buttons."
 }

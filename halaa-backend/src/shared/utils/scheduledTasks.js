@@ -1,3 +1,4 @@
+const { resolveInvitationDelivery } = require('../../modules/messaging/invitationDelivery');
 /**
  * Scheduled Tasks
  * Cron jobs for automated notifications and reports
@@ -738,7 +739,7 @@ const scheduleGuestReminders = () => {
         status: { $in: ["scheduled", "live"] },
         "reminderSettings.scheduledDate": { $lte: dateLimit },
         "messagingStatus.reminderSent": { $ne: true },
-      }).populate("host", "name");
+      }).populate("host", "name accountType");
 
       // Load legacy events without custom settings that fall into the 48h window
       const windowStart = new Date(now.getTime() + 47.5 * 3600 * 1000);
@@ -748,7 +749,7 @@ const scheduleGuestReminders = () => {
         "eventDetails.date": { $gte: windowStart, $lte: windowEnd },
         "reminderSettings.scheduledDate": { $exists: false },
         "messagingStatus.reminderSent": { $ne: true },
-      }).populate("host", "name");
+      }).populate("host", "name accountType");
 
       // Combine arrays
       const allEvents = [...eventsWithSettings];
@@ -825,7 +826,7 @@ async function _runAutoReminderForEvent(event) {
 
   if (confirmedGuests.length > 0) {
     const template = await taqnyatTemplatesService
-      .findActiveByCategoryAndType(category, "reminder_confirmed")
+      .findActiveByCategoryAndType(category, "reminder_confirmed", resolveInvitationDelivery(event))
       .catch(() => null);
 
     if (!template) {

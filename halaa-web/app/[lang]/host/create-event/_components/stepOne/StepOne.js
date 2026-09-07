@@ -1,4 +1,5 @@
 "use client";
+import BusinessCoverInput from "@/components/events/BusinessCoverInput";
 import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import styles from "./stepOne.module.css";
@@ -10,7 +11,7 @@ import MapInput from "@/ui/commen/inputs/MapInput";
 import { useEventSubscriptionInfo } from "@/hooks/events";
 import { EVENT_CATEGORIES } from "@halaa/shared/constants/eventCategories";
 
-const StepOne = ({ constraints } = {}) => {
+const StepOne = ({ constraints, owner } = {}) => {
   const { t } = useTranslation("createEvent");
   const { data: subscriptionData } = useEventSubscriptionInfo();
   const isTrial = subscriptionData?.data?.planCode === "trial";
@@ -41,6 +42,7 @@ const StepOne = ({ constraints } = {}) => {
 
   return (
     <div className={styles.step_one}>
+      {!constraints && <BusinessCoverInput owner={owner} />}
       <div className={styles.form_container}>
         {/* First Row: Event Type and Event Name */}
         <div className={styles.form_row}>

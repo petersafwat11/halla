@@ -175,6 +175,7 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
       try {
         const payload = EventsService.transformFormDataToPayload(data);
         const formDataObj = new FormData();
+        if (payload.coverImage?.uri) formDataObj.append("coverImage", payload.coverImage);
 
         if (payload.guestList) {
           formDataObj.append("guestList", JSON.stringify(payload.guestList));
@@ -371,7 +372,7 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
     const wizardStep = isHostMode ? currentStep : currentStep - 1;
     switch (wizardStep) {
       case 1:
-        return <StepOne />;
+        return <StepOne owner={hostSelection.owner} />;
       case 2:
         return (
           <StepTwo

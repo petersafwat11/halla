@@ -1,4 +1,6 @@
-import React, { useMemo, useState } from "react";
+import { WEB_BASE_URL } from "../../config/api";
+import * as WebBrowser from "expo-web-browser";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -22,7 +24,7 @@ const FALLBACK_BG = "#F9F4EF";
 
 const InvitationScreen = ({ route }) => {
   const code = route?.params?.code;
-  const { t } = useTranslation("events");
+  const { t, currentLanguage } = useTranslation("events");
 
   const { data, isLoading, isError, error, refetch } = useGuestByToken(code);
   const submit = useSubmitRSVP();
@@ -40,6 +42,10 @@ const InvitationScreen = ({ route }) => {
 
   const guest = data?.data?.guest || data?.guest;
   const event = data?.data?.event || data?.event;
+  const businessUrl = `${WEB_BASE_URL}/${currentLanguage === 'en' ? 'en' : 'ar'}/business-invitation/${encodeURIComponent(code)}`;
+  useEffect(() => {
+    if (event?.deliveryMode === 'portal_link') WebBrowser.openBrowserAsync(businessUrl).catch(() => {});
+  }, [event?.deliveryMode, businessUrl]);
   // Event branding comes from the event's own `eventDetails.primaryColor`.
   // Defaults below preserve a sensible look without that source.
   const brandColor =
@@ -69,6 +75,7 @@ const InvitationScreen = ({ route }) => {
     [brandColor]
   );
 
+  if (event?.deliveryMode === 'portal_link') return <SafeAreaView style={{ flex: 1, justifyContent: 'center', padding: 24 }}><TouchableOpacity accessibilityRole="link" onPress={() => WebBrowser.openBrowserAsync(businessUrl)}><Text>{currentLanguage === 'en' ? 'Open business invitation' : 'فتح دعوة المنشأة'}</Text></TouchableOpacity></SafeAreaView>;
   if (isLoading) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: FALLBACK_BG }]}>

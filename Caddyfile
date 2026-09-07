@@ -17,6 +17,15 @@ halaa.com.sa {
 		reverse_proxy api:8000
 	}
 
+	# Private guest pages retain strict privacy headers through the proxy.
+	@businessGuest path /ar/business-invitation/* /en/business-invitation/* /business-invitation/*
+	handle @businessGuest {
+		header Cache-Control "private, no-store"
+		header Referrer-Policy "no-referrer"
+		header X-Robots-Tag "noindex, nofollow, noarchive"
+		reverse_proxy web:3000
+	}
+
 	# Everything else → Next.js web container
 	handle {
 		header {

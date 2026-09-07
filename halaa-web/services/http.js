@@ -158,7 +158,7 @@ axiosInstance.interceptors.response.use(
     const duration = Date.now() - (response.config.metadata?.startTime || Date.now());
 
     // Log successful requests in development
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === 'development' && !/\/guests\//.test(response.config.url || '')) {
       // eslint-disable-next-line no-console
       console.log(`[API] ${response.config.method?.toUpperCase()} ${response.config.url} - ${response.status} (${duration}ms)`);
     }

@@ -98,6 +98,7 @@ const mapApiToFormValues = (eventData) => {
       onAbsent: replies.onAbsent || "",
     },
     invitationType: eventData.invitationType || DEFAULT_INVITATION_TYPE,
+    isBusinessEvent: eventData.invitationDeliveryMode === 'portal_link',
   };
 };
 

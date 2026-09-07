@@ -103,7 +103,11 @@ function getButtonCapability(buttons = []) {
   };
 }
 
-function isTemplateCompatibleWithInvitationMode(template, invitationMode) {
+function isTemplateCompatibleWithInvitationMode(template, invitationMode, deliveryMode = 'quick_reply') {
+  if (deliveryMode === 'portal_link') {
+    return require('../messaging/invitationDelivery').isBusinessTemplate(template) && INVITATION_MODES.includes(invitationMode) && template.compatibleInvitationModes?.includes(invitationMode);
+  }
+  if (template?.deliveryMode === 'portal_link') return false;
   if (!INVITATION_MODES.includes(invitationMode)) return false;
   const capability = getButtonCapability(template?.buttons || []);
 

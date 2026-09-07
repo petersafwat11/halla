@@ -1,6 +1,6 @@
 "use client";
-import React, { useMemo, useState } from "react";
-import { useParams } from "next/navigation";
+import React, { useEffect, useMemo, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import {
   useGuestByToken,
@@ -49,6 +49,7 @@ function isReplaySuccess(error) {
 
 export default function GuestPortalPage() {
   const { code, lang } = useParams();
+  const router = useRouter();
   const { t } = useTranslation("guest-portal");
   const { formatDate } = useLocalizedDate();
 
@@ -63,6 +64,9 @@ export default function GuestPortalPage() {
   const guest = data?.data?.guest || data?.guest || null;
   const event = data?.data?.event || data?.event || null;
 
+  useEffect(() => {
+    if (event?.deliveryMode === 'portal_link') router.replace(`/${lang}/business-invitation/${encodeURIComponent(code)}`);
+  }, [event?.deliveryMode, lang, code, router]);
   const cssVars = useMemo(
     () => ({
       "--portal-primary": DEFAULT_PRIMARY,
@@ -104,7 +108,7 @@ export default function GuestPortalPage() {
     setIsChanging(true);
   };
 
-  if (isLoading) {
+  if (isLoading || event?.deliveryMode === 'portal_link') {
     return (
       <div className={styles.page} style={cssVars}>
         <PortalSkeleton />

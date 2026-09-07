@@ -1,3 +1,4 @@
+const { optimizeCover, storeImage } = require('./eventCover');
 /**
  * Events Service — CRUD sub-module
  * Composed onto EventsService via prototype mixin in events.service.js
@@ -7,6 +8,7 @@
 const { EVENT_STATUS, INVITATION_TYPE, isPerEventPlan, isPoolPlan } = require("../../shared/constants");
 const { ROLES } = require("../../shared/constants/roles");
 const {
+  AppError,
   NotFoundError,
   ValidationError,
   ForbiddenError,
@@ -469,6 +471,7 @@ module.exports = {
     let capacitySub = null;
     let createdEventId = null;
     let copiedLogoKey = null;
+    let copiedCoverKey = null;
     let subscriptionUsageIncremented = false;
 
     if (!skipSubscriptionCheck) {
@@ -540,6 +543,13 @@ module.exports = {
       );
     }
 
+    const owner = await User.findById(userId).select('accountType name avatar');
+    eventData.invitationDeliveryMode = owner?.accountType === ACCOUNT_TYPES.BUSINESS ? 'portal_link' : 'quick_reply';
+    let coverBuffer = null;
+    if (eventData.invitationDeliveryMode === 'portal_link') {
+      if (!owner.avatar) throw new AppError('Add a business logo in business settings before creating an event.', 400, 'BUSINESS_LOGO_REQUIRED');
+      coverBuffer = await optimizeCover(context.coverFile);
+    }
     // Freeze a valid Step-4 contract at creation time. Category, invitation
     // mode, and the approved template's real WhatsApp controls must agree.
     await taqnyatTemplatesService.assertInviteTemplateCompatible(
@@ -547,6 +557,7 @@ module.exports = {
       {
         category: eventData.eventDetails?.type,
         invitationMode: eventData.invitationType || INVITATION_TYPE.REPLY_AND_QR,
+        deliveryMode: eventData.invitationDeliveryMode,
       }
     );
 
@@ -626,7 +637,6 @@ module.exports = {
       // copy + snapshotted business name. Pre-generate the event _id so the
       // copied S3 key is event-owned. Reject creation if the copy fails; the
       // copied object is cleaned up if the event create later throws.
-      const owner = await User.findById(userId).select('accountType name avatar');
       const preEventId = new mongoose.Types.ObjectId();
       eventData._id = preEventId;
       if (owner?.accountType === ACCOUNT_TYPES.BUSINESS) {
@@ -641,7 +651,9 @@ module.exports = {
           }
           copiedLogoKey = logoKey === owner.avatar ? null : logoKey; // only clean up real copies
         }
-        eventData.branding = { logoKey, businessName: owner.name || null };
+        const cover = await storeImage(coverBuffer, `events/${preEventId}/branding`, 'cover.webp', 'image/webp');
+        copiedCoverKey = cover.key;
+        eventData.branding = { logoKey, businessName: owner.name || null, coverImageKey: cover.key };
       } else {
         eventData.invitationDeliveryMode = 'quick_reply';
       }
@@ -729,6 +741,7 @@ module.exports = {
           });
         }
       }
+      if (copiedCoverKey) await deleteFromS3(copiedCoverKey).catch(() => {});
       if (copiedLogoKey) {
         await deleteFromS3(copiedLogoKey).catch((cleanupError) => {
           logger.error('event logo cleanup failed', {

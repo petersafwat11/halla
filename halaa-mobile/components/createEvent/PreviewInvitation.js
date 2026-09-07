@@ -113,7 +113,7 @@ const PreviewInvitation = ({
   }, [template, templateImage]);
 
   const messageTime = t("preview_timestamp");
-  const showReplyActions = invitationAllowsReply(invitationType);
+  const showReplyActions = selectedTemplate?.deliveryMode !== "portal_link" && invitationAllowsReply(invitationType);
   const previewWidth = Math.min(viewportWidth - 24, 390);
   const previewHeight = Math.min(
     viewportHeight - insets.top - insets.bottom - 24,

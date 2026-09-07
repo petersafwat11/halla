@@ -58,7 +58,7 @@ const HostSelectorStep = ({ value = {}, onChange }) => {
   };
 
   const handleSelectHost = (host) => {
-    onChange({ createForSelf: false, targetUserId: host._id || host.id, targetType: 'host', subscription: host.subscription || null });
+    onChange({ createForSelf: false, targetUserId: host._id || host.id, targetType: 'host', subscription: host.subscription || null, owner: host });
   };
 
   const isSelected = (id, type) => {

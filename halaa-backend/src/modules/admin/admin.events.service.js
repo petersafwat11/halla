@@ -1,3 +1,4 @@
+const { resolveInvitationDelivery } = require('../messaging/invitationDelivery');
 /**
  * Admin Events Service
  * Event management operations for the admin module.
@@ -149,6 +150,7 @@ async function updateEventFull(eventId, updateData, context = {}) {
     {
       category: event.eventDetails?.type,
       invitationMode: event.invitationType || INVITATION_TYPE.REPLY_AND_QR,
+        deliveryMode: resolveInvitationDelivery(event),
     }
   );
 
@@ -223,7 +225,7 @@ async function getEventTargets(type = 'host', requestingUser = null) {
   const query = { role: ROLES.HOST, status: { $ne: USER_STATUS.DELETED } };
 
   const users = await User.find(query)
-    .select('name email phoneNumber role status')
+    .select('name email phoneNumber role status accountType avatar')
     .lean();
 
   const userIds = users.map(u => u._id);

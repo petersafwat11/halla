@@ -1,3 +1,4 @@
+const { resolveInvitationDelivery, buildGuestInvitationUrl } = require('../messaging/invitationDelivery');
 /**
  * Messaging send service.
  * Test, single-guest, bulk, launch batch, and retry flows.
@@ -126,7 +127,7 @@ function createInvitationPreviewCode(eventId) {
 }
 
 async function sendSMS(phoneNumber, message, logContext = {}) {
-  return taqnyat.sendSMS(phoneNumber, message, { sender: TAQNYAT_SENDER, logContext });
+  return taqnyat.sendSMS(phoneNumber, message, { sender: TAQNYAT_SENDER, logContext, sensitive: true });
 }
 
 /**
@@ -134,7 +135,7 @@ async function sendSMS(phoneNumber, message, logContext = {}) {
  * Validates status allowlist, sends test payload, and records canonical test fingerprint.
  */
 async function sendTestMessage({ eventId, phoneNumber, channel = 'whatsapp', isAdmin = false }) {
-  const event = await Event.findById(eventId).populate('host', 'name');
+  const event = await Event.findById(eventId).populate('host', 'name accountType');
   if (!event) {
     throw new NotFoundError('Event');
   }
@@ -160,11 +161,10 @@ async function sendTestMessage({ eventId, phoneNumber, channel = 'whatsapp', isA
     }
   }
 
-  const frontendUrl = (config.frontend?.url || 'https://halaa.sa').replace(/\/$/, '');
   const previewCode = createInvitationPreviewCode(eventId);
-  const rsvpLink = `${frontendUrl}/ar/invitation/${previewCode}`;
 
   let cached = await resolveTaqnyatTemplate(event);
+  const rsvpLink = buildGuestInvitationUrl(event, previewCode, cached?.language);
   const templateName = cached?.templateName;
 
   let result;
@@ -188,10 +188,11 @@ async function sendTestMessage({ eventId, phoneNumber, channel = 'whatsapp', isA
       {
         category: event.eventDetails?.type,
         invitationMode: event.invitationType || INVITATION_TYPE.REPLY_AND_QR,
+        deliveryMode: resolveInvitationDelivery(event),
       }
     );
     imageUrl = getRequiredEventImageUrl(event, cached);
-    bodyParams = getEventBodyParams(event, 'ضيف تجريبي', cached);
+    bodyParams = getEventBodyParams(event, 'ضيف تجريبي', cached, { invitation: { url: rsvpLink } });
 
     const components = [
       {
@@ -210,7 +211,7 @@ async function sendTestMessage({ eventId, phoneNumber, channel = 'whatsapp', isA
       ? await taqnyat.sendWhatsAppTemplateWithImage(
           phoneNumber,
           templateName,
-          'ar',
+          cached?.language || 'ar',
           imageUrl,
           bodyParams,
           smsFallback,
@@ -220,7 +221,7 @@ async function sendTestMessage({ eventId, phoneNumber, channel = 'whatsapp', isA
       : await taqnyat.sendWhatsAppTemplate(
           phoneNumber,
           templateName,
-          'ar',
+          cached?.language || 'ar',
           components,
           smsFallback,
           logOptions
@@ -233,11 +234,11 @@ async function sendTestMessage({ eventId, phoneNumber, channel = 'whatsapp', isA
   logger.info('[sendTestMessage] result', {
     eventId,
     channel,
-    phoneNumber,
+    phoneNumber: '[redacted]',
     templateName: templateName || null,
     imageUrl,
-    bodyParams,
-    smsBodyPreview: smsBody ? smsBody.slice(0, 80) : null,
+    bodyParams: '[redacted]',
+    smsBodyPreview: smsBody ? '[redacted]' : null,
     success: !!result.success,
     messageId: result.messageId || null,
     error: result.error || null,
@@ -288,10 +289,9 @@ async function _dispatchInvitationToGuest({
   let dispatchClaimToken = null;
   let inviteReserved = false;
 
-  const rsvpBase = config.frontend?.url || 'https://halaa.sa';
-  const rsvpLink = `${rsvpBase.replace(/\/$/, '')}/ar/invitation/${guest.qrcode}`;
 
   let cached = await resolveTaqnyatTemplate(event);
+  const rsvpLink = buildGuestInvitationUrl(event, guest.qrcode, cached?.language);
   const templateName = cached?.templateName;
 
   let result;
@@ -328,10 +328,11 @@ async function _dispatchInvitationToGuest({
       {
         category: event.eventDetails?.type,
         invitationMode: event.invitationType || INVITATION_TYPE.REPLY_AND_QR,
+        deliveryMode: resolveInvitationDelivery(event),
       }
     );
     imageUrl = getRequiredEventImageUrl(event, cached);
-    bodyParams = getEventBodyParams(event, guest.name, cached);
+    bodyParams = getEventBodyParams(event, guest.name, cached, { invitation: { url: rsvpLink } });
     const components = [
       {
         type: 'body',
@@ -348,7 +349,7 @@ async function _dispatchInvitationToGuest({
       ? await taqnyat.sendWhatsAppTemplateWithImage(
           guest.phone,
           templateName,
-          'ar',
+          cached?.language || 'ar',
           imageUrl,
           bodyParams,
           smsFallback,
@@ -358,7 +359,7 @@ async function _dispatchInvitationToGuest({
       : await taqnyat.sendWhatsAppTemplate(
           guest.phone,
           templateName,
-          'ar',
+          cached?.language || 'ar',
           components,
           smsFallback,
           logOptions
@@ -379,11 +380,11 @@ async function _dispatchInvitationToGuest({
     eventId,
     guestId,
     channel,
-    phone: guest.phone,
+    phone: '[redacted]',
     templateName: templateName || null,
     imageUrl,
-    bodyParams,
-    smsBodyPreview: smsBody ? smsBody.slice(0, 80) : null,
+    bodyParams: '[redacted]',
+    smsBodyPreview: smsBody ? '[redacted]' : null,
     success: !!result.success,
     messageId: result.messageId || null,
     error: result.error || null,
@@ -514,7 +515,7 @@ async function _dispatchInvitationToGuest({
 async function sendToGuest({ guestId, eventId, channel = 'sms', userId, isAdmin = false, actorRole }) {
   const [guest, event] = await Promise.all([
     Guest.findById(guestId),
-    Event.findById(eventId).populate('host', 'name'),
+    Event.findById(eventId).populate('host', 'name accountType'),
   ]);
 
   if (!guest) {

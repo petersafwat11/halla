@@ -416,5 +416,9 @@
   "discard_changes": "تجاهل التغييرات",
   "keep_editing": "متابعة التعديل",
   "refresh_templates": "تحديث القوالب",
-  "changes_saved_unscheduled": "تم حفظ التغييرات. أرسل رسالة تجريبية جديدة ثم أعد جدولة الدعوات."
+  "changes_saved_unscheduled": "تم حفظ التغييرات. أرسل رسالة تجريبية جديدة ثم أعد جدولة الدعوات.",
+  "business_invitation_type_reply_and_qr_label": "تأكيد الحضور مع رمز دخول",
+  "business_invitation_type_reply_and_qr_desc": "يؤكد الضيف أو يعتذر في الموقع. يظهر رمز الدخول بعد التأكيد. رسالة واتساب تحتوي على رابط فقط دون أزرار.",
+  "business_invitation_type_reply_only_desc": "يؤكد الضيف أو يعتذر في الموقع دون رمز دخول. رسالة واتساب تحتوي على رابط فقط دون أزرار.",
+  "business_invitation_type_none_desc": "يعرض الموقع معلومات المناسبة دون ردود أو رمز دخول. رسالة واتساب تحتوي على رابط فقط دون أزرار."
 }

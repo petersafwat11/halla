@@ -40,6 +40,7 @@ const updateGuestSchema = z
 const submitRSVPSchema = z
   .object({
     response: z.enum(Object.values(RSVP_STATUS)),
+    revision: z.number().int().min(0).optional(),
     invitationCode: z.string().min(1, 'invitationCode is required'),
     message: z.string().max(500).optional(),
     dietaryRestrictions: z.string().max(200).optional(),
