@@ -1,0 +1,109 @@
+'use client';
+
+import React from 'react';
+import { StatusBadge } from '../ui/StatusBadge.jsx';
+import { Button } from '../ui/Button.jsx';
+import { getDictionary, t, formatRiyadhDate } from '../../lib/locale.js';
+import styles from './EventHeaderBar.module.css';
+
+/**
+ * Event header bar displaying event name, venue, Riyadh start time, status badge,
+ * lifecycle action buttons (Open, Close, Reopen), and settings trigger.
+ */
+export function EventHeaderBar({
+  event,
+  lang = 'ar',
+  onOpenSettings,
+  onOpenLifecycle,
+}) {
+  const dict = getDictionary(lang);
+  if (!event) return null;
+
+  const isDraft = event.status === 'draft';
+  const isLive = event.status === 'live';
+  const isClosed = event.status === 'closed';
+
+  return (
+    <div className={styles.container}>
+      <div className={styles.bar}>
+        <div className={styles.eventMeta}>
+          <div className={styles.titleRow}>
+            <h1 className={styles.eventName} dir="auto">
+              {event.name}
+            </h1>
+            <StatusBadge
+              status={event.status}
+              label={t(dict, `status.${event.status}`)}
+              size="md"
+            />
+          </div>
+
+          <div className={styles.detailRow}>
+            <span className={styles.detailItem}>
+              <span aria-hidden="true">📍</span>
+              <span dir="auto">{event.venue}</span>
+            </span>
+            <span className={styles.detailItem}>
+              <span aria-hidden="true">🕒</span>
+              <span>{formatRiyadhDate(event.startsAt, lang)}</span>
+            </span>
+          </div>
+        </div>
+
+        <div className={styles.actions}>
+          {/* Settings Trigger */}
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={onOpenSettings}
+            data-testid="event-settings-btn"
+          >
+            ⚙️ {t(dict, 'events.editSettings')}
+          </Button>
+
+          {/* Lifecycle Action Triggers */}
+          {isDraft && (
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => onOpenLifecycle('live')}
+              data-testid="open-event-btn"
+            >
+              🟢 {t(dict, 'events.openEvent')}
+            </Button>
+          )}
+
+          {isLive && (
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={() => onOpenLifecycle('closed')}
+              data-testid="close-event-btn"
+            >
+              🛑 {t(dict, 'events.closeEvent')}
+            </Button>
+          )}
+
+          {isClosed && (
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => onOpenLifecycle('live')}
+              data-testid="reopen-event-btn"
+            >
+              🔄 {t(dict, 'events.reopenEvent')}
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Prominent warning banner when event is closed */}
+      {isClosed && (
+        <div className={styles.closedBanner} role="alert" data-testid="event-closed-banner">
+          <span aria-hidden="true">🔒</span>
+          <span>{t(dict, 'events.eventClosedBanner')}</span>
+        </div>
+      )}
+    </div>
+  );
+}

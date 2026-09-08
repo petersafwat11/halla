@@ -92,22 +92,9 @@ const GuestFormSection = ({
     [formData.guestList, setValue],
   );
 
-  const handleRemoveGuest = useCallback(
-    (id) => {
-      Alert.alert(t("remove"), "", [
-        { text: t("cancel"), style: "cancel" },
-        {
-          text: t("delete"),
-          style: "destructive",
-          onPress: () => {
-            const updatedList = EventsService.removeListItem(id, formData.guestList);
-            setValue("guestList", updatedList, { shouldValidate: true });
-          },
-        },
-      ]);
-    },
-    [formData.guestList, setValue, t],
-  );
+  const handleRemoveGuest = useCallback((id) => {
+    setValue("guestList", EventsService.removeListItem(id, formData.guestList || []), { shouldValidate: true });
+  }, [formData.guestList, setValue]);
 
   // Bulk "link to category" — stamp the chosen label onto the selected guests.
   const handleAssignGuestCategory = useCallback(
@@ -140,22 +127,9 @@ const GuestFormSection = ({
     [formData.staffList, setValue],
   );
 
-  const handleRemoveModerator = useCallback(
-    (id) => {
-      Alert.alert(t("remove"), "", [
-        { text: t("cancel"), style: "cancel" },
-        {
-          text: t("delete"),
-          style: "destructive",
-          onPress: () => {
-            const updatedList = EventsService.removeListItem(id, formData.staffList || []);
-            setValue("staffList", updatedList, { shouldValidate: true });
-          },
-        },
-      ]);
-    },
-    [formData.staffList, setValue, t],
-  );
+  const handleRemoveModerator = useCallback((id) => {
+    setValue("staffList", EventsService.removeListItem(id, formData.staffList || []), { shouldValidate: true });
+  }, [formData.staffList, setValue]);
 
   const currentList = activeTab === "guests" ? guestList : staffList;
   const currentCount = currentList?.length || 0;
@@ -231,6 +205,7 @@ const GuestFormSection = ({
 
       {currentCount > 0 && (
         <ViewListButton
+          listType={activeTab}
           count={currentCount}
           onPress={() => {
             if (activeTab === "guests") setShowGuestModal(true);

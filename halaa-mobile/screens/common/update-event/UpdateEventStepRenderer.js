@@ -63,7 +63,7 @@ const UpdateEventStepRenderer = ({
     case 3:
       return <StepThree disabled={lockoutActive} />;
     case 4:
-      return <StepFour disabled={lockoutActive} />;
+      return <StepFour disabled={lockoutActive} owner={eventData?.host} />;
     default:
       return null;
   }

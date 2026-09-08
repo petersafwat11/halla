@@ -180,12 +180,14 @@ const styles = StyleSheet.create({
     height: 56,
     borderRadius: 8,
     overflow: "hidden",
-    backgroundColor: "#F2F2F2",
+    backgroundColor: "#FAF6F1",
+    borderWidth: 1,
+    borderColor: "#EEE5DC",
   },
   image: {
     width: "100%",
     height: "100%",
-    resizeMode: "cover",
+    resizeMode: "contain",
   },
   placeholderImage: {
     width: "100%",

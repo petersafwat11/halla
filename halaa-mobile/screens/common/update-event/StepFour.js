@@ -9,12 +9,12 @@ import React from "react";
 import { View, StyleSheet } from "react-native";
 import CreateStepFour from "../../../components/createEvent/StepFour";
 
-const StepFour = ({ disabled = false }) => (
+const StepFour = ({ disabled = false, owner }) => (
   <View
     style={[styles.container, disabled && styles.disabled]}
     pointerEvents={disabled ? "none" : "auto"}
   >
-    <CreateStepFour />
+    <CreateStepFour owner={owner} />
   </View>
 );
 

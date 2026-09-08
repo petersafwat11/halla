@@ -272,6 +272,14 @@ async function sendAutoReminderBatch({
             !wa?.success &&
             (wa?.statusCode === 429 || wa?.error === 'RATE_LIMITED');
 
+          // Cache accepted sends only. Returning a failed result here would
+          // permanently replay that failure on every retry of the same key.
+          if (!wa?.success) {
+            const error = new Error(wa?.error || 'Reminder provider rejected the message');
+            error.rateLimited = isRateLimited;
+            throw error;
+          }
+
           return {
             guestId: guest._id,
             success: !!wa?.success,
@@ -281,7 +289,13 @@ async function sendAutoReminderBatch({
           };
         },
         { scope, requestHash }
-      );
+      ).catch(error => ({
+        guestId: guest._id,
+        success: false,
+        messageId: null,
+        error: error?.message || 'Reminder send failed',
+        rateLimited: !!error?.rateLimited,
+      }));
     },
     { concurrency: 5, ratePerSecond: 10 }
   );
@@ -291,8 +305,8 @@ async function sendAutoReminderBatch({
     return {
       guestId: r.item?._id,
       success: false,
-      error: r.error?.message || 'unknown',
-      rateLimited: false,
+      error: r.error?.message || r.error || 'unknown',
+      rateLimited: !!r.error?.rateLimited,
     };
   });
   let successful = 0;

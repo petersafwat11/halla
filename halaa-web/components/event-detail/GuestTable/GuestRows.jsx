@@ -25,6 +25,7 @@ export default function GuestRows({
   onRotateQr,
   onRevokeAccess,
   onExportGuests,
+  headerAction,
 }) {
   const guestsList = guests || [];
 
@@ -55,6 +56,7 @@ export default function GuestRows({
 
   return (
     <Table
+      headerAction={headerAction}
       mode="server"
       searchValue={searchValue}
       onSearchChange={onSearchChange}

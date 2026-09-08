@@ -61,8 +61,8 @@ test("GUEST-EDIT-02: editor sheet suspends while its CategoryPickerSheet is pres
   );
   assert.match(
     source,
-    /onPickerVisibleChange=\{setPickerPresented\}/,
-    "editor must receive picker presentation changes from CategorySelect"
+    /<\/KeyboardSafeModalSheet>[\s\S]*<CategoryPickerSheet visible=\{visible && pickerPresented\}/,
+    "category picker must remain outside the hidden editor modal"
   );
 });
 

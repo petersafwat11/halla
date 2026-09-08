@@ -4,7 +4,7 @@ const API_HOST = API_BASE_URL.replace(/\/api\/v2\/?$/, "").replace(/\/api\/?$/, 
 
 export const getImageUrl = (image) => {
   if (!image) return null;
-  if (image.startsWith("http")) return image;
+  if (/^(https?:|file:|content:|data:|blob:)/i.test(image)) return image;
 
   if (image.includes("\\") || /^[A-Z]:/i.test(image)) {
     const uploadsMatch = image.match(/uploads[\\/](.+)$/);

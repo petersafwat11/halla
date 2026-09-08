@@ -169,6 +169,18 @@
     "fallbackMessage": "Unable to open WhatsApp. You can reach us directly at:\n{{displayNumber}}",
     "accessibilityLabel": "Customer support chat on WhatsApp"
   },
-  "queue": {
+  "queue": {},
+  "spreadsheet": {
+    "saveTemplate": "Save template",
+    "exportError": "Could not export the template.",
+    "empty": "The file is empty.",
+    "missing": "Missing columns: {{columns}}",
+    "imported": "Imported {{rows}} rows. Invalid rows: {{errors}}.",
+    "readError": "Could not read the file."
+  },
+  "picker": {
+    "date": "Date",
+    "time": "Time",
+    "manualAddress": "Enter the venue address manually. Interactive map selection is available in the mobile app."
   }
 }

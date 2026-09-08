@@ -1,5 +1,5 @@
 import React from "react";
-import { EventActionRow } from "./EventActionRow";
+import EventActionRow from "./EventActionRow";
 
 const EventActionsSection = ({ event, canEdit, canDelete, updatePending, deletePending, onStatusChange, onDelete, t, SectionCard }) => {
   const status = event.status;

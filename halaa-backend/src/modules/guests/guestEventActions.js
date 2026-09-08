@@ -1,7 +1,7 @@
 const { parseDateTime } = require('../../shared/utils/timezone');
 
 function escapeIcs(value) {
-  return String(value || '').replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/;/g, '\\;').replace(/,/g, '\\,');
+  return String(value || '').replace(/\\/g, '\\\\').replace(/\r\n|\r|\n/g, '\\n').replace(/;/g, '\\;').replace(/,/g, '\\,');
 }
 function fold(line) {
   let result = '', bytes = 0;
@@ -24,7 +24,7 @@ function guestEventActions(event) {
     actions.ride = { provider: 'Uber', url: `https://m.uber.com/ul/?${params}`, fallbackUrl: actions.directionsUrl };
   }
   const normalized = String(details.time || '').replace(/[٠-٩]/g, c => String(c.charCodeAt(0) - 0x660));
-  const match = /^(\d{1,2}):(\d{2})\s*(AM|PM|ص|م)?$/i.exec(normalized.trim());
+  const match = /^(\d{1,2}):(\d{2})(?:\s*:?\s*(AM|PM|ص|م))?$/i.exec(normalized.trim());
   let time = normalized;
   if (match?.[3] && Number(match[1]) >= 1 && Number(match[1]) <= 12) {
     const hour = Number(match[1]) % 12 + (/^(PM|م)$/i.test(match[3]) ? 12 : 0);

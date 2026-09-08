@@ -346,13 +346,20 @@ async function runEventLaunch(event, workerId) {
       fresh.status = "live";
       fresh.launchedAt = new Date();
       fresh.failureReason = null;
+      const launchUpdate = {
+        status: fresh.status,
+        launchedAt: fresh.launchedAt,
+        failureReason: null,
+      };
       if (sendResult.failed === 0) {
-        fresh.messagingStatus = fresh.messagingStatus || {};
-        fresh.messagingStatus.deliveryStatus = "delivered";
-        fresh.messagingStatus.deliveryExhaustedAt = null;
-        fresh.messagingStatus.lastError = null;
+        launchUpdate['messagingStatus.deliveryStatus'] = "delivered";
+        launchUpdate['messagingStatus.deliveryExhaustedAt'] = null;
+        launchUpdate['messagingStatus.lastError'] = null;
       }
-      await fresh.save();
+      // The batch has already recomputed counters from persisted guests.
+      // Saving this pre-send document's mixed messagingStatus would restore
+      // stale failure/sent counts after a successful retry.
+      await Event.updateOne({ _id: eventId }, { $set: launchUpdate });
 
       await logAudit({
         action: "event.launched",
@@ -797,6 +804,11 @@ const scheduleGuestReminders = () => {
  * after sending so the next tick is a no-op.
  */
 async function _runAutoReminderForEvent(event) {
+  // Re-read completion state: callers may hold an older event snapshot.
+  event = await Event.findById(event._id).populate("host", "name accountType");
+  if (!event || event.messagingStatus?.reminderSent) {
+    return { reminded: false, reason: "already_completed_or_missing" };
+  }
   const category = event.eventDetails?.type || null;
   const eventId = event._id;
 
@@ -810,9 +822,9 @@ async function _runAutoReminderForEvent(event) {
   }
 
   const allGuests = await Guest.find({
-    event: eventId,
+    ...getActiveEventGuestsFilter(eventId, event.guestList),
     "invitation.sent": true,
-    deleted: { $ne: true },
+    "invitation.autoReminderSent": { $ne: true },
   });
 
   // Confirmed-only audience. Non-responders and declined guests get nothing
@@ -830,6 +842,7 @@ async function _runAutoReminderForEvent(event) {
       .catch(() => null);
 
     if (!template) {
+      totalFailed = confirmedGuests.length;
       await logAudit({
         action: "reminder.template_missing",
         actor: { _id: null, role: "system" },
@@ -851,13 +864,9 @@ async function _runAutoReminderForEvent(event) {
       });
 
       totalSuccess += result.successful;
-      totalFailed += result.failed;
+      totalFailed += result.failed + (result.rateLimited || 0);
 
-      // Per-guest tracking writes for successful sends. Failures intentionally
-      // do not flip autoReminderSent so the next tick (if still in the
-      // detection window AND event hasn't been marked yet) could retry —
-      // though in practice the per-event flag below normally locks future
-      // ticks out.
+      // Persist successes individually so retries target only unfinished guests.
       const bulkOps = [];
       for (const detail of result.details) {
         if (!detail?.success) continue;
@@ -879,7 +888,7 @@ async function _runAutoReminderForEvent(event) {
     }
   }
 
-  await Event.findByIdAndUpdate(eventId, {
+  if (totalFailed === 0) await Event.findByIdAndUpdate(eventId, {
     $set: {
       "messagingStatus.reminderSent": true,
       "messagingStatus.reminderSentAt": new Date(),
@@ -903,6 +912,7 @@ async function _runAutoReminderForEvent(event) {
   console.log(
     `[Cron] Reminders sent for event ${eventId} — confirmed:${confirmedGuests.length} ok:${totalSuccess} fail:${totalFailed}`
   );
+  return { reminded: totalFailed === 0, successful: totalSuccess, failed: totalFailed };
 }
 
 /**
@@ -1647,6 +1657,7 @@ module.exports = {
   scheduleEventRetry,
   scheduleEventCompletion,
   scheduleGuestReminders,
+  runAutoReminderForEvent: _runAutoReminderForEvent,
   schedulePaymentReconcile,
   scheduleSubscriptionRenewal,
   runEventLaunch,

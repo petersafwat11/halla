@@ -1,0 +1,124 @@
+.strip {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justifyContent: space-between;
+  font-size: 13px;
+  color: var(--color-natural-450, #656565);
+}
+
+.asOfText {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.liveDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--color-success, #2a8c5b);
+  display: inline-block;
+  animation: pulse 2s infinite;
+}
+
+.fetchingDot {
+  background-color: var(--color-primary-600, #c28e5c);
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.85);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.cardsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 1024px) {
+  .cardsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .cardsGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+.card {
+  background-color: var(--color-natural-50, #ffffff);
+  border: 1px solid var(--border-gray-250, #dfdfdf);
+  border-radius: var(--radius-default, 12px);
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justifyContent: space-between;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-natural-450, #656565);
+}
+
+.cardValue {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-natural-900, #2c2c2c);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.cardSubtext {
+  font-size: 12px;
+  color: var(--color-natural-450, #656565);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rateBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  background-color: var(--color-primary-100, #f5ece4);
+  color: var(--color-primary-800, #6b4e33);
+}
+
+.rateBadgeSuccess {
+  background-color: #e8f5e9;
+  color: #2a8c5b;
+}

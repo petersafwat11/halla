@@ -1,0 +1,157 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.templateRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--color-natural-100, #f7f7f7);
+  border: 1px solid var(--border-gray-250, #dfdfdf);
+  border-radius: var(--radius-default, 12px);
+  padding: 12px 16px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.templateText {
+  font-size: 13px;
+  color: var(--color-natural-800, #3d3d3d);
+  font-weight: 500;
+}
+
+.templateButtons {
+  display: flex;
+  gap: 8px;
+}
+
+.dropzone {
+  border: 2px dashed var(--border-gray-250, #dfdfdf);
+  border-radius: var(--radius-default, 12px);
+  padding: 32px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  background-color: #fafafa;
+  transition: all 0.15s ease;
+}
+
+.dropzone:hover {
+  border-color: var(--color-primary-600, #c28e5c);
+  background-color: var(--color-primary-100, #f5ece4);
+}
+
+.dropzoneText {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-natural-900, #2c2c2c);
+}
+
+.dropzoneSubtext {
+  font-size: 12px;
+  color: var(--color-natural-450, #656565);
+}
+
+.selectedFileBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #ffffff;
+  border: 1px solid var(--border-gray-250, #dfdfdf);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+}
+
+.previewSummary {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.summaryCards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.summaryCard {
+  background-color: #fafafa;
+  border: 1px solid var(--border-gray-250, #dfdfdf);
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.summaryCardSuccess {
+  background-color: #f6fbf8;
+  border-color: #b7dfc8;
+}
+
+.summaryCardError {
+  background-color: #fef3f2;
+  border-color: #fecdca;
+}
+
+.summaryTitle {
+  font-size: 12px;
+  color: var(--color-natural-450, #656565);
+}
+
+.summaryCount {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-natural-900, #2c2c2c);
+}
+
+.summaryCountSuccess {
+  color: #2a8c5b;
+}
+
+.summaryCountError {
+  color: #c0392b;
+}
+
+.issuesList {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--border-gray-250, #dfdfdf);
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background-color: #ffffff;
+}
+
+.issueItem {
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  line-height: 1.4;
+}
+
+.issueError {
+  background-color: #fef3f2;
+  color: #b42318;
+}
+
+.issueWarning {
+  background-color: #fffaeb;
+  color: #b54708;
+}
+
+.footerActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}

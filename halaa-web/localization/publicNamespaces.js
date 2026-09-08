@@ -2,6 +2,7 @@
 // after client navigation are loaded by the client provider on demand.
 export function publicNamespacesForPath(pathname) {
   const path = pathname?.replace(/^\/(ar|en)(?=\/|$)/, '').replace(/\/$/, '') ?? null;
+  if (/^\/business-invitation\/[^/]+$/.test(path || '')) return ['common', 'businessGuestHub'];
   if (path === '' || /^\/(market-place(?:\/.*)?|terms|privacy|refund|delete-account|support|community-rules)$/.test(path || '')) {
     return ['common', 'landing', 'plans', 'marketplace'];
   }

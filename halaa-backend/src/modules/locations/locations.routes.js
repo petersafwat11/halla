@@ -204,4 +204,6 @@ router.get(
   locationsController.googleReverseGeocode
 );
 
+router.use('/azure', require('./azureMaps.routes'));
+
 module.exports = router;

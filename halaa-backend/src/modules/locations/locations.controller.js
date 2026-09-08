@@ -8,7 +8,6 @@ const catchAsync = require('../../shared/utils/catchAsync');
 const { sendSuccess } = require('../../shared/utils/responseHelper');
 const locationsService = require('./locations.service');
 const googleMapsService = require('./googleMaps.service');
-
 exports.getRegions = catchAsync(async (req, res) => {
   const result = await locationsService.getRegions();
   sendSuccess(res, result);

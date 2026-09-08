@@ -1,7 +1,8 @@
 import React, { useMemo } from "react";
+import Image from "../../commen/AuthenticatedImage";
 import {
   View,
-  Image,
+
   Text,
   TouchableOpacity,
   Animated,
@@ -48,10 +49,9 @@ function TemplateCard({
   const imgSource = useMemo(() => {
     if (template.src) return template.src;
 
-    const rawUri =
-      template.thumbnailUrl ||
-      template.imageUrl ||
-      (isDatabaseTemplate ? ENDPOINTS.TEMPLATES.ASSET(templateId) : null);
+    const rawUri = isDatabaseTemplate
+      ? `${ENDPOINTS.TEMPLATES.ASSET(templateId)}?variant=thumbnail`
+      : template.thumbnailUrl || template.imageUrl;
     if (!rawUri) return null;
 
     const uri = resolveApiUrl(rawUri);

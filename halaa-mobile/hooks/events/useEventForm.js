@@ -210,7 +210,7 @@ export const validateStepData = (stepNumber, formData) => {
         formData.address.address.trim() !== "";
 
       return !!(
-        (!formData.isBusinessEvent || (formData.coverImage && !formData.businessLogoMissing)) &&
+        (!formData.isBusinessEvent || formData.isExistingEvent || (formData.coverImage && !formData.businessLogoMissing)) &&
         formData.eventType &&
         hasValidEventName &&
         formData.eventDate &&

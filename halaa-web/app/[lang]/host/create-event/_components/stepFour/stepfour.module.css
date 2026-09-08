@@ -30,6 +30,17 @@
 }
 
 /* ─── Layout ──────────────────────────────────── */
+.choiceList { display: grid; gap: 10px; }
+.choiceOption { display: flex; align-items: center; gap: 14px; width: 100%; padding: 16px; border: 1px solid #ded7cf; border-radius: 10px; background: #fff; color: #302b27; text-align: start; cursor: pointer; font: inherit; }
+.choiceOption[aria-pressed="true"] { border-color: #996b40; background: #fcf8f3; }
+.choiceOption:focus-visible { outline: 3px solid #b98249; outline-offset: 3px; }
+.choiceIcon { display: flex; color: #876342; flex-shrink: 0; }
+.choiceCopy { display: grid; gap: 5px; flex: 1; min-width: 0; }
+.choiceTitle { font-size: 1.5rem; line-height: 1.5; font-weight: 600; }
+.choiceDescription { color: #69625b; font-size: 1.3rem; line-height: 1.6; max-width: 65ch; }
+.choiceRadio { display: grid; place-items: center; width: 20px; height: 20px; border: 1px solid #b8afa4; border-radius: 50%; flex-shrink: 0; }
+.choiceOption[aria-pressed="true"] .choiceRadio { background: #876342; color: #fff; border-color: #876342; }
+
 .stepFour {
   display: flex;
   flex-direction: column;

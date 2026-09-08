@@ -169,6 +169,18 @@
     "fallbackMessage": "تعذر فتح تطبيق واتساب. يمكنك التواصل معنا مباشرة عبر الرقم:\n{{displayNumber}}",
     "accessibilityLabel": "محادثة الدعم الفني عبر واتساب"
   },
-  "queue": {
+  "queue": {},
+  "spreadsheet": {
+    "saveTemplate": "حفظ القالب",
+    "exportError": "تعذر تصدير القالب.",
+    "empty": "الملف فارغ.",
+    "missing": "أعمدة مفقودة: {{columns}}",
+    "imported": "تم استيراد {{rows}} سجل. السجلات غير الصالحة: {{errors}}.",
+    "readError": "تعذرت قراءة الملف."
+  },
+  "picker": {
+    "date": "التاريخ",
+    "time": "الوقت",
+    "manualAddress": "أدخل عنوان المكان يدويًا. اختيار الموقع من الخريطة متاح في تطبيق الجوال."
   }
 }

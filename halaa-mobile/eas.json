@@ -22,6 +22,12 @@
         "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       }
     },
+    "azure-preview": {
+      "extends": "preview",
+      "env": {
+        "EXPO_PUBLIC_MAPS_PROVIDER": "azure"
+      }
+    },
     "visual-test": {
       "distribution": "internal",
       "android": {

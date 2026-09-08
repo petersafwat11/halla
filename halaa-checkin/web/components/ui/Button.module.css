@@ -1,0 +1,138 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-cairo, "Cairo", sans-serif);
+  font-weight: 600;
+  border-radius: var(--radius-12, 12px);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--color-primary-500, #c28e5c);
+  outline-offset: 2px;
+}
+
+/* Sizes */
+.sm {
+  height: 36px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+
+.md {
+  height: 44px;
+  padding: 0 18px;
+  font-size: 14px;
+}
+
+.lg {
+  height: 48px;
+  padding: 0 24px;
+  font-size: 15px;
+}
+
+/* Variants */
+.primary {
+  background-color: var(--btn-primary-contrast-bg, #6b4e33);
+  color: #ffffff;
+  border-color: transparent;
+}
+
+.primary:hover:not(:disabled) {
+  background-color: var(--btn-primary-contrast-hover, #513c27);
+}
+
+.primary:active:not(:disabled) {
+  background-color: var(--btn-primary-contrast-active, #513c27);
+}
+
+.brand {
+  background-color: var(--btn-brand-bg, #c28e5c);
+  color: #ffffff;
+  border-color: transparent;
+}
+
+.brand:hover:not(:disabled) {
+  background-color: var(--btn-brand-hover, #b18154);
+}
+
+.secondary {
+  background-color: var(--color-primary-100, #f5ece4);
+  color: var(--color-primary-800, #6b4e33);
+  border-color: var(--color-primary-200, #e3cbb4);
+}
+
+.secondary:hover:not(:disabled) {
+  background-color: var(--color-primary-200, #e3cbb4);
+}
+
+.outline {
+  background-color: var(--color-natural-50, #ffffff);
+  color: var(--color-natural-900, #2c2c2c);
+  border-color: var(--border-gray-250, #dfdfdf);
+}
+
+.outline:hover:not(:disabled) {
+  background-color: var(--color-natural-150, #f7f7f7);
+  border-color: var(--color-natural-350, #a0a0a0);
+}
+
+.danger {
+  background-color: var(--color-error-500, #c0392b);
+  color: #ffffff;
+  border-color: transparent;
+}
+
+.danger:hover:not(:disabled) {
+  background-color: var(--color-error-600, #af3427);
+}
+
+.ghost {
+  background-color: transparent;
+  color: var(--color-natural-700, #454545);
+  border-color: transparent;
+}
+
+.ghost:hover:not(:disabled) {
+  background-color: var(--color-natural-150, #f7f7f7);
+  color: var(--color-natural-900, #2c2c2c);
+}
+
+/* States */
+.disabled,
+.button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

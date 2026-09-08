@@ -141,8 +141,9 @@ const styles = StyleSheet.create({
     borderBottomColor: "#EAE6E2",
   },
   toolbarAction: {
-    width: 76,
-    minHeight: 44,
+    minWidth: 76,
+    minHeight: 48,
+    paddingHorizontal: 12,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 12,
@@ -158,8 +159,8 @@ const styles = StyleSheet.create({
   },
   confirmText: {
     color: "#8A5B31",
-    fontSize: 14,
-    lineHeight: 22,
+    fontSize: 16,
+    lineHeight: 24,
     fontFamily: "Cairo_700Bold",
   },
   title: {

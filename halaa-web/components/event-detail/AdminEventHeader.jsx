@@ -12,15 +12,17 @@ import { useAdminEventMutation } from "@/hooks/admin";
 import { useEventMutation } from "@/hooks/events";
 import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
+import useAuthStore from "@/stores/authStore";
 // Admin-specific classes (`outlineButton`, `dangerButton`) live in the
 // admin page's CSS module — we reference it by absolute path so this
 // component can live in the shared `components/event-detail/` folder.
-import styles from "@/app/[lang]/admin-dash/events/[id]/singleEvent.module.css";
+import styles from "./EventHeader.module.css";
 
 export default function AdminEventHeader({ data }) {
   const { t, i18n } = useTranslation("adminEvents");
   const { id: eventId, lang } = useParams();
   const router = useRouter();
+  const currentUserId = useAuthStore((state) => state.user?._id || state.user?.id);
   const [showStaffPopup, setShowStaffPopup] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -40,6 +42,8 @@ export default function AdminEventHeader({ data }) {
     t("singleEvent.title", "Event Details");
   const hostName =
     data?.host?.name || "";
+  const ownerId = data?.event?.host?._id || data?.event?.host?.id || data?.host?._id || data?.host?.id || data?.event?.host;
+  const isOwnEvent = Boolean(currentUserId && ownerId && String(currentUserId) === String(ownerId));
 
   // Spread the full event so every field the shared `useEventActionGate`
   // hook reads (`taqnyatTemplate`, `status`, `launchSettings`,
@@ -191,33 +195,25 @@ export default function AdminEventHeader({ data }) {
       <div className={styles.header}>
         <div className={styles.headerContent}>
           <h1 className={styles.title}>
+            <button type="button" className={styles.backControl} aria-label={t("buttons.goBack", "Go Back")} onClick={() => router.push(`/${lang}/admin-dash/events`)}>
             <IoIosArrowForward
-              onClick={() => router.push(`/${lang}/admin-dash/events`)}
               className={styles.backButton}
               style={{
                 transform: isArabic ? "rotate(0deg)" : "rotate(180deg)",
               }}
             />
-            {eventTitle}
-            {hostName && (
-              <span
-                style={{
-                  fontSize: "14px",
-                  fontWeight: "normal",
-                  color: "#656565",
-                  marginInlineStart: "8px",
-                }}
-              >
-                (
-                {t("singleEvent.hostInfo", { hostName }) || `Host: ${hostName}`}
-                )
-              </span>
-            )}
+            </button>
+            <span>{eventTitle}</span>
           </h1>
+            {hostName && (
+              <p className={styles.eventMeta}>
+                {t(isOwnEvent ? "singleEvent.adminOwnerInfo" : "singleEvent.hostInfo", { hostName })}
+              </p>
+            )}
         </div>
 
         <div className={styles.actions}>
-          <EventActionsHeader event={event} isAdmin={true} />
+          <EventActionsHeader event={event} isAdmin={true}>
 
           {/* Status transitions — publish / end / cancel / reschedule */}
           {statusActions.map((a) => (
@@ -252,6 +248,7 @@ export default function AdminEventHeader({ data }) {
               </>
             )}
           </button>
+          </EventActionsHeader>
         </div>
       </div>
 

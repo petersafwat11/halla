@@ -4,6 +4,7 @@ import { APIProvider, Map, Marker, useMap } from "@vis.gl/react-google-maps";
 import { useFormContext, useController } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import styles from "./MapInput.module.css";
+import AzureMapInput from './AzureMapInput';
 
 const DEFAULT_CENTER = { lat: 24.7136, lng: 46.6753 };
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
@@ -587,4 +588,4 @@ const MapInput = ({ name, label, required, hintMessage }) => {
   );
 };
 
-export default MapInput;
+export default process.env.NEXT_PUBLIC_MAPS_PROVIDER === 'azure' ? AzureMapInput : MapInput;

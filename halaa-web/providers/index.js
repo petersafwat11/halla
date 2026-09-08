@@ -39,6 +39,7 @@ const i18nNamespaces = [
   "landing",
   "marketplace",
   "guest-portal",
+  "businessGuestHub",
 ];
 
 export default async function GlobalProvider({ children, lang }) {

@@ -15,6 +15,7 @@ const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpaci
 export default function LastEventActions({
   canSendTest,
   canSchedule,
+  pulseSchedule = false,
   isCompleted,
   onTestMessagePress,
   onSchedulePress,
@@ -27,7 +28,7 @@ export default function LastEventActions({
   const pulseAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    Animated.loop(
+    const animation = Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
           toValue: 1,
@@ -40,7 +41,9 @@ export default function LastEventActions({
           useNativeDriver: false,
         }),
       ])
-    ).start();
+    );
+    animation.start();
+    return () => animation.stop();
   }, [pulseAnim]);
 
   const flashingStyle = {
@@ -73,7 +76,7 @@ export default function LastEventActions({
         )}
         {canSchedule && onSchedulePress && (
           <AnimatedTouchableOpacity
-            style={[styles.outlineButton, flashingStyle]}
+            style={[styles.outlineButton, pulseSchedule && flashingStyle]}
             onPress={onSchedulePress}
             activeOpacity={0.7}
           >

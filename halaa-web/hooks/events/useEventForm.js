@@ -102,14 +102,17 @@ const populatedSelectedTemplate = (event) => {
       name: ref.templateName || ref.name,
       templateName: ref.templateName,
       bodyText: ref.bodyText,
+      varMapping: ref.varMapping || [],
       hasImageHeader: ref.hasImageHeader || false,
       language: ref.language || "ar",
+      deliveryMode: ref.deliveryMode || event.invitationDeliveryMode || 'quick_reply',
     };
   }
   return { _id: ref, id: ref };
 };
 
 export const mapEventToFormValues = (event) => ({
+  isExistingEvent: true,
   isBusinessEvent: event.invitationDeliveryMode === 'portal_link',
   eventType: event.eventDetails?.type || "",
   eventName: event.eventDetails?.title || "",

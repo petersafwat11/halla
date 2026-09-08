@@ -600,7 +600,7 @@ async function sendInitialLaunchBatch({
   channel = 'sms',
   attemptId,
 }) {
-  const event = await Event.findById(eventId);
+  const event = await Event.findById(eventId).populate('host', 'name accountType');
   if (!event) {
     throw new NotFoundError('Event');
   }
@@ -727,11 +727,11 @@ async function sendBulk({
   scope = 'manual_send',
   attemptId,
 }) {
-  const event = await Event.findById(eventId);
+  const event = await Event.findById(eventId).populate('host', 'name accountType');
   if (!event) {
     throw new NotFoundError('Event');
   }
-  if (!isAdmin && event.host && userId && event.host.toString() !== userId.toString()) {
+  if (!isAdmin && event.host && userId && String(event.host._id || event.host) !== userId.toString()) {
     throw new ForbiddenError('Not authorized for this event');
   }
 

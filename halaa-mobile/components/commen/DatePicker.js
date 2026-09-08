@@ -7,7 +7,7 @@ import {
   Platform,
 } from "react-native";
 import { useFormContext, Controller } from "react-hook-form";
-import DateTimePicker from "@react-native-community/datetimepicker";
+import DateTimePicker from "./PlatformDateTimePicker";
 import { Ionicons } from "@expo/vector-icons";
 import { isolateAuto } from "@halaa/shared/utils/bidi";
 import { useTranslation } from "../../localization";

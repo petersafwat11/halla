@@ -24,7 +24,8 @@
  */
 
 import React, { useEffect, useState, useMemo } from "react";
-import { View, Image, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
+import Image from "../commen/AuthenticatedImage";
 import * as LucideIcons from "lucide-react-native";
 import { useTranslation } from "../../localization";
 import { formatDate } from "@halaa/shared/utils/locale";
@@ -106,11 +107,9 @@ function getBackgroundSource(template, token) {
   const templateId = String(template._id || template.id || "");
   const isDatabaseTemplate = /^[a-f\d]{24}$/i.test(templateId);
 
-  const raw =
-    template.previewImageUrl ||
-    template.imageUrl ||
-    template.thumbnailUrl ||
-    (isDatabaseTemplate ? ENDPOINTS.TEMPLATES.ASSET(templateId) : null);
+  const raw = template.previewImageUrl || (isDatabaseTemplate
+    ? `${ENDPOINTS.TEMPLATES.ASSET(templateId)}?variant=original`
+    : template.imageUrl || template.thumbnailUrl);
 
   // Backend-provided sources only — no bundled fallback image.
   const uri = resolveTemplateImageUri(raw);
@@ -200,7 +199,8 @@ function OverlayItem({ overlay, containerWidth, containerHeight, text, primaryCo
 
   return (
     <View pointerEvents="none" style={wrapperStyle}>
-      <Text style={textStyle} numberOfLines={2}>{text}</Text>
+      <Text style={textStyle} numberOfLines={overlay.maxLines || undefined}
+        adjustsFontSizeToFit={Boolean(overlay.maxLines)} minimumFontScale={0.35}>{text}</Text>
     </View>
   );
 }
@@ -292,7 +292,7 @@ export default function TemplatePreviewCanvas({
         const field = fieldsByKey[o.fieldKey];
         const raw = data?.[o.fieldKey];
         const formatted = formatFieldValue(field, raw, currentLanguage || "ar");
-        const display = formatted !== null ? formatted : (field?.labelAr ?? field?.labelEn ?? o.fieldKey);
+        const display = formatted ?? '';
         return (
           <OverlayItem
             key={`ov-${i}`}

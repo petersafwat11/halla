@@ -255,7 +255,8 @@ export function useAdminEventTargets(type) {
     queryFn: async () => {
       const endpoint = `${ENDPOINTS.ADMIN.EVENT_TARGETS}${type ? `?type=${type}` : ""}`;
       const response = await adminRequest(endpoint);
-      return response.data;
+      if (!response.success) throw new Error(response.error || "Failed to load event owners");
+      return response.data?.data || response.data;
     },
     enabled: !!token,
     staleTime: 60 * 1000,

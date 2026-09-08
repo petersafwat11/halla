@@ -15,6 +15,7 @@ import {
 } from "@/utils/invitationTypes";
 
 const WhatsappPreview = ({
+  owner,
   eventTitle = "",
   previewBody = "",
   templateImage = "/svg/events/invitation.svg",
@@ -34,9 +35,10 @@ const WhatsappPreview = ({
 }) => {
   const { t } = useTranslation("createEvent");
   const { entryDate, address } = templateData;
-  const hostName = useAuthStore(
+  const signedInName = useAuthStore(
     (state) => state.user?.name || ""
   );
+  const hostName = owner ? owner.name || "" : signedInName;
   const showReplyActions = selectedTemplate?.deliveryMode !== "portal_link" && invitationAllowsReply(invitationType);
 
   const formattedDate = useMemo(() => {
@@ -51,6 +53,8 @@ const WhatsappPreview = ({
       guestName: locale === "en" ? "Dear Guest" : "ضيفنا الكريم",
       eventTitle,
       dateFormatted: formattedDate,
+      eventDate: eventDate || entryDate,
+      locale: selectedTemplate?.language || "ar",
       eventTime,
       locationAddress: locationAddress || address || "",
       hostName,
@@ -63,6 +67,7 @@ const WhatsappPreview = ({
   }, [
     previewBody,
     selectedTemplate?.varMapping,
+    selectedTemplate?.language,
     eventTitle,
     formattedDate,
     eventTime,
@@ -200,7 +205,7 @@ const WhatsappPreview = ({
                 {resolvedMessage ? (
                   <p className={styles.msgBody}>{resolvedMessage}</p>
                 ) : (
-                  <p className={styles.msgPlaceholder}>اختر قالب رسالة في الخطوة السابقة لمعاينة النص هنا</p>
+                  <p className={styles.msgPlaceholder}>{t("preview_select_message", "اختر قالب رسالة في الخطوة السابقة لمعاينة النص هنا")}</p>
                 )}
 
                 {/* Timestamp */}

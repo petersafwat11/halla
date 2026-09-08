@@ -9,6 +9,7 @@
 **/.next-*
 **/.expo
 **/.turbo
+**/.cache
 **/coverage
 **/dist
 **/build
@@ -34,3 +35,8 @@ halaa-mobile/*
 
 # Local test/deploy scaffolding
 deploy-*.sh
+
+# Standalone check-in app has its own build and deployment.
+halaa-checkin/
+# Runtime uploads are restored or mounted, never shipped in images.
+halaa-backend/public/uploads/

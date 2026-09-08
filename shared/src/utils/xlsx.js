@@ -38,7 +38,7 @@ export const buildWorkbook = (headers, dataRows = [], sheetName = "Sheet1") => {
  * @returns {{ ok: true, headerMap: Record<string, number> } | { ok: false, missing: string[] }}
  */
 export const validateXlsxHeaders = (fileHeaders, expectedHeaders) => {
-  const expectedLabels = expectedHeaders.map((h) => h.label);
+  const expectedLabels = expectedHeaders.filter((h) => !h.optional).map((h) => h.label);
   const missing = expectedLabels.filter((l) => !fileHeaders.includes(l));
   if (missing.length > 0) return { ok: false, missing };
 

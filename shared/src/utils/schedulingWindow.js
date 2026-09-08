@@ -40,7 +40,7 @@ export function calendarParts(value) {
   if (!value) return null;
 
   if (typeof value === "string") {
-    const isoDay = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    const isoDay = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
     if (isoDay) {
       return {
         year: Number(isoDay[1]),
@@ -48,6 +48,10 @@ export function calendarParts(value) {
         day: Number(isoDay[3]),
       };
     }
+    const instant = new Date(value);
+    if (Number.isNaN(instant.getTime())) return null;
+    const riyadh = new Date(instant.getTime() + RIYADH_OFFSET_MS);
+    return { year: riyadh.getUTCFullYear(), month: riyadh.getUTCMonth(), day: riyadh.getUTCDate() };
   }
 
   const date = value instanceof Date ? value : new Date(value);

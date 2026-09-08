@@ -101,6 +101,7 @@
     "tableTitle": "Taqnyat Templates",
     "selectCategory": "Select a category",
     "sourceKeys": {
+      "invitation_url": "Guest invitation link",
       "guest_name": "Guest name",
       "event_title": "Event title",
       "event_dayFormatted": "Event day (formatted)",
@@ -113,7 +114,11 @@
       "staff_accessUrl": "Staff access URL",
       "hostNote": "Host note",
       "invitationMessage": "Invitation message"
-    }
+    },
+    "deliveryMode": "Delivery mode",
+    "personalDelivery": "Personal — WhatsApp replies",
+    "businessDelivery": "Business — body link, zero buttons",
+    "bodyLinkHelp": "Map a body variable to invitation.url. The approved template must contain zero buttons. Website modes are independent."
   },
   "templates": {
     "title": "Invitation Templates",

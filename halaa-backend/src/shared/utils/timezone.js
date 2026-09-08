@@ -168,14 +168,21 @@ const isDue = (eventDoc, now = new Date(), windowSeconds = 60) => {
 
 const parseDateTime = (date, timeStr) => {
   if (!date || !timeStr) return null;
-  const m = /^(\d{1,2}):(\d{2})$/.exec(timeStr.trim());
+  const m = /^(\d{1,2}):(\d{2})(?::\d{2})?\s*:?\s*(AM|PM)?$/i.exec(String(timeStr).trim());
   if (!m) return null;
 
-  const hh = Number(m[1]);
+  let hh = Number(m[1]);
   const mm = Number(m[2]);
-  if (Number.isNaN(hh) || Number.isNaN(mm) || hh > 23 || mm > 59) return null;
+  if (mm > 59 || (m[3] ? hh < 1 || hh > 12 : hh > 23)) return null;
+  if (m[3]) hh = (hh % 12) + (m[3].toUpperCase() === 'PM' ? 12 : 0);
 
-  const d = new Date(date);
+  let d = new Date(date);
+  if (Number.isNaN(d.getTime())) return null;
+  // Preserve UTC-midnight calendar tokens. Older clients serialized Riyadh
+  // midnight as 21:00Z on the preceding day; recover that local calendar day.
+  if (d.getUTCHours() !== 0 || d.getUTCMinutes() !== 0) {
+    d = new Date(d.getTime() + RIYADH_OFFSET_MINUTES * 60 * 1000);
+  }
   const year = d.getUTCFullYear();
   const month = d.getUTCMonth();
   const day = d.getUTCDate();

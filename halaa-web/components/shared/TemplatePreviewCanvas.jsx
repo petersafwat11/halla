@@ -8,7 +8,7 @@
  * Renders the background image + decorations + text overlays at the
  * template's natural aspect ratio. Caller hands in `data` (the
  * fieldKey → value map) and we resolve each overlay.fieldKey against
- * it, falling back to the field's labelEn for empty slots.
+ * it. Empty fields stay empty so labels are never baked into invitations.
  *
  * For the admin canvas (drag-resize), wrap each OverlayItem in <Rnd>
  * inside the editor — this component stays stateless.
@@ -144,7 +144,7 @@ const TemplatePreviewCanvas = forwardRef(function TemplatePreviewCanvas(
         const field = fieldsByKey[o.fieldKey];
         const raw = data?.[o.fieldKey];
         const formatted = formatFieldValue(field, raw, currentLocale);
-        const display = formatted !== null ? formatted : (field?.labelEn ?? o.fieldKey);
+        const display = formatted ?? '';
         return (
           <OverlayItem
             key={`ov-${i}`}

@@ -64,7 +64,7 @@ import {
   InfoRow,
 } from "../../components/admin-dashboard/hosts/HostSectionCard";
 import EventActionsHeader from "../../components/home/EventActionsHeader";
-import { EventActionsSection } from "../../components/admin-dashboard/events";
+import AdminEventActionsMenu from "../../components/admin-dashboard/events/AdminEventActionsMenu";
 import StatsCards from "../../components/events/StatsCards";
 import GuestListItem from "../../components/events/GuestListItem";
 import ModeratorListItem from "../../components/events/ModeratorListItem";
@@ -573,6 +573,9 @@ const EventDetailsScreen = () => {
     t("eventDetails.title");
   const hostName =
     event?.host?.name || event?.hostName || null;
+  const ownerId = event?.host?._id || event?.host?.id || event?.host;
+  const viewerId = currentUser?._id || currentUser?.id;
+  const isOwnAdminEvent = isAdmin && ownerId && viewerId && String(ownerId) === String(viewerId);
   const hostEmail = event?.host?.email || event?.hostEmail || null;
   const hostPhone = event?.host?.phone || event?.hostPhone || null;
 
@@ -747,11 +750,31 @@ const EventDetailsScreen = () => {
             event={headerEvent}
             isAdmin={isAdmin}
             onDeleted={() => navigation.goBack()}
-            // Admin delete is owned by EventActionsSection below (audited
+            // Admin delete is owned by the More actions sheet (audited
             // /admin/events/:id route). Suppress the header's host-route delete
             // so an admin doesn't see two delete buttons hitting two endpoints.
             showAdminDelete={false}
           />
+        {/* Secondary admin controls stay together in the header sheet. */}
+        {isAdmin && (
+          <AdminEventActionsMenu
+            onManageStaff={() => {
+              setActiveTab("moderators");
+              if (tabsYRef.current !== null) scrollViewRef.current?.scrollToOffset({ offset: tabsYRef.current - 20, animated: true });
+            }}
+            event={event}
+            canEdit={canEdit}
+            canDelete={canDelete}
+            updatePending={updateStatus.isPending}
+            deletePending={deleteEvent.isPending}
+            onStatusChange={handleStatusChange}
+            onDelete={handleAdminDelete}
+            t={t}
+            SectionCard={SectionCard}
+          />
+        )}
+
+
         </View>
 
         {/* Stats — confirmed / declined / pending */}
@@ -772,7 +795,7 @@ const EventDetailsScreen = () => {
         {/* Admin-only: host info section */}
         {isAdmin && (hostName || hostEmail || hostPhone) && (
           <SectionCard
-            title={t("eventDetails.host")}
+            title={t(isOwnAdminEvent ? "eventDetails.adminSelfOwner" : "eventDetails.eventOwner")}
             icon="person-circle-outline"
           >
             {hostName && (
@@ -818,16 +841,6 @@ const EventDetailsScreen = () => {
                 )}
               />
             )}
-            <InfoRow
-              icon="people-outline"
-              label={t("events:eventDetails.guestsRemaining")}
-              value={
-                invitationBalance?.unlimited
-                  ? t("events:remainingInvites.unlimited")
-                  : formatLocaleCount(invitationBalance?.remaining ?? 0, currentLanguage)
-              }
-              last
-            />
           </SectionCard>
         )}
 
@@ -841,21 +854,6 @@ const EventDetailsScreen = () => {
         )}
 
         <AutoReminderInfoText event={event} />
-
-        {/* Admin status / delete row */}
-        {isAdmin && (
-          <EventActionsSection
-            event={event}
-            canEdit={canEdit}
-            canDelete={canDelete}
-            updatePending={updateStatus.isPending}
-            deletePending={deleteEvent.isPending}
-            onStatusChange={handleStatusChange}
-            onDelete={handleAdminDelete}
-            t={t}
-            SectionCard={SectionCard}
-          />
-        )}
 
         {/* Guests / Moderators tabs */}
         <View

@@ -230,6 +230,7 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
             {currentStep === 4 && (
               <div className={styles.preview_wrapper}>
                 <WhatsappPreview
+                  owner={eventRaw?.host}
                   eventTitle={formData.eventName || ""}
                   previewBody={formData.selectedTemplate?.bodyText || ""}
                   templateImage={
@@ -253,6 +254,7 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
 
           {showMobilePreview && currentStep === 4 && (
             <MobilePreviewModal
+              owner={eventRaw?.host}
               formData={formData}
               locale={locale}
               onClose={() => toggleMobilePreview(false)}

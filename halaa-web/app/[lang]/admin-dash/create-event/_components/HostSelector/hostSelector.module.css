@@ -470,6 +470,9 @@
 }
 
 .selfCard {
+  width: 100%;
+  font-family: inherit;
+  text-align: start;
   display: flex;
   align-items: center;
   gap: 1.6rem;

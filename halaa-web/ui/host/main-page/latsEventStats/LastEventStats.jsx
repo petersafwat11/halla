@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useEventActionGate } from "@halaa/shared/hooks/useEventActionGate";
 import styles from "./LastEventStats.module.css";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useRouter } from "next/navigation";
@@ -41,17 +42,9 @@ function LastEventStats() {
   const subscription = actualData?.subscription;
 
   const data = event || {};
-  const [testMessageSent, setTestMessageSent] = useState(
-    data.testMessageSent || false,
-  );
-
-  // Backend dual-writes both `taqnyatTemplate` and legacy `invitationSettings`
-  // until consumers finish migrating; accept either as proof of a template.
-  const hasTemplate =
-    !!data.taqnyatTemplate?.templateRef ||
-    !!data.invitationSettings?.selectedTemplate?.name;
-  const canSendTest = hasTemplate && !testMessageSent;
-  const canSchedule = hasTemplate && testMessageSent;
+  const [testMessageSent, setTestMessageSent] = useState(false);
+  useEffect(() => setTestMessageSent(false), [data.id, data.testMessageFingerprint]);
+  const { canSendTest, canSchedule } = useEventActionGate({ event: data, testMessageSent });
 
   if (isLoading) return <SimpleLoading />;
   if (!data?.id) return null;
@@ -113,8 +106,9 @@ function LastEventStats() {
           eventId={data.id}
           onSuccess={() => router.refresh()}
           existingSchedule={data.launchSettings}
-          eventDate={data.eventDetails?.date}
-          eventTime={data.eventDetails?.time}
+          eventDate={data.eventDetails?.date || data.date}
+          eventTime={data.eventDetails?.time || data.time}
+          eventIsTrial={data.capabilities?.isTrial}
         />
       </PopupWrapper>
     </div>

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -13,13 +13,22 @@ import UseLanguageChange from "@/hooks/UseLanguageChange";
 import { useEventActionGate } from "@halaa/shared/hooks/useEventActionGate";
 import styles from "./EventActionsHeader.module.css";
 
-export default function EventActionsHeader({ event, isAdmin = false }) {
+export default function EventActionsHeader({ event, isAdmin = false, children }) {
   const { t } = useTranslation("home-events");
   const router = useRouter();
   const { currentLocale } = UseLanguageChange();
   const [showDropdown, setShowDropdown] = useState(false);
   const [showSchedulePopup, setShowSchedulePopup] = useState(false);
   const [showTestMessagePopup, setShowTestMessagePopup] = useState(false);
+  const moreActionsRef = useRef(null);
+  useEffect(() => {
+    const closeOutside = (event) => {
+      const menu = moreActionsRef.current;
+      if (menu && !menu.contains(event.target)) menu.open = false;
+    };
+    document.addEventListener("pointerdown", closeOutside);
+    return () => document.removeEventListener("pointerdown", closeOutside);
+  }, []);
   // Server flag wins as soon as fresh event data arrives (router.refresh,
   // remount). The local flag is only an optimistic bridge between sending
   // the test message and the next successful refetch — seeding `useState`
@@ -32,6 +41,7 @@ export default function EventActionsHeader({ event, isAdmin = false }) {
 
   // Resolve the event ID robustly — Mongoose virtual `id` OR raw `_id`
   const effectiveEventId = event?.id?.toString() || event?._id?.toString();
+  useEffect(() => setOptimisticTestSent(false), [effectiveEventId, event?.testMessageFingerprint]);
 
   // Gate logic centralised in `useEventActionGate` so the header, the
   // dashboard widget, and the mobile companions all resolve action
@@ -100,7 +110,7 @@ export default function EventActionsHeader({ event, isAdmin = false }) {
           </button>
         )}
         {canSchedule && (
-          <button className={styles.outlineButton} onClick={handleScheduleClick}>
+          <button className={`${styles.outlineButton} ${event?.status === 'pending_scheduling' ? styles.flashingButton : ''}`} onClick={handleScheduleClick}>
             <span>{t("lastEvent.buttons.scheduleEvent")}</span>
             <Image src="/svg/events/calendar-edit.svg" alt="calendar" width={12} height={12} />
           </button>
@@ -157,7 +167,24 @@ export default function EventActionsHeader({ event, isAdmin = false }) {
             )}
           </div>
         )}
+        {children && <details ref={moreActionsRef} className={styles.moreActions} onKeyDown={(event) => {
+          if (event.key === "Escape") { event.currentTarget.open = false; event.currentTarget.querySelector("summary")?.focus(); }
+        }}>
+          <summary>
+            {t("lastEvent.buttons.moreActions", "More actions")}
+            <svg className={styles.moreActionsChevron} width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+              <path d="m6 9 6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </summary>
+          <div className={styles.moreActionsMenu} onClick={(event) => {
+            if (event.target.closest("button")) moreActionsRef.current.open = false;
+          }}>{children}</div>
+        </details>}
       </div>
+
+      {(canSendTest || canSchedule) && <p className={styles.workflowHint} role="status">
+        {t(canSendTest ? 'workflow.testFirst' : event?.status === 'scheduled' ? 'workflow.scheduled' : 'workflow.scheduleNext')}
+      </p>}
 
       <PopupWrapper isOpen={showTestMessagePopup} onClose={() => setShowTestMessagePopup(false)}>
         <TestMessagePopup
@@ -175,6 +202,7 @@ export default function EventActionsHeader({ event, isAdmin = false }) {
           existingSchedule={event?.launchSettings}
           eventDate={event?.eventDetails?.date}
           eventTime={event?.eventDetails?.time}
+          eventIsTrial={event?.capabilities?.isTrial}
         />
       </PopupWrapper>
     </>

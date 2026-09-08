@@ -325,14 +325,14 @@ export default function AdminCreateEvent() {
         return (
           <>
             <StepTitleAndDesc title={t("step4_title")} description={t("step4_description")} />
-            <StepFour />
+            <StepFour owner={selectedHost || user} />
           </>
         );
       case 5:
         return (
           <>
             <StepTitleAndDesc title={t("step5_title")} description={t("step5_description")} />
-            <Summary />
+            <Summary owner={selectedHost || user} />
           </>
         );
       default:
@@ -365,10 +365,11 @@ export default function AdminCreateEvent() {
               <form className={styles.form_card} onSubmit={(e) => e.preventDefault()}>
                 {renderStepContent()}
                 <Buttons
+                  currentStep={currentStep}
                   onNext={onNext}
                   onPrevious={onPrevious}
                   isNextDisabled={!isStepValid || isSubmitting}
-                  showPrevious={true}
+                  showPrevious={!isSubmitting}
                   isLoading={isSubmitting}
                 />
                 {isSubmitting && elapsedSeconds >= 5 && (
@@ -389,6 +390,7 @@ export default function AdminCreateEvent() {
 
             {currentStep === 4 && (
               <WhatsappPreview
+                owner={selectedHost || user}
                 eventTitle={formData.eventName || ""}
                 previewBody={formData.selectedTemplate?.bodyText || ""}
                 templateImage={formData.templateImage || formData.selectedTemplate?.image || "/svg/events/invitation.svg"}
@@ -414,6 +416,7 @@ export default function AdminCreateEvent() {
                   &times;
                 </button>
                 <WhatsappPreview
+                  owner={selectedHost || user}
                   eventTitle={formData.eventName || ""}
                   previewBody={formData.selectedTemplate?.bodyText || ""}
                   templateImage={formData.templateImage || formData.selectedTemplate?.image || "/svg/events/invitation.svg"}

@@ -321,6 +321,10 @@ module.exports = {
       ...event.capabilities,
       ...require('./eventActionCapabilities').eventActionCapabilities(event),
     };
+    const reminderTemplate = await require('../taqnyat-templates/taqnyat-templates.service')
+      .findActiveByCategoryAndType(event.eventDetails?.type, 'reminder_confirmed',
+        require('../messaging/invitationDelivery').resolveInvitationDelivery(event));
+    event.reminderAvailability = { configured: Boolean(reminderTemplate) };
     return { event };
   },
 

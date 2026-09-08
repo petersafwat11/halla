@@ -1,98 +1,36 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import TextInput from "./DirectionalTextInput";
+import { View, Text, StyleSheet } from "react-native";
 import { useFormContext, Controller } from "react-hook-form";
-import { Ionicons } from "@expo/vector-icons";
-import { isolateAuto } from "@halaa/shared/utils/bidi";
+import { useTranslation } from "../../localization";
 import { useFieldDirection } from "../../hooks/useInputDirection";
 
-/**
- * Web stub for MapPicker — react-native-maps is not supported on web.
- * Shows a disabled placeholder instead.
- */
-const MapPickerInner = ({
-  label,
-  placeholder,
-  error,
-  disabled,
-  contentDirection = "localized",
-}) => {
-  const fieldDirection = useFieldDirection(contentDirection);
-  return (
-    <View style={styles.container}>
-      {label && <Text style={[styles.label, fieldDirection.text]}>{label}</Text>}
-      <TouchableOpacity
-        style={[
-          styles.inputContainer,
-          error && styles.inputContainerError,
-          styles.inputContainerDisabled,
-        ]}
-        disabled
-        activeOpacity={1}
-      >
-        <View style={styles.inputContent}>
-          <Ionicons name="location-outline" size={24} color="#C28E5C" />
-          <Text style={[styles.placeholderText, fieldDirection.input]}>
-            {isolateAuto(placeholder || "Map not available on web")}
-          </Text>
-        </View>
-      </TouchableOpacity>
-      {error && (
-        <Text style={[styles.errorText, fieldDirection.text]}>{error.message}</Text>
-      )}
-    </View>
-  );
-};
-
-const MapPicker = ({
-  name,
-  label,
-  placeholder = "Map not available on web",
-  disabled = false,
-  rules,
-  contentDirection = "localized",
-}) => {
+// Expo web supports the same manual-address fallback as native. Interactive
+// native map selection and location permissions still require a device test.
+function ManualAddress({ label, placeholder, value, onChange, error, disabled }) {
+  const { t } = useTranslation("common");
+  const direction = useFieldDirection("adaptive", { hasValue: !!value?.address, value: value?.address });
+  return <View style={styles.container}>
+    {!!label && <Text style={styles.label}>{label}</Text>}
+    <TextInput contentDirection="adaptive" accessibilityLabel={label || placeholder} placeholder={placeholder} editable={!disabled} value={value?.address || ""}
+      onChangeText={address => onChange({ address, city: "", country: "", latitude: null, longitude: null, placeId: "", provider: "manual" })}
+      style={[styles.input, direction.input, error && styles.invalid]} />
+    <Text style={styles.hint}>{t("picker.manualAddress", "Enter the venue address manually. Interactive map selection is available in the mobile app.")}</Text>
+    {!!error && <Text style={styles.error}>{error.message}</Text>}
+  </View>;
+}
+function FormAddress({ name, rules, ...props }) {
   const { control } = useFormContext();
-
-  return (
-    <Controller
-      control={control}
-      name={name}
-      rules={rules}
-      render={({ field: { onChange, value }, fieldState: { error } }) => (
-        <MapPickerInner
-          onChange={onChange}
-          value={value}
-          error={error}
-          label={label}
-          placeholder={placeholder}
-          disabled={disabled}
-          contentDirection={contentDirection}
-        />
-      )}
-    />
-  );
-};
-
+  return <Controller control={control} name={name} rules={rules} render={({ field, fieldState }) => <ManualAddress {...props} value={field.value} onChange={field.onChange} error={fieldState.error} />} />;
+}
+export default function MapPicker({ name, ...props }) {
+  return name ? <FormAddress name={name} {...props} /> : <ManualAddress {...props} />;
+}
 const styles = StyleSheet.create({
-  container: { marginBottom: 16, width: "100%" },
-  label: { fontSize: 14, fontWeight: "600", color: "#2C2C2C", marginBottom: 8 },
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderWidth: 1,
-    borderColor: "#E0E0E0",
-    borderRadius: 12,
-    backgroundColor: "#FFF",
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    minHeight: 56,
-  },
-  inputContent: { flexDirection: "row", alignItems: "center", gap: 12, flex: 1 },
-  inputContainerError: { borderColor: "#E74C3C", borderWidth: 1.5 },
-  inputContainerDisabled: { backgroundColor: "#F5F5F5", opacity: 0.6 },
-  placeholderText: { flex: 1, fontSize: 15, color: "#999" },
-  errorText: { fontSize: 12, color: "#E74C3C", marginTop: 6 },
+  container: { width: "100%", marginBottom: 16, gap: 8 },
+  label: { fontSize: 14, fontFamily: "Cairo_600SemiBold", color: "#2C2C2C" },
+  input: { minHeight: 48, padding: 12, borderWidth: 1, borderColor: "#E0E0E0", borderRadius: 12, backgroundColor: "#FFF", fontSize: 14, fontFamily: "Cairo_400Regular" },
+  hint: { fontSize: 12, color: "#656565", lineHeight: 20 },
+  invalid: { borderColor: "#C0392B" },
+  error: { fontSize: 12, color: "#C0392B" },
 });
-
-export default MapPicker;

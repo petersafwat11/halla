@@ -1,3 +1,4 @@
+import { Platform } from "react-native";
 import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
 import * as FileSystem from "expo-file-system/legacy";
 import { UPLOAD_LIMITS } from "@halaa/shared/constants";
@@ -20,6 +21,7 @@ const resizeAction = (width, height, maxDimension) => {
 };
 
 const fileSize = async (uri) => {
+  if (Platform.OS === "web") return (await (await fetch(uri)).blob()).size;
   const info = await FileSystem.getInfoAsync(uri, { size: true });
   return info.exists && typeof info.size === "number" ? info.size : null;
 };

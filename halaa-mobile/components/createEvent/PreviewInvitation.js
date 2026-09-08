@@ -38,6 +38,7 @@ import {
  * bezel/notch/status-bar (redundant inside a real phone).
  */
 const PreviewInvitation = ({
+  owner,
   visible = false,
   onClose,
   eventTitle = "",
@@ -59,14 +60,15 @@ const PreviewInvitation = ({
   const brandDirection = useInputDirection("ltr");
   const { width: viewportWidth, height: viewportHeight } = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const hostName = useAuthStore(
+  const signedInName = useAuthStore(
     (state) => state.user?.name || ""
   );
+  const hostName = owner ? owner.name || "" : signedInName;
 
   const formattedDate = useMemo(() => {
     if (!eventDate) return "";
-    return formatDate(eventDate, currentLanguage || "ar");
-  }, [eventDate, currentLanguage]);
+    return formatDate(eventDate, selectedTemplate?.language || "ar");
+  }, [eventDate, selectedTemplate?.language]);
 
   const resolvedBody = useMemo(() => {
     if (!previewBody) return "";
@@ -74,6 +76,8 @@ const PreviewInvitation = ({
       guestName: t("preview_guest_placeholder"),
       eventTitle,
       dateFormatted: formattedDate,
+      eventDate,
+      locale: selectedTemplate?.language || "ar",
       eventTime,
       locationAddress: location || "",
       hostName,
@@ -86,8 +90,10 @@ const PreviewInvitation = ({
   }, [
     previewBody,
     selectedTemplate?.varMapping,
+    selectedTemplate?.language,
     eventTitle,
     formattedDate,
+    eventDate,
     eventTime,
     location,
     hostName,

@@ -196,7 +196,7 @@ const HostSelector = ({
       {targetType === "self" && isPlatformAdmin && (
         <div className={styles.contentArea}>
           <div className={styles.selfOption}>
-            <div className={styles.selfCard} onClick={handleSelectSelf}>
+            <button type="button" className={styles.selfCard} onClick={handleSelectSelf}>
               <div className={styles.selfCardIcon}>
                 <FaUserShield />
               </div>
@@ -212,7 +212,7 @@ const HostSelector = ({
                 <FaCheck className={styles.badgeIcon} />
                 {t("createEvent.selectHost.unlimited")}
               </div>
-            </div>
+            </button>
           </div>
         </div>
       )}

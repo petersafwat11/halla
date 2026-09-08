@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Modal, Pressable, Alert, Anim
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
+import LocalizedText from "../commen/LocalizedText";
 import DirectionalIonicon from "../common/DirectionalIonicon";
 import TestMessageModal from "./TestMessageModal";
 import ScheduleSendingModal from "./ScheduleSendingModal";
@@ -36,7 +37,7 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete
   const pulseAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    Animated.loop(
+    const animation = Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
           toValue: 1,
@@ -49,7 +50,9 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete
           useNativeDriver: false,
         }),
       ])
-    ).start();
+    );
+    animation.start();
+    return () => animation.stop();
   }, [pulseAnim]);
 
   const flashingStyle = {
@@ -67,6 +70,7 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete
   const deleteEventMutation = useDeleteEvent();
 
   const eventId = event?.id || event?._id;
+  useEffect(() => { setOptimisticTestSent(false); }, [eventId, event?.testMessageFingerprint]);
   const updateRoute = isAdmin ? "UpdateEvent" : "UpdateEventScreen";
 
   // Shared gate. Visibility rules require an active template before
@@ -85,6 +89,10 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete
     try {
       const result = await notifyStaffMutation.mutateAsync({ eventId });
       const data = result?.data || result;
+      const sent = data?.sent || 0;
+      const total = data?.total || 0;
+      if (sent === 0) { toast.error(t("staff.notifyError")); return; }
+      if (sent < total) { toast.error(t("staff.notifyPartial", { sent, total })); return; }
       toast.success(
         t("staff.notifySuccess", { sent: data?.sent || 0, total: data?.total || 0 }) ||
           `Sent to ${data?.sent || 0}/${data?.total || 0} staff`
@@ -132,7 +140,7 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete
           <View style={styles.actionsRow}>
             {canSendTest && (
               <AnimatedTouchableOpacity
-                style={[styles.outlineButton, flashingStyle]}
+                style={styles.outlineButton}
                 onPress={() => setShowTestModal(true)}
                 activeOpacity={0.7}
               >
@@ -144,8 +152,8 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete
             )}
 
             {canSchedule && (
-              <TouchableOpacity
-                style={styles.outlineButton}
+              <AnimatedTouchableOpacity
+                style={[styles.outlineButton, event?.status === "pending_scheduling" && flashingStyle]}
                 onPress={() => setShowScheduleModal(true)}
                 activeOpacity={0.7}
               >
@@ -153,7 +161,7 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete
                 <Text style={styles.outlineButtonText}>
                   {t("scheduleSend.title", "جدولة الإرسال")}
                 </Text>
-              </TouchableOpacity>
+              </AnimatedTouchableOpacity>
             )}
 
             {canNotifyStaff && (
@@ -191,6 +199,7 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete
           </View>
         )}
 
+        {(canSendTest || canSchedule) && <LocalizedText role="body" style={styles.workflowHint}>{t(canSendTest ? "workflow.testFirst" : event?.status === "scheduled" ? "workflow.scheduled" : "workflow.scheduleNext")}</LocalizedText>}
         <View style={styles.primaryRow}>
           {!isCompleted && (
             <TouchableOpacity
@@ -200,7 +209,7 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete
             >
               <Ionicons name="create-outline" size={14} color="#FFF" />
               <Text style={styles.manageButtonText}>{t("manageEvent", "إدارة المناسبة")}</Text>
-              <Ionicons name="chevron-down" size={14} color="#FFF" />
+              <Ionicons name={showManageMenu ? "chevron-up" : "chevron-down"} size={14} color="#FFF" />
             </TouchableOpacity>
           )}
 
@@ -230,7 +239,7 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete
       >
         <Pressable style={styles.menuBackdrop} onPress={() => setShowManageMenu(false)}>
           <Pressable style={styles.menuCard} onPress={(e) => e.stopPropagation()}>
-            <Text style={styles.menuTitle}>{t("lastEvent.buttons.editEvent", "تعديل المناسبة")}</Text>
+            <Text style={styles.menuTitle}>{t("manageEvent")}</Text>
             {EVENT_EDIT_STEPS.filter(item => event?.capabilities?.[{ 1: "canEditDetails", 2: "canAddGuest", 3: "canEditDesign", 4: "canEditMessages" }[item.step]] ?? ["pending_review", "pending_scheduling", "scheduled"].includes(event?.status)).map((item) => (
               <TouchableOpacity
                 key={item.step}
@@ -270,6 +279,7 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete
         existingSchedule={event?.launchSettings}
         eventDate={event?.eventDetails?.date || event?.date}
         eventTime={event?.eventDetails?.time || event?.time}
+        eventIsTrial={event?.capabilities?.isTrial}
       />
     </>
   );
@@ -280,6 +290,7 @@ const styles = StyleSheet.create({
     gap: 8,
     width: "100%",
   },
+  workflowHint: { fontSize: 14, lineHeight: 23, color: "#756757", marginVertical: 8 },
   actionsRow: {
     flexDirection: "column",
     gap: 8,
@@ -296,10 +307,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#D6B392",
     backgroundColor: "#FFF",
-    height: 40,
+    minHeight: 44,
   },
   outlineButtonText: {
-    fontSize: 13,
+    fontSize: 14,
     fontFamily: "Cairo_600SemiBold",
     color: "#6B4E33",
     lineHeight: 18,
@@ -323,10 +334,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#C28E5C",
     paddingVertical: 10,
     borderRadius: 8,
-    height: 40,
+    minHeight: 44,
   },
   manageButtonText: {
-    fontSize: 13,
+    fontSize: 14,
     fontFamily: "Cairo_600SemiBold",
     color: "#FFF",
     lineHeight: 18,
@@ -340,10 +351,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#C0392B",
     paddingVertical: 10,
     borderRadius: 8,
-    height: 40,
+    minHeight: 44,
   },
   deleteButtonText: {
-    fontSize: 13,
+    fontSize: 14,
     fontFamily: "Cairo_600SemiBold",
     color: "#FFF",
     lineHeight: 18,
@@ -383,7 +394,7 @@ const styles = StyleSheet.create({
   },
   menuItemText: {
     flex: 1,
-    fontSize: 13,
+    fontSize: 14,
     fontFamily: "Cairo_600SemiBold",
     color: "#2C2C2C",
   },
@@ -393,7 +404,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   menuCloseText: {
-    fontSize: 13,
+    fontSize: 14,
     fontFamily: "Cairo_600SemiBold",
     color: "#9CA3AF",
   },

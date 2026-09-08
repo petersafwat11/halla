@@ -1,5 +1,8 @@
 import { ENDPOINTS } from '../config/api';
 import { apiFetch } from './http';
+import { API_PATHS } from '@halaa/shared/api/paths';
+
+export const usesAzureMaps = process.env.EXPO_PUBLIC_MAPS_PROVIDER === 'azure';
 
 const unwrap = async (response) => {
   const body = await response.json().catch(() => ({}));
@@ -38,7 +41,7 @@ export async function autocompletePlaces({
     longitude,
   });
   const data = await unwrap(
-    await apiFetch(`${ENDPOINTS.LOCATIONS.GOOGLE_AUTOCOMPLETE}?${qs}`)
+    await apiFetch(`${usesAzureMaps ? API_PATHS.locations.azureAutocomplete : ENDPOINTS.LOCATIONS.GOOGLE_AUTOCOMPLETE}?${qs}`)
   );
   return data?.predictions || [];
 }
@@ -54,9 +57,13 @@ export async function getPlaceDetails({ placeId, language, sessionToken }) {
 export async function reverseGeocode({ latitude, longitude, language }) {
   const qs = queryString({ latitude, longitude, language });
   const data = await unwrap(
-    await apiFetch(`${ENDPOINTS.LOCATIONS.GOOGLE_REVERSE_GEOCODE}?${qs}`)
+    await apiFetch(`${usesAzureMaps ? API_PATHS.locations.azureReverseGeocode : ENDPOINTS.LOCATIONS.GOOGLE_REVERSE_GEOCODE}?${qs}`)
   );
   return data?.location || data;
 }
 
-export default { autocompletePlaces, getPlaceDetails, reverseGeocode };
+export async function createMapSession(signal) {
+  return unwrap(await apiFetch(API_PATHS.locations.azureSession, { method: 'POST', signal }));
+}
+
+export default { autocompletePlaces, getPlaceDetails, reverseGeocode, createMapSession };

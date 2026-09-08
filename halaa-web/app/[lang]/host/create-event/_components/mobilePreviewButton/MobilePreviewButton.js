@@ -2,8 +2,10 @@
 import React from "react";
 import styles from "./mobilePreviewButton.module.css";
 import Image from "next/image";
+import { useTranslation } from 'react-i18next';
 
 const MobilePreviewButton = ({ onClick }) => {
+  const { t } = useTranslation('createEvent');
   return (
     <button
       type="button"
@@ -11,7 +13,7 @@ const MobilePreviewButton = ({ onClick }) => {
       onClick={onClick}
     >
       <div className={styles.button_content}>
-        <h3 className={styles.button_title}>معاينة الدعوة</h3>
+        <h3 className={styles.button_title}>{t('preview_title', 'معاينة الدعوة')}</h3>
       </div>
       <Image
         src="/svg/events/eye.svg"

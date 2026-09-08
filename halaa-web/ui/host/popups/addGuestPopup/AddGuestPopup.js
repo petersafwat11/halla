@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
@@ -29,14 +29,12 @@ const AddGuestPopup = ({ onConfirm, onCancel, eventId, editGuest = null }) => {
   const {
     handleSubmit,
     formState: { errors, isSubmitting },
-    register,
-    watch,
   } = methods;
-
-  const watchedFields = watch();
+  const [submitError, setSubmitError] = useState("");
   const attempt = useRef(null);
 
   const onSubmit = async (data) => {
+    setSubmitError("");
     try {
       if (isEditing) {
         // Update existing guest
@@ -64,6 +62,7 @@ const AddGuestPopup = ({ onConfirm, onCancel, eventId, editGuest = null }) => {
           t("singleEvent.addGuest.error") ||
           "Failed to add guest";
       toast.error(errorMessage);
+      setSubmitError(errorMessage);
     }
   };
 
@@ -88,7 +87,7 @@ const AddGuestPopup = ({ onConfirm, onCancel, eventId, editGuest = null }) => {
     <div className={styles.popup}>
       <div className={styles.header}>
         <h2 className={styles.title}>{getTitle()}</h2>
-        <button className={styles.closeButton} onClick={onCancel} type="button">
+        <button className={styles.closeButton} onClick={onCancel} type="button" aria-label={t("common.cancel")} disabled={isSubmitting}>
           ×
         </button>
       </div>
@@ -123,9 +122,11 @@ const AddGuestPopup = ({ onConfirm, onCancel, eventId, editGuest = null }) => {
                 required
               />
             </div>
+            <div className={styles.formGroup}>
+              <InputGroup name="category" label={t("people.categoryLabel")} error={errors.category?.message} />
+            </div>
+            {submitError && <p className={styles.contactError} role="alert">{submitError}</p>}
           </div>
-
-          <InputGroup name="category" label={t("people.categoryLabel")} error={errors.category?.message} />
           <div className={styles.footer}>
             <Button
               variant="secondary"

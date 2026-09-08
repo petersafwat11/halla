@@ -75,6 +75,8 @@ const config = {
 
   maps: {
     serverApiKey: env.GOOGLE_MAPS_SERVER_API_KEY,
+    azureApiKey: env.AZURE_MAPS_SERVER_API_KEY,
+    provider: env.MAPS_PROVIDER,
   },
 
   export: {

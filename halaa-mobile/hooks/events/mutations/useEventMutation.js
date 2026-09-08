@@ -1,3 +1,4 @@
+import { appendInvitationImage } from "../../../utils/invitationMultipart";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { ENDPOINTS } from "../../../config/api";
@@ -170,11 +171,7 @@ const _updateInvitationSettings = async (eventId, invitationSettings) => {
   });
 
   if (templateImage && typeof templateImage === "object" && templateImage.uri) {
-    formData.append("templateImage", {
-      uri: templateImage.uri,
-      type: templateImage.type || "image/jpeg",
-      name: templateImage.fileName || "template.jpg",
-    });
+    await appendInvitationImage(formData, templateImage);
   }
 
   const response = await apiFetch(ENDPOINTS.EVENTS.UPDATE_INVITATION(eventId), {
@@ -406,7 +403,7 @@ const ACTIONS = {
         selectedTemplate?.id;
       const settings = {};
       if (ref) {
-        settings.taqnyatTemplate = { templateRef: ref };
+        settings.taqnyatTemplate = { templateRef: typeof ref === "object" ? ref._id || ref.id : ref };
       }
       // Step 4 also carries the auto-reply text + the invitation type. These
       // MUST be forwarded here — previously the mutation destructured only the

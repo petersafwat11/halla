@@ -33,6 +33,7 @@ const SOURCE_KEYS = [
 ];
 
 const SOURCE_KEY_LABEL_KEY = {
+  "invitation.url": "taqnyat.sourceKeys.invitation_url",
   "guest.name": "taqnyat.sourceKeys.guest_name",
   "eventDetails.title": "taqnyat.sourceKeys.event_title",
   "eventDetails.dayFormatted": "taqnyat.sourceKeys.event_dayFormatted",
@@ -214,13 +215,13 @@ export default function AssignTaqnyatTemplatePopup({ template, categories, onClo
 
         <FormProvider {...methods}>
           <form onSubmit={methods.handleSubmit(onSubmit)} className={styles.form}>
-          <label>{t("taqnyat.deliveryMode", "Delivery mode")}
+          <label>{t("taqnyat.deliveryMode")}
             <select {...methods.register("deliveryMode")}>
-              <option value="quick_reply">{t("taqnyat.personalDelivery", "Personal — WhatsApp replies")}</option>
-              <option value="portal_link">{t("taqnyat.businessDelivery", "Business — body link, zero buttons")}</option>
+              <option value="quick_reply">{t("taqnyat.personalDelivery")}</option>
+              <option value="portal_link">{t("taqnyat.businessDelivery")}</option>
             </select>
           </label>
-          {deliveryMode === "portal_link" && <p>{t("taqnyat.bodyLinkHelp", "Map a body variable to invitation.url. The approved template must contain zero buttons. Website modes are independent.")}</p>}
+          {deliveryMode === "portal_link" && <p>{t("taqnyat.bodyLinkHelp")}</p>}
 
             <CategorySelect
               label={t("taqnyat.fieldCategory", "الفئة")}

@@ -101,6 +101,7 @@
     "tableTitle": "قوالب Taqnyat",
     "selectCategory": "اختر الفئة",
     "sourceKeys": {
+      "invitation_url": "رابط دعوة الضيف",
       "guest_name": "اسم الضيف",
       "event_title": "عنوان الحدث",
       "event_dayFormatted": "يوم الحدث (منسّق)",
@@ -113,7 +114,11 @@
       "staff_accessUrl": "رابط دخول المشرف",
       "hostNote": "ملاحظة المضيف",
       "invitationMessage": "رسالة الدعوة"
-    }
+    },
+    "deliveryMode": "طريقة إرسال الدعوة",
+    "personalDelivery": "شخصي — الرد عبر واتساب",
+    "businessDelivery": "أعمال — رابط في النص دون أزرار",
+    "bodyLinkHelp": "اربط أحد متغيرات النص بـ invitation.url. يجب أن يكون القالب المعتمد دون أزرار. خيارات الرد تظهر في صفحة الدعوة فقط."
   },
   "templates": {
     "title": "قوالب الدعوات",

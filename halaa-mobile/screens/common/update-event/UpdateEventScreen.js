@@ -313,6 +313,7 @@ const UpdateEventScreen = () => {
         </KeyboardAwareFormScrollView>
 
         <PreviewInvitation
+          owner={eventData?.host}
           visible={showPreview}
           onClose={() => setShowPreview(false)}
           eventTitle={formData.eventName || ""}

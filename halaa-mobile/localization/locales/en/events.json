@@ -82,7 +82,9 @@
     "noModerators": "No moderators",
     "guestsTabCount": "Guests ({{count}})",
     "moderatorsTabCount": "Moderators ({{count}})",
-    "dateTimeRow": "{{date}} • {{time}}"
+    "dateTimeRow": "{{date}} • {{time}}",
+    "adminSelfOwner": "Event for your admin account",
+    "eventOwner": "Event owner"
   },
   "guestList": {
     "title": "Guest List",
@@ -166,7 +168,8 @@
     "notifySuccess": "Sent to {{sent}}/{{total}} staff",
     "notifyError": "Failed to notify staff",
     "notifying": "Sending...",
-    "notifyStaff": "Notify Staff"
+    "notifyStaff": "Notify Staff",
+    "notifyPartial": "Sent to {{sent}} of {{total}} staff. Some notifications failed."
   },
   "postEvent": {
     "share": "Share Post-Event"
@@ -202,6 +205,8 @@
     "time": "Send Time",
     "timePlaceholder": "Select Time",
     "windowNote": "Choose a send date between the earliest allowed date and at least 3 days before the event.",
+    "windowNotePaid": "Sending must be at least 24 hours from now and 3 days before the event. Today is unavailable on this plan. Dates and times use Riyadh time; check the selected calendar date before saving.",
+    "windowNoteTrial": "Sending must be at least 15 minutes from now and 3 days before the event. Dates and times use Riyadh time; check the selected calendar date before saving.",
     "cancel": "Cancel",
     "confirm": "Confirm Schedule",
     "scheduling": "Scheduling...",
@@ -287,10 +292,12 @@
       "messageLabel": "Message (optional)",
       "messagePlaceholder": "Add a note for the host",
       "dietaryLabel": "Dietary requirements (optional)",
-      "plusOnesLabel": "Additional guests (optional)"
+      "plusOnesLabel": "Additional guests (optional)",
+      "openBusinessInvitation": "Open business invitation"
     }
   },
   "autoReminderInfo": "We send a free reminder to confirmed guests before the event.",
+  "reminderUnavailable": "Reminders are not available for this event yet. An approved message template must be configured by the Halaa team.",
   "autoReminderInfoCustom": "We send a free reminder to confirmed guests on {{date}} at {{time}}.",
   "customizeReminder": "Customize",
   "customizeReminderModalTitle": "Customize Auto Reminder",
@@ -457,7 +464,8 @@
     "unlimitedPlan": "Unlimited Plan",
     "addMore": "Add More",
     "usedOfTotal": "{{used}} of {{total}}",
-    "helper": "Adding guests is free; you're charged only when an invitation or reminder is sent."
+    "helper": "Adding guests is free; you're charged only when an invitation or reminder is sent.",
+    "usageSummary": "{{used}} of {{total}} used"
   },
   "peopleRetry": "Could not load guests. Tap to retry.",
   "peopleBulkTitle": "Update selected guests",
@@ -469,5 +477,10 @@
   "peopleCategory": "Change category",
   "peopleRemove": "Remove guests",
   "peopleFailed": "View failed recipients",
-  "peopleClearFilter": "{{count}} matching guests · Clear filter"
+  "peopleClearFilter": "{{count}} matching guests · Clear filter",
+  "workflow": {
+    "testFirst": "Send a test invitation to review the message and artwork. Then choose when invitations go to your guests.",
+    "scheduleNext": "Your test was sent. Choose a sending time next; guests receive their invitations at that scheduled time.",
+    "scheduled": "Invitations are scheduled. Reopen the schedule to review or change the saved date and time."
+  }
 }

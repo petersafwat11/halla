@@ -28,6 +28,7 @@ export function computeEventActionGate({
   }
 
   const status = event.status;
+  const hasCurrentTest = Boolean(testMessageSent || event.testMessageSent);
   const hasTemplate = !!event.taqnyatTemplate?.templateRef;
   const hasStaff = (event.staffList?.length || event.staffCount || 0) > 0;
 
@@ -55,10 +56,11 @@ export function computeEventActionGate({
     hasTemplate,
     canSendTest:
       hasTemplate &&
+      !hasCurrentTest &&
       (event.capabilities?.canSendTest ?? ["pending_scheduling", "scheduled"].includes(status)),
     canSchedule:
       hasTemplate &&
-      testMessageSent &&
+      hasCurrentTest &&
       (status === "pending_scheduling" || status === "scheduled") &&
       !isLive &&
       !isCompleted &&

@@ -199,7 +199,7 @@ test("seven-variable resolver includes the Arabic Riyadh weekday", () => {
   assert.equal(params[2], "ملتقى قادة الأعمال");
   assert.equal(params[3], formatDay(event.eventDetails.date));
   assert.ok(params[3]);
-  assert.equal(params[5], "20:30");
+  assert.equal(params[5], "8:30 م");
   assert.equal(params[6], "قاعة ليلتي، جدة");
 });
 

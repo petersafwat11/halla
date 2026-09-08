@@ -41,14 +41,12 @@ const AdminEventListItem = ({ event, onPress, selected = false, onSelect }) => {
     const newStatus = isCancelled ? "scheduled" : "cancelled";
     const actionLabel = isCancelled
       ? t("events.details.activate")
-      : t("events.details.suspend");
+      : t("events.details.cancel");
     const confirmMessage = isCancelled
       ? t("events.details.activateConfirmMessage", {
           title: eventTitle,
         })
-      : t("events.details.suspendConfirmMessage", {
-          title: eventTitle,
-        });
+      : t("events.details.cancelConfirm");
     Alert.alert(actionLabel, confirmMessage, [
       { text: t("common.cancel"), style: "cancel" },
       {
@@ -95,8 +93,8 @@ const AdminEventListItem = ({ event, onPress, selected = false, onSelect }) => {
       key: "status",
       label: isCancelled
         ? t("events.details.activate")
-        : t("events.details.suspend"),
-      icon: isCancelled ? "checkmark-circle-outline" : "pause-circle-outline",
+        : t("events.details.cancel"),
+      icon: isCancelled ? "checkmark-circle-outline" : "close-circle-outline",
       color: isCancelled ? colors.success[500] : colors.warning[600],
       onPress: handleToggleStatus,
       isPending: updateStatus.isPending,

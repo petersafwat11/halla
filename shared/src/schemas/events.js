@@ -8,6 +8,7 @@
  * supply their own list.
  */
 import { z } from "zod";
+import { parseClockParts } from "../utils/schedulingWindow.js";
 import { saudiPhone, requiredString } from "./_shared.js";
 import { EVENT_CATEGORY_VALUES } from "../constants/eventCategories.js";
 import { INVITATION_TYPE_VALUES } from "../constants/status.js";
@@ -47,7 +48,7 @@ export const locationSchema = (t = idT) =>
     city: z.string().optional(),
     country: z.string().optional(),
     placeId: z.string().max(300).optional().nullable(),
-    provider: z.enum(["google", "device", "manual"]).optional(),
+    provider: z.enum(["google", "azure", "device", "manual"]).optional(),
   });
 
 export const visualTemplateSchema = (_t = idT) =>
@@ -382,18 +383,12 @@ export const buildDynamicTemplateSchema = (fields, options = {}) => {
   return z.object(shape);
 };
 
-function parseTimeStringToDate(str) {
-  if (!str || typeof str !== "string") return new Date();
-  const parts = str.split(":");
-  if (parts.length < 2) return new Date();
-  let hour = parseInt(parts[0], 10);
-  const min = parseInt(parts[1], 10);
-  const period = parts[2];
-  if (period === "PM" && hour !== 12) hour += 12;
-  if (period === "AM" && hour === 12) hour = 0;
-  const d = new Date();
-  d.setHours(hour, min, 0, 0);
-  return d;
+function parseTimeStringToDate(value) {
+  if (value instanceof Date) return new Date(value);
+  const clock = parseClockParts(value);
+  const date = new Date();
+  if (clock) date.setHours(clock.hour, clock.minute, 0, 0);
+  return date;
 }
 
 export const buildDefaultValues = (template, parentEventDate, parentEventTime, options = {}) => {

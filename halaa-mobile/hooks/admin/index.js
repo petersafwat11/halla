@@ -33,6 +33,7 @@ export {
   useAssignBusinessPlan,
   useAssignTicket,
   useBulkApproveVendors,
+  useBulkCancelEvents,
   useBulkDeleteEvents,
   useBulkDeleteHosts,
   useBulkDeleteModerators,

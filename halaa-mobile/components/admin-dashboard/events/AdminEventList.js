@@ -4,7 +4,7 @@ import { useTranslation } from "../../../localization";
 import { backgrounds, colors } from "../../../styles/tokens";
 import { useAuthStore } from "../../../stores/authStore";
 import { canEditPage, canDeleteOnPage, PAGES } from "../../../utils/adminPermissions";
-import { useBulkDeleteEvents, useBulkCancelEvents, useExportAdminEvents } from "../../../hooks";
+import { useBulkDeleteEvents, useBulkCancelEvents, useExportAdminEvents } from "../../../hooks/admin";
 import { useToast } from "../../../contexts/ToastContext";
 import AdminPageHeader from "../common/AdminPageHeader";
 import AdminFlatList from "../common/AdminFlatList";

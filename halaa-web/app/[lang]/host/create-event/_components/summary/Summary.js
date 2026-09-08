@@ -8,18 +8,20 @@ import {
   resolveTaqnyatPlaceholders,
   buildTaqnyatPreviewContext,
 } from "@halaa/shared/utils";
-import { formatDate as formatLocaleDate } from "@halaa/shared/utils/locale";
+import { formatDate as formatLocaleDate, formatTime } from "@halaa/shared/utils/locale";
 import useAuthStore from "@/stores/authStore";
 import SummaryCards from "./SummaryCards";
 import EventDataDisplay from "./EventDataDisplay";
 import ScheduleSection from "./ScheduleSection";
+import { INVITATION_TYPE_OPTIONS, invitationAllowsReply } from '@/utils/invitationTypes';
 
-const Summary = () => {
+const Summary = ({ owner } = {}) => {
   const { watch, setValue } = useFormContext();
   const { t, i18n } = useTranslation("createEvent");
-  const hostName = useAuthStore(
+  const signedInName = useAuthStore(
     (state) => state.user?.name || ""
   );
+  const hostName = owner ? owner.name || "" : signedInName;
 
   // Watch confirmReviewed from form state
   const confirmChecked = watch("confirmReviewed") || false;
@@ -32,6 +34,8 @@ const Summary = () => {
   const address = watch("address") || {};
   const guestList = watch("guestList") || [];
   const staffList = watch("staffList") || [];
+  const invitationType = watch("invitationType") || 'reply_and_qr';
+  const guestReplies = watch("guestReplies") || {};
   const selectedTemplate = watch("selectedTemplate") || null;
   const launchSettings = watch("launchSettings") || {};
   const scheduleDate = watch("scheduleDate") || launchSettings.scheduledDate || "";
@@ -40,29 +44,21 @@ const Summary = () => {
   const formatDate = (date) => date ? formatLocaleDate(date, i18n.language) : "";
 
   // Format event type
-  const formatEventType = (type) => {
-    const typeMap = {
-      wedding: t("wedding"),
-      birthday: t("birthday"),
-      graduation: t("graduation"),
-      meeting: t("meeting"),
-      conference: t("conference"),
-      other: t("other"),
-    };
-    return typeMap[type] || type;
-  };
+  const formatEventType = (type) => t(`event_types.${type}`, type);
 
   // Resolve the WhatsApp template placeholders so the summary shows the same
   // mapped message as the step 4 picker cards and the WhatsApp preview pane.
   const invitationText = useMemo(() => {
     const bodyText = selectedTemplate?.bodyText;
     if (!bodyText) return "";
-    const locale = i18n?.language || "ar";
+    const locale = selectedTemplate?.language || "ar";
     const dateFormatted = eventDate ? formatLocaleDate(eventDate, locale) : "";
     const context = buildTaqnyatPreviewContext({
       guestName: i18n?.language === "en" ? "Dear Guest" : "ضيفنا الكريم",
       eventTitle: eventName,
       dateFormatted,
+      eventDate,
+      locale,
       eventTime,
       locationAddress: address?.address || "",
       hostName,
@@ -91,7 +87,7 @@ const Summary = () => {
     invitationText: invitationText || "",
     guestCount: guestList.length,
     dateTime:
-      eventDate && eventTime ? `${formatDate(eventDate)} - ${eventTime}` : "",
+      eventDate && eventTime ? `${formatDate(eventDate)} - ${formatTime(eventTime, i18n.language)}` : "",
     location: address.address || "",
     mapLink:
       hasEventCoordinates(address)
@@ -111,6 +107,21 @@ const Summary = () => {
         {imageUrl && <img src={imageUrl} alt={t("invitation_visual")} style={{ maxWidth: "100%", maxHeight: 440, objectFit: "contain" }} />}
 
         <EventDataDisplay eventData={eventData} />
+
+        <section className={styles.reviewDetails} aria-label={t('review_delivery', 'Invitation and replies')}>
+          <h3>{t('review_delivery', 'Invitation and replies')}</h3>
+          <dl>
+            <dt>{t('invitation_type', 'Invitation type')}</dt>
+            <dd>{t(INVITATION_TYPE_OPTIONS.find(option => option.value === invitationType)?.labelKey || 'invitation_type')}</dd>
+            {invitationAllowsReply(invitationType) && <>
+              <dt>{t('attendance_auto_reply')}</dt><dd dir="auto">{guestReplies.onAttend}</dd>
+              <dt>{t('absence_auto_reply')}</dt><dd dir="auto">{guestReplies.onAbsent}</dd>
+            </>}
+          </dl>
+          {staffList.length > 0 && <details><summary>{t('review_staff_list', {count: staffList.length, defaultValue: 'Review gate supervisors ({{count}})'})}</summary>
+            <ul>{staffList.map((staff,index)=><li key={staff.id || index}><span dir="auto">{staff.name}</span> <bdi>{staff.mobile || staff.phone}</bdi></li>)}</ul>
+          </details>}
+        </section>
 
         <ScheduleSection eventData={eventData} />
 

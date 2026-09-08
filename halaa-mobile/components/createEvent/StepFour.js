@@ -8,6 +8,7 @@
  * Auto-replies write guestReplies.* plus the legacy keys.
  */
 
+import DEFAULT_GUEST_REPLIES from "@halaa/shared/constants/guestReplies.cjs";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
@@ -42,17 +43,16 @@ const REPLY_TABS = [
   {
     key: "onAttend",
     labelKey: "auto_replies_tab_attending",
-    defaultKey: "auto_replies_default_attending",
   },
   {
     key: "onAbsent",
     labelKey: "auto_replies_tab_absence",
-    defaultKey: "auto_replies_default_absence",
   },
 ];
 
-const StepFour = () => {
+const StepFour = ({ owner } = {}) => {
   const { setValue, watch } = useFormContext();
+  const isBusinessEvent = watch("isBusinessEvent");
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const [activeTab, setActiveTab] = useState("onAttend");
   const previousCategoryRef = useRef("");
@@ -74,32 +74,35 @@ const StepFour = () => {
   const eventDate = watch("eventDate");
   const eventTime = watch("eventTime");
   const address = watch("address");
-  const hostName = useAuthStore(
+  const signedInName = useAuthStore(
     (state) => state.user?.name || ""
   );
+  const hostName = owner ? owner.name || "" : signedInName;
 
   // Build a preview-resolution context once per form change so template
   // previews on screen match what the guest will receive.
   const previewContext = useMemo(() => {
     const dateFormatted = eventDate
-      ? formatDate(eventDate, currentLanguage || "ar")
+      ? formatDate(eventDate, selectedTemplate?.language || "ar")
       : "";
     return buildTaqnyatPreviewContext({
       guestName: t("preview_guest_placeholder"),
       eventTitle: eventName,
       dateFormatted,
+      eventDate,
+      locale: selectedTemplate?.language || "ar",
       eventTime,
       locationAddress: address?.address || "",
       hostName,
     });
-  }, [eventName, eventDate, eventTime, address?.address, hostName, t, currentLanguage]);
+  }, [eventName, eventDate, eventTime, address?.address, hostName, t, currentLanguage, selectedTemplate?.language]);
 
   const { data, isLoading, error } = useHostTaqnyatTemplates(
     {
       category: category || undefined,
       type: "invite",
       invitationMode: invitationType,
-      deliveryMode: watch("isBusinessEvent") ? "portal_link" : "quick_reply",
+      deliveryMode: isBusinessEvent ? "portal_link" : "quick_reply",
     },
     { enabled: Boolean(category) }
   );
@@ -113,7 +116,7 @@ const StepFour = () => {
   useEffect(() => {
     REPLY_TABS.forEach((tab) => {
       if (!guestReplies?.[tab.key]) {
-        setValue(`guestReplies.${tab.key}`, t(tab.defaultKey), { shouldDirty: false });
+        setValue(`guestReplies.${tab.key}`, DEFAULT_GUEST_REPLIES[tab.key], { shouldDirty: false });
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -192,6 +195,8 @@ const StepFour = () => {
               return (
                 <TouchableOpacity
                   key={opt.value}
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: isSelected }}
                   style={[
                     styles.inviteTypeCard,
                     isSelected && styles.inviteTypeCardSelected,
@@ -224,7 +229,7 @@ const StepFour = () => {
                             isSelected && styles.inviteTypeTitleSelected,
                           ]}
                         >
-                          {t(watch("isBusinessEvent") && opt.value === "reply_and_qr" ? "business_invitation_type_reply_and_qr_label" : opt.labelKey)}
+                          {t(isBusinessEvent && opt.value === "reply_and_qr" ? "business_invitation_type_reply_and_qr_label" : opt.labelKey)}
                         </Text>
                         {opt.badgeKey && (
                           <View style={styles.featureBadge}>
@@ -235,7 +240,7 @@ const StepFour = () => {
                         )}
                       </View>
                       <Text style={[styles.inviteTypeDesc, fieldDirection.text]}>
-                        {t(watch("isBusinessEvent") ? `business_${opt.descKey}` : opt.descKey)}
+                        {t(isBusinessEvent ? `business_${opt.descKey}` : opt.descKey)}
                       </Text>
                     </View>
 
@@ -252,9 +257,9 @@ const StepFour = () => {
                   </View>
 
                   {/* Feature chips */}
-                  {!watch("isBusinessEvent") && opt.features && opt.features.length > 0 && (
+                  {!isBusinessEvent && opt.features && opt.features.length > 0 && (
                     <View style={styles.featureChipsRow}>
-                      {opt.features.filter(() => !watch("isBusinessEvent")).map((feat) => (
+                      {opt.features.map((feat) => (
                         <View
                           key={feat.key}
                           style={[
@@ -404,6 +409,7 @@ const StepFour = () => {
               </View>
 
               <DirectionalTextInput
+                contentDirection="adaptive"
                 value={activeReplyValue}
                 onChangeText={handleReplyChange}
                 placeholder={t("auto_reply_placeholder")}
@@ -413,6 +419,9 @@ const StepFour = () => {
                 maxLength={500}
                 style={styles.textArea}
               />
+              <Text style={[styles.hint, fieldDirection.text]}>
+                {t(activeTab === "onAbsent" ? "reply_delivery_decline" : invitationType === "reply_and_qr" ? "reply_delivery_qr" : "reply_delivery_text")}
+              </Text>
             </>
           ) : (
             <View style={styles.repliesDisabledNote}>

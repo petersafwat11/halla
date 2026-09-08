@@ -11,7 +11,7 @@ const {
   INVITATION_TYPE,
   EVENT_CATEGORY_VALUES,
 } = require('../../shared/constants');
-const { clampPhoneInput, SAUDI_PHONE_REGEX } = require('../../shared/utils/phone');
+const { normalizeDigits, SAUDI_PHONE_REGEX } = require('../../shared/utils/phone');
 
 // Invitation type (Step 4) — reply×QR selector. Optional everywhere; the
 // model default (reply_and_qr) applies when omitted.
@@ -25,7 +25,7 @@ const objectId = z
 const saudiPhone = z
   .string()
   .min(1, 'phone is required')
-  .transform((v) => clampPhoneInput(v))
+  .transform((v) => normalizeDigits(v).replace(/[\s()+-]/g, ""))
   .refine(
     (v) => SAUDI_PHONE_REGEX.test(v),
     { message: 'phone must be a valid Saudi mobile number (10 digits starting with 05 or 9 digits starting with 5)' }
@@ -52,7 +52,7 @@ const eventLocationSchema = z.object({
   city: z.string().trim().max(100).optional().nullable(),
   country: z.string().trim().max(100).optional().nullable(),
   placeId: z.string().trim().max(300).optional().nullable(),
-  provider: z.enum(['google', 'device', 'manual']).optional().nullable(),
+  provider: z.enum(['google', 'azure', 'device', 'manual']).optional().nullable(),
 }).passthrough();
 
 const createEventDetailsSchema = z.object({
@@ -132,7 +132,7 @@ const updateEventDetailsSchema = z.object({
     city: z.string().trim().max(100).optional().nullable(),
     country: z.string().trim().max(100).optional().nullable(),
     placeId: z.string().trim().max(300).optional().nullable(),
-    provider: z.enum(['google', 'device', 'manual']).optional().nullable(),
+    provider: z.enum(['google', 'azure', 'device', 'manual']).optional().nullable(),
   }).partial().passthrough().optional(),
   description: z.string().trim().max(2000).optional().nullable(),
 }).partial().passthrough().refine(

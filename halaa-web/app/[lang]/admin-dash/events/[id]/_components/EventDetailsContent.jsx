@@ -8,7 +8,6 @@ import {
   AdminEventHeader,
   EventStats,
   GuestTable,
-  SubscriptionInfo,
   AutoReminderInfoText,
   RemainingInvitesBanner,
 } from "@/components/event-detail";
@@ -50,18 +49,16 @@ export default function EventDetailsContent({ eventId }) {
 
   const eventData = data?.data || data;
   const fullEvent = eventResp?.data?.event || eventResp?.event || null;
-  const subscription = fullEvent?.subscription || eventData?.subscription || null;
-  const guests = eventData?.guests || [];
+  const headerData = {
+    ...eventData,
+    event: { ...eventData?.event, ...fullEvent, title: fullEvent?.eventDetails?.title || eventData?.event?.title },
+  };
 
   return (
     <>
-      <AdminEventHeader data={eventData} />
+      <AdminEventHeader data={headerData} />
 
       <div className={styles.contentWrapper}>
-        {subscription && (
-          <SubscriptionInfo subscription={subscription} />
-        )}
-
         <RemainingInvitesBanner eventId={eventId} />
         <AutoReminderInfoText eventId={eventId} />
 

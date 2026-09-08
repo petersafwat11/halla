@@ -1,0 +1,59 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 480px) {
+  .row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.helperBox {
+  background-color: var(--color-primary-100, #f5ece4);
+  color: var(--color-primary-800, #6b4e33);
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius-default, 12px);
+  border: 1px solid var(--border-gray-250, #dfdfdf);
+  font-family: inherit;
+  font-size: 14px;
+  resize: vertical;
+  background-color: var(--color-natural-50, #ffffff);
+  color: var(--color-natural-900, #2c2c2c);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.textarea:focus {
+  border-color: var(--color-primary-600, #c28e5c);
+  box-shadow: 0 0 0 3px rgba(194, 142, 92, 0.15);
+}
+
+.hasError {
+  border-color: var(--color-error, #c0392b);
+}
+
+.footerActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+}

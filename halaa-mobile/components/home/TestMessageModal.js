@@ -16,12 +16,12 @@ import Button from "../commen/Button";
 import LocalizedText from "../commen/LocalizedText";
 import { useSendTestMessage } from "../../hooks/messaging";
 
-const buildSchema = (t) =>
+export const buildSchema = (t) =>
   z.object({
     phoneNumber: z
       .string()
       .min(1, t("testMessage.validation.phoneRequired"))
-      .regex(/^5[0-9]{8}$/, t("testMessage.validation.phoneFormat")),
+      .regex(/^0?5[0-9]{8}$/, t("testMessage.validation.phoneFormat")),
   });
 
 const TestMessageModal = ({ visible, onClose, onSuccess, eventId }) => {

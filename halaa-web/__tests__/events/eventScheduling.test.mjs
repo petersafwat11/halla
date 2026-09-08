@@ -15,6 +15,8 @@ describe('Session 1.6 Web: Event Action Gate & Scheduling Tests (EVT-09)', () =>
       testMessageSent: true,
     });
     assert.equal(gate1.canSchedule, true);
+    assert.equal(gate1.canSendTest, false);
+    assert.equal(computeEventActionGate({event: {...unscheduledEvent, testMessageSent: true}}).canSendTest, false);
     assert.equal(gate1.isScheduled, false);
     assert.equal(gate1.isLive, false);
 

@@ -2,7 +2,8 @@
 import React from "react";
 import Image from "next/image";
 import { useTranslation } from "react-i18next";
-import { formatDate } from "@halaa/shared/utils/locale";
+import { formatDate, formatTime } from "@halaa/shared/utils/locale";
+import { getMediaUrl } from "@/utils";
 import styles from "../LastEventStats.module.css";
 
 const STATUS_KEYS = {
@@ -24,7 +25,7 @@ function formatDateTime(date, time, currentLocale) {
     month: "long",
     day: "numeric",
   });
-  return time ? `${dateStr} - ${time}` : dateStr;
+  return time ? `${dateStr} - ${formatTime(time, currentLocale || "ar")}` : dateStr;
 }
 
 export default function LastEventHeader({ event, isMobile, currentLocale }) {
@@ -42,7 +43,7 @@ export default function LastEventHeader({ event, isMobile, currentLocale }) {
       <div className={styles.eventImage}>
         {event.templateImage ? (
           <Image
-            src={event.templateImage}
+            src={getMediaUrl(event.templateImage)}
             alt={event.title || "event"}
             width={isMobile ? 40 : 80}
             height={isMobile ? 40 : 80}

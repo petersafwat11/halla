@@ -1,5 +1,6 @@
 import Image from "next/image";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import styles from "./actionButtons.module.css";
 
 const ActionButtons = ({
@@ -11,6 +12,7 @@ const ActionButtons = ({
   isEditing,
   isAddDisabled = false,
 }) => {
+  const { t } = useTranslation("createEvent");
   const handleUploadClick = () => {
     if (isAddDisabled) return;
     fileInputRef.current?.click();
@@ -30,11 +32,11 @@ const ActionButtons = ({
           >
             <Image
               src="/svg/events/user-add.svg"
-              alt="Add"
+              alt=""
               width={24}
               height={24}
             />
-            <span>أضف</span>
+            <span>{t("add")}</span>
           </button>
 
           <div className={styles.importButtons}>
@@ -48,11 +50,11 @@ const ActionButtons = ({
             >
               <Image
                 src="/svg/events/document-upload.svg"
-                alt="Import"
+                alt=""
                 width={24}
                 height={24}
               />
-              <span>استيراد من Excel/CSV</span>
+              <span>{t("import_spreadsheet")}</span>
             </button>
 
             <button
@@ -62,11 +64,11 @@ const ActionButtons = ({
             >
               <Image
                 src="/svg/events/document-download.svg"
-                alt="Download"
+                alt=""
                 width={24}
                 height={24}
               />
-              <span>تحميل قالب Excel/CSV</span>
+              <span>{t("download_spreadsheet")}</span>
             </button>
           </div>
         </>
@@ -75,11 +77,11 @@ const ActionButtons = ({
           <button className={styles.addButton} onClick={onEdit} type="button">
             <Image
               src="/svg/events/user-add.svg"
-              alt="Edit"
+              alt=""
               width={24}
               height={24}
             />
-            <span>تعديل</span>
+            <span>{t("edit")}</span>
           </button>
 
           <button
@@ -89,11 +91,11 @@ const ActionButtons = ({
           >
             <Image
               src="/svg/events/close.svg"
-              alt="Cancel"
+              alt=""
               width={24}
               height={24}
             />
-            <span>إلغاء</span>
+            <span>{t("cancel")}</span>
           </button>
         </>
       )}

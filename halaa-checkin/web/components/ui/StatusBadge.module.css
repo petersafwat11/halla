@@ -1,0 +1,60 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-cairo, "Cairo", sans-serif);
+  font-weight: 600;
+  border-radius: 20px;
+  white-space: nowrap;
+  line-height: 1;
+  user-select: none;
+}
+
+.sm {
+  font-size: 12px;
+  padding: 3px 8px;
+}
+
+.md {
+  font-size: 13px;
+  padding: 5px 12px;
+}
+
+/* Status variants */
+.live,
+.admitted {
+  background-color: var(--status-success-bg, #eaf4ef);
+  color: var(--status-success-contrast-fg, #1e6341);
+  border: 1px solid var(--color-success-200, #9dcab4);
+}
+
+.draft,
+.pending {
+  background-color: var(--status-warning-bg, #fbf3e6);
+  color: var(--status-warning-contrast-fg, #744800);
+  border: 1px solid var(--color-warning-200, #ebc68a);
+}
+
+.closed {
+  background-color: var(--color-natural-150, #f7f7f7);
+  color: var(--status-neutral-contrast-fg, #454545);
+  border: 1px solid var(--border-gray-250, #dfdfdf);
+}
+
+.admin {
+  background-color: var(--color-primary-100, #f5ece4);
+  color: var(--color-primary-800, #6b4e33);
+  border: 1px solid var(--color-primary-200, #e3cbb4);
+}
+
+.reception {
+  background-color: var(--color-secondary-50, #eeeceb);
+  color: var(--color-secondary-500, #524438);
+  border: 1px solid var(--color-secondary-100, #c9c5c1);
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}

@@ -198,7 +198,8 @@ class StaffService {
    */
   async checkInByQR(eventId, qrCode, staffUser) {
     const policy = require('../guests/businessGuestPolicy');
-    const event = await Event.findById(eventId);
+    const event = await Event.findById(eventId).populate('host', 'accountType');
+    if (!event) throw new NotFoundError('Event');
     let guest;
     if (policy.resolveInvitationDelivery(event) === 'portal_link') {
       let token;
@@ -424,6 +425,7 @@ class StaffService {
           'checkIn.checkedInBy': checkedInByUserId,
           'checkIn.checkedInByStaff': checkedInByStaff,
         },
+        ...(requireConfirmed && { $inc: { __v: 1 } }),
       },
       { new: true }
     );

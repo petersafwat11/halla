@@ -146,7 +146,7 @@ const DropdownInputField = ({
                 onPress={() => setIsOpen(false)}
                 activeOpacity={0.7}
               >
-                <Text style={styles.cancelButtonText}>{t("cancel", "إلغاء")}</Text>
+                <Text style={styles.cancelButtonText}>{t("buttons.cancel", "Cancel")}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[
@@ -163,7 +163,7 @@ const DropdownInputField = ({
                     !selectedOption && styles.confirmButtonTextDisabled,
                   ]}
                 >
-                  {t("confirm", "تأكيد")}
+                  {t("buttons.confirm", "Confirm")}
                 </Text>
               </TouchableOpacity>
             </View>

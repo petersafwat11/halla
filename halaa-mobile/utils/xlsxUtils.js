@@ -4,6 +4,7 @@
  * `@halaa/shared/utils/xlsx`.
  */
 import * as XLSX from "xlsx";
+import i18n from "../localization/config/i18nConfig";
 // SDK 54 (expo-file-system 19) moved the classic file API to `/legacy`; the
 // bare module no longer exports `cacheDirectory` / `writeAsStringAsync` /
 // `readAsStringAsync` / `EncodingType`. Without `/legacy`, template export and
@@ -29,11 +30,11 @@ export const exportTemplateXLSX = async (
     const wb = buildWorkbook(headers, sampleData);
     const base64 = XLSX.write(wb, { type: "base64", bookType: "xlsx" });
     return await saveBase64ToDevice(base64, `${filename}.xlsx`, {
-      dialogTitle: "حفظ القالب",
+      dialogTitle: i18n.t("common:spreadsheet.saveTemplate"),
     });
   } catch (error) {
     console.error("exportTemplateXLSX error:", error);
-    return { success: false, message: "حدث خطأ أثناء تصدير القالب" };
+    return { success: false, message: i18n.t("common:spreadsheet.exportError") };
   }
 };
 
@@ -46,6 +47,8 @@ export const importFromXLSX = async (expectedHeaders, validateRow) => {
       type: [
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         "application/vnd.ms-excel",
+        "text/csv",
+        "text/plain",
         "application/octet-stream",
         "*/*",
       ],
@@ -61,12 +64,12 @@ export const importFromXLSX = async (expectedHeaders, validateRow) => {
       encoding: FileSystem.EncodingType.Base64,
     });
 
-    const workbook = XLSX.read(base64, { type: "base64" });
+    const workbook = XLSX.read(base64, { type: "base64", raw: true });
     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
 
     if (!rows || rows.length === 0) {
-      return { success: false, message: "الملف فارغ" };
+      return { success: false, message: i18n.t("common:spreadsheet.empty") };
     }
 
     const result = parseXlsxRowsToObjects(rows, expectedHeaders, validateRow);
@@ -74,7 +77,7 @@ export const importFromXLSX = async (expectedHeaders, validateRow) => {
     if (result.invalidHeaders) {
       return {
         success: false,
-        message: `أعمدة مفقودة: ${result.missing.join("، ")}`,
+        message: i18n.t("common:spreadsheet.missing", { columns: result.missing.join("، ") }),
       };
     }
 
@@ -82,10 +85,10 @@ export const importFromXLSX = async (expectedHeaders, validateRow) => {
       success: true,
       data: result.data,
       errors: result.errors,
-      message: `تم استيراد ${result.data.length} سجل${result.errors.length > 0 ? ` مع ${result.errors.length} خطأ` : ""}`,
+      message: i18n.t("common:spreadsheet.imported", { rows: result.data.length, errors: result.errors.length }),
     };
   } catch (error) {
     console.error("importFromXLSX error:", error);
-    return { success: false, message: "حدث خطأ أثناء قراءة الملف" };
+    return { success: false, message: i18n.t("common:spreadsheet.readError") };
   }
 };

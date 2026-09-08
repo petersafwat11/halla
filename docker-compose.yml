@@ -47,6 +47,8 @@ services:
     build:
       context: .
       dockerfile: halaa-web/Dockerfile
+      args:
+        NEXT_PUBLIC_MAPS_PROVIDER: ${NEXT_PUBLIC_MAPS_PROVIDER:-google}
     restart: unless-stopped
     environment:
       NODE_ENV: production

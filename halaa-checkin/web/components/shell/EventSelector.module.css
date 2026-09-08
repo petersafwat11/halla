@@ -1,0 +1,152 @@
+.container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.selectorButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 42px;
+  padding: 0 14px;
+  background-color: var(--color-natural-50, #ffffff);
+  border: 1px solid var(--border-gray-250, #dfdfdf);
+  border-radius: var(--radius-12, 12px);
+  cursor: pointer;
+  font-family: var(--font-cairo, "Cairo", sans-serif);
+  color: var(--color-natural-900, #2c2c2c);
+  transition: all 0.15s;
+  max-width: 280px;
+  text-align: start;
+}
+
+.selectorButton:hover {
+  border-color: var(--color-primary-400, #cea57d);
+  background-color: var(--color-natural-100, #fdfdfd);
+}
+
+.selectorButton:focus-visible {
+  outline: 2px solid var(--color-primary-500, #c28e5c);
+  outline-offset: 2px;
+}
+
+.eventName {
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+}
+
+.chevron {
+  color: var(--color-natural-450, #656565);
+  display: flex;
+  align-items: center;
+  transition: transform 0.15s;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  inset-inline-start: 0;
+  width: 320px;
+  background-color: var(--color-natural-50, #ffffff);
+  border: 1px solid var(--border-gray-250, #dfdfdf);
+  border-radius: var(--radius-12, 12px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  padding: 8px;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.dropdownHeader {
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-natural-450, #656565);
+  border-bottom: 1px solid var(--border-gray-200, #f2f2f2);
+  margin-bottom: 4px;
+}
+
+.eventItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: var(--radius-8, 8px);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: start;
+  font-family: var(--font-cairo, "Cairo", sans-serif);
+  transition: background-color 0.15s;
+  gap: 8px;
+}
+
+.eventItem:hover {
+  background-color: var(--color-primary-50, #f9f4ef);
+}
+
+.eventItemActive {
+  background-color: var(--color-primary-100, #f5ece4);
+}
+
+.itemInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.itemName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-natural-900, #2c2c2c);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.itemVenue {
+  font-size: 12px;
+  color: var(--color-natural-450, #656565);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.emptyState {
+  padding: 16px 12px;
+  font-size: 13px;
+  color: var(--color-natural-450, #656565);
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .selectorButton {
+    height: 34px;
+    padding: 0 6px;
+    gap: 4px;
+    max-width: 140px;
+  }
+
+  .eventName {
+    max-width: 60px;
+    font-size: 12px;
+  }
+
+  .dropdown {
+    width: 280px;
+  }
+}

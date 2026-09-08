@@ -286,7 +286,11 @@ async function findActiveByCategoryAndType(category, type, deliveryMode = 'quick
           removedFromMeta: { $ne: true },
         };
   if (type === 'reminder_confirmed') filter.deliveryMode = deliveryMode === 'portal_link' ? 'portal_link' : { $ne: 'portal_link' };
-  return TaqnyatTemplate.findOne(filter).lean();
+  const categoryTemplate = await TaqnyatTemplate.findOne(filter).lean();
+  if (categoryTemplate || type !== 'reminder_confirmed' || category === 'general_event') return categoryTemplate;
+  // An explicitly mapped general-event reminder is category-neutral. Keep
+  // uncategorized provider imports excluded, and retain delivery-mode isolation.
+  return TaqnyatTemplate.findOne({ ...filter, category: 'general_event' }).lean();
 }
 
 async function listForAdmin({ search, includeInactive = true } = {}) {

@@ -8,11 +8,12 @@ import { useTranslation } from "../../localization";
 import Button from "../commen/Button";
 import FormField from "../commen/FormField";
 import LocalizedText from "../commen/LocalizedText";
-import CategorySelect from "../commen/CategorySelect";
+import CategoryPickerSheet from "../commen/CategoryPickerSheet";
 import KeyboardSafeModalSheet from "../commen/keyboard/KeyboardSafeModalSheet";
 import Svg, { Path } from "react-native-svg";
 import {
   clampPhoneInput,
+  toLocalSaudiPhone,
   getPhoneMaxLength,
   DEFAULT_PHONE_PLACEHOLDER,
 } from "@halaa/shared/utils/phone";
@@ -52,7 +53,7 @@ const EditGuestOrModeratorsModal = ({
   useEffect(() => {
     if (item) {
       setName(item.name || "");
-      setPhone(item.phone || item.mobile || "");
+      setPhone(toLocalSaudiPhone(item.phone || item.mobile || ""));
       setCategory(item.category || "");
       setErrors({});
     }
@@ -118,7 +119,7 @@ const EditGuestOrModeratorsModal = ({
     // Small centered card (§6.4): the shared avoiding owner lifts the card
     // above the keyboard; the compact form body scrolls only if font scaling
     // requires it.
-    <KeyboardSafeModalSheet
+    <><KeyboardSafeModalSheet
       visible={visible && !pickerPresented}
       onClose={handleClose}
       onRequestClose={handleClose}
@@ -175,18 +176,20 @@ const EditGuestOrModeratorsModal = ({
 
         {type === "guest" && (
           <View style={styles.inputWrapper}>
-            <CategorySelect
+            <FormField
               label={tCreate("category")}
               placeholder={tCreate("category_placeholder")}
               value={category}
-              onChange={setCategory}
-              options={categories}
-              onPickerVisibleChange={setPickerPresented}
+              onPress={() => setPickerPresented(true)}
             />
           </View>
         )}
       </View>
     </KeyboardSafeModalSheet>
+    <CategoryPickerSheet visible={visible && pickerPresented}
+      onClose={() => setPickerPresented(false)} onSelect={setCategory}
+      value={category} options={categories} />
+    </>
   );
 };
 

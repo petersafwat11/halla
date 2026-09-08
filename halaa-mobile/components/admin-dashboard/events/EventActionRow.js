@@ -7,6 +7,10 @@ import { colors, spacing } from "../../../styles/tokens";
 const EventActionRow = ({ icon, iconBg, iconColor, label, sublabel, onPress, loading, last, destructive }) => {
   return (
   <TouchableOpacity
+    accessibilityRole="button"
+    accessibilityLabel={label}
+    accessibilityHint={sublabel}
+    accessibilityState={{ disabled: !!loading, busy: !!loading }}
     style={[styles.actionRow, !last && styles.actionRowBorder]}
     onPress={onPress}
     disabled={loading}
@@ -18,7 +22,7 @@ const EventActionRow = ({ icon, iconBg, iconColor, label, sublabel, onPress, loa
           : <Ionicons name={icon} size={18} color={iconColor} />
         }
       </View>
-      <View>
+      <View style={styles.actionCopy}>
         <Text style={[styles.actionLabel, destructive && { color: colors.error[500] }]}>
           {label}
         </Text>
@@ -56,11 +60,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   actionLabel: {
-    fontSize: 14,
+    fontSize: 16,
     color: colors.natural[900],
     fontWeight: "600",
   },
-  actionSub: { fontSize: 11, color: colors.natural[400], marginTop: 1 },
+  actionCopy: { flex: 1, minWidth: 0, paddingEnd: 8 },
+  actionSub: { fontSize: 13, lineHeight: 21, color: colors.natural[600], marginTop: 3 },
 });
 
 export default EventActionRow;

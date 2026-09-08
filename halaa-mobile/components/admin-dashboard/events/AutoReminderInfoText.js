@@ -218,8 +218,8 @@ const AutoReminderInfoText = ({ event }) => {
         <View style={styles.iconWrap}>
           <Ionicons name="time-outline" size={16} color={colors.primary[700]} />
         </View>
-        <LocalizedText style={styles.text}>{infoText}</LocalizedText>
-        {isEditable && !isTrial && (
+        <LocalizedText style={styles.text}>{event.reminderAvailability?.configured === false ? t("reminderUnavailable") : infoText}</LocalizedText>
+        {isEditable && !isTrial && event.reminderAvailability?.configured !== false && (
           <TouchableOpacity
             style={styles.customizeButton}
             onPress={() => setModalOpen(true)}

@@ -78,7 +78,9 @@ export default function InvitationBalanceCard({
             <div className={styles.compactTitle}>
               {t("invitationBalance.remaining", "الدعوات المتبقية")}
             </div>
+            <div className={styles.compactValue}>{remainingDisplay}</div>
             <div className={styles.compactSecondary}>
+              {t("invitationBalance.used", "المستخدم")}{": "}
               {t("invitationBalance.usedOfTotal", "{{used}} من {{total}}", {
                 used: consumedDisplay,
                 total: totalDisplay,
@@ -88,7 +90,6 @@ export default function InvitationBalanceCard({
         </div>
 
         <div className={styles.compactRight}>
-          <span className={styles.compactValue}>{remainingDisplay}</span>
           {isPurchasable && (
             <button
               type="button"
@@ -96,7 +97,7 @@ export default function InvitationBalanceCard({
               onClick={handleAddMore}
               aria-label={t("invitationBalance.addMore", "إضافة المزيد")}
             >
-              <FiPlusCircle size={12} aria-hidden="true" />
+              <FiPlusCircle size={16} aria-hidden="true" />
               <span>{t("invitationBalance.addMore", "إضافة المزيد")}</span>
             </button>
           )}

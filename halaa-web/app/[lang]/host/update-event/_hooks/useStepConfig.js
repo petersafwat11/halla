@@ -64,6 +64,7 @@ const useStepConfig = ({ t, subscriptionInfo, eventRaw, isEventLive }) =>
         title: t("step4_title"),
         description: t("step4_description"),
         Component: StepFour,
+        props: { owner: eventRaw?.host },
       },
     };
     },

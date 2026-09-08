@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { isolateLtr } from "@halaa/shared/utils/bidi";
+import { toLocalSaudiPhone } from "@halaa/shared/utils/phone";
 import { formatCount } from "@halaa/shared/utils/locale";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "../../localization";
@@ -19,6 +20,8 @@ import AdaptiveText from "../commen/AdaptiveText";
 import LocalizedText from "../commen/LocalizedText";
 import EditGuestOrModeratorsModal from "./EditGuestOrModeratorsModal";
 import CategoryPickerSheet from "../commen/CategoryPickerSheet";
+import KeyboardSafeModalSheet from "../commen/keyboard/KeyboardSafeModalSheet";
+import Button from "../commen/Button";
 import Svg, { Path } from "react-native-svg";
 
 const CloseIcon = () => (
@@ -88,6 +91,7 @@ const ListOfGuestsORModerators = ({
   const [showEditModal, setShowEditModal] = useState(false);
   const [selected, setSelected] = useState({}); // id -> true
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
+  const [removingItem, setRemovingItem] = useState(null);
 
   // Single native modal window at a time (§6.4): stacking a second Modal
   // window over the still-presented list misroutes touches, the Android
@@ -96,7 +100,7 @@ const ListOfGuestsORModerators = ({
   // sheet is up the list window suspends; both states live HERE, so when
   // they close the list re-presents with selection/scroll intact and no
   // parent coordination is needed.
-  const listVisible = visible && !showEditModal && !showCategoryPicker;
+  const listVisible = visible && !showEditModal && !showCategoryPicker && !removingItem;
 
   const selectable = type === "guest" && typeof onAssignCategory === "function" && !allowAddOnly;
   const selectedIds = Object.keys(selected).filter((id) => selected[id]);
@@ -105,6 +109,9 @@ const ListOfGuestsORModerators = ({
   // Drop the selection whenever the list modal closes.
   useEffect(() => {
     if (!visible) {
+      setShowEditModal(false);
+      setEditingItem(null);
+      setRemovingItem(null);
       setSelected({});
       setShowCategoryPicker(false);
     }
@@ -163,7 +170,7 @@ const ListOfGuestsORModerators = ({
             {item.name}
           </AdaptiveText>
           <Text style={styles.listItemPhone}>
-            {isolateLtr(item.phone || item.mobile)}
+            {isolateLtr(toLocalSaudiPhone(item.phone || item.mobile))}
           </Text>
           {item.category ? (
             <View style={styles.categoryBadge}>
@@ -186,7 +193,7 @@ const ListOfGuestsORModerators = ({
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.actionButton}
-            onPress={() => onRemove(item.id)}
+            onPress={() => setRemovingItem(item)}
             activeOpacity={0.7}
           >
             <TrashIcon />
@@ -294,6 +301,15 @@ const ListOfGuestsORModerators = ({
         />
       )}
 
+      <KeyboardSafeModalSheet visible={visible && !!removingItem} centered
+        onClose={() => setRemovingItem(null)}
+        header={<LocalizedText role="sectionTitle" style={styles.header}>{t("remove")}</LocalizedText>}
+        footer={<View style={styles.header}>
+          <Button text={t("delete")} onPress={() => { onRemove(removingItem.id); setRemovingItem(null); }} />
+          <Button text={t("cancel")} variant="outline" onPress={() => setRemovingItem(null)} />
+        </View>}>
+        <AdaptiveText style={styles.header}>{removingItem?.name}</AdaptiveText>
+      </KeyboardSafeModalSheet>
       {/* Edit Modal */}
       {editingItem && (
         <EditGuestOrModeratorsModal

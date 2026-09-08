@@ -1,0 +1,626 @@
+# Implementation ledger
+
+Status as of 8 September 2026: **T08 complete; ready for T09**.
+
+Only this documentation package and the standalone `halaa-checkin/` mini-app files were authored for this request. No parent Halaa source, dependencies, root package manifests, production configuration, database, DNS or VPS deployment was changed. Existing unrelated repository edits remain untouched.
+
+## Task status
+
+| Task | State | Evidence |
+| --- | --- | --- |
+| T00 Workspace/runtime/design | Complete | tests pass (4/4), design:check pass, lint pass, build pass, same-origin liveness verified, screenshots |
+| T01 Schemas/DTOs/statistics | Complete | contracts tests pass (41/41), api tests pass (1/1), lint pass, build pass, exact 3-invitation fixture verified |
+| T02 DB/auth/authorization | Complete | integration tests pass (14/14), replica set harness, scrypt auth, CSRF/Origin enforcement, session persistence, cookie flags, fail-fast config |
+| T03 Event/guest/audit API | Complete | integration tests pass (26/26 api, 41/41 contracts), event/guest CRUD persistence, duplicate names allowed, unique references, cross-event rejection, token omitted from DTOs, immutable tokens, optimistic locking 409, soft delete, capacity gate, closed-event gate, stats filter-independence, audit transaction rollback, all indexes verified on replica set |
+| T04 CSV import | Complete | integration tests pass (36/36 api, 41/41 contracts), BOM/Arabic/quoted parsing, 2 MB / 1,000 row caps, preview without write, atomic rollback on invalid row/reference collision/capacity overflow, idempotency playback & 409 conflict, concurrent deduplication, CSV template download |
+| T05 Atomic gate API | Complete | integration tests pass (49/49 api, 41/41 contracts), resolve QR/guestId without admission, cross-event rejection (404 INVALID_INVITATION), gate search & recent admissions, fractional/excess validation, atomic admission with event fence & idempotency, concurrency gate: simultaneous submissions yield 1 commit & 1 ALREADY_CHECKED_IN with 1 audit & correct stats, same-key replay & lost-response recovery, closed-event serializability, concurrent edit isolation, reception 403 on reset/correction, admin correction & reset with stats updates |
+| T06 PDF/export service | Complete | integration tests pass (61/61 api, 41/41 contracts), Playwright PDF renderer, A6 single pass, 4-up A4 bulk passes, interim/final attendance reports, QR generator with M error correction and verified decode, 24h cleanup, evidence screenshots and sample PDFs |
+| T07 Bilingual shell | Complete | web tests pass (15/15), browser E2E passes (4/4), lint pass, build pass, design:check pass, 1:1 bilingual dictionary parity, role-aware routing, responsive layouts (1440/1024/390/360) without overflow, 9 visual screenshots |
+| T08 Guest management UI | Complete | web tests pass (22/22), browser E2E passes, lint pass, build pass, design:check pass, real-time stats, paginated/searchable guest table, CRUD modals, CSV import preview & commit with stable idempotency, event lifecycle transition guards, responsive screenshots |
+| T09 Gate/scanner UI | Not started | — |
+| T10 Reports/demo polish | Not started | — |
+| T11 Deployment rehearsal | Not started | — |
+| T12 Final acceptance | Not started | — |
+
+## Fixed planning decisions
+
+- Standalone Next.js + Express + dedicated MongoDB database, using existing infrastructure conventions.
+- Full live Halaa CSS token snapshot. CSS background `#f9f4ef` overrides JS token discrepancy; Cairo matches the applied frontend font.
+- Two main workspaces, bilingual, named admin/reception accounts, explicit scan confirmation.
+- Actual companion count on one admission; no late separate companion arrival support.
+- CSV v1; native XLSX deferred. 1,000 active invitations/event, maximum 20 companions/invitation.
+- DB-backed atomic admission, idempotent import/admission, private asynchronous QR/report PDFs.
+- Independent Docker Compose project; existing Caddy needs durable tracked network/hostname integration in T11.
+
+## Next session
+
+Start **T09**. Read `01-PRODUCT-AND-DESIGN.md` §6; `02-TECHNICAL-CONTRACT.md` §5; and `03-IMPLEMENTATION-STEPS.md` under T09. Inspect current working-tree status first. Do not run parent npm install or change Halaa business features.
+
+## Append after each implementation session
+
+### 8 September 2026 / T00 — Workspace, runtime and design snapshot
+- **State**: complete
+- **Files changed**:
+  - `halaa-checkin/package.json`
+  - `halaa-checkin/package-lock.json`
+  - `halaa-checkin/.gitignore`
+  - `halaa-checkin/.dockerignore`
+  - `halaa-checkin/.env.example`
+  - `halaa-checkin/README.md`
+  - `halaa-checkin/eslint.config.mjs`
+  - `halaa-checkin/scripts/sync-design.mjs`
+  - `halaa-checkin/scripts/check-design.mjs`
+  - `halaa-checkin/scripts/dev.mjs`
+  - `halaa-checkin/design/tokens.css`
+  - `halaa-checkin/design/SOURCES.json`
+  - `halaa-checkin/design/assets/logos/{logo.svg, sidebar-logo.svg, sidebar-mobile-logo.svg}`
+  - `halaa-checkin/design/assets/fonts/{Cairo_400Regular.ttf, Cairo_500Medium.ttf, Cairo_600SemiBold.ttf, Cairo_700Bold.ttf, LICENSE_FONT}`
+  - `halaa-checkin/contracts/package.json`
+  - `halaa-checkin/contracts/src/index.js`
+  - `halaa-checkin/contracts/test/tokens.test.js`
+  - `halaa-checkin/api/package.json`
+  - `halaa-checkin/api/src/config.js`
+  - `halaa-checkin/api/src/app.js`
+  - `halaa-checkin/api/src/server.js`
+  - `halaa-checkin/api/test/liveness.test.js`
+  - `halaa-checkin/web/package.json`
+  - `halaa-checkin/web/next.config.mjs`
+  - `halaa-checkin/web/styles/tokens.css`
+  - `halaa-checkin/web/public/fonts/*`
+  - `halaa-checkin/web/public/images/*`
+  - `halaa-checkin/web/app/globals.css`
+  - `halaa-checkin/web/app/layout.jsx`
+  - `halaa-checkin/web/app/page.jsx`
+  - `halaa-checkin/web/app/[lang]/layout.jsx`
+  - `halaa-checkin/web/app/[lang]/page.jsx`
+  - `halaa-checkin/web/app/[lang]/HealthProbe.jsx`
+  - `docs/evidence/hilton-guest-checkin/t00-initial-shell-en.png`
+  - `docs/evidence/hilton-guest-checkin/t00-initial-shell-ar.png`
+  - `docs/implementation/hilton-guest-checkin/PROGRESS.md`
+- **Implemented**:
+  - Independent npm workspace root under `halaa-checkin/` managing `contracts`, `api`, and `web` with dedicated `package-lock.json`.
+  - Full first `:root` block snapshot extracted from `halaa-web/app/[lang]/globals.css` into `design/tokens.css` and `web/styles/tokens.css`.
+  - Authoritative CSS-over-JS precedence enforced: `--bg-artboard: #f9f4ef`, 100% root font-size with px tokens, and Cairo font applied across both Arabic and English locales.
+  - Local Cairo font binaries (`Cairo_400Regular.ttf`, `Cairo_500Medium.ttf`, `Cairo_600SemiBold.ttf`, `Cairo_700Bold.ttf`) and SIL OFL 1.1 license copied from `@expo-google-fonts/cairo`; zero runtime font network calls.
+  - Halaa brand artwork copied to `design/assets/logos` and `web/public/images`.
+  - `design:sync` and `design:check` scripts created with SHA-256 audit manifest `design/SOURCES.json`.
+  - Contracts workspace `@halaa-checkin/contracts` with token tests.
+  - Express app factory `createApp(deps)` in `api` with `/api/checkin/v1/health` and `/health` probe on port 8100.
+  - Next.js 15 App router web shell on port 3100 with dev rewrite proxying `/api/checkin/v1/*` to `http://127.0.0.1:8100/api/checkin/v1/*`.
+  - Minimal bilingual web shell supporting English (LTR) and Arabic (RTL) with dynamic health probe.
+- **Commands run and actual results**:
+  - `node scripts/sync-design.mjs`: Extracted tokens, copied fonts and logos, generated `SOURCES.json`.
+  - `npm run design:check`: 14/14 checks passed (tokens, hashes, font assets, logos, root block parity).
+  - `npm test`: 4 passing tests (3 contracts tests, 1 API liveness test), 0 failures.
+  - `npm run lint`: 0 errors, 0 warnings across all mini-app packages.
+  - `npm run build`: Contracts build ok, Next.js 15 production build compiled static pages (`/`, `/_not-found`, `/[lang]` for `/en` and `/ar`).
+  - Next dev proxy probe: `Invoke-RestMethod -Uri http://localhost:3100/api/checkin/v1/health` returned HTTP 200 `{ status: "ok", service: "checkin-api", uptimeSeconds: 23 }`.
+  - Screenshots captured: `docs/evidence/hilton-guest-checkin/t00-initial-shell-en.png` (English LTR) and `docs/evidence/hilton-guest-checkin/t00-initial-shell-ar.png` (Arabic RTL) displaying operational backend probe and authentic typography.
+  - `git status --short`: Verified parent package manifests, lockfiles, and unrelated files remained untouched.
+- **Evidence paths**:
+  - `docs/evidence/hilton-guest-checkin/t00-initial-shell-en.png`
+  - `docs/evidence/hilton-guest-checkin/t00-initial-shell-ar.png`
+  - `halaa-checkin/design/tokens.css`
+  - `halaa-checkin/design/SOURCES.json`
+- **Contract changes (if any, with reason)**: None.
+- **Known failures / external blockers**: None.
+- **Remaining work in this task**: None.
+- **Next task and files to read**:
+  - Task T01: Shared schemas, DTOs and statistics.
+  - Read: `02-TECHNICAL-CONTRACT.md` §§3–6; `01-PRODUCT-AND-DESIGN.md` §§1, 5, 6; `03-IMPLEMENTATION-STEPS.md` §T01.
+
+### 8 September 2026 / T01 — Shared schemas, DTOs and statistics
+- **State**: complete
+- **Files changed**:
+  - `halaa-checkin/contracts/package.json`
+  - `halaa-checkin/package-lock.json`
+  - `halaa-checkin/contracts/README.md`
+  - `halaa-checkin/contracts/src/constants.js`
+  - `halaa-checkin/contracts/src/errors.js`
+  - `halaa-checkin/contracts/src/schemas.js`
+  - `halaa-checkin/contracts/src/stats.js`
+  - `halaa-checkin/contracts/src/index.js`
+  - `halaa-checkin/contracts/test/errors.test.js`
+  - `halaa-checkin/contracts/test/normalization.test.js`
+  - `halaa-checkin/contracts/test/schemas.test.js`
+  - `halaa-checkin/contracts/test/stats.test.js`
+  - `docs/implementation/hilton-guest-checkin/PROGRESS.md`
+- **Implemented**:
+  - Pinned `zod@3.24.2` in `@halaa-checkin/contracts` workspace, maintaining strict package lock isolation without touching root manifests.
+  - Defined strict Zod schemas for all request payloads: `eventCreateSchema`, `eventUpdateSchema` (requiring an allowed update field in addition to version), `eventStatusTransitionSchema` (with reopen reason validation), `guestCreateSchema`, `guestUpdateSchema` (requiring an allowed update field in addition to version), `guestSoftDeleteSchema`, `gateResolveSchema` (strictly requiring exactly one of token or guestId), `gateSearchQuerySchema` (bounded 2..120 chars), `checkInAdmissionSchema`, `admissionCorrectionSchema`, `admissionResetSchema`, `csvPayloadSchema`, and `exportCreateSchema` (validating QR scope with 1..1000 unique guest IDs and report scope restrictions).
+  - Writable payloads strictly reject unknown keys, internal state injections (`status`, `activitySeq`, `version`), and operator/timestamp injections (`checkedInAt`, `operatorName`, `checkedInBy`).
+  - Response DTO schemas (`eventDtoSchema`, `guestDtoSchema`, `checkInDtoSchema`, `exportJobDtoSchema`, `sessionUserDtoSchema`, `sessionDtoSchema`) separate public views and strictly exclude `qrToken` while calculating derived party attributes (`totalAllowed`, `actualPartySize`).
+  - Text normalization helpers: `normalizeForSearch` applying NFKC normalization, removing Arabic diacritics/tatweel, unifying Alef forms/Alef Maksura/Taa Marbuta, case-folding, and collapsing whitespace without mutating displayed names; `normalizeReference` and `normalizeReferenceKey` omitting blank keys.
+  - Date normalization and validation: `isoTimestampWithOffsetSchema` and `parseExplicitOffsetDate` requiring explicit timezone offsets or Z and strictly verifying calendar day validity (preventing month rollover errors such as Feb 31).
+  - Authoritative pure statistics calculation function `calculateStats(guests)` implementing all 9 metrics from Technical Contract Section 6, with zero-denominator safety, one-decimal rate rounding, and automatic exclusion of soft-deleted records.
+  - Defined 18 core domain error codes matching Technical Contract Section 4, standard HTTP status mapping, `DomainError` class, and consistent API response envelopes (`createErrorEnvelope`, `createSuccessEnvelope`, `createPaginatedEnvelope`).
+  - Comprehensive contract test suite with 41 tests covering valid Arabic/English/mixed names, whitespace trimming, 0 and 20 companions, negative/fractional/>20 counts, excess companion names, malformed ObjectIds/shortCodes/QR tokens, unknown writable fields, zero totals, and the exact 3-invitation statistics fixture.
+- **Commands run and actual results**:
+  - `npm test`: 42 passing tests (41 contracts tests, 1 API liveness test), 0 failures.
+  - `npm run lint`: 0 errors, 0 warnings across all mini-app packages.
+  - `npm run build`: Contracts build ok, Next.js 15 production build compiled successfully.
+  - `npm run design:check`: 15/15 design checks passed.
+  - `git status --short`: Confirmed zero changes to parent workspaces, parent lockfiles, or root manifests.
+- **Evidence paths**:
+  - `halaa-checkin/contracts/src/constants.js`
+  - `halaa-checkin/contracts/src/errors.js`
+  - `halaa-checkin/contracts/src/schemas.js`
+  - `halaa-checkin/contracts/src/stats.js`
+  - `halaa-checkin/contracts/src/index.js`
+  - `halaa-checkin/contracts/README.md`
+- **Contract changes (if any, with reason)**: None.
+- **Known failures / external blockers**: None.
+- **Remaining work in this task**: None.
+- **Next task and files to read**:
+  - Task T02: Database, authentication and access control.
+  - Read: `02-TECHNICAL-CONTRACT.md` §§2–4, 8; `03-IMPLEMENTATION-STEPS.md` §T02.
+
+### 8 September 2026 / T02 — Database, authentication and access control
+- **State**: complete
+- **Files changed**:
+  - `halaa-checkin/package.json`
+  - `halaa-checkin/package-lock.json`
+  - `halaa-checkin/api/package.json`
+  - `halaa-checkin/api/src/config.js`
+  - `halaa-checkin/api/src/utils/crypto.js`
+  - `halaa-checkin/api/src/db/connection.js`
+  - `halaa-checkin/api/src/db/indexes.js`
+  - `halaa-checkin/api/src/modules/auth/user.model.js`
+  - `halaa-checkin/api/src/modules/auth/session.model.js`
+  - `halaa-checkin/api/src/modules/events/event.model.js`
+  - `halaa-checkin/api/src/middleware/auth.js`
+  - `halaa-checkin/api/src/middleware/authorize.js`
+  - `halaa-checkin/api/src/middleware/csrf.js`
+  - `halaa-checkin/api/src/middleware/rateLimits.js`
+  - `halaa-checkin/api/src/middleware/errors.js`
+  - `halaa-checkin/api/src/modules/auth/auth.service.js`
+  - `halaa-checkin/api/src/modules/auth/auth.routes.js`
+  - `halaa-checkin/api/src/app.js`
+  - `halaa-checkin/api/src/server.js`
+  - `halaa-checkin/api/scripts/provision-user.mjs`
+  - `halaa-checkin/api/test/helpers/testHarness.js`
+  - `halaa-checkin/api/test/auth.test.js`
+  - `halaa-checkin/api/test/config.test.js`
+  - `docs/implementation/hilton-guest-checkin/PROGRESS.md`
+- **Implemented**:
+  - Database connection module enforcing mini-app database prefix (`halaa_checkin` or `checkin_`), strictly rejecting parent Halaa database names (`halaa`, `halla`, `halaa_backend`, `halaa_prod`) and verifying replica-set readiness.
+  - Fail-fast configuration validation: enforces HTTPS origin in production, rejects missing or weak/placeholder session secrets, and assigns production cookie name `__Host-halaa-checkin-session`.
+  - Scrypt password hashing with Node's built-in `crypto.scrypt` (N=16384, r=8, p=1, salt=16B, keylen=64B) and timing-safe verification (`crypto.timingSafeEqual`).
+  - Mongoose models for `User` (with safe DTO projection omitting passwordHash), `Session` (with SHA-256 token digests, TTL index, and runtime expiry enforcement), and foundation `Event`.
+  - Centralized security middlewares: `createAuthMiddleware` (resolves session, enforces non-disabled state), `requireAuth`, `requireRole`, `requireEventAssignment` (scoped event check returning generic 404 for unassigned events), `createCsrfMiddleware` (Origin matching and X-CSRF-Token comparison), `requestIdMiddleware` (attaches unique request ID and `no-store`/`noindex` headers), and `errorHandler` (maps DomainError, Zod validation, and JSON parse errors to standard envelopes).
+  - Rate limiting middleware with structured error envelopes (`RATE_LIMITED`).
+  - Auth routes: `POST /auth/login` (rate limited, sets HttpOnly/SameSite cookie, returns safe user + csrfToken), `GET /auth/session` (authenticated probe), and `POST /auth/logout` (session deletion + cookie clearance, 204 No Content).
+  - User provisioning CLI (`api/scripts/provision-user.mjs`) supporting named roles, assignment validation, hidden password input via muted terminal, and automated session revocation on credential changes.
+  - Ephemeral replica-set test harness using `MongoMemoryReplSet` for isolated testing of transactions, deduplication, and app re-creation.
+- **Commands run and actual results**:
+  - `npm test`: 55 passing tests (41 in contracts, 14 in api), 0 failures.
+  - `npm run lint`: 0 errors, 0 warnings across all mini-app packages.
+  - `npm run build`: Contracts build ok, Next.js 15 production build compiled successfully.
+  - `npm run design:check`: 15/15 checks passed.
+  - `git status --short`: Confirmed zero changes to parent workspaces, parent lockfiles, or root manifests.
+- **Evidence paths**:
+  - `halaa-checkin/api/src/config.js`
+  - `halaa-checkin/api/src/db/connection.js`
+  - `halaa-checkin/api/src/modules/auth/user.model.js`
+  - `halaa-checkin/api/src/modules/auth/session.model.js`
+  - `halaa-checkin/api/src/modules/auth/auth.service.js`
+  - `halaa-checkin/api/src/modules/auth/auth.routes.js`
+  - `halaa-checkin/api/test/auth.test.js`
+  - `halaa-checkin/api/test/config.test.js`
+- **Contract changes (if any, with reason)**: None.
+- **Known failures / external blockers**: None.
+- **Remaining work in this task**: None.
+- **Next task and files to read**:
+  - Task T03: Event and guest CRUD, audit and statistics API.
+  - Read: `02-TECHNICAL-CONTRACT.md` §§3–6; `01-PRODUCT-AND-DESIGN.md` §§2, 4; `03-IMPLEMENTATION-STEPS.md` §T03.
+
+### 8 September 2026 / T03 — Event and guest CRUD, audit and statistics API
+- **State**: complete
+- **Files changed**:
+  - `halaa-checkin/package.json`
+  - `halaa-checkin/api/src/utils/crypto.js`
+  - `halaa-checkin/api/src/db/transaction.js`
+  - `halaa-checkin/api/src/db/indexes.js`
+  - `halaa-checkin/api/src/middleware/errors.js`
+  - `halaa-checkin/api/src/modules/audit/audit.model.js`
+  - `halaa-checkin/api/src/modules/audit/audit.service.js`
+  - `halaa-checkin/api/src/modules/events/event.model.js`
+  - `halaa-checkin/api/src/modules/events/events.service.js`
+  - `halaa-checkin/api/src/modules/events/events.routes.js`
+  - `halaa-checkin/api/src/modules/guests/guest.model.js`
+  - `halaa-checkin/api/src/modules/guests/guests.repository.js`
+  - `halaa-checkin/api/src/modules/guests/guests.service.js`
+  - `halaa-checkin/api/src/modules/guests/guests.routes.js`
+  - `halaa-checkin/api/src/app.js`
+  - `halaa-checkin/api/scripts/ensure-indexes.mjs`
+  - `halaa-checkin/api/test/helpers/syntheticFixtures.js`
+  - `halaa-checkin/api/test/guests.test.js`
+  - `docs/implementation/hilton-guest-checkin/PROGRESS.md`
+- **Implemented**:
+  - Event CRUD and lifecycle state machine (`draft` -> `live` -> `closed`, and audited `closed` -> `live` with mandatory reason) with optimistic locking and serialization fence `activitySeq`.
+  - Scoped event access control: receptionists can only view assigned events and assigned statistics (unassigned events return generic 404).
+  - Active guest CRUD with cryptographic Crockford-base32 `shortCode` and secure `HGC1.` `qrToken` generation (`select: false`).
+  - Strict DTO projections excluding `qrToken` across all ordinary reads while calculating derived party attributes (`totalAllowed`, `actualPartySize`).
+  - Tokens and short codes remain strictly immutable across edits.
+  - Duplicate guest names permitted; reference uniqueness enforced per event via partial unique index (`referenceKey`).
+  - Soft-deleted guests excluded from lookups, listings, and statistics. Soft-deleted references can be reused.
+  - 1,000 active invitation capacity cap enforced with domain error (409 `CAPACITY_EXCEEDED`).
+  - Closed-event rejection prevents adding, editing, or deleting guests, or modifying event settings (409 `EVENT_CLOSED`).
+  - Admitted guests protected from ordinary edit and delete (409 `ALREADY_CHECKED_IN`).
+  - Authoritative statistics calculation (`calculateStats`) verified against exact 3-invitation contract fixture; verified isolated and unchanged by table search/status filters.
+  - Append-only audit logging committed in same MongoDB multi-document transaction; rollback verified on audit failure.
+  - Full index initialization and verification on wiredTiger replica set, including `/health/ready` probe integration and `npm run db:indexes` CLI script.
+- **Commands run and actual results**:
+  - `npm test`: 67 passing tests (41 in contracts, 26 in api), 0 failures.
+  - `npm run lint`: 0 errors, 0 warnings across all mini-app workspaces.
+  - `npm run build`: Contracts build ok, Next.js 15 production build compiled successfully.
+  - `npm run design:check`: 15/15 checks passed.
+  - `git status --short`: Confirmed zero changes to parent workspaces, parent lockfiles, or root manifests.
+- **Evidence paths**:
+  - `halaa-checkin/api/src/modules/events/event.model.js`
+  - `halaa-checkin/api/src/modules/events/events.service.js`
+  - `halaa-checkin/api/src/modules/events/events.routes.js`
+  - `halaa-checkin/api/src/modules/guests/guest.model.js`
+  - `halaa-checkin/api/src/modules/guests/guests.repository.js`
+  - `halaa-checkin/api/src/modules/guests/guests.service.js`
+  - `halaa-checkin/api/src/modules/guests/guests.routes.js`
+  - `halaa-checkin/api/src/modules/audit/audit.model.js`
+  - `halaa-checkin/api/src/modules/audit/audit.service.js`
+  - `halaa-checkin/api/src/db/transaction.js`
+  - `halaa-checkin/api/test/guests.test.js`
+- **Contract changes (if any, with reason)**: None.
+- **Known failures / external blockers**: None.
+- **Remaining work in this task**: None.
+- **Next task and files to read**:
+  - Task T04: Atomic CSV preview and import.
+  - Read: `01-PRODUCT-AND-DESIGN.md` §5; `02-TECHNICAL-CONTRACT.md` §§4–5; `03-IMPLEMENTATION-STEPS.md` §T04.
+
+### 8 September 2026 / T04 — Atomic CSV preview and import
+- **State**: complete
+- **Files changed**:
+  - `halaa-checkin/api/package.json`
+  - `halaa-checkin/package-lock.json`
+  - `halaa-checkin/api/src/modules/idempotency/idempotency.model.js`
+  - `halaa-checkin/api/src/modules/idempotency/idempotency.service.js`
+  - `halaa-checkin/api/src/modules/imports/imports.service.js`
+  - `halaa-checkin/api/src/modules/imports/imports.routes.js`
+  - `halaa-checkin/api/src/modules/events/events.routes.js`
+  - `halaa-checkin/api/src/db/indexes.js`
+  - `halaa-checkin/api/test/helpers/csvFixtures.js`
+  - `halaa-checkin/api/test/imports.test.js`
+  - `docs/implementation/hilton-guest-checkin/PROGRESS.md`
+- **Implemented**:
+  - Pinned `csv-parse: 5.6.0` in `api/package.json` maintaining strict workspace lock isolation.
+  - Created `Idempotency` model and service with compound unique index `{ actorId: 1, operation: 1, eventId: 1, key: 1 }` and 24h TTL index on `expiresAt`.
+  - Request body fingerprinting with canonical JSON stringification and SHA-256 digest calculation.
+  - Non-destructive CSV preview endpoint (`POST /events/:eventId/imports/preview`) supporting UTF-8 BOM, Arabic text, and quoted fields with commas. Enforces 2 MB raw payload cap and 1,000 parsed row cap.
+  - Row-level validation using `validateCsvRow` from `@halaa-checkin/contracts` returning 1-indexed line numbers (`lineNumber = i + 2`), field-level errors, intra-file reference collision detection, database reference collision detection, duplicate name warnings, and capacity checks without writing any records.
+  - Atomic commit endpoint (`POST /events/:eventId/imports/commit`) executed within a single MongoDB multi-document transaction with optimistic concurrency event fence (`activitySeq`).
+  - Commit revalidates all rows, live capacity, and active references against concurrent modifications. Generates secure `HGC1.` `qrToken` (`select: false`) and Crockford base32 `shortCode` for each guest.
+  - Commits guest batch, creates append-only audit record (`guests_imported`), and records idempotency entry atomically; verifies total atomic rollback on any failure (0 partial records committed).
+  - Concurrent idempotency deduplication handling MongoDB E11000 duplicate key errors by fetching and returning the committed result; returns 409 `IDEMPOTENCY_KEY_REUSED` when the key is reused with a different payload.
+  - UTF-8 BOM CSV template endpoint (`GET /events/:eventId/imports/template`) serving sample templates in Arabic and English with appropriate headers.
+  - Added comprehensive integration test suite (`imports.test.js`) with 11 tests verifying preview parsing, atomic rollback, duplicate reference and capacity gates, idempotency caching and conflict detection, concurrency deduplication, and template downloads.
+- **Commands run and actual results**:
+  - `npm test`: 77 passing tests (41 contracts tests, 36 API tests), 0 failures.
+  - `npm run lint`: 0 errors, 0 warnings across all mini-app packages.
+  - `npm run build`: Contracts build ok, Next.js 15 production build compiled successfully.
+  - `npm run design:check`: 15/15 design checks passed.
+  - `git status --short`: Confirmed zero changes to parent workspaces, parent lockfiles, or root manifests.
+- **Evidence paths**:
+  - `halaa-checkin/api/src/modules/idempotency/idempotency.model.js`
+  - `halaa-checkin/api/src/modules/idempotency/idempotency.service.js`
+  - `halaa-checkin/api/src/modules/imports/imports.service.js`
+  - `halaa-checkin/api/src/modules/imports/imports.routes.js`
+  - `halaa-checkin/api/test/imports.test.js`
+  - `halaa-checkin/api/test/helpers/csvFixtures.js`
+- **Contract changes (if any, with reason)**: None.
+- **Known failures / external blockers**: None.
+- **Remaining work in this task**: None.
+- **Next task and files to read**:
+  - Task T05: Atomic gate API, admission and resolution.
+  - Read: `01-PRODUCT-AND-DESIGN.md` §6; `02-TECHNICAL-CONTRACT.md` §§4–6; `03-IMPLEMENTATION-STEPS.md` §T05.
+
+### 8 September 2026 / T05 — Gate resolution, atomic admission and admin correction
+- **State**: complete
+- **Files changed**:
+  - `halaa-checkin/api/src/modules/checkins/checkins.service.js`
+  - `halaa-checkin/api/src/modules/checkins/checkins.routes.js`
+  - `halaa-checkin/api/src/modules/guests/guests.repository.js`
+  - `halaa-checkin/api/src/modules/guests/guests.routes.js`
+  - `halaa-checkin/api/src/modules/events/events.routes.js`
+  - `halaa-checkin/api/src/app.js`
+  - `halaa-checkin/api/test/checkins.test.js`
+  - `docs/implementation/hilton-guest-checkin/PROGRESS.md`
+- **Implemented**:
+  - Added `findByQrToken`, `searchGate`, and `findRecentAdmissions` repository queries with stable sort order and NFKC-normalized search.
+  - Non-destructive QR and guest ID resolution (`POST /events/:eventId/gate/resolve`) scoped to authorized events. Returns safe guest projection and event state without writing admission; cross-event or unknown tokens return 404 `INVALID_INVITATION` with zero token or guest detail leakage.
+  - Gate search endpoint (`GET /events/:eventId/gate/search`) supporting Arabic diacritic-insensitive search, short code, and reference lookup with bounded queries (2..120 chars, max 20 matches).
+  - Recent admissions endpoint (`GET /events/:eventId/gate/recent`) returning the latest 10 admitted guests ordered by `checkIn.checkedInAt` desc with operator name, time, and companion count.
+  - Atomic check-in admission endpoint (`POST /events/:eventId/checkins`) strictly implementing the Technical Contract Section 5 algorithm:
+    - Session, role, and event scope verification;
+    - CSRF and Origin protection on mutation;
+    - Required `Idempotency-Key` header with canonical SHA-256 payload hash verification;
+    - MongoDB multi-document transaction with snapshot read concern and majority write concern;
+    - Event fence (`activitySeq` increment on live events) serializing admissions against event closure and guest mutations;
+    - Optimistic guest version verification and duplicate admission checks returning safe original check-in details;
+    - Fractional, negative, and excess companion count validation;
+    - Atomic guest update with predicates (`checkIn: null, version: expectedVersion`);
+    - Immutable audit record creation (`GUEST_CHECKIN`);
+    - Idempotency response recording, same-key playback, and concurrent E11000 deduplication returning 201 without duplicate writes.
+  - Concurrency gate verified on WiredTiger replica set: two simultaneous reception requests for the same guest result in exactly one 201 commit and one 409 `ALREADY_CHECKED_IN`, exactly one audit entry, and correct event statistics.
+  - Closed event serializability verified: concurrent close and admission cleanly serialize with zero corrupted or inconsistent states.
+  - Admin-only admission correction endpoint (`PATCH /events/:eventId/guests/:guestId/checkin`) validating 5..500 char reason, preserving original check-in timestamp and operator, auditing count changes, and updating event attendance stats.
+  - Admin-only admission reset endpoint (`DELETE /events/:eventId/guests/:guestId/checkin`) validating 5..500 char reason, retaining previous admission history in audit, clearing `checkIn` to null, incrementing version, updating stats without counters, and enabling another deliberate admission. Reception role access is strictly rejected with 403 `FORBIDDEN`.
+  - Added comprehensive integration test suite (`checkins.test.js`) with 13 tests covering all gate requirements.
+- **Commands run and actual results**:
+  - `npm test`: 90 passing tests (41 contracts tests, 49 API tests), 0 failures.
+  - `npm run lint`: 0 errors, 0 warnings across all mini-app packages.
+  - `npm run build`: Contracts build ok, Next.js 15 production build compiled successfully.
+  - `npm run design:check`: 15/15 design checks passed.
+  - `git status --short`: Confirmed zero changes to parent workspaces, parent lockfiles, or root manifests.
+- **Evidence paths**:
+  - `halaa-checkin/api/src/modules/checkins/checkins.service.js`
+  - `halaa-checkin/api/src/modules/checkins/checkins.routes.js`
+  - `halaa-checkin/api/test/checkins.test.js`
+- **Contract changes (if any, with reason)**: None.
+- **Known failures / external blockers**: None.
+- **Remaining work in this task**: None.
+- **Next task and files to read**:
+  - Task T06: PDF templates, export worker and protected download.
+  - Read: `01-PRODUCT-AND-DESIGN.md` §7; `02-TECHNICAL-CONTRACT.md` §7; `03-IMPLEMENTATION-STEPS.md` §T06.
+
+### 8 September 2026 / T06 — PDF templates, export worker and protected download
+- **State**: complete
+- **Files changed**:
+  - `halaa-checkin/api/package.json`
+  - `halaa-checkin/package-lock.json`
+  - `halaa-checkin/api/src/modules/exports/chromium.js`
+  - `halaa-checkin/api/src/modules/exports/pdfRenderer.js`
+  - `halaa-checkin/api/src/modules/exports/qrGenerator.js`
+  - `halaa-checkin/api/src/modules/exports/exportJob.model.js`
+  - `halaa-checkin/api/src/modules/exports/exports.service.js`
+  - `halaa-checkin/api/src/modules/exports/exports.worker.js`
+  - `halaa-checkin/api/src/modules/exports/exports.routes.js`
+  - `halaa-checkin/api/src/modules/exports/templates/assets.js`
+  - `halaa-checkin/api/src/modules/exports/templates/helpers.js`
+  - `halaa-checkin/api/src/modules/exports/templates/singlePass.js`
+  - `halaa-checkin/api/src/modules/exports/templates/bulkPasses.js`
+  - `halaa-checkin/api/src/modules/exports/templates/report.js`
+  - `halaa-checkin/api/src/modules/events/events.routes.js`
+  - `halaa-checkin/api/src/modules/guests/guests.routes.js`
+  - `halaa-checkin/api/src/db/indexes.js`
+  - `halaa-checkin/api/src/server.js`
+  - `halaa-checkin/api/test/exports.test.js`
+  - `docs/evidence/hilton-guest-checkin/t06-single-pass-a6-ar.png`
+  - `docs/evidence/hilton-guest-checkin/t06-single-pass-a6-en.png`
+  - `docs/evidence/hilton-guest-checkin/t06-bulk-passes-a4.png`
+  - `docs/evidence/hilton-guest-checkin/t06-overflow-20-companions.png`
+  - `docs/evidence/hilton-guest-checkin/t06-sample-attendance-report.pdf`
+  - `docs/evidence/hilton-guest-checkin/t06-sample-single-pass.pdf`
+  - `docs/evidence/hilton-guest-checkin/t06-sample-bulk-passes.pdf`
+  - `docs/implementation/hilton-guest-checkin/PROGRESS.md`
+- **Implemented**:
+  - Cross-platform Chromium locator (`chromium.js`) automatically detecting local Edge and Chrome on Windows and container Chromium binaries without external network dependencies.
+  - Offline Playwright HTML-to-PDF renderer (`pdfRenderer.js`) enforcing strict route aborting (`page.route('**/*', route => route.abort())`) and local Cairo font readiness wait (`document.fonts.ready`).
+  - Internal functional black-and-white QR image generation (`qrGenerator.js`) with 4-module quiet zone, error correction level M, >=35mm print dimension, no logo overlay, and verified round-trip decoding via `pngjs` + `jsqr`.
+  - Inlined base64 Cairo font faces (400, 600, 700) and Halaa SVG logo (`templates/assets.js`) providing completely self-contained offline PDF rendering with zero network access.
+  - Single pass template (`singlePass.js`): A6 portrait (105mm x 148mm) with Halaa tokens, Arabic shaping, RTL/LTR support, Crockford base32 short code, companion counts, and "Present this QR at the entrance" instruction.
+  - Bulk passes template (`bulkPasses.js`): 4-up A4 portrait (2x2 grid) with safe cut lines, independent pagination across multiple pages, and empty slots on the last page.
+  - Attendance report template (`report.js`): Interim report for draft/live events ("تقرير الحضور المرحلي" / "الضيوف في انتظار تسجيل الدخول") and Final attendance report for closed events ("تقرير الحضور النهائي" / "الضيوف الذين لم يحضروا"), with Asia/Riyadh timestamps, authoritative stats from `calculateStats`, attended table with operator/time/actual party count, pending table with reference companion names, and graceful handling of 0-guest events.
+  - Read snapshot transaction: immutable snapshot captured at export request time containing event metadata and target active guests; subsequent guest additions, edits, or deletions do not alter in-flight or completed exports.
+  - Export queue bounds: maximum 10 active jobs system-wide, maximum 3 per admin; excess requests return 429 `RATE_LIMITED`.
+  - Export worker (`exports.worker.js`): single rendering slot, atomic job claiming with 90s lease deadline, crash recovery for stale leases, 2-attempt retry cap, atomic temporary file creation (`.tmp`) and rename, and prevention of publishing after lease loss.
+  - Protected download endpoint (`GET /events/:eventId/exports/:exportId/download`): streams PDF with `Cache-Control: no-store`, sanitized RFC 6266 `Content-Disposition`, enforcing proper states (409 `EXPORT_NOT_READY`, 409 `EXPORT_FAILED`, 410 `EXPORT_EXPIRED`, 403 reception, 404 cross-event).
+  - QR preview endpoint (`GET /events/:eventId/guests/:guestId/qr`): returns `{ data: { imageDataUrl, shortCode } }` with `Cache-Control: no-store` for active guests, strictly omitting raw `qrToken`.
+  - 24-hour artifact TTL cleanup (`cleanupExpiredArtifacts`): sweeps expired files from storage, cleans abandoned `.tmp` files older than 10 minutes, and sweeps orphan PDFs.
+  - Visual evidence artifacts saved to `docs/evidence/hilton-guest-checkin/`.
+  - Added comprehensive integration test suite (`exports.test.js`) with 12 tests covering all gate requirements.
+- **Commands run and actual results**:
+  - `npm test`: 102 passing tests (41 in contracts, 61 in api), 0 failures.
+  - `npm run lint`: 0 errors, 0 warnings across all mini-app packages.
+  - `npm run build`: Contracts build ok, Next.js 15 production build compiled successfully.
+  - `npm run design:check`: 15/15 design checks passed.
+  - `git status --short`: Confirmed zero changes to parent workspaces, parent lockfiles, or root manifests.
+- **Evidence paths**:
+  - `halaa-checkin/api/src/modules/exports/exportJob.model.js`
+  - `halaa-checkin/api/src/modules/exports/exports.service.js`
+  - `halaa-checkin/api/src/modules/exports/exports.worker.js`
+  - `halaa-checkin/api/src/modules/exports/exports.routes.js`
+  - `halaa-checkin/api/src/modules/exports/pdfRenderer.js`
+  - `halaa-checkin/api/src/modules/exports/qrGenerator.js`
+  - `halaa-checkin/api/src/modules/exports/templates/singlePass.js`
+  - `halaa-checkin/api/src/modules/exports/templates/bulkPasses.js`
+  - `halaa-checkin/api/src/modules/exports/templates/report.js`
+  - `halaa-checkin/api/test/exports.test.js`
+  - `docs/evidence/hilton-guest-checkin/t06-single-pass-a6-ar.png`
+  - `docs/evidence/hilton-guest-checkin/t06-single-pass-a6-en.png`
+  - `docs/evidence/hilton-guest-checkin/t06-bulk-passes-a4.png`
+  - `docs/evidence/hilton-guest-checkin/t06-overflow-20-companions.png`
+  - `docs/evidence/hilton-guest-checkin/t06-sample-attendance-report.pdf`
+  - `docs/evidence/hilton-guest-checkin/t06-sample-single-pass.pdf`
+  - `docs/evidence/hilton-guest-checkin/t06-sample-bulk-passes.pdf`
+- **Contract changes (if any, with reason)**: None.
+- **Known failures / external blockers**: None.
+- **Remaining work in this task**: None.
+- **Next task and files to read**:
+  - Task T07: Authenticated bilingual Halaa shell and UI primitives.
+  - Read: `01-PRODUCT-AND-DESIGN.md` §§2–3, 8; `02-TECHNICAL-CONTRACT.md` §§2, 4; `03-IMPLEMENTATION-STEPS.md` §T07.
+
+### 8 September 2026 / T07 — Authenticated bilingual Halaa shell and UI primitives
+- **State**: complete
+- **Files changed**:
+  - `halaa-checkin/package.json`
+  - `halaa-checkin/package-lock.json`
+  - `halaa-checkin/web/package.json`
+  - `halaa-checkin/web/styles/theme.css`
+  - `halaa-checkin/web/app/globals.css`
+  - `halaa-checkin/web/locales/ar.json`
+  - `halaa-checkin/web/locales/en.json`
+  - `halaa-checkin/web/lib/locale.js`
+  - `halaa-checkin/web/lib/api.js`
+  - `halaa-checkin/web/lib/queryClient.js`
+  - `halaa-checkin/web/hooks/useSession.jsx`
+  - `halaa-checkin/web/hooks/useEvent.jsx`
+  - `halaa-checkin/web/components/ui/Button.jsx`
+  - `halaa-checkin/web/components/ui/Button.module.css`
+  - `halaa-checkin/web/components/ui/Dialog.jsx`
+  - `halaa-checkin/web/components/ui/Dialog.module.css`
+  - `halaa-checkin/web/components/ui/Field.jsx`
+  - `halaa-checkin/web/components/ui/Field.module.css`
+  - `halaa-checkin/web/components/ui/StatusBadge.jsx`
+  - `halaa-checkin/web/components/ui/StatusBadge.module.css`
+  - `halaa-checkin/web/components/ui/Pagination.jsx`
+  - `halaa-checkin/web/components/ui/Pagination.module.css`
+  - `halaa-checkin/web/components/ui/Notice.jsx`
+  - `halaa-checkin/web/components/ui/Notice.module.css`
+  - `halaa-checkin/web/components/shell/AppHeader.jsx`
+  - `halaa-checkin/web/components/shell/AppHeader.module.css`
+  - `halaa-checkin/web/components/shell/EventSelector.jsx`
+  - `halaa-checkin/web/components/shell/EventSelector.module.css`
+  - `halaa-checkin/web/components/shell/WorkspaceNav.jsx`
+  - `halaa-checkin/web/components/shell/WorkspaceNav.module.css`
+  - `halaa-checkin/web/app/page.jsx`
+  - `halaa-checkin/web/app/[lang]/providers.jsx`
+  - `halaa-checkin/web/app/[lang]/layout.jsx`
+  - `halaa-checkin/web/app/[lang]/login/page.jsx`
+  - `halaa-checkin/web/app/[lang]/login/login.module.css`
+  - `halaa-checkin/web/app/[lang]/(workspace)/layout.jsx`
+  - `halaa-checkin/web/app/[lang]/(workspace)/workspace.module.css`
+  - `halaa-checkin/web/app/[lang]/(workspace)/guests/page.jsx`
+  - `halaa-checkin/web/app/[lang]/(workspace)/gate/page.jsx`
+  - `halaa-checkin/web/test/shell.test.js`
+  - `halaa-checkin/web/test/browser-shell.test.js`
+  - `docs/evidence/hilton-guest-checkin/t07-login-ar-1440x900.png`
+  - `docs/evidence/hilton-guest-checkin/t07-login-en-1440x900.png`
+  - `docs/evidence/hilton-guest-checkin/t07-login-ar-1024x768.png`
+  - `docs/evidence/hilton-guest-checkin/t07-login-ar-390x844.png`
+  - `docs/evidence/hilton-guest-checkin/t07-login-ar-360x800.png`
+  - `docs/evidence/hilton-guest-checkin/t07-workspace-ar-1440x900.png`
+  - `docs/evidence/hilton-guest-checkin/t07-workspace-en-1440x900.png`
+  - `docs/evidence/hilton-guest-checkin/t07-workspace-ar-390x844.png`
+  - `docs/evidence/hilton-guest-checkin/t07-reception-gate-ar.png`
+  - `docs/implementation/hilton-guest-checkin/PROGRESS.md`
+- **Implemented**:
+  - Pinned `@tanstack/react-query@5.90.21` in `@halaa-checkin/web` workspace with strict package-lock isolation, zero modifications to parent manifests.
+  - Symmetrical 1:1 bilingual localization dictionaries (`ar.json`, `en.json`) covering all application strings and all 18 DomainError codes from Technical Contract §4 with verified non-empty values.
+  - Direction helpers (`getDir`), translation resolver (`t`), and `formatRiyadhDate` using `Asia/Riyadh` timezone.
+  - Production API fetch wrapper (`lib/api.js`) sending `credentials: 'include'`, auto-attaching `X-CSRF-Token` from active session on mutations, safely handling 204 No Content without JSON parsing errors, and normalizing error envelopes into `ApiError` instances.
+  - Local semantic theme tokens (`styles/theme.css`) implementing contrast-safe aliases (`--btn-primary-contrast-bg: #6b4e33`, status foregrounds) with Cairo font applied.
+  - Accessible UI primitives:
+    - `Button`: variants (`primary`, `brand`, `secondary`, `outline`, `danger`, `ghost`), sizes (`sm`, `md`, `lg`), spinner loading state (`aria-busy`), disabled state, 12px radius.
+    - `Dialog`: accessible modal with focus trap (Tab/Shift+Tab cycling), Escape listener, scroll lock on body, labeled title (`aria-labelledby`), focus restoration to opener on close.
+    - `Field`: accessible form field wrapper supporting label, hint, error (`aria-invalid`, `aria-describedby`), and mobile font scaling (>=16px).
+    - `StatusBadge`: contrast-safe badges with icons for `draft`, `live`, `closed`, `admitted`, `pending`, `admin`, `reception`.
+    - `Pagination`: accessible page navigation with previous/next and total counters.
+    - `Notice`: semantic banners for `info`, `success`, `warning`, `error`.
+  - Shell navigation & header:
+    - `AppHeader`: Halaa logo (`sidebar-logo.svg`), product name, integrated `EventSelector`, staff chip with role badge, language toggle (preserving route & query params), and logout button.
+    - `EventSelector`: dropdown selector displaying active event, status badge, and empty state guidance.
+    - `WorkspaceNav`: navigation bar for `Guests` and `Gate`. Receptionist role sees `Gate` only.
+  - Pages & Routing:
+    - Root `/` redirects to `/ar/guests`.
+    - Bilingual layout (`app/[lang]/layout.jsx`) sets synchronous `dir="rtl"` / `dir="ltr"` and `lang` attributes, wrapping in `<Providers>`.
+    - Login page (`app/[lang]/login/page.jsx`): authentic Halaa card with logo, username, password, validation, error alert, and submit button.
+    - Workspace layout (`app/[lang]/(workspace)/layout.jsx`): session guard redirecting unauthenticated users to `/login`, rendering header & nav, handling empty events and session expiry.
+    - Guests workspace (`app/[lang]/(workspace)/guests/page.jsx`): admin-only view with role guard immediately redirecting receptionists to `/gate`.
+    - Gate workspace (`app/[lang]/(workspace)/gate/page.jsx`): gate view accessible to admin and receptionists.
+  - Automated tests:
+    - `shell.test.js`: 11 tests verifying dictionary symmetry, non-empty values, 18 error codes, direction/date formatting, CSRF injection, 204 handling, error normalization, and role permissions.
+    - `browser-shell.test.js`: 4 Playwright browser E2E tests verifying login rendering, admin navigation, reception redirection & hidden Guests tab, language toggle query preservation, and mobile viewport responsive fitting.
+    - Visual evidence screenshots captured and saved in `docs/evidence/hilton-guest-checkin/`.
+- **Commands run and actual results**:
+  - `npm test`: 117 passing tests (41 in contracts, 61 in api, 15 in web), 0 failures.
+  - `npm run lint`: 0 errors, 0 warnings across all mini-app packages.
+  - `npm run build`: Contracts build ok, Next.js 15 production build compiled 12 static pages successfully.
+  - `npm run design:check`: 15/15 design checks passed.
+  - `git status --short`: Confirmed zero changes to parent workspaces, parent lockfiles, or root manifests.
+- **Evidence paths**:
+  - `halaa-checkin/web/locales/ar.json`
+  - `halaa-checkin/web/locales/en.json`
+  - `halaa-checkin/web/lib/api.js`
+  - `halaa-checkin/web/lib/locale.js`
+  - `halaa-checkin/web/hooks/useSession.jsx`
+  - `halaa-checkin/web/hooks/useEvent.jsx`
+  - `halaa-checkin/web/components/ui/Button.jsx`
+  - `halaa-checkin/web/components/ui/Dialog.jsx`
+  - `halaa-checkin/web/components/ui/Field.jsx`
+  - `halaa-checkin/web/components/ui/StatusBadge.jsx`
+  - `halaa-checkin/web/components/ui/Pagination.jsx`
+  - `halaa-checkin/web/components/ui/Notice.jsx`
+  - `halaa-checkin/web/components/shell/AppHeader.jsx`
+  - `halaa-checkin/web/components/shell/EventSelector.jsx`
+  - `halaa-checkin/web/components/shell/WorkspaceNav.jsx`
+  - `halaa-checkin/web/test/shell.test.js`
+  - `halaa-checkin/web/test/browser-shell.test.js`
+  - `docs/evidence/hilton-guest-checkin/t07-login-ar-1440x900.png`
+  - `docs/evidence/hilton-guest-checkin/t07-login-en-1440x900.png`
+  - `docs/evidence/hilton-guest-checkin/t07-login-ar-1024x768.png`
+  - `docs/evidence/hilton-guest-checkin/t07-login-ar-390x844.png`
+  - `docs/evidence/hilton-guest-checkin/t07-login-ar-360x800.png`
+  - `docs/evidence/hilton-guest-checkin/t07-workspace-ar-1440x900.png`
+  - `docs/evidence/hilton-guest-checkin/t07-workspace-en-1440x900.png`
+  - `docs/evidence/hilton-guest-checkin/t07-workspace-ar-390x844.png`
+  - `docs/evidence/hilton-guest-checkin/t07-reception-gate-ar.png`
+- **Contract changes (if any, with reason)**: None.
+- **Known failures / external blockers**: None.
+- **Remaining work in this task**: None.
+- **Next task and files to read**:
+  - Task T08: Guests workspace, event setup and import UI.
+  - Read: `01-PRODUCT-AND-DESIGN.md` §§4–5; `02-TECHNICAL-CONTRACT.md` §§4–5; `03-IMPLEMENTATION-STEPS.md` §T08.
+
+### 8 September 2026 / T08 — Guests workspace, event setup and import UI
+- **State**: complete
+- **Commands run**:
+  - `npm --prefix web run build` (Next.js production SSG compilation passes, 12 static pages)
+  - `node --test test/guests-unit.test.js` (Riyadh date parsing, contract limits, calculateStats fixture)
+  - `node --test test/browser-guests.test.js` (Playwright E2E browser test covering complete workspace workflows)
+  - `npm --prefix web test` (22/22 web tests pass: 15 T07 + 7 T08)
+  - `npm test` (monorepo full test suite: 41 contracts, 61 api, 22 web = 124/124 tests pass)
+  - `npm run lint` (ESLint clean across workspace)
+  - `npm run design:check` (design token check clean)
+- **Files changed**:
+  - `halaa-checkin/web/locales/ar.json`
+  - `halaa-checkin/web/locales/en.json`
+  - `halaa-checkin/web/lib/locale.js`
+  - `halaa-checkin/web/hooks/useStats.js`
+  - `halaa-checkin/web/hooks/useGuests.js`
+  - `halaa-checkin/web/hooks/useEventSettings.js`
+  - `halaa-checkin/web/components/guests/StatsStrip.jsx`
+  - `halaa-checkin/web/components/guests/StatsStrip.module.css`
+  - `halaa-checkin/web/components/guests/EventHeaderBar.jsx`
+  - `halaa-checkin/web/components/guests/EventHeaderBar.module.css`
+  - `halaa-checkin/web/components/guests/EventDialog.jsx`
+  - `halaa-checkin/web/components/guests/EventDialog.module.css`
+  - `halaa-checkin/web/components/guests/EventLifecycleDialog.jsx`
+  - `halaa-checkin/web/components/guests/GuestTable.jsx`
+  - `halaa-checkin/web/components/guests/GuestTable.module.css`
+  - `halaa-checkin/web/components/guests/GuestForm.jsx`
+  - `halaa-checkin/web/components/guests/GuestForm.module.css`
+  - `halaa-checkin/web/components/guests/GuestDeleteDialog.jsx`
+  - `halaa-checkin/web/components/guests/QrPreviewDialog.jsx`
+  - `halaa-checkin/web/components/guests/QrPreviewDialog.module.css`
+  - `halaa-checkin/web/components/guests/ImportDialog.jsx`
+  - `halaa-checkin/web/components/guests/ImportDialog.module.css`
+  - `halaa-checkin/web/components/guests/GuestsWorkspace.jsx`
+  - `halaa-checkin/web/components/guests/GuestsWorkspace.module.css`
+  - `halaa-checkin/web/app/[lang]/(workspace)/guests/page.jsx`
+  - `halaa-checkin/web/test/guests-unit.test.js`
+  - `halaa-checkin/web/test/browser-guests.test.js`
+  - `docs/evidence/hilton-guest-checkin/t08-guests-workspace-ar-1440x900.png`
+  - `docs/evidence/hilton-guest-checkin/t08-guests-workspace-en-1440x900.png`
+  - `docs/evidence/hilton-guest-checkin/t08-guests-workspace-ar-390x844.png`
+  - `docs/evidence/hilton-guest-checkin/t08-guests-workspace-ar-360x800.png`
+- **Contract changes (if any, with reason)**: None.
+- **Known failures / external blockers**: None.
+- **Remaining work in this task**: None.
+- **Next task and files to read**:
+  - Task T09: Gate UI and scanner lifecycle.
+  - Read: `01-PRODUCT-AND-DESIGN.md` §6; `02-TECHNICAL-CONTRACT.md` §5; `03-IMPLEMENTATION-STEPS.md` §T09.
+
+## Final milestone evidence
+
+- Implemented: pending (T00–T08 complete, T09–T12 pending).
+- Demo verified locally: pending.
+- Deployed: pending; hostname/credentials/VPS checks not performed.
+- Gate ready: pending; actual devices and operations not verified.

@@ -3,6 +3,7 @@
 import { useAdminDashboard } from "@/hooks/admin";
 import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { normalizeDashboardFilters } from "@/utils/filterNormalizer";
 import PieChartComponent from "@/ui/admin/dashboard/charts/pieChart/PieChart";
 import CustomPieChart from "@/ui/admin/dashboard/charts/customPieChart/CustomPieChart";

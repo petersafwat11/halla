@@ -42,7 +42,7 @@ const TemplatesCards = ({ templates, selectedTemplate, onTemplateSelect }) => {
           const alt = "Invitation template";
 
           return (
-            <div
+            <button type="button" aria-label={`Select ${template.name || template.title || alt}`} aria-pressed={Boolean(isSelected)}
               key={template.id || template._id}
               className={`${styles.templateCard} ${
                 isSelected ? styles.selected : ""
@@ -63,14 +63,14 @@ const TemplatesCards = ({ templates, selectedTemplate, onTemplateSelect }) => {
                     height={172}
                     className={styles.templateImage}
                     unoptimized={
-                      src.startsWith("blob:") || src.startsWith("data:")
+                      src.startsWith("blob:") || src.startsWith("data:") || src.includes('/templates/') && src.includes('/asset')
                     }
                   />
                 ) : (
                   <div className={styles.templateImage} />
                 )}
               </div>
-            </div>
+            </button>
           );
         })}
       </div>

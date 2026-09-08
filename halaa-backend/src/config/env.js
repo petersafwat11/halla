@@ -78,6 +78,8 @@ const envSchema = Joi.object({
   // Google Maps web-service key. This key stays server-side and should be
   // restricted to the VPS egress IP plus Places API (New) + Geocoding API.
   GOOGLE_MAPS_SERVER_API_KEY: Joi.string().allow('').default(''),
+  AZURE_MAPS_SERVER_API_KEY: Joi.string().allow('').default(''),
+  MAPS_PROVIDER: Joi.string().valid('google', 'azure').default('google'),
 
   // Minimum lead time for messaging.scheduleBulkSend.
   // PAID plans: 24h. Backend rejects schedules below this with SCHEDULE_TOO_SOON

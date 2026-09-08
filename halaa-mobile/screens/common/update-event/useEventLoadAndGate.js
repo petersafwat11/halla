@@ -73,8 +73,11 @@ const mapApiToFormValues = (eventData) => {
           name: taqnyatRef.templateName || taqnyatRef.name,
           templateName: taqnyatRef.templateName,
           bodyText: taqnyatRef.bodyText,
+          varMapping: taqnyatRef.varMapping || [],
+          buttons: taqnyatRef.buttons || [],
           hasImageHeader: taqnyatRef.hasImageHeader || false,
           language: taqnyatRef.language || "ar",
+          deliveryMode: taqnyatRef.deliveryMode || eventData.invitationDeliveryMode || 'quick_reply',
         }
       : { _id: taqnyatRef, id: taqnyatRef }
     : null;
@@ -91,7 +94,7 @@ const mapApiToFormValues = (eventData) => {
     staffList,
     visualTemplate,
     selectedTemplate,
-    taqnyatTemplate: taqnyatRef ? ct : null,
+    taqnyatTemplate: taqnyatRef ? { ...ct, templateRef: typeof taqnyatRef === "object" ? taqnyatRef._id || taqnyatRef.id : taqnyatRef } : null,
     templateImage: cv.bakedImagePath || eventData.templateImage || "",
     guestReplies: {
       onAttend: replies.onAttend || "",
@@ -99,6 +102,7 @@ const mapApiToFormValues = (eventData) => {
     },
     invitationType: eventData.invitationType || DEFAULT_INVITATION_TYPE,
     isBusinessEvent: eventData.invitationDeliveryMode === 'portal_link',
+    isExistingEvent: true,
   };
 };
 

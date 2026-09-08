@@ -51,6 +51,9 @@ export default function SendMessagesMenu({ event, eventId }) {
     }
   }
   const states = buildSendActionStates(event, audiences);
+  if (event.reminderAvailability?.configured === false) {
+    states.extraReminder = { ...states.extraReminder, enabled: false, reasonKey: 'reminderUnavailable' };
+  }
   const invitationBalance = event?.invitationBalance || event?.subscription?.invitationBalance || null;
   const invitesRemaining = invitationBalance?.unlimited
     ? null
@@ -89,7 +92,9 @@ export default function SendMessagesMenu({ event, eventId }) {
             const state = states[action];
             const [labelKey, labelFallback] = ITEM_LABEL_KEYS[action];
             const reason = state.reasonKey
-              ? t(...DISABLED_KEYS[state.reasonKey])
+              ? state.reasonKey === 'reminderUnavailable'
+                ? t('singleEvent.reminderUnavailableShort')
+                : t(...DISABLED_KEYS[state.reasonKey])
               : null;
             return (
               <button

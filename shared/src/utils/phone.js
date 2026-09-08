@@ -12,6 +12,14 @@ import { normalizeDigits } from "./locale.js";
  */
 export const DEFAULT_PHONE_PLACEHOLDER = "05xxxxxxxx";
 
+/** Local editable/display form; leave unsupported numbers intact for validation. */
+export const toLocalSaudiPhone = (value) => {
+  const digits = normalizeDigits(String(value ?? "")).replace(/[\s()+-]/g, "");
+  return /^(?:966|0)?5\d{8}$/.test(digits)
+    ? `0${digits.replace(/^(966|0)/, "")}`
+    : digits;
+};
+
 /**
  * Unified Saudi phone regex.
  * Matches: 05XXXXXXXX (10 digits), 5XXXXXXXX (9 digits), 9665XXXXXXXX (12 digits), +9665XXXXXXXX (13 digits).

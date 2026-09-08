@@ -12,6 +12,7 @@
  * Auto-replies dual-write canonical guestReplies.* + legacy keys.
  */
 
+import DEFAULT_GUEST_REPLIES from "@halaa/shared/constants/guestReplies.cjs";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -93,21 +94,18 @@ const REPLY_TABS = [
     labelKey: "auto_replies_tab_attending",
     fallback: "الحضور",
     canonical: "onAttend",
-    defaultKey: "auto_replies_default_attending",
-    defaultText: "شكرًا لتأكيد حضورك! يسعدنا أن تكون معنا في هذه المناسبة. 🎉",
   },
   {
     key: "absence",
     labelKey: "auto_replies_tab_absence",
     fallback: "الاعتذار",
     canonical: "onAbsent",
-    defaultKey: "auto_replies_default_absence",
-    defaultText: "شكراً لإعلامنا. نتفهم ظروفك ونتمنى لك دوام الصحة والسعادة. 🌹",
   },
 ];
 
-const StepFour = () => {
+const StepFour = ({ owner } = {}) => {
   const { setValue, watch } = useFormContext();
+  const isBusinessEvent = watch("isBusinessEvent");
   const { t, i18n } = useTranslation("createEvent");
   const [activeTab, setActiveTab] = useState("attending");
   const previousCategoryRef = useRef("");
@@ -121,27 +119,30 @@ const StepFour = () => {
   const eventDate = watch("eventDate");
   const eventTime = watch("eventTime");
   const address = watch("address");
-  const hostName = useAuthStore(
+  const signedInName = useAuthStore(
     (state) => state.user?.name || ""
   );
+  const hostName = owner ? owner.name || "" : signedInName;
 
   // Build the preview context once per form change. The same context drives
   // placeholder substitution in the template-picker list AND the WhatsApp
   // preview pane, mirroring the backend resolver semantics so what the host
   // sees on screen matches what the guest receives.
   const previewContext = useMemo(() => {
-    const locale = i18n?.language || "ar";
+    const locale = selectedTemplate?.language || "ar";
     const dateFormatted = eventDate ? formatDate(eventDate, locale) : "";
     return buildTaqnyatPreviewContext({
       guestName:
         i18n?.language === "en" ? "Dear Guest" : "ضيفنا الكريم",
       eventTitle: eventName,
       dateFormatted,
+      eventDate,
+      locale,
       eventTime,
       locationAddress: address?.address || "",
       hostName,
     });
-  }, [eventName, eventDate, eventTime, address?.address, hostName, i18n?.language]);
+  }, [eventName, eventDate, eventTime, address?.address, hostName, i18n?.language, selectedTemplate?.language]);
 
   // Filter templates by the event category chosen in step 1 (eventType),
   // not the visual template picked in step 3.
@@ -152,7 +153,7 @@ const StepFour = () => {
       category: category || undefined,
       type: "invite",
       invitationMode: invitationType,
-      deliveryMode: watch("isBusinessEvent") ? "portal_link" : "quick_reply",
+      deliveryMode: isBusinessEvent ? "portal_link" : "quick_reply",
     },
     { enabled: Boolean(category) }
   );
@@ -180,7 +181,7 @@ const StepFour = () => {
     REPLY_TABS.forEach((tab) => {
       const path = `guestReplies.${tab.canonical}`;
       if (!watch(path)) {
-        setValue(path, t(tab.defaultKey, tab.defaultText), { shouldDirty: false });
+        setValue(path, DEFAULT_GUEST_REPLIES[tab.canonical], { shouldDirty: false });
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -236,70 +237,32 @@ const StepFour = () => {
             <label className={styles.sectionLabel}>
               {t("invitation_type", "نوع الدعوة")}
             </label>
-            <p className={styles.repliesHint}>
+            {replyAllowed && <p className={styles.repliesHint}>
               {t(
                 "invitation_type_hint",
                 "حدّد الرسالة التي تصل بعد تأكيد الضيف، أو أرسل دعوة نصية فقط بدون أزرار."
               )}
-            </p>
+            </p>}
           </div>
 
-          <div className={styles.inviteTypeGrid}>
+          <div className={styles.choiceList}>
             {INVITATION_TYPE_OPTIONS.map((opt) => {
               const isSelected = invitationType === opt.value;
               return (
-                <button
-                  key={opt.value}
-                  type="button"
-                  className={`${styles.inviteTypeCard} ${isSelected ? styles.inviteTypeCardSelected : ""}`}
-                  onClick={() =>
-                    setValue("invitationType", opt.value, { shouldDirty: true })
-                  }
-                  aria-pressed={isSelected}
-                >
-                  <div className={styles.cardHeader}>
-                    <div className={styles.iconBox}>
-                      {opt.value === "reply_and_qr" && <QrPassHeroIcon />}
-                      {opt.value === "reply_only" && <ChatRsvpHeroIcon />}
-                      {opt.value === "none" && <DirectMailHeroIcon />}
-                    </div>
-                    <div className={styles.cardHeaderMeta}>
-                      <span className={styles.inviteTypeNum}>{opt.id}</span>
-                      {opt.badgeKey && (
-                        <span className={styles.featureBadge}>
-                          {t(opt.badgeKey, "شامل رمز الدخول")}
-                        </span>
-                      )}
-                    </div>
-                    <span
-                      className={`${styles.radioIndicator} ${isSelected ? styles.radioIndicatorActive : ""}`}
-                    >
-                      {isSelected && <CheckIcon />}
-                    </span>
-                  </div>
-
-                  <div className={styles.cardContent}>
-                    <p className={styles.inviteTypeTitle}>{t(watch("isBusinessEvent") && opt.value === "reply_and_qr" ? "business_invitation_type_reply_and_qr_label" : opt.labelKey)}</p>
-                    <p className={styles.inviteTypeDesc}>{t(watch("isBusinessEvent") ? `business_${opt.descKey}` : opt.descKey)}</p>
-                  </div>
-
-                  {!watch("isBusinessEvent") && opt.features && opt.features.length > 0 && (
-                    <div className={styles.featureChipsList}>
-                      {opt.features.filter(() => !watch("isBusinessEvent")).map((feat) => (
-                        <span
-                          key={feat.key}
-                          className={`${styles.featureChip} ${
-                            feat.included
-                              ? styles.featureChipIncluded
-                              : styles.featureChipExcluded
-                          }`}
-                        >
-                          {feat.included ? <MiniCheckIcon /> : <MiniCrossIcon />}
-                          {t(feat.labelKey, feat.fallback)}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                <button key={opt.value} type="button"
+                  className={styles.choiceOption}
+                  onClick={() => setValue("invitationType", opt.value, { shouldDirty: true })}
+                  aria-pressed={isSelected}>
+                  <span className={styles.choiceIcon}>
+                    {opt.value === "reply_and_qr" && <QrPassHeroIcon />}
+                    {opt.value === "reply_only" && <ChatRsvpHeroIcon />}
+                    {opt.value === "none" && <DirectMailHeroIcon />}
+                  </span>
+                  <span className={styles.choiceCopy}>
+                    <span className={styles.choiceTitle}>{t(isBusinessEvent && opt.value === "reply_and_qr" ? "business_invitation_type_reply_and_qr_label" : opt.labelKey)}</span>
+                    <span className={styles.choiceDescription}>{t(isBusinessEvent ? `business_${opt.descKey}` : opt.descKey)}</span>
+                  </span>
+                  <span className={styles.choiceRadio} aria-hidden="true">{isSelected && <CheckIcon />}</span>
                 </button>
               );
             })}
@@ -426,6 +389,9 @@ const StepFour = () => {
                 ))}
               </div>
 
+              <p className={styles.repliesHint}>
+                {t(activeTab === "absence" ? "reply_delivery_decline" : invitationType === "reply_and_qr" ? "reply_delivery_qr" : "reply_delivery_text")}
+              </p>
               <textarea
                 value={replyText || ""}
                 onChange={handleReplyChange}
@@ -433,7 +399,7 @@ const StepFour = () => {
                 maxLength={500}
                 className={styles.replyTextarea}
                 placeholder={t("auto_reply_placeholder", "اكتب الرد التلقائي هنا")}
-                dir={i18n?.language === "ar" ? "rtl" : "ltr"}
+                dir="auto"
                 style={{
                   width: "100%",
                   padding: 12,
@@ -441,8 +407,7 @@ const StepFour = () => {
                   border: "1px solid #ddd",
                   fontFamily: "inherit",
                   fontSize: 14,
-                  direction: i18n?.language === "ar" ? "rtl" : "ltr",
-                  textAlign: i18n?.language === "ar" ? "right" : "left",
+                  textAlign: "start",
                 }}
               />
             </>

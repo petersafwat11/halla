@@ -13,7 +13,8 @@ import * as Location from "expo-location";
 import { isolateAuto } from "@halaa/shared/utils/bidi";
 import { useTranslation } from "../../localization";
 import { useFieldDirection } from "../../hooks/useInputDirection";
-import mapsApi from "../../services/mapsApi";
+import mapsApi, { usesAzureMaps } from "../../services/mapsApi";
+import AzureMapView from './AzureMapView';
 import DirectionalTextInput from "./DirectionalTextInput";
 
 const DEFAULT_COORDINATE = { latitude: 24.7136, longitude: 46.6753 };
@@ -40,6 +41,8 @@ function MapPickerInner({
   });
   const mapRef = useRef(null);
   const searchTimer = useRef(null);
+  const searchEpoch = useRef(0);
+  const resolveEpoch = useRef(0);
   const sessionToken = useRef(newSessionToken());
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -61,33 +64,41 @@ function MapPickerInner({
     longitudeDelta: 0.025,
   }), [draft.latitude, draft.longitude]);
 
-  useEffect(() => { if (value) setDraft(normalizeLocation(value)); }, [value]);
-  useEffect(() => () => { if (searchTimer.current) clearTimeout(searchTimer.current); }, []);
+  useEffect(() => { setDraft(normalizeLocation(value)); }, [value]);
+  useEffect(() => () => { ++searchEpoch.current; ++resolveEpoch.current; if (searchTimer.current) clearTimeout(searchTimer.current); }, []);
 
   const reverseCoordinate = useCallback(async (coordinate) => {
+    const epoch = ++resolveEpoch.current;
+    ++searchEpoch.current;
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    setResults([]); setSearching(false); setLocating(false); setQuery('');
     setResolving(true);
     try {
       const resolved = await mapsApi.reverseGeocode({ ...coordinate, language: currentLanguage });
+      if (epoch !== resolveEpoch.current) return;
       setDraft(normalizeLocation(resolved, coordinate));
       setProviderFailed(false);
     } catch {
+      if (epoch !== resolveEpoch.current) return;
       try {
         const [fallback] = await Location.reverseGeocodeAsync(coordinate);
+        if (epoch !== resolveEpoch.current) return;
         const fallbackAddress = fallback
           ? [fallback.name, fallback.street, fallback.city, fallback.region, fallback.country].filter(Boolean).join(", ")
           : "";
         setDraft((previous) => ({
           ...previous, ...coordinate,
-          address: fallbackAddress || previous.address,
-          city: fallback?.city || previous.city || "",
-          country: fallback?.country || previous.country || "",
+          address: fallbackAddress,
+          city: fallback?.city || "",
+          country: fallback?.country || "",
           placeId: "", provider: fallbackAddress ? "device" : "manual",
         }));
       } catch {
-        setDraft((previous) => ({ ...previous, ...coordinate, placeId: "", provider: "manual" }));
+        if (epoch !== resolveEpoch.current) return;
+        setDraft({ address: '', city: '', country: '', ...coordinate, placeId: "", provider: "manual" });
       }
       setProviderFailed(true);
-    } finally { setResolving(false); }
+    } finally { if (epoch === resolveEpoch.current) setResolving(false); }
   }, [currentLanguage]);
 
   const moveTo = useCallback((coordinate) => {
@@ -95,56 +106,76 @@ function MapPickerInner({
     mapRef.current?.animateToRegion({ ...coordinate, latitudeDelta: 0.018, longitudeDelta: 0.018 }, 300);
   }, []);
 
-  const search = useCallback(async (text) => {
+  const search = useCallback(async (text, epoch) => {
+    if (epoch !== searchEpoch.current) return;
     const normalized = text.trim();
-    if (normalized.length < 3) { setResults([]); return; }
+    if (normalized.length < 3) { setResults([]); setSearching(false); return; }
     setSearching(true);
     try {
       const data = await mapsApi.autocompletePlaces({
         query: normalized, language: currentLanguage, sessionToken: sessionToken.current,
         latitude: draft.latitude, longitude: draft.longitude,
       });
+      if (epoch !== searchEpoch.current) return;
       setResults(Array.isArray(data) ? data : data?.suggestions || []);
       setProviderFailed(false);
-    } catch { setResults([]); setProviderFailed(true); }
-    finally { setSearching(false); }
+    } catch { if (epoch === searchEpoch.current) { setResults([]); setProviderFailed(true); } }
+    finally { if (epoch === searchEpoch.current) setSearching(false); }
   }, [currentLanguage, draft.latitude, draft.longitude]);
 
   const onSearchChange = (text) => {
+    const epoch = ++searchEpoch.current;
+    ++resolveEpoch.current;
+    setResolving(false); setLocating(false); setSearching(false);
+    setDraft(previous => ({ ...previous, address: '' }));
+    setResults([]);
     setQuery(text);
     if (searchTimer.current) clearTimeout(searchTimer.current);
-    searchTimer.current = setTimeout(() => search(text), 350);
+    searchTimer.current = setTimeout(() => search(text, epoch), 350);
   };
 
   const selectPrediction = async (item) => {
+    const epoch = ++resolveEpoch.current;
+    setLocating(false);
+    ++searchEpoch.current;
+    if (searchTimer.current) clearTimeout(searchTimer.current);
     const placeId = item.placeId || item.place_id;
-    if (!placeId) return;
+    if (!placeId && !item.location) return;
     setSearching(true);
     try {
-      const location = await mapsApi.getPlaceDetails({ placeId, language: currentLanguage, sessionToken: sessionToken.current });
+      const location = item.location || await mapsApi.getPlaceDetails({ placeId, language: currentLanguage, sessionToken: sessionToken.current });
+      if (epoch !== resolveEpoch.current) return;
       const normalized = normalizeLocation(location);
       setDraft(normalized); moveTo(normalized); setQuery(""); setResults([]);
+      setProviderFailed(false);
       sessionToken.current = newSessionToken(); Keyboard.dismiss();
-    } catch { setProviderFailed(true); }
-    finally { setSearching(false); }
+    } catch { if (epoch === resolveEpoch.current) setProviderFailed(true); }
+    finally { if (epoch === resolveEpoch.current) { setSearching(false); setResolving(false); } }
   };
 
   const useCurrentLocation = async () => {
+    const epoch = ++resolveEpoch.current;
     setLocating(true);
     try {
       const permission = await Location.requestForegroundPermissionsAsync();
+      if (epoch !== resolveEpoch.current) return;
       if (permission.status !== "granted") {
         Alert.alert(t("map_picker_permission_title"), t("map_picker_permission_message"));
         return;
       }
       const current = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      if (epoch !== resolveEpoch.current) return;
       const coordinate = { latitude: current.coords.latitude, longitude: current.coords.longitude };
-      moveTo(coordinate); await reverseCoordinate(coordinate);
-    } catch { setProviderFailed(true); }
-    finally { setLocating(false); }
+      setLocating(false); moveTo(coordinate); await reverseCoordinate(coordinate);
+    } catch { if (epoch === resolveEpoch.current) setProviderFailed(true); }
+    finally { if (epoch === resolveEpoch.current) setLocating(false); }
   };
 
   const useTypedAddress = () => {
+    setLocating(false);
+    ++resolveEpoch.current; ++searchEpoch.current;
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    setResolving(false); setSearching(false);
     const address = query.trim();
     if (address.length < 3) return;
     setDraft((previous) => ({ ...previous, address, latitude: null, longitude: null, city: "", country: "", placeId: "", provider: "manual" }));
@@ -156,11 +187,16 @@ function MapPickerInner({
   };
   const closePicker = () => {
     Keyboard.dismiss();
+    setLocating(false);
+    ++resolveEpoch.current; ++searchEpoch.current;
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    setResolving(false); setSearching(false);
     setDraft(normalizeLocation(value));
     setOpen(false);
   };
   const confirm = () => {
-    if (!draft.address.trim()) return;
+    if (!draft.address.trim() || resolving || searching || locating) return;
+    ++resolveEpoch.current; ++searchEpoch.current;
     Keyboard.dismiss();
     onChange(normalizeLocation(draft));
     setOpen(false);
@@ -197,6 +233,7 @@ function MapPickerInner({
             <View style={styles.searchBox}>
               {searching ? <ActivityIndicator size="small" color="#C28E5C" /> : <Ionicons name="search" size={20} color="#777" />}
               <DirectionalTextInput value={query} onChangeText={onSearchChange} placeholder={t("map_picker_search_placeholder")}
+                maxLength={160}
                 placeholderTextColor="#999" style={[styles.searchInput, direction.input]}
                 returnKeyType="done" onSubmitEditing={useTypedAddress} />
               {query ? <TouchableOpacity onPress={() => onSearchChange("")}><Ionicons name="close-circle" size={20} color="#999" /></TouchableOpacity> : null}
@@ -214,7 +251,11 @@ function MapPickerInner({
           </View>
 
           <View style={styles.mapWrap}>
-            {nativeConfigured ? (
+            {usesAzureMaps ? (
+              open && <AzureMapView ref={mapRef} style={StyleSheet.absoluteFill}
+                coordinate={isFiniteCoordinate(draft) ? region : null} language={currentLanguage === 'en' ? 'en' : 'ar'}
+                onPick={reverseCoordinate} onError={() => setProviderFailed(true)} />
+            ) : nativeConfigured ? (
               <MapView ref={mapRef} provider={PROVIDER_GOOGLE} style={StyleSheet.absoluteFill}
                 initialRegion={region} onPress={(event) => reverseCoordinate(event.nativeEvent.coordinate)}
                 showsCompass showsMyLocationButton={false}>
@@ -255,7 +296,7 @@ function MapPickerInner({
 
           <View style={styles.footer}>
             <TouchableOpacity onPress={closePicker} style={styles.cancelButton}><Text style={styles.cancelText}>{t("cancel", { ns: "common" })}</Text></TouchableOpacity>
-            <TouchableOpacity onPress={confirm} disabled={!draft.address.trim()}
+            <TouchableOpacity onPress={confirm} disabled={!draft.address.trim() || resolving || searching || locating}
               style={[styles.confirmButton, (!draft.address.trim()) && styles.confirmDisabled]}>
               <Text style={styles.confirmText}>{t("map_picker_confirm")}</Text>
             </TouchableOpacity>
@@ -320,4 +361,3 @@ const styles = StyleSheet.create({
   confirmDisabled: { backgroundColor: "#CFCBC6" },
   confirmText: { fontFamily: "Cairo_600SemiBold", color: "#FFF", fontSize: 14 },
 });
-

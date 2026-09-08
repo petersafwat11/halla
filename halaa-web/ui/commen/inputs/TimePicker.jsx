@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import styles from './TimePicker.module.css';
 import { useFormContext, useController } from 'react-hook-form';
 import Image from 'next/image';
+import { useTranslation } from 'react-i18next';
+import { formatTime as displayTime } from '@halaa/shared/utils/locale';
 
 const pad = (num) => num.toString().padStart(2, '0');
 const formatTime = (hour, minute, ampm) =>
@@ -9,12 +11,13 @@ const formatTime = (hour, minute, ampm) =>
 const parseTime = (str) => {
   if (!str || typeof str !== 'string')
     return { hour: 12, minute: 0, ampm: 'AM' };
-  const match = str.match(/(\d{1,2}):(\d{2}):(AM|PM)/);
+  const match = str.trim().match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*:?\s*(AM|PM)?$/i);
   if (!match) return { hour: 12, minute: 0, ampm: 'AM' };
+  const rawHour = Number(match[1]);
   return {
-    hour: parseInt(match[1], 10),
+    hour: rawHour % 12 || 12,
     minute: parseInt(match[2], 10),
-    ampm: match[3],
+    ampm: match[3]?.toUpperCase() || (rawHour >= 12 ? 'PM' : 'AM'),
   };
 };
 
@@ -27,6 +30,7 @@ const TimePicker = ({
   className,
   style,
 }) => {
+  const { t, i18n } = useTranslation('common');
   const {
     control,
     formState: { errors },
@@ -60,7 +64,7 @@ const TimePicker = ({
 
   // Open dialog
   const handleInputClick = () => {
-    setDialogOpen(true);
+    setDialogOpen(open => !open);
   };
 
   // Dialog time controls (update value as string)
@@ -90,30 +94,31 @@ const TimePicker = ({
           {required && <span className={styles.required}>*</span>}
         </label>
       )}
-      <div className={styles.input_container}>
+      <div className={styles.input_container} ref={dialogRef} onKeyDown={e => { if (e.key === 'Escape') setDialogOpen(false); }}>
         <button
           dir="ltr"
           type="button"
           className={styles.time_input}
           onClick={handleInputClick}
-          aria-label="Select time"
+          id={name}
+          aria-label={t('timePicker.select')}
+          aria-expanded={dialogOpen}
         >
           <Image
             src="/svg/events/clock.svg"
-            alt="clock"
+            alt=""
             width={24}
             height={24}
             className={styles.clock_icon}
           />
           <span className={styles.time_input_text}>
-            {formatTime(time.hour, time.minute, time.ampm)}
+            {displayTime(formatTime(time.hour, time.minute, time.ampm), i18n.language)}
           </span>
         </button>
         {dialogOpen && (
           <div
             dir="ltr"
             className={styles.time_dialog}
-            ref={dialogRef}
             onClick={(e) => e.stopPropagation()}
           >
             <div className={styles.time_picker_box}>
@@ -124,6 +129,7 @@ const TimePicker = ({
                   onClick={() => {
                     handleHour(1);
                   }}
+                  aria-label={t('timePicker.increaseHour')}
                 >
                   <span>
                     <Image
@@ -141,6 +147,7 @@ const TimePicker = ({
                   onClick={() => {
                     handleHour(-1);
                   }}
+                  aria-label={t('timePicker.decreaseHour')}
                 >
                   <span>
                     <Image
@@ -163,6 +170,7 @@ const TimePicker = ({
                   onClick={() => {
                     handleMinute(1);
                   }}
+                  aria-label={t('timePicker.increaseMinute')}
                 >
                   <span>
                     <Image
@@ -180,6 +188,7 @@ const TimePicker = ({
                   onClick={() => {
                     handleMinute(-1);
                   }}
+                  aria-label={t('timePicker.decreaseMinute')}
                 >
                   <span>
                     <Image
@@ -201,6 +210,7 @@ const TimePicker = ({
                 onClick={() => {
                   handleAmpm();
                 }}
+                aria-label={t('timePicker.togglePeriod')}
               >
                 <span>
                   <Image
@@ -215,6 +225,7 @@ const TimePicker = ({
               <button
                 type="button"
                 className={styles.arrow_btn}
+                aria-label={t('timePicker.togglePeriod')}
                 onClick={() => {
                   handleAmpm();
                 }}
@@ -230,6 +241,7 @@ const TimePicker = ({
                 </span>
               </button>
             </div>
+            <button type="button" className={styles.doneButton} onClick={() => setDialogOpen(false)}>{t('timePicker.done')}</button>
           </div>
         )}
       </div>

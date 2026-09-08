@@ -190,7 +190,6 @@
 
 .sectionTitle {
   color: var(--Content-Text-Text-title-black, #2c2c2c);
-  text-align: right;
   font-size: clamp(1.6rem, 2vw, 1.8rem);
   font-style: normal;
   font-weight: 700;
@@ -259,7 +258,6 @@
 
 .staffName {
   color: var(--Content-Text-Text-title-black, #2c2c2c);
-  text-align: right;
   font-size: 14px;
   font-style: normal;
   font-weight: 500;
@@ -269,7 +267,6 @@
 
 .staffPhone {
   color: var(--Content-Text-Text-body-discription, #656565);
-  text-align: right;
   font-size: 12px;
   font-style: normal;
   font-weight: 400;
@@ -592,3 +589,4 @@
     font-size: 1.4rem;
   }
 }
+.eventMeta { font-size: 1.3rem; line-height: 1.6; color: #6d6258; margin-block: 8px 0; }

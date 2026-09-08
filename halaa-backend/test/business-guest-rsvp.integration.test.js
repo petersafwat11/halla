@@ -60,6 +60,63 @@ test('concurrent business responses have one atomic winner', async t => {
   assert.equal((await Guest.findById(guestId)).__v, 1);
 });
 
+test('legacy revisionless guests can respond and RSVP changes preserve check-in records', async t => {
+  t.mock.method(service, '_notifyHostRSVP', async () => {});
+  t.mock.method(staff, '_notifyHostCheckIn', async () => {});
+  const { guestId, eventId } = await fixture();
+  await Guest.collection.updateOne({ _id: guestId }, { $unset: { __v: '' } });
+  const confirm = await service.submitRSVP(guestId, 'confirmed', { invitationCode: 'private-code', revision: 0 });
+  assert.equal(confirm.guest.revision, 1);
+  const scan = await staff.checkInByQR(eventId, confirm.pass.code, { _id: new mongoose.Types.ObjectId(), role: 'host' });
+  assert.equal(scan.alreadyCheckedIn, false);
+  const checked = await Guest.findById(guestId);
+  assert.equal(checked.__v, 2);
+  await assert.rejects(() => service.submitRSVP(guestId, 'declined', { invitationCode: 'private-code', revision: 1 }), { code: 'RSVP_STATE_CHANGED' });
+  const update = await service.submitRSVP(guestId, 'confirmed', { invitationCode: 'private-code', revision: 2, message: 'Updated after arrival' });
+  assert.equal(update.guest.status, 'checked_in');
+  assert.equal((await staff.checkInByQR(eventId, update.pass.code, {})).alreadyCheckedIn, true);
+  assert.equal((await Guest.findById(guestId)).checkIn.checkedInAt.getTime(), checked.checkIn.checkedInAt.getTime());
+});
+
+test('orphaned events cannot accept RSVP writes', async () => {
+  const { guestId, eventId } = await fixture();
+  await Event.deleteOne({ _id: eventId });
+  await assert.rejects(() => service.submitRSVP(guestId, 'confirmed', { invitationCode: 'private-code', revision: 0 }), /no longer accepting/);
+  assert.equal((await Guest.findById(guestId)).status, 'invited');
+});
+
+test('public HTTP routes validate payloads, protect private responses and reject stale or crafted writes', async t => {
+  const express = require('express');
+  t.mock.method(service, '_notifyHostRSVP', async () => {});
+  const { guestId, eventId } = await fixture();
+  const app = express();
+  app.use(express.json());
+  app.use('/guests', require('../src/modules/guests/guests.routes'));
+  app.use((error, _req, res, _next) => res.status(error.statusCode || 500).json({ code: error.code }));
+  const server = await new Promise(resolve => { const listener = app.listen(0, '127.0.0.1', () => resolve(listener)); });
+  const origin = `http://127.0.0.1:${server.address().port}`;
+  try {
+    const get = await fetch(`${origin}/guests/invitation/private-code?lang=en`);
+    assert.equal(get.status, 200);
+    assert.match(get.headers.get('cache-control'), /private, no-store/);
+    assert.equal(get.headers.get('referrer-policy'), 'no-referrer');
+    assert.equal((await get.json()).data.pass, null);
+    const post = data => fetch(`${origin}/guests/${guestId}/rsvp`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ invitationCode: 'private-code', response: 'confirmed', revision: 0, ...data }) });
+    assert.equal((await post({ plusOnes: 20 })).status, 400);
+    const confirmed = await post({ plusOnes: 1 });
+    assert.equal(confirmed.status, 200);
+    assert.ok((await confirmed.json()).data.pass.code);
+    assert.equal((await post({ plusOnes: 1 })).status, 409);
+    assert.equal((await Guest.findById(guestId)).__v, 1);
+    await Event.updateOne({ _id: eventId }, { $set: { invitationType: 'none' } });
+    assert.equal((await post({ revision: 1 })).status, 403);
+    assert.equal((await post({ invitationCode: 'forged', revision: 1 })).status, 403);
+  } finally {
+    server.closeAllConnections();
+    await new Promise(resolve => server.close(resolve));
+  }
+});
+
 test('test sends, initial sends, resends, reminders and SMS all use body links without buttons', async t => {
   const Template = require('../models/TaqnyatTemplateModel');
   const Subscription = require('../models/SubscriptionModel');
@@ -104,6 +161,9 @@ test('test sends, initial sends, resends, reminders and SMS all use body links w
       assert.equal(batch.successful, 1);
     }
     await sender.sendToGuest({ eventId, guestId, channel: 'sms', isAdmin: true });
-    assert.equal(sends.length - before, 6);
+    await Template.create({ ...template.toObject(), _id: new mongoose.Types.ObjectId(), taqnyatId: 'reminder_fixture', templateName: 'business_reminder_fixture', type: 'reminder_confirmed' });
+    const manual = await reminders.sendReminder({ eventId, channel: 'whatsapp', isAdmin: true });
+    assert.equal(manual.successful, 1);
+    assert.equal(sends.length - before, 7);
   }
 });

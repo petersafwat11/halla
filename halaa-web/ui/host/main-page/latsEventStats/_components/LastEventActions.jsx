@@ -47,7 +47,7 @@ export default function LastEventActions({
   ) : null;
 
   const scheduleButton = canSchedule && !isCompleted ? (
-    <button className={`${styles.outlineButton} ${styles.flashingButton}`} onClick={onScheduleSending}>
+    <button className={`${styles.outlineButton} ${event.status === 'pending_scheduling' ? styles.flashingButton : ''}`} onClick={onScheduleSending}>
       <span>{t("lastEvent.buttons.scheduleEvent")}</span>
       <Image src="/svg/events/calendar-edit.svg" alt="calendar" width={12} height={12} />
     </button>

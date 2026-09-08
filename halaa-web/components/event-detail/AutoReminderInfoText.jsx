@@ -61,6 +61,9 @@ export default function AutoReminderInfoText({ eventId }) {
     );
   }
 
+  const reminderUnavailable = event.reminderAvailability?.configured === false;
+  if (reminderUnavailable) infoText = t("singleEvent.reminderUnavailable");
+
   return (
     <>
       <div className={styles.banner} role="note">
@@ -68,7 +71,7 @@ export default function AutoReminderInfoText({ eventId }) {
           <FiClock className={styles.icon} />
         </span>
         <span className={styles.text}>{infoText}</span>
-        {isEditable && (
+        {isEditable && !reminderUnavailable && (
           <button
             className={styles.customizeButton}
             onClick={() => setIsPopupOpen(true)}

@@ -5,7 +5,7 @@ const { resolveInvitationDelivery } = require('./invitationDelivery');
  */
 
 const TaqnyatTemplate = require('../../../models/TaqnyatTemplateModel');
-const { formatRiyadh } = require('../../shared/utils/timezone');
+const { formatRiyadh, parseDateTime } = require('../../shared/utils/timezone');
 const logger = require('../../shared/utils/logger');
 const { invitationAllowsReply } = require('../../shared/constants');
 const { AppError } = require('../../shared/errors');
@@ -98,6 +98,10 @@ function getEventBodyParams(event, guestName, taqnyatTemplate = null, extraConte
   // varMapping resolution sees real values, not undefined.
   const ed = event.eventDetails?.toObject?.() || event.eventDetails || {};
   const loc = ed.location?.toObject?.() || ed.location || {};
+  const formattedTime = formatRiyadh(parseDateTime(ed.date, ed.time), {
+    style: 'time', locale: taqnyatTemplate?.language === 'en' ? 'en-US' : 'ar-SA-u-nu-latn',
+    options: { hour: 'numeric', minute: '2-digit', hour12: true },
+  });
   const mapUrl =
     loc.latitude != null && loc.longitude != null
       ? `https://maps.google.com/?q=${loc.latitude},${loc.longitude}`
@@ -108,6 +112,8 @@ function getEventBodyParams(event, guestName, taqnyatTemplate = null, extraConte
       ...ed,
       dayFormatted: formatDay(ed.date, taqnyatTemplate?.language),
       dateFormatted: formatDate(ed.date, taqnyatTemplate?.language),
+      time: formattedTime,
+      timeFormatted: formattedTime,
       location: { ...loc, mapUrl },
     },
     host:

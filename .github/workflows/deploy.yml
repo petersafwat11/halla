@@ -73,6 +73,7 @@ jobs:
           context: .
           file: halaa-web/Dockerfile
           build-args: |
+            NEXT_PUBLIC_MAPS_PROVIDER=${{ vars.NEXT_PUBLIC_MAPS_PROVIDER || 'google' }}
             NEXT_PUBLIC_GA4_MEASUREMENT_ID=${{ vars.NEXT_PUBLIC_GA4_MEASUREMENT_ID }}
             NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${{ secrets.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }}
           push: true

@@ -9,18 +9,19 @@ import { guestsKeys } from "./keys";
  * Fetch a guest record by their public invitation code (guest portal).
  */
 export const useGuestByToken = (token, options = {}) => {
+  const { language, ...queryOptions } = options;
   return useQuery({
-    queryKey: guestsKeys.byToken(token),
+    queryKey: [...guestsKeys.byToken(token), language || 'ar'],
     queryFn: () =>
       apiRequest({
         method: "GET",
         path: API_PATHS.guests.getByInvitationCode(token),
-        params: { lang: options.language },
+        params: { lang: language },
       }),
     enabled: !!token,
     staleTime: 0,
     gcTime: 0,
-    ...options,
+    ...queryOptions,
   });
 };
 

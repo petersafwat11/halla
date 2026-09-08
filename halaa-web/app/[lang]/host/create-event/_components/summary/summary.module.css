@@ -377,3 +377,11 @@
     padding: 0;
   }
 }
+.reviewDetails { padding: 20px; border: 1px solid #e6ddd3; border-radius: 12px; width: 100%; font-size: 1.4rem; line-height: 1.6; }
+.reviewDetails h3 { font-size: 1.6rem; margin: 0 0 16px; }
+.reviewDetails dl { display: grid; gap: 6px; margin: 0; }
+.reviewDetails dt { color: #71675d; }
+.reviewDetails dd { margin: 0 0 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.reviewDetails details { border-top: 1px solid #eee5dc; padding-block: 12px; }
+.reviewDetails summary { cursor: pointer; font-weight: 600; min-height: 32px; }
+.reviewDetails li { padding-block: 4px; }

@@ -142,7 +142,7 @@ router.post(
   async (req, res, next) => {
     try {
       const Guest = require('../../../models/GuestModel');
-      const guest = await Guest.findOne({ _id: req.params.id, qrcode: req.body.invitationCode, deleted: { $ne: true } }).populate('event');
+      const guest = await Guest.findOne({ _id: req.params.id, qrcode: req.body.invitationCode, deleted: { $ne: true } }).populate({ path: 'event', populate: { path: 'host', select: 'accountType' } });
       const { isOpen, resolveInvitationDelivery } = require('./businessGuestPolicy');
       if (!guest?.event || !isOpen(guest.event) || guest.event.invitationType === 'none') return res.status(403).json({ message: 'This invitation cannot accept a response.' });
       if (resolveInvitationDelivery(guest.event) === 'portal_link' && req.body.revision !== (guest.__v || 0)) return res.status(409).json({ code: 'RSVP_STATE_CHANGED', message: 'Reload your invitation before responding.' });

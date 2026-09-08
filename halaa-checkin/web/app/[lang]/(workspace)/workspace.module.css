@@ -1,0 +1,86 @@
+.shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-artboard, #f9f4ef);
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.mainContent {
+  flex: 1;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px clamp(16px, 3vw, 36px);
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.loadingScreen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background-color: var(--bg-artboard, #f9f4ef);
+  font-family: var(--font-cairo, "Cairo", sans-serif);
+  color: var(--color-natural-700, #454545);
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--color-primary-200, #e3cbb4);
+  border-top-color: var(--color-primary-500, #c28e5c);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.unassignedCard {
+  background-color: var(--color-natural-50, #ffffff);
+  border: 1px solid var(--border-gray-250, #dfdfdf);
+  border-radius: var(--radius-16, 16px);
+  padding: 48px 24px;
+  text-align: center;
+  margin: 40px auto;
+  max-width: 540px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+}
+
+.unassignedIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: var(--color-primary-100, #f5ece4);
+  color: var(--color-primary-800, #6b4e33);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.unassignedTitle {
+  font-family: var(--font-cairo, "Cairo", sans-serif);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-natural-900, #2c2c2c);
+  margin-bottom: 8px;
+}
+
+.unassignedDesc {
+  font-family: var(--font-cairo, "Cairo", sans-serif);
+  font-size: 15px;
+  color: var(--color-natural-450, #656565);
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

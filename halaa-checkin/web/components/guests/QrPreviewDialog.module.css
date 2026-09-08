@@ -1,0 +1,68 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.guestInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.guestName {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-natural-900, #2c2c2c);
+  margin: 0;
+}
+
+.shortCodeBadge {
+  display: inline-block;
+  font-family: monospace;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  background-color: var(--color-natural-100, #f7f7f7);
+  border: 1px solid var(--border-gray-250, #dfdfdf);
+  padding: 4px 12px;
+  border-radius: 6px;
+  color: var(--color-natural-800, #3d3d3d);
+}
+
+.qrWrapper {
+  background-color: #ffffff;
+  padding: 16px;
+  border-radius: var(--radius-default, 12px);
+  border: 1px solid var(--border-gray-250, #dfdfdf);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 220px;
+  height: 220px;
+}
+
+.qrImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.instruction {
+  font-size: 13px;
+  color: var(--color-natural-450, #656565);
+  margin: 0;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}

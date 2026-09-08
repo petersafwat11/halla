@@ -220,7 +220,8 @@
   },
   "singleEvent": {
     "title": "تفاصيل المناسبة",
-    "hostInfo": "المضيف: {{hostName}}",
+    "hostInfo": "مالك المناسبة: {{hostName}}",
+    "adminOwnerInfo": "مناسبة لحسابك الإداري: {{hostName}}",
     "deleteSuccess": "تم حذف المناسبة بنجاح",
     "deleteError": "فشل حذف المناسبة",
     "actions": {
@@ -232,7 +233,7 @@
       "schedule": "جدولة الإرسال",
       "viewStats": "عرض الإحصائيات",
       "moderators": "المشرفين",
-      "staff": "الطاقم"
+      "staff": "إدارة الطاقم"
     },
     "header": {
       "sendReminder": "إرسال تذكير"
@@ -276,7 +277,20 @@
       "used": "مستخدم",
       "expired": "منتهي الصلاحية",
       "unlimited": "غير محدود"
-    }
+    },
+    "statusActions": {
+      "publish": "نشر المناسبة",
+      "end": "إنهاء المناسبة",
+      "cancel": "إلغاء المناسبة",
+      "reschedule": "إعادة جدولة"
+    },
+    "statusConfirm": {
+      "publish": "نشر هذه المناسبة الآن؟",
+      "end": "إنهاء هذه المناسبة؟",
+      "cancel": "إلغاء هذه المناسبة؟",
+      "reschedule": "إعادة جدولة هذه المناسبة؟"
+    },
+    "statusUpdateSuccess": "تم تحديث حالة المناسبة"
   },
   "loading": "جاري التحميل...",
   "messaging": {

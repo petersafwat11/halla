@@ -39,11 +39,11 @@ The implementation uses `/{lang}/business-invitation/{code}`. Business WhatsApp 
 
 ## Verification
 
-- Backend full suite: 562 passing tests at implementation verification, including new business contract, cover, RSVP/concurrency, and messaging-path integration tests.
-- Web full suite: 209 passing tests.
-- Mobile full suite: 539 passing tests. Changed mobile JSX parses successfully; native builds/device tests are separate release checks.
+- Backend full suite: 566 passing tests after review, including business contract, cover, HTTP routes, RSVP/check-in concurrency, and messaging-path integration tests.
+- Web full suite: 211 passing tests.
+- Mobile full suite: 540 passing tests. Changed mobile JSX parses successfully; native builds/device tests are separate release checks.
 - Next.js production build passes, with existing unrelated lint/metadata warnings.
-- Browser harness: 132 assertions passed across 12 language/mode/layout scenarios. It uses fabricated guest data and mocked guest API responses. It exercises AR/EN, desktop/mobile, all three modes, confirmation/reload/decline, recovery after a saved response receives a simulated network failure, saved optional fields, closed/preview/invalid states, metadata/headers, and horizontal overflow. Screenshots are saved under `docs/evidence/business-guest-hub/`.
+- Browser harness: 202 assertions passed across 12 language/mode/layout scenarios, with additional 320px checks. It uses fabricated guest data and mocked guest API responses. It exercises AR/EN, desktop/mobile, all three modes, confirmation/reload/decline, uncertain writes, rejected writes, failed follow-up reads, saved fields, closed/preview/invalid states, calendar downloads, menu placement/keyboard controls, metadata/headers, and horizontal overflow. Screenshots are saved under `docs/evidence/business-guest-hub/`.
 - Migration smoke check against an isolated in-memory database: dry-run leaves records unchanged, apply sets eligible delivery snapshots, and repeat apply makes no further changes.
 
 Run focused backend checks:

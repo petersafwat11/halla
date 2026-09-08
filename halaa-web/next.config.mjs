@@ -1,7 +1,10 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { createRequire } from "node:module";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const require = createRequire(import.meta.url);
+const zodRoot = path.dirname(require.resolve("zod/package.json"));
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -18,6 +21,9 @@ const nextConfig = {
   // Transpile the in-repo workspace package so Next bundles it rather than
   // externalizing as a node module. Required for `@halaa/shared` (plain ESM).
   transpilePackages: ["@halaa/shared"],
+  // Shared schema fragments must use the same Zod major as the form that
+  // composes them. The workspace root also contains mobile's Zod 4.
+  turbopack: { resolveAlias: { zod: zodRoot } },
 
   // Production deploys copy `shared/` into `frontend/node_modules/@halaa/shared`
   // as a real directory (not a symlink) to keep webpack's realpath() from
@@ -26,6 +32,13 @@ const nextConfig = {
   // way and prevents the resolution from drifting on a workspace symlink.
   webpack: (config) => {
     config.resolve.symlinks = false;
+    config.resolve.alias = { ...config.resolve.alias, zod: zodRoot };
+    // This workspace junction changes during development. Do not treat its
+    // contents as immutable third-party node_modules snapshots.
+    config.snapshot = { ...config.snapshot,
+      unmanagedPaths: [...(config.snapshot?.unmanagedPaths || []),
+        path.join(__dirname, '..', 'node_modules', '@halaa', 'shared')],
+    };
     return config;
   },
 
@@ -40,6 +53,10 @@ const nextConfig = {
       {
         source: "/api/v2/:path*",
         destination: `${backendUrl}/api/v2/:path*`,
+      },
+      {
+        source: "/uploads/:path*",
+        destination: `${backendUrl}/uploads/:path*`,
       },
     ];
   },

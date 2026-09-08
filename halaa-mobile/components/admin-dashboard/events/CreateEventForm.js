@@ -1,3 +1,4 @@
+import { appendInvitationImage } from "../../../utils/invitationMultipart";
 import React, { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import {
   View,
@@ -203,11 +204,7 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
           formDataObj.append("launchSettings", JSON.stringify(payload.launchSettings));
         }
         if (payload.templateImage && payload.templateImage.uri) {
-          formDataObj.append("templateImage", {
-            uri: payload.templateImage.uri,
-            type: payload.templateImage.type || "image/png",
-            name: payload.templateImage.name || payload.templateImage.fileName || `template-${Date.now()}.png`,
-          });
+          await appendInvitationImage(formDataObj, payload.templateImage);
         }
 
         // One idempotency key per logical submit attempt; reused on retry unless edited
@@ -393,9 +390,9 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
           />
         );
       case 4:
-        return <StepFour />;
+        return <StepFour owner={hostSelection.owner} />;
       case 5:
-        return <EventSummary />;
+        return <EventSummary owner={hostSelection.owner} />;
       default:
         return null;
     }
@@ -465,6 +462,7 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
       {isHostMode && (
         <>
           <PreviewInvitation
+            owner={hostSelection.owner}
             visible={showPreview}
             onClose={() => setShowPreview(false)}
             eventTitle={formData.eventName || ""}

@@ -28,9 +28,12 @@ const isSameOrigin = (src) => {
 const proxify = (src) =>
   `${PROXY_PATH}?url=${encodeURIComponent(src)}`;
 
-const waitForLoad = (img) =>
+export const waitForTemplateImage = (img) =>
   new Promise((resolve, reject) => {
-    if (img.complete && img.naturalWidth > 0) return resolve();
+    if (img.complete) {
+      if (img.naturalWidth > 0) return resolve();
+      return reject(new Error("image-load-failed"));
+    }
     const onLoad = () => {
       cleanup();
       resolve();
@@ -40,9 +43,11 @@ const waitForLoad = (img) =>
       reject(new Error("image-load-failed"));
     };
     const cleanup = () => {
+      clearTimeout(timer);
       img.removeEventListener("load", onLoad);
       img.removeEventListener("error", onError);
     };
+    const timer = setTimeout(onError, 15000);
     img.addEventListener("load", onLoad);
     img.addEventListener("error", onError);
   });
@@ -64,7 +69,7 @@ async function swapToProxy(rootEl) {
         if (originalCO !== null) img.setAttribute("crossorigin", originalCO);
         img.setAttribute("src", original);
       });
-      await waitForLoad(img);
+      await waitForTemplateImage(img);
       })
     );
   } catch (error) {
@@ -84,7 +89,7 @@ export async function bakeTemplateImage(previewRef, _options = {}) {
     // A white canvas with text overlays is not a valid invitation image.
     // Refuse to bake until every background/decoration image has decoded.
     await Promise.all(
-      Array.from(previewRef.current.querySelectorAll("img")).map(waitForLoad)
+      Array.from(previewRef.current.querySelectorAll("img")).map(waitForTemplateImage)
     );
     const baked = await htmlToImageConvert(previewRef, "template-image", {
       autoDownload: false,

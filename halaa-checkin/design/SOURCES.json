@@ -1,0 +1,60 @@
+{
+  "version": "1.0.0",
+  "extractedAt": "2026-09-08T17:02:28.151Z",
+  "precedenceRules": {
+    "background": "--bg-artboard (#f9f4ef) from globals.css overrides tokens.web.js (#fcfaf8)",
+    "font": "Cairo applied to both Arabic and English locales matching live body layout",
+    "rootFontSize": "100% root with px tokens instead of 62.5% rem scaling"
+  },
+  "sources": {
+    "globalsCss": {
+      "path": "halaa-web/app/[lang]/globals.css",
+      "sha256": "2c45736e2633f2c7282b489de3497a09b144edbd81655e8fb58d17f7079a19ac",
+      "tokenBlockSha256": "bb98e2d2d33809b8cf5a8c598322bfdf20f706e3a99844d43210b2bb9d05dc67"
+    },
+    "tokensWebJs": {
+      "path": "halaa-web/styles/tokens.web.js",
+      "sha256": "9a01702e8089626278c559ba15ccbd73aeb50ec24e37fcdb1fa6557e0990476f"
+    },
+    "logos": {
+      "logo.svg": {
+        "source": "halaa-web/public/svg/logo.svg",
+        "sha256": "0d334a0c54b889196aefa99483509566caf9e25c545023e51b61ca3af3dd94df"
+      },
+      "sidebar-logo.svg": {
+        "source": "halaa-web/public/svg/events/sidebar-logo.svg",
+        "sha256": "e72be6652aba883886c0613090a84d7dd09f9f9ca260c6fac581cb78b823a670"
+      },
+      "sidebar-mobile-logo.svg": {
+        "source": "halaa-web/public/svg/events/sidebar-mobile-logo.svg",
+        "sha256": "6519ab18c9142080772a3b4e03a8c0e5cd0636884889461f6cdd672ee73e3041"
+      }
+    },
+    "fonts": {
+      "license": "SIL Open Font License 1.1",
+      "provenance": "node_modules/@expo-google-fonts/cairo",
+      "files": {
+        "Cairo_400Regular.ttf": {
+          "source": "node_modules/@expo-google-fonts/cairo/400Regular/Cairo_400Regular.ttf",
+          "sha256": "44786a38e27c58262cbd65341beda4fa4f6c7085ec42e830b35ba1ae37807030"
+        },
+        "Cairo_500Medium.ttf": {
+          "source": "node_modules/@expo-google-fonts/cairo/500Medium/Cairo_500Medium.ttf",
+          "sha256": "64c7cab8e2cf003c3fc4edca1820e7e1b0ee667373cf8500060bca97262a2b65"
+        },
+        "Cairo_600SemiBold.ttf": {
+          "source": "node_modules/@expo-google-fonts/cairo/600SemiBold/Cairo_600SemiBold.ttf",
+          "sha256": "3fe2e182a88a5d64a96b289fd1c518bdc9b14ec91525a03990c35e91f7863a2a"
+        },
+        "Cairo_700Bold.ttf": {
+          "source": "node_modules/@expo-google-fonts/cairo/700Bold/Cairo_700Bold.ttf",
+          "sha256": "a0e58d71b85b15902ea87914d8e31a6d22da48ac2db70213dcfd1a7dad3f198a"
+        },
+        "LICENSE_FONT": {
+          "source": "node_modules/@expo-google-fonts/cairo/LICENSE_FONT",
+          "sha256": "a4554e1799d42e1405924b61eb0e0722ae1623b1f1f07f995348f96c496362a9"
+        }
+      }
+    }
+  }
+}

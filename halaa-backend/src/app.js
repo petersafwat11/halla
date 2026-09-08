@@ -143,7 +143,7 @@ const createApp = () => {
       },
       credentials: true,
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-      allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "X-Request-ID"],
+      allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "X-Request-ID", "X-Client", "Idempotency-Key"],
       exposedHeaders: ["X-Request-ID"],
     })
   );

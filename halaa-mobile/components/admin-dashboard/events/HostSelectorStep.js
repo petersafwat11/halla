@@ -28,7 +28,7 @@ const HostSelectorStep = ({ value = {}, onChange }) => {
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState(null);
 
-  const { data: hostsData, isLoading: hostsLoading } = useAdminEventTargets(
+  const { data: hostsData, isLoading: hostsLoading, isError: hostsError, refetch: retryHosts } = useAdminEventTargets(
     activeTab === 'host' ? 'host' : undefined,
   );
 
@@ -126,7 +126,7 @@ const HostSelectorStep = ({ value = {}, onChange }) => {
     );
   };
 
-  const hosts = hostsData?.hosts || hostsData?.data || (Array.isArray(hostsData) ? hostsData : []);
+  const hosts = hostsData?.targets || hostsData?.hosts || (Array.isArray(hostsData?.data) ? hostsData.data : Array.isArray(hostsData) ? hostsData : []);
 
   return (
     <View style={styles.container}>
@@ -199,9 +199,12 @@ const HostSelectorStep = ({ value = {}, onChange }) => {
           <LocalizedText style={styles.sectionLabel}>{t('events.hostSelector.hostList')}</LocalizedText>
           {hostsLoading ? (
             <ActivityIndicator color="#C28E5C" style={{ margin: 16 }} />
+          ) : hostsError ? (
+            <ActionButton label={t('events.hostSelector.retryHosts')} onPress={retryHosts} variant="secondary" />
           ) : (
             <FlatList
               data={hosts}
+              ListEmptyComponent={<LocalizedText>{t('events.hostSelector.noHosts')}</LocalizedText>}
               keyExtractor={(item) => String(item._id || item.id)}
               renderItem={({ item }) => renderHostCard(item, handleSelectHost, 'host')}
               scrollEnabled={false}

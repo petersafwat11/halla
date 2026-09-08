@@ -1,0 +1,63 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background-color: var(--color-natural-50, #ffffff);
+  border: 1px solid var(--border-gray-250, #dfdfdf);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-natural-900, #2c2c2c);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.inputWrapper {
+  flex: 1;
+  position: relative;
+}
+
+.input {
+  width: 100%;
+  height: 44px;
+  padding-inline-start: 14px;
+  padding-inline-end: 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border-gray-250, #dfdfdf);
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--color-natural-900, #2c2c2c);
+  background-color: var(--color-natural-50, #ffffff);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
+}
+
+.input:focus {
+  border-color: var(--color-primary-500, #c28e5c);
+  box-shadow: 0 0 0 3px var(--color-primary-100, #f5ece4);
+}
+
+.input:disabled {
+  background-color: var(--color-natural-100, #f8f8f8);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+@media (max-width: 600px) {
+  .form {
+    flex-direction: column;
+  }
+}

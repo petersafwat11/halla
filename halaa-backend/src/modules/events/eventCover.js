@@ -5,7 +5,7 @@ const { AppError } = require('../../shared/errors');
 const storage = require('../../shared/utils/storageDriver');
 const { uploadToS3, s3Storage, imageFilter } = require('../../shared/utils/s3Upload');
 
-const LIMITS = { bytes: 10 * 1024 * 1024, pixels: 40000000, side: 8192 };
+const { BUSINESS_COVER: LIMITS, validCoverDimensions } = require('@halaa/shared/constants/businessCover.cjs');
 const memory = multer.memoryStorage();
 // Preserve the existing streaming invitation-image pipeline for personal hosts.
 const uploadStorage = {
@@ -44,10 +44,13 @@ async function optimizeCover(file) {
     if (!scan.ok) throw new Error('Invalid cover');
     const source = sharp(file.buffer, { limitInputPixels: LIMITS.pixels, failOn: 'error' });
     const meta = await source.metadata();
+    const rotated = [5, 6, 7, 8].includes(meta.orientation);
+    const width = rotated ? meta.height : meta.width;
+    const height = rotated ? meta.width : meta.height;
     if (file.mimetype !== `image/${meta.format}`) throw new Error('Format mismatch');
     if (!['jpeg', 'png', 'webp'].includes(meta.format) || (meta.pages || 1) !== 1 ||
-        meta.width > LIMITS.side || meta.height > LIMITS.side || meta.width < 960 || meta.height < 540) throw new Error('dimensions');
-    return await source.rotate().resize(1600, 900, { fit: 'cover', withoutEnlargement: true }).webp({ quality: 82 }).toBuffer();
+        !validCoverDimensions(width, height)) throw new Error('dimensions');
+    return await source.rotate().resize(LIMITS.outputWidth, LIMITS.outputHeight, { fit: 'cover', withoutEnlargement: true }).webp({ quality: 82 }).toBuffer();
   } catch (_) {
     throw new AppError('Use a still JPEG, PNG or WebP cover, at least 960 × 540, at most 8192 pixels per side and 40 megapixels.', 400, 'INVALID_BUSINESS_COVER');
   }

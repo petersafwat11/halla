@@ -77,7 +77,8 @@ export default function SendActionModal({
   const effectiveRemaining = invitationBalance
     ? invitationBalance.remaining
     : invitesRemaining;
-  const selectedCount = selectedIds.size;
+  const eligibleSelectedIds = audience.map(guestKey).filter(id => selectedIds.has(id));
+  const selectedCount = eligibleSelectedIds.length;
   const overQuota = !isUnlimited && selectedCount > (effectiveRemaining || 0);
   const canSend = selectedCount > 0 && !overQuota && !isPending;
   const allSelected = audience.length > 0 && selectedCount === audience.length;
@@ -115,8 +116,8 @@ export default function SendActionModal({
       });
 
   const handleSend = async () => {
-    const guestIds = [...selectedIds];
-    if (guestIds.length === 0) return;
+    const guestIds = eligibleSelectedIds;
+    if (!canSend) return;
     try {
       const result = await mutation.mutateAsync({ eventId, guestIds });
       const data = result?.data || result || {};
@@ -179,6 +180,7 @@ export default function SendActionModal({
     return (
       <TouchableOpacity
         style={styles.row}
+        disabled={isPending}
         onPress={() => toggleOne(id)}
         activeOpacity={0.7}
       >
@@ -219,7 +221,8 @@ export default function SendActionModal({
             <>
               <TouchableOpacity
                 style={styles.selectAllRow}
-                onPress={toggleAll}
+                disabled={isPending}
+              onPress={toggleAll}
                 activeOpacity={0.7}
               >
                 <Ionicons

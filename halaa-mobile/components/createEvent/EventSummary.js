@@ -1,5 +1,7 @@
 import { hasEventCoordinates } from "@halaa/shared/utils/eventLocation";
-import React, { useRef, useEffect, useMemo } from "react";
+import { getImageUrl } from "../../utils/imageUtils";
+import { INVITATION_TYPE_OPTIONS, DEFAULT_INVITATION_TYPE, invitationAllowsReply } from "../../utils/invitationTypes";
+import React, { useRef, useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -114,9 +116,10 @@ const DetailRow = ({ icon, children }) => (
   </View>
 );
 
-const EventSummary = () => {
+const EventSummary = ({ owner } = {}) => {
   const { watch, setValue } = useFormContext();
   const { t, currentLanguage } = useTranslation("createEvent");
+  const [showStaff, setShowStaff] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -134,11 +137,16 @@ const EventSummary = () => {
   const address = watch("address") || {};
   const guestList = watch("guestList") || [];
   const staffList = watch("staffList") || [];
+  const invitationType = watch("invitationType") || DEFAULT_INVITATION_TYPE;
+  const guestReplies = watch("guestReplies") || {};
+  const mode = INVITATION_TYPE_OPTIONS.find(option => option.value === invitationType);
+  const isBusinessEvent = watch("isBusinessEvent");
   const selectedTemplate = watch("selectedTemplate") || null;
   const confirmReviewed = watch("confirmReviewed") || false;
-  const hostName = useAuthStore(
+  const signedInName = useAuthStore(
     (state) => state.user?.name || ""
   );
+  const hostName = owner ? owner.name || "" : signedInName;
 
   const eventTypeLabel = eventType
     ? t(`event_types.${eventType}`, t(eventType) || eventType)
@@ -165,12 +173,14 @@ const EventSummary = () => {
     const bodyText = selectedTemplate?.bodyText;
     if (!bodyText) return "";
     const dateFormatted = eventDate
-      ? formatLocaleDate(eventDate, currentLanguage || "ar")
+      ? formatLocaleDate(eventDate, selectedTemplate?.language || "ar")
       : "";
     const context = buildTaqnyatPreviewContext({
       guestName: t("preview_guest_placeholder"),
       eventTitle: eventName,
       dateFormatted,
+      eventDate,
+      locale: selectedTemplate?.language || "ar",
       eventTime,
       locationAddress: address?.address || "",
       hostName,
@@ -183,6 +193,7 @@ const EventSummary = () => {
   }, [
     selectedTemplate?.bodyText,
     selectedTemplate?.varMapping,
+    selectedTemplate?.language,
     eventName,
     eventDate,
     eventTime,
@@ -192,7 +203,7 @@ const EventSummary = () => {
     currentLanguage,
   ]);
   const visual = watch("templateImage");
-  const visualUri = typeof visual === "string" ? visual : visual?.uri;
+  const visualUri = getImageUrl(typeof visual === "string" ? visual : visual?.uri);
   const mapLink =
     hasEventCoordinates(address)
       ? `https://maps.google.com/?q=${address.latitude},${address.longitude}`
@@ -286,6 +297,21 @@ const EventSummary = () => {
           </View>
         </View>
 
+        <View style={styles.detailsSection}>
+          <LocalizedText role="label" style={styles.detailsHeader}>{t("summary_replies")}</LocalizedText>
+          <View style={styles.detailsContent}>
+            <LocalizedText>{t("invitation_type")}</LocalizedText>
+            <LocalizedText>{t(isBusinessEvent && invitationType === "reply_and_qr" ? "business_invitation_type_reply_and_qr_label" : mode?.labelKey)}</LocalizedText>
+            {invitationAllowsReply(invitationType) ? <>
+              <LocalizedText>{t("attendance_auto_reply")}</LocalizedText>
+              <AdaptiveText>{guestReplies.onAttend || "—"}</AdaptiveText>
+              <LocalizedText>{t("absence_auto_reply")}</LocalizedText>
+              <AdaptiveText>{guestReplies.onAbsent || "—"}</AdaptiveText>
+            </> : <LocalizedText>{t("auto_replies_disabled_note")}</LocalizedText>}
+            {!!staffList.length && <TouchableOpacity accessibilityRole="button" accessibilityState={{ expanded: showStaff }} onPress={() => setShowStaff(value => !value)} style={styles.disclosure}><LocalizedText role="label">{t("summary_staff")} ({formatCount(staffList.length, currentLanguage)})</LocalizedText><Ionicons name={showStaff ? "chevron-up" : "chevron-down"} size={18} color="#6B4E33" /></TouchableOpacity>}
+            {showStaff && staffList.map((staff, index) => <AdaptiveText key={staff.id || staff._id || index}>{`${staff.name || ""} · ${staff.phone || staff.mobile || ""}`}</AdaptiveText>)}
+          </View>
+        </View>
         {/* Confirm checkbox — mirrors web */}
         <TouchableOpacity
           style={styles.checkboxRow}
@@ -309,6 +335,7 @@ const EventSummary = () => {
 };
 
 const styles = StyleSheet.create({
+  disclosure: { minHeight: 44, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12, paddingVertical: 8, borderTopWidth: 1, borderTopColor: "#F5ECE4" },
   statsCards: {
     flexDirection: "row",
     flexWrap: "wrap",

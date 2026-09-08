@@ -21,7 +21,6 @@ const PRODUCTION_REQUIRED_SECRETS = [
   "DATABASE",
   "MOYASAR_API_KEY", // web payments
   "MOYASAR_WEBHOOK_SECRET", // Moyasar webhook auth
-  "GOOGLE_MAPS_SERVER_API_KEY", // authenticated Places + reverse-geocode proxy
 ];
 
 const unsignedWhatsAppWebhooksAllowed = () =>
@@ -30,6 +29,7 @@ const unsignedWhatsAppWebhooksAllowed = () =>
 
 const getProductionRequiredSecrets = () => [
   ...PRODUCTION_REQUIRED_SECRETS,
+  process.env.MAPS_PROVIDER === 'azure' ? 'AZURE_MAPS_SERVER_API_KEY' : 'GOOGLE_MAPS_SERVER_API_KEY',
   ...(!unsignedWhatsAppWebhooksAllowed() ? ["WHATSAPP_APP_SECRET"] : []),
 ];
 

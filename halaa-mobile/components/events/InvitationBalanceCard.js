@@ -70,7 +70,9 @@ export default function InvitationBalanceCard({
             <LocalizedText style={styles.compactLabel}>
               {t("invitationBalance.remaining", "الدعوات المتبقية")}
             </LocalizedText>
+            <LocalizedText style={styles.compactValue}>{remainingDisplay}</LocalizedText>
             <LocalizedText style={styles.secondaryText}>
+              {t("invitationBalance.used", "المستخدم")}{": "}
               {t("invitationBalance.usedOfTotal", "{{used}} من {{total}}", {
                 used: consumedDisplay,
                 total: totalDisplay,
@@ -80,9 +82,6 @@ export default function InvitationBalanceCard({
         </View>
 
         <View style={styles.compactEnd}>
-          <LocalizedText style={styles.compactValue}>
-            {remainingDisplay}
-          </LocalizedText>
           {isPurchasable && (
             <TouchableOpacity
               style={styles.compactAddButton}
@@ -102,214 +101,67 @@ export default function InvitationBalanceCard({
 
   return (
     <View style={[styles.card, style]}>
-      <View style={styles.headerRow}>
-        <View style={styles.headerLeft}>
-          <View style={styles.iconCircle}>
-            <Ionicons name="paper-plane-outline" size={18} color="#6B4E33" />
-          </View>
-          <View>
-            <LocalizedText style={styles.title}>
-              {t("invitationBalance.remaining", "الدعوات المتبقية")}
-            </LocalizedText>
-            <LocalizedText style={styles.helper}>
-              {t(
-                "invitationBalance.helper",
-                "إضافة الضيوف مجانية؛ يتم خصم الرصيد فقط عند إرسال دعوة أو تذكير."
-              )}
-            </LocalizedText>
-          </View>
+      <LocalizedText style={styles.title}>{t("invitationBalance.remaining")}</LocalizedText>
+      <View style={styles.balanceRow}>
+        <View style={styles.balanceCopy}>
+          <LocalizedText style={styles.value}>{remainingDisplay}</LocalizedText>
+          <LocalizedText style={styles.usage}>
+            {t("invitationBalance.usageSummary", { used: consumedDisplay, total: totalDisplay })}
+          </LocalizedText>
         </View>
-
-        {isPurchasable && (
-          <TouchableOpacity
-            style={styles.addMoreButton}
-            onPress={handleAddMore}
-            accessibilityRole="button"
-            accessibilityLabel={t("invitationBalance.addMore", "إضافة المزيد")}
-          >
-            <Ionicons name="add-circle-outline" size={16} color="#6B4E33" />
-            <LocalizedText style={styles.addMoreText}>
-              {t("invitationBalance.addMore", "إضافة المزيد")}
-            </LocalizedText>
-          </TouchableOpacity>
-        )}
+        {isPurchasable && <TouchableOpacity style={styles.addMoreButton} onPress={handleAddMore} accessibilityRole="button" accessibilityLabel={t("invitationBalance.addMore")}>
+          <Ionicons name="add" size={18} color="#6B4E33" />
+          <LocalizedText style={styles.addMoreText}>{t("invitationBalance.addMore")}</LocalizedText>
+        </TouchableOpacity>}
       </View>
-
-      <View style={styles.bodyRow}>
-        {/* Prominent remaining count */}
-        <View style={styles.prominentStat}>
-          <LocalizedText style={styles.prominentValue}>
-            {remainingDisplay}
-          </LocalizedText>
-          <LocalizedText style={styles.statSublabel}>
-            {isUnlimited
-              ? t("invitationBalance.unlimitedPlan", "باقة غير محدودة")
-              : t("invitationBalance.remainingLabel", "دعوة متبقية")}
-          </LocalizedText>
-        </View>
-
-        {/* Secondary stats (Used / Total) */}
-        <View style={styles.secondaryStats}>
-          <View style={styles.secondaryStatItem}>
-            <LocalizedText style={styles.secondaryLabel}>
-              {t("invitationBalance.used", "المستخدم")}
-            </LocalizedText>
-            <LocalizedText style={styles.secondaryValue}>
-              {consumedDisplay}
-            </LocalizedText>
-          </View>
-
-          <View style={styles.statDivider} />
-
-          <View style={styles.secondaryStatItem}>
-            <LocalizedText style={styles.secondaryLabel}>
-              {t("invitationBalance.total", "الإجمالي")}
-            </LocalizedText>
-            <LocalizedText style={styles.secondaryValue}>
-              {totalDisplay}
-            </LocalizedText>
-          </View>
-        </View>
+      <View style={styles.helperRow}>
+        <LocalizedText style={styles.helper}>{t("invitationBalance.helper")}</LocalizedText>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#E8D4C4",
-    padding: 16,
-    marginHorizontal: 4,
-    marginVertical: 6,
-    gap: 12,
-  },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  headerLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    flex: 1,
-  },
-  iconCircle: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: "#F9F4EF",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  title: {
-    fontSize: 14,
-    fontFamily: "Cairo_700Bold",
-    color: "#2C2C2C",
-    lineHeight: 20,
-  },
-  helper: {
-    fontSize: 11,
-    fontFamily: "Cairo_400Regular",
-    color: "#8C8C8C",
-    lineHeight: 16,
-  },
-  addMoreButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    backgroundColor: "#F9F4EF",
-    borderWidth: 1,
-    borderColor: "#D9C3B0",
-    borderRadius: 8,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-  },
-  addMoreText: {
-    fontSize: 12,
-    fontFamily: "Cairo_600SemiBold",
-    color: "#6B4E33",
-  },
-  bodyRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: "#F4EBE2",
-  },
-  prominentStat: {
-    alignItems: "flex-start",
-  },
-  prominentValue: {
-    fontSize: 26,
-    fontFamily: "Cairo_700Bold",
-    color: "#6B4E33",
-    lineHeight: 34,
-  },
-  statSublabel: {
-    fontSize: 12,
-    fontFamily: "Cairo_500Medium",
-    color: "#656565",
-  },
-  secondaryStats: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#FBF8F5",
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    gap: 12,
-  },
-  secondaryStatItem: {
-    alignItems: "center",
-  },
-  secondaryLabel: {
-    fontSize: 11,
-    fontFamily: "Cairo_400Regular",
-    color: "#8C8C8C",
-  },
-  secondaryValue: {
-    fontSize: 15,
-    fontFamily: "Cairo_700Bold",
-    color: "#2C2C2C",
-  },
-  statDivider: {
-    width: 1,
-    height: 24,
-    backgroundColor: "#E8D4C4",
-  },
+  card: { backgroundColor: "#FFFFFF", borderRadius: 14, borderWidth: 1, borderColor: "#E8D4C4", padding: 18, marginHorizontal: 4, marginVertical: 6, gap: 12 },
+  title: { fontSize: 15, fontFamily: "Cairo_600SemiBold", color: "#4A3D33", lineHeight: 24 },
+  balanceRow: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 16 },
+  balanceCopy: { flexGrow: 1, flexShrink: 1, minWidth: 120 },
+  value: { fontSize: 32, fontFamily: "Cairo_700Bold", color: "#6B4E33", lineHeight: 44 },
+  usage: { fontSize: 13, fontFamily: "Cairo_400Regular", color: "#656565", lineHeight: 22 },
+  addMoreButton: { minHeight: 44, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, paddingHorizontal: 14, paddingVertical: 10, backgroundColor: "#F9F4EF", borderRadius: 10, borderWidth: 1, borderColor: "#D9C3B0" },
+  addMoreText: { fontSize: 14, lineHeight: 22, fontFamily: "Cairo_600SemiBold", color: "#6B4E33" },
+  helperRow: { borderTopWidth: 1, borderTopColor: "#F0E7DE", paddingTop: 12 },
+  helper: { fontSize: 12, lineHeight: 20, fontFamily: "Cairo_400Regular", color: "#656565" },
   compactContainer: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     backgroundColor: "#F9F4EF",
-    borderRadius: 10,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: "#E8D4C4",
-    paddingVertical: 10,
-    paddingHorizontal: 14,
+    padding: 16,
+    gap: 16,
+    flexWrap: "wrap",
     marginVertical: 4,
   },
   compactMain: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     gap: 10,
     flex: 1,
+    minWidth: 150,
   },
   compactTextGroup: {
     flex: 1,
   },
   compactLabel: {
-    fontSize: 13,
+    fontSize: 14,
     fontFamily: "Cairo_600SemiBold",
     color: "#2C2C2C",
   },
   secondaryText: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: "Cairo_400Regular",
     color: "#656565",
   },
@@ -318,20 +170,25 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   compactValue: {
-    fontSize: 20,
+    fontSize: 28,
+    lineHeight: 38,
+    marginVertical: 4,
     fontFamily: "Cairo_700Bold",
     color: "#6B4E33",
   },
   compactAddButton: {
-    paddingVertical: 2,
-    paddingHorizontal: 8,
+    minHeight: 44,
+    justifyContent: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
     backgroundColor: "#FFFFFF",
-    borderRadius: 6,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: "#D9C3B0",
   },
   compactAddButtonText: {
-    fontSize: 10,
+    fontSize: 14,
+    lineHeight: 22,
     fontFamily: "Cairo_600SemiBold",
     color: "#6B4E33",
   },

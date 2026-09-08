@@ -73,7 +73,8 @@ export default function SendActionPopup({
   const effectiveRemaining = invitationBalance
     ? (invitationBalance.unlimited ? null : invitationBalance.remaining)
     : invitesRemaining;
-  const selectedCount = selectedIds.size;
+  const selectedGuests = audience.filter(g => selectedIds.has(g.id));
+  const selectedCount = selectedGuests.length;
   const overQuota = !isUnlimited && selectedCount > (effectiveRemaining ?? 0);
   const canSend = selectedCount > 0 && !overQuota && !isPending;
 
@@ -115,7 +116,7 @@ export default function SendActionPopup({
       });
 
   const handleSend = async () => {
-    const guestIds = [...selectedIds];
+    const guestIds = selectedGuests.map(g => g.id);
     if (guestIds.length === 0) return;
     try {
       const result = await mutation.mutateAsync({ eventId, guestIds });
@@ -145,7 +146,8 @@ export default function SendActionPopup({
       }
 
       const successful = data.successful ?? guestIds.length;
-      toast.success(
+      const notify = successful === 0 ? toast.error : successful < total ? toast.warn : toast.success;
+      notify(
         t("singleEvent.bulkActions.sentResult", {
           defaultValue: "{{successful}}/{{total}} sent",
           successful,
@@ -177,6 +179,7 @@ export default function SendActionPopup({
     <PopupWrapper isOpen={isOpen} onClose={isPending ? () => {} : onClose}>
       <div className={styles.container}>
         <h3 className={styles.title}>{title}</h3>
+        <p className={styles.hint}>{t(`singleEvent.sendActions.popup.hint.${action}`)}</p>
 
         {audience.length === 0 ? (
           <p className={styles.empty}>
@@ -192,6 +195,7 @@ export default function SendActionPopup({
                       <input
                         type="checkbox"
                         checked={allSelected}
+                        disabled={isPending}
                         onChange={toggleAll}
                         aria-label={t("singleEvent.sendActions.popup.selectAll", "Select all")}
                       />
@@ -206,12 +210,14 @@ export default function SendActionPopup({
                     <tr
                       key={g.id}
                       className={styles.row}
-                      onClick={() => toggleOne(g.id)}
+                      onClick={() => !isPending && toggleOne(g.id)}
                     >
                       <td className={styles.checkCol}>
                         <input
                           type="checkbox"
                           checked={selectedIds.has(g.id)}
+                          disabled={isPending}
+                          aria-label={t("table:selectRow", { name: g.name || g.phone })}
                           onChange={() => toggleOne(g.id)}
                           onClick={(e) => e.stopPropagation()}
                         />

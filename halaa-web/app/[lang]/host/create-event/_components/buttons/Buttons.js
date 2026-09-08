@@ -33,7 +33,7 @@ const Buttons = ({
           type="button"
           className={`${styles.button} ${styles.button_secondary}`}
           onClick={onPrevious}
-          disabled={!showPrevious}
+          disabled={!showPrevious || isLoading}
         >
           {previousLabel || t("previous")}
         </button>

@@ -73,6 +73,7 @@ const ScheduleSendingModal = ({
   existingSchedule,
   eventDate,
   eventTime,
+  eventIsTrial,
 }) => {
   const { t } = useTranslation("events");
   const scheduleSend = useScheduleSend();
@@ -80,7 +81,8 @@ const ScheduleSendingModal = ({
   const normalizedSub = normalizeSubscriptionResponse(subData);
   const subscription = toSubscriptionDTO(normalizedSub.subscription);
   const isTrial =
-    subscription?.planCode === "trial" || subscription?.planType === "trial";
+    typeof eventIsTrial === "boolean" ? eventIsTrial :
+      subscription?.planCode === "trial" || subscription?.planType === "trial";
 
   const methods = useForm({
     resolver: zodResolver(buildSchema(t)),
@@ -121,7 +123,7 @@ const ScheduleSendingModal = ({
   // SCHEDULE_TOO_LATE for boundary cases.
   const scheduleWindow = useMemo(
     () => getScheduleWindow({ isTrial, eventDate, eventTime }),
-    [isTrial, eventDate, eventTime]
+    [isTrial, eventDate, eventTime, visible]
   );
   const minDate = scheduleWindow.minimumDate;
   const maxDate = scheduleWindow.maximumDate;
@@ -247,7 +249,7 @@ const ScheduleSendingModal = ({
               <View style={styles.infoBox}>
                 <Ionicons name="time-outline" size={16} color="#C28E5C" />
                 <LocalizedText role="hint" style={styles.infoText}>
-                  {t("scheduleSend.windowNote")}
+                  {t(isTrial ? "scheduleSend.windowNoteTrial" : "scheduleSend.windowNotePaid")}
                 </LocalizedText>
               </View>
             </ScrollView>

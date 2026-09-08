@@ -26,7 +26,7 @@ import { parseError, ErrorTypes } from '@/services/errorHandlingService';
 // Server components call the backend directly; browser calls go through the
 // Next.js proxy (rewrites) so cookies land on the correct origin (:3000).
 const isServer = typeof window === "undefined";
-const API_BASE_URL = isServer
+export const API_BASE_URL = isServer
   ? process.env.INTERNAL_API_URL || "http://localhost:8000/api/v2"
   : process.env.NEXT_PUBLIC_API_URL || "/api/v2";
 
@@ -195,7 +195,8 @@ axiosInstance.interceptors.response.use(
       parsedError.type === ErrorTypes.AUTH &&
       parsedError.status === 401 &&
       !skipRefresh;
-    if (!willRetry401) {
+    // Guest URLs contain invitation credentials; never put them in console logs.
+    if (!willRetry401 && !/\/guests\//.test(url)) {
       console.error(`[API Error] ${error.config?.method?.toUpperCase()} ${error.config?.url} - ${parsedError.status || 'Unknown'} (${duration}ms):`, parsedError.message);
     }
 

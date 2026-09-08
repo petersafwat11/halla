@@ -1,5 +1,6 @@
 {
   "search": "Search...",
+  "selectRow": "Select {{name}}",
   "actions": "Actions",
   "filter": "Filter",
   "export": "Export Data",

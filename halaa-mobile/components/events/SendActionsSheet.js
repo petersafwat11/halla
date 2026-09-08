@@ -30,6 +30,7 @@ const ITEM = {
   },
 };
 const DISABLED_KEYS = {
+  reminderUnavailable: "events:reminderUnavailable",
   sendFirst: "events:sendActions.disabled.sendFirst",
   noNewGuests: "events:sendActions.disabled.noNewGuests",
   noResend: "events:sendActions.disabled.noResend",
@@ -88,7 +89,7 @@ export default function SendActionsSheet({ visible, event, guests, onPick, onClo
                     </LocalizedText>
                   </View>
                 ) : (
-                  <LocalizedText style={styles.reason} numberOfLines={1}>
+                  <LocalizedText style={styles.reason}>
                     {reason}
                   </LocalizedText>
                 )}

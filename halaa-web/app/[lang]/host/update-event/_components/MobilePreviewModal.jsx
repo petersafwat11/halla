@@ -7,7 +7,7 @@ import styles from "../../create-event/page.module.css";
  * Full-screen modal overlay that renders the WhatsApp preview on mobile.
  * Closes when the backdrop or the × button is clicked.
  */
-const MobilePreviewModal = ({ formData, locale, onClose }) => (
+const MobilePreviewModal = ({ formData, locale, onClose, owner }) => (
   <div className={styles.modal_overlay} onClick={onClose}>
     <div
       className={styles.modal_content}
@@ -21,6 +21,7 @@ const MobilePreviewModal = ({ formData, locale, onClose }) => (
         ×
       </button>
       <WhatsappPreview
+        owner={owner}
         eventTitle={formData.eventName || ""}
         previewBody={formData.selectedTemplate?.bodyText || ""}
         templateImage={

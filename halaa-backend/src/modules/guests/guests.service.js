@@ -153,7 +153,7 @@ class GuestsService {
       throw new ValidationError('Invitation code is required');
     }
 
-    const guest = await Guest.findById(guestId).populate('event');
+    const guest = await Guest.findById(guestId).populate({ path: 'event', populate: { path: 'host', select: 'accountType' } });
     if (!guest || guest.deleted) {
       throw new NotFoundError('Guest');
     }
@@ -166,7 +166,7 @@ class GuestsService {
 
     // Check event is still active
     const activeStatuses = ['scheduled', 'live', 'published'];
-    if (guest.event && !activeStatuses.includes(guest.event.status)) {
+    if (!guest.event || !activeStatuses.includes(guest.event.status)) {
       throw new ValidationError('This event is no longer accepting RSVPs');
     }
 
@@ -180,7 +180,8 @@ class GuestsService {
     if (resolveInvitationDelivery(guest.event) === 'portal_link' && (!Number.isInteger(additionalInfo.revision) || additionalInfo.revision !== (guest.__v || 0))) throw new AppError('Reload your invitation before responding.', 409, 'RSVP_STATE_CHANGED');
     const previousStatus = guest.status;
 
-    guest.status = response;
+    const business = resolveInvitationDelivery(guest.event) === 'portal_link';
+    guest.status = business && guest.checkIn?.checkedIn ? 'checked_in' : response;
     guest.rsvp = {
       response,
       respondedAt: new Date(),
@@ -190,8 +191,17 @@ class GuestsService {
       plusOnes: additionalInfo.plusOnes ?? guest.rsvp?.plusOnes ?? 0,
     };
 
-    if (resolveInvitationDelivery(guest.event) === 'portal_link') {
-      const updated = await Guest.updateOne({ _id: guest._id, qrcode: additionalInfo.invitationCode, __v: additionalInfo.revision, deleted: { $ne: true } }, { $set: { status: response, rsvp: guest.rsvp.toObject?.() || guest.rsvp }, $inc: { __v: 1 } });
+    if (business) {
+      const revisionFilter = additionalInfo.revision === 0
+        ? { $or: [{ __v: 0 }, { __v: { $exists: false } }] }
+        : { __v: additionalInfo.revision };
+      const updated = await Guest.updateOne({
+        _id: guest._id, qrcode: additionalInfo.invitationCode,
+        ...revisionFilter, deleted: { $ne: true },
+      }, {
+        $set: { status: guest.status, rsvp: guest.rsvp.toObject?.() || guest.rsvp },
+        $inc: { __v: 1 },
+      });
       if (updated.modifiedCount !== 1) throw new AppError('Your response changed. Reload and try again.', 409, 'RSVP_STATE_CHANGED');
       guest.__v = (guest.__v || 0) + 1;
     } else {

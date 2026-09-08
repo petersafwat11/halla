@@ -25,6 +25,7 @@ const ScheduleSendingPopup = ({
   existingSchedule,
   eventDate,
   eventTime,
+  eventIsTrial,
 }) => {
   const { t, i18n } = useTranslation("common");
   const scheduleSend = useScheduleSend();
@@ -34,7 +35,8 @@ const ScheduleSendingPopup = ({
     [rawSubscription]
   );
   const isTrial =
-    subscription?.planCode === "trial" || subscription?.planType === "trial";
+    typeof eventIsTrial === "boolean" ? eventIsTrial :
+      subscription?.planCode === "trial" || subscription?.planType === "trial";
 
   // Live scheduling window: [now + minLead, event − 3d].
   //   minLead: trial = 15min, paid = 24h.
@@ -57,14 +59,17 @@ const ScheduleSendingPopup = ({
             year: "numeric",
             month: "short",
             day: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            timeZone: "Asia/Riyadh",
           })
         : null;
-    const from = fmt(minDate);
-    const to = fmt(maxDate);
+    const from = fmt(scheduleWindow.earliestInstant);
+    const to = fmt(scheduleWindow.latestInstant);
     if (from && to) return { from, to };
     if (from) return { from, to: null };
     return null;
-  }, [minDate, maxDate, i18n.language]);
+  }, [scheduleWindow, i18n.language]);
 
   // Build a UTC-midnight ISO string from a Date's local Y/M/D
   // components. The DatePicker emits a Date at local 00:00; calling
@@ -236,6 +241,7 @@ const ScheduleSendingPopup = ({
                   })}
             </small>
           )}
+          {!scheduleWindow.hasValidWindow && <p role="alert">{t('schedule_no_window')}</p>}
 
           <div className={styles.actions}>
             <Button
@@ -249,7 +255,7 @@ const ScheduleSendingPopup = ({
               variant="primary"
               title={t("confirm") || "Confirm"}
               type="submit"
-              disabled={scheduleSend.isPending}
+              disabled={scheduleSend.isPending || !scheduleWindow.hasValidWindow}
             />
           </div>
         </form>

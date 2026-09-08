@@ -1,0 +1,22 @@
+/*
+ * Local semantic theme aliases and contrast-safe tokens
+ * Per Product Contract §3 and Technical Contract §1
+ */
+
+:root {
+  /* High contrast solid primary button background for AAA compliance on white text */
+  --btn-primary-contrast-bg: var(--color-primary-800, #6b4e33);
+  --btn-primary-contrast-hover: var(--color-primary-900, #513c27);
+  --btn-primary-contrast-active: var(--color-primary-900, #513c27);
+  --btn-primary-contrast-fg: #ffffff;
+
+  /* Standard brand primary */
+  --btn-brand-bg: var(--color-primary-500, #c28e5c);
+  --btn-brand-hover: var(--color-primary-600, #b18154);
+
+  /* Contrast-safe status badge foregrounds (WCAG AA/AAA on respective light backgrounds) */
+  --status-success-contrast-fg: var(--color-success-700, #1e6341);
+  --status-warning-contrast-fg: var(--color-warning-800, #744800);
+  --status-error-contrast-fg: var(--color-error-700, #88281f);
+  --status-neutral-contrast-fg: var(--color-natural-700, #454545);
+}

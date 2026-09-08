@@ -1,5 +1,6 @@
 "use client";
 import { useLocalizedDate } from "@/utils/date/useLocalizedDate";
+import { formatTime } from "@halaa/shared/utils";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useRouter } from "next/navigation";
@@ -9,7 +10,7 @@ import PopupWrapper from "@/ui/host/popups/popupWrapper/PopupWrapper";
 import StaffPopup from "@/app/[lang]/host/create-event/_components/staffPopup/StaffPopup";
 import EventActionsHeader from "@/ui/host/events/EventActionsHeader";
 import { useEvent, useEventMutation } from "@/hooks/events";
-import styles from "@/app/[lang]/host/events/[id]/singleEvent.module.css";
+import styles from "./EventHeader.module.css";
 
 export default function HostEventHeader({ eventId }) {
   const { t } = useTranslation("home-events");
@@ -74,9 +75,9 @@ export default function HostEventHeader({ eventId }) {
   return (
     <>
       <div className={styles.header}>
-        <div>
+        <div className={styles.headerContent}>
         <h1 className={styles.title}>
-          <button type="button" aria-label={t("singleEvent.header.back")} onClick={() => router.push(`/${lang}/host/events`)} style={{ minWidth: 44, minHeight: 44, border: 0, background: "transparent" }}>
+          <button type="button" className={styles.backControl} aria-label={t("singleEvent.header.back")} onClick={() => router.push(`/${lang}/host/events`)}>
           <IoIosArrowForward
             className={styles.backButton}
             style={{
@@ -86,12 +87,12 @@ export default function HostEventHeader({ eventId }) {
             }}
           />
           </button>
-          {eventTitle}
+          <span>{eventTitle}</span>
         </h1>
-        <p dir="auto">{formatDate(event?.eventDetails?.date)} · {event?.eventDetails?.time} · {event?.eventDetails?.location?.address}</p>
+        <p className={styles.eventMeta} dir="auto">{formatDate(event?.eventDetails?.date)} · {formatTime(event?.eventDetails?.time, lang)} · {event?.eventDetails?.location?.address}</p>
         </div>
         <div className={styles.actions}>
-          <EventActionsHeader event={event} isAdmin={false} />
+          <EventActionsHeader event={event} isAdmin={false}>
           {event?.capabilities?.canAddGuest && <Button
             variant="secondary"
             title={t("singleEvent.header.editGuests")}
@@ -102,6 +103,7 @@ export default function HostEventHeader({ eventId }) {
             title={t("singleEvent.header.staffDetails")}
             onClick={() => setShowStaffPopup(true)}
           />}
+          </EventActionsHeader>
         </div>
       </div>
 

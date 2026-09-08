@@ -92,6 +92,7 @@ export const useGuestMutation = (action) => {
     },
 
     rsvp: {
+      gcTime: 0,
       // `id` is the guest's ObjectId, used for the `/guests/:id/rsvp` route
       // slot (the route runs `validateObjectId('id')`). `token` is the public
       // qrcode/invitation code — it stays in the body as `invitationCode`

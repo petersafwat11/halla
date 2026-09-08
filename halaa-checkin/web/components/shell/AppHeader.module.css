@@ -1,0 +1,142 @@
+.header {
+  height: 72px;
+  background-color: var(--color-natural-50, #ffffff);
+  border-bottom: 1px solid var(--border-gray-200, #f2f2f2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 clamp(16px, 4vw, 48px);
+  gap: 16px;
+  position: relative;
+  z-index: 40;
+}
+
+.startSection {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.logoLink {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  height: 32px;
+  width: auto;
+  display: block;
+}
+
+.divider {
+  height: 24px;
+  width: 1px;
+  background-color: var(--border-gray-250, #dfdfdf);
+}
+
+.productTitle {
+  font-family: var(--font-cairo, "Cairo", sans-serif);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-natural-900, #2c2c2c);
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .productTitle {
+    display: none;
+  }
+}
+
+.centerSection {
+  display: flex;
+  align-items: center;
+}
+
+.endSection {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.langToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: var(--radius-12, 12px);
+  border: 1px solid var(--border-gray-250, #dfdfdf);
+  background-color: var(--color-natural-50, #ffffff);
+  color: var(--color-natural-900, #2c2c2c);
+  font-family: var(--font-cairo, "Cairo", sans-serif);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+
+.langToggle:hover {
+  background-color: var(--color-natural-150, #f7f7f7);
+  border-color: var(--color-natural-350, #a0a0a0);
+}
+
+.staffChip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  border-radius: var(--radius-12, 12px);
+  background-color: var(--color-natural-100, #fdfdfd);
+  border: 1px solid var(--border-gray-200, #f2f2f2);
+}
+
+.staffName {
+  font-family: var(--font-cairo, "Cairo", sans-serif);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-natural-900, #2c2c2c);
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 640px) {
+  .header {
+    height: 56px;
+    padding: 0 8px;
+    gap: 6px;
+  }
+
+  .startSection {
+    gap: 6px;
+  }
+
+  .logo {
+    height: 22px;
+  }
+
+  .divider {
+    display: none;
+  }
+
+  .staffChip {
+    display: none;
+  }
+
+  .endSection {
+    gap: 4px;
+  }
+
+  .langToggle {
+    height: 32px;
+    padding: 0 8px;
+    font-size: 12px;
+  }
+
+  .logoutBtn {
+    height: 32px;
+    padding: 0 8px;
+  }
+}

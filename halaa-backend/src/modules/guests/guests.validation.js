@@ -5,13 +5,13 @@
 
 const { z } = require('zod');
 const { GUEST_STATUS, RSVP_STATUS } = require('../../shared/constants');
-const { clampPhoneInput, SAUDI_PHONE_REGEX } = require('../../shared/utils/phone');
+const { normalizeDigits, SAUDI_PHONE_REGEX } = require('../../shared/utils/phone');
 
 // Saudi mobile: 10 digits starting with 05 or 9 digits starting with 5.
 const saudiPhone = z
   .string()
   .min(1, 'phone is required')
-  .transform((v) => clampPhoneInput(v))
+  .transform((v) => normalizeDigits(v).replace(/[\s()+-]/g, ""))
   .refine(
     (v) => SAUDI_PHONE_REGEX.test(v),
     { message: 'phone must be a valid Saudi mobile number (10 digits starting with 05 or 9 digits starting with 5)' }

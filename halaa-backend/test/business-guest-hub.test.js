@@ -36,7 +36,7 @@ test('delivery snapshots win over account changes; every business SMS mode conta
 });
 
 test('calendar uses Riyadh time, escapes injection, and exposes no guest credentials', () => {
-  for (const time of ['18:30', '6:30 PM', '٦:٣٠ م']) {
+  for (const time of ['18:30', '6:30 PM', '٦:٣٠ م', '06:30:PM', '٦:٣٠:م']) {
     const event = { _id: 'event1', eventDetails: { title: 'مؤتمر, Business\nBEGIN:BAD', date: '2026-10-20', time, location: { address: 'Venue', latitude: 24.7, longitude: 46.6 } } };
     const actions = guestEventActions(event);
     assert.equal(actions.startAt, '2026-10-20T15:30:00.000Z');
@@ -60,4 +60,25 @@ test('cover optimization enforces decoded format/dimensions and strips metadata'
   const small = await sharp({ create: { width: 300, height: 200, channels: 3, background: 'white' } }).png().toBuffer();
   await assert.rejects(() => optimizeCover({ buffer: small, mimetype: 'image/png' }), { code: 'INVALID_BUSINESS_COVER' });
   await assert.rejects(() => optimizeCover({ buffer, mimetype: 'image/png' }), { code: 'INVALID_BUSINESS_COVER' });
+  const rotated = await sharp({ create: { width: 540, height: 960, channels: 3, background: 'white' } }).jpeg().withMetadata({ orientation: 6 }).toBuffer();
+  const oriented = await sharp(await optimizeCover({ buffer: rotated, mimetype: 'image/jpeg' })).metadata();
+  assert.equal(oriented.width, 960);
+  assert.equal(oriented.height, 540);
+});
+
+test('cover crop stays in bounds at all positions without upscaling', () => {
+  const { coverCrop, validCoverDimensions } = require('@halaa/shared/constants/businessCover.cjs');
+  for (const [width, height] of [[960, 540], [1920, 1920], [4000, 3000]]) {
+    assert.equal(validCoverDimensions(width, height), true);
+    for (const x of [0, .5, 1]) for (const y of [0, .5, 1]) {
+      const crop = coverCrop(width, height, x, y);
+      assert.ok(crop.originX >= 0 && crop.originY >= 0);
+      assert.ok(crop.originX + crop.width <= width && crop.originY + crop.height <= height);
+      assert.equal(crop.width / crop.height, 16 / 9);
+      assert.ok(crop.outputWidth <= crop.width && crop.outputHeight <= crop.height);
+    }
+  }
+  assert.equal(validCoverDimensions(9000, 540), false);
+  assert.equal(validCoverDimensions(8192, 8192), false);
+  assert.equal(validCoverDimensions(NaN, 540), false);
 });

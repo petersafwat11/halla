@@ -1,0 +1,160 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background-color: var(--color-natural-50, #ffffff);
+  border: 1px solid var(--border-gray-250, #dfdfdf);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-natural-900, #2c2c2c);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.viewfinderContainer {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  max-height: 320px;
+  background-color: #111111;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  direction: ltr !important;
+}
+
+.canvas {
+  display: none;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.scanBox {
+  width: 200px;
+  height: 200px;
+  border: 2px solid rgba(194, 142, 92, 0.8);
+  border-radius: 16px;
+  position: relative;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45);
+}
+
+.scanCornerTL,
+.scanCornerTR,
+.scanCornerBL,
+.scanCornerBR {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-color: var(--color-primary-500, #c28e5c);
+  border-style: solid;
+}
+
+.scanCornerTL {
+  top: -2px;
+  inset-inline-start: -2px;
+  border-width: 4px 0 0 4px;
+  border-top-left-radius: 16px;
+}
+
+.scanCornerTR {
+  top: -2px;
+  inset-inline-end: -2px;
+  border-width: 4px 4px 0 0;
+  border-top-right-radius: 16px;
+}
+
+.scanCornerBL {
+  bottom: -2px;
+  inset-inline-start: -2px;
+  border-width: 0 0 4px 4px;
+  border-bottom-left-radius: 16px;
+}
+
+.scanCornerBR {
+  bottom: -2px;
+  inset-inline-end: -2px;
+  border-width: 0 4px 4px 0;
+  border-bottom-right-radius: 16px;
+}
+
+.scanLine {
+  position: absolute;
+  top: 10%;
+  left: 5%;
+  right: 5%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--color-primary-500, #c28e5c), transparent);
+  animation: scanSweep 2s ease-in-out infinite alternate;
+}
+
+@keyframes scanSweep {
+  0% {
+    top: 10%;
+    opacity: 0.4;
+  }
+  100% {
+    top: 90%;
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scanLine {
+    animation: none;
+    top: 50%;
+  }
+}
+
+.placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 32px 20px;
+  text-align: center;
+  color: var(--color-natural-450, #656565);
+  background-color: var(--color-natural-100, #f8f8f8);
+  border: 1px dashed var(--border-gray-250, #dfdfdf);
+  border-radius: 12px;
+}
+
+.placeholderIcon {
+  font-size: 36px;
+  opacity: 0.6;
+}
+
+.hint {
+  font-size: 13px;
+  color: var(--color-natural-450, #656565);
+  margin: 0;
+}

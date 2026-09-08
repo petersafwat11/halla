@@ -18,6 +18,7 @@ const Table = ({
   activeFilter = null,
   onFilterChange = null,
   title = "",
+  headerAction = null,
   showSearch = true,
   showFilter = true,
   showExport = false,
@@ -571,6 +572,7 @@ const Table = ({
                   : ""
               }`}
             >
+              {headerAction}
               {showSearch && (
                 <div className={styles.searchContainer}>
                   <Image
@@ -826,7 +828,7 @@ const Table = ({
                           className={styles.checkbox}
                           checked={selectedRows.includes(row.id || row._id)}
                           onChange={() => handleSelectRow(row.id || row._id)}
-                          aria-label={`تحديد ${row.title || row.subject || row.id || ""}`}
+                          aria-label={t("selectRow", { name: row.name || row.title || row.subject || row.id || "" })}
                         />
                       </td>
                     )}

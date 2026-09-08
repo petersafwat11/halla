@@ -114,7 +114,6 @@ export default function GuestTable({ eventId, statusFilter, onStatusFilterChange
           onConfirm={(data, idempotencyKey) => addGuestMutation.mutateAsync({ eventId, data, idempotencyKey })} />
       </PopupWrapper>
       <div className={styles.rightCol}>
-        {caps.canAddGuest && <button className={peopleStyles.addButton} type="button" onClick={() => setShowAddPopup(true)}>{t("singleEvent.addGuest.title")}</button>}
         {selectedIds.length > 0 && <div className={peopleStyles.toolbar} role="toolbar" aria-label={t("people.selected", { count: selectedIds.length })}>
           <button type="button" onClick={() => { setSelectedIds([]); setSelectionVersion(value => value + 1); }}>{t("people.clear")}</button>
           <span aria-live="polite">{t("people.selected", { count: selectedIds.length })}</span>
@@ -124,6 +123,7 @@ export default function GuestTable({ eventId, statusFilter, onStatusFilterChange
         </div>}
         {error && <button type="button" onClick={() => refetch()}>{t("people.retry")}</button>}
         <GuestRows
+          headerAction={caps.canAddGuest ? <button className={peopleStyles.addButton} type="button" onClick={() => setShowAddPopup(true)}>{t("singleEvent.addGuest.title")}</button> : null}
           key={page + search + statusFilter + selectionVersion}
           guests={guests}
           onSelectionChange={setSelectedIds}

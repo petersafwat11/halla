@@ -22,6 +22,13 @@ test("Riyadh wall-clock conversion matches the backend UTC interpretation", () =
   );
 });
 
+test("serialized Riyadh midnight keeps its intended event day and 12h time", () => {
+  assert.equal(
+    riyadhWallClockInstant("2026-09-11T21:00:00.000Z", "08:00:PM").toISOString(),
+    "2026-09-12T17:00:00.000Z"
+  );
+});
+
 test("trial and paid scheduling windows use 15 minutes and 24 hours", () => {
   const now = new Date("2026-08-27T09:00:00.000Z");
   const common = {
@@ -55,4 +62,3 @@ test("exact selected time is checked inside the day-granular picker bounds", () 
     "tooLate"
   );
 });
-

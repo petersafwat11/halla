@@ -1,0 +1,26 @@
+{
+  "name": "halaa-checkin",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "contracts",
+    "api",
+    "web"
+  ],
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "build": "npm --prefix contracts run build && npm --prefix web run build",
+    "lint": "eslint .",
+    "test": "npm --prefix contracts test && npm --prefix api test && npm --prefix web test",
+    "design:sync": "node scripts/sync-design.mjs",
+    "design:check": "node scripts/check-design.mjs",
+    "user:provision": "node api/scripts/provision-user.mjs",
+    "db:indexes": "node api/scripts/ensure-indexes.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.29.0",
+    "eslint": "^9.29.0",
+    "globals": "^14.0.0"
+  }
+}

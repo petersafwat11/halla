@@ -220,7 +220,8 @@
   },
   "singleEvent": {
     "title": "Event Details",
-    "hostInfo": "Host: {{hostName}}",
+    "hostInfo": "Event owner: {{hostName}}",
+    "adminOwnerInfo": "Created for your admin account: {{hostName}}",
     "deleteSuccess": "Event deleted successfully",
     "deleteError": "Failed to delete event",
     "actions": {
@@ -232,7 +233,7 @@
       "testMessage": "Test Message",
       "schedule": "Schedule Sending",
       "viewStats": "View Statistics",
-      "staff": "Staff"
+      "staff": "Manage staff"
     },
     "header": {
       "sendReminder": "Send Reminder"
@@ -276,7 +277,20 @@
       "used": "used",
       "expired": "Expired",
       "unlimited": "Unlimited"
-    }
+    },
+    "statusActions": {
+      "publish": "Publish Event",
+      "end": "End Event",
+      "cancel": "Cancel Event",
+      "reschedule": "Reschedule"
+    },
+    "statusConfirm": {
+      "publish": "Publish this event now?",
+      "end": "End this event?",
+      "cancel": "Cancel this event?",
+      "reschedule": "Reschedule this event?"
+    },
+    "statusUpdateSuccess": "Event status updated"
   },
   "loading": "Loading...",
   "messaging": {

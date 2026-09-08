@@ -15,9 +15,9 @@ const LastEvent = ({
   onPostEventPress,
   subscription,
 }) => {
-  if (!event) return null;
 
-  const testMessageSent = event.testMessageSent || false;
+
+  const testMessageSent = event?.testMessageSent || false;
   // Notify Staff is intentionally not surfaced on this dashboard card (it
   // lives on the single-event page), so `hasStaff` is not consumed here —
   // this keeps the button set in parity with the web dashboard card.
@@ -25,6 +25,8 @@ const LastEvent = ({
     event,
     testMessageSent,
   });
+
+  if (!event) return null;
 
   return (
     <View style={styles.container}>
@@ -41,6 +43,7 @@ const LastEvent = ({
       <LastEventActions
         canSendTest={canSendTest}
         canSchedule={canSchedule}
+        pulseSchedule={event.status === "pending_scheduling"}
         isCompleted={isCompleted}
         onTestMessagePress={onTestMessagePress}
         onSchedulePress={onSchedulePress}

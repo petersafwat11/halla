@@ -1,6 +1,16 @@
 .container {
-  width: min(92vw, 520px);
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 2.4rem;
   text-align: start;
+}
+
+.hint {
+  font-size: 1.3rem;
+  line-height: 1.6;
+  color: #655b52;
+  margin: 0 0 1.6rem;
 }
 
 .title {
@@ -19,7 +29,7 @@
 
 .tableWrap {
   max-height: 42vh;
-  overflow-y: auto;
+  overflow: auto;
   border: 1px solid #eee;
   border-radius: 8px;
 }
@@ -140,4 +150,10 @@
 .confirmButton:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+  .container { padding: 1.6rem; }
+  .row td, .table thead th { padding: 1rem 0.6rem; }
+  .actions > button { flex: 1; min-height: 44px; }
 }

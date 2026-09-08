@@ -75,7 +75,17 @@ const InvitationScreen = ({ route }) => {
     [brandColor]
   );
 
-  if (event?.deliveryMode === 'portal_link') return <SafeAreaView style={{ flex: 1, justifyContent: 'center', padding: 24 }}><TouchableOpacity accessibilityRole="link" onPress={() => WebBrowser.openBrowserAsync(businessUrl)}><Text>{currentLanguage === 'en' ? 'Open business invitation' : 'فتح دعوة المنشأة'}</Text></TouchableOpacity></SafeAreaView>;
+  if (event?.deliveryMode === 'portal_link') {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.centered}>
+          <TouchableOpacity accessibilityRole="link" style={[styles.button, styles.declineButton]} onPress={() => WebBrowser.openBrowserAsync(businessUrl).catch(() => {})}>
+            <Text style={[styles.buttonText, styles.declineButtonText]}>{t("guest.portal.openBusinessInvitation")}</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
   if (isLoading) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: FALLBACK_BG }]}>

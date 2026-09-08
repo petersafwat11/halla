@@ -159,6 +159,17 @@
   background: #fdf6ec;
 }
 
+/* Keep Azure results in flow so they cannot cover the manual-address action. */
+.azure_suggestions {
+  position: relative;
+  top: auto;
+}
+
+.azure_suggestions .suggestion_item {
+  width: 100%;
+  text-align: start;
+}
+
 .suggestion_pin {
   color: #d38200;
   flex-shrink: 0;

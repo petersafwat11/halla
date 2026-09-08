@@ -3,9 +3,11 @@ import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/services/http";
 import { API_PATHS } from "@halaa/shared/api/paths";
 import { templatesKeys, templateCategoriesKeys, fontsKeys } from "./keys";
+import { normalizeTemplateAssets } from '@/utils/templateAssets';
 
 export function useHostTemplates({ category } = {}) {
   return useQuery({
+    select: normalizeTemplateAssets,
     queryKey: templatesKeys.hostList(category),
     queryFn: () =>
       apiRequest({
@@ -19,6 +21,7 @@ export function useHostTemplates({ category } = {}) {
 
 export function useAdminTemplates(params = {}) {
   return useQuery({
+    select: normalizeTemplateAssets,
     queryKey: templatesKeys.adminList(params),
     queryFn: () =>
       apiRequest({
@@ -31,6 +34,7 @@ export function useAdminTemplates(params = {}) {
 
 export function useTemplate(id, { enabled = true } = {}) {
   return useQuery({
+    select: normalizeTemplateAssets,
     queryKey: templatesKeys.detail(id),
     queryFn: () =>
       apiRequest({

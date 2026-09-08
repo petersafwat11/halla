@@ -278,6 +278,10 @@ const PATHS = {
     googlePlaceDetails: (placeId) =>
       `/locations/google/places/${encodeURIComponent(placeId)}`,
     googleReverseGeocode: "/locations/google/reverse-geocode",
+    azureAutocomplete: '/locations/azure/autocomplete',
+    azureReverseGeocode: '/locations/azure/reverse-geocode',
+    azureSession: '/locations/azure/session',
+    azureRender: '/locations/azure/render',
   },
 
   // ============================================

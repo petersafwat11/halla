@@ -8,7 +8,7 @@ import {
   Platform,
 } from "react-native";
 import { useFormContext } from "react-hook-form";
-import DateTimePicker from "@react-native-community/datetimepicker";
+import DateTimePicker from "../commen/PlatformDateTimePicker";
 import { useTranslation } from "../../localization";
 import {
   formatDate as formatLocaleDate,

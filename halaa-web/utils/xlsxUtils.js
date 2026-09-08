@@ -53,12 +53,15 @@ export const importFromXLSX = (file, expectedHeaders, validateRow) => {
     const allowedTypes = [
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "application/vnd.ms-excel",
+      "text/csv",
+      "application/csv",
     ];
 
-    if (!allowedTypes.includes(file.type)) {
+    const supportedExtension = /\.(xlsx|xls|csv)$/i.test(file.name || '');
+    if (!supportedExtension || (file.type && file.type !== 'application/octet-stream' && !allowedTypes.includes(file.type))) {
       reject({
         success: false,
-        message: "Please select an Excel file (.xlsx or .xls)",
+        message: "Please select an Excel or CSV file (.xlsx, .xls or .csv)",
       });
       return;
     }
@@ -68,7 +71,7 @@ export const importFromXLSX = (file, expectedHeaders, validateRow) => {
     reader.onload = (e) => {
       try {
         const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: "array" });
+        const workbook = XLSX.read(data, { type: "array", raw: true });
         const firstSheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[firstSheetName];
         const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });

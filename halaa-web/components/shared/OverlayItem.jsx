@@ -10,7 +10,7 @@
  * caller side; this component is dumb about ordering.
  */
 
-import React from "react";
+import React, { useLayoutEffect, useRef } from "react";
 import { renderIconByName } from "@/app/[lang]/admin-dash/templates/_components/IconPicker";
 
 export function OverlayItem({
@@ -43,8 +43,40 @@ export function OverlayItem({
     primaryColor ||
     (overlay.colorBinding === "custom" ? overlay.color || "#000" : "#5a4a42");
 
+  const textRef = useRef(null);
+  useLayoutEffect(() => {
+    const element = textRef.current;
+    if (!element || overlay.type === "icon" || !overlay.maxLines || !text || typeof width !== "number" || width <= 0) return;
+    let cancelled = false;
+    const fit = () => {
+      if (cancelled) return;
+      // Measure the full text, then fit within the authored line budget.
+      // Clamping alone silently removed venue/name text from exported cards.
+      element.style.WebkitLineClamp = "unset";
+      element.style.overflow = "visible";
+      let low = fontSize * 0.35;
+      let high = fontSize;
+      const fits = size => {
+        element.style.fontSize = `${size}px`;
+        // scrollHeight includes font glyph overhang (not just line boxes),
+        // which would shrink fonts such as Cairo/Amiri even on a single line.
+        return element.clientHeight <= size * (overlay.lineHeight || 1.35) * overlay.maxLines + 1;
+      };
+      if (fits(high)) low = high;
+      else for (let i = 0; i < 10; i++) {
+        const mid = (low + high) / 2;
+        if (fits(mid)) low = mid; else high = mid;
+      }
+      element.style.fontSize = `${low}px`;
+    };
+    fit();
+    document.fonts?.ready.then(fit);
+    return () => { cancelled = true; };
+  }, [text, width, fontSize, overlay.maxLines, overlay.lineHeight, overlay.type, overlay.fontWeight, overlay.fontFamily, fontFamilyOverride]);
+
   return (
     <div
+      ref={textRef}
       onClick={onClick}
       style={{
         position: "absolute",

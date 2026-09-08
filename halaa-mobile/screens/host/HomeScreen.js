@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   View,
@@ -47,6 +47,8 @@ const HomeScreen = ({ navigation }) => {
   };
 
   const eventId = dashboardData?.lastEvent?.id || dashboardData?.lastEvent?._id;
+  const [optimisticTestSent, setOptimisticTestSent] = useState(false);
+  useEffect(() => setOptimisticTestSent(false), [eventId, dashboardData?.lastEvent?.testMessageFingerprint]);
   const hasEvents = dashboardData?.hasEvents === true;
 
   const handleEditPress = (step) => {
@@ -156,7 +158,7 @@ const HomeScreen = ({ navigation }) => {
                 loading={loading}
                 error={error}
                 hasEvents={hasEvents}
-                event={dashboardData?.lastEvent}
+                event={dashboardData?.lastEvent ? { ...dashboardData.lastEvent, testMessageSent: Boolean(dashboardData.lastEvent.testMessageSent || optimisticTestSent) } : null}
                 subscription={dashboardData?.subscription}
                 onEditPress={handleEditPress}
                 onTestMessagePress={handleTestMessagePress}
@@ -227,7 +229,8 @@ const HomeScreen = ({ navigation }) => {
             dashboardData?.lastEvent?.eventDetails?.date ||
             dashboardData?.lastEvent?.date
           }
-          eventTime={dashboardData?.lastEvent?.eventDetails?.time}
+          eventTime={dashboardData?.lastEvent?.eventDetails?.time || dashboardData?.lastEvent?.time}
+          eventIsTrial={dashboardData?.lastEvent?.capabilities?.isTrial}
         />
       </View>
     </SafeAreaView>

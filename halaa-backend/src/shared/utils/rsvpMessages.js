@@ -12,6 +12,8 @@
  * improve copy without a migration.
  */
 
+const DEFAULT_GUEST_REPLIES = require('@halaa/shared/constants/guestReplies.cjs');
+
 const { formatRiyadh } = require('./timezone');
 
 /** Format an event date in Asia/Riyadh wall-clock. '' when no date. */
@@ -29,14 +31,8 @@ function formatDate(date, lang = 'ar') {
 
 /** Default reply copy by response + language. */
 const DEFAULT_REPLIES = {
-  confirmed: {
-    ar: 'شكرًا لتأكيد حضورك! يسعدنا أن تكون معنا في هذه المناسبة. 🎉',
-    en: "Thank you for confirming! We're delighted you'll be joining us. 🎉",
-  },
-  declined: {
-    ar: 'شكراً لإخبارنا. سنفتقدك حقاً، وندعوك في أي وقت آخر.',
-    en: "Thank you for letting us know. We'll truly miss you — you're welcome anytime.",
-  },
+  confirmed: { ar: DEFAULT_GUEST_REPLIES.onAttend, en: DEFAULT_GUEST_REPLIES.onAttend },
+  declined: { ar: DEFAULT_GUEST_REPLIES.onAbsent, en: DEFAULT_GUEST_REPLIES.onAbsent },
 };
 
 const OVERRIDE_KEY = {
@@ -46,7 +42,7 @@ const OVERRIDE_KEY = {
 
 /**
  * Resolve the reply message for a response: per-event override first,
- * then the localized default.
+ * then the Arabic default, independently of interface language.
  */
 function getReplyMessage(response, event, lang = 'ar') {
   const override = event?.guestReplies?.[OVERRIDE_KEY[response]];

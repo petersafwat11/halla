@@ -57,6 +57,6 @@ export function buildSendActionStates(event, audiences) {
   return {
     newGuests: gate(a.newGuests, started ? null : "sendFirst", "noNewGuests"),
     resend: gate(a.resend, started ? null : "sendFirst", "noResend"),
-    extraReminder: gate(a.extraReminder, null, "noConfirmed"),
+    extraReminder: gate(a.extraReminder, event?.reminderAvailability?.configured === false ? "reminderUnavailable" : null, "noConfirmed"),
   };
 }

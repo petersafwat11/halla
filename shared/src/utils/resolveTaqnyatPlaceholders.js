@@ -1,3 +1,6 @@
+import { formatDate, formatTime } from './locale.js';
+import { calendarParts } from './schedulingWindow.js';
+
 /**
  * Resolve Taqnyat WhatsApp template `{{N}}` placeholders against an
  * event/guest/host context, so client previews match what the recipient
@@ -89,17 +92,23 @@ export function buildTaqnyatPreviewContext({
   guestName,
   eventTitle,
   dateFormatted,
+  eventDate,
+  locale = 'ar',
   eventTime,
   locationAddress,
   hostName,
 }) {
+  const day = calendarParts(eventDate);
+  const civilDate = day ? `${day.year}-${String(day.month + 1).padStart(2, '0')}-${String(day.day).padStart(2, '0')}` : null;
   return {
     invitation: { url: "https://halaa.com.sa/ar/business-invitation/preview" },
     guest: { name: guestName || "" },
     eventDetails: {
       title: eventTitle || "",
-      dateFormatted: dateFormatted || "",
-      time: eventTime || "",
+      dateFormatted: civilDate ? formatDate(civilDate, locale, { numberingSystem: 'latn', calendar: 'gregory' }) : dateFormatted || "",
+      dayFormatted: civilDate ? formatDate(civilDate, locale, { year: undefined, month: undefined, day: undefined, weekday: 'long' }) : "",
+      time: formatTime(eventTime, locale),
+      timeFormatted: formatTime(eventTime, locale),
       location: { address: locationAddress || "" },
     },
     host: { name: hostName || "" },
