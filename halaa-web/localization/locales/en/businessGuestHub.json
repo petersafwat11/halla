@@ -43,5 +43,9 @@
   "guestCount": "{{count}} guests",
   "guestCount_one": "{{count}} guest",
   "guestCount_other": "{{count}} guests",
-  "previewGuest": "Preview guest"
+  "previewGuest": "Preview guest",
+  "guestCount_zero": "{{count}} guests",
+  "guestCount_two": "{{count}} guests",
+  "guestCount_few": "{{count}} guests",
+  "guestCount_many": "{{count}} guests"
 }

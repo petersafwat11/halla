@@ -189,7 +189,8 @@
       "status": "الحالة",
       "respondAt": "تاريخ الرد",
       "actions": "الإجراءات",
-      "autoReminder": "تذكير تلقائي"
+      "autoReminder": "تذكير تلقائي",
+      "sentVia": "أُرسلت عبر"
     },
     "cell": {
       "sent": "تم الإرسال",

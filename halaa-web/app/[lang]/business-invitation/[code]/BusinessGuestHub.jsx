@@ -3,6 +3,7 @@
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import { useTranslation } from 'react-i18next';
+import { formatDateTime } from '@halaa/shared/utils/locale';
 import { QRCodeSVG } from 'qrcode.react';
 import { CalendarDays, MapPin, Check, Globe } from 'lucide-react';
 import Button from '@/ui/commen/button/Button';
@@ -59,10 +60,7 @@ export default function BusinessGuestHub() {
   const start = actions.startAt && new Date(actions.startAt);
   const date =
     start && !Number.isNaN(start.getTime())
-      ? new Intl.DateTimeFormat(
-          language === 'ar' ? 'ar-SA-u-ca-gregory' : 'en-GB',
-          { timeZone: 'Asia/Riyadh', dateStyle: 'full', timeStyle: 'short' },
-        ).format(start)
+      ? formatDateTime(start, language, { timeZone: 'Asia/Riyadh' })
       : `${event.date || ''} ${event.time || ''}`;
   const showPass =
     pass?.code &&
