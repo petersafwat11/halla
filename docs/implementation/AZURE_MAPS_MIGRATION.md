@@ -2,7 +2,7 @@
 
 ## Status
 
-Azure Maps account `halaa-maps` is live (Gen2, North Europe) under the owner's active subscription. The backend adapter, web picker and native picker integration are implemented locally. Production has not been deployed and signed native builds have not been installed or tested on devices.
+Azure Maps account `halaa-maps` is live (Gen2, North Europe) under the owner's active subscription. The backend adapter, web picker and native picker integration are implemented locally. Production web/API deployment and live Azure smoke checks passed on September 9 (see RELEASE_2026-09-09.md). Signed native builds have not been installed or tested on devices.
 
 ## Implementation
 
