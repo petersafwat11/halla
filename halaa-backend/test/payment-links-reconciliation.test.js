@@ -349,6 +349,27 @@ test('Moyasar authenticates events and durably queues repeated refund hints', as
   assert.equal(await Payment.countDocuments(), 0);
 });
 
+test('Apple Pay payment flows from signed webhook through the worker to a paid ledger row', async () => {
+  const link = await seedReadyLink('HPL-APPLEPAY');
+  await PaymentLink.updateOne({ _id: link._id }, { $set: { nextReconcileAt: null } });
+  const applePay = paymentFor(link, { id: 'pay_applepay', paid_at: '2026-09-01T10:00:05Z',
+    source: { type: 'applepay', company: 'visa', number: '4111 11** **** 1111',
+      gateway_id: 'moyasar_ap_test', reference_number: '125478454231', message: 'APPROVED' } });
+  const delivered = await deliverWebhook({ id: 'event-applepay', type: 'payment_paid', data: applePay });
+  assert.equal(delivered.status, 200);
+  assert.equal(await Payment.countDocuments(), 0);
+  paymentProvider.fetchInvoice = async () => ({ success: true,
+    data: invoiceFor(link, { status: 'paid', payments: [applePay] }) });
+  assert.equal((await service.runPaymentLinksReconcileTick()).scanned, 1);
+  const paid = await PaymentLink.findById(link._id);
+  assert.equal(paid.status, 'paid');
+  assert.equal(paid.collectedHalalas, link.amountHalalas);
+  const row = await Payment.findOne({ moyasarPaymentId: 'pay_applepay' });
+  assert.equal(row.status, 'paid');
+  assert.deepEqual({ type: row.paymentMethod.type, company: row.paymentMethod.company, last4: row.paymentMethod.last4 },
+    { type: 'applepay', company: 'visa', last4: '1111' });
+});
+
 test('Moyasar retries a recognized payment link event when queue persistence fails', async () => {
   const link = await seedReadyLink();
   const original = service.queueReconciliation;
