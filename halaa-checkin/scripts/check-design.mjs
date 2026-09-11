@@ -108,7 +108,12 @@ for (const logoName of logoNames) {
 // F31: provenance hash verification + copy parity + parent drift (report only).
 import crypto from 'node:crypto';
 function sha256Of(filePath) {
-  return crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
+  const raw = fs.readFileSync(filePath);
+  const isTextAsset = /(?:\.(?:css|js|json|svg)|LICENSE_FONT)$/i.test(filePath);
+  const content = isTextAsset
+    ? raw.toString('utf8').replace(/\r\n/g, '\n')
+    : raw;
+  return crypto.createHash('sha256').update(content).digest('hex');
 }
 let driftFound = false;
 function driftCheck(desc, fn) {
@@ -151,8 +156,7 @@ try {
     // Report parent source drift without auto-rewriting.
     if (fs.existsSync(globalsCssPath)) {
       driftCheck('parent globals.css drift vs manifest', () => {
-        const globalsCss = fs.readFileSync(globalsCssPath, 'utf8');
-        const actual = crypto.createHash('sha256').update(globalsCss).digest('hex');
+        const actual = sha256Of(globalsCssPath);
         if (actual !== sources?.sources?.globalsCss?.sha256) {
           throw new Error(`parent drift detected (manifest ${String(sources?.sources?.globalsCss?.sha256).slice(0,12)}… vs current ${actual.slice(0,12)}…); review manually`);
         }

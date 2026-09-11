@@ -1,11 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
+import { API_PATHS } from '../src/api/paths.js';
 import { azureMapDocument } from '../src/utils/azureMapDocument.js';
 import { createMapSessionManager } from '../src/utils/mapSession.js';
 
 test('map document remains executable data for Hermes and escapes script-breaking configuration', () => {
-  const html = azureMapDocument({ renderUrl: 'https://halaa.com.sa/api/v2/locations/azure/render',
+  const html = azureMapDocument({ renderUrl: `https://halaa.com.sa${API_PATHS.locations.azureRender}`,
     token: '</script><script>alert(1)</script>', language: 'en', latitude: 0, longitude: 0 });
   const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)];
   assert.equal(scripts.length, 1);
