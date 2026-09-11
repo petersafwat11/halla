@@ -31,7 +31,10 @@ export async function getBrowser() {
   browserPromise = chromium
     .launch({
       executablePath,
-      timeout: 5000,
+      // Cold starts on small CI/VPS hosts can exceed five seconds while the
+      // browser process initializes. Keep this below the worker's independent
+      // 90-second render deadline while avoiding false 503 health failures.
+      timeout: 15000,
       headless: true,
       args: [
         '--no-sandbox',
