@@ -1193,7 +1193,8 @@
     "admin": "مسؤول",
     "bulkSuspendModerators": "هل أنت متأكد من إيقاف {{count}} مشرف؟",
     "bulkDeleteModerators": "هل أنت متأكد من حذف {{count}} مشرف؟",
-    "selectedCount": "تم تحديد {{count}}"
+    "selectedCount": "تم تحديد {{count}}",
+    "clearSelection": "إلغاء التحديد"
   },
   "discounts": {
     "title": "أكواد الخصم",

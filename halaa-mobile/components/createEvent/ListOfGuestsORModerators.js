@@ -1,3 +1,4 @@
+import BulkActionsBar from "../admin-dashboard/common/BulkActionsBar";
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -270,22 +271,12 @@ const ListOfGuestsORModerators = ({
 
             {/* Bulk "link to category" bar — shown when guests are selected */}
             {selectable && selectedCount > 0 && (
-              <View style={styles.selectionBar}>
-                <Text style={styles.selectionCount}>
-                  {t("reuse_guests_selected", { count: selectedCount })}
-                </Text>
-                <TouchableOpacity
-                  style={styles.linkCategoryBtn}
-                  onPress={() => {
-                    Keyboard.dismiss();
-                    setShowCategoryPicker(true);
-                  }}
-                  activeOpacity={0.8}
-                >
-                  <Ionicons name="pricetag-outline" size={18} color="#FFF" />
-                  <Text style={styles.linkCategoryText}>{t("link_to_category")}</Text>
-                </TouchableOpacity>
-              </View>
+              <BulkActionsBar selectedIds={selectedIds} totalCount={list.length}
+                onClearSelection={() => setSelected({})}
+                onSelectAll={() => setSelected(Object.fromEntries(list.map(item => [item.id, true])))}
+                actions={[{ icon: 'pricetag-outline', label: t('link_to_category'), onPress: () => {
+                  Keyboard.dismiss(); setShowCategoryPicker(true);
+                } }]} />
             )}
           </Pressable>
         </Pressable>

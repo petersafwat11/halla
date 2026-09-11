@@ -28,7 +28,7 @@ export function computeEventActionGate({
   }
 
   const status = event.status;
-  const hasCurrentTest = Boolean(testMessageSent || event.testMessageSent);
+  const hasCurrentTest = Boolean(event.testMessageCurrent ?? (testMessageSent || event.testMessageSent));
   const hasTemplate = !!event.taqnyatTemplate?.templateRef;
   const hasStaff = (event.staffList?.length || event.staffCount || 0) > 0;
 

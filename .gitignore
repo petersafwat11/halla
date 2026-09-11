@@ -33,6 +33,8 @@
 # Local runtime & test artifacts
 data/
 qa-evidence/
+test-wedding-invitation.jpg
+test-*.jpg
 halaa-checkin/ui-ux-audit-screenshots/
 halaa-backend/public/uploads/temp/
 halaa-backend/public/uploads/events/

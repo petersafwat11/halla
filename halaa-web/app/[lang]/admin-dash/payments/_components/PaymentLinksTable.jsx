@@ -41,7 +41,6 @@ export default function PaymentLinksTable() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: configData, error: configError, refetch: reloadConfig } = usePaymentLinksConfig();
-  const userId = configData?.data?.actorId;
   const canManage = configData?.data?.canRefresh === true;
   const canCreate = canManage && configData?.data?.canCreate === true;
 
@@ -61,16 +60,6 @@ export default function PaymentLinksTable() {
   const { data, isLoading, error, refetch } = useAdminPaymentLinks(filters);
   const links = useMemo(() => data?.data?.links || [], [data]);
   const pagination = data?.data?.pagination || { page: 1, pages: 1, total: 0 };
-
-  const pushParams = useCallback(
-    (mutator) => {
-      const params = new URLSearchParams(searchParams.toString());
-      mutator(params);
-      params.set("page", params.get("page") || "1");
-      router.push(`?${params.toString()}`, { scroll: false });
-    },
-    [searchParams, router]
-  );
 
   const handlePageChange = useCallback(
     (page) => {
@@ -243,24 +232,21 @@ export default function PaymentLinksTable() {
   if (isLoading) return <SimpleLoading />;
 
   const isEmpty = links.length === 0;
-  const isFiltered = Boolean(filters.search || filters.status || filters.creator || filters.from || filters.to);
+  const isFiltered = Boolean(filters.search || filters.status || filters.from || filters.to);
 
   return (
     <>
       {configError && <div role="alert" className={styles.errorState}><p>{t("errors.loadFailed")}</p><Button variant="secondary" onClick={() => reloadConfig()} title={t("links.actions.retry")} /></div>}
       {configData?.data?.environment === "test" && <p className={modalStyles.hint} role="status">{t("links.testMode")}</p>}
       <div style={{ display: "flex", flexWrap: "wrap", alignItems: "end", gap: "1rem", marginBlockEnd: "1.2rem" }}>
-        {userId && <Button variant={filters.creator === userId ? "primary" : "secondary"} ariaPressed={filters.creator === userId} title={t("links.filters.mine", "Created by me")} onClick={() => pushParams((params) => {
-          if (filters.creator !== userId) params.set("creator", userId); else params.delete("creator");
-          params.set("page", "1");
-        })} />}
         {isFiltered && <Button variant="secondary" onClick={() => router.push("?", { scroll: false })} title={t("links.filters.clear", "Clear filters")} />}
       </div>
       <div style={{ display: "flex", justifyContent: "flex-end", marginBlockEnd: "1.2rem" }}>
-        {canCreate && (
-          <Button onClick={() => setCreateOpen(true)} title={t("links.create.title", "Create payment link")} />
+        {canManage && (
+          <Button disabled={!canCreate} onClick={() => setCreateOpen(true)} title={t("links.create.title", "Create payment link")} />
         )}
       </div>
+      {canManage && !canCreate && <p role="status" className={modalStyles.hint}>{t("links.create.disabledByConfig")}</p>}
       {error ? (
         <div className={styles.errorState} role="alert">
           <p>{t("errors.loadFailed", "Failed to load payments")}</p>

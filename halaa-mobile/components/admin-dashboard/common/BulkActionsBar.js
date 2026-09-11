@@ -2,7 +2,6 @@ import React from "react";
 import {
   View,
   TouchableOpacity,
-  ScrollView,
   ActivityIndicator,
   StyleSheet,
 } from "react-native";
@@ -45,6 +44,9 @@ const BulkActionsBar = ({
     <View style={styles.container}>
       {/* Logical start: select-all toggle + count */}
       <TouchableOpacity
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: allSelected }}
+        disabled={actions.some(item => item.loading)}
         style={styles.selectSection}
         onPress={allSelected ? onClearSelection : onSelectAll}
         activeOpacity={0.7}
@@ -63,18 +65,24 @@ const BulkActionsBar = ({
         </LocalizedText>
       </TouchableOpacity>
 
-      {/* Middle: scrollable action buttons */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.actionsScroll}
-        contentContainerStyle={styles.actionsContent}
-        bounces={false}
+      {/* Logical end: close / deselect-all */}
+      <TouchableOpacity
+        accessibilityRole="button"
+        accessibilityLabel={t("common.clearSelection")}
+        disabled={actions.some(item => item.loading)}
+        style={styles.closeBtn}
+        onPress={onClearSelection}
+        activeOpacity={0.7}
       >
+        <Ionicons name="close" size={18} color={colors.natural[500]} />
+      </TouchableOpacity>
+
+      {/* Actions wrap onto their own row on narrow screens. */}
+      <View style={styles.actionsContent}>
         {actions.map((action, idx) => {
           const btnColor = action.destructive
             ? colors.error[500]
-            : action.color || colors.primary[500];
+            : action.color || colors.primary[800];
           const btnBg = action.destructive
             ? colors.error[50]
             : action.bg || colors.primary[50];
@@ -84,7 +92,9 @@ const BulkActionsBar = ({
               style={[styles.actionBtn, { backgroundColor: btnBg }]}
               onPress={() => action.onPress(selectedIds)}
               activeOpacity={0.8}
-              disabled={!!action.loading}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: actions.some(item => item.loading), busy: !!action.loading }}
+              disabled={actions.some(item => item.loading)}
             >
               {action.loading ? (
                 <ActivityIndicator size="small" color={btnColor} />
@@ -99,16 +109,9 @@ const BulkActionsBar = ({
             </TouchableOpacity>
           );
         })}
-      </ScrollView>
+      </View>
 
-      {/* Logical end: close / deselect-all */}
-      <TouchableOpacity
-        style={styles.closeBtn}
-        onPress={onClearSelection}
-        activeOpacity={0.7}
-      >
-        <Ionicons name="close" size={18} color={colors.natural[500]} />
-      </TouchableOpacity>
+
     </View>
   );
 };
@@ -118,8 +121,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: colors.primary[50],
-    borderBottomWidth: 1,
-    borderBottomColor: colors.primary[200],
+    flexWrap: "wrap",
+    borderRadius: borderRadius[12],
+    borderWidth: 1,
+    borderColor: colors.primary[200],
     paddingHorizontal: spacing[12],
     paddingVertical: spacing[8],
     gap: spacing[8],
@@ -129,7 +134,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: spacing[6],
-    flexShrink: 0,
+    flexShrink: 1,
+    flexGrow: 1,
+    minHeight: 44,
   },
   checkIcon: {
     width: 20,
@@ -151,6 +158,10 @@ const styles = StyleSheet.create({
   },
   actionsScroll: { flex: 1 },
   actionsContent: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    flexGrow: 1,
+    flexBasis: "100%",
     gap: spacing[6],
     paddingHorizontal: spacing[4],
     alignItems: "center",
@@ -163,7 +174,8 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius[8],
     minWidth: 72,
     justifyContent: "center",
-    minHeight: 30,
+    minHeight: 44,
+    flexGrow: 1,
   },
   actionBtnContent: {
     flexDirection: "row",
@@ -175,6 +187,10 @@ const styles = StyleSheet.create({
     fontWeight: typography.fontWeight.semibold,
   },
   closeBtn: {
+    minHeight: 44,
+    minWidth: 44,
+    justifyContent: "center",
+    alignItems: "center",
     padding: spacing[4],
     flexShrink: 0,
   },

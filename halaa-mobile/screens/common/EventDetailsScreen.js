@@ -1,3 +1,4 @@
+import EventActionDropdown, { EventActionItem } from "../../components/events/EventActionDropdown";
 import PartialFailureBanner from "../../components/home/PartialFailureBanner";
 import React, { useCallback, useMemo, useState, useRef, useEffect } from "react";
 import {
@@ -78,8 +79,7 @@ import AdaptiveText from "../../components/commen/AdaptiveText";
 import LocalizedText from "../../components/commen/LocalizedText";
 import TotalGuestsChips from "../../components/events/TotalGuestsChips";
 import RemainingInvitesBadge from "../../components/events/RemainingInvitesBadge";
-import ReminderButton from "../../components/events/ReminderButton";
-import { hasSendStarted, isTerminalEvent } from "../../components/events/sendAudiences";
+import { isTerminalEvent } from "../../components/events/sendAudiences";
 
 import {
   colors,
@@ -759,6 +759,15 @@ const EventDetailsScreen = () => {
 
         {/* Action bar — test message, schedule, notify staff, share post-event, manage dropdown, delete (admin) */}
         <View style={styles.actionsWrapper}>
+          {isLive && <EventActionDropdown label={t("events:sendActions.menu")} icon="paper-plane-outline" resetKey={eventId}
+            onOpen={() => { setSelectedGuestIds([]); setShowSendSheet(true); }}>
+            {(close) => <>
+              {audienceLoading ? <ActivityIndicator /> : audienceError ? <EventActionItem label={t("events:peopleRetry")} onPress={() => refetchGuests()} /> :
+                <SendActionsSheet inline event={event} guests={guests} onPick={action => { close(); setShowSendSheet(false); setActiveSendAction(action); }} />}
+              {hasUnansweredSentGuests && <EventActionItem icon="notifications-outline" label={t("events:sendActions.pendingReminder")} disabled={sendReminderMutation.isPending} onPress={() => { close(); handleSendReminder(); }} />}
+            </>}
+          </EventActionDropdown>}
+
           <EventActionsHeader
             event={headerEvent}
             isAdmin={isAdmin}
@@ -784,10 +793,15 @@ const EventDetailsScreen = () => {
             onDelete={handleAdminDelete}
             t={t}
             SectionCard={SectionCard}
-          />
+          >
+            {(close) => <EventActionItem icon="download-outline" label={t("events:guest.alerts.exportTitle")} disabled={exportGuestsMutation.isPending} onPress={() => { close(); handleExportGuests(); }} />}
+          </AdminEventActionsMenu>
         )}
 
 
+        {!isAdmin && <EventActionDropdown label={t("events:eventDetails.moreActions")} icon="ellipsis-horizontal" resetKey={eventId}>
+          {(close) => <EventActionItem icon="download-outline" label={t("events:guest.alerts.exportTitle")} disabled={exportGuestsMutation.isPending} onPress={() => { close(); handleExportGuests(); }} />}
+        </EventActionDropdown>}
         </View>
 
         {/* Stats — confirmed / declined / pending */}
@@ -972,55 +986,9 @@ const EventDetailsScreen = () => {
             </>}
             {isLive && <TouchableOpacity onPress={() => setActiveSendAction("resend")}><LocalizedText>{t("events:sendActions.items.resend")}</LocalizedText></TouchableOpacity>}
           </View>}
-          {activeTab === "guests" && (
-            <View style={styles.guestActionsRow}>
-              {hasUnansweredSentGuests && (
-                <ReminderButton
-                  onPress={handleSendReminder}
-                  sending={sendReminderMutation.isPending}
-                />
-              )}
-              {!isTerminalEvent(event) && hasSendStarted(event) && (
-                <TouchableOpacity
-                  style={styles.outlineActionBtn}
-                  onPress={() => setShowSendSheet(true)}
-                  activeOpacity={0.7}
-                >
-                  <Ionicons name="paper-plane-outline" size={14} color="#6B4E33" />
-                  <LocalizedText style={styles.outlineActionText}>
-                    {t("events:sendActions.menu")}
-                  </LocalizedText>
-                </TouchableOpacity>
-              )}
-              <TouchableOpacity
-                style={styles.outlineActionBtn}
-                onPress={handleExportGuests}
-                activeOpacity={0.7}
-                disabled={exportGuestsMutation.isPending}
-              >
-                <Ionicons name="download-outline" size={14} color="#6B4E33" />
-                <LocalizedText style={styles.outlineActionText}>
-                  {t("events:guest.alerts.exportTitle")}
-                </LocalizedText>
-              </TouchableOpacity>
-            </View>
-          )}
 
         </View>
         </View>}
-      />
-
-      {showSendSheet && audienceLoading && <ActivityIndicator />}
-      {showSendSheet && audienceError && <TouchableOpacity onPress={() => refetchGuests()}><LocalizedText>{t("events:peopleRetry")}</LocalizedText></TouchableOpacity>}
-      <SendActionsSheet
-        visible={showSendSheet && !audienceLoading && !audienceError}
-        event={event}
-        guests={guests}
-        onPick={(a) => {
-          setShowSendSheet(false);
-          setActiveSendAction(a);
-        }}
-        onClose={() => setShowSendSheet(false)}
       />
 
       <SendActionModal
@@ -1128,6 +1096,7 @@ const styles = StyleSheet.create({
   },
 
   actionsWrapper: {
+    gap: spacing[12],
     backgroundColor: "#FFF",
     borderRadius: borderRadius[12] || 12,
     padding: spacing[12],

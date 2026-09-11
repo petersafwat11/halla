@@ -6,7 +6,7 @@
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(2px);
-  z-index: 1000;
+  z-index: 1200;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -70,3 +70,6 @@
     align-items: flex-end;
   }
 }
+
+.overlay { box-sizing: border-box; }
+.popup { max-height: calc(100dvh - 32px); overscroll-behavior: contain; }

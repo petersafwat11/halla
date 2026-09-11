@@ -1,5 +1,10 @@
-import { riyadhWallClockInstant, instantToPickerDay } from "@halaa/shared/utils/schedulingWindow";
-import React, { useState, useEffect } from "react";
+import {
+  getReminderWindow,
+  getScheduleTimeBounds,
+  instantToPickerDay,
+  validateReminderSelection,
+} from "@halaa/shared/utils/schedulingWindow";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   View,
   StyleSheet,
@@ -19,13 +24,6 @@ import { colors, spacing, textStyles } from "../../../styles/tokens";
 import LocalizedText from "../../commen/LocalizedText";
 import DatePicker from "../../commen/DatePicker";
 import TimePicker from "../../commen/TimePicker";
-
-const ONE_DAY_MS = 24 * 60 * 60 * 1000;
-
-// Combine a Date (or date string) with a 24h "HH:mm" string into one local
-// Date. Used to resolve the scheduled-send instant (the lower bound of the
-// free reminder window).
-const combineDateTime = riyadhWallClockInstant;
 
 /**
  * Small inline banner reminding the user that the platform auto-sends a
@@ -75,9 +73,7 @@ const AutoReminderInfoText = ({ event }) => {
     }
   }, [event, modalOpen, reset]);
 
-  if (!event) return null;
-
-  const isEditable = !["completed", "cancelled"].includes(event.status);
+  const isEditable = !["completed", "cancelled"].includes(event?.status);
 
   // Stored "HH:mm" strings are localized through the shared locale utility —
   // never hand-assembled "6:30 PM" tokens that scramble inside Arabic copy.
@@ -112,20 +108,43 @@ const AutoReminderInfoText = ({ event }) => {
   // launch send time when scheduled, otherwise "now". Upper bound is 24h
   // before the event start. The backend is authoritative and returns
   // REMINDER_OUT_OF_RANGE if the chosen instant falls outside.
-  const sendInstant = combineDateTime(
-    event?.launchSettings?.scheduledDate,
-    event?.launchSettings?.scheduledTime
+  const reminderWindow = useMemo(() => getReminderWindow({
+    scheduledDate: event?.launchSettings?.scheduledDate,
+    scheduledTime: event?.launchSettings?.scheduledTime,
+    eventDate: event?.eventDetails?.date || event?.date,
+    eventTime: event?.eventDetails?.time || event?.time,
+  }), [event, modalOpen]);
+  const lowerBound = reminderWindow.earliestInstant;
+  const upperBound = reminderWindow.latestInstant;
+  const selectedDate = methods.watch("reminderDate");
+  const timeBounds = useMemo(
+    () => getScheduleTimeBounds(selectedDate, reminderWindow),
+    [selectedDate, reminderWindow]
   );
-  const eventInstant = combineDateTime(
-    event?.eventDetails?.date || event?.date,
-    event?.eventDetails?.time || event?.time
-  );
-  const nowTs = Date.now();
-  const lowerBound =
-    sendInstant && sendInstant.getTime() > nowTs ? sendInstant : new Date(nowTs);
-  const upperBound = eventInstant
-    ? new Date(eventInstant.getTime() - ONE_DAY_MS)
-    : null;
+  const pickerTimeBounds = useMemo(() => {
+    const makeTime = (minutes) => {
+      const value = new Date();
+      value.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0);
+      return value;
+    };
+    return {
+      minimumDate: makeTime(timeBounds.minimumMinutes),
+      maximumDate: makeTime(timeBounds.maximumMinutes),
+    };
+  }, [timeBounds]);
+
+  useEffect(() => {
+    const current = getValues("reminderTime");
+    if (!selectedDate || !current) return;
+    const minutes = current.getHours() * 60 + current.getMinutes();
+    if (minutes < timeBounds.minimumMinutes) {
+      methods.setValue("reminderTime", pickerTimeBounds.minimumDate);
+    } else if (minutes > timeBounds.maximumMinutes) {
+      methods.setValue("reminderTime", pickerTimeBounds.maximumDate);
+    }
+  }, [selectedDate, timeBounds, pickerTimeBounds, methods, getValues]);
+
+  if (!event) return null;
 
   const onSave = async () => {
     let payload = {
@@ -150,12 +169,15 @@ const AutoReminderInfoText = ({ event }) => {
       // Client-side guard against the window [scheduledSend, event−24h]. The
       // backend is authoritative (REMINDER_OUT_OF_RANGE) but catching it here
       // saves a round-trip.
-      const chosenInstant = combineDateTime(currentDate, time24);
-      if (
-        chosenInstant &&
-        ((lowerBound && chosenInstant.getTime() < lowerBound.getTime()) ||
-          (upperBound && chosenInstant.getTime() > upperBound.getTime()))
-      ) {
+      const validation = validateReminderSelection({
+        date: currentDate,
+        time: time24,
+        scheduledDate: event?.launchSettings?.scheduledDate,
+        scheduledTime: event?.launchSettings?.scheduledTime,
+        eventDate: event?.eventDetails?.date || event?.date,
+        eventTime: event?.eventDetails?.time || event?.time,
+      });
+      if (!validation.valid || !reminderWindow.hasValidWindow) {
         toast.error(
           t("reminderCustomize.errors.outOfRange")
         );
@@ -280,6 +302,8 @@ const AutoReminderInfoText = ({ event }) => {
                     <TimePicker
                       name="reminderTime"
                       label={t("reminderCustomize.timeLabel")}
+                      minimumDate={pickerTimeBounds.minimumDate}
+                      maximumDate={pickerTimeBounds.maximumDate}
                     />
                   </FormProvider>
 

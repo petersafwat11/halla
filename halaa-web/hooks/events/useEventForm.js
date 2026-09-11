@@ -230,13 +230,19 @@ export const useEventForm = (options = {}) => {
 
   // Step validation — 5-step wizard
   const validateStep = useCallback(
-    (step) => validateEventStep(step, formData),
-    [formData]
+    (step) => {
+      if (step === 1 && formData.isBusinessEvent && !formData.isExistingEvent && formData.businessLogoMissing) {
+        setValue('businessLogoCheckRequested', true);
+        return false;
+      }
+      return validateEventStep(step, formData);
+    },
+    [formData, setValue]
   );
 
   const isStepValid = useMemo(
-    () => validateStep(currentStep),
-    [validateStep, currentStep]
+    () => validateEventStep(currentStep, currentStep === 1 ? { ...formData, businessLogoMissing: false } : formData),
+    [formData, currentStep]
   );
 
   // Navigation

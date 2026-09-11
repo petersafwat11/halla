@@ -50,9 +50,6 @@ router.get("/payment-links/config", protect, requirePaymentLinksView, controller
  *         name: status
  *         schema: { type: string, enum: [all, awaiting_payment, paid, expired, canceled, refunded, needs_review] }
  *       - in: query
- *         name: creator
- *         schema: { type: string }
- *       - in: query
  *         name: from
  *         schema: { type: string, format: date }
  *       - in: query

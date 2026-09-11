@@ -367,7 +367,7 @@ async function runEventLaunch(event, workerId) {
       console.log(`[Cron] Event ${eventId} launched (sent ${sendResult.successful || 0}/${guestIds.length})`);
       return { launched: true };
     } catch (err) {
-      console.error(`[Cron] Event ${eventId} launch threw:`, err);
+      console.error(`[Cron] Event ${eventId} launch threw:`, { ...require('./dispatchDiagnostics').dispatchDiagnostic(err), attemptId: err.attemptId || null, failures: err.failureDiagnostics || [] });
       const reason = err.code || err.message || "exception";
       try {
         await Event.updateOne(
@@ -379,7 +379,7 @@ async function runEventLaunch(event, workerId) {
           actor: { _id: null, role: "system" },
           targetType: "event",
           targetId: event._id,
-          metadata: { reason, message: err.message, workerId },
+          metadata: { reason, message: require('./dispatchDiagnostics').dispatchDiagnostic(err).message, workerId, attemptId: err.attemptId || null, failures: err.failureDiagnostics || [], failed: err.failed || 0 },
           status: "failure",
         });
       } catch (_) {

@@ -525,7 +525,8 @@
   "businessBranding": {
     "logoRequired": "Add a business logo before creating this event.",
     "settings": "Business settings",
-    "refreshLogo": "Refresh after adding your logo",
-    "refreshError": "Could not refresh the logo. Try again."
+    "refreshLogo": "Check logo",
+    "refreshError": "Could not refresh the logo. Try again.",
+    "close": "Back to event"
   }
 }

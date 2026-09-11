@@ -69,3 +69,11 @@ describe('Session 1.6 Web: Event Action Gate & Scheduling Tests (EVT-09)', () =>
     assert.equal(gate6.canSendTest, false);
   });
 });
+
+it('server-invalidated test overrides optimistic success for every management role', () => {
+  for (const role of ['host', 'admin', 'super_admin', 'moderator']) {
+    const gate = computeEventActionGate({ event: { status: 'scheduled', taqnyatTemplate: { templateRef: 'template' }, testMessageSent: true, testMessageCurrent: false }, testMessageSent: true, currentUser: { role } });
+    assert.equal(gate.canSchedule, false);
+    assert.equal(gate.canSendTest, true);
+  }
+});

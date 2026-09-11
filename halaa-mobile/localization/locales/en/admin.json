@@ -1193,7 +1193,8 @@
     "admin": "Admin",
     "bulkSuspendModerators": "Are you sure you want to suspend {{count}} moderators?",
     "bulkDeleteModerators": "Are you sure you want to delete {{count}} moderators?",
-    "selectedCount": "{{count}} selected"
+    "selectedCount": "{{count}} selected",
+    "clearSelection": "Clear selection"
   },
   "discounts": {
     "title": "Discount Codes",

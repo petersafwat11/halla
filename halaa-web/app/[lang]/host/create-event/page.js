@@ -138,6 +138,7 @@ const CreateEventV2 = () => {
 
   const onNext = useCallback(() => {
     if (!validateStep(currentStep)) {
+      if (currentStep === 1 && formData.isBusinessEvent && formData.businessLogoMissing) return;
       toastUtils.error(t("errors.complete_required_fields"));
       return;
     }
@@ -155,7 +156,7 @@ const CreateEventV2 = () => {
     } else {
       handleSubmit(onSubmit)();
     }
-  }, [currentStep, handleSubmit, onSubmit, validateStep, goToNextStep, t]);
+  }, [currentStep, formData, handleSubmit, onSubmit, validateStep, goToNextStep, t]);
 
   const onPrevious = useCallback(() => {
     if (currentStep > 1) window.history.back();

@@ -1,6 +1,7 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useRef, useLayoutEffect, useId } from "react";
 import { useTranslation } from "react-i18next";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import { useEventGuests } from "@/hooks/events";
 import SendActionPopup from "./SendActionPopup";
@@ -35,6 +36,46 @@ export default function SendMessagesMenu({ event, eventId }) {
   const { t } = useTranslation("home-events");
   const [open, setOpen] = useState(false);
   const [activeAction, setActiveAction] = useState(null);
+  const triggerRef = useRef(null);
+  const menuRef = useRef(null);
+  const menuId = useId();
+  const [position, setPosition] = useState({});
+  useLayoutEffect(() => {
+    if (!open) return;
+    const place = () => {
+      const rect = triggerRef.current?.getBoundingClientRect();
+      if (!rect || !menuRef.current) return;
+      const width = Math.min(360, window.innerWidth - 24);
+      const rtl = getComputedStyle(triggerRef.current).direction === 'rtl';
+      const left = Math.max(12, Math.min(rtl ? rect.right - width : rect.left, window.innerWidth - width - 12));
+      const height = Math.min(menuRef.current.scrollHeight, window.innerHeight - 24);
+      const below = window.innerHeight - rect.bottom - 12;
+      const top = below >= height ? rect.bottom + 8 : Math.max(12, rect.top - height - 8);
+      setPosition({ left, top, width, maxHeight: window.innerHeight - top - 12, direction: rtl ? 'rtl' : 'ltr' });
+    };
+    const outside = (event) => {
+      if (!menuRef.current?.contains(event.target) && !triggerRef.current?.contains(event.target)) setOpen(false);
+    };
+    const escape = (event) => {
+      if (event.key === 'Escape') { setOpen(false); triggerRef.current?.focus(); }
+    };
+    place();
+    menuRef.current?.focus();
+    const observer = new ResizeObserver(place);
+    observer.observe(menuRef.current);
+    window.addEventListener('resize', place);
+    window.addEventListener('scroll', place, true);
+    document.addEventListener('pointerdown', outside);
+    document.addEventListener('keydown', escape);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', place);
+      window.removeEventListener('scroll', place, true);
+      document.removeEventListener('pointerdown', outside);
+      document.removeEventListener('keydown', escape);
+    };
+  }, [open]);
+
 
   const { data: guestsData } = useEventGuests(eventId);
   const guests = guestsData?.data || [];
@@ -69,6 +110,9 @@ export default function SendMessagesMenu({ event, eventId }) {
     <div className={styles.wrapper}>
       <button
         type="button"
+        ref={triggerRef}
+        aria-expanded={open}
+        aria-controls={open ? menuId : undefined}
         className={styles.menuButton}
         onClick={() => setOpen((o) => !o)}
       >
@@ -86,8 +130,8 @@ export default function SendMessagesMenu({ event, eventId }) {
         />
       </button>
 
-      {open && (
-        <div className={styles.dropdown}>
+      {open && createPortal(
+        <div ref={menuRef} id={menuId} tabIndex={-1} style={position} className={styles.dropdown}>
           {SEND_ACTIONS.map((action) => {
             const state = states[action];
             const [labelKey, labelFallback] = ITEM_LABEL_KEYS[action];
@@ -116,7 +160,7 @@ export default function SendMessagesMenu({ event, eventId }) {
               </button>
             );
           })}
-        </div>
+        </div>, document.body
       )}
 
       <SendActionPopup

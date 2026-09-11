@@ -84,7 +84,8 @@
     "moderatorsTabCount": "Moderators ({{count}})",
     "dateTimeRow": "{{date}} • {{time}}",
     "adminSelfOwner": "Event for your admin account",
-    "eventOwner": "Event owner"
+    "eventOwner": "Event owner",
+    "moreActions": "Other actions"
   },
   "guestList": {
     "title": "Guest List",
@@ -374,7 +375,8 @@
       "cost": "This will send {{count}} message(s) and use {{count}} invite(s).",
       "costUnlimited": "This will send {{count}} message(s).",
       "empty": "No guests match this action."
-    }
+    },
+    "pendingReminder": "Remind guests who have not replied"
   },
   "remainingInvites": {
     "label": "Invites left",

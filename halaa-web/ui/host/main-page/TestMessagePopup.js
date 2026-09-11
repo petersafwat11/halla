@@ -5,12 +5,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import styles from "./testMessagePopup.module.css";
-import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
+import MobileInputGroup from "@/ui/commen/inputs/mobileInputGroup/MobileInputGroup";
 import Button from "@/ui/commen/button/Button";
 import { useSendTestMessage } from "@/hooks/messaging";
 import { toast } from "react-toastify";
 import { saudiPhone } from "@halaa/shared/schemas/_shared";
-import { DEFAULT_PHONE_PLACEHOLDER } from "@halaa/shared/utils/phone";
 
 const testMessageSchema = (t) =>
   z.object({
@@ -62,13 +61,11 @@ const TestMessagePopup = ({ onConfirm, onCancel, eventId }) => {
         </div>
 
         <div className={styles.content}>
-          <InputGroup
+          <MobileInputGroup
             name="phoneNumber"
             label={t("testMessage.phoneLabel")}
-            placeholder={DEFAULT_PHONE_PLACEHOLDER}
             type="tel"
             required
-            prefixText="+966"
             error={errors.phoneNumber?.message}
           />
         </div>

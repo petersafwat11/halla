@@ -112,8 +112,8 @@ test("EventDetailsScreen delegates the three blocks and stops hand-assembling da
   assert.ok(
     source.includes("<TotalGuestsChips") &&
       source.includes("<RemainingInvitesBadge") &&
-      source.includes("<ReminderButton"),
-    "the three widgets render as shared components, not inline JSX"
+      source.includes("<EventActionDropdown") && source.includes("handleSendReminder();"),
+    "stats use shared widgets and reminders live in the shared header dropdown"
   );
   assert.ok(
     !/checkedInLabel|invitesBadgeLabel|outlineActionBtnActive/.test(source),
@@ -175,6 +175,8 @@ test("AutoReminderInfoText reminder customization renders the shared pickers", (
   );
   assert.ok(source.includes("minimumDate={lowerBound"), "window lower bound bounds the calendar");
   assert.ok(source.includes("maximumDate={upperBound"), "window upper bound bounds the calendar");
+  assert.ok(source.includes("minimumDate={pickerTimeBounds.minimumDate}"), "window lower bound restricts the boundary-day clock");
+  assert.ok(source.includes("maximumDate={pickerTimeBounds.maximumDate}"), "window upper bound restricts the boundary-day clock");
 });
 
 test("SendActionsSheet chrome renders through localized roles over plain Text", () => {

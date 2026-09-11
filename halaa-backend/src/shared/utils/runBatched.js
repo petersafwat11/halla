@@ -1,3 +1,4 @@
+const { dispatchDiagnostic } = require('./dispatchDiagnostics');
 /**
  * Batched parallel runner with concurrency + per-second rate cap.
  *
@@ -134,6 +135,7 @@ async function runBatched(items, worker, opts = {}) {
               item,
               ok: false,
               error: retryErr && retryErr.message ? retryErr.message : String(retryErr),
+              diagnostic: dispatchDiagnostic(retryErr),
             };
             failed++;
             continue;
@@ -144,6 +146,7 @@ async function runBatched(items, worker, opts = {}) {
           item,
           ok: false,
           error: err && err.message ? err.message : String(err),
+          diagnostic: dispatchDiagnostic(err),
         };
         failed++;
       }

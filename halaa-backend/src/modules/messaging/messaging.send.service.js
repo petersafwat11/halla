@@ -286,6 +286,7 @@ async function _dispatchInvitationToGuest({
 }) {
   const guestId = guest._id;
   const eventId = event._id;
+  let dispatchStage = 'claim';
   let dispatchClaimToken = null;
   let inviteReserved = false;
 
@@ -311,6 +312,7 @@ async function _dispatchInvitationToGuest({
   try {
     dispatchClaimToken = await claimFirstInvitationDispatch(guest, eventId);
     if (dispatchClaimToken) {
+      dispatchStage = 'invite_capacity';
       inviteReserved = await reserveInviteCapacity(event.subscriptionId);
     }
 
@@ -323,6 +325,7 @@ async function _dispatchInvitationToGuest({
       );
     }
 
+    dispatchStage = 'template_validation';
     cached = taqnyatTemplatesService.assertResolvedInviteTemplateCompatible(
       cached,
       {
@@ -331,6 +334,7 @@ async function _dispatchInvitationToGuest({
         deliveryMode: resolveInvitationDelivery(event),
       }
     );
+    dispatchStage = 'image_validation';
     imageUrl = getRequiredEventImageUrl(event, cached);
     bodyParams = getEventBodyParams(event, guest.name, cached, { invitation: { url: rsvpLink } });
     const components = [
@@ -345,6 +349,7 @@ async function _dispatchInvitationToGuest({
       body: buildSmsBody(event, guest.name, rsvpLink),
     };
 
+    dispatchStage = 'provider_send';
     result = imageUrl
       ? await taqnyat.sendWhatsAppTemplateWithImage(
           guest.phone,
@@ -366,9 +371,11 @@ async function _dispatchInvitationToGuest({
         );
   } else {
     smsBody = buildSmsBody(event, guest.name, rsvpLink);
+    dispatchStage = 'provider_send';
     result = await sendSMS(guest.phone, smsBody, logOptions.logContext);
   }
   } catch (error) {
+    error.dispatchStage = dispatchStage;
     await Promise.allSettled([
       releaseInviteCapacity(event.subscriptionId, inviteReserved),
       releaseInvitationDispatchClaim(guestId, dispatchClaimToken),
@@ -669,8 +676,17 @@ async function sendInitialLaunchBatch({
   const failed = batched.total - successful;
   const details = batched.results.map((r) => ({
     guestId: r.item._id,
-    ...(r.ok ? r.value : { success: false, error: r.error }),
+    ...(r.ok ? r.value : { success: false, error: r.error, diagnostic: r.diagnostic }),
   }));
+
+  const failureDiagnostics = details.filter(item => !item.success).slice(0, 20).map(item => ({
+    guestId: String(item.guestId),
+    ...(item.diagnostic || require('../../shared/utils/dispatchDiagnostics').dispatchDiagnostic({ code: item.code, message: item.error, dispatchStage: 'provider_response' })),
+  }));
+  if (failureDiagnostics.length) logger.error('[invitationBatch] guest failures', {
+    eventId: String(eventId), attemptId: String(fingerprint), scope, channel,
+    failed, failures: failureDiagnostics, truncated: failed > failureDiagnostics.length,
+  });
 
   // Authoritative re-aggregation from DB records
   await _recomputeAuthoritativeMessagingStatus(eventId, event.guestList);
@@ -697,6 +713,8 @@ async function sendInitialLaunchBatch({
       'ALL_SENDS_FAILED'
     );
     err.details = details;
+    err.failureDiagnostics = failureDiagnostics;
+    err.attemptId = String(fingerprint);
     err.total = effectiveGuestIds.length;
     err.successful = successful;
     err.failed = failed;
@@ -816,8 +834,17 @@ async function sendBulk({
   const failed = batched.total - successful;
   const details = batched.results.map((r) => ({
     guestId: r.item._id,
-    ...(r.ok ? r.value : { success: false, error: r.error }),
+    ...(r.ok ? r.value : { success: false, error: r.error, diagnostic: r.diagnostic }),
   }));
+
+  const failureDiagnostics = details.filter(item => !item.success).slice(0, 20).map(item => ({
+    guestId: String(item.guestId),
+    ...(item.diagnostic || require('../../shared/utils/dispatchDiagnostics').dispatchDiagnostic({ code: item.code, message: item.error, dispatchStage: 'provider_response' })),
+  }));
+  if (failureDiagnostics.length) logger.error('[invitationBatch] guest failures', {
+    eventId: String(eventId), attemptId: String(fingerprint), scope, channel,
+    failed, failures: failureDiagnostics, truncated: failed > failureDiagnostics.length,
+  });
 
   // Authoritative re-aggregation from DB
   await _recomputeAuthoritativeMessagingStatus(eventId, event.guestList);
@@ -864,6 +891,8 @@ async function sendBulk({
       'ALL_SENDS_FAILED'
     );
     err.details = details;
+    err.failureDiagnostics = failureDiagnostics;
+    err.attemptId = String(fingerprint);
     err.total = effectiveGuestIds.length;
     err.successful = successful;
     err.failed = failed;

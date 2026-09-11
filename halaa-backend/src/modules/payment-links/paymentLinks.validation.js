@@ -18,7 +18,6 @@ const listPaymentLinksSchema = z.object({
   status: z
     .enum(["all", "awaiting_payment", "paid", "expired", "canceled", "refunded", "needs_review"])
     .optional(),
-  creator: z.string().regex(/^[a-fA-F0-9]{24}$/).optional(),
   from: dateFilter.optional(),
   to: dateFilter.optional(),
 }).refine((v) => !v.from || !v.to || new Date(v.from) <= new Date(v.to), { message: "Date range is invalid" });

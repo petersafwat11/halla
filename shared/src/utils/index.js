@@ -117,13 +117,17 @@ export {
   TRIAL_SCHEDULE_MIN_LEAD_MS,
   PAID_SCHEDULE_MIN_LEAD_MS,
   INVITATION_EVENT_CUTOFF_MS,
+  PAID_REMINDER_MIN_GAP_MS,
   scheduleMinLeadMs,
   parseClockParts,
   calendarParts,
   riyadhWallClockInstant,
   instantToPickerDay,
   getScheduleWindow,
+  getScheduleTimeBounds,
+  getReminderWindow,
   validateScheduleSelection,
+  validateReminderSelection,
 } from "./schedulingWindow.js";
 export {
   COMPLETION_KINDS,

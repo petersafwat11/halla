@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Linking } from 'react-native';
+import { View, Linking, Modal } from 'react-native';
 import { useFormContext } from 'react-hook-form';
 import { WEB_BASE_URL } from '../../config/api';
 import { API_PATHS } from '@halaa/shared/api/paths';
@@ -16,7 +16,9 @@ export default function BusinessLogoNotice({ owner }) {
   const accountId = account?._id || account?.id;
   const otherOwner = Boolean(owner && accountId !== (user?._id || user?.id));
   const { t, currentLanguage } = useTranslation('createEvent');
-  const { setValue } = useFormContext();
+  const { setValue, watch } = useFormContext();
+  const requested = watch('businessLogoCheckRequested');
+  const dismiss = () => setValue('businessLogoCheckRequested', false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [refreshedLogo, setRefreshedLogo] = useState(null);
@@ -26,6 +28,9 @@ export default function BusinessLogoNotice({ owner }) {
     setValue('isBusinessEvent', business);
     setValue('businessLogoMissing', business && !logo);
   }, [business, logo, setValue]);
+  useEffect(() => {
+    if (logo && requested) setValue('businessLogoCheckRequested', false);
+  }, [logo, requested, setValue]);
   async function refreshLogo() {
     setBusy(true);
     setError('');
@@ -51,10 +56,13 @@ export default function BusinessLogoNotice({ owner }) {
   }
   if (!business || logo) return null;
   const action = (label, onPress) => <TouchableOpacity accessibilityRole="button" disabled={busy} onPress={onPress} style={{ minHeight: 48, padding: spacing[12], backgroundColor: colors.primary[100], borderRadius: 12 }}><LocalizedText>{label}</LocalizedText></TouchableOpacity>;
-  return <View style={{ gap: spacing[12], paddingVertical: spacing[16] }}>
+  return <Modal visible={!!requested} transparent animationType="fade" onRequestClose={dismiss}>
+    <View style={{ flex: 1, justifyContent: 'center', padding: spacing[24], backgroundColor: 'rgba(0,0,0,0.45)' }}>
+    <View accessibilityViewIsModal style={{ gap: spacing[12], padding: spacing[24], backgroundColor: colors.natural[50], borderRadius: 16 }}>
     <LocalizedText>{t('businessBranding.logoRequired')}</LocalizedText>
     {action(t('businessBranding.settings'), () => Linking.openURL(`${WEB_BASE_URL}/${currentLanguage === 'ar' ? 'ar' : 'en'}/${otherOwner ? `admin-dash/businesses/${accountId}` : 'host/settings'}`).catch(() => setError(t('businessBranding.refreshError'))))}
     {action(t('businessBranding.refreshLogo'), refreshLogo)}
+    {action(t('businessBranding.close'), dismiss)}
     {!!error && <LocalizedText>{error}</LocalizedText>}
-  </View>;
+  </View></View></Modal>;
 }

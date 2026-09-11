@@ -32,15 +32,8 @@ const LastEvent = ({
     <View style={styles.container}>
       <LastEventHeader event={event} />
 
-      <LastEventStatsRow stats={event.stats} />
-
-      {subscription && (
-        <LastEventQuota
-          balance={event.invitationBalance}
-        />
-      )}
-
       <LastEventActions
+        event={event}
         canSendTest={canSendTest}
         canSchedule={canSchedule}
         pulseSchedule={event.status === "pending_scheduling"}
@@ -51,6 +44,16 @@ const LastEvent = ({
         onPostEventPress={onPostEventPress}
         onEditPress={onEditPress}
       />
+
+      <LastEventStatsRow stats={event.stats} />
+
+      {subscription && (
+        <LastEventQuota
+          balance={event.invitationBalance}
+        />
+      )}
+
+
     </View>
   );
 };

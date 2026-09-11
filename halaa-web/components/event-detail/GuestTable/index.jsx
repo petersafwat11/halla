@@ -1,6 +1,8 @@
 "use client";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import DeleteConfirmation from "@/ui/vendor/modals/DeleteConfirmation";
+import Button from "@/ui/commen/button/Button";
+import CategoryAssignModal from "@/components/guests/categoryAssign/CategoryAssignModal";
 import SendActionPopup from "../sendActions/SendActionPopup";
 import { toast } from "react-toastify";
 import React, { useState, useEffect } from "react";
@@ -52,11 +54,10 @@ export default function GuestTable({ eventId, statusFilter, onStatusFilterChange
   const [selectedIds, setSelectedIds] = useState([]);
   const [selectionVersion, setSelectionVersion] = useState(0);
   const [bulkAction, setBulkAction] = useState(null);
-  const [category, setCategory] = useState("");
   const [bulkKey, setBulkKey] = useState(null);
   useEffect(() => { setSelectedIds([]); setBulkAction(null); }, [page, search, statusFilter]);
   const openBulk = (action) => { setBulkKey(crypto.randomUUID()); setBulkAction(action); };
-  const performBulk = async () => {
+  const performBulk = async (category = "") => {
     try {
       const result = await bulkMutation.mutateAsync({ eventId,
         data: { action: bulkAction, category, guestIds: selectedIds }, idempotencyKey: bulkKey });
@@ -94,17 +95,14 @@ export default function GuestTable({ eventId, statusFilter, onStatusFilterChange
   return (
     <>
       <DeleteConfirmation isOpen={bulkAction === "remove"} onClose={() => setBulkAction(null)}
-        onConfirm={performBulk} isLoading={bulkMutation.isPending}
+        onConfirm={() => performBulk()} isLoading={bulkMutation.isPending}
         title={t("people.remove")} message={t("people.confirmRemove", { count: selectedIds.length })}
         confirmText={t("people.remove")} cancelText={t("people.cancel")} />
-      <PopupWrapper isOpen={bulkAction === "category"} onClose={() => setBulkAction(null)}>
-        <form className={peopleStyles.bulkForm} onSubmit={(e) => { e.preventDefault(); performBulk(); }}>
-          <label htmlFor="bulk-category">{t("people.category")}</label>
-          <input id="bulk-category" value={category} maxLength={60} onChange={(e) => { setCategory(e.target.value); setBulkKey(crypto.randomUUID()); }} />
-          <p>{t("people.selected", { count: selectedIds.length })}</p>
-          <button type="submit" disabled={bulkMutation.isPending}>{t("people.save")}</button>
-        </form>
-      </PopupWrapper>
+      <CategoryAssignModal isOpen={bulkAction === "category"}
+        onClose={() => { if (!bulkMutation.isPending) setBulkAction(null); }}
+        onConfirm={performBulk} isLoading={bulkMutation.isPending} closeOnConfirm={false}
+        onValueChange={() => setBulkKey(crypto.randomUUID())}
+        count={selectedIds.length} options={[...new Set(guests.map(guest => guest.category).filter(Boolean))]} />
       <SendActionPopup isOpen={bulkAction === "resend"} action="resend" eventId={eventId}
         guests={guests.filter(guest => selectedIds.includes(guest.id))}
         invitationBalance={event?.invitationBalance} invitesRemaining={event?.invitationBalance?.remaining}
@@ -115,11 +113,16 @@ export default function GuestTable({ eventId, statusFilter, onStatusFilterChange
       </PopupWrapper>
       <div className={styles.rightCol}>
         {selectedIds.length > 0 && <div className={peopleStyles.toolbar} role="toolbar" aria-label={t("people.selected", { count: selectedIds.length })}>
-          <button type="button" onClick={() => { setSelectedIds([]); setSelectionVersion(value => value + 1); }}>{t("people.clear")}</button>
-          <span aria-live="polite">{t("people.selected", { count: selectedIds.length })}</span>
-          {caps.canEditGuest && <button type="button" onClick={() => openBulk("category")}>{t("people.category")}</button>}
-          {caps.canDeleteGuest && <button type="button" onClick={() => openBulk("remove")}>{t("people.remove")}</button>}
-          {caps.canSendLiveMessages && <button type="button" onClick={() => openBulk("resend")}>{t("singleEvent.sendActions.items.resend")}</button>}
+          <div className={peopleStyles.selectionSummary}>
+            <span aria-live="polite">{t("people.selected", { count: selectedIds.length })}</span>
+            <Button size="small" variant="secondary" title={t("people.clear")} disabled={bulkMutation.isPending}
+              onClick={() => { setSelectedIds([]); setSelectionVersion(value => value + 1); }} />
+          </div>
+          <div className={peopleStyles.bulkActions}>
+            {caps.canEditGuest && <Button size="small" variant="secondary" title={t("people.category")} disabled={bulkMutation.isPending} onClick={() => openBulk("category")} />}
+            {caps.canSendLiveMessages && <Button size="small" variant="secondary" title={t("singleEvent.sendActions.items.resend")} disabled={bulkMutation.isPending} onClick={() => openBulk("resend")} />}
+            {caps.canDeleteGuest && <Button size="small" variant="danger" title={t("people.remove")} disabled={bulkMutation.isPending} onClick={() => openBulk("remove")} />}
+          </div>
         </div>}
         {error && <button type="button" onClick={() => refetch()}>{t("people.retry")}</button>}
         <GuestRows

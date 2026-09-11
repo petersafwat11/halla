@@ -3,8 +3,10 @@ import {
   View,
   StyleSheet,
   Modal,
+  ScrollView,
   TouchableOpacity,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { formatCount } from "@halaa/shared/utils/locale";
 import { useTranslation } from "../../localization";
@@ -42,7 +44,8 @@ const DISABLED_KEYS = {
  * its target count or a disable reason. Selecting an enabled action calls
  * `onPick(action)` (which opens the shared SendActionModal).
  */
-export default function SendActionsSheet({ visible, event, guests, onPick, onClose }) {
+export default function SendActionsSheet({ visible, event, guests, onPick, onClose, inline = false }) {
+  const insets = useSafeAreaInsets();
   const { t, currentLanguage } = useTranslation(["events"]);
 
   const states = useMemo(
@@ -50,10 +53,27 @@ export default function SendActionsSheet({ visible, event, guests, onPick, onClo
     [event, guests]
   );
 
+  if (inline) return <View style={{ gap: 6 }}>
+    {SEND_ACTIONS.map(action => {
+      const state = states[action];
+      const unavailable = action === 'extraReminder' && event?.reminderAvailability?.configured === false;
+      const reason = unavailable ? t('events:reminderUnavailable') : state.reasonKey ? t(DISABLED_KEYS[state.reasonKey]) : null;
+      return <TouchableOpacity key={action} accessibilityRole="button" accessibilityState={{ disabled: !state.enabled || unavailable }}
+        style={[styles.item, (!state.enabled || unavailable) && styles.itemDisabled]} disabled={!state.enabled || unavailable} onPress={() => onPick(action)}>
+        <Ionicons name={ITEM[action].icon} size={18} color="#6B4E33" />
+        <View style={{ flex: 1, gap: 4 }}><LocalizedText style={styles.itemText}>{t(ITEM[action].labelKey)}</LocalizedText>
+          {!!reason && <LocalizedText style={styles.reason}>{reason}</LocalizedText>}
+        </View>
+        {state.enabled && !unavailable && <LocalizedText style={styles.countText}>{formatCount(state.audience.length, currentLanguage)}</LocalizedText>}
+      </TouchableOpacity>;
+    })}
+  </View>;
+
   return (
-    <Modal visible={!!visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible={!!visible} transparent presentationStyle="overFullScreen" animationType="slide" onRequestClose={onClose}>
       <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={onClose}>
-      <TouchableOpacity style={styles.card} activeOpacity={1} onPress={() => {}}>
+      <View style={[styles.card, { paddingBottom: Math.max(16, insets.bottom), marginTop: insets.top }]} accessibilityViewIsModal>
+        <ScrollView bounces={false} contentContainerStyle={{ gap: 6 }}>
         <LocalizedText style={styles.title}>
           {t("events:sendActions.menu")}
         </LocalizedText>
@@ -77,7 +97,6 @@ export default function SendActionsSheet({ visible, event, guests, onPick, onClo
                 />
                 <LocalizedText
                   style={[styles.itemText, !state.enabled && styles.itemTextDisabled]}
-                  numberOfLines={1}
                 >
                   {t(meta.labelKey)}
                 </LocalizedText>
@@ -102,7 +121,7 @@ export default function SendActionsSheet({ visible, event, guests, onPick, onClo
               {t("events:bulkActions.cancel")}
             </LocalizedText>
           </TouchableOpacity>
-        </TouchableOpacity>
+        </ScrollView></View>
       </TouchableOpacity>
     </Modal>
   );
@@ -115,6 +134,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   card: {
+    maxHeight: "90%",
     backgroundColor: "#FFF",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,

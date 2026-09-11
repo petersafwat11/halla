@@ -4,9 +4,11 @@ import assert from "node:assert/strict";
 import {
   getScheduleWindow,
   getScheduleTimeBounds,
+  getReminderWindow,
   parseClockParts,
   riyadhWallClockInstant,
   validateScheduleSelection,
+  validateReminderSelection,
 } from "../src/utils/schedulingWindow.js";
 
 test("clock parser accepts the app's 12h and 24h tokens", () => {
@@ -14,6 +16,30 @@ test("clock parser accepts the app's 12h and 24h tokens", () => {
   assert.deepEqual(parseClockParts("9:30:PM"), { hour: 21, minute: 30 });
   assert.deepEqual(parseClockParts("23:45"), { hour: 23, minute: 45 });
   assert.equal(parseClockParts("25:00"), null);
+});
+
+test("paid reminder window matches backend send-to-event-minus-24h bounds", () => {
+  const input = {
+    scheduledDate: "2026-08-28",
+    scheduledTime: "14:30",
+    eventDate: "2026-09-03",
+    eventTime: "18:00",
+    now: new Date("2026-08-27T09:00:30.000Z"),
+  };
+  const window = getReminderWindow(input);
+  assert.equal(window.earliestInstant.toISOString(), "2026-08-28T11:30:00.000Z");
+  assert.equal(window.latestInstant.toISOString(), "2026-09-02T15:00:00.000Z");
+  assert.deepEqual(getScheduleTimeBounds("2026-08-28", window), {
+    minimumMinutes: 14 * 60 + 30,
+    maximumMinutes: 1439,
+  });
+  assert.deepEqual(getScheduleTimeBounds("2026-09-02", window), {
+    minimumMinutes: 0,
+    maximumMinutes: 18 * 60,
+  });
+  assert.equal(validateReminderSelection({ ...input, date: "2026-08-28", time: "14:29" }).reason, "tooSoon");
+  assert.equal(validateReminderSelection({ ...input, date: "2026-08-28", time: "14:30" }).valid, true);
+  assert.equal(validateReminderSelection({ ...input, date: "2026-09-02", time: "18:01" }).reason, "tooLate");
 });
 
 test("time bounds disable too-early and too-late clock values on boundary days", () => {

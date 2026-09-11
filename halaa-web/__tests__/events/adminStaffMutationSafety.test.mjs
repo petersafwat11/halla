@@ -90,7 +90,9 @@ test("EVT-16: send-message dropdown is layered above event content", () => {
 
   assert.match(headerCss, /\.header\s*\{[^}]*position:\s*relative;/);
   assert.match(headerCss, /\.header\s*\{[^}]*z-index:\s*20;/);
-  assert.match(menuCss, /\.dropdown\s*\{[^}]*z-index:\s*1000;/s);
+  assert.match(menuCss, /\.dropdown\s*\{[^}]*position:\s*fixed;/s);
+  const menuLayer = Number(menuCss.match(/\.dropdown\s*\{[^}]*z-index:\s*(\d+)/s)?.[1]);
+  assert.ok(menuLayer > 1000, 'Menu layer must clear the mobile sidebar');
 });
 
 test("EVT-17: web template customization offers continue or destructive discard", () => {

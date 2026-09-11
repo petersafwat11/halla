@@ -176,15 +176,12 @@ const STATUS_FILTER_MAP = {
   needs_review: [LINK_STATUS.NEEDS_REVIEW, LINK_STATUS.UNAVAILABLE],
 };
 
-const listPaymentLinks = async ({ page = 1, limit = 20, search, status, creator, from, to } = {}) => {
+const listPaymentLinks = async ({ page = 1, limit = 20, search, status, from, to } = {}) => {
   page = Math.max(1, parseInt(page, 10) || 1);
   limit = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
   const match = { environment: getProviderEnvironment() };
   if (status && status !== "all" && STATUS_FILTER_MAP[status]) {
     match.status = { $in: STATUS_FILTER_MAP[status] };
-  }
-  if (creator && mongoose.Types.ObjectId.isValid(creator)) {
-    match.createdBy = new mongoose.Types.ObjectId(creator);
   }
   if (from || to) {
     match.createdAt = {};

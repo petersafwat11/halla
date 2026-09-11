@@ -1,11 +1,12 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useId } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'next/navigation';
 import useAuthStore from '@/stores/authStore';
 import { apiRequest } from '@/services/http';
 import { API_PATHS } from '@halaa/shared/api/paths';
+import styles from './BusinessLogoNotice.module.css';
 import Button from '@/ui/commen/button/Button';
 
 export default function BusinessLogoNotice({ owner }) {
@@ -15,7 +16,11 @@ export default function BusinessLogoNotice({ owner }) {
   const otherOwner = Boolean(owner && accountId !== (user?._id || user?.id));
   const { lang } = useParams();
   const { t } = useTranslation('createEvent');
-  const { setValue } = useFormContext();
+  const { setValue, watch } = useFormContext();
+  const requested = watch('businessLogoCheckRequested');
+  const dialog = useRef(null);
+  const titleId = useId();
+  const dismiss = () => setValue('businessLogoCheckRequested', false);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [refreshedLogo, setRefreshedLogo] = useState(null);
@@ -25,6 +30,11 @@ export default function BusinessLogoNotice({ owner }) {
     setValue('isBusinessEvent', isBusiness);
     setValue('businessLogoMissing', isBusiness && !logo);
   }, [isBusiness, logo, setValue]);
+  useEffect(() => {
+    if (requested && isBusiness && !logo) dialog.current?.showModal();
+    else dialog.current?.close();
+    if (logo && requested) setValue('businessLogoCheckRequested', false);
+  }, [requested, isBusiness, logo, setValue]);
   async function refreshLogo() {
     setBusy(true);
     setError('');
@@ -48,10 +58,11 @@ export default function BusinessLogoNotice({ owner }) {
     }
   }
   if (!isBusiness || logo) return null;
-  return <section aria-busy={busy}>
-    <p role="alert">{t('businessBranding.logoRequired')}</p>
+  return <dialog ref={dialog} className={styles.dialog} aria-labelledby={titleId} aria-busy={busy} onCancel={dismiss} onClose={dismiss}>
+    <h2 id={titleId}>{t('businessBranding.logoRequired')}</h2>
     <a href={otherOwner ? `/${lang}/admin-dash/businesses/${accountId}` : `/${lang}/host/settings`} target="_blank" rel="noopener noreferrer">{t('businessBranding.settings')}</a>
     <Button variant="secondary" title={t('businessBranding.refreshLogo')} disabled={busy} onClick={refreshLogo} />
+    <Button variant="secondary" title={t('businessBranding.close')} onClick={dismiss} />
     {error && <p role="alert">{error}</p>}
-  </section>;
+  </dialog>;
 }

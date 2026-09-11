@@ -5,6 +5,7 @@ const MS_PER_DAY = 24 * MS_PER_HOUR;
 export const TRIAL_SCHEDULE_MIN_LEAD_MS = 15 * MS_PER_MINUTE;
 export const PAID_SCHEDULE_MIN_LEAD_MS = 24 * MS_PER_HOUR;
 export const INVITATION_EVENT_CUTOFF_MS = 3 * MS_PER_DAY;
+export const PAID_REMINDER_MIN_GAP_MS = 24 * MS_PER_HOUR;
 
 const RIYADH_OFFSET_MS = 3 * MS_PER_HOUR;
 
@@ -133,6 +134,38 @@ export function getScheduleWindow({
   };
 }
 
+/**
+ * Paid custom-reminder window, matching events.settings.service exactly:
+ * [max(now, scheduled invitation send), event instant - 24 hours].
+ */
+export function getReminderWindow({
+  scheduledDate,
+  scheduledTime,
+  eventDate,
+  eventTime,
+  now = new Date(),
+} = {}) {
+  const nowInstant = now instanceof Date ? now : new Date(now);
+  const sendInstant = riyadhWallClockInstant(scheduledDate, scheduledTime);
+  const earliestInstant =
+    sendInstant && sendInstant.getTime() > nowInstant.getTime()
+      ? sendInstant
+      : nowInstant;
+  const eventInstant = riyadhWallClockInstant(eventDate, eventTime);
+  const latestInstant = eventInstant
+    ? new Date(eventInstant.getTime() - PAID_REMINDER_MIN_GAP_MS)
+    : null;
+
+  return {
+    earliestInstant,
+    latestInstant,
+    minimumDate: instantToPickerDay(earliestInstant),
+    maximumDate: latestInstant ? instantToPickerDay(latestInstant) : undefined,
+    hasValidWindow:
+      !latestInstant || earliestInstant.getTime() <= latestInstant.getTime(),
+  };
+}
+
 const riyadhDayAndMinutes = (instant) => {
   if (!instant) return null;
   const shifted = new Date(new Date(instant).getTime() + RIYADH_OFFSET_MS);
@@ -178,6 +211,34 @@ export function validateScheduleSelection({
     window.latestInstant &&
     selectedInstant.getTime() > window.latestInstant.getTime()
   ) {
+    return { valid: false, reason: "tooLate", selectedInstant, ...window };
+  }
+  return { valid: true, reason: null, selectedInstant, ...window };
+}
+
+export function validateReminderSelection({
+  date,
+  time,
+  scheduledDate,
+  scheduledTime,
+  eventDate,
+  eventTime,
+  now = new Date(),
+} = {}) {
+  const selectedInstant = riyadhWallClockInstant(date, time);
+  if (!selectedInstant) return { valid: false, reason: "invalid", selectedInstant: null };
+
+  const window = getReminderWindow({
+    scheduledDate,
+    scheduledTime,
+    eventDate,
+    eventTime,
+    now,
+  });
+  if (selectedInstant.getTime() < window.earliestInstant.getTime()) {
+    return { valid: false, reason: "tooSoon", selectedInstant, ...window };
+  }
+  if (window.latestInstant && selectedInstant.getTime() > window.latestInstant.getTime()) {
     return { valid: false, reason: "tooLate", selectedInstant, ...window };
   }
   return { valid: true, reason: null, selectedInstant, ...window };

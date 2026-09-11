@@ -193,7 +193,7 @@ module.exports = {
       // badges. Without them, the picker shows zero eligible guests for the
       // confirmed bucket and the badges never light up.
       .populate({ path: "guestList", match: { deleted: { $ne: true } }, select: "name phone category status rsvp invitation" })
-      .populate("host", "email phoneNumber name")
+      .populate("host", "email phoneNumber name accountType")
       // Populate the canonical refs so the wizard can highlight the
       // saved template (Step 3) and show body text (Step 4) on edit.
       .populate({
@@ -211,6 +211,8 @@ module.exports = {
     if (!event) {
       throw new NotFoundError("Event");
     }
+
+    await require('./eventTestState').applyEventTestState(event);
 
     // The populate above returns the RAW stored image columns, which can be
     // stale/private (S3 bucket URLs 403 on mobile). Rebuild them through the
@@ -384,7 +386,7 @@ module.exports = {
 
     const [events, total, statusAgg] = await Promise.all([
       Event.find(query)
-        .populate("host", "email phoneNumber name")
+        .populate("host", "email phoneNumber name accountType")
         .select('-guestList')
         .sort({ createdAt: -1 })
         .skip(skip)
@@ -686,7 +688,7 @@ module.exports = {
       // ─── STAGE 5: RESPONSE ASSEMBLY ───
       stageStart = Date.now();
       const populatedEvent = await Event.findById(event._id)
-        .populate("host", "email phoneNumber name")
+        .populate("host", "email phoneNumber name accountType")
         .populate("guestList", "name phone category status");
 
       this._notifyEventCreated(populatedEvent, userId, guestIds.length).catch(

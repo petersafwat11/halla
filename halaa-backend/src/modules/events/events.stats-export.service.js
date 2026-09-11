@@ -164,7 +164,7 @@ module.exports = {
    */
   async getSingleEventStats(eventId, userContext) {
     const query = this._buildScopedEventQuery(eventId, userContext);
-    const event = await Event.findOne(query).populate("host", "email phoneNumber name");
+    const event = await Event.findOne(query).populate("host", "email phoneNumber name accountType");
     if (!event) throw new NotFoundError("Event");
 
     const guests = await Guest.find(getActiveEventGuestsFilter(eventId, event.guestList))
@@ -172,6 +172,7 @@ module.exports = {
       .lean();
 
     const eventObj = event.toObject ? event.toObject() : event;
+    await require('./eventTestState').applyEventTestState(eventObj);
     const host = eventObj.host || null;
     const unansweredSentCount = guests.filter((g) => g.invitation?.sent === true && g.rsvp?.responded !== true).length;
 
@@ -184,6 +185,7 @@ module.exports = {
         type: eventObj.eventDetails?.type || "",
         date: eventObj.eventDetails?.date,
         testMessageSent: eventObj.testMessageSent || false,
+        testMessageCurrent: eventObj.testMessageCurrent,
         whatsappTemplateStatus: eventObj.whatsappTemplateStatus || null,
         launchSettings: eventObj.launchSettings || null,
         status: eventObj.status,
@@ -238,7 +240,7 @@ module.exports = {
    */
   async getEventCapabilities(eventId, userContext) {
     const query = this._buildScopedEventQuery(eventId, userContext);
-    const event = await Event.findOne(query).populate("host", "email phoneNumber name");
+    const event = await Event.findOne(query).populate("host", "email phoneNumber name accountType");
     if (!event) throw new NotFoundError("Event");
 
     let sub = null;

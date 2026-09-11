@@ -160,7 +160,7 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
     // Admin step (2-6) maps to EventsService step (1-5);
     // host mode steps already align (1-5).
     const eventsServiceStep = isHostMode ? currentStep : currentStep - 1;
-    return EventsService.validateStepData(eventsServiceStep, formData);
+    return EventsService.validateStepData(eventsServiceStep, eventsServiceStep === 1 ? { ...formData, businessLogoMissing: false } : formData);
   }, [isHostMode, currentStep, formData, hostSelection]);
 
   const handleFinalSubmit = useCallback(
@@ -284,6 +284,11 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
   );
 
   const onNext = useCallback(() => {
+    const detailsStep = isHostMode ? 1 : 2;
+    if (currentStep === detailsStep && formData.isBusinessEvent && !formData.isExistingEvent && formData.businessLogoMissing) {
+      setValue('businessLogoCheckRequested', true);
+      return;
+    }
     if (!isStepValid) {
       Alert.alert(t("common.error"), t("events.steps.incompleteFields"));
       return;
@@ -293,7 +298,7 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
     } else {
       handleSubmit(handleFinalSubmit)();
     }
-  }, [currentStep, isStepValid, handleSubmit, handleFinalSubmit, TOTAL_STEPS, t]);
+  }, [currentStep, isHostMode, formData, setValue, isStepValid, handleSubmit, handleFinalSubmit, TOTAL_STEPS, t]);
 
   const onPrevious = useCallback(() => {
     if (currentStep > 1) setCurrentStep((s) => s - 1);

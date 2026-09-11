@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Modal, Pressable, Alert, Animated } from "react-native";
+import { colors, spacing } from "../../styles/tokens";
+import EventActionDropdown, { EventActionItem } from "../events/EventActionDropdown";
+import React, { useState, useEffect } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import LocalizedText from "../commen/LocalizedText";
-import DirectionalIonicon from "../common/DirectionalIonicon";
 import TestMessageModal from "./TestMessageModal";
 import ScheduleSendingModal from "./ScheduleSendingModal";
 import { useNotifyStaff, useDeleteEvent } from "../../hooks/events/mutations/useEventMutation";
@@ -13,7 +14,6 @@ import { useEventActionGate } from "@halaa/shared/hooks/useEventActionGate";
 import { formatDateTime } from "@halaa/shared/utils/locale";
 import { riyadhWallClockInstant } from "@halaa/shared/utils/schedulingWindow";
 
-const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
 const EVENT_EDIT_STEPS = [
   { step: 1, labelKey: "home:lastEvent.dropdown.eventDetails" },
@@ -28,7 +28,6 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete
   const toast = useToast();
   const [showTestModal, setShowTestModal] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
-  const [showManageMenu, setShowManageMenu] = useState(false);
   // Server flag wins as soon as fresh event data arrives (pull-to-refresh,
   // polling, remount). The local flag is only an optimistic bridge between
   // sending the test message in this session and the next successful refetch
@@ -36,38 +35,6 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete
   // forever when the component mounted on cached/stale data.
   const [optimisticTestSent, setOptimisticTestSent] = useState(false);
   const testMessageSent = !!(event?.testMessageSent || optimisticTestSent);
-  const pulseAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    const animation = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1150,
-          useNativeDriver: false,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 0,
-          duration: 1150,
-          useNativeDriver: false,
-        }),
-      ])
-    );
-    animation.start();
-    return () => animation.stop();
-  }, [pulseAnim]);
-
-  const flashingStyle = {
-    backgroundColor: pulseAnim.interpolate({
-      inputRange: [0, 1],
-      outputRange: ["#FFFFFF", "#FAF0E6"],
-    }),
-    borderColor: pulseAnim.interpolate({
-      inputRange: [0, 1],
-      outputRange: ["#D6B392", "#C28E5C"],
-    }),
-  };
-
   const notifyStaffMutation = useNotifyStaff();
   const deleteEventMutation = useDeleteEvent();
 
@@ -87,7 +54,6 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete
     : null;
 
   const handleEditStep = (step) => {
-    setShowManageMenu(false);
     if (!eventId) return;
     navigation.navigate(updateRoute, { eventId, step });
   };
@@ -147,7 +113,7 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete
         {hasAnyOutlineAction && (
           <View style={styles.actionsRow}>
             {canSendTest && (
-              <AnimatedTouchableOpacity
+              <TouchableOpacity
                 style={styles.outlineButton}
                 onPress={() => setShowTestModal(true)}
                 activeOpacity={0.7}
@@ -156,12 +122,12 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete
                 <Text style={styles.outlineButtonText}>
                   {t("testMessage.title", "رسالة تجريبية")}
                 </Text>
-              </AnimatedTouchableOpacity>
+              </TouchableOpacity>
             )}
 
             {canSchedule && (
-              <AnimatedTouchableOpacity
-                style={[styles.outlineButton, event?.status === "pending_scheduling" && flashingStyle]}
+              <TouchableOpacity
+                style={styles.outlineButton}
                 onPress={() => setShowScheduleModal(true)}
                 activeOpacity={0.7}
               >
@@ -169,7 +135,7 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete
                 <Text style={styles.outlineButtonText}>
                   {t("scheduleSend.title", "جدولة الإرسال")}
                 </Text>
-              </AnimatedTouchableOpacity>
+              </TouchableOpacity>
             )}
 
             {canNotifyStaff && (
@@ -207,6 +173,13 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete
           </View>
         )}
 
+        {!isCompleted && <EventActionDropdown primary label={t("home:lastEvent.buttons.editEvent")} icon="create-outline" resetKey={eventId}>
+          {(close) => EVENT_EDIT_STEPS.filter(item => event?.capabilities?.[{ 1: "canEditDetails", 2: "canAddGuest", 3: "canEditDesign", 4: "canEditMessages" }[item.step]] ?? ["pending_review", "pending_scheduling", "scheduled"].includes(event?.status)).map(item =>
+            <EventActionItem key={item.step} label={t(item.labelKey)} icon="create-outline" onPress={() => { close(); handleEditStep(item.step); }} />)}
+        </EventActionDropdown>}
+        {isAdmin && showAdminDelete && <EventActionDropdown label={t("eventDetails.moreActions")} icon="ellipsis-horizontal">
+          {(close) => <EventActionItem label={t("eventDetails.deleteEvent")} icon="trash-outline" destructive disabled={deleteEventMutation.isPending} onPress={() => { close(); handleDelete(); }} />}
+        </EventActionDropdown>}
         {scheduledSendText ? (
           <View style={styles.scheduledNotice} accessibilityRole="text">
             <Ionicons name="calendar-outline" size={18} color="#8A5B31" />
@@ -215,70 +188,7 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete
             </LocalizedText>
           </View>
         ) : (canSendTest || canSchedule) && <LocalizedText role="body" style={styles.workflowHint}>{t(canSendTest ? "workflow.testFirst" : event?.status === "scheduled" ? "workflow.scheduled" : "workflow.scheduleNext")}</LocalizedText>}
-        <View style={styles.primaryRow}>
-          {!isCompleted && (
-            <TouchableOpacity
-              style={styles.manageButton}
-              onPress={() => setShowManageMenu(true)}
-              activeOpacity={0.85}
-            >
-              <Ionicons name="create-outline" size={14} color="#FFF" />
-              <Text style={styles.manageButtonText}>{t("manageEvent", "إدارة المناسبة")}</Text>
-              <Ionicons name={showManageMenu ? "chevron-up" : "chevron-down"} size={14} color="#FFF" />
-            </TouchableOpacity>
-          )}
-
-          {isAdmin && showAdminDelete && (
-            <TouchableOpacity
-              style={styles.deleteButton}
-              onPress={handleDelete}
-              activeOpacity={0.85}
-              disabled={deleteEventMutation.isPending}
-            >
-              <Ionicons name="trash-outline" size={14} color="#FFF" />
-              <Text style={styles.deleteButtonText}>
-                {deleteEventMutation.isPending
-                  ? t("common.loading", "جار التحميل...")
-                  : t("eventDetails.deleteEvent", "حذف")}
-              </Text>
-            </TouchableOpacity>
-          )}
-        </View>
       </View>
-
-      <Modal
-        visible={showManageMenu}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowManageMenu(false)}
-      >
-        <Pressable style={styles.menuBackdrop} onPress={() => setShowManageMenu(false)}>
-          <Pressable style={styles.menuCard} onPress={(e) => e.stopPropagation()}>
-            <Text style={styles.menuTitle}>{t("manageEvent")}</Text>
-            {EVENT_EDIT_STEPS.filter(item => event?.capabilities?.[{ 1: "canEditDetails", 2: "canAddGuest", 3: "canEditDesign", 4: "canEditMessages" }[item.step]] ?? ["pending_review", "pending_scheduling", "scheduled"].includes(event?.status)).map((item) => (
-              <TouchableOpacity
-                key={item.step}
-                style={styles.menuItem}
-                onPress={() => handleEditStep(item.step)}
-                activeOpacity={0.7}
-              >
-                <Ionicons name="create-outline" size={16} color="#6B4E33" />
-                <Text style={styles.menuItemText}>
-                  {t(item.labelKey)}
-                </Text>
-                <DirectionalIonicon name="chevron-forward" size={14} color="#9CA3AF" />
-              </TouchableOpacity>
-            ))}
-            <TouchableOpacity
-              style={styles.menuCloseButton}
-              onPress={() => setShowManageMenu(false)}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.menuCloseText}>{t("guest.alerts.cancel", "إلغاء")}</Text>
-            </TouchableOpacity>
-          </Pressable>
-        </Pressable>
-      </Modal>
 
       <TestMessageModal
         visible={showTestModal}
@@ -301,130 +211,14 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete
 };
 
 const styles = StyleSheet.create({
-  container: {
-    gap: 8,
-    width: "100%",
-  },
-  workflowHint: { fontSize: 14, lineHeight: 23, color: "#756757", marginVertical: 8 },
-  scheduledNotice: { flexDirection: "row", alignItems: "flex-start", gap: 10, padding: 12, borderRadius: 10, borderStartWidth: 3, borderStartColor: "#C28E5C", backgroundColor: "#FAF6F0" },
-  scheduledNoticeText: { flex: 1, fontSize: 13, lineHeight: 21, color: "#5F452F" },
-  actionsRow: {
-    flexDirection: "column",
-    gap: 8,
-    width: "100%",
-  },
-  outlineButton: {
-    width: "100%",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    paddingVertical: 10,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#D6B392",
-    backgroundColor: "#FFF",
-    minHeight: 44,
-  },
-  outlineButtonText: {
-    fontSize: 14,
-    fontFamily: "Cairo_600SemiBold",
-    color: "#6B4E33",
-    lineHeight: 18,
-  },
-  outlineButtonDisabled: {
-    backgroundColor: "#FAF6F1",
-    borderColor: "#E6D6C2",
-    opacity: 0.65,
-  },
-  primaryRow: {
-    flexDirection: "column",
-    gap: 8,
-    width: "100%",
-  },
-  manageButton: {
-    width: "100%",
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 8,
-    backgroundColor: "#C28E5C",
-    paddingVertical: 10,
-    borderRadius: 8,
-    minHeight: 44,
-  },
-  manageButtonText: {
-    fontSize: 14,
-    fontFamily: "Cairo_600SemiBold",
-    color: "#FFF",
-    lineHeight: 18,
-  },
-  deleteButton: {
-    width: "100%",
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 6,
-    backgroundColor: "#C0392B",
-    paddingVertical: 10,
-    borderRadius: 8,
-    minHeight: 44,
-  },
-  deleteButtonText: {
-    fontSize: 14,
-    fontFamily: "Cairo_600SemiBold",
-    color: "#FFF",
-    lineHeight: 18,
-  },
-  menuBackdrop: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.45)",
-    justifyContent: "center",
-    paddingHorizontal: 24,
-  },
-  menuCard: {
-    backgroundColor: "#FFF",
-    borderRadius: 14,
-    padding: 12,
-    gap: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
-    shadowRadius: 14,
-    elevation: 12,
-  },
-  menuTitle: {
-    fontSize: 14,
-    fontFamily: "Cairo_700Bold",
-    color: "#2C2C2C",
-    paddingHorizontal: 8,
-    paddingVertical: 10,
-  },
-  menuItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    borderRadius: 8,
-    backgroundColor: "#FAF6F1",
-  },
-  menuItemText: {
-    flex: 1,
-    fontSize: 14,
-    fontFamily: "Cairo_600SemiBold",
-    color: "#2C2C2C",
-  },
-  menuCloseButton: {
-    marginTop: 8,
-    paddingVertical: 10,
-    alignItems: "center",
-  },
-  menuCloseText: {
-    fontSize: 14,
-    fontFamily: "Cairo_600SemiBold",
-    color: "#9CA3AF",
-  },
+  container: { gap: spacing[12], width: '100%' },
+  actionsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing[8] },
+  outlineButton: { flexGrow: 1, flexBasis: 150, minHeight: 48, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing[8], padding: spacing[12], borderRadius: 12, borderWidth: 1, borderColor: colors.primary[200], backgroundColor: colors.natural[50] },
+  outlineButtonText: { flexShrink: 1, fontFamily: 'Cairo_600SemiBold', fontSize: 14, color: colors.primary[800] },
+  outlineButtonDisabled: { opacity: 0.5 },
+  workflowHint: { fontSize: 14, lineHeight: 23, color: colors.secondary[400] },
+  scheduledNotice: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing[12], padding: spacing[12], borderRadius: 12, borderStartWidth: 3, borderStartColor: colors.primary[500], backgroundColor: colors.primary[50] },
+  scheduledNoticeText: { flex: 1, fontSize: 13, lineHeight: 21, color: colors.primary[800] },
 });
 
 export default EventActionsHeader;

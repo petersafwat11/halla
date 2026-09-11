@@ -636,6 +636,11 @@ test("Provider 429 sets guest status failed and rateLimited true for retry recov
     },
     (err) => {
       assert.equal(err.code, "ALL_SENDS_FAILED");
+      assert.equal(err.attemptId, "rate_limit_test");
+      assert.equal(err.failureDiagnostics.length, 1);
+      assert.equal(err.failureDiagnostics[0].guestId, String(guest._id));
+      assert.equal(err.failureDiagnostics[0].stage, "provider_response");
+      assert.match(err.failureDiagnostics[0].message, /RATE_LIMITED/);
       return true;
     }
   );

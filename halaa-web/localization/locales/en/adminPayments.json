@@ -42,7 +42,6 @@
     "filters": {
       "from": "Created from",
       "to": "Created through",
-      "mine": "Created by me",
       "clear": "Clear filters"
     },
     "actions": {
@@ -82,7 +81,8 @@
       "createAnother": "Create another",
       "amountRange": "Enter an amount between SAR {{min}} and {{max}}",
       "rejected": "The provider could not create this link. You can create a new request.",
-      "expiryInvalid": "Choose an available expiry period"
+      "expiryInvalid": "Choose an available expiry period",
+      "disabledByConfig": "Payment-link creation is currently disabled in the server configuration."
     },
     "cancel": {
       "title": "Cancel payment link",

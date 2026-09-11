@@ -84,7 +84,8 @@
     "moderatorsTabCount": "المشرفين ({{count}})",
     "dateTimeRow": "{{date}} • {{time}}",
     "adminSelfOwner": "مناسبة لحسابك الإداري",
-    "eventOwner": "صاحب المناسبة"
+    "eventOwner": "صاحب المناسبة",
+    "moreActions": "إجراءات أخرى"
   },
   "guestList": {
     "title": "قائمة الضيوف",
@@ -374,7 +375,8 @@
       "cost": "سيُرسل هذا {{count}} رسالة ويستهلك {{count}} دعوة.",
       "costUnlimited": "سيُرسل هذا {{count}} رسالة.",
       "empty": "لا يوجد ضيوف مطابقون لهذا الإجراء."
-    }
+    },
+    "pendingReminder": "تذكير من لم يرد"
   },
   "remainingInvites": {
     "label": "الدعوات المتبقية",

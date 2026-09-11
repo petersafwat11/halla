@@ -99,6 +99,9 @@ test("AutoReminderInfoText reuses the migrated shared pickers", () => {
 
   assert.match(banner, /<DatePicker\b/);
   assert.match(banner, /<TimePicker\b/);
+  assert.match(banner, /minimumDate=\{pickerTimeBounds\.minimumDate\}/);
+  assert.match(banner, /maximumDate=\{pickerTimeBounds\.maximumDate\}/);
+  assert.match(banner, /validateReminderSelection\(/);
   assert.doesNotMatch(banner, /@react-native-community\/datetimepicker/);
 });
 

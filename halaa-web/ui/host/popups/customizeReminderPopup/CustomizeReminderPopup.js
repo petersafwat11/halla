@@ -1,5 +1,10 @@
 "use client";
-import { riyadhWallClockInstant, instantToPickerDay } from "@halaa/shared/utils/schedulingWindow";
+import {
+  getReminderWindow,
+  getScheduleTimeBounds,
+  instantToPickerDay,
+  validateReminderSelection,
+} from "@halaa/shared/utils/schedulingWindow";
 
 import React, { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -12,13 +17,6 @@ import TimePicker from "@/ui/commen/inputs/TimePicker";
 import { toast } from "react-toastify";
 import { useUpdateReminderSettings } from "@/hooks/events";
 
-const ONE_DAY_MS = 24 * 60 * 60 * 1000;
-
-// Combine a YYYY-MM-DD-ish date and a 24h "HH:mm" string into a single
-// local-time Date. Used to resolve the scheduled-send instant (the lower
-// bound of the paid reminder window).
-const combineDateTime = riyadhWallClockInstant;
-
 const CustomizeReminderPopup = ({ onClose, eventId, event, existingSettings, onSuccess }) => {
   const { t } = useTranslation("home-events");
   const updateReminderSettings = useUpdateReminderSettings();
@@ -30,37 +28,14 @@ const CustomizeReminderPopup = ({ onClose, eventId, event, existingSettings, onS
   // launch send time when scheduled, otherwise "now". Upper bound is 24h
   // before the event start. The backend is the source of truth and returns
   // REMINDER_OUT_OF_RANGE if the chosen instant falls outside.
-  const sendInstant = useMemo(
-    () =>
-      combineDateTime(
-        event?.launchSettings?.scheduledDate,
-        event?.launchSettings?.scheduledTime
-      ),
-    [event?.launchSettings?.scheduledDate, event?.launchSettings?.scheduledTime]
-  );
-
-  const eventInstant = useMemo(() => {
-    return combineDateTime(
-      event?.eventDetails?.date || event?.date,
-      event?.eventDetails?.time || event?.time
-    );
-  }, [
-    event?.eventDetails?.date,
-    event?.eventDetails?.time,
-    event?.date,
-    event?.time,
-  ]);
-
-  const lowerBound = useMemo(() => {
-    const now = new Date();
-    if (sendInstant && sendInstant.getTime() > now.getTime()) return sendInstant;
-    return now;
-  }, [sendInstant]);
-
-  const upperBound = useMemo(
-    () => (eventInstant ? new Date(eventInstant.getTime() - ONE_DAY_MS) : null),
-    [eventInstant]
-  );
+  const reminderWindow = useMemo(() => getReminderWindow({
+    scheduledDate: event?.launchSettings?.scheduledDate,
+    scheduledTime: event?.launchSettings?.scheduledTime,
+    eventDate: event?.eventDetails?.date || event?.date,
+    eventTime: event?.eventDetails?.time || event?.time,
+  }), [event]);
+  const lowerBound = reminderWindow.earliestInstant;
+  const upperBound = reminderWindow.latestInstant;
 
   const toUtcMidnightIso = (d) => {
     const date = d instanceof Date ? d : new Date(d);
@@ -123,6 +98,26 @@ const CustomizeReminderPopup = ({ onClose, eventId, event, existingSettings, onS
   ]);
 
   const customReminderTime = methods.watch("customReminderTime");
+  const selectedDate = methods.watch("date");
+  const timeBounds = useMemo(
+    () => getScheduleTimeBounds(selectedDate, reminderWindow),
+    [selectedDate, reminderWindow]
+  );
+
+  useEffect(() => {
+    if (!selectedDate) return;
+    const value24 = to24h(methods.getValues("time"));
+    if (!value24) return;
+    const [hour, minute] = value24.split(":").map(Number);
+    const valueMinutes = hour * 60 + minute;
+    if (valueMinutes < timeBounds.minimumMinutes) {
+      const min = timeBounds.minimumMinutes;
+      methods.setValue("time", fromHHmm(`${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`));
+    } else if (valueMinutes > timeBounds.maximumMinutes) {
+      const max = timeBounds.maximumMinutes;
+      methods.setValue("time", fromHHmm(`${String(Math.floor(max / 60)).padStart(2, "0")}:${String(max % 60).padStart(2, "0")}`));
+    }
+  }, [selectedDate, timeBounds, methods]);
 
   const onSubmit = async (data) => {
     let payload = {
@@ -144,12 +139,15 @@ const CustomizeReminderPopup = ({ onClose, eventId, event, existingSettings, onS
       // Client-side guard against the paid window [scheduledSend, event−24h].
       // The backend is authoritative and returns REMINDER_OUT_OF_RANGE, but
       // catching it here saves a round-trip and reads clearer.
-      const chosenInstant = combineDateTime(new Date(data.date), time24);
-      if (
-        chosenInstant &&
-        ((lowerBound && chosenInstant.getTime() < lowerBound.getTime()) ||
-          (upperBound && chosenInstant.getTime() > upperBound.getTime()))
-      ) {
+      const validation = validateReminderSelection({
+        date: data.date,
+        time: time24,
+        scheduledDate: event?.launchSettings?.scheduledDate,
+        scheduledTime: event?.launchSettings?.scheduledTime,
+        eventDate: event?.eventDetails?.date || event?.date,
+        eventTime: event?.eventDetails?.time || event?.time,
+      });
+      if (!validation.valid || !reminderWindow.hasValidWindow) {
         toast.error(t("singleEvent.reminderCustomize.errors.outOfRange", "The reminder time must be after sending starts and at least 24 hours before the event."));
         return;
       }
@@ -248,6 +246,8 @@ const CustomizeReminderPopup = ({ onClose, eventId, event, existingSettings, onS
                   name="time"
                   label={t("singleEvent.reminderCustomize.timeLabel", "Time")}
                   required
+                  minimumMinutes={timeBounds.minimumMinutes}
+                  maximumMinutes={timeBounds.maximumMinutes}
                 />
               </div>
               <small className={styles.windowHint}>

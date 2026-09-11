@@ -1,0 +1,16 @@
+.dialog {
+  box-sizing: border-box;
+  width: min(480px, calc(100% - 32px));
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
+  padding: var(--spacing-24, 24px);
+  border: 1px solid var(--color-primary-200, #e3cbb4);
+  border-radius: 16px;
+  background: var(--color-natural-50, #fff);
+  color: var(--color-secondary-900, #221d18);
+}
+.dialog[open] { display: flex; flex-direction: column; gap: var(--spacing-16, 16px); }
+.dialog::backdrop { background: rgb(34 29 24 / 45%); }
+.dialog h2 { margin: 0; font-size: 1.8rem; line-height: 1.6; }
+.dialog a { color: var(--color-primary-800, #6b4e33); text-decoration: underline; }
+.dialog a:focus-visible { outline: 2px solid var(--color-primary-800, #6b4e33); outline-offset: 4px; }

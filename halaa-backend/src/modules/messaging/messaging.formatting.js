@@ -57,7 +57,7 @@ async function resolveTaqnyatTemplate(event) {
   try {
     const ref = event.taqnyatTemplate?.templateRef;
     if (!ref) return null;
-    const doc = await TaqnyatTemplate.findById(ref).lean();
+    const doc = await TaqnyatTemplate.findById(ref._id || ref).lean();
     if (doc) return doc;
   } catch (err) {
     logger.warn('[messaging] resolveTaqnyatTemplate failed', { error: err.message });
@@ -322,7 +322,7 @@ function computeInvitationFingerprint(event, resolvedTemplate = null, { legacy =
 
   const payload = {
     deliveryMode: resolveInvitationDelivery(event),
-    templateRef: event.taqnyatTemplate?.templateRef?.toString?.() || null,
+    templateRef: (event.taqnyatTemplate?.templateRef?._id || event.taqnyatTemplate?.templateRef)?.toString?.() || null,
     templateName: resolvedTemplate?.templateName || null,
     templateLanguage: resolvedTemplate?.language || 'ar',
     // Provider sync timestamps are operational metadata, not invitation content.
@@ -333,7 +333,7 @@ function computeInvitationFingerprint(event, resolvedTemplate = null, { legacy =
       varMapping: resolvedTemplate?.varMapping || [],
       buttons: resolvedTemplate?.buttons || [],
     }),
-    visualTemplateRef: vt.templateRef?.toString?.() || null,
+    visualTemplateRef: (vt.templateRef?._id || vt.templateRef)?.toString?.() || null,
     fieldValues: deepSortObject(vt.fieldValues || {}),
     bakedImagePath: eventInvitationImage(event),
     resolvedImageUrl: resolvedImageUrl || null,
