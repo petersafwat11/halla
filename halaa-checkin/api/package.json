@@ -8,7 +8,7 @@
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
     "test": "node --test --test-concurrency=1 test/*.test.js",
-    "test:e2e": "node --test ../tests/e2e/*.test.js",
+    "test:e2e": "node --test --test-concurrency=1 ../tests/e2e/*.test.js",
     "user:provision": "node scripts/provision-user.mjs",
     "seed:demo": "node scripts/seed-demo.mjs",
     "db:indexes": "node scripts/ensure-indexes.mjs",

@@ -131,6 +131,7 @@ describe('T11 — Container-equivalent E2E journey on disposable DB', { timeout:
     webProcess = spawn(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['next', 'start', '-p', String(WEB_PORT)], {
       cwd: webDir,
       env: { ...process.env, NODE_ENV: 'production', PORT: String(WEB_PORT) },
+      detached: process.platform !== 'win32',
       shell: true,
       stdio: 'pipe',
     });
@@ -160,7 +161,7 @@ describe('T11 — Container-equivalent E2E journey on disposable DB', { timeout:
     if (webProcess?.pid) {
       try {
         if (process.platform === 'win32') spawn('taskkill', ['/pid', String(webProcess.pid), '/T', '/F']);
-        else webProcess.kill('SIGTERM');
+        else process.kill(-webProcess.pid, 'SIGTERM');
       } catch {
         // Ignore termination errors.
       }
