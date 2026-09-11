@@ -43,7 +43,7 @@ test("STEP2-DIR-01: GuestForm and ModeratorForm render through the shared field 
   }
 });
 
-test("STEP2-DIR-02: phone digits stay LTR and placeholders stay localized", async () => {
+test("STEP2-DIR-02: phone digits and numeric placeholders stay LTR", async () => {
   const source = fs
     .readFileSync(path.join(mobileRoot, "hooks", "useInputDirection.js"), "utf8")
     .replace(/^import .*localization.*\r?\n/m, "");
@@ -61,8 +61,8 @@ test("STEP2-DIR-02: phone digits stay LTR and placeholders stay localized", asyn
   );
   assert.equal(
     resolveInputDirection("phone", { isRTL: true, hasValue: false }).writingDirection,
-    "rtl",
-    "empty phone placeholder follows the Arabic UI locale"
+    "ltr",
+    "empty numeric phone placeholder stays LTR so iOS does not flip the controlled field"
   );
 });
 

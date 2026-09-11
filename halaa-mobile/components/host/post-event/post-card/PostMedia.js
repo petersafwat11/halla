@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Image, Modal, TouchableOpacity, ScrollView } fr
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { VideoView, useVideoPlayer } from 'expo-video';
+import DirectionalIonicon from '../../../common/DirectionalIonicon';
 import { getImageUrl } from '../../../../utils/imageUtils';
 import { useReportPostEventContent } from '../../../../hooks/postEvent';
 import { useTranslation } from '../../../../localization';
@@ -26,9 +27,9 @@ export default function PostMedia({ post, t, eventId, sessionToken, readOnly, to
    <View style={styles.toolbar}><Text style={styles.counter}>{selected===null?'':`${selected+1} / ${items.length}`}</Text><TouchableOpacity style={styles.control} accessibilityLabel={t('aria.close',{defaultValue:label('Close','إغلاق')})} onPress={() => setSelected(null)}><Ionicons name="close" size={28} color="#FFF" /></TouchableOpacity></View>
    <ScrollView contentContainerStyle={{flexGrow:1,justifyContent:'center'}} maximumZoomScale={4} minimumZoomScale={1}>{active && (active.type==='video' ? <Video key={uri(active)} uri={uri(active)} /> : <Image source={{uri:uri(active)}} resizeMode="contain" style={{width:'100%',height:460}} />)}</ScrollView>
    <View style={styles.toolbar}>
-    <TouchableOpacity style={styles.control} disabled={!selected} onPress={() => setSelected(index => index-1)} accessibilityLabel={label('Previous media','الوسائط السابقة')}><Ionicons name="chevron-back" size={28} color={!selected?'#555':'#FFF'} /></TouchableOpacity>
+    <TouchableOpacity style={styles.control} disabled={!selected} onPress={() => setSelected(index => index-1)} accessibilityLabel={label('Previous media','الوسائط السابقة')}><DirectionalIonicon name="chevron-back" size={28} color={!selected?'#555':'#FFF'} /></TouchableOpacity>
     {!readOnly && active?._id && <TouchableOpacity disabled={report.isPending} style={styles.control} accessibilityLabel={t('moderation.report')} onPress={() => report.mutate({eventId,sessionToken,targetType:'post_event_media',targetId:active._id,reason:'other'},{onSuccess:()=>toast?.success(t('moderation.reported')),onError:()=>toast?.error(t('moderation.failed'))})}><Ionicons name="flag-outline" size={22} color="#FFF" /></TouchableOpacity>}
-    <TouchableOpacity style={styles.control} disabled={selected===items.length-1} onPress={() => setSelected(index => index+1)} accessibilityLabel={label('Next media','الوسائط التالية')}><Ionicons name="chevron-forward" size={28} color={selected===items.length-1?'#555':'#FFF'} /></TouchableOpacity>
+    <TouchableOpacity style={styles.control} disabled={selected===items.length-1} onPress={() => setSelected(index => index+1)} accessibilityLabel={label('Next media','الوسائط التالية')}><DirectionalIonicon name="chevron-forward" size={28} color={selected===items.length-1?'#555':'#FFF'} /></TouchableOpacity>
    </View>
   </SafeAreaView></Modal>
  </>;

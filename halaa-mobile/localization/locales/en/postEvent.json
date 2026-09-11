@@ -32,6 +32,13 @@
     "guestFallback": "Guest",
     "legalPrefix": "By posting, you accept"
   },
+  "comments": {
+    "loadMore": "Load more"
+  },
+  "aria": {
+    "close": "Close",
+    "attachImages": "Attach photos"
+  },
   "moderation": {
     "menuReport": "Report comment",
     "reportPost": "Report this post",

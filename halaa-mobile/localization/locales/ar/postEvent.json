@@ -32,6 +32,13 @@
     "guestFallback": "ضيف",
     "legalPrefix": "بالنشر فإنك تقبل"
   },
+  "comments": {
+    "loadMore": "عرض المزيد"
+  },
+  "aria": {
+    "close": "إغلاق",
+    "attachImages": "إرفاق صور"
+  },
   "moderation": {
     "menuReport": "الإبلاغ عن التعليق",
     "reportPost": "الإبلاغ عن هذا المنشور",
