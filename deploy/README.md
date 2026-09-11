@@ -17,8 +17,12 @@ App secrets live only on the VPS (`/opt/halaa/config.env` +
 
 1. Push to `master` (touching `halaa-web/`, `halaa-backend/`, `shared/`, `docker-compose.yml`, or `Caddyfile`) runs `.github/workflows/deploy.yml`.
 2. CI builds `halaa-web` + `halaa-api` images and pushes them to GHCR tagged with the git SHA (+ `latest`).
-3. CI SSHes to the VPS, syncs `docker-compose.yml` + `Caddyfile`, writes `IMAGE_TAG=<sha>` to `/opt/halaa/.env`, then `docker compose pull && docker compose up -d --wait`.
-4. `--wait` blocks until both containers report healthy, so a bad build fails the deploy instead of taking the site down.
+3. CI SSHes to the VPS, syncs `docker-compose.yml` + `Caddyfile`, writes `IMAGE_TAG=<sha>` to `/opt/halaa/.env`, and runs `docker compose pull`.
+4. **Preflight:** a throwaway API container validates `config.env` and loads the app (no listener, no cron). If it fails, the running containers are untouched and the previous `IMAGE_TAG` is restored. This catches the startup-crash class that took the site down for ~90s on 2026-09-11, when `--wait` alone let `web` be recreated while `api` crash-looped.
+5. `docker compose up -d --wait` then blocks until both containers report healthy. If that fails, CI rolls back to the previous tag (its image is still on disk) and fails the run.
+6. CI smoke-tests `https://halaa.com.sa/health` and `/ar`.
+
+The repository is public, so the workflow prints only redacted startup-error lines. Full preflight/rollout logs are kept on the VPS in `/opt/halaa/deploy-logs/`.
 
 ## One-time setup
 

@@ -105,26 +105,66 @@ jobs:
         # The VPS logs in to GHCR with the workflow's EPHEMERAL GITHUB_TOKEN (valid
         # only for this run), pulls, rolls forward, then logs out — no persistent
         # PAT stored on the server.
+        # The repository is public: print only redacted startup errors here. Full
+        # logs stay on the VPS under /opt/halaa/deploy-logs.
         run: |
           ssh -i ~/.ssh/id_deploy "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" bash -s <<'EOF'
           set -euo pipefail
           cd /opt/halaa
-          mkdir -p data/uploads
+          NEW_TAG="${{ needs.build.outputs.tag }}"
+          PREV_TAG="$(sed -n 's/^IMAGE_TAG=//p' .env 2>/dev/null || true)"
+          mkdir -p data/uploads deploy-logs
           chown -R 1001:1001 data/uploads
-          echo "IMAGE_TAG=${{ needs.build.outputs.tag }}" > .env
+          redacted_errors() {
+            grep -aE '❌|validation failed|^ +- |Error|failed to start' "$1" | tail -n 40 |
+              sed -E 's#mongodb(\+srv)?://[^ ]+#mongodb://***#g; s#((key|secret|token|password|auth)[a-z_]*"?[=:] *)[^ ,]+#\1***#Ig; s#(sk|pk)_(live|test)_[A-Za-z0-9]+#\1_\2_***#g' || true
+          }
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          trap 'docker logout ghcr.io >/dev/null 2>&1 || true' EXIT
+          echo "IMAGE_TAG=$NEW_TAG" > .env
           docker compose pull
-          # --wait blocks until every service is healthy (or fails the deploy).
-          docker compose up -d --wait --remove-orphans
+          # Preflight: validate config.env and load the app in a throwaway container
+          # (no listener, no cron) before any running container is replaced.
+          echo "Preflight for $NEW_TAG"
+          if ! timeout 120 docker compose run --rm --no-deps -T --entrypoint node api \
+              -e "require('./src/config'); require('./src/app')(); console.log('preflight ok'); process.exit(0)" \
+              > "deploy-logs/preflight-$NEW_TAG.log" 2>&1; then
+            echo "::error::API preflight failed for $NEW_TAG; running containers were not changed"
+            redacted_errors "deploy-logs/preflight-$NEW_TAG.log"
+            if [ -n "$PREV_TAG" ]; then echo "IMAGE_TAG=$PREV_TAG" > .env; fi
+            exit 1
+          fi
+          # --wait blocks until every service is healthy; otherwise return to the
+          # previous image, which is still on disk.
+          if ! docker compose up -d --wait --wait-timeout 180 --remove-orphans; then
+            echo "::error::Rollout of $NEW_TAG failed health checks"
+            docker compose ps -a
+            docker compose logs --no-color --tail 300 api web > "deploy-logs/rollout-$NEW_TAG.log" 2>&1 || true
+            redacted_errors "deploy-logs/rollout-$NEW_TAG.log"
+            if [ -n "$PREV_TAG" ] && [ "$PREV_TAG" != "$NEW_TAG" ]; then
+              echo "IMAGE_TAG=$PREV_TAG" > .env
+              if docker compose up -d --wait --wait-timeout 180 --remove-orphans; then
+                echo "::warning::Rolled back to $PREV_TAG"
+              else
+                echo "::error::Rollback to $PREV_TAG also failed"
+              fi
+            fi
+            exit 1
+          fi
           # Caddy's bind-mounted file can change without recreating the
           # long-running container, so explicitly load the synced config.
           docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile
           # Idempotent: restores the tracked template masters on first local-
           # storage deploy and becomes a no-op on later pushes.
           docker compose exec -T api npm run storage:restore-templates
-          docker logout ghcr.io >/dev/null 2>&1 || true
           docker compose ps
           docker image prune -f
           EOF
+      - name: Smoke test public endpoints
+        run: |
+          for url in https://halaa.com.sa/health https://halaa.com.sa/ar; do
+            curl -fsS -o /dev/null --retry 5 --retry-delay 5 --retry-all-errors --max-time 20 "$url"
+            echo "OK $url"
+          done
       - name: Deployed
         run: echo "Deployed tag ${{ needs.build.outputs.tag }} to ${{ secrets.VPS_HOST }}"
