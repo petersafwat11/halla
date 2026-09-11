@@ -1,8 +1,9 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { useParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
+import Button from "@/ui/commen/button/Button";
 import { useHostPostEventContent } from "@/hooks/postEvent";
 import MediaGrid from "../_components/MediaGrid/MediaGrid";
 import MediaUploader from "../_components/MediaUploader/MediaUploader";
@@ -15,6 +16,7 @@ import styles from "../hostPostEvent.module.css";
 const HostPostEventContent = () => {
   const { t } = useTranslation("postEvent");
   const { eventId } = useParams();
+  const [editing, setEditing] = useState(false);
 
   const { data: response, isLoading, error } = useHostPostEventContent(eventId);
 
@@ -55,17 +57,20 @@ const HostPostEventContent = () => {
         <p className={styles.subtitle}>{eventTitle}</p>
       </header>
 
-      {isPublished ? (
+      {isPublished && !editing ? (
         <div className={styles.composer}>
           <PublishedView
             eventId={eventId}
             content={content}
             hostName={hostName}
             eventDate={event?.eventDetails?.date}
+            messagePreviews={payload.messagePreviews}
+            onEdit={() => setEditing(true)}
           />
         </div>
       ) : (
         <div className={styles.composer}>
+          {isPublished && <Button title={t('host.viewSharedPage')} onClick={() => setEditing(false)} />}
           <section className={styles.composerCard}>
             <CaptionEditor
               eventId={eventId}
@@ -79,18 +84,19 @@ const HostPostEventContent = () => {
 
           <section className={styles.section}>
             <MessagingTemplatePicker
+          messagePreviews={payload.messagePreviews}
               eventId={eventId}
               savedTemplateRef={savedTemplateRef}
             />
           </section>
 
-          <section className={styles.section}>
+          {!isPublished && <section className={styles.section}>
             <PublishBar
               eventId={eventId}
               hasMedia={media.length > 0}
               hasTemplate={!!savedTemplateRef}
             />
-          </section>
+          </section>}
         </div>
       )}
     </div>

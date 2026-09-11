@@ -6,10 +6,12 @@ import ConfirmBtn from "@/ui/commen/confirmButton/ConfirmBtn";
 import { useAuthMutation } from "@/hooks/auth";
 import OtpInput from "@/ui/auth/login/form/otpInput/OtpInput";
 import { parseError, getAuthErrorMessage } from "@/services/errorHandlingService";
+import useLanguageChange from "@/hooks/UseLanguageChange";
 
 const OTPVerification = ({ phoneNumber, onBack, type = "signup" }) => {
   const { t } = useTranslation("signup");
   const { t: tCommon } = useTranslation("common");
+  const { currentLocale } = useLanguageChange();
   const {
     mutateAsync: verifyOTP,
     isPending: isVerifying,
@@ -61,8 +63,19 @@ const OTPVerification = ({ phoneNumber, onBack, type = "signup" }) => {
     }
 
     try {
-      await verifyOTP({ phoneNumber, otp: otpCode, type });
-      // Success redirect is handled by mutation onSuccess
+      const result = await verifyOTP({ phoneNumber, otp: otpCode, type });
+
+      // The mutation commits the auth-routing cookies and Zustand snapshot
+      // before it resolves. Use a full navigation so Next middleware sees the
+      // new cookies and the HttpOnly session is available on the first render
+      // of the protected profile-completion route.
+      if (result?.profileCompleted === false) {
+        window.location.replace(
+          `/${currentLocale}/signup/continue-signup`
+        );
+      } else {
+        window.location.replace(`/${currentLocale}/host`);
+      }
     } catch (err) {
       setLocalError(
         resolveAuthError(err) ||

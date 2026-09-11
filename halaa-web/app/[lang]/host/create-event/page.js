@@ -209,15 +209,12 @@ const CreateEventV2 = () => {
             <StepTitleAndDesc
               title={t("step2_title")}
               description={t("step2_description")}
-              Button={
-                <Button
-                  variant="secondary"
-                  onClick={() => setShowStaffPopup(true)}
-                  title={t("staff_button")}
-                />
-              }
             />
-            <StepTwo subscription={subscriptionInfo} />
+            <StepTwo
+              subscription={subscriptionInfo}
+              staffCount={staffList.length}
+              onManageStaff={() => setShowStaffPopup(true)}
+            />
           </>
         );
       case 3:

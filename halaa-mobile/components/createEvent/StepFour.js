@@ -1,3 +1,4 @@
+import { readTaqnyatTemplates } from '../../utils/taqnyatTemplates';
 /**
  * StepFour (mobile) — Taqnyat picker + auto-replies.
  *
@@ -8,6 +9,8 @@
  * Auto-replies write guestReplies.* plus the legacy keys.
  */
 
+import { buildReplyPreview } from '@halaa/shared/utils/rsvpMessages';
+import ReplyDeliveryPreview from './ReplyDeliveryPreview';
 import DEFAULT_GUEST_REPLIES from "@halaa/shared/constants/guestReplies.cjs";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -32,6 +35,7 @@ import DirectionalTextInput from "../commen/DirectionalTextInput";
 import { isolateAuto } from "@halaa/shared/utils/bidi";
 import { useFieldDirection } from "../../hooks/useInputDirection";
 import {
+  getInvitationTypeCopy,
   INVITATION_TYPE_OPTIONS,
   DEFAULT_INVITATION_TYPE,
   invitationAllowsReply,
@@ -107,7 +111,7 @@ const StepFour = ({ owner } = {}) => {
     { enabled: Boolean(category) }
   );
 
-  const templates = data?.data?.templates || [];
+  const templates = readTaqnyatTemplates(data);
 
   useEffect(() => {
     Animated.timing(fadeAnim, { toValue: 1, duration: 300, useNativeDriver: true }).start();
@@ -176,6 +180,11 @@ const StepFour = ({ owner } = {}) => {
   const activeReplyMeta = REPLY_TABS.find((tab) => tab.key === activeTab);
   const activeReplyValue = guestReplies?.[activeTab] || "";
 
+  const response = activeTab === "onAbsent" ? 'declined' : 'confirmed';
+  const replyPreview = buildReplyPreview({ invitationType, isBusinessEvent, response, guestReplies, eventName, eventDate, eventTime, address });
+  const deliveryHint = isBusinessEvent ? (replyPreview.includesQr ? 'reply_delivery_portal_qr' : 'reply_delivery_portal_text')
+    : response === 'declined' ? 'reply_delivery_decline' : replyPreview.includesQr ? 'reply_delivery_qr' : 'reply_delivery_text';
+
   const handleReplyChange = (text) => {
     if (!activeReplyMeta) return;
     setValue(`guestReplies.${activeReplyMeta.key}`, text, { shouldDirty: true });
@@ -192,6 +201,7 @@ const StepFour = ({ owner } = {}) => {
           <View style={styles.inviteTypeList}>
             {INVITATION_TYPE_OPTIONS.map((opt) => {
               const isSelected = invitationType === opt.value;
+              const copy = getInvitationTypeCopy(opt.value, currentLanguage, isBusinessEvent);
               return (
                 <TouchableOpacity
                   key={opt.value}
@@ -229,7 +239,7 @@ const StepFour = ({ owner } = {}) => {
                             isSelected && styles.inviteTypeTitleSelected,
                           ]}
                         >
-                          {t(isBusinessEvent && opt.value === "reply_and_qr" ? "business_invitation_type_reply_and_qr_label" : opt.labelKey)}
+                          {copy.title}
                         </Text>
                         {opt.badgeKey && (
                           <View style={styles.featureBadge}>
@@ -240,7 +250,7 @@ const StepFour = ({ owner } = {}) => {
                         )}
                       </View>
                       <Text style={[styles.inviteTypeDesc, fieldDirection.text]}>
-                        {t(isBusinessEvent ? `business_${opt.descKey}` : opt.descKey)}
+                        {copy.description}
                       </Text>
                     </View>
 
@@ -256,49 +266,6 @@ const StepFour = ({ owner } = {}) => {
                     </View>
                   </View>
 
-                  {/* Feature chips */}
-                  {!isBusinessEvent && opt.features && opt.features.length > 0 && (
-                    <View style={styles.featureChipsRow}>
-                      {opt.features.map((feat) => (
-                        <View
-                          key={feat.key}
-                          style={[
-                            styles.featureChip,
-                            feat.included
-                              ? styles.featureChipIncluded
-                              : styles.featureChipExcluded,
-                            isSelected &&
-                              feat.included &&
-                              styles.featureChipIncludedActive,
-                          ]}
-                        >
-                          <Ionicons
-                            name={
-                              feat.included
-                                ? "checkmark-circle"
-                                : "close-circle-outline"
-                            }
-                            size={12}
-                            color={
-                              feat.included
-                                ? isSelected
-                                  ? "#2A8C5B"
-                                  : "#43805B"
-                                : "#A89E94"
-                            }
-                          />
-                          <Text
-                            style={[
-                              styles.featureChipText,
-                              !feat.included && styles.featureChipTextExcluded,
-                            ]}
-                          >
-                            {t(feat.labelKey)}
-                          </Text>
-                        </View>
-                      ))}
-                    </View>
-                  )}
                 </TouchableOpacity>
               );
             })}
@@ -389,7 +356,7 @@ const StepFour = ({ owner } = {}) => {
         {/* ── Auto-replies (only for reply-enabled invitation types) ── */}
         <View style={styles.repliesSection}>
           <Text style={[styles.sectionTitle, fieldDirection.text]}>{t("auto_replies")}</Text>
-          <Text style={[styles.hint, fieldDirection.text]}>{t("auto_replies_hint")}</Text>
+          {replyAllowed && <Text style={[styles.hint, fieldDirection.text]}>{t(isBusinessEvent ? "auto_replies_hint_portal" : "auto_replies_hint")}</Text>}
 
           {replyAllowed ? (
             <>
@@ -408,7 +375,9 @@ const StepFour = ({ owner } = {}) => {
                 ))}
               </View>
 
+              <Text style={[styles.hint, fieldDirection.text]}>{t("reply_editable_text")}</Text>
               <DirectionalTextInput
+                accessibilityLabel={t("reply_editable_text")}
                 contentDirection="adaptive"
                 value={activeReplyValue}
                 onChangeText={handleReplyChange}
@@ -420,8 +389,10 @@ const StepFour = ({ owner } = {}) => {
                 style={styles.textArea}
               />
               <Text style={[styles.hint, fieldDirection.text]}>
-                {t(activeTab === "onAbsent" ? "reply_delivery_decline" : invitationType === "reply_and_qr" ? "reply_delivery_qr" : "reply_delivery_text")}
+                {t(deliveryHint)}
               </Text>
+              <Text style={[styles.hint, fieldDirection.text]}>{t("reply_empty_default")}</Text>
+              <ReplyDeliveryPreview preview={replyPreview} />
             </>
           ) : (
             <View style={styles.repliesDisabledNote}>

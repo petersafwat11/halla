@@ -10,6 +10,7 @@ import PopupWrapper from "@/ui/host/popups/popupWrapper/PopupWrapper";
 import StaffPopup from "@/app/[lang]/host/create-event/_components/staffPopup/StaffPopup";
 import EventActionsHeader from "@/ui/host/events/EventActionsHeader";
 import { useEvent, useEventMutation } from "@/hooks/events";
+import { handleError } from "@/services/errorHandlingService";
 import styles from "./EventHeader.module.css";
 
 export default function HostEventHeader({ eventId }) {
@@ -46,11 +47,13 @@ export default function HostEventHeader({ eventId }) {
       name: staffMember.name,
       phone: staffMember.phone ?? staffMember.mobile,
     };
-    await addStaffMutation.mutateAsync({
-      eventId,
-      data: staffData,
-    });
-    setShowStaffPopup(false);
+    try {
+      await addStaffMutation.mutateAsync({ eventId, data: staffData });
+      setShowStaffPopup(false);
+    } catch (error) {
+      handleError(error, t, { fallbackMessage: "singleEvent.errors.staffUpdateFailed" });
+      throw error;
+    }
   };
 
   const handleEditStaff = async (staffMember) => {
@@ -58,18 +61,25 @@ export default function HostEventHeader({ eventId }) {
       name: staffMember.name,
       phone: staffMember.phone ?? staffMember.mobile,
     };
-    await updateStaffMutation.mutateAsync({
-      eventId,
-      staffId: staffMember.id,
-      data: staffData,
-    });
+    try {
+      await updateStaffMutation.mutateAsync({
+        eventId,
+        staffId: staffMember.id,
+        data: staffData,
+      });
+    } catch (error) {
+      handleError(error, t, { fallbackMessage: "singleEvent.errors.staffUpdateFailed" });
+      throw error;
+    }
   };
 
   const handleDeleteStaff = async (id) => {
-    await deleteStaffMutation.mutateAsync({
-      eventId,
-      staffId: id,
-    });
+    try {
+      await deleteStaffMutation.mutateAsync({ eventId, staffId: id });
+    } catch (error) {
+      handleError(error, t, { fallbackMessage: "singleEvent.errors.staffUpdateFailed" });
+      throw error;
+    }
   };
 
   return (

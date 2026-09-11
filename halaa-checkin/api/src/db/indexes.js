@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from 'node:util';
 /**
  * @halaa-checkin/api
  * Index initialization and verification module.
@@ -11,88 +12,32 @@ import { Guest } from '../modules/guests/guest.model.js';
 import { Audit } from '../modules/audit/audit.model.js';
 import { Idempotency } from '../modules/idempotency/idempotency.model.js';
 import { ExportJob } from '../modules/exports/exportJob.model.js';
+import { ExportQuota } from '../modules/exports/exportQuota.js';
 
-/**
- * Ensure indexes exist on all declared collections.
- *
- * @returns {Promise<void>}
- */
+const models = [User, Session, Event, Guest, Audit, Idempotency, ExportJob, ExportQuota];
+
+// Explicit deployment command works even when production autoIndex is false.
+// Never drop an index here; incompatible existing options fail for review.
 export async function ensureIndexes() {
-  await Promise.all([
-    User.init(),
-    Session.init(),
-    Event.init(),
-    Guest.init(),
-    Audit.init(),
-    Idempotency.init(),
-    ExportJob.init(),
-  ]);
+  await Promise.all(models.map(async model => {
+    await model.createCollection();
+    await model.createIndexes();
+  }));
 }
 
-/**
- * Verify that all required indexes exist on MongoDB collections.
- *
- * @returns {Promise<void>}
- * @throws {Error} If any required index is missing
- */
 export async function verifyIndexes() {
-  const targets = [
-    {
-      model: User,
-      required: ['username_1'],
-    },
-    {
-      model: Session,
-      required: ['tokenHash_1', 'expiresAt_1'],
-    },
-    {
-      model: Event,
-      required: ['status_1', 'startsAt_-1_createdAt_-1'],
-    },
-    {
-      model: Guest,
-      required: [
-        'qrToken_1',
-        'eventId_1_shortCode_1',
-        'eventId_1_referenceKey_1',
-        'eventId_1_deletedAt_1_nameSearch_1__id_1',
-        'eventId_1_deletedAt_1_checkIn.checkedInAt_-1',
-      ],
-    },
-    {
-      model: Audit,
-      required: [
-        'eventId_1_timestamp_-1',
-        'guestId_1_timestamp_-1',
-        'actorId_1_timestamp_-1',
-      ],
-    },
-    {
-      model: Idempotency,
-      required: [
-        'actorId_1_operation_1_eventId_1_key_1',
-        'expiresAt_1',
-      ],
-    },
-    {
-      model: ExportJob,
-      required: [
-        'eventId_1_createdAt_-1',
-        'createdBy_1_state_1',
-        'state_1_createdAt_1',
-        'expiresAt_1',
-      ],
-    },
-  ];
-
-  for (const { model, required } of targets) {
-    const existing = await model.collection.indexes();
-    const existingNames = new Set(existing.map((idx) => idx.name));
-    for (const reqIdx of required) {
-      if (!existingNames.has(reqIdx)) {
-        throw new Error(
-          `Required index '${reqIdx}' is missing on collection '${model.collection.name}'`
-        );
+  for (const model of models) {
+    const actual = await model.collection.indexes();
+    for (const [key, options] of model.schema.indexes()) {
+      const name = options.name || Object.entries(key).map(([field, direction]) => `${field}_${direction}`).join('_');
+      const found = actual.find(index => index.name === name);
+      if (!found || JSON.stringify(found.key) !== JSON.stringify(key)) {
+        throw new Error(`Required index '${name}' is missing or has wrong keys on '${model.collection.name}'`);
+      }
+      for (const option of ['unique', 'sparse', 'expireAfterSeconds', 'partialFilterExpression']) {
+        const expected = options[option] ?? (['unique', 'sparse'].includes(option) ? false : undefined);
+        const value = found[option] ?? (['unique', 'sparse'].includes(option) ? false : undefined);
+        if (!isDeepStrictEqual(value, expected)) throw new Error(`Index '${name}' has wrong ${option} on '${model.collection.name}'`);
       }
     }
   }

@@ -118,7 +118,7 @@ function getEventBodyParams(event, guestName, taqnyatTemplate = null, extraConte
     },
     host:
       event.host && typeof event.host === 'object'
-        ? { name: event.host.name || '' }
+        ? { name: resolveInvitationDelivery(event) === 'portal_link' ? event.branding?.businessName || event.host.name || '' : event.host.name || '' }
         : {},
     // Caller-supplied branches (e.g. staff.*) merge last so they win.
     ...extraContext,
@@ -299,7 +299,7 @@ function deepSortObject(obj) {
  * @param {Object} [resolvedTemplate=null]
  * @returns {string}
  */
-function computeInvitationFingerprint(event, resolvedTemplate = null) {
+function computeInvitationFingerprint(event, resolvedTemplate = null, { legacy = false } = {}) {
   if (!event) return '';
   const ed = event.eventDetails?.toObject?.() || event.eventDetails || {};
   const vt = event.visualTemplate?.toObject?.() || event.visualTemplate || {};
@@ -324,7 +324,8 @@ function computeInvitationFingerprint(event, resolvedTemplate = null) {
     templateRef: event.taqnyatTemplate?.templateRef?.toString?.() || null,
     templateName: resolvedTemplate?.templateName || null,
     templateLanguage: resolvedTemplate?.language || 'ar',
-    templateUpdatedAt: resolvedTemplate?.updatedAt ? new Date(resolvedTemplate.updatedAt).toISOString() : null,
+    // Provider sync timestamps are operational metadata, not invitation content.
+    ...(legacy ? { templateUpdatedAt: resolvedTemplate?.updatedAt ? new Date(resolvedTemplate.updatedAt).toISOString() : null } : {}),
     templateContract: deepSortObject({
       bodyText: resolvedTemplate?.bodyText || '',
       hasImageHeader: Boolean(resolvedTemplate?.hasImageHeader),
@@ -355,10 +356,20 @@ function computeInvitationFingerprint(event, resolvedTemplate = null) {
     },
   };
 
-  return crypto.createHash('sha256').update(JSON.stringify(deepSortObject(payload))).digest('hex');
+  const digest = crypto.createHash('sha256').update(JSON.stringify(deepSortObject(payload))).digest('hex');
+  return legacy ? digest : `v2:${digest}`;
+}
+
+// Preserve an existing approval only when its full legacy hash still matches.
+// Never infer approval from a message ID or ignore a mismatched legacy hash.
+function invitationFingerprintMatches(event, template = null) {
+  const saved = event?.testMessageFingerprint;
+  if (!event?.testMessageSent || !saved) return false;
+  return saved === computeInvitationFingerprint(event, template, { legacy: !saved.startsWith('v2:') });
 }
 
 module.exports = {
+  invitationFingerprintMatches,
   TAQNYAT_SENDER,
   formatDate,
   formatDay,

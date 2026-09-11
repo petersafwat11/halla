@@ -44,6 +44,7 @@ const PostEventContent = require("../../../models/PostEventContentModel");
 const Service = require("../../../models/ServiceModel");
 const Subscription = require("../../../models/SubscriptionModel");
 const Payment = require("../../../models/PaymentModel");
+const PaymentLink = require("../../../models/PaymentLinkModel");
 const BusinessPlanAssignment = require("../../../models/BusinessPlanAssignmentModel");
 const RevenueCatEvent = require("../../../models/RevenueCatEventModel");
 const AuditLog = require("../../../models/AuditLogModel");
@@ -330,6 +331,11 @@ async function runDeletion({ userId, channel = "app" }) {
         { $set: { description: null, metadata: {}, redirectUrl: null, callbackUrl: null, privacySubjectDeletedAt: privacyDeletedAt } }
       );
       await Payment.updateMany({ userId, "refunds.0": { $exists: true } }, { $unset: { "refunds.$[].reason": "" } });
+      // The creator is an audit actor, not the guest payer. Retain financial
+      // references while removing the deleted account's display snapshot.
+      await PaymentLink.updateMany({ createdBy: userId }, {
+        $set: { "creatorSnapshot.name": null, "creatorSnapshot.email": null },
+      });
       await BusinessPlanAssignment.updateMany(
         { businessUserId: userId },
         { $set: { grantReason: null, discountCode: null, tokenHash: null, privacySubjectDeletedAt: privacyDeletedAt } }

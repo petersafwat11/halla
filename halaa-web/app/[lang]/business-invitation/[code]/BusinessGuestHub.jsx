@@ -194,10 +194,19 @@ export default function BusinessGuestHub() {
                 </div>
               )}
 
-              {(guest.rsvp?.message || payload.message) && (
+              {payload.message && (
                 <div className={styles.passMessageSection}>
                   <p className={styles.outcomeMessage}>
-                    {guest.rsvp?.message || payload.message}
+                    {payload.message}
+                  </p>
+                </div>
+              )}
+
+              {guest.rsvp?.message && (
+                <div className={styles.passMessageSection}>
+                  <p className={styles.outcomeMessage}>
+                    <strong>{t('message')}: </strong>
+                    <span dir="auto">{guest.rsvp.message}</span>
                   </p>
                 </div>
               )}

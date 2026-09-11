@@ -60,6 +60,17 @@
       { "label": "On event day", "title": "Check guests in", "desc": "Open the QR scanner at the entrance to record attendance instantly and follow every guest's status accurately.", "imageAlt": "Halaa event details and QR scanner screen for guest check-in" }
     ]
   },
+  "invitationTypes": {
+    "eyebrow": "Invitation types",
+    "title": "Choose how your guests respond",
+    "sub": "Three options in step 4, with a complete reply preview before sending.",
+    "cta": "Create your event",
+    "detailsTitle": "What do automatic replies include?",
+    "qrDetails": "Confirmation with an entry pass sends a QR image and your reply, event title, date and time, venue address, guest count, and entry instructions. Available event details are added automatically; the address is text, not a map link.",
+    "declineDetails": "Confirmation without a pass, or declining either RSVP type, sends only your reply text. Edit confirmation and decline replies in step 4; blank text uses the default reply.",
+    "businessDetails": "For business events, the invitation contains a link and guests respond on the website. Replies and the entry pass, when enabled, appear on the website; no WhatsApp auto-reply is sent.",
+    "fallbackDetails": "If the WhatsApp reply fails, the system attempts SMS delivery, including a link to the QR image when applicable."
+  },
   "testimonials": {
     "ratingLabel": "{{count}} out of 5 stars",
     "eyebrow": "Testimonials",

@@ -136,7 +136,11 @@ export const idempotencyKeySchema = z
   .string()
   .trim()
   .min(1, 'Idempotency key cannot be empty')
-  .max(128, 'Idempotency key exceeds maximum length of 128');
+  .max(128, 'Idempotency key exceeds maximum length of 128')
+  .regex(
+    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/,
+    'Idempotency key must be a UUID',
+  );
 
 export const isoTimestampWithOffsetSchema = z
   .string()
@@ -640,6 +644,10 @@ export const csvPayloadSchema = z
 
 /**
  * Validated row structure extracted from CSV.
+ * Mirrors validateCsvRow() bounds: reference 1..60 when present,
+ * companionNames each 1..120 and count <= allowedCompanions.
+ * validateCsvRow() remains authoritative for raw CSV string parsing;
+ * this schema guards already-parsed objects passed between layers.
  */
 export const csvParsedRowSchema = z
   .object({
@@ -653,12 +661,23 @@ export const csvParsedRowSchema = z
       .int()
       .min(LIMITS.MIN_COMPANIONS_PER_GUEST)
       .max(LIMITS.MAX_COMPANIONS_PER_GUEST),
-    companionNames: z.array(z.string().trim().min(1).max(LIMITS.MAX_COMPANION_NAME_LENGTH)),
-    reference: z.string().optional(),
+    companionNames: z
+      .array(z.string().trim().min(1).max(LIMITS.MAX_COMPANION_NAME_LENGTH))
+      .max(LIMITS.MAX_COMPANIONS_PER_GUEST),
+    reference: z
+      .string()
+      .trim()
+      .min(1)
+      .max(LIMITS.MAX_REFERENCE_LENGTH, `Reference cannot exceed ${LIMITS.MAX_REFERENCE_LENGTH} characters`)
+      .optional(),
     referenceKey: z.string().optional(),
     nameSearch: z.string(),
   })
-  .strict();
+  .strict()
+  .refine((data) => data.companionNames.length <= data.allowedCompanions, {
+    message: 'companionNames count cannot exceed allowedCompanions',
+    path: ['companionNames'],
+  });
 
 /**
  * Parse and validate an individual CSV row representation.

@@ -102,11 +102,23 @@ const paymentMethodSchema = new mongoose.Schema(
 const paymentSchema = new mongoose.Schema(
   {
     // ─── OWNER & SCOPE ───
+    // Standalone admin payment links (metadata.purpose='admin_payment_link'
+    // + paymentLinkId set) are guest payments with no Halaa user. userId is
+    // required for every other kind; the pre-validate hook below enforces
+    // that invariant so existing checkout ownership stays strict.
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+      required: false,
+      default: null,
       index: true,
+    },
+    paymentLinkId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "PaymentLink",
+      default: null,
+      index: true,
+      sparse: true,
     },
     privacySubjectDeletedAt: { type: Date, default: null },
 
@@ -337,6 +349,24 @@ paymentSchema.pre("save", function (next) {
   next();
 });
 
+paymentSchema.pre("validate", function (next) {
+  const purpose = this.metadata?.purpose;
+  const isLinkPayment =
+    purpose === "admin_payment_link" && this.paymentLinkId;
+  if ((purpose === "admin_payment_link" || this.paymentLinkId) &&
+      (!isLinkPayment || this.subscriptionId || this.addonId)) {
+    return next(new Error("Payment-link payments require a link and cannot fulfill entitlements"));
+  }
+  if (!isLinkPayment && !this.userId) {
+    return next(new Error("Payment userId is required"));
+  }
+  if (isLinkPayment && this.userId) {
+    // Never assign the staff creator as the payer of a guest link payment.
+    return next(new Error("Payment-link payments must not carry a userId payer"));
+  }
+  next();
+});
+
 paymentSchema.post("save", async function (doc, next) {
   const statusChanged = doc._statusWasModified;
   const refundsChanged = doc._refundsWereModified;
@@ -360,6 +390,9 @@ paymentSchema.post("save", async function (doc, next) {
 
 async function sendPaymentNotifications(payment) {
   try {
+    // Standalone collections have no account payer or subscription fulfillment.
+    // Status remains available in the admin dashboard without misleading renewal emails.
+    if (payment.metadata?.purpose === "admin_payment_link") return;
     const User = require("./UserModel");
     const notificationsService = require("../src/modules/notifications/notifications.service");
     const config = require("../src/config");

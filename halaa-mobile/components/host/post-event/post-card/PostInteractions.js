@@ -6,7 +6,12 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  Image,
+  Platform,
 } from "react-native";
+import * as ImagePicker from 'expo-image-picker';
+import { buildPostEventMediaForm } from '../../../../utils/postEventMultipart';
+import { getImageUrl } from '../../../../utils/imageUtils';
 import TextInput from "../../../commen/DirectionalTextInput";
 import AdaptiveText from "../../../commen/AdaptiveText";
 import { Ionicons } from "@expo/vector-icons";
@@ -22,13 +27,22 @@ import {
 import { useTranslation } from "../../../../localization";
 import LegalLinks from "../../../legal/LegalLinks";
 
-const PostInteractions = ({ post, eventId, sessionToken, t, toast }) => {
+const PostInteractions = ({ post, eventId, sessionToken, t, toast, readOnly = false, settings = {} }) => {
   const liked = !!post.userLiked;
   const likesCount = post.likesCount ?? post.likes?.length ?? 0;
   const commentsCount = post.commentsCount ?? post.comments?.length ?? 0;
 
-  const [showComments, setShowComments] = useState(false);
+  const [showComments, setShowComments] = useState(true);
   const [commentText, setCommentText] = useState("");
+  const [attachments, setAttachments] = useState([]);
+  const [page, setPage] = useState(1);
+  const [loadedComments, setLoadedComments] = useState([]);
+  const pickImages = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsMultipleSelection: true, selectionLimit: 10 - attachments.length });
+      if (!result.canceled) setAttachments(previous => [...previous, ...result.assets].slice(0, 10));
+    } catch { toast?.error(t('comment.error')); }
+  };
 
   const toggleLike = useTogglePostEventLike();
   const addComment = useAddPostEventComment();
@@ -128,10 +142,10 @@ const PostInteractions = ({ post, eventId, sessionToken, t, toast }) => {
   const commentsQuery = usePostEventComments(
     eventId,
     post._id,
-    { page: 1, limit: 20 },
+    { page, limit: 20 },
     sessionToken,
     {
-      enabled: !!showComments && !!eventId && !!post?._id && !!sessionToken,
+      enabled: !readOnly && !!showComments && !!eventId && !!sessionToken && settings.allowComments !== false,
     }
   );
 
@@ -143,7 +157,12 @@ const PostInteractions = ({ post, eventId, sessionToken, t, toast }) => {
     }
   }, [commentsQuery.isError, commentsQuery.error, t, toast]);
 
-  const comments = commentsQuery.data?.data?.comments || [];
+  const commentsResult = commentsQuery.data?.data;
+  useEffect(() => {
+    if (!commentsResult?.comments) return;
+    setLoadedComments(previous => page === 1 ? commentsResult.comments : [...new Map([...previous, ...commentsResult.comments].map(comment => [comment._id, comment])).values()]);
+  }, [commentsResult, page]);
+  const comments = readOnly ? (post.comments || []) : loadedComments;
 
   const handleLike = () => {
     if (toggleLike.isPending) return;
@@ -155,16 +174,20 @@ const PostInteractions = ({ post, eventId, sessionToken, t, toast }) => {
     );
   };
 
-  const handleSendComment = () => {
+  const handleSendComment = async () => {
     const text = commentText.trim();
-    if (!text || addComment.isPending) return;
-    const formData = new FormData();
+    if ((!text && !attachments.length) || addComment.isPending || readOnly) return;
+    let formData;
+    try { formData = await buildPostEventMediaForm(attachments, Platform.OS, 'images'); }
+    catch { toast?.error(t('comment.error')); return; }
     formData.append("text", text);
     addComment.mutate(
       { eventId, postId: post._id, formData, sessionToken },
       {
         onSuccess: () => {
           setCommentText("");
+          setAttachments([]);
+          setPage(1);
           toast?.success(t("comment.success"));
         },
         onError: () => toast?.error(t("comment.error")),
@@ -180,7 +203,7 @@ const PostInteractions = ({ post, eventId, sessionToken, t, toast }) => {
         <TouchableOpacity
           style={styles.actionBtn}
           onPress={handleLike}
-          disabled={toggleLike.isPending}
+          disabled={readOnly || settings.allowLikes === false || toggleLike.isPending}
           activeOpacity={0.7}
         >
           <Ionicons
@@ -195,6 +218,7 @@ const PostInteractions = ({ post, eventId, sessionToken, t, toast }) => {
 
         <TouchableOpacity
           style={styles.actionBtn}
+          disabled={settings.allowComments === false}
           onPress={toggleCommentsVisibility}
           activeOpacity={0.7}
         >
@@ -204,8 +228,9 @@ const PostInteractions = ({ post, eventId, sessionToken, t, toast }) => {
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
+        {!!post._id && <TouchableOpacity
           style={[styles.actionBtn, styles.reportAction]}
+          disabled={readOnly}
           onPress={handleReportPost}
           activeOpacity={0.7}
           accessibilityRole="button"
@@ -213,10 +238,10 @@ const PostInteractions = ({ post, eventId, sessionToken, t, toast }) => {
         >
           <Ionicons name="flag-outline" size={18} color="#999" />
           <Text style={styles.reportText}>{t("moderation.report")}</Text>
-        </TouchableOpacity>
+        </TouchableOpacity>}
       </View>
 
-      {showComments && (
+      {showComments && settings.allowComments !== false && (
         <View style={styles.commentsSection}>
           {commentsQuery.isLoading ? (
             <ActivityIndicator
@@ -245,9 +270,11 @@ const PostInteractions = ({ post, eventId, sessionToken, t, toast }) => {
                   <AdaptiveText style={styles.commentText}>
                     {c.text}
                   </AdaptiveText>
+                  {(c.images || []).map((image, index) => <Image key={index} source={{ uri: getImageUrl(typeof image === 'string' ? image : image.url) }} style={{ width: 160, height: 120, borderRadius: 8, marginTop: 8 }} resizeMode="contain" />)}
                 </View>
                 <TouchableOpacity
                   style={styles.commentMenuBtn}
+                  disabled={readOnly}
                   onPress={() => openCommentMenu(c)}
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   accessibilityRole="button"
@@ -259,6 +286,15 @@ const PostInteractions = ({ post, eventId, sessionToken, t, toast }) => {
             ))
           )}
 
+          {!readOnly && page < (commentsResult?.pagination?.totalPages || commentsResult?.totalPages || 1) && <TouchableOpacity onPress={() => setPage(value => value + 1)}><Text style={{ color: '#C28E5C', padding: 12 }}>{t('comments.loadMore', { defaultValue: currentLanguage === 'ar' ? 'عرض المزيد' : 'Load more' })}</Text></TouchableOpacity>}
+          {!readOnly && <>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {attachments.map((asset, index) => <TouchableOpacity key={index} accessibilityLabel={t('aria.close')} onPress={() => setAttachments(items => items.filter((_, i) => i !== index))}><Image source={{ uri: asset.uri }} style={{ width: 64, height: 64, borderRadius: 8 }} /><Ionicons name="close-circle" size={20} style={{ position: 'absolute', end: 0 }} /></TouchableOpacity>)}
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <TouchableOpacity onPress={pickImages} disabled={attachments.length >= 10} accessibilityLabel={t('aria.attachImages', { defaultValue: currentLanguage === 'ar' ? 'إرفاق صور' : 'Attach photos' })} style={{ padding: 10 }}><Ionicons name="image-outline" size={24} color="#C28E5C" /></TouchableOpacity>
+            {['🤍', '😍', '👏', '🎉', '🙏'].map(emoji => <TouchableOpacity key={emoji} onPress={() => setCommentText(text => (text + emoji).slice(0, 1000))}><Text style={{ fontSize: 22 }}>{emoji}</Text></TouchableOpacity>)}
+          </View>
           <View style={styles.commentInputRow}>
             {/* Guest comment text is arbitrary content — placeholder follows
                 the UI locale, a filled value follows its first strong char. */}
@@ -276,11 +312,11 @@ const PostInteractions = ({ post, eventId, sessionToken, t, toast }) => {
             <TouchableOpacity
               style={[
                 styles.sendButton,
-                (!commentText.trim() || addComment.isPending) &&
+                ((!commentText.trim() && !attachments.length) || addComment.isPending) &&
                   styles.sendButtonDisabled,
               ]}
               onPress={handleSendComment}
-              disabled={!commentText.trim() || addComment.isPending}
+              disabled={readOnly || (!commentText.trim() && !attachments.length) || addComment.isPending}
               activeOpacity={0.7}
             >
               {addComment.isPending ? (
@@ -297,6 +333,7 @@ const PostInteractions = ({ post, eventId, sessionToken, t, toast }) => {
             docTypes={["terms", "community-rules"]}
             prefix={t("comment.legalPrefix")}
           />
+          </>}
         </View>
       )}
     </>

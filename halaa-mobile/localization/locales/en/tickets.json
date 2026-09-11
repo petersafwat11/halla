@@ -25,8 +25,10 @@
     "attachmentLabel": "Attachment (optional)",
     "addImage": "Add image",
     "addVideo": "Add video",
+    "addMedia": "Add images or videos",
+    "attachmentTooMany": "You can attach up to 4 files",
     "removeAttachment": "Remove attachment",
-    "attachmentTooLarge": "File too large (max 50MB)",
+    "attachmentTooLarge": "A file is too large (max 50MB each)",
     "permissionRequired": "Permission required",
     "permissionMessage": "Please allow photo library access to attach a file"
   },

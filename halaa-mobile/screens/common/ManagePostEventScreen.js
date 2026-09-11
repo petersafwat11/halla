@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Alert,
   RefreshControl,
+  Modal,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -27,6 +28,7 @@ import MediaUploader from "../../components/host/post-event/MediaUploader";
 import MessagingTemplatePicker from "../../components/host/post-event/MessagingTemplatePicker";
 import AccessLinksSheet from "../../components/host/post-event/AccessLinksSheet";
 import PublishControls from "../../components/host/post-event/PublishControls";
+import PostEventScreen from "../host/PostEventScreen";
 import LegalLinks from "../../components/legal/LegalLinks";
 import DirectionalIonicon from "../../components/common/DirectionalIonicon";
 import LocalizedText from "../../components/commen/LocalizedText";
@@ -73,7 +75,8 @@ const ManagePostEventScreen = ({ navigation, route }) => {
   const publish = usePublishPostEventContent();
   const unpublish = useUnpublishPostEventContent();
 
-  const content = contentQuery.data?.data || contentQuery.data || null;
+  const payload = contentQuery.data?.data || contentQuery.data || {};
+  const content = { ...(payload.content || {}), event: payload.event, eventTitle: payload.eventTitle, thankYouMessage: payload.thankYouMessage };
   const media = Array.isArray(content?.media) ? content.media : [];
   const isPublished = content?.settings?.isPublished === true;
   const savedTemplateRef = content?.taqnyatTemplate?.templateRef || null;
@@ -81,6 +84,7 @@ const ManagePostEventScreen = ({ navigation, route }) => {
   const [thankYouMessage, setThankYouMessage] = useState("");
   const [messageSaved, setMessageSaved] = useState(false);
   const [accessSheetOpen, setAccessSheetOpen] = useState(false);
+  const [sharedPageOpen, setSharedPageOpen] = useState(false);
   const [deletingMediaId, setDeletingMediaId] = useState(null);
   const [publishAudience, setPublishAudience] = useState("attended");
 
@@ -295,6 +299,7 @@ const ManagePostEventScreen = ({ navigation, route }) => {
         />
 
         <MessagingTemplatePicker
+          messagePreviews={payload.messagePreviews}
           eventId={eventId}
           selectedTemplateRef={savedTemplateRef}
           t={t}
@@ -341,6 +346,7 @@ const ManagePostEventScreen = ({ navigation, route }) => {
           unpublishing={unpublish.isPending}
           onPublish={handlePublish}
           onOpenAccessLinks={() => setAccessSheetOpen(true)}
+          onViewSharedPage={() => setSharedPageOpen(true)}
           onUnpublish={handleUnpublish}
           t={t}
         />
@@ -355,6 +361,7 @@ const ManagePostEventScreen = ({ navigation, route }) => {
       </KeyboardAwareFormScrollView>
 
       <AccessLinksSheet
+        messagePreviews={payload.messagePreviews}
         visible={accessSheetOpen}
         onClose={() => setAccessSheetOpen(false)}
         eventId={eventId}
@@ -362,6 +369,10 @@ const ManagePostEventScreen = ({ navigation, route }) => {
         t={t}
         toast={toast}
       />
+      <Modal visible={sharedPageOpen && isPublished} animationType="slide" onRequestClose={() => setSharedPageOpen(false)}>
+        <PostEventScreen previewContent={content} navigation={{ canGoBack: () => true, goBack: () => setSharedPageOpen(false) }} />
+
+      </Modal>
     </SafeAreaView>
   );
 };

@@ -13,6 +13,7 @@ const Button = ({
   type = "button",
   style,
   href,
+  ariaPressed,
 }) => {
   // Admin templates pages use `variant="danger"` and `size="small"`.
   // Map unknown variants/sizes back to the supported set
@@ -40,6 +41,7 @@ const Button = ({
       className={buttonClass}
       onClick={onClick}
       disabled={disabled}
+      aria-pressed={ariaPressed}
       style={style}
     >
       {icon && <img src={icon} alt="" />}

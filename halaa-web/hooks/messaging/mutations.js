@@ -111,7 +111,7 @@ export const useRetryFailedInvitations = () => {
 
 /**
  * Send reminder to pending guests.
- * Body: `{ eventId, channel, customMessage?, guestIds?, reminderTemplateName? }`.
+ * Body: `{ eventId, channel, customMessage?, guestIds? }`.
  */
 export const useSendReminder = () => {
   const invalidate = useMessagingInvalidations();
@@ -121,7 +121,6 @@ export const useSendReminder = () => {
       channel,
       customMessage,
       guestIds,
-      reminderTemplateName,
     }) =>
       apiRequest({
         method: "POST",
@@ -131,7 +130,6 @@ export const useSendReminder = () => {
           channel,
           ...(customMessage ? { customMessage } : {}),
           ...(guestIds ? { guestIds } : {}),
-          ...(reminderTemplateName ? { reminderTemplateName } : {}),
         },
         config: {
           headers: {

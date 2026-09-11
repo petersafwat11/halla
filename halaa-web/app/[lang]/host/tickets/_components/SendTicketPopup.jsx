@@ -34,7 +34,7 @@ const SendTicketPopup = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   // Optional attachment (image OR video) — held outside react-hook-form since
   // it is a File, not a JSON value. Only used when creating a ticket.
-  const [attachment, setAttachment] = useState(null);
+  const [attachment, setAttachment] = useState([]);
   const isEditMode = !!editTicket;
 
   const schema = useMemo(
@@ -90,13 +90,13 @@ const SendTicketPopup = ({
         // When an attachment is present, send multipart/form-data; otherwise
         // keep the plain JSON path. apiRequest auto-switches on FormData.
         let payload = data;
-        if (attachment) {
+        if (attachment.length) {
           const formData = new FormData();
           formData.append("subject", data.subject);
           formData.append("type", data.type);
           formData.append("message", data.message);
           if (data.priority) formData.append("priority", data.priority);
-          formData.append("ticketAttachment", attachment);
+          attachment.forEach(file => formData.append("ticketAttachments", file));
           payload = formData;
         }
         response = await createMutation.mutateAsync(payload);
@@ -104,7 +104,7 @@ const SendTicketPopup = ({
       }
 
       reset();
-      setAttachment(null);
+      setAttachment([]);
       onClose();
       onSuccess?.(response?.data);
     } catch (error) {
@@ -117,7 +117,7 @@ const SendTicketPopup = ({
 
   const handleCancel = () => {
     reset();
-    setAttachment(null);
+    setAttachment([]);
     onClose();
   };
 

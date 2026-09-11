@@ -43,7 +43,11 @@ const PublishBar = ({ eventId, hasMedia, hasTemplate }) => {
             return;
           }
           const breakdown = summary.channelBreakdown || {};
-          toast.success(
+          if (!summary.sent && summary.failed) {
+            toast.warning(t('host.publishNotify.publishedNoNotify'));
+            return;
+          }
+          (summary.failed ? toast.warning : toast.success)(
             t("host.publishNotify.success", {
               sent: summary.sent ?? 0,
               whatsapp: breakdown.whatsapp ?? 0,

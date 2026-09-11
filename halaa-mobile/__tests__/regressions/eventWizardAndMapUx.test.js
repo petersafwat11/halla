@@ -64,3 +64,44 @@ test("EVT-UI-03: MapPicker modal uses SafeAreaView and provides proper header pa
     "MapPicker must wrap modal content in SafeAreaView with top and bottom edges"
   );
 });
+
+test("EVT-UI-04: MapPicker cancel is resolved explicitly from the common locale", () => {
+  const file = path.join(mobileRoot, "components/commen/MapPicker.js");
+  const content = fs.readFileSync(file, "utf8");
+  assert.ok(content.includes('const { t: tCommon } = useTranslation("common")'));
+  assert.ok(content.includes('{tCommon("cancel")}'));
+});
+
+test("EVT-UI-05: incomplete template customization can only continue or discard", () => {
+  const file = path.join(mobileRoot, "components/createEvent/StepThree.js");
+  const content = fs.readFileSync(file, "utf8");
+  assert.ok(content.includes("const requestClose = useCallback"));
+  assert.ok(content.includes('t("template_continue_editing"'));
+  assert.ok(content.includes('t("template_discard"'));
+  assert.ok(content.includes("onPress: onDiscard"));
+  assert.ok(content.includes('parentSetValue("visualTemplate", null'));
+  assert.ok(content.includes('parentSetValue("templateImage", null'));
+  assert.ok(content.includes("onRequestClose={requestClose}"));
+});
+
+test("EVT-UI-06: live-event update adds staff through the dedicated endpoint", () => {
+  const screen = fs.readFileSync(
+    path.join(mobileRoot, "screens/common/update-event/UpdateEventScreen.js"),
+    "utf8"
+  );
+  const renderer = fs.readFileSync(
+    path.join(mobileRoot, "screens/common/update-event/UpdateEventStepRenderer.js"),
+    "utf8"
+  );
+  const stepTwo = fs.readFileSync(
+    path.join(mobileRoot, "components/createEvent/StepTwo.js"),
+    "utf8"
+  );
+
+  assert.ok(screen.includes("useAddEventStaff"));
+  assert.match(screen, /if \(!isLive\) return staffMember;/);
+  assert.match(screen, /await addStaffMutation\.mutateAsync/);
+  assert.ok(screen.includes("onStaffAdd={handleStaffAdd}"));
+  assert.ok(renderer.includes("onStaffAdd={onStaffAdd}"));
+  assert.ok(stepTwo.includes("onStaffAdd={onStaffAdd}"));
+});

@@ -3,6 +3,7 @@ const assert = require("node:assert/strict");
 const mongoose = require("mongoose");
 const db = require("./helpers/memoryDb");
 const Payment = require("../models/PaymentModel");
+const PaymentLink = require("../models/PaymentLinkModel");
 const Subscription = require("../models/SubscriptionModel");
 const AuditLog = require("../models/AuditLogModel");
 const BusinessPlanAssignment = require("../models/BusinessPlanAssignmentModel");
@@ -47,10 +48,18 @@ test("generated operations contract has exact approved rules and hash", () => {
   assert.equal(operations.ownerApproval, "OWNER_APPROVED");
   assert.match(operations.policyHash, /^[a-f0-9]{64}$/);
   assert.deepEqual(operations.retentionRules.map((r) => [r.collection, r.durationYears]), [
-    ["payments", 6], ["subscriptions", 6], ["revenuecatevents", 6], ["auditlogs", 2], ["businessplanassignments", 6],
+    ["paymentlinks", 6], ["payments", 6], ["subscriptions", 6], ["revenuecatevents", 6], ["auditlogs", 2], ["businessplanassignments", 6],
   ]);
   assert.equal(operations.retentionRules.find((r) => r.collection === "payments").triggerField, "updatedAt");
   assert.equal(operations.retentionRules.find((r) => r.collection === "businessplanassignments").eligibleStatuses.includes("active"), false);
+});
+
+test('payment links use financial activity rather than polling timestamps for retention', async () => {
+  const old = await PaymentLink.collection.insertOne({ reference: 'HPL-OLD', status: 'paid', financialActivityAt: old6y, updatedAt: NOW });
+  const active = await PaymentLink.collection.insertOne({ reference: 'HPL-ACTIVE', status: 'awaiting_payment', financialActivityAt: old6y, updatedAt: NOW });
+  await runRetention({ dryRun: false, now: NOW });
+  assert.equal(await PaymentLink.countDocuments({ _id: old.insertedId }), 0);
+  assert.equal(await PaymentLink.countDocuments({ _id: active.insertedId }), 1);
 });
 
 test("dry-run reports eligible rows but never mutates data", async () => {

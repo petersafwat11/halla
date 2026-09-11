@@ -27,6 +27,7 @@ const GuestFormSection = ({
   isUnlimited,
   guestLimit,
   allowAddOnly = false,
+  onStaffAdd,
 }) => {
   const { t } = useTranslation("createEvent");
   const { setValue, watch } = useFormContext();
@@ -200,7 +201,7 @@ const GuestFormSection = ({
           </View>
         </View>
       ) : (
-        <ModeratorForm />
+        <ModeratorForm onAdd={onStaffAdd} />
       )}
 
       {currentCount > 0 && (

@@ -1,7 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import request from 'supertest';
-import mongoose from 'mongoose';
 import {
   setupTestDb,
   clearDatabase,
@@ -278,8 +277,24 @@ test('auth: Origin and CSRF enforcement rejects invalid requests', async () => {
 });
 
 test('auth: role and event scope restrictions are strictly enforced', async () => {
-  const event1Id = new mongoose.Types.ObjectId().toString();
-  const event2Id = new mongoose.Types.ObjectId().toString();
+  // F28: provisioning validates event existence — create real events first.
+  const { Event } = await import('../src/modules/events/event.model.js');
+  const ev1 = await Event.create({
+    name: 'Scope Test Event 1',
+    venue: 'Scope Venue 1',
+    startsAt: new Date(Date.now() + 86400000),
+    timezone: 'Asia/Riyadh',
+    status: 'live',
+  });
+  const ev2 = await Event.create({
+    name: 'Scope Test Event 2',
+    venue: 'Scope Venue 2',
+    startsAt: new Date(Date.now() + 86400000),
+    timezone: 'Asia/Riyadh',
+    status: 'live',
+  });
+  const event1Id = ev1._id.toString();
+  const event2Id = ev2._id.toString();
 
   await provisionUser({
     username: 'adminuser',

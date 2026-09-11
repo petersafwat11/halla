@@ -32,6 +32,7 @@ function MapPickerInner({
   contentDirection = "localized",
 }) {
   const { t, currentLanguage } = useTranslation("createEvent");
+  const { t: tCommon } = useTranslation("common");
   // Addresses are arbitrary user/backend text (blueprint §5.3): callers pass
   // "adaptive" so a filled value follows its first strong Arabic or Latin
   // character while the empty placeholder follows the UI locale.
@@ -295,7 +296,7 @@ function MapPickerInner({
           </View>
 
           <View style={styles.footer}>
-            <TouchableOpacity onPress={closePicker} style={styles.cancelButton}><Text style={styles.cancelText}>{t("cancel", { ns: "common" })}</Text></TouchableOpacity>
+            <TouchableOpacity onPress={closePicker} style={styles.cancelButton}><Text style={styles.cancelText}>{tCommon("cancel")}</Text></TouchableOpacity>
             <TouchableOpacity onPress={confirm} disabled={!draft.address.trim() || resolving || searching || locating}
               style={[styles.confirmButton, (!draft.address.trim()) && styles.confirmDisabled]}>
               <Text style={styles.confirmText}>{t("map_picker_confirm")}</Text>

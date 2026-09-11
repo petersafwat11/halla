@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo } from "react";
+import { useSearchParams } from "next/navigation";
+import { parseISO, isValid } from "date-fns";
 import Header from "@/ui/admin/header/Header";
 
 export default function AdminPageHeader({
@@ -10,13 +12,19 @@ export default function AdminPageHeader({
   addButtonTitle,
   addButtonIcon,
   onAddButtonClick,
+  wholeDays = false,
 }) {
-  const [dateRange, setDateRange] = useState(null);
+  const params = useSearchParams();
+  const dateRange = useMemo(() => {
+    const parse = (key) => { const date = parseISO(params.get(key) || ""); return isValid(date) ? date : undefined; };
+    return { from: parse("from"), to: parse("to") };
+  }, [params]);
 
   return (
     <Header
       selectedDateRange={dateRange}
-      setSelectedDateRange={setDateRange}
+      setSelectedDateRange={() => {}}
+      wholeDays={wholeDays}
       title={title}
       subtitle={subtitle}
       actions={actions}

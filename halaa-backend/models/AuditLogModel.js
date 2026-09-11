@@ -62,6 +62,7 @@ const auditLogSchema = new mongoose.Schema(
         // Payment system: refund / capture / void / webhook /
         // reconcile / pending_refund all target a Payment row.
         "payment",
+        "payment_link",
         "discount",
       ],
       index: true,

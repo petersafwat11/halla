@@ -25,25 +25,27 @@ export function getDir(lang) {
 }
 
 /**
- * Resolve a dot-notated string key from dictionary with variable replacement
+ * Resolve a dot-notated string key from dictionary with variable replacement.
+ * Returns '' for missing keys so `t(...) || fallback` works and raw keys like
+ * `errors.UNDEFINED` are never rendered (F12). Use `tOr` for explicit fallback.
  * @param {object} dict
  * @param {string} path e.g. "common.appName"
  * @param {Record<string, any>} [vars]
  * @returns {string}
  */
 export function t(dict, path, vars = {}) {
-  if (!dict || !path) return path || '';
+  if (!dict || !path) return '';
   const parts = path.split('.');
   let current = dict;
   for (const part of parts) {
     if (current && typeof current === 'object' && part in current) {
       current = current[part];
     } else {
-      return path; // Fallback to key
+      return '';
     }
   }
 
-  if (typeof current !== 'string') return path;
+  if (typeof current !== 'string') return '';
 
   // Replace {varName} placeholders
   let result = current;
@@ -51,6 +53,41 @@ export function t(dict, path, vars = {}) {
     result = result.replace(new RegExp(`\\{${key}\\}`, 'g'), String(val));
   }
   return result;
+}
+
+/**
+ * Check whether a dot-notated key exists in the dictionary (F12).
+ * @param {object} dict
+ * @param {string} path
+ * @returns {boolean}
+ */
+export function hasTranslation(dict, path) {
+  if (!dict || !path) return false;
+  const parts = path.split('.');
+  let current = dict;
+  for (const part of parts) {
+    if (current && typeof current === 'object' && part in current) {
+      current = current[part];
+    } else {
+      return false;
+    }
+  }
+  return typeof current === 'string' && current.length > 0;
+}
+
+/**
+ * Explicit localized fallback (F12): returns the localized string when present,
+ * otherwise the supplied fallback (never a raw missing key like
+ * `errors.UNDEFINED`). Use for `errors.${code}` mappings.
+ * @param {object} dict
+ * @param {string} path
+ * @param {string} fallback
+ * @param {Record<string, any>} [vars]
+ * @returns {string}
+ */
+export function tOr(dict, path, fallback, vars = {}) {
+  if (hasTranslation(dict, path)) return t(dict, path, vars);
+  return fallback || '';
 }
 
 /**

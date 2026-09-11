@@ -103,7 +103,7 @@ class PostEventService {
   async getPostEventContent(eventId, user) {
     const [event, content] = await Promise.all([
       Event.findOne(buildScopedEventQuery(eventId, user))
-        .select('eventDetails status visualTemplate host')
+        .select('eventDetails status visualTemplate host guestList')
         .populate('host', 'name'),
       PostEventContent.findOne({ event: eventId })
         .populate('host', 'name')
@@ -114,6 +114,19 @@ class PostEventService {
     if (!event) {
       throw new NotFoundError('Event');
     }
+
+    const previewGuests = await Guest.find(getActiveEventGuestsFilter(event._id, event.guestList)).select('name').lean();
+    const firstGuest = (event.guestList || []).map(id => previewGuests.find(g => String(g._id) === String(id))).find(Boolean);
+    const templates = await require('../taqnyat-templates/taqnyat-templates.service').listForHost({ type: 'post_event' });
+    const { getPostEventBodyParams } = require('../messaging/messaging.formatting');
+    const messagePreviews = Object.fromEntries(templates.map(template => {
+      const params = getPostEventBodyParams(event, firstGuest?.name, template, {
+        link: dispatchService.buildAccessLink('PREVIEW_ONLY'),
+        expiresAt: template.language === 'en' ? '[Link expiry]' : '[وقت انتهاء صلاحية الرابط]',
+      });
+      const body = String(template.bodyText || '').replace(/\{\{\s*(\d+)\s*\}\}/g, (_, slot) => params[Number(slot) - 1] ?? '');
+      return [String(template._id), body];
+    }));
 
     // Hydrate guest names for post-level likes + comments so the host's
     // published view can render the real liker list and comment thread
@@ -153,6 +166,8 @@ class PostEventService {
     }
 
     return {
+      messagePreviews,
+      previewGuestName: firstGuest?.name || null,
       eventId: event._id,
       eventTitle: event.eventDetails?.title,
       event,

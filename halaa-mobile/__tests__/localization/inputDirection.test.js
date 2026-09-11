@@ -62,13 +62,14 @@ test("resolveInputDirection: rtl stays RTL regardless of locale/value", async ()
   }
 });
 
-test("resolveInputDirection: phone is localized when empty, LTR once filled", async () => {
+test("resolveInputDirection: phone stays LTR before and during entry", async () => {
   const { resolveInputDirection } = await loadResolver();
 
-  // Arabic, empty → RTL placeholder (aligned right on iOS)
+  // Arabic, empty → stable LTR numeric placeholder. This prevents the first
+  // normalized Latin digit from changing direction while focused on iOS.
   assert.equal(
     resolveInputDirection("phone", { isRTL: true, hasValue: false }).writingDirection,
-    "rtl"
+    "ltr"
   );
   // Arabic, typing → stable LTR digit/cursor order
   assert.equal(

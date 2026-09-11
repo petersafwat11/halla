@@ -5,6 +5,8 @@ export default function GuestModeratorTabs({ activeTab, setActiveTab, guestCount
   return (
     <View style={styles.tabsContainer}>
       <TouchableOpacity
+        accessibilityRole="tab"
+        accessibilityState={{ selected: activeTab === "guests" }}
         style={[styles.tab, activeTab === "guests" && styles.tabActive]}
         onPress={() => setActiveTab("guests")}
         activeOpacity={0.7}
@@ -12,12 +14,12 @@ export default function GuestModeratorTabs({ activeTab, setActiveTab, guestCount
         <Text style={[styles.tabText, activeTab === "guests" && styles.tabTextActive]}>
           {t("event_guests_label")}
         </Text>
-        {guestCount > 0 && (
-          <View style={styles.badge}><Text style={styles.badgeText}>{guestCount}</Text></View>
-        )}
+        <View style={styles.badge}><Text style={styles.badgeText}>{guestCount}</Text></View>
       </TouchableOpacity>
 
       <TouchableOpacity
+        accessibilityRole="tab"
+        accessibilityState={{ selected: activeTab === "moderators" }}
         style={[styles.tab, activeTab === "moderators" && styles.tabActive]}
         onPress={() => setActiveTab("moderators")}
         activeOpacity={0.7}
@@ -25,9 +27,7 @@ export default function GuestModeratorTabs({ activeTab, setActiveTab, guestCount
         <Text style={[styles.tabText, activeTab === "moderators" && styles.tabTextActive]}>
           {t("event_moderators_label")}
         </Text>
-        {moderatorCount > 0 && (
-          <View style={styles.badge}><Text style={styles.badgeText}>{moderatorCount}</Text></View>
-        )}
+        <View style={styles.badge}><Text style={styles.badgeText}>{moderatorCount}</Text></View>
       </TouchableOpacity>
     </View>
   );

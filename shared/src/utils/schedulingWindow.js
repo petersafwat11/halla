@@ -133,6 +133,32 @@ export function getScheduleWindow({
   };
 }
 
+const riyadhDayAndMinutes = (instant) => {
+  if (!instant) return null;
+  const shifted = new Date(new Date(instant).getTime() + RIYADH_OFFSET_MS);
+  if (Number.isNaN(shifted.getTime())) return null;
+  return {
+    key: `${shifted.getUTCFullYear()}-${shifted.getUTCMonth()}-${shifted.getUTCDate()}`,
+    minutes: shifted.getUTCHours() * 60 + shifted.getUTCMinutes(),
+    hasPartialMinute: shifted.getUTCSeconds() > 0 || shifted.getUTCMilliseconds() > 0,
+  };
+};
+
+/** Return selectable time-of-day bounds for a picker day in Riyadh time. */
+export function getScheduleTimeBounds(date, scheduleWindow) {
+  const parts = calendarParts(date);
+  if (!parts) return { minimumMinutes: 0, maximumMinutes: 1439 };
+  const selectedKey = `${parts.year}-${parts.month}-${parts.day}`;
+  const earliest = riyadhDayAndMinutes(scheduleWindow?.earliestInstant);
+  const latest = riyadhDayAndMinutes(scheduleWindow?.latestInstant);
+  return {
+    minimumMinutes: earliest?.key === selectedKey
+      ? Math.min(1439, earliest.minutes + (earliest.hasPartialMinute ? 1 : 0))
+      : 0,
+    maximumMinutes: latest?.key === selectedKey ? latest.minutes : 1439,
+  };
+}
+
 export function validateScheduleSelection({
   date,
   time,

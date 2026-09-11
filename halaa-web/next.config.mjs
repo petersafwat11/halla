@@ -5,6 +5,9 @@ import { createRequire } from "node:module";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 const zodRoot = path.dirname(require.resolve("zod/package.json"));
+// Turbopack interprets Windows drive-letter paths as unsupported imports.
+// Keep its alias relative to the web project and use portable separators.
+const turbopackZodRoot = `./${path.relative(__dirname, zodRoot).split(path.sep).join("/")}`;
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -23,7 +26,7 @@ const nextConfig = {
   transpilePackages: ["@halaa/shared"],
   // Shared schema fragments must use the same Zod major as the form that
   // composes them. The workspace root also contains mobile's Zod 4.
-  turbopack: { resolveAlias: { zod: zodRoot } },
+  turbopack: { resolveAlias: { zod: turbopackZodRoot } },
 
   // Production deploys copy `shared/` into `frontend/node_modules/@halaa/shared`
   // as a real directory (not a symlink) to keep webpack's realpath() from
@@ -57,6 +60,16 @@ const nextConfig = {
       {
         source: "/uploads/:path*",
         destination: `${backendUrl}/uploads/:path*`,
+      },
+    ];
+  },
+
+  async headers() {
+    return [
+      { source: '/sw.js', headers: [{ key: 'Cache-Control', value: 'no-store' }] },
+      {
+        source: '/.well-known/apple-developer-merchantid-domain-association',
+        headers: [{ key: 'Content-Type', value: 'text/plain' }],
       },
     ];
   },

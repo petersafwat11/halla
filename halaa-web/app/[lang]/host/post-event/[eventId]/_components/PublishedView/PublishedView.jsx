@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import { FaUserCircle } from "react-icons/fa";
@@ -9,15 +9,18 @@ import { handleError } from "@/services/errorHandlingService";
 import PostMediaGallery from "@/components/postEvent/PostMediaGallery";
 import CommentList from "@/components/postEvent/CommentList";
 import LikesPopup from "@/components/postEvent/LikesPopup";
+import AccessLinksDialog from "../AccessLinksDialog/AccessLinksDialog";
 import { formatDate, formatDateTime } from "@halaa/shared/utils/locale";
 import styles from "./publishedView.module.css";
 
 
 
-const PublishedView = ({ eventId, content, hostName, eventDate }) => {
+const PublishedView = ({ eventId, content, hostName, eventDate, messagePreviews, onEdit }) => {
   const { t, i18n } = useTranslation("postEvent");
   const [confirmUnpublish, setConfirmUnpublish] = useState(false);
   const [showLikes, setShowLikes] = useState(false);
+  const [showAccessLinks, setShowAccessLinks] = useState(false);
+  const postRef = useRef(null);
   const unpublish = useUnpublishPostEventContent();
 
   const caption = content?.title || "";
@@ -58,7 +61,7 @@ const PublishedView = ({ eventId, content, hostName, eventDate }) => {
           <>
             <div className={styles.deliveryGrid}>
               <div className={styles.deliveryStat}>
-                <span className={styles.statValue}>{lastSend.total ?? 0}</span>
+                <span className={styles.statValue}>{(lastSend.whatsapp || 0) + (lastSend.sms || 0)}</span>
                 <span className={styles.statLabel}>
                   {t("host.publishNotify.notified")}
                 </span>
@@ -89,6 +92,9 @@ const PublishedView = ({ eventId, content, hostName, eventDate }) => {
         )}
 
         <div className={styles.actions}>
+          <Button title={t("host.viewSharedPage")} onClick={() => { postRef.current?.scrollIntoView({ block: 'start' }); postRef.current?.focus({ preventScroll: true }); }} />
+          <Button variant="secondary" title={t("host.accessLinks.title")} onClick={() => setShowAccessLinks(true)} />
+          <Button variant="secondary" title={t("host.editContent")} onClick={onEdit} />
           <Button
             variant="danger"
             size="small"
@@ -100,18 +106,18 @@ const PublishedView = ({ eventId, content, hostName, eventDate }) => {
       </section>
 
       {/* Live post — identical structure to what guests see */}
-      <section className={styles.postCard}>
+      <section ref={postRef} tabIndex={-1} aria-label={t("host.viewSharedPage")} className={styles.postCard}>
         <div className={styles.postHeader}>
           <FaUserCircle className={styles.postAvatar} />
           <div className={styles.postHeaderText}>
-            <span className={styles.postHostName}>{hostName}</span>
+            <span dir="auto" className={styles.postHostName}>{hostName}</span>
             <span className={styles.postDate}>
               {formatDate(eventDate, i18n.language)}
             </span>
           </div>
         </div>
 
-        {caption && <p className={styles.caption}>{caption}</p>}
+        {caption && <p dir="auto" className={styles.caption}>{caption}</p>}
 
         {media.length > 0 && <PostMediaGallery media={media} />}
 
@@ -141,6 +147,7 @@ const PublishedView = ({ eventId, content, hostName, eventDate }) => {
         />
       </section>
 
+      {showAccessLinks && <AccessLinksDialog eventId={eventId} savedTemplateRef={content?.taqnyatTemplate?.templateRef} messagePreviews={messagePreviews} previouslySent={!!(lastSend?.whatsapp || lastSend?.sms)} onClose={() => setShowAccessLinks(false)} />}
       {showLikes && (
         <LikesPopup
           likes={likes}

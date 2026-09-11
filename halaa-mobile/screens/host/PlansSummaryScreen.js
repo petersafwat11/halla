@@ -40,6 +40,10 @@ import { addonPreflight, eventPreflight, reconcileGeneric } from "../../services
 import { getEntry, addonCatalogCode, resolvePurchasable } from "../../services/billing/catalog";
 import { getPurchaseReadiness, READINESS_STATES, readinessReasonKey } from "../../services/billing/purchaseReadiness";
 import { classifyChange, selectReplacementMode, isDeferredChange } from "../../services/billing/changeMode";
+import {
+  purchaseChangeInfoForItem,
+  resolveNativeCheckoutAddons,
+} from "../../services/billing/nativeCheckoutCart";
 import { subscriptionCode } from "../../services/billing/currentPlan";
 import { isRestorable, showsManageSubscription } from "../../services/billing/disclosures";
 import { resolveMobileCompletionRoute } from "@halaa/shared/schemas/completionDestination";
@@ -527,6 +531,23 @@ const PlansSummaryScreen = () => {
       toast.error(t("queue.startError"));
       return;
     }
+
+    // Validate the complete cart before opening the first store sheet. This
+    // prevents a plan charge followed by a late failure for a missing add-on.
+    const resolvedCart = resolveNativeCheckoutAddons(
+      addonItems,
+      catalogEntries,
+      offeringsAll,
+    );
+    if (resolvedCart.unavailable) {
+      Sentry.captureMessage("Native checkout add-on unavailable", {
+        level: "warning",
+        tags: { area: "purchase_queue", operation: "cart_preflight" },
+        extra: { catalogCode: resolvedCart.unavailable.catalogCode || "missing" },
+      });
+      toast.error(t("checkout.errors.addonUnavailable"));
+      return;
+    }
     try {
       await queueFlow.purchaseCurrentItem(readiness.pkg, changeInfo, {
         preflight:
@@ -566,7 +587,7 @@ const PlansSummaryScreen = () => {
           ? () => eventPreflight(item.catalogCode)
           : null;
     try {
-      await queueFlow.purchaseCurrentItem(pkg, changeInfo, {
+      await queueFlow.purchaseCurrentItem(pkg, purchaseChangeInfoForItem(item, changeInfo), {
         preflight,
         deferred:
           item.kind === "plan" &&

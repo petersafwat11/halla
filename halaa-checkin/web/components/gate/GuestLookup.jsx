@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Notice } from '../ui/Notice.jsx';
 import { api } from '../../lib/api.js';
 import { StatusBadge } from '../ui/StatusBadge.jsx';
 import { t } from '../../lib/locale.js';
@@ -12,14 +13,18 @@ import styles from './GuestLookup.module.css';
  */
 export function GuestLookup({ eventId, onSelect, disabled = false, dict }) {
   const [query, setQuery] = useState('');
+  const [searchError, setSearchError] = useState(false);
   const [results, setResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const debounceTimerRef = useRef(null);
+  // Generation guard: only the latest query may populate results (F07).
+  const searchGenRef = useRef(0);
 
-  const performSearch = useCallback(async (q) => {
+  const performSearch = useCallback(async (q, gen) => {
     const trimmed = q.trim();
     if (trimmed.length < 2) {
+      if (gen !== searchGenRef.current) return;
       setResults([]);
       setIsSearching(false);
       setHasSearched(false);
@@ -27,15 +32,35 @@ export function GuestLookup({ eventId, onSelect, disabled = false, dict }) {
     }
 
     setIsSearching(true);
+    setSearchError(false);
+    const capturedEventId = eventId;
     try {
-      const res = await api.get(`/events/${eventId}/gate/search?q=${encodeURIComponent(trimmed)}`);
+      const res = await api.get(`/events/${capturedEventId}/gate/search?q=${encodeURIComponent(trimmed)}`);
+      // Discard stale responses and wrong-event responses (F07).
+      if (gen !== searchGenRef.current || capturedEventId !== eventId) return;
       setResults(res.data || []);
       setHasSearched(true);
     } catch {
+      if (gen !== searchGenRef.current || capturedEventId !== eventId) return;
       setResults([]);
+      setHasSearched(false);
+      setSearchError(true);
     } finally {
-      setIsSearching(false);
+      if (gen === searchGenRef.current && capturedEventId === eventId) {
+        setIsSearching(false);
+      }
     }
+  }, [eventId]);
+
+  // Clear local search state on event switch (spec §2)
+  useEffect(() => {
+    searchGenRef.current += 1;
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    setQuery('');
+    setResults([]);
+    setHasSearched(false);
+    setIsSearching(false);
+    return () => { searchGenRef.current += 1; };
   }, [eventId]);
 
   useEffect(() => {
@@ -43,9 +68,11 @@ export function GuestLookup({ eventId, onSelect, disabled = false, dict }) {
       clearTimeout(debounceTimerRef.current);
     }
 
-    if (query.trim().length >= 2) {
+    const gen = ++searchGenRef.current;
+    if (!disabled && query.trim().length >= 2) {
+      const snapshot = query;
       debounceTimerRef.current = setTimeout(() => {
-        performSearch(query);
+        performSearch(snapshot, gen);
       }, 300);
     } else {
       setResults([]);
@@ -53,11 +80,12 @@ export function GuestLookup({ eventId, onSelect, disabled = false, dict }) {
     }
 
     return () => {
+      searchGenRef.current += 1;
       if (debounceTimerRef.current) {
         clearTimeout(debounceTimerRef.current);
       }
     };
-  }, [query, performSearch]);
+  }, [query, performSearch, disabled]);
 
   const handleSelect = (guest) => {
     onSelect({ guestId: guest.id }, 'manual');
@@ -68,16 +96,22 @@ export function GuestLookup({ eventId, onSelect, disabled = false, dict }) {
 
   return (
     <div className={styles.container} data-testid="guest-lookup-container">
+      {searchError && <Notice variant="warning">{t(dict, 'common.networkError')}</Notice>}
       <h2 className={styles.title}>
         <span>🔍</span>
         <span>{t(dict, 'gate.manualSearchTitle')}</span>
       </h2>
 
       <div className={styles.inputWrapper}>
+        <label htmlFor="gate-manual-search" className={styles.srOnly || ''}>
+          {t(dict, 'gate.manualSearchTitle')}
+        </label>
         <input
+          id="gate-manual-search"
           type="text"
           className={styles.input}
           placeholder={t(dict, 'gate.manualSearchPlaceholder')}
+          aria-label={t(dict, 'gate.manualSearchTitle')}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           disabled={disabled}
@@ -112,7 +146,7 @@ export function GuestLookup({ eventId, onSelect, disabled = false, dict }) {
                 data-testid={`gate-search-result-${guest.id}`}
               >
                 <div className={styles.guestInfo}>
-                  <span className={styles.guestName}>{guest.name}</span>
+                  <span className={styles.guestName} dir="auto">{guest.name}</span>
                   <div className={styles.guestMeta}>
                     <bdi className={styles.shortCode}>{guest.shortCode}</bdi>
                     {guest.reference && <span>{guest.reference}</span>}

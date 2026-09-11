@@ -317,24 +317,60 @@ const moyasarProvider = {
     }
   },
 
-  // ─── INVOICES (recurring billing) ──────────────────────
-  async createInvoice({ amount, currency = "SAR", description, callbackUrl, metadata }) {
+  // ─── INVOICES (recurring billing + admin payment links) ──────
+  // `amount` is SAR major units. `amountHalalas` is the explicit minor-unit
+  // path for payment-links so integer halalas are never converted twice.
+  async createInvoice({
+    amount,
+    amountHalalas,
+    currency = "SAR",
+    description,
+    callbackUrl,
+    successUrl,
+    backUrl,
+    expireAt,
+    metadata,
+  }) {
     if (!process.env.MOYASAR_API_KEY) {
       return { success: false, error: "MOYASAR_API_KEY missing", provider: "moyasar" };
     }
-    const halalas = sarToHalalas(amount);
+    let halalas;
     try {
-      const response = await axios.post(
-        `${MOYASAR_BASE}/invoices`,
-        {
-          amount: halalas,
-          currency,
-          description,
-          callback_url: callbackUrl,
-          metadata: metadata || {},
-        },
-        { auth: auth(), timeout: 15000 }
-      );
+      if (amountHalalas !== undefined && amountHalalas !== null) {
+        if (!Number.isSafeInteger(amountHalalas) || amountHalalas <= 0) {
+          throw new ValidationError(
+            "paymentProvider.createInvoice: amountHalalas must be a positive safe integer"
+          );
+        }
+        halalas = amountHalalas;
+      } else {
+        halalas = sarToHalalas(amount);
+      }
+    } catch (e) {
+      return {
+        success: false,
+        provider: "moyasar",
+        error: e.message,
+        statusCode: 400,
+      };
+    }
+    try {
+      const body = {
+        amount: halalas,
+        currency,
+        description,
+        callback_url: callbackUrl,
+        metadata: metadata || {},
+      };
+      // success_url/back_url are browser redirects; callback_url is the
+      // server notification. Keep them separate per Moyasar docs.
+      if (successUrl) body.success_url = successUrl;
+      if (backUrl) body.back_url = backUrl;
+      if (expireAt) body.expired_at = expireAt;
+      const response = await axios.post(`${MOYASAR_BASE}/invoices`, body, {
+        auth: auth(),
+        timeout: 15000,
+      });
       const data = response.data || {};
       return {
         success: true,
@@ -354,12 +390,84 @@ const moyasarProvider = {
     }
   },
 
+  // Dedicated minor-unit wrapper — preserves exact integer halalas.
+  async createInvoiceMinor(params = {}) {
+    return this.createInvoice(params);
+  },
+
+  async cancelInvoice(invoiceId) {
+    if (!process.env.MOYASAR_API_KEY) {
+      return { success: false, error: "MOYASAR_API_KEY missing", provider: "moyasar" };
+    }
+    if (!invoiceId) {
+      return { success: false, error: "invoiceId required", provider: "moyasar" };
+    }
+    try {
+      const response = await axios.put(
+        `${MOYASAR_BASE}/invoices/${encodeURIComponent(invoiceId)}/cancel`,
+        {},
+        { auth: auth(), timeout: 15000 }
+      );
+      const data = response.data || {};
+      return {
+        success: true,
+        invoiceId: data.id || invoiceId,
+        providerStatus: data.status,
+        raw: data,
+        provider: "moyasar",
+      };
+    } catch (err) {
+      return {
+        success: false,
+        provider: "moyasar",
+        error: err.response?.data?.message || err.message,
+        statusCode: err.response?.status,
+      };
+    }
+  },
+
+  // Metadata-filtered lookup for creation recovery. `metadata` is encoded as
+  // `metadata[key]=value` query params; paging via `page`/`per`.
+  async listInvoices({ metadata = {}, page = 1, per = 25 } = {}) {
+    if (!process.env.MOYASAR_API_KEY) {
+      return { success: false, error: "MOYASAR_API_KEY missing", provider: "moyasar" };
+    }
+    try {
+      const params = { page };
+      for (const [k, v] of Object.entries(metadata)) {
+        params[`metadata[${k}]`] = v;
+      }
+      const response = await axios.get(`${MOYASAR_BASE}/invoices`, {
+        auth: auth(),
+        timeout: 15000,
+        params,
+      });
+      const data = response.data || {};
+      const invoices = Array.isArray(data.invoices) ? data.invoices : Array.isArray(data) ? data : [];
+      return {
+        success: true,
+        invoices,
+        totalPages: data.total_pages,
+        meta: data.meta || null,
+        raw: data,
+        provider: "moyasar",
+      };
+    } catch (err) {
+      return {
+        success: false,
+        provider: "moyasar",
+        error: err.response?.data?.message || err.message,
+        statusCode: err.response?.status,
+      };
+    }
+  },
+
   async fetchInvoice(invoiceId) {
     if (!process.env.MOYASAR_API_KEY) {
       return { success: false, error: "MOYASAR_API_KEY missing", provider: "moyasar" };
     }
     try {
-      const response = await axios.get(`${MOYASAR_BASE}/invoices/${invoiceId}`, {
+      const response = await axios.get(`${MOYASAR_BASE}/invoices/${encodeURIComponent(invoiceId)}`, {
         auth: auth(),
         timeout: 15000,
       });

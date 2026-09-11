@@ -211,7 +211,11 @@ const AddonsSection = ({ onAddonsChange, showBusiness = false, style }) => {
             return (
               <TouchableOpacity
                 key={tier.type}
-                style={[styles.designRow, active && styles.designRowActive]}
+                style={[
+                  styles.designRow,
+                  { direction: lang === "ar" ? "rtl" : "ltr" },
+                  active && styles.designRowActive,
+                ]}
                 onPress={() => toggleDes(tier)}
                 activeOpacity={0.85}
               >

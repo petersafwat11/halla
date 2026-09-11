@@ -17,8 +17,8 @@ describe("Session 2.5 Web: Ticket Attachment Viewer Matrix (ADM-14)", () => {
     const content = fs.readFileSync(cardPath, "utf-8");
 
     assert.match(content, /import MediaViewerModal from/);
-    assert.match(content, /ticket\.attachment\?\.url/);
-    assert.match(content, /setIsAttachmentOpen\(true\)/);
+    assert.match(content, /ticket\.attachments\?\.length/);
+    assert.match(content, /setOpenAttachment\(attachment\)/);
     assert.match(content, /<MediaViewerModal/);
   });
 
@@ -30,9 +30,9 @@ describe("Session 2.5 Web: Ticket Attachment Viewer Matrix (ADM-14)", () => {
     const content = fs.readFileSync(detailPath, "utf-8");
 
     assert.match(content, /import MediaViewerModal from/);
-    assert.match(content, /ticket\.attachment\?\.url/);
+    assert.match(content, /ticket\.attachments\?\.length/);
     assert.match(content, /<MediaViewerModal/);
-    assert.match(content, /setIsAttachmentOpen\(true\)/);
+    assert.match(content, /setOpenAttachment\(attachment\)/);
   });
 
   it("MediaViewerModal.jsx handles both video and image attachments", () => {
@@ -62,9 +62,9 @@ describe("Session 2.5 Web: Ticket Attachment Viewer Matrix (ADM-14)", () => {
     const makeContent = fs.readFileSync(makePopupPath, "utf-8");
 
     assert.match(sendContent, /MediaAttachmentInput/);
-    assert.match(sendContent, /formData\.append\("ticketAttachment", attachment\)/);
+    assert.match(sendContent, /formData\.append\("ticketAttachments", file\)/);
 
     assert.match(makeContent, /MediaAttachmentInput/);
-    assert.match(makeContent, /formData\.append\("ticketAttachment", attachment\)/);
+    assert.match(makeContent, /formData\.append\("ticketAttachments", file\)/);
   });
 });

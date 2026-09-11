@@ -103,6 +103,17 @@ const envSchema = Joi.object({
   MOYASAR_WEBHOOK_SECRET: Joi.string().allow('').default(''),
   MOYASAR_WEBHOOK_IP_WHITELIST: Joi.string().allow('').default(''),
 
+  // ─── Admin payment links (V1) ────────────────────────────────
+  PAYMENT_LINKS_ENABLED: Joi.string().valid('true', 'false').default('false'),
+  PAYMENT_LINKS_MAX_AMOUNT_SAR: Joi.number().min(1).max(9999999.99).precision(2).when('PAYMENT_LINKS_ENABLED', { is: 'true', then: Joi.required() }),
+  PAYMENT_LINKS_MIN_AMOUNT_SAR: Joi.number().min(1).default(1),
+  PAYMENT_LINKS_EXPIRY_CHOICES_DAYS: Joi.string().default('1,7,30'),
+  PAYMENT_LINKS_DEFAULT_EXPIRY_DAYS: Joi.number().min(1).default(7),
+  PAYMENT_LINKS_CALLBACK_BASE_URL: Joi.string().allow('').default(''),
+  PAYMENT_LINKS_HOSTED_URL_ALLOWLIST: Joi.string().default('https://checkout.moyasar.com,https://invoice.moyasar.com'),
+  PAYMENT_LINKS_RECONCILE_BATCH: Joi.number().integer().min(1).max(100).default(50),
+  PAYMENT_LINKS_RECONCILE_CONCURRENCY: Joi.number().integer().min(1).max(5).default(2),
+
 }).unknown(true); // Allow unknown keys for flexibility
 
 const { error, value: envVars } = envSchema.validate(process.env, {

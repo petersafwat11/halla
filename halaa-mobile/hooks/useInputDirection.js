@@ -13,7 +13,9 @@ import { useTranslation } from "../localization";
  *  - "ltr": intrinsically LTR content — email, URL, IDs, card data, OTP,
  *    raw time/amount, stored canonical strings.
  *  - "rtl": explicitly Arabic-only content.
- *  - "phone": localized placeholder while empty, LTR digits once non-empty.
+ *  - "phone": always LTR, including the numeric placeholder. Keeping the
+ *    direction stable prevents iOS RTL keyboards from dropping controlled
+ *    Latin digits after normalization.
  *
  * The resolver returns explicit `writingDirection` (iOS base direction for
  * both value and placeholder) while keeping `textAlign: "auto"` so alignment
@@ -90,8 +92,9 @@ export const resolveInputDirection = (
             : "ltr";
       break;
     case CONTENT_DIRECTIONS.PHONE:
-      // Localized placeholder while empty; stable LTR digits once typing.
-      writingDirection = hasValue ? "ltr" : isRTL ? "rtl" : "ltr";
+      // Numeric placeholders and values are intrinsically LTR. Never switch a
+      // focused iOS field from RTL to LTR on its first controlled keystroke.
+      writingDirection = "ltr";
       break;
     case CONTENT_DIRECTIONS.LOCALIZED:
     default:

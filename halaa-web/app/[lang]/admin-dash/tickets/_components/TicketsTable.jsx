@@ -162,6 +162,7 @@ export default function TicketsTable() {
     createdAt: ticket.createdAt || ticket.created_at,
     message: ticket.message || "",
     resolution: ticket.resolution || null,
+    attachments: ticket.attachments?.length ? ticket.attachments : ticket.attachment ? [ticket.attachment] : [],
   })), [data]);
 
   if (isLoading) return <SimpleLoading />;

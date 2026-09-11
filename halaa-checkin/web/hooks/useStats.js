@@ -20,7 +20,14 @@ export function useStats(eventId) {
     enabled: !!eventId,
     refetchInterval: 5000,
     refetchOnWindowFocus: true,
-    placeholderData: (previousData) => previousData,
+    refetchIntervalInBackground: false,
+    // Retain previous data only within the same event (F18); failed fetches
+    // must not become zero totals — callers surface error instead (F11).
+    placeholderData: (previousData, previousQuery) => {
+      const prevEventId = previousQuery?.queryKey?.[1];
+      if (prevEventId && prevEventId === eventId) return previousData;
+      return undefined;
+    },
     staleTime: 4000,
   });
 

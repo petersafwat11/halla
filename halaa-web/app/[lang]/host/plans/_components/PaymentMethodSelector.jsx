@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { FaLock, FaApple } from "react-icons/fa";
+import { FaLock } from "react-icons/fa";
 import { formatExpiryInput, detectCardBrand as sharedDetectCardBrand } from "@halaa/shared/utils";
 import {
   clampPhoneInput,
@@ -39,10 +39,6 @@ const StcPayLogo = ({ height = 24 }) => (
   </svg>
 );
 
-const ApplePayLogo = () => (
-  <FaApple size={28} color="var(--color-secondary-900)" style={{ display: 'inline-block', verticalAlign: 'middle' }} />
-);
-
 const METHODS = [
   {
     key: "creditcard",
@@ -54,34 +50,9 @@ const METHODS = [
       </div>
     ),
   },
-  { key: "applepay",   Logo: ApplePayLogo },
+  // Apple Pay must only return after a real wallet session/token integration is available.
   { key: "stcpay",     Logo: () => <StcPayLogo height={24} /> },
 ];
-
-const detectCardBrand = (number) => {
-  const clean = number.replace(/\D/g, "");
-  if (!clean) return "unknown";
-
-  // Mada ranges
-  const p6 = clean.substring(0, 6);
-  const p4 = clean.substring(0, 4);
-  const mada6 = [
-    "406136", "410621", "417633", "422817", "422818", "422819", "428331", "428671", "428672", "428673", "431361", "432328", "434673", "439953", "440533", "440647", "445564", "446393", "446404", "446672", "455036", "455708", "457865", "457997", "458456", "462220", "468541", "468542", "468543", "483010", "483011", "483012", "484783", "486094", "486095", "486096", "489317", "489318", "489319", "493137", "504300", "506959", "506960", "506961", "506962", "506963", "513213", "520058", "521076", "524130", "524514", "529415", "529741", "530060", "530906", "531095", "531196", "532013", "535822", "535989", "536023", "537767", "539931", "543085", "543357", "549760", "554180", "557606", "558848", "585265", "588845", "588846", "588847", "588848", "588849", "588850", "588851", "588982", "588983", "589005", "589206", "604906", "605141", "636120", "968201", "968202", "968203", "968204", "968205", "968206", "968207", "968208", "968209", "968211"
-  ];
-  
-  if (mada6.includes(p6)) return "mada";
-  
-  const p4Num = parseInt(p4, 10);
-  if (p4Num === 5892 || p4Num === 9682) return "mada";
-
-  if (clean.startsWith("4")) return "visa";
-  
-  if (/^(5[1-5]|222[1-9]|22[3-9]|2[3-6]|27[0-1]|2720)/.test(clean)) {
-    return "mastercard";
-  }
-  
-  return "unknown";
-};
 
 export default function PaymentMethodSelector({
   value,
@@ -148,7 +119,7 @@ export default function PaymentMethodSelector({
     onMobileChange?.(val);
   };
 
-  const activeCardBrand = (sharedDetectCardBrand || detectCardBrand)(card.number || "");
+  const activeCardBrand = sharedDetectCardBrand(card.number || "");
 
   const renderCardInputBrandIcon = () => {
     const meta = CARD_BRANDS[activeCardBrand];
@@ -305,19 +276,6 @@ export default function PaymentMethodSelector({
         </div>
       )}
 
-      {value === "applepay" && (
-        <div className={styles.fields}>
-          <p className={styles.note}>
-            <span style={{ fontSize: '1.6rem', marginRight: '4px' }}></span>
-            <span>
-              {t(
-                "checkout.applepay.note",
-                "You'll be prompted by Apple Pay on the next step."
-              )}
-            </span>
-          </p>
-        </div>
-      )}
     </div>
   );
 }

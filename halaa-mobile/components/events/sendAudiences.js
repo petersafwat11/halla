@@ -27,7 +27,7 @@ export function isTerminalEvent(event) {
 }
 
 export function computeSendAudiences(guests = []) {
-  const list = Array.isArray(guests) ? guests : [];
+  const list = Array.isArray(guests) ? guests.filter(g => g && !g.deleted) : [];
   const newGuests = list.filter(
     (g) => g?.invitation?.sent !== true && !g?.deleted
   );

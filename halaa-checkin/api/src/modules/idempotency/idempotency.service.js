@@ -49,12 +49,22 @@ export const IdempotencyService = {
    * @returns {Promise<import('./idempotency.model.js').Idempotency | null>}
    */
   async findExisting({ actorId, operation, eventId, key }, { session } = {}) {
-    return Idempotency.findOne({
+    const rec = await Idempotency.findOne({
       actorId,
       operation,
       eventId,
       key,
     }).session(session || null);
+    // F28: handle expired key records deterministically rather than depending
+    // on TTL timing. Expired records are treated as absent so a new operation
+    // with the same key starts fresh; callers never replay stale responses.
+    if (rec && rec.expiresAt && rec.expiresAt <= new Date()) {
+      // Remove the expired unique-key occupant within the caller transaction.
+      // Otherwise TTL lag makes the replacement insert collide indefinitely.
+      await Idempotency.deleteOne({ _id: rec._id, expiresAt: { $lte: new Date() } }).session(session || null);
+      return null;
+    }
+    return rec;
   },
 
   /**

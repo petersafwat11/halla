@@ -7,6 +7,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toastUtils } from "@/utils/toastUtils";
 import { useHostPlans } from "@/hooks/plans";
 import { useMySubscription, subscriptionsKeys } from "@/hooks/subscriptions";
+import { buildCreditCardSource } from "@halaa/shared/utils/card";
 import { useCheckout } from "@/hooks/checkout";
 import { addonsKeys } from "@/hooks/addons/keys";
 import { eventsKeys } from "@/hooks/events/keys";
@@ -97,24 +98,13 @@ export const usePlansPageState = () => {
 
   const buildSource = useCallback(() => {
     if (paymentMethod === "creditcard") {
-      return {
-        type: "creditcard",
-        name: cardData?.name,
-        number: cardData?.number,
-        month: Number(cardData?.month),
-        year: Number(cardData?.year),
-        cvc: cardData?.cvc,
-      };
+      return buildCreditCardSource(cardData);
     }
     if (paymentMethod === "stcpay") {
       return { type: "stcpay", mobile: stcMobile };
     }
-    if (paymentMethod === "applepay") {
-      // applepay token left null until PassKit integration ships.
-      return { type: "applepay", token: null };
-    }
-    return null;
-  }, [paymentMethod, cardData, stcMobile]);
+    throw new Error(t("checkout.errors.methodUnavailable", "This payment method is not available"));
+  }, [paymentMethod, cardData, stcMobile, t]);
 
   // Map AddonsSection cart into checkout body shape. Scope is forced to
   // pool/org since checkout addons cannot be event-scoped (no event yet at

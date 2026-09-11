@@ -19,6 +19,7 @@ const { EVENT_LIFECYCLE_ALLOWED } = require('../../shared/constants');
 const {
   resolveTaqnyatTemplate,
   computeInvitationFingerprint,
+  invitationFingerprintMatches,
 } = require('./messaging.formatting');
 const { getActiveEventGuestsFilter } = require('../../shared/utils/guestFilter');
 
@@ -38,7 +39,7 @@ async function scheduleBulkSend({
   actorRole,
 }) {
   const event = await Event.findById(eventId)
-    .populate('host', 'name')
+    .populate('host', 'name accountType')
     .populate('planId', 'code planType');
   if (!event) {
     throw new NotFoundError('Event');
@@ -60,7 +61,7 @@ async function scheduleBulkSend({
   const cachedTemplate = await resolveTaqnyatTemplate(event);
   const currentFingerprint = computeInvitationFingerprint(event, cachedTemplate);
 
-  if (!event.testMessageSent || event.testMessageFingerprint !== currentFingerprint) {
+  if (!invitationFingerprintMatches(event, cachedTemplate)) {
     throw new AppError(
       'A test message matching the current invitation content must be sent before scheduling',
       409,

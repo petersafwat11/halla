@@ -6,6 +6,7 @@ import { useRouter, useParams } from "next/navigation";
 import { toastUtils } from "@/utils/toastUtils";
 import { useBusinessPlans } from "@/hooks/plans";
 import { useMySubscription } from "@/hooks/subscriptions";
+import { buildCreditCardSource } from "@halaa/shared/utils/card";
 import { useCheckout } from "@/hooks/checkout";
 
 // Business plans are grouped by billing family: { event, quarterly, annual }.
@@ -79,23 +80,13 @@ export const useBusinessPlansPageState = () => {
 
   const buildSource = useCallback(() => {
     if (paymentMethod === "creditcard") {
-      return {
-        type: "creditcard",
-        name: cardData?.name,
-        number: cardData?.number,
-        month: Number(cardData?.month),
-        year: Number(cardData?.year),
-        cvc: cardData?.cvc,
-      };
+      return buildCreditCardSource(cardData);
     }
     if (paymentMethod === "stcpay") {
       return { type: "stcpay", mobile: stcMobile };
     }
-    if (paymentMethod === "applepay") {
-      return { type: "applepay", token: null };
-    }
-    return null;
-  }, [paymentMethod, cardData, stcMobile]);
+    throw new Error(t("checkout.errors.methodUnavailable", "This payment method is not available"));
+  }, [paymentMethod, cardData, stcMobile, t]);
 
   const handleSelectPlan = useCallback(
     (plan) => {

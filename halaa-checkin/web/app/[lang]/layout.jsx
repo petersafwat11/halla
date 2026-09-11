@@ -7,7 +7,8 @@ export async function generateStaticParams() {
 
 export default async function LangLayout({ children, params }) {
   const resolvedParams = await params;
-  const lang = resolvedParams?.lang === 'ar' ? 'ar' : 'en';
+  // Arabic default per product spec (unknown -> ar)
+  const lang = resolvedParams?.lang === 'en' ? 'en' : 'ar';
   const dir = lang === 'ar' ? 'rtl' : 'ltr';
 
   return (

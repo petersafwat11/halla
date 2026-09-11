@@ -11,6 +11,25 @@
   },
   "retentionRules": [
     {
+      "id": "financial-payment-links-6y",
+      "collection": "paymentlinks",
+      "model": "PaymentLink",
+      "triggerField": "financialActivityAt",
+      "durationYears": 6,
+      "retentionAnchor": "end_of_calendar_year",
+      "action": "delete",
+      "legalBasis": "legal_obligation",
+      "subjectField": "createdBy",
+      "eligibleStatuses": [
+        "paid",
+        "refunded",
+        "partially_refunded",
+        "expired",
+        "canceled",
+        "unavailable"
+      ]
+    },
+    {
       "id": "financial-payments-6y",
       "collection": "payments",
       "model": "Payment",
@@ -248,5 +267,5 @@
       "dpaStatus": "PLATFORM_TERMS_CONFIRMATION_REQUIRED"
     }
   ],
-  "policyHash": "28b061780f1e0162a38080ab919acb2ec1490b68168c60934924a8cfd7f9ccfd"
+  "policyHash": "0422f9bb17578b311c8a214837b3ad987f71ea4932d5a78104cc5fdaadd6333b"
 }

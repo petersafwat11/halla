@@ -1,0 +1,36 @@
+# Halaa Guest Check-in — Caddy host block (tracked snippet).
+#
+# This file is the REVIEWABLE source of the check-in host routing. It is not
+# loaded directly on the VPS. The exact block below (with CHECKIN_HOSTNAME
+# replaced by the operator-confirmed hostname, e.g. checkin.halaa.com.sa) is
+# appended to the TRACKED root Caddyfile through the normal main-stack
+# configuration process — see deploy/ROOT-INTEGRATION.md. Because the existing
+# deploy workflow copies the tracked root Caddyfile on every main-app deploy,
+# integrating through the tracked file (and never through a hand-edited VPS
+# Caddyfile) is what keeps this route alive after future Halaa deployments.
+#
+# Do NOT deploy the literal CHECKIN_HOSTNAME placeholder. DNS must resolve to
+# the VPS and Caddy must obtain a certificate before the hostname is usable.
+# Camera requires HTTPS except localhost.
+#
+# Network aliases assume the external `halaa_checkin_proxy` bridge (created
+# one-time via `docker network create halaa_checkin_proxy`) with the mini-app
+# services reachable as checkin-api:8100 / checkin-web:3100, and Caddy
+# attached to both that bridge and the existing Halaa network.
+
+CHECKIN_HOSTNAME {
+	encode zstd gzip
+	header {
+		X-Robots-Tag "noindex, nofollow, noarchive"
+		Referrer-Policy "no-referrer"
+		X-Content-Type-Options "nosniff"
+		Permissions-Policy "camera=(self), microphone=()"
+	}
+	@checkinApi path /api/checkin/v1 /api/checkin/v1/*
+	handle @checkinApi {
+		reverse_proxy checkin-api:8100
+	}
+	handle {
+		reverse_proxy checkin-web:3100
+	}
+}

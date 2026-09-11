@@ -1,3 +1,4 @@
+import { readTaqnyatTemplates } from '../../../utils/taqnyatTemplates';
 import React, { useMemo, useState } from "react";
 import {
   Modal,
@@ -34,6 +35,7 @@ const AccessLinksSheet = ({
   visible,
   onClose,
   eventId,
+  messagePreviews = {},
   savedTemplateRef,
   t,
   toast,
@@ -47,7 +49,7 @@ const AccessLinksSheet = ({
       { type: "post_event" },
       { enabled: visible }
     );
-  const templates = tplResponse?.data || [];
+  const templates = readTaqnyatTemplates(tplResponse);
 
   const generateTokens = useGeneratePostEventTokens();
   const sendLinks = useSendPostEventAccessLinks();
@@ -201,8 +203,8 @@ const AccessLinksSheet = ({
                     <AdaptiveText style={styles.tplName} numberOfLines={1}>
                       {tpl.templateName}
                     </AdaptiveText>
-                    <AdaptiveText style={styles.tplBody} numberOfLines={2}>
-                      {tpl.bodyText}
+                    <AdaptiveText style={styles.tplBody}>
+                      {messagePreviews[String(tpl._id)] || tpl.bodyText}
                     </AdaptiveText>
                   </TouchableOpacity>
                 );
@@ -293,8 +295,8 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   tplCardActive: {
-    borderColor: "#2A8C5B",
-    backgroundColor: "#EAF4EF",
+    borderColor: "#C28E5C",
+    backgroundColor: "#F9F4EF",
   },
   tplName: {
     fontSize: 12,
@@ -322,3 +324,4 @@ const styles = StyleSheet.create({
 });
 
 export default AccessLinksSheet;
+

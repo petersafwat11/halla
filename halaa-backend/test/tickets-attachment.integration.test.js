@@ -113,6 +113,23 @@ test("video attachment: typed 'video' and signed on read", async () => {
   assert.ok(ticket.attachment.url.endsWith(file.key));
 });
 
+test("mixed attachments: stores and returns up to four images and videos", async () => {
+  const user = await seedHost();
+  const files = [
+    imageFile(`${user._id}-1`),
+    videoFile(`${user._id}-2`),
+    imageFile(`${user._id}-3`),
+    videoFile(`${user._id}-4`),
+  ];
+
+  const { ticket } = await ticketsService.createTicket({ ...baseTicket }, user, files);
+
+  assert.equal(ticket.attachments.length, 4);
+  assert.deepEqual(ticket.attachments.map(item => item.type), ["image", "video", "image", "video"]);
+  assert.equal(ticket.attachment.url, ticket.attachments[0].url);
+  assert.ok(ticket.attachments.every(item => item.url.startsWith(BASE_URL)));
+});
+
 test("no attachment: JSON-only create leaves attachment null", async () => {
   const user = await seedHost();
 

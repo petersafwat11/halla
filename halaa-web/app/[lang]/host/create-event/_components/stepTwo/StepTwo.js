@@ -12,8 +12,10 @@ import GuestTable from "./GuestTable";
 import ReuseGuestsModal from "@/components/guests/reuseGuests/ReuseGuestsModal";
 import VCardImportModal from "@/components/guests/vcardImport/VCardImportModal";
 import CategoryAssignModal from "@/components/guests/categoryAssign/CategoryAssignModal";
+import { toLocalSaudiPhone } from "@halaa/shared/utils/phone";
 import { useMyContacts } from "@/hooks/guests/queries";
 import { toastUtils } from "@/utils/toastUtils";
+import { FiUsers, FiShield } from "react-icons/fi";
 import {
   isContactPickerSupported,
   pickPhoneContacts,
@@ -26,7 +28,7 @@ import {
  * form is disabled by the wizard's outer fieldset; here we just gate the
  * per-row actions.
  */
-const StepTwo = ({ subscription, allowAddOnly = false }) => {
+const StepTwo = ({ subscription, allowAddOnly = false, staffCount = 0, onManageStaff }) => {
   const { watch, setValue } = useFormContext();
   const router = useRouter();
   const pathname = usePathname();
@@ -166,7 +168,7 @@ const StepTwo = ({ subscription, allowAddOnly = false }) => {
       if (item) {
         setCurrentItemTracked({
           name: item.name || "",
-          mobile: item.mobile || "",
+          mobile: toLocalSaudiPhone(item.mobile || ""),
           category: item.category || "",
           id: item.id,
         });
@@ -258,6 +260,25 @@ const StepTwo = ({ subscription, allowAddOnly = false }) => {
 
   return (
     <div className={styles.stepTwo}>
+      <div className={styles.peopleSwitcher} aria-label={t("people_type_label", "Choose people type")}>
+        <div className={`${styles.peopleOption} ${styles.peopleOptionActive}`}>
+          <FiUsers className={styles.peopleOptionIcon} aria-hidden="true" />
+          <span className={styles.peopleOptionCopy}>
+            <strong>{t("event_guests_label", "Guests")}</strong>
+            <small>{t("guests_tab_hint", "Add and manage invitees")}</small>
+          </span>
+          <span className={styles.peopleCount}>{guestList.length}</span>
+        </div>
+        <button type="button" className={styles.peopleOption} onClick={onManageStaff}>
+          <FiShield className={styles.peopleOptionIcon} aria-hidden="true" />
+          <span className={styles.peopleOptionCopy}>
+            <strong>{t("event_moderators_label", "Staff")}</strong>
+            <small>{t("staff_tab_hint", "Manage gate supervisors")}</small>
+          </span>
+          <span className={styles.peopleCount}>{staffCount}</span>
+        </button>
+      </div>
+
       {/* Guest Quota Counter */}
       {subscription && (
         <GuestQuotaCounter

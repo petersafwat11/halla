@@ -23,6 +23,7 @@ import {
 } from "@halaa/shared/utils";
 import {
   getScheduleWindow,
+  getScheduleTimeBounds,
   validateScheduleSelection,
 } from "@halaa/shared/utils/schedulingWindow";
 import { useScheduleSend } from "../../hooks/messaging";
@@ -127,6 +128,33 @@ const ScheduleSendingModal = ({
   );
   const minDate = scheduleWindow.minimumDate;
   const maxDate = scheduleWindow.maximumDate;
+  const selectedDate = methods.watch("scheduledDate");
+  const timeBounds = useMemo(
+    () => getScheduleTimeBounds(selectedDate, scheduleWindow),
+    [selectedDate, scheduleWindow]
+  );
+  const pickerTimeBounds = useMemo(() => {
+    const makeTime = (minutes) => {
+      const value = new Date();
+      value.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0);
+      return value;
+    };
+    return {
+      minimumDate: makeTime(timeBounds.minimumMinutes),
+      maximumDate: makeTime(timeBounds.maximumMinutes),
+    };
+  }, [timeBounds]);
+
+  useEffect(() => {
+    const current = methods.getValues("scheduledTime");
+    if (!selectedDate || !current) return;
+    const minutes = current.getHours() * 60 + current.getMinutes();
+    if (minutes < timeBounds.minimumMinutes) {
+      methods.setValue("scheduledTime", pickerTimeBounds.minimumDate, { shouldValidate: true });
+    } else if (minutes > timeBounds.maximumMinutes) {
+      methods.setValue("scheduledTime", pickerTimeBounds.maximumDate, { shouldValidate: true });
+    }
+  }, [selectedDate, timeBounds, pickerTimeBounds, methods]);
 
   const onSubmit = async (data) => {
     const scheduledTime = formatTimeForAPI(data.scheduledTime);
@@ -243,6 +271,8 @@ const ScheduleSendingModal = ({
                 name="scheduledTime"
                 label={t("scheduleSend.time")}
                 placeholder={t("scheduleSend.timePlaceholder")}
+                minimumDate={pickerTimeBounds.minimumDate}
+                maximumDate={pickerTimeBounds.maximumDate}
               />
 
               {/* Scheduling-window note */}

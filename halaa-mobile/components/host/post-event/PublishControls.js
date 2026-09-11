@@ -7,6 +7,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "../../../localization";
 
 /**
  * Bottom action group for the host post-event screen. When the content
@@ -20,9 +21,11 @@ const PublishControls = ({
   unpublishing,
   onPublish,
   onOpenAccessLinks,
+  onViewSharedPage,
   onUnpublish,
   t,
 }) => {
+  const { currentLanguage } = useTranslation("postEvent");
   if (!isPublished) {
     return (
       <View style={styles.actionsSection}>
@@ -45,6 +48,10 @@ const PublishControls = ({
 
   return (
     <View style={styles.actionsSection}>
+      <TouchableOpacity style={styles.publishButton} onPress={onViewSharedPage} activeOpacity={0.7} accessibilityRole="button">
+        <Ionicons name="eye-outline" size={18} color="#FFF" />
+        <Text style={styles.publishButtonText}>{t("host.viewSharedPage", { defaultValue: currentLanguage === "ar" ? "عرض الصفحة المنشورة" : "View shared page" })}</Text>
+      </TouchableOpacity>
       <TouchableOpacity
         style={styles.resendButton}
         onPress={onOpenAccessLinks}

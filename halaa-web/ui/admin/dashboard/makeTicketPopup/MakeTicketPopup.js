@@ -20,7 +20,7 @@ const MakeTicketPopup = ({ onClose, onSuccess }) => {
   const { t: tt } = useTranslation("tickets");
   const createMutation = useTicketMutation("createTicket");
   // Optional attachment (image OR video), held outside react-hook-form.
-  const [attachment, setAttachment] = useState(null);
+  const [attachment, setAttachment] = useState([]);
 
   const typeLabels = {
     technical: t("ticketTypes.technical", "تقني"),
@@ -54,18 +54,18 @@ const MakeTicketPopup = ({ onClose, onSuccess }) => {
     try {
       // Send multipart only when an attachment is present; else plain JSON.
       let payload = data;
-      if (attachment) {
+      if (attachment.length) {
         const formData = new FormData();
         formData.append("subject", data.subject);
         formData.append("type", data.type);
         formData.append("message", data.message);
         if (data.priority) formData.append("priority", data.priority);
-        formData.append("ticketAttachment", attachment);
+        attachment.forEach(file => formData.append("ticketAttachments", file));
         payload = formData;
       }
       await createMutation.mutateAsync(payload);
       toast.success(t("createTicket.success", "تم إنشاء الشكوى بنجاح"));
-      setAttachment(null);
+      setAttachment([]);
       onSuccess?.();
       onClose?.();
     } catch (error) {

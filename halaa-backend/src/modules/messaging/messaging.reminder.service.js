@@ -7,7 +7,6 @@ const { resolveInvitationDelivery, buildGuestInvitationUrl, assertBusinessTempla
 const taqnyat = require('../../infrastructure/taqnyat');
 const Event = require('../../../models/EventModel');
 const Guest = require('../../../models/GuestModel');
-const config = require('../../config');
 const { runBatched } = require('../../shared/utils/runBatched');
 const { logAudit } = require('../../shared/utils/auditLog');
 const { NotFoundError, ForbiddenError, AppError } = require('../../shared/errors');
@@ -36,7 +35,6 @@ async function sendReminder({
   guestIds = null,
   channel = 'sms',
   customMessage = null,
-  reminderTemplateName,
   userId,
   isAdmin = false,
   actorRole,
@@ -70,11 +68,13 @@ async function sendReminder({
     );
   }
 
-  const templateName =
-    reminderTemplateName || config.taqnyat?.reminderTemplateName;
-
-  const businessTemplate = resolveInvitationDelivery(event) === 'portal_link' && channel === 'whatsapp'
-    ? assertBusinessTemplate(await require('../taqnyat-templates/taqnyat-templates.service').findActiveByCategoryAndType(event.eventDetails?.type, 'reminder_confirmed', 'portal_link')) : null;
+  if (event.invitationType === 'none') throw new AppError('Information-only invitations do not accept responses.', 400, 'RSVP_NOT_ALLOWED');
+  // Non-responders receive their event's approved invitation, not wording
+  // claiming they already confirmed attendance. The server owns selection.
+  const deliveryMode = resolveInvitationDelivery(event);
+  const reminderTemplate = channel === 'whatsapp'
+    ? await require('../taqnyat-templates/taqnyat-templates.service').assertInviteTemplateCompatible(event.taqnyatTemplate?.templateRef, { category: event.eventDetails?.type, invitationMode: event.invitationType, deliveryMode }) : null;
+  const templateName = reminderTemplate?.templateName;
   const query = {
     ...getActiveEventGuestsFilter(
       eventId,
@@ -112,35 +112,17 @@ async function sendReminder({
           purpose: 'guest_reminder_manual',
         },
       };
-      const rsvpLink = buildGuestInvitationUrl(event, guest.qrcode, businessTemplate?.language);
+      const rsvpLink = buildGuestInvitationUrl(event, guest.qrcode, reminderTemplate?.language);
       const defaultMessage = `تذكير: ${eventData.hostName} بانتظار ردك على دعوة "${eventData.title}". للرد: ${rsvpLink}`;
       const message = resolveInvitationDelivery(event) === 'portal_link' ? `${customMessage || eventData.title}\n${rsvpLink}` : customMessage || defaultMessage;
 
       let result;
-      if (businessTemplate) {
-        const params = getEventBodyParams(event, guest.name, businessTemplate, { invitation: { url: rsvpLink } });
+      if (reminderTemplate) {
+        const params = getEventBodyParams(event, guest.name, reminderTemplate, { invitation: { url: rsvpLink } });
         const sms = { sender: TAQNYAT_SENDER, body: message };
-        const image = getRequiredEventImageUrl(event, businessTemplate);
-        result = image ? await taqnyat.sendWhatsAppTemplateWithImage(guest.phone, businessTemplate.templateName, businessTemplate.language || 'ar', image, params, sms, { ...logOptions, sensitive: true }, [])
-          : await taqnyat.sendWhatsAppTemplate(guest.phone, businessTemplate.templateName, businessTemplate.language || 'ar', [{ type: 'body', parameters: params.map(text => ({ type: 'text', text })) }], sms, { ...logOptions, sensitive: true });
-      } else if (channel === 'whatsapp') {
-        result = await taqnyat.sendWhatsAppTemplate(
-          guest.phone,
-          templateName,
-          'ar',
-          [
-            {
-              type: 'body',
-              parameters: [
-                { type: 'text', text: eventData.hostName },
-                { type: 'text', text: eventData.title },
-                { type: 'text', text: eventData.date },
-              ],
-            },
-          ],
-          null,
-          logOptions
-        );
+        const image = getRequiredEventImageUrl(event, reminderTemplate);
+        result = image ? await taqnyat.sendWhatsAppTemplateWithImage(guest.phone, reminderTemplate.templateName, reminderTemplate.language || 'ar', image, params, sms, { ...logOptions, sensitive: true }, [])
+          : await taqnyat.sendWhatsAppTemplate(guest.phone, reminderTemplate.templateName, reminderTemplate.language || 'ar', [{ type: 'body', parameters: params.map(text => ({ type: 'text', text })) }], sms, { ...logOptions, sensitive: true });
       } else {
         result = await sendSMS(guest.phone, message, logOptions.logContext);
       }
@@ -233,7 +215,7 @@ async function sendAutoReminderBatch({
             logContext: {
               eventId: event._id,
               guestId: guest._id,
-              purpose: reminderType === 'extra' ? 'guest_reminder_extra' : 'guest_reminder_auto',
+              purpose: scope === 'extra_reminder' || reminderType === 'extra' ? 'guest_reminder_extra' : 'guest_reminder_auto',
               metadata: { reminderType },
             },
           };

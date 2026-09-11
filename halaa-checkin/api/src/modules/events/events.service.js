@@ -69,7 +69,7 @@ export const EventsService = {
     }
 
     const event = await Event.findById(eventId);
-    if (!event) {
+    if (!event || event.purgingAt) {
       throw new DomainError({
         code: ERROR_CODES.NOT_FOUND,
         message: 'Event not found',
@@ -165,7 +165,7 @@ export const EventsService = {
 
     return withTransaction(async (session) => {
       const event = await Event.findById(eventId).session(session);
-      if (!event) {
+      if (!event || event.purgingAt) {
         throw new DomainError({
           code: ERROR_CODES.NOT_FOUND,
           message: 'Event not found',
@@ -258,7 +258,7 @@ export const EventsService = {
 
     return withTransaction(async (session) => {
       const event = await Event.findById(eventId).session(session);
-      if (!event) {
+      if (!event || event.purgingAt) {
         throw new DomainError({
           code: ERROR_CODES.NOT_FOUND,
           message: 'Event not found',
@@ -336,7 +336,7 @@ export const EventsService = {
     }
 
     const event = await Event.findById(eventId);
-    if (!event) {
+    if (!event || event.purgingAt) {
       throw new DomainError({
         code: ERROR_CODES.NOT_FOUND,
         message: 'Event not found',

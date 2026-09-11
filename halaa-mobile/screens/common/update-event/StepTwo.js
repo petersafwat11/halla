@@ -15,7 +15,7 @@ import CreateStepTwo from "../../../components/createEvent/StepTwo";
 import LocalizedText from "../../../components/commen/LocalizedText";
 import { useTranslation } from "../../../localization";
 
-const StepTwo = ({ guestList, staffList, subscription, allowAddOnly = false }) => {
+const StepTwo = ({ guestList, staffList, subscription, allowAddOnly = false, onStaffAdd }) => {
   const { t } = useTranslation("admin");
   return (
     <View style={styles.container}>
@@ -33,6 +33,7 @@ const StepTwo = ({ guestList, staffList, subscription, allowAddOnly = false }) =
         staffList={staffList}
         subscription={subscription}
         allowAddOnly={allowAddOnly}
+        onStaffAdd={onStaffAdd}
       />
     </View>
   );

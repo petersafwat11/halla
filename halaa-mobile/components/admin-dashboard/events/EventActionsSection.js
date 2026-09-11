@@ -6,20 +6,6 @@ const EventActionsSection = ({ event, canEdit, canDelete, updatePending, deleteP
   const actionRows = [];
 
   if (canEdit) {
-    if (status === "pending_scheduling") {
-      actionRows.push(
-        <EventActionRow
-          key="publish"
-          icon="megaphone-outline"
-          iconBg="#EAF4EF"
-          iconColor="#2A8C5B"
-          label={t("eventDetails.publishEvent")}
-          sublabel={t("eventDetails.publishEventSublabel")}
-          loading={updatePending}
-          onPress={() => onStatusChange("scheduled", "eventDetails.publishConfirmTitle", "eventDetails.publishConfirmMessage", "eventDetails.publish")}
-        />
-      );
-    }
     if (status === "scheduled" || status === "live") {
       actionRows.push(
         <EventActionRow

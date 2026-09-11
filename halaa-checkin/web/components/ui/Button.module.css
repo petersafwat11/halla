@@ -20,10 +20,10 @@
   outline-offset: 2px;
 }
 
-/* Sizes */
+/* Sizes (spec §8: touch targets >= 44px; sm keeps compact padding but meets height) */
 .sm {
-  height: 36px;
-  padding: 0 12px;
+  min-height: 44px;
+  padding: 6px 12px;
   font-size: 13px;
 }
 
@@ -54,6 +54,8 @@
   background-color: var(--btn-primary-contrast-active, #513c27);
 }
 
+/* NOTE: .brand is white-on-primary-500 and fails normal-text contrast (spec §3).
+   Retained only for large/bold decorative accents; prefer .primary for text buttons. */
 .brand {
   background-color: var(--btn-brand-bg, #c28e5c);
   color: #ffffff;

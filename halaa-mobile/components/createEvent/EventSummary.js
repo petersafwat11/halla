@@ -1,6 +1,8 @@
+import { buildReplyPreview } from '@halaa/shared/utils/rsvpMessages';
+import ReplyDeliveryPreview from './ReplyDeliveryPreview';
 import { hasEventCoordinates } from "@halaa/shared/utils/eventLocation";
 import { getImageUrl } from "../../utils/imageUtils";
-import { INVITATION_TYPE_OPTIONS, DEFAULT_INVITATION_TYPE, invitationAllowsReply } from "../../utils/invitationTypes";
+import { getInvitationTypeCopy, DEFAULT_INVITATION_TYPE, invitationAllowsReply } from "../../utils/invitationTypes";
 import React, { useRef, useEffect, useMemo, useState } from "react";
 import {
   View,
@@ -139,7 +141,6 @@ const EventSummary = ({ owner } = {}) => {
   const staffList = watch("staffList") || [];
   const invitationType = watch("invitationType") || DEFAULT_INVITATION_TYPE;
   const guestReplies = watch("guestReplies") || {};
-  const mode = INVITATION_TYPE_OPTIONS.find(option => option.value === invitationType);
   const isBusinessEvent = watch("isBusinessEvent");
   const selectedTemplate = watch("selectedTemplate") || null;
   const confirmReviewed = watch("confirmReviewed") || false;
@@ -301,12 +302,12 @@ const EventSummary = ({ owner } = {}) => {
           <LocalizedText role="label" style={styles.detailsHeader}>{t("summary_replies")}</LocalizedText>
           <View style={styles.detailsContent}>
             <LocalizedText>{t("invitation_type")}</LocalizedText>
-            <LocalizedText>{t(isBusinessEvent && invitationType === "reply_and_qr" ? "business_invitation_type_reply_and_qr_label" : mode?.labelKey)}</LocalizedText>
+            <LocalizedText>{getInvitationTypeCopy(invitationType, currentLanguage, isBusinessEvent).title}</LocalizedText>
             {invitationAllowsReply(invitationType) ? <>
               <LocalizedText>{t("attendance_auto_reply")}</LocalizedText>
-              <AdaptiveText>{guestReplies.onAttend || "—"}</AdaptiveText>
+              <ReplyDeliveryPreview preview={buildReplyPreview({ invitationType, isBusinessEvent, guestReplies, eventName, eventDate, eventTime, address, response: "confirmed" })} />
               <LocalizedText>{t("absence_auto_reply")}</LocalizedText>
-              <AdaptiveText>{guestReplies.onAbsent || "—"}</AdaptiveText>
+              <ReplyDeliveryPreview preview={buildReplyPreview({ invitationType, isBusinessEvent, guestReplies, eventName, eventDate, eventTime, address, response: "declined" })} />
             </> : <LocalizedText>{t("auto_replies_disabled_note")}</LocalizedText>}
             {!!staffList.length && <TouchableOpacity accessibilityRole="button" accessibilityState={{ expanded: showStaff }} onPress={() => setShowStaff(value => !value)} style={styles.disclosure}><LocalizedText role="label">{t("summary_staff")} ({formatCount(staffList.length, currentLanguage)})</LocalizedText><Ionicons name={showStaff ? "chevron-up" : "chevron-down"} size={18} color="#6B4E33" /></TouchableOpacity>}
             {showStaff && staffList.map((staff, index) => <AdaptiveText key={staff.id || staff._id || index}>{`${staff.name || ""} · ${staff.phone || staff.mobile || ""}`}</AdaptiveText>)}

@@ -7,6 +7,7 @@ import { createEventAdditionSchemas } from "@/utils/schemas/eventAddintionSchema
 import styles from "./addGuestPopup.module.css";
 import Button from "@/ui/commen/button/Button";
 import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
+import { toLocalSaudiPhone } from "@halaa/shared/utils/phone";
 
 const AddGuestPopup = ({ onConfirm, onCancel, eventId, editGuest = null }) => {
   const { t } = useTranslation("home-events");
@@ -21,7 +22,7 @@ const AddGuestPopup = ({ onConfirm, onCancel, eventId, editGuest = null }) => {
     resolver: zodResolver(guestSchema),
     defaultValues: {
       name: editGuest?.name || "",
-      phone: editGuest?.phone || "",
+      phone: toLocalSaudiPhone(editGuest?.phone || ""),
       category: editGuest?.category || "",
     },
   });

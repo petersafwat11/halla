@@ -145,8 +145,9 @@ export default function SendActionModal({
         return;
       }
 
-      const successful = data.successful ?? guestIds.length;
-      toast.success(
+      const successful = data.successful ?? 0;
+      const notify = successful === 0 ? toast.error : successful < total ? toast.warning : toast.success;
+      notify(
         t("events:bulkActions.sentResult", {
           // One atomic LTR token — the slash must not split/reverse in Arabic.
           successful: isolateLtr(

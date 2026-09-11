@@ -85,12 +85,14 @@ function buildEventDoc(status = EVENT_STATUS.SCHEDULED, overrides = {}) {
 }
 
 test.describe('EVT-06: Event State Machine & Status Transitions', () => {
-  test('allows valid transitions (e.g. pending_scheduling -> scheduled, scheduled -> live, live -> completed)', async () => {
+  test('requires the scheduling service before allowing lifecycle transitions', async () => {
     const event = await Event.create(buildEventDoc(EVENT_STATUS.PENDING_SCHEDULING));
 
     // pending_scheduling -> scheduled
-    const updated1 = await adminEventsService.updateEventStatus(event._id, EVENT_STATUS.SCHEDULED, adminUser);
-    assert.equal(updated1.status, EVENT_STATUS.SCHEDULED);
+    await assert.rejects(adminEventsService.updateEventStatus(event._id, EVENT_STATUS.SCHEDULED, adminUser), /Use Schedule Delivery/);
+    assert.equal((await Event.findById(event._id)).status, EVENT_STATUS.PENDING_SCHEDULING);
+    // Establish the state normally written by the scheduling service.
+    await Event.updateOne({ _id: event._id }, { $set: { status: EVENT_STATUS.SCHEDULED } });
 
     // scheduled -> live
     const updated2 = await adminEventsService.updateEventStatus(event._id, EVENT_STATUS.LIVE, adminUser);
@@ -128,15 +130,21 @@ test.describe('EVT-06: Event State Machine & Status Transitions', () => {
     const cancelled = await adminEventsService.updateEventStatus(event._id, EVENT_STATUS.CANCELLED, adminUser);
     assert.equal(cancelled.status, EVENT_STATUS.CANCELLED);
     assert.ok(cancelled.cancelledAt);
+    assert.equal(cancelled.launchSettings?.scheduledDate, undefined);
+    assert.equal(cancelled.launchSettings?.scheduledTime, undefined);
     assert.equal(cancelled.previousStatus, EVENT_STATUS.SCHEDULED);
 
     // Subscription usage.eventsCreated should be decremented from 2 to 1
     const subAfterCancel = await Subscription.findById(testSub._id);
     assert.equal(subAfterCancel.usage.eventsCreated, 1);
 
+    // Older deployments may have retained a schedule on a cancelled event.
+    await Event.updateOne({_id:event._id},{$set:{'launchSettings.scheduledDate':new Date('2026-10-10'),'launchSettings.scheduledTime':'02:25'}});
     // Reactivate event back to scheduled
     const reactivated = await adminEventsService.updateEventStatus(event._id, EVENT_STATUS.SCHEDULED, adminUser);
-    assert.equal(reactivated.status, EVENT_STATUS.SCHEDULED);
+    assert.equal(reactivated.status, EVENT_STATUS.PENDING_SCHEDULING);
+    assert.equal(reactivated.launchSettings?.scheduledDate, undefined);
+    assert.equal(reactivated.launchSettings?.scheduledTime, undefined);
     assert.equal(reactivated.cancelledAt, null);
     assert.equal(reactivated.previousStatus, null);
   });
@@ -250,8 +258,7 @@ test.describe('EVT-05 & EVT-06: Single and Bulk Delete Parity & Invariants', () 
     const event2 = await Event.create(buildEventDoc(EVENT_STATUS.COMPLETED));
 
     // Target transition: SCHEDULED
-    // event1 (pending_scheduling -> scheduled): VALID
-    // event2 (completed -> scheduled): VALID (reschedule)
+    // Pending events must use the scheduling endpoint; completed events reopen pending.
     const result = await adminEventsService.bulkUpdateEventStatus(
       [event1._id.toString(), event2._id.toString()],
       EVENT_STATUS.SCHEDULED,
@@ -259,9 +266,12 @@ test.describe('EVT-05 & EVT-06: Single and Bulk Delete Parity & Invariants', () 
     );
 
     assert.equal(result.success, true);
-    assert.equal(result.updatedCount, 2);
-    assert.equal(result.succeeded.length, 2);
-    assert.equal(result.failed.length, 0);
+    assert.equal(result.updatedCount, 1);
+    assert.equal(result.succeeded.length, 1);
+    assert.equal(result.failed.length, 1);
+    assert.equal(result.failed[0].id, event1._id.toString());
+    assert.equal((await Event.findById(event2._id)).status, EVENT_STATUS.PENDING_SCHEDULING);
+    await Event.findByIdAndUpdate(event1._id, { status: EVENT_STATUS.SCHEDULED });
 
     // If we attempt transition to LIVE:
     // event1 is SCHEDULED -> LIVE (valid)

@@ -44,7 +44,10 @@
 
 @media (max-width: 768px) {
   .productTitle {
-    display: none;
+    font-size: 13px;
+    max-width: 110px;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 
@@ -122,7 +125,12 @@
   }
 
   .staffChip {
-    display: none;
+    padding: 2px 6px;
+  }
+
+  .staffName {
+    max-width: 64px;
+    font-size: 12px;
   }
 
   .endSection {
@@ -130,13 +138,13 @@
   }
 
   .langToggle {
-    height: 32px;
+    min-height: 44px;
     padding: 0 8px;
     font-size: 12px;
   }
 
   .logoutBtn {
-    height: 32px;
+    min-height: 44px;
     padding: 0 8px;
   }
 }

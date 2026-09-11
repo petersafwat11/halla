@@ -63,7 +63,33 @@ export function parseAndValidateHeaders(rawCsv) {
   }
 
   let records = [];
+  let rawHeaders = [];
   try {
+    // F14: validate the raw header array BEFORE object mapping so duplicate
+    // headers cannot silently collapse (e.g. `name,name,...`).
+    const headerRows = parse(cleanCsv, {
+      bom: true,
+      columns: false,
+      skip_empty_lines: true,
+      trim: true,
+      relax_column_count: false,
+      to_line: 1,
+    });
+    rawHeaders = (headerRows?.[0] || []).map((h) => String(h).trim());
+    const seen = new Set();
+    const duplicates = [];
+    for (const h of rawHeaders) {
+      if (seen.has(h)) duplicates.push(h);
+      else seen.add(h);
+    }
+    if (duplicates.length > 0) {
+      return {
+        records: [],
+        headers: rawHeaders,
+        error: `Duplicate header(s): ${[...new Set(duplicates)].join(', ')}. Each of the four headers must appear exactly once.`,
+      };
+    }
+
     records = parse(cleanCsv, {
       bom: true,
       columns: true,
@@ -136,9 +162,17 @@ export const ImportsService = {
 
     const parseResult = parseAndValidateHeaders(rawCsv);
     if (parseResult.error) {
+      const headerIssue = {
+        row: null,
+        lineNumber: null,
+        field: 'header',
+        code: 'IMPORT_INVALID',
+        message: parseResult.error,
+      };
       return {
         rows: [],
-        errors: [parseResult.error],
+        // Structured issues (F13); clients must read .message, not assume strings.
+        errors: [headerIssue],
         warnings: [],
         validCount: 0,
         remainingCapacity: 0,
@@ -170,10 +204,26 @@ export const ImportsService = {
 
     for (let i = 0; i < records.length; i++) {
       const row = records[i];
+      // Logical data-row numbering: header is row 1, first data record is row 2.
+      // Blank lines are skipped by the parser, so this is a stable logical
+      // reference (not a physical source line after quoted multiline records).
       const lineNumber = i + 2; // Line 1 is header
       const rowValidation = validateCsvRow(row, lineNumber);
 
-      const rowErrors = [...(rowValidation.errors || [])];
+      const toIssue = (msg, kind) => {
+        const lower = String(msg).toLowerCase();
+        let field = null;
+        let code = kind === 'warning' ? 'DUPLICATE_NAME' : 'IMPORT_INVALID';
+        if (lower.includes('allowedcompanions')) { field = 'allowedCompanions'; code = 'VALIDATION_FAILED'; }
+        else if (lower.includes('companionnames') || lower.includes('companion name')) { field = 'companionNames'; code = 'VALIDATION_FAILED'; }
+        else if (lower.includes('reference')) { field = 'reference'; code = lower.includes('duplicate') || lower.includes('already used') ? 'REFERENCE_CONFLICT' : 'VALIDATION_FAILED'; }
+        else if (lower.includes('name')) { field = 'name'; code = kind === 'warning' ? 'DUPLICATE_NAME' : 'VALIDATION_FAILED'; }
+        else if (lower.includes('capacity')) { field = null; code = 'CAPACITY_EXCEEDED'; }
+        else if (lower.includes('header')) { field = 'header'; code = 'IMPORT_INVALID'; }
+        return { row: lineNumber, lineNumber, field, code, message: String(msg) };
+      };
+
+      const rowErrors = (rowValidation.errors || []).map((m) => toIssue(m, 'error'));
       const rowWarnings = [];
 
       if (rowValidation.valid && rowValidation.data) {
@@ -184,36 +234,52 @@ export const ImportsService = {
         if (referenceKey) {
           if (seenReferences.has(referenceKey)) {
             const prevLine = seenReferences.get(referenceKey);
-            rowErrors.push(
-              `Row ${lineNumber}: duplicate reference '${reference}' within import file (first defined at row ${prevLine})`
-            );
+            rowErrors.push({
+              row: lineNumber,
+              lineNumber,
+              field: 'reference',
+              code: 'REFERENCE_CONFLICT',
+              message: `Row ${lineNumber}: duplicate reference '${reference}' within import file (first defined at row ${prevLine})`,
+            });
           } else {
             seenReferences.set(referenceKey, lineNumber);
           }
 
           // 2. Database reference collision check (blocking error)
           if (existingRefKeys.has(referenceKey)) {
-            rowErrors.push(
-              `Row ${lineNumber}: reference '${reference}' is already used by an active guest in this event`
-            );
+            rowErrors.push({
+              row: lineNumber,
+              lineNumber,
+              field: 'reference',
+              code: 'REFERENCE_CONFLICT',
+              message: `Row ${lineNumber}: reference '${reference}' is already used by an active guest in this event`,
+            });
           }
         }
 
         // 3. Intra-file matching name check (non-blocking warning)
         if (seenNames.has(normName)) {
           const prevLine = seenNames.get(normName);
-          rowWarnings.push(
-            `Row ${lineNumber}: matching name '${name}' found in import file (also at row ${prevLine})`
-          );
+          rowWarnings.push({
+            row: lineNumber,
+            lineNumber,
+            field: 'name',
+            code: 'DUPLICATE_NAME',
+            message: `Row ${lineNumber}: matching name '${name}' found in import file (also at row ${prevLine})`,
+          });
         } else {
           seenNames.set(normName, lineNumber);
         }
 
         // 4. Database matching name check (non-blocking warning)
         if (existingNames.has(normName)) {
-          rowWarnings.push(
-            `Row ${lineNumber}: a guest with matching name '${name}' already exists in this event`
-          );
+          rowWarnings.push({
+            row: lineNumber,
+            lineNumber,
+            field: 'name',
+            code: 'DUPLICATE_NAME',
+            message: `Row ${lineNumber}: a guest with matching name '${name}' already exists in this event`,
+          });
         }
       }
 
@@ -230,6 +296,7 @@ export const ImportsService = {
 
       rows.push({
         lineNumber,
+        row: lineNumber,
         valid: rowErrors.length === 0,
         data: rowValidation.data || null,
         errors: rowErrors,
@@ -239,9 +306,13 @@ export const ImportsService = {
 
     // Capacity limit check
     if (validCount > remainingCapacity) {
-      allErrors.push(
-        `Import of ${validCount} guests exceeds remaining event capacity of ${remainingCapacity}`
-      );
+      allErrors.push({
+        row: null,
+        lineNumber: null,
+        field: null,
+        code: 'CAPACITY_EXCEEDED',
+        message: `Import of ${validCount} guests exceeds remaining event capacity of ${remainingCapacity}`,
+      });
     }
 
     const canCommit = allErrors.length === 0 && validCount > 0 && validCount <= remainingCapacity;

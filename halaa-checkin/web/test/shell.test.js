@@ -75,10 +75,10 @@ describe('T07 — Shell, Localization and UI Primitives', () => {
       assert.equal(getDictionary('ar'), arDict);
       assert.equal(getDictionary('en'), enDict);
 
-      // t() lookup and variable interpolation
+      // t() lookup and variable interpolation (F12: missing keys never render raw keys)
       assert.equal(t(arDict, 'common.appName'), 'إدارة دخول الضيوف');
       assert.equal(t(enDict, 'common.appName'), 'Guest Check-in');
-      assert.equal(t(arDict, 'nonexistent.key'), 'nonexistent.key');
+      assert.equal(t(arDict, 'nonexistent.key'), '');
 
       // formatRiyadhDate produces valid string
       const testDate = '2026-09-08T18:00:00.000Z';

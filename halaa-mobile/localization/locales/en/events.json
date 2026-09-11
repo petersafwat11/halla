@@ -297,6 +297,7 @@
     }
   },
   "autoReminderInfo": "We send a free reminder to confirmed guests before the event.",
+  "reminderInactiveEvent": "Reminders are unavailable because this event is completed or cancelled. Use an active event to manage reminder settings and send extra reminders.",
   "reminderUnavailable": "Reminders are not available for this event yet. An approved message template must be configured by the Halaa team.",
   "autoReminderInfoCustom": "We send a free reminder to confirmed guests on {{date}} at {{time}}.",
   "customizeReminder": "Customize",
@@ -320,10 +321,10 @@
   },
   "reminder": {
     "confirmTitle": "Send Reminder",
-    "confirmBody": "Send free reminder to confirmed guests?",
+    "confirmBody": "Send an SMS reminder to invited guests who have not responded?",
     "send": "Send",
     "sending": "Sending...",
-    "sendAll": "Remind Guests",
+    "sendAll": "Remind non-responders",
     "success": "Reminder sent",
     "error": "Failed to send reminder"
   },
@@ -467,6 +468,10 @@
     "helper": "Adding guests is free; you're charged only when an invitation or reminder is sent.",
     "usageSummary": "{{used}} of {{total}} used"
   },
+  "currentPlan": {
+    "label": "Current account plan",
+    "eventAllowanceNote": "This event keeps the invitation allowance assigned when it was created. Your current plan applies when creating new events."
+  },
   "peopleRetry": "Could not load guests. Tap to retry.",
   "peopleBulkTitle": "Update selected guests",
   "peopleBulkConfirm": "Apply this change to {{count}} selected guests?",
@@ -481,6 +486,7 @@
   "workflow": {
     "testFirst": "Send a test invitation to review the message and artwork. Then choose when invitations go to your guests.",
     "scheduleNext": "Your test was sent. Choose a sending time next; guests receive their invitations at that scheduled time.",
-    "scheduled": "Invitations are scheduled. Reopen the schedule to review or change the saved date and time."
+    "scheduled": "Invitations are scheduled. Reopen the schedule to review or change the saved date and time.",
+    "scheduledFor": "Invitations are scheduled to send on {{dateTime}} (Riyadh time)."
   }
 }

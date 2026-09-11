@@ -15,6 +15,8 @@ export function EventHeaderBar({
   lang = 'ar',
   onOpenSettings,
   onOpenLifecycle,
+  onCreateEvent,
+  isAdmin = false,
 }) {
   const dict = getDictionary(lang);
   if (!event) return null;
@@ -51,6 +53,17 @@ export function EventHeaderBar({
         </div>
 
         <div className={styles.actions}>
+          {/* Compact admin new-event action (reachable when events already exist) */}
+          {isAdmin && typeof onCreateEvent === 'function' && (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={onCreateEvent}
+              data-testid="new-event-btn"
+            >
+              ➕ {t(dict, 'events.createFirstEvent')}
+            </Button>
+          )}
           {/* Settings Trigger */}
           <Button
             variant="secondary"
@@ -61,16 +74,26 @@ export function EventHeaderBar({
             ⚙️ {t(dict, 'events.editSettings')}
           </Button>
 
-          {/* Lifecycle Action Triggers */}
+          {/* Lifecycle Action Triggers (draft may go live OR closed per contract) */}
           {isDraft && (
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => onOpenLifecycle('live')}
-              data-testid="open-event-btn"
-            >
-              🟢 {t(dict, 'events.openEvent')}
-            </Button>
+            <>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => onOpenLifecycle('live')}
+                data-testid="open-event-btn"
+              >
+                🟢 {t(dict, 'events.openEvent')}
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={() => onOpenLifecycle('closed')}
+                data-testid="close-event-btn"
+              >
+                🛑 {t(dict, 'events.closeEvent')}
+              </Button>
+            </>
           )}
 
           {isLive && (

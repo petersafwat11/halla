@@ -11,7 +11,7 @@ test("Session 2.5 Mobile: Ticket Attachment Matrix (ADM-14)", () => {
   const cardContent = fs.readFileSync(cardPath, "utf-8");
 
   assert.match(cardContent, /attachment\.type === "image"/);
-  assert.match(cardContent, /setImageViewerVisible\(true\)/);
+  assert.match(cardContent, /setViewerAttachment\(attachment\)/);
   assert.match(cardContent, /Linking\.openURL\(attachment\.url\)/);
   assert.match(cardContent, /getImageUrl\(attachment\.url\)/);
 
@@ -20,16 +20,18 @@ test("Session 2.5 Mobile: Ticket Attachment Matrix (ADM-14)", () => {
   const modalContent = fs.readFileSync(modalPath, "utf-8");
 
   assert.match(modalContent, /MAX_ATTACHMENT_BYTES\s*=\s*50\s*\*\s*1024\s*\*\s*1024/);
-  assert.match(modalContent, /formData\.append\("ticketAttachment",/);
+  assert.match(modalContent, /formData\.append\("ticketAttachments",/);
+  assert.match(modalContent, /allowsMultipleSelection:\s*true/);
+  assert.match(modalContent, /selectionLimit:\s*4\s*-\s*attachment\.length/);
   assert.match(modalContent, /handlePickAttachment/);
 
   // 3. TicketDetailsScreen.js maps raw.attachment and renders attachment section with image/video preview
   const adminDetailPath = path.join(repoRoot, "halaa-mobile/screens/admin/admin-dashboard/TicketDetailsScreen.js");
   const adminDetailContent = fs.readFileSync(adminDetailPath, "utf-8");
 
-  assert.match(adminDetailContent, /attachment:\s*raw\.attachment/);
-  assert.match(adminDetailContent, /ticket\.attachment\?\.url/);
-  assert.match(adminDetailContent, /ticket\.attachment\.type === "image"/);
-  assert.match(adminDetailContent, /Linking\.openURL\(ticket\.attachment\.url\)/);
-  assert.match(adminDetailContent, /setImageViewerVisible\(true\)/);
+  assert.match(adminDetailContent, /attachments:\s*raw\.attachments\?\.length/);
+  assert.match(adminDetailContent, /ticket\.attachments\.map/);
+  assert.match(adminDetailContent, /attachment\.type === "image"/);
+  assert.match(adminDetailContent, /Linking\.openURL\(attachment\.url\)/);
+  assert.match(adminDetailContent, /setViewerAttachment\(attachment\)/);
 });

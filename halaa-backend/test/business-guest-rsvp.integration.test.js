@@ -162,8 +162,13 @@ test('test sends, initial sends, resends, reminders and SMS all use body links w
     }
     await sender.sendToGuest({ eventId, guestId, channel: 'sms', isAdmin: true });
     await Template.create({ ...template.toObject(), _id: new mongoose.Types.ObjectId(), taqnyatId: 'reminder_fixture', templateName: 'business_reminder_fixture', type: 'reminder_confirmed' });
-    const manual = await reminders.sendReminder({ eventId, channel: 'whatsapp', isAdmin: true });
-    assert.equal(manual.successful, 1);
-    assert.equal(sends.length - before, 7);
+    if (mode === 'none') {
+      await assert.rejects(reminders.sendReminder({ eventId, channel: 'whatsapp', isAdmin: true }), { code: 'RSVP_NOT_ALLOWED' });
+      assert.equal(sends.length - before, 6);
+    } else {
+      const manual = await reminders.sendReminder({ eventId, channel: 'whatsapp', isAdmin: true });
+      assert.equal(manual.successful, 1);
+      assert.equal(sends.length - before, 7);
+    }
   }
 });

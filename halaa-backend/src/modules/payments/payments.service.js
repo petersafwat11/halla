@@ -93,6 +93,9 @@ class PaymentsService {
     if (!payment) return;
     const purpose = payment.metadata?.purpose;
     if (!purpose) return;
+    // Standalone admin payment links collect funds only — no subscription,
+    // invitations, addon, or business-assignment fulfillment.
+    if (purpose === "admin_payment_link") return;
     try {
       if (
         purpose === 'addon' &&

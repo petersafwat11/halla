@@ -49,6 +49,7 @@ const eventSchema = new Schema(
       default: 0,
       min: 0,
     },
+    purgingAt: { type: Date, default: null },
     closedAt: {
       type: Date,
       default: null,

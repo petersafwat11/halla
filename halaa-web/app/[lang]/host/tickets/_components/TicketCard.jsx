@@ -19,7 +19,8 @@ const TicketCard = ({ ticket, onDelete, onEdit }) => {
   const { t } = useTranslation("tickets");
   const { formatDateTime } = useLocalizedDate();
   const queryClient = useQueryClient();
-  const [isAttachmentOpen, setIsAttachmentOpen] = useState(false);
+  const [openAttachment, setOpenAttachment] = useState(null);
+  const attachments = ticket.attachments?.length ? ticket.attachments : ticket.attachment ? [ticket.attachment] : [];
 
   const statusModifier = statusClassMap[ticket.status] || styles.statusOpen;
   const title = t(`types.${ticket.type}`) || ticket.type;
@@ -129,12 +130,13 @@ const TicketCard = ({ ticket, onDelete, onEdit }) => {
           <h3 className={styles.title}>{title}</h3>
           <p className={styles.description}>{description}</p>
 
-          {ticket.attachment?.url && (
+          {attachments.length > 0 && (
             <div className={styles.attachmentRow}>
-              <button
+              {attachments.map((attachment, index) => <button
+                key={`${attachment.url}-${index}`}
                 type="button"
                 className={styles.attachmentButton}
-                onClick={() => setIsAttachmentOpen(true)}
+                onClick={() => setOpenAttachment(attachment)}
               >
                 <svg
                   width="14"
@@ -149,11 +151,11 @@ const TicketCard = ({ ticket, onDelete, onEdit }) => {
                   <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
                 </svg>
                 <span>
-                  {ticket.attachment.type === "video"
+                  {attachment.type === "video"
                     ? t("popup.video", "Video")
                     : t("popup.image", "Image")}
                 </span>
-              </button>
+              </button>)}
             </div>
           )}
 
@@ -188,10 +190,10 @@ const TicketCard = ({ ticket, onDelete, onEdit }) => {
         </div>
       </div>
 
-      {isAttachmentOpen && (
+      {openAttachment && (
         <MediaViewerModal
-          attachment={ticket.attachment}
-          onClose={() => setIsAttachmentOpen(false)}
+          attachment={openAttachment}
+          onClose={() => setOpenAttachment(null)}
           closeLabel={t("popup.cancel", "Close")}
           openLabel={t("attachment.openNewTab", "Open in new tab")}
         />

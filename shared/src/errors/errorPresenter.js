@@ -75,6 +75,18 @@ const ACTION_MESSAGES = {
     ar: "تاريخ المناسبة قريب جداً بالنسبة للباقة المختارة. يرجى تحديد موعد لاحق.",
     en: "The event date is too soon for your plan. Please choose a later date.",
   },
+  SUBSCRIPTION_REQUIRED: {
+    ar: "لا توجد باقة نشطة مرتبطة بحسابك. افتح صفحة الباقات وأكمل تفعيل الباقة، ثم حاول حفظ المناسبة مجدداً.",
+    en: "No active plan is linked to your account. Open Plans and finish activating a plan, then save the event again.",
+  },
+  EVENT_LIMIT_REACHED: {
+    ar: "تم استخدام باقة المناسبة الحالية أو توجد مناسبة مرتبطة بها. اشترِ باقة مناسبة جديدة أو احذف المناسبة غير المستخدمة ثم حاول مجدداً.",
+    en: "This event plan has already been used or has an event linked to it. Purchase a new event plan, or delete the unused event, then try again.",
+  },
+  INVITATION_CAPACITY_EXCEEDED: {
+    ar: "عدد المدعوين أكبر من الرصيد المتاح في باقتك. قلّل عدد المدعوين أو اشترِ دعوات إضافية ثم حاول مجدداً.",
+    en: "The guest list exceeds your available invitation balance. Remove some guests or purchase additional invitations, then try again.",
+  },
   PACKAGE_LIMIT_EXCEEDED: {
     ar: "تم تجاوز الحد المسموح به للمناسبات أو المدعوين في باقتك الحالية.",
     en: "You have reached the event or guest limit for your current subscription.",
@@ -189,6 +201,15 @@ export function presentError(error, { language = "ar" } = {}) {
     isRetryable = true;
   } else if (rawCode === "EVENT_DATE_TOO_SOON") {
     resolvedKey = "EVENT_DATE_TOO_SOON";
+    isRetryable = false;
+  } else if (rawCode === "SUBSCRIPTION_REQUIRED") {
+    resolvedKey = "SUBSCRIPTION_REQUIRED";
+    isRetryable = false;
+  } else if (rawCode === "EVENT_LIMIT_REACHED") {
+    resolvedKey = "EVENT_LIMIT_REACHED";
+    isRetryable = false;
+  } else if (rawCode === "INVITATION_CAPACITY_EXCEEDED") {
+    resolvedKey = "INVITATION_CAPACITY_EXCEEDED";
     isRetryable = false;
   } else if (
     rawCode === "PACKAGE_LIMIT_EXCEEDED" ||

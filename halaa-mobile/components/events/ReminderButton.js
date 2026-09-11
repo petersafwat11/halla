@@ -5,7 +5,7 @@ import { useTranslation } from "../../localization";
 import LocalizedText from "../commen/LocalizedText";
 
 /**
- * Free "send reminder to confirmed guests" action on the single-event page
+ * SMS reminder to invited guests who have not responded on the single-event page
  * (blueprint §8 "Event details" row).
  *
  * Content classification: the label is localized application copy and always

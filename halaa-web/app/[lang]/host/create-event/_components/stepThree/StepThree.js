@@ -423,11 +423,12 @@ const StepThree = () => {
         )}
       </div>
 
-      <TemplateForm
+        <TemplateForm
         isOpen={showTemplateForm}
         onClose={() => setShowTemplateForm(false)}
         locale={currentLocale}
-        setEventValues={handleSetEventValues}
+          setEventValues={handleSetEventValues}
+          onDiscard={handleRemoveSelection}
         template={activeTemplate}
       />
     </div>

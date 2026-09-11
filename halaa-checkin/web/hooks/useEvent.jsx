@@ -17,7 +17,7 @@ export function EventProvider({ children }) {
 
   const urlEventId = searchParams?.get('eventId') || null;
 
-  // Fetch accessible events when authenticated
+  // Fetch accessible events when authenticated (F11: refresh while visible/on focus)
   const {
     data: eventsResponse,
     isLoading: isLoadingEvents,
@@ -25,25 +25,68 @@ export function EventProvider({ children }) {
     error: eventsError,
   } = useQuery({
     queryKey: ['events'],
-    queryFn: () => api.get('/events'),
+    queryFn: ({ signal }) => api.get('/events', { signal }),
     enabled: isAuthenticated,
     staleTime: 10000,
+    refetchInterval: 15000,
+    refetchOnWindowFocus: true,
+    refetchIntervalInBackground: false,
   });
 
   const events = useMemo(() => eventsResponse?.data || [], [eventsResponse]);
 
   const [selectedEventId, setSelectedEventId] = useState(urlEventId);
+  const [invalidEventId, setInvalidEventId] = useState(null);
 
-  // Sync state with urlEventId or default to first event
+  // F18: fetch a permitted selected event outside the first 100-event page.
+  const shouldFetchSingle =
+    isAuthenticated &&
+    !!urlEventId &&
+    !isLoadingEvents &&
+    !events.some((e) => e.id === urlEventId);
+  const singleEventQuery = useQuery({
+    queryKey: ['event', urlEventId],
+    queryFn: ({ signal }) => api.get(`/events/${urlEventId}`, { signal }),
+    refetchInterval: 15000,
+    refetchOnWindowFocus: true,
+    enabled: shouldFetchSingle,
+    staleTime: 10000,
+    retry: false,
+  });
+  const fetchedSingleEvent = singleEventQuery.error ? null : singleEventQuery.data?.data || null;
+
+  const allEvents = useMemo(() => {
+    if (fetchedSingleEvent && !events.some((e) => e.id === fetchedSingleEvent.id)) {
+      return [...events, fetchedSingleEvent];
+    }
+    return events;
+  }, [events, fetchedSingleEvent]);
+
+  // Sync state with urlEventId or default to first event (F18: deterministic).
   useEffect(() => {
-    if (events.length > 0) {
-      if (urlEventId && events.some(e => e.id === urlEventId)) {
+    if (isLoadingEvents) return;
+    if (allEvents.length > 0) {
+      if (urlEventId && allEvents.some(e => e.id === urlEventId)) {
+        setInvalidEventId(null);
         if (selectedEventId !== urlEventId) {
           setSelectedEventId(urlEventId);
         }
+      } else if (urlEventId && singleEventQuery.isError && [403, 404, 422].includes(singleEventQuery.error?.status)) {
+        // Invalid/revoked/deleted/unassigned URL: explicit error + valid fallback.
+        setInvalidEventId(urlEventId);
+        const defaultEvent = allEvents.find(e => e.status === 'live') || allEvents[0];
+        if (defaultEvent) {
+          setSelectedEventId(defaultEvent.id);
+          const params = new URLSearchParams(searchParams.toString());
+          params.set('eventId', defaultEvent.id);
+          router.replace(`${pathname}?${params.toString()}`);
+        } else {
+          setSelectedEventId(null);
+        }
       } else if (!urlEventId) {
+        setInvalidEventId(null);
         // Find live event first, or default to most recent
-        const defaultEvent = events.find(e => e.status === 'live') || events[0];
+        const defaultEvent = allEvents.find(e => e.status === 'live') || allEvents[0];
         if (defaultEvent) {
           setSelectedEventId(defaultEvent.id);
           const params = new URLSearchParams(searchParams.toString());
@@ -51,14 +94,16 @@ export function EventProvider({ children }) {
           router.replace(`${pathname}?${params.toString()}`);
         }
       }
-    } else {
+    } else if (!isLoadingEvents) {
+      // Distinguish fetch error (eventsError) from genuinely empty list upstream.
       setSelectedEventId(null);
+      setInvalidEventId(urlEventId || null);
     }
-  }, [events, urlEventId, pathname, router, searchParams, selectedEventId]);
+  }, [allEvents, urlEventId, pathname, router, searchParams, selectedEventId, isLoadingEvents, shouldFetchSingle, singleEventQuery.isFetched]);
 
   const selectedEvent = useMemo(() => {
-    return events.find(e => e.id === selectedEventId) || null;
-  }, [events, selectedEventId]);
+    return allEvents.find(e => e.id === selectedEventId) || null;
+  }, [allEvents, selectedEventId]);
 
   const selectEvent = useCallback((newEventId) => {
     if (newEventId === selectedEventId) return;
@@ -77,14 +122,15 @@ export function EventProvider({ children }) {
   }, [selectedEventId, queryClient, searchParams, pathname, router]);
 
   const value = {
-    events,
+    events: allEvents,
     selectedEvent,
     selectedEventId,
-    isLoadingEvents,
-    eventsError,
+    isLoadingEvents: isLoadingEvents || (shouldFetchSingle && singleEventQuery.isLoading),
+    eventsError: eventsError || singleEventQuery.error || null,
+    invalidEventId,
     selectEvent,
     refetchEvents,
-    hasEvents: events.length > 0,
+    hasEvents: allEvents.length > 0,
   };
 
   return (

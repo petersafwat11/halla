@@ -43,8 +43,9 @@ export function useNotificationSettings() {
  * (Living here on mobile because it shares the user-info surface; web has it
  * in `hooks/subscriptions/`. Keep both code paths in sync semantically.)
  */
-export function useMySubscription() {
+export function useMySubscription(options = {}) {
   const token = useAuthStore((state) => state.token);
+  const { enabled = true, ...queryOptions } = options;
 
   return useQuery({
     queryKey: [...subscriptionsKeys.all, "my-subscription"],
@@ -52,8 +53,9 @@ export function useMySubscription() {
       subscriptionsRequest(ENDPOINTS.SUBSCRIPTIONS.MY_SUBSCRIPTION, {
         method: "GET",
       }),
-    enabled: !!token,
+    enabled: !!token && enabled,
     staleTime: 5 * 60 * 1000,
+    ...queryOptions,
   });
 }
 

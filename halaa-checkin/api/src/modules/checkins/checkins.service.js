@@ -84,6 +84,7 @@ export const CheckinsService = {
       guest: guest.toSafeDto(),
       event: {
         id: event._id.toString(),
+        version: event.version,
         name: event.name,
         status: event.status,
         venue: event.venue,
@@ -350,7 +351,7 @@ export const CheckinsService = {
         );
 
         if (updateResult.matchedCount === 0 || updateResult.modifiedCount === 0) {
-          const concurrentGuest = await Guest.findById(guest._id).session(session);
+          const concurrentGuest = await Guest.findOne({ _id: guest._id, eventId }).session(session);
           if (concurrentGuest && concurrentGuest.checkIn !== null) {
             throw new DomainError({
               code: ERROR_CODES.ALREADY_CHECKED_IN,
@@ -365,6 +366,7 @@ export const CheckinsService = {
             code: ERROR_CODES.VERSION_CONFLICT,
             message: 'Guest version conflict during admission',
             status: 409,
+            details: concurrentGuest ? { guest: concurrentGuest.toSafeDto() } : undefined,
           });
         }
 

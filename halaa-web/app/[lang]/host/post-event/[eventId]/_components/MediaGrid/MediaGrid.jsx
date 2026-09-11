@@ -1,4 +1,5 @@
 "use client";
+import { postEventMediaUrl } from '@/utils/postEventMedia';
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
@@ -15,12 +16,12 @@ const MediaTile = ({ item, onDelete, deleting }) => {
       {isVideo ? (
         <video
           className={styles.media}
-          src={item.url}
+          src={postEventMediaUrl(item.url)}
           controls
           preload="metadata"
         />
       ) : (
-        <img className={styles.media} src={item.url} alt="" />
+        <img className={styles.media} src={postEventMediaUrl(item.url)} alt="" />
       )}
 
       <button

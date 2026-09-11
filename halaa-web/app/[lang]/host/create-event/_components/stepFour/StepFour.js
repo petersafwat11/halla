@@ -12,6 +12,8 @@
  * Auto-replies dual-write canonical guestReplies.* + legacy keys.
  */
 
+import { buildReplyPreview } from '@halaa/shared/utils/rsvpMessages';
+import ReplyDeliveryPreview from '@/ui/host/ReplyDeliveryPreview';
 import DEFAULT_GUEST_REPLIES from "@halaa/shared/constants/guestReplies.cjs";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
@@ -25,6 +27,7 @@ import {
 import { formatDate } from "@halaa/shared/utils/locale";
 import useAuthStore from "@/stores/authStore";
 import {
+  getInvitationTypeCopy,
   INVITATION_TYPE_OPTIONS,
   DEFAULT_INVITATION_TYPE,
   invitationAllowsReply,
@@ -73,18 +76,6 @@ const DirectMailHeroIcon = () => (
 const CheckIcon = () => (
   <svg width="11" height="9" viewBox="0 0 11 9" fill="none" aria-hidden="true">
     <path d="M1 4.5L3.8 7.5L10 1" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
-const MiniCheckIcon = () => (
-  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-    <path d="M2.5 6.2L4.8 8.5L9.5 3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
-const MiniCrossIcon = () => (
-  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-    <path d="M3.5 3.5L8.5 8.5M8.5 3.5L3.5 8.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
   </svg>
 );
 
@@ -222,6 +213,11 @@ const StepFour = ({ owner } = {}) => {
   const activeReply = REPLY_TABS.find((tab) => tab.key === activeTab);
   const replyText = guestReplies?.[activeReply?.canonical];
 
+  const response = activeTab === "absence" ? 'declined' : 'confirmed';
+  const replyPreview = buildReplyPreview({ invitationType, isBusinessEvent, response, guestReplies, eventName, eventDate, eventTime, address });
+  const deliveryHint = isBusinessEvent ? (replyPreview.includesQr ? 'reply_delivery_portal_qr' : 'reply_delivery_portal_text')
+    : response === 'declined' ? 'reply_delivery_decline' : replyPreview.includesQr ? 'reply_delivery_qr' : 'reply_delivery_text';
+
   const handleReplyChange = (e) => {
     const value = e.target.value;
     if (!activeReply) return;
@@ -248,6 +244,7 @@ const StepFour = ({ owner } = {}) => {
           <div className={styles.choiceList}>
             {INVITATION_TYPE_OPTIONS.map((opt) => {
               const isSelected = invitationType === opt.value;
+              const copy = getInvitationTypeCopy(opt.value, i18n.language, isBusinessEvent);
               return (
                 <button key={opt.value} type="button"
                   className={styles.choiceOption}
@@ -259,8 +256,8 @@ const StepFour = ({ owner } = {}) => {
                     {opt.value === "none" && <DirectMailHeroIcon />}
                   </span>
                   <span className={styles.choiceCopy}>
-                    <span className={styles.choiceTitle}>{t(isBusinessEvent && opt.value === "reply_and_qr" ? "business_invitation_type_reply_and_qr_label" : opt.labelKey)}</span>
-                    <span className={styles.choiceDescription}>{t(isBusinessEvent ? `business_${opt.descKey}` : opt.descKey)}</span>
+                    <span className={styles.choiceTitle}>{copy.title}</span>
+                    <span className={styles.choiceDescription}>{copy.description}</span>
                   </span>
                   <span className={styles.choiceRadio} aria-hidden="true">{isSelected && <CheckIcon />}</span>
                 </button>
@@ -366,12 +363,12 @@ const StepFour = ({ owner } = {}) => {
             <label className={styles.sectionLabel}>
               {t("auto_replies", "الردود التلقائية")}
             </label>
-            <p className={styles.repliesHint}>
+            {replyAllowed && <p className={styles.repliesHint}>
               {t(
-                "auto_replies_hint_editable",
+                isBusinessEvent ? "auto_replies_hint_portal" : "auto_replies_hint_editable",
                 "تُرسل تلقائياً للضيف فور اختياره — يمكنك تعديل النص"
               )}
-            </p>
+            </p>}
           </div>
 
           {replyAllowed ? (
@@ -390,9 +387,13 @@ const StepFour = ({ owner } = {}) => {
               </div>
 
               <p className={styles.repliesHint}>
-                {t(activeTab === "absence" ? "reply_delivery_decline" : invitationType === "reply_and_qr" ? "reply_delivery_qr" : "reply_delivery_text")}
+                {t(deliveryHint)}
               </p>
+              <div className={styles.replyEditorGrid}>
+              <div>
+              <label htmlFor="guest-auto-reply" className={styles.repliesHint}>{t("reply_editable_text")}</label>
               <textarea
+                id="guest-auto-reply"
                 value={replyText || ""}
                 onChange={handleReplyChange}
                 rows={4}
@@ -410,6 +411,10 @@ const StepFour = ({ owner } = {}) => {
                   textAlign: "start",
                 }}
               />
+              <p className={styles.repliesHint}>{t("reply_empty_default")}</p>
+              </div>
+              <ReplyDeliveryPreview preview={replyPreview} />
+              </div>
             </>
           ) : (
             <div className={styles.repliesDisabledNote}>

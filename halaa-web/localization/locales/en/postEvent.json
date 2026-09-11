@@ -99,7 +99,8 @@
       "varCount": "Variables: {{count}}",
       "preview": "Preview",
       "saveSuccess": "Template saved.",
-      "saveFailed": "Couldn't save the template selection."
+      "saveFailed": "Couldn't save the template selection.",
+      "previewNote": "Preview uses the first guest and this event. The example link and expiry are replaced with each guest’s private access details when sent."
     },
     "thankYouMessage": {
       "title": "Thank-you message",
@@ -124,7 +125,8 @@
       "success": "Sent to {{sent}} guest(s) — WhatsApp: {{whatsapp}}, SMS: {{sms}}, failed: {{failed}}.",
       "channelBreakdown": "Delivery breakdown",
       "noTemplateConfigured": "No WhatsApp template is configured yet.",
-      "noTemplateCta": "Configure messaging templates"
+      "noTemplateCta": "Configure messaging templates",
+      "resendConfirmation": "I understand this sends another access link to everyone in the selected audience, including guests already notified."
     },
     "summary": {
       "photos": "Photos",
@@ -138,6 +140,8 @@
       "deleteFailed": "Couldn't delete this item.",
       "publishFailed": "Couldn't publish the content.",
       "sendFailed": "Couldn't send access links."
-    }
+    },
+    "viewSharedPage": "View shared page",
+    "editContent": "Edit published content"
   }
 }

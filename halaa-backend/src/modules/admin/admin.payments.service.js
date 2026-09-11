@@ -29,6 +29,10 @@ async function buildPaymentSearchClause(search) {
 
   const or = [{ moyasarPaymentId: directRegex }];
   if (userIds.length > 0) or.push({ userId: { $in: userIds } });
+  // Guest standalone payment-link transactions carry description/reference
+  // metadata instead of a host owner — match those fields too.
+  or.push({ description: directRegex });
+  or.push({ 'metadata.reference': directRegex });
   return { $or: or };
 }
 
@@ -106,7 +110,17 @@ async function getPayments({ page = 1, limit = 10, status, search, from, to } = 
         ? 'refunded'
         : p.status,
       providerStatus: p.status,
-      hostName: p.userId?.name || p.userId?.email || null,
+      // Guest payment-link rows have no host owner: label them explicitly
+      // and never crash on a null populated user.
+      hostName:
+        p.userId?.name ||
+        p.userId?.email ||
+        (p.metadata?.purpose === 'admin_payment_link'
+          ? `Payment link / ${p.metadata?.reference || p.description || 'guest'}`
+          : null),
+      hostEmail: p.userId?.email || null,
+      isGuestPaymentLink: p.metadata?.purpose === 'admin_payment_link' || !p.userId,
+      paymentLinkId: p.paymentLinkId || p.metadata?.paymentLinkId || null,
       description: p.description,
       paymentMethod: p.paymentMethod?.type || null,
       paymentMethodLast4: p.paymentMethod?.last4 || null,
@@ -184,7 +198,12 @@ async function exportPayments({ status, search, from, to } = {}) {
     .lean();
 
   return rows.map((p) => ({
-    Host: p.userId?.name || p.userId?.email || '-',
+    Host:
+      p.userId?.name ||
+      p.userId?.email ||
+      (p.metadata?.purpose === 'admin_payment_link'
+        ? `Payment link / ${p.metadata?.reference || p.description || 'guest'}`
+        : '-'),
     'Host Email': p.userId?.email || '-',
     Description: p.description || '-',
     Amount: `${p.amount || 0} ${p.currency || 'SAR'}`,
@@ -193,6 +212,7 @@ async function exportPayments({ status, search, from, to } = {}) {
     'Payment Method': p.paymentMethod?.type || '-',
     Last4: p.paymentMethod?.last4 || '-',
     'Transaction ID': p.moyasarPaymentId || '-',
+    'Payment Link': p.paymentLinkId ? String(p.paymentLinkId) : p.metadata?.reference || '-',
     'Created At': p.createdAt ? new Date(p.createdAt).toISOString().split('T')[0] : '-',
   }));
 }

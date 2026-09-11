@@ -64,9 +64,9 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
 
   // Single optional image/video attachment (create mode only). Kept in local
   // state, NOT react-hook-form, since it's uploaded as multipart, not JSON.
-  const [attachment, setAttachment] = useState(null);
+  const [attachment, setAttachment] = useState([]);
 
-  const handlePickAttachment = async (mediaTypes) => {
+  const handlePickAttachment = async () => {
     const { status } =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
@@ -77,25 +77,30 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes,
-      allowsMultipleSelection: false,
+      mediaTypes: ["images", "videos"],
+      allowsMultipleSelection: true,
+      selectionLimit: 4 - attachment.length,
       quality: 0.8
     });
     if (result.canceled || !result.assets?.length) return;
-    const asset = result.assets[0];
-    if (asset.fileSize && asset.fileSize > MAX_ATTACHMENT_BYTES) {
+    const selectedAssets = result.assets || [];
+    if (attachment.length + selectedAssets.length > 4) {
+      Alert.alert(t("popup.attachmentTooMany"));
+      return;
+    }
+    if (selectedAssets.some(asset => asset.fileSize && asset.fileSize > MAX_ATTACHMENT_BYTES)) {
       Alert.alert(t("popup.attachmentTooLarge"));
       return;
     }
-    const isVideo =
-      asset.type === "video" || /video/i.test(asset.mimeType || "");
-    // Replace any previously picked file — only ONE attachment is allowed.
-    setAttachment({
-      uri: asset.uri,
-      name: asset.fileName || (isVideo ? "video.mp4" : "photo.jpg"),
-      type: asset.mimeType || (isVideo ? "video/mp4" : "image/jpeg"),
-      isVideo
-    });
+    setAttachment(current => [...current, ...selectedAssets.map(asset => {
+      const isVideo = asset.type === "video" || /video/i.test(asset.mimeType || "");
+      return {
+        uri: asset.uri,
+        name: asset.fileName || (isVideo ? "video.mp4" : "photo.jpg"),
+        type: asset.mimeType || (isVideo ? "video/mp4" : "image/jpeg"),
+        isVideo
+      };
+    })]);
   };
 
   React.useEffect(() => {
@@ -103,7 +108,7 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
       // Runs on both cancel/close AND successful submit (the screen sets
       // visible=false directly), so clear the picked file here to avoid it
       // leaking into the next new ticket. No-op in edit mode.
-      setAttachment(null);
+      setAttachment([]);
     }
   }, [visible]);
 
@@ -116,17 +121,17 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
     // With an attachment (create mode only) send multipart/form-data. The
     // backend Zod schema is .strict(), so append ONLY known fields and guard
     // priority. Field name MUST be exactly "ticketAttachment".
-    if (!isEditMode && attachment) {
+    if (!isEditMode && attachment.length) {
       const formData = new FormData();
       formData.append("subject", data.subject);
       formData.append("type", data.type);
       formData.append("message", data.message);
       if (data.priority) formData.append("priority", data.priority);
-      formData.append("ticketAttachment", {
-        uri: attachment.uri,
-        name: attachment.name,
-        type: attachment.type
-      });
+      attachment.forEach(item => formData.append("ticketAttachments", {
+        uri: item.uri,
+        name: item.name,
+        type: item.type
+      }));
       onSubmit(formData);
       return;
     }
@@ -317,24 +322,24 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
                   {t("popup.attachmentLabel")}
                 </LocalizedText>
 
-                {attachment ? (
-                  <View style={styles.attachmentPreview}>
-                    {attachment.isVideo ? (
+                {attachment.map((item, index) => (
+                  <View style={styles.attachmentPreview} key={`${item.uri}-${index}`}>
+                    {item.isVideo ? (
                       <View style={styles.attachmentPreviewIcon}>
                         <Ionicons name="videocam" size={24} color="#c28e5c" />
                       </View>
                     ) : (
                       <Image
-                        source={{ uri: attachment.uri }}
+                        source={{ uri: item.uri }}
                         style={styles.attachmentPreviewImage}
                       />
                     )}
                     <AdaptiveText style={styles.attachmentName} numberOfLines={1}>
-                      {attachment.name}
+                      {item.name}
                     </AdaptiveText>
                     <TouchableOpacity
                       style={styles.attachmentRemove}
-                      onPress={() => setAttachment(null)}
+                      onPress={() => setAttachment(current => current.filter((_, i) => i !== index))}
                       accessibilityLabel={t("popup.removeAttachment")}
                       hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                       activeOpacity={0.7}
@@ -342,26 +347,17 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
                       <Ionicons name="close-circle" size={22} color="#e74c3c" />
                     </TouchableOpacity>
                   </View>
-                ) : (
+                ))}
+                {attachment.length < 4 && (
                   <View style={styles.attachmentButtons}>
                     <TouchableOpacity
                       style={styles.attachmentButton}
-                      onPress={() => handlePickAttachment(["images"])}
+                      onPress={handlePickAttachment}
                       activeOpacity={0.7}
                     >
                       <Ionicons name="image-outline" size={18} color="#c28e5c" />
                       <LocalizedText style={styles.attachmentButtonText}>
-                        {t("popup.addImage")}
-                      </LocalizedText>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.attachmentButton}
-                      onPress={() => handlePickAttachment(["videos"])}
-                      activeOpacity={0.7}
-                    >
-                      <Ionicons name="videocam-outline" size={18} color="#c28e5c" />
-                      <LocalizedText style={styles.attachmentButtonText}>
-                        {t("popup.addVideo")}
+                        {t("popup.addMedia")}
                       </LocalizedText>
                     </TouchableOpacity>
                   </View>

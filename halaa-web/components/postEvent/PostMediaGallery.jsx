@@ -1,4 +1,5 @@
 "use client";
+import { postEventMediaUrl } from '@/utils/postEventMedia';
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
@@ -17,7 +18,7 @@ const MediaItem = ({ item, className, onOpen }) => {
       <div className={`${styles.tile} ${className || ""}`}>
         <video
           className={styles.media}
-          src={item.url}
+          src={postEventMediaUrl(item.url)}
           controls
           playsInline
           preload="metadata"
@@ -32,7 +33,7 @@ const MediaItem = ({ item, className, onOpen }) => {
       onClick={() => onOpen(item)}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img className={styles.media} src={item.url} alt="" loading="lazy" />
+      <img className={styles.media} src={postEventMediaUrl(item.url)} alt="" loading="lazy" />
     </button>
   );
 };
@@ -145,14 +146,14 @@ const PostMediaGallery = ({ media = [], eventId }) => {
             {lightbox.type === "video" ? (
               <video
                 className={styles.lightboxMedia}
-                src={lightbox.url}
+                src={postEventMediaUrl(lightbox.url)}
                 controls
                 autoPlay
                 playsInline
               />
             ) : (
               // eslint-disable-next-line @next/next/no-img-element
-              <img className={styles.lightboxMedia} src={lightbox.url} alt="" />
+              <img className={styles.lightboxMedia} src={postEventMediaUrl(lightbox.url)} alt="" />
             )}
           </div>
         </div>

@@ -12,9 +12,11 @@ import { toast } from "react-toastify";
 import UseLanguageChange from "@/hooks/UseLanguageChange";
 import { useEventActionGate } from "@halaa/shared/hooks/useEventActionGate";
 import styles from "./EventActionsHeader.module.css";
+import { formatDateTime } from "@halaa/shared/utils/locale";
+import { riyadhWallClockInstant } from "@halaa/shared/utils/schedulingWindow";
 
 export default function EventActionsHeader({ event, isAdmin = false, children }) {
-  const { t } = useTranslation("home-events");
+  const { t, i18n } = useTranslation("home-events");
   const router = useRouter();
   const { currentLocale } = UseLanguageChange();
   const [showDropdown, setShowDropdown] = useState(false);
@@ -50,6 +52,12 @@ export default function EventActionsHeader({ event, isAdmin = false, children })
   // gates so the existing `event` prop is enough.)
   const { canSendTest, canSchedule, canNotifyStaff, isCompleted } =
     useEventActionGate({ event, testMessageSent });
+  const scheduledSendInstant = event?.launchSettings?.scheduledDate && event?.launchSettings?.scheduledTime
+    ? riyadhWallClockInstant(event.launchSettings.scheduledDate, event.launchSettings.scheduledTime)
+    : null;
+  const scheduledSendText = scheduledSendInstant
+    ? formatDateTime(scheduledSendInstant, i18n.language || "ar", { timeZone: "Asia/Riyadh" })
+    : null;
 
   const dropdownItems = [
     { label: t("lastEvent.dropdown.eventDetails"), step: 1 },
@@ -182,7 +190,14 @@ export default function EventActionsHeader({ event, isAdmin = false, children })
         </details>}
       </div>
 
-      {(canSendTest || canSchedule) && <p className={styles.workflowHint} role="status">
+      {scheduledSendText && (
+        <div className={styles.scheduledNotice} role="status">
+          <Image src="/svg/events/calendar-edit.svg" alt="" width={18} height={18} />
+          <span>{t("workflow.scheduledFor", { dateTime: scheduledSendText })}</span>
+        </div>
+      )}
+
+      {!scheduledSendText && (canSendTest || canSchedule) && <p className={styles.workflowHint} role="status">
         {t(canSendTest ? 'workflow.testFirst' : event?.status === 'scheduled' ? 'workflow.scheduled' : 'workflow.scheduleNext')}
       </p>}
 

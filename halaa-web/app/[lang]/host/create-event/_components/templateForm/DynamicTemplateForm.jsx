@@ -16,6 +16,7 @@ import TemplatePreviewCanvas from "@/components/shared/TemplatePreviewCanvas";
 import { renderField } from "./renderField";
 import { bakeTemplateImage } from "./useTemplateBake";
 import { toastUtils } from "@/utils/toastUtils";
+import DeleteConfirmation from "@/ui/vendor/modals/DeleteConfirmation";
 import styles from "./templateForm.module.css";
 
 const FALLBACK_FONT_OPTIONS = [
@@ -30,11 +31,13 @@ export default function DynamicTemplateForm({
   locale,
   setEventValues,
   template,
+  onDiscard,
 }) {
   const { t } = useTranslation("createEvent");
   const previewRef = useRef(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
+  const [showDiscardConfirmation, setShowDiscardConfirmation] = useState(false);
 
   const parentFormContext = useFormContext();
   const parentEventDate = parentFormContext?.watch("eventDate");
@@ -51,8 +54,23 @@ export default function DynamicTemplateForm({
     defaultValues: buildDefaultValues(template, parentEventDate, parentEventTime),
   });
 
-  const { handleSubmit, watch } = methods;
+  const { handleSubmit, watch, reset, formState: { isDirty } } = methods;
   const formData = watch();
+
+  const requestClose = () => {
+    if (isDirty) {
+      setShowDiscardConfirmation(true);
+      return;
+    }
+    onClose();
+  };
+
+  const discardCustomization = () => {
+    reset();
+    onDiscard?.();
+    setShowDiscardConfirmation(false);
+    onClose();
+  };
 
   const primaryColorField = template.fields.find((f) => f.type === "color");
   const fontField = template.fields.find((f) => f.type === "font");
@@ -92,13 +110,13 @@ export default function DynamicTemplateForm({
 
   return (
     <>
-      <PopupLayout isOpen={isOpen} onClose={onClose} size="full">
+      <PopupLayout isOpen={isOpen} onClose={requestClose} size="full">
         <div className={styles.header}>
           <h2>{t("edit_design_template")}</h2>
           <button
             type="button"
             className={styles.closeButton}
-            onClick={onClose}
+            onClick={requestClose}
           >
             <img src="/svg/events/close-circle.svg" alt="close" />
           </button>
@@ -127,7 +145,7 @@ export default function DynamicTemplateForm({
               <div className={styles.buttonContainer}>
                 <Button
                   variant="secondary"
-                  onClick={onClose}
+                  onClick={requestClose}
                   title={t("cancel")}
                   type="button"
                   disabled={isGenerating}
@@ -160,6 +178,16 @@ export default function DynamicTemplateForm({
           </FormProvider>
         </CardLayout>
       </PopupLayout>
+
+      <DeleteConfirmation
+        isOpen={showDiscardConfirmation}
+        onClose={() => setShowDiscardConfirmation(false)}
+        onConfirm={discardCustomization}
+        title={t("template_discard_title")}
+        message={t("template_discard_body")}
+        confirmText={t("template_discard")}
+        cancelText={t("template_continue_editing")}
+      />
 
       <PopupLayout
         isOpen={showMobilePreview}

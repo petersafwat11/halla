@@ -63,6 +63,7 @@ export default function AutoReminderInfoText({ eventId }) {
 
   const reminderUnavailable = event.reminderAvailability?.configured === false;
   if (reminderUnavailable) infoText = t("singleEvent.reminderUnavailable");
+  if (!isEditable) infoText = t("singleEvent.reminderInactiveEvent");
 
   return (
     <>

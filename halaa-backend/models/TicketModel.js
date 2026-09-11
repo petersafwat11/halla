@@ -79,6 +79,18 @@ const TicketSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
+    // Up to four mixed image/video files. `attachment` remains for old records
+    // and older clients; new uploads are stored here.
+    attachments: {
+      type: [{
+        url: { type: String, trim: true },
+        type: { type: String, enum: ["image", "video"] },
+        mimeType: { type: String, trim: true },
+        size: { type: Number },
+      }],
+      validate: [value => value.length <= 4, "A ticket can have at most 4 attachments"],
+      default: undefined,
+    },
 
     // Optional internal context supplied when an admin assigns the ticket.
     assignmentNote: {

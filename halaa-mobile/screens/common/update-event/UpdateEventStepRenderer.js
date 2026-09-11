@@ -18,6 +18,7 @@ const UpdateEventStepRenderer = ({
   subscription,
   lockoutActive,
   allowAddOnlyOnStep2,
+  onStaffAdd,
 }) => {
   switch (currentStep) {
     case 1:
@@ -44,6 +45,7 @@ const UpdateEventStepRenderer = ({
           guestList={formData.guestList}
           staffList={formData.staffList}
           allowAddOnly={allowAddOnlyOnStep2}
+          onStaffAdd={onStaffAdd}
           subscription={{
             ...subscription,
             guestLimit: isPool

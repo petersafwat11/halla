@@ -1,0 +1,42 @@
+✔ gate: resolve QR token and guestId returns safe data without writing admission (1328.241ms)
+✔ gate: cross-event and unknown QR tokens fail with 404 INVALID_INVITATION and zero data leaked (142.8066ms)
+✔ gate: soft-deleted guest cannot resolve (128.2532ms)
+✔ gate: search and recent endpoints return bounded safe matches (156.6098ms)
+✔ admission: fractional, negative, or excess companion counts fail validation (142.0911ms)
+✔ admission: non-live event rejects admission with 409 (150.0989ms)
+✔ admission: same-key retry and simulated lost HTTP response return original result without duplicate write (206.0943ms)
+✔ concurrency: two distinct reception users submit simultaneously: one commit, one duplicate, one audit, correct stats (194.6544ms)
+✔ concurrency: closing event concurrently with admission has serializable result (147.8862ms)
+✔ concurrency: concurrent allowance edit cannot silently overwrite a scan (162.4685ms)
+✔ correction and reset: reception user cannot correct or reset admission (403) (130.6634ms)
+✔ correction: admin corrects actualCompanions, preserves operator/time, audits change and updates stats (223.2099ms)
+✔ reset: admin resets admission, retains audit history, and enables another deliberate admission (174.8147ms)
+✔ explicit index setup repairs missing indexes with autoIndex disabled; readiness rejects wrong TTL options (1256.5763ms)
+✔ expired idempotency record can be atomically replaced before the TTL monitor deletes it (37.4739ms)
+✔ backup and restore CLI rehearsal round trips a real disposable replica-set database (1713.4868ms)
+✔ purge fence rejects reopening and export creation; purge CLI removes only the selected event (744.6344ms)
+✔ simultaneous enqueue enforces 3/admin and 10 global; terminal and expired jobs free capacity without cleanup counters (686.6547ms)
+✔ expiry clears hidden snapshot, survives repeated cleanup, and retains an expired status until TTL (44.6268ms)
+✔ download does not expose internal error messages or accept sibling-directory traversal (21.8838ms)
+✔ backup EJSON round trips ObjectId, Date, numeric versions and nested snapshot values; manifest rejects corrupt/unlisted files (13.121ms)
+✖ real browser → frontend → Express → replica set: first event, guest, CSV, gate uncertainty, reauthentication, reset truth and logout (23172.6077ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 21
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 24761.129
+
+✖ failing tests:
+
+test at tests\e2e\browser-integrated.test.js:23:1
+✖ real browser → frontend → Express → replica set: first event, guest, CSV, gate uncertainty, reauthentication, reset truth and logout (23172.6077ms)
+  locator.waitFor: Timeout 15000ms exceeded.
+  Call log:
+  [2m  - waiting for getByTestId('admit-guest-btn') to be visible[22m
+  
+      at TestContext.<anonymous> (D:\halla\halaa-checkin\tests\e2e\browser-integrated.test.js:129:47) {
+    name: 'TimeoutError'
+  }

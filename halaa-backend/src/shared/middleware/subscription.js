@@ -61,7 +61,13 @@ exports.requireSubscription = catchAsync(async (req, res, next) => {
     if (eventSubscription) {
       subscriptions = [eventSubscription];
     } else {
-      return res.status(403).json({ success: false, message: 'No active subscription found' });
+      return next(
+        new AppError(
+          'No active subscription found',
+          403,
+          'SUBSCRIPTION_REQUIRED'
+        )
+      );
     }
   }
 
@@ -153,11 +159,13 @@ exports.checkEventLimit = catchAsync(async (req, res, next) => {
   });
 
   if (activeEventCount >= maxEvents) {
-    return res.status(403).json({
-      success: false,
-      message: 'Event limit reached for your current subscription',
-      code: 'EVENT_LIMIT_REACHED',
-    });
+    return next(
+      new AppError(
+        'Event limit reached for your current subscription',
+        403,
+        'EVENT_LIMIT_REACHED'
+      )
+    );
   }
 
   req.remainingEvents = subscription.eventsRemaining;
@@ -229,7 +237,13 @@ exports.checkGuestLimit = (getGuestCount) => {
       capacitySub = await Subscription.getCapacityForEvent(userId, guestCount);
     }
     if (!capacitySub) {
-      return res.status(403).json({ success: false, message: 'No active subscription with sufficient capacity' });
+      return next(
+        new AppError(
+          'No active subscription with sufficient invitation capacity',
+          403,
+          'INVITATION_CAPACITY_EXCEEDED'
+        )
+      );
     }
     req.capacitySubscription = capacitySub;
     next();

@@ -5,18 +5,25 @@ import styles from './Notice.module.css';
 
 /**
  * Notice banner component for feedback, warnings, and error messages.
+ * Standard interface (F12): `variant` (alias `type` tolerated), `message`
+ * and/or `children`, plus forwarded DOM/test props (data-testid, etc.).
  */
 export function Notice({
   variant = 'info',
+  type,
   title,
+  message,
   children,
   onDismiss,
+  dismissLabel,
   className = '',
+  ...rest
 }) {
-  const role = variant === 'error' || variant === 'warning' ? 'alert' : 'status';
+  const resolvedVariant = variant || type || 'info';
+  const role = resolvedVariant === 'error' || resolvedVariant === 'warning' ? 'alert' : 'status';
 
   const renderIcon = () => {
-    switch (variant) {
+    switch (resolvedVariant) {
       case 'success':
         return (
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -52,22 +59,25 @@ export function Notice({
     }
   };
 
+  const body = message ?? children;
+
   return (
     <div
-      className={`${styles.notice} ${styles[variant] || styles.info} ${className}`.trim()}
+      className={`${styles.notice} ${styles[resolvedVariant] || styles.info} ${className}`.trim()}
       role={role}
+      {...rest}
     >
       <span className={styles.icon}>{renderIcon()}</span>
       <div className={styles.content}>
         {title && <div className={styles.title}>{title}</div>}
-        <div>{children}</div>
+        {body != null && body !== '' && <div>{body}</div>}
       </div>
       {onDismiss && (
         <button
           type="button"
           onClick={onDismiss}
           className={styles.dismissBtn}
-          aria-label="Dismiss notice"
+          aria-label={dismissLabel || 'Dismiss notice'}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <line x1="18" y1="6" x2="6" y2="18" />

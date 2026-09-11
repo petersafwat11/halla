@@ -1,3 +1,4 @@
+import { buildPostEventMediaForm } from '../../../utils/postEventMultipart';
 import React, { useState } from "react";
 import {
   View,
@@ -8,6 +9,7 @@ import {
   StyleSheet,
   FlatList,
   Alert,
+  Platform,
 } from "react-native";
 import { useWindowDimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -52,20 +54,12 @@ const MediaUploader = ({
       selectionLimit: 20,
     });
     if (result.canceled || !result.assets?.length) return;
-    const formData = new FormData();
-    result.assets.forEach((asset, index) => {
-      const isVideo =
-        asset.type === "video" || /video/i.test(asset.mimeType || "");
-      formData.append("files", {
-        uri: asset.uri,
-        name:
-          asset.fileName ||
-          (isVideo ? `video_${index}.mp4` : `photo_${index}.jpg`),
-        type:
-          asset.mimeType || (isVideo ? "video/mp4" : "image/jpeg"),
-      });
-    });
-    onPickFiles(formData);
+    try {
+      const formData = await buildPostEventMediaForm(result.assets, Platform.OS);
+      onPickFiles(formData);
+    } catch {
+      Alert.alert(t('host.errors.uploadFailed'));
+    }
   };
 
   const renderTile = ({ item }) => {

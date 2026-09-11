@@ -92,6 +92,24 @@ const config = {
       ? env.MOYASAR_WEBHOOK_IP_WHITELIST.split(',').map((ip) => ip.trim()).filter(Boolean)
       : [],
   },
+
+  paymentLinks: {
+    enabled: env.PAYMENT_LINKS_ENABLED === 'true',
+    minAmountSar: Number(env.PAYMENT_LINKS_MIN_AMOUNT_SAR || 1),
+    maxAmountSar: env.PAYMENT_LINKS_MAX_AMOUNT_SAR == null ? null : Number(env.PAYMENT_LINKS_MAX_AMOUNT_SAR),
+    expiryChoicesDays: String(env.PAYMENT_LINKS_EXPIRY_CHOICES_DAYS || '1,7,30')
+      .split(',')
+      .map((s) => parseInt(String(s).trim(), 10))
+      .filter((n) => Number.isFinite(n) && n > 0),
+    defaultExpiryDays: Number(env.PAYMENT_LINKS_DEFAULT_EXPIRY_DAYS || 7),
+    callbackBaseUrl: env.PAYMENT_LINKS_CALLBACK_BASE_URL || env.BACKEND_URL,
+    hostedUrlAllowlist: String(env.PAYMENT_LINKS_HOSTED_URL_ALLOWLIST || '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean),
+    reconcileBatch: Number(env.PAYMENT_LINKS_RECONCILE_BATCH || 50),
+    reconcileConcurrency: Number(env.PAYMENT_LINKS_RECONCILE_CONCURRENCY || 2),
+  },
 };
 
 module.exports = config;

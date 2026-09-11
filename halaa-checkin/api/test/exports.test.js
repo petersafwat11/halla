@@ -54,6 +54,7 @@ import { generateBulkPassesHtml } from '../src/modules/exports/templates/bulkPas
 import { generateReportHtml } from '../src/modules/exports/templates/report.js';
 
 function findEvidenceDir() {
+  if (process.env.CHECKIN_EVIDENCE_DIR) return path.resolve(process.env.CHECKIN_EVIDENCE_DIR);
   let dir = process.cwd();
   for (let i = 0; i < 4; i++) {
     const candidate = path.join(dir, 'docs', 'evidence', 'hilton-guest-checkin');
@@ -349,6 +350,7 @@ test('bulk passes: renders 4-up A4 pages, spans multiple pages, includes all gue
   assert.equal(dlRes.status, 200);
   assert.equal(dlRes.headers['content-type'], 'application/pdf');
   assert.ok(dlRes.body.toString('latin1', 0, 5).startsWith('%PDF-'));
+  assert.equal((dlRes.body.toString('latin1').match(/\/Type\s*\/Page\b/g) || []).length, 2, 'six invitations fit exactly two sheets with snapshot timestamps');
   // Multi-page A4 PDF should be substantial
   assert.ok(dlRes.body.length > 20000, 'Multi-page bulk PDF should exceed 20KB');
 });

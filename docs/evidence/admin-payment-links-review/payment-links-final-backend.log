@@ -1,0 +1,208 @@
+[s3Upload] storage init error: S3 is not configured. Set AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, AWS_S3_BUCKET (and AWS_S3_BASE_URL). To run locally without AWS, set ALLOW_LOCAL_UPLOADS=true (development only).
+✔ collectS3Keys gathers ALL variants incl. full-URL media + nested comment images (3079.7512ms)
+✔ full deletion → no non-retained PII remains; retained rows survive; status completed (4259.4928ms)
+✔ auth token invalidation: deleted user excluded from default find (899.2696ms)
+✔ idempotent: second delete returns same request, no throw (308.9319ms)
+[WARN] [deletion] step 'delete_s3_objects' failed {
+  userId: '6aa2aa76d90c25a1c9c84d4c',
+  error: '1 S3 object(s) not deleted'
+}
+[INFO] [deletion.retry] tick { scanned: 1, completed: 1, stillPending: 0 }
+✔ partial S3 failure → pending_retry (NOT completed) with residual; worker converges (409.5876ms)
+✔ idempotent S3 retry: an already-absent key counts as gone (343.5841ms)
+[WARN] [deletion] step 'delete_s3_objects' failed {
+  userId: '6aa2aa77d90c25a1c9c84e04',
+  error: '1 S3 object(s) not deleted'
+}
+[INFO] [deletion.retry] tick { scanned: 1, completed: 0, stillPending: 1 }
+[ERROR] [deletion.retry] cleanup exhausted retries — manual action needed { requestId: 'ca290413-0564-437f-906e-1ee82cf9a3ce', residual: 1 }
+[INFO] [deletion.retry] tick { scanned: 1, completed: 0, stillPending: 1 }
+✔ persistent S3 failure → terminal `failed` after max retries (ops signal, never false completed) (445.004ms)
+[paymentProvider] active provider: moyasar
+✔ extra-invites store grant applies quota atomically and is unique-txn idempotent (2079.1127ms)
+[ERROR] [addons.purchase] PENDING REFUND {
+  reason: 'addon_iap_missing_target_subscription',
+  userId: new ObjectId('6aa2aa701e9cbb4abee676a5'),
+  amount: 120,
+  paymentId: null,
+  moyasarPaymentId: null,
+  detail: null
+}
+[ERROR] [addons.grantFromStore] no target subscription for pool/org add-on → failed_quota {
+  addonId: new ObjectId('6aa2aa711e9cbb4abee676a9'),
+  providerTransactionId: 'atxn-miss'
+}
+✔ missing target subscription → failed_quota + refund_required (not silent success) (733.0141ms)
+[ERROR] [addons.purchase] PENDING REFUND {
+  reason: 'addon_iap_quota_failed',
+  userId: new ObjectId('6aa2aa711e9cbb4abee676ba'),
+  amount: 200,
+  paymentId: null,
+  moyasarPaymentId: null,
+  detail: 'forced in-txn quota failure'
+}
+[ERROR] [addons.grantFromStore] applyQuota failed → failed_quota {
+  addonId: new ObjectId('6aa2aa741e9cbb4abee676c6'),
+  error: 'forced in-txn quota failure'
+}
+✔ an in-transaction quota failure ROLLS BACK the addon create → failed_quota, pool unchanged (§10) (3225.058ms)
+✔ event REFUND_REVERSED restores a refunded-before-use package to unused + re-activates access (1943.8676ms)
+[WARN] [addons.refundFromStore] extra_invites clawback { addonId: new ObjectId('6aa2aa761e9cbb4abee6771f'), reclaimed: 10 }
+✔ extra-invites refund claws back ONLY the unused delta, never below consumed (281.074ms)
+[WARN] [addons.refundFromStore] extra_invites clawback { addonId: new ObjectId('6aa2aa771e9cbb4abee67740'), reclaimed: 50 }
+✔ refund reversal restores exactly the clawed-back delta once (292.0095ms)
+[ERROR] [addons.purchase] PENDING REFUND {
+  reason: 'design_template_store_forced_refund',
+  userId: new ObjectId('6aa2aa771e9cbb4abee6775c'),
+  amount: 350,
+  paymentId: null,
+  moyasarPaymentId: null,
+  detail: null
+}
+✔ design-template store refund is recorded but the service work is NOT undone (DEC-03L) (257.7819ms)
+✔ event package grant creates an unused entitlement + per-event sub and blocks a 2nd buy (333.4688ms)
+[WARN] [revenuecat] event package delivered while a recurring plan is active — routed to manual_review {
+  userId: '6aa2aa771e9cbb4abee6779c',
+  planCode: 'basic_event_50',
+  txnId: 'etx-race'
+}
+✔ event package delivered while a recurring plan is active → manual_review, NOT blocking (306.9495ms)
+✔ refund of an unused event package revokes access + keeps the ledger row (370.7482ms)
+[s3Upload] storage init error: S3 is not configured. Set AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, AWS_S3_BUCKET (and AWS_S3_BASE_URL). To run locally without AWS, set ALLOW_LOCAL_UPLOADS=true (development only).
+[paymentProvider] active provider: moyasar
+✔ rejects a webhook with a bad auth header (401) (2018.03ms)
+✔ INITIAL_PURCHASE grants a subscription, writes purchased-currency ledger, redacts PII (962.4066ms)
+✔ a duplicate delivery (same eventId) does not double-grant (3440.0472ms)
+✔ concurrent deliveries of the same event grant exactly once (atomic lease) (1482.6526ms)
+[ERROR] [revenuecat] DEAD-LETTER (envelope) {
+  eventId: 'e-lteq1kbinih',
+  type: 'INITIAL_PURCHASE',
+  reason: 'unmapped_product'
+}
+✔ unmapped product is dead-lettered durably (not dropped, no grant) (252.7766ms)
+✔ environment mismatch is ignored durably (259.9683ms)
+[ERROR] [revenuecat] DEAD-LETTER (process) {
+  eventId: 'e-mj2pz43qy4q',
+  type: 'INITIAL_PURCHASE',
+  reason: 'unknown_user'
+}
+✔ unknown user is dead-lettered (never grants) (261.3921ms)
+[WARN] [revenuecat] MANUAL-REVIEW {
+  eventId: 'e-7p978z4iy6c',
+  type: 'TRANSFER',
+  reason: 'transfer_keep_original_user'
+}
+✔ TRANSFER is parked as manual_review (keep with original user, DEC-04) (286.0412ms)
+[WARN] [revenuecat] retryable — released for retry { eventId: 'e-cjm3ajaz79', reason: 'snapshot_unavailable' }
+✔ EXPIRATION with an unavailable snapshot does NOT revoke — 500 retry (P0-08) (347.702ms)
+✔ EXPIRATION with snapshot inactive revokes exactly the lineage subscription (354.1129ms)
+✔ refund→REFUND_REVERSED restores the EXACT revoked subscription end-to-end (canonical active) (380.9173ms)
+[WARN] [revenuecat] retryable — released for retry { eventId: 'e-dara6dhit5d', reason: 'snapshot_unavailable' }
+✔ REFUND_REVERSED on a subscription with NO snapshot is retryable (never blind-restores) (354.4996ms)
+✔ a crashed worker's stuck (processing, expired-lease) event is reclaimed + reprocessed (332.0209ms)
+✔ parses western + arabic amounts to exact halalas (1.2873ms)
+✔ rejects zero, negative, sub-minimum, extra decimals, exponents, grouping (1.0061ms)
+✔ rejects over configured max (0.232ms)
+✔ moyasar adapter preserves exact minor units (no double conversion) (84.9701ms)
+[paymentProvider] active provider: moyasar
+✔ failed attempt then success: detail visible, same link pays (1524.0852ms)
+✔ multiple partial refunds update totals exactly once (118.7075ms)
+✔ amount mismatch becomes needs_review with no paid transition (39.6272ms)
+✔ forged callback for unknown invoice creates nothing (12.3302ms)
+✔ payment/cancel race: paid wins, cancel rejected (63.3862ms)
+✔ provider outage preserves last known status (36.3606ms)
+✔ invoice status alone cannot prove collection (35.1146ms)
+✔ reject missing metadata, wrong payment amount/currency/membership and environment (122.2779ms)
+✔ provider payment collision never retargets a host checkout (33.2511ms)
+✔ stale refund snapshots cannot reduce already recorded refunds (68.2733ms)
+✔ concurrent reconciliations have one provider fetch and preserve queued wakeup (57.5051ms)
+✔ ledger write failure never publishes paid and is repairable (62.7099ms)
+✔ unsigned callback cannot bind a pending invoice using forged metadata (22.4028ms)
+✔ callback returns retryable error when durable queue fails (3.849ms)
+✔ cancel HTTP success without provider canceled state remains uncertain (39.6343ms)
+✔ payment that arrives during cancel wins over cancellation response (49.7569ms)
+✔ duplicate collections are recorded and flagged for review (85.0105ms)
+✔ expired leases are reclaimable; worker ignores null next-run dates (174.6621ms)
+✔ hosted URLs reject subdomains, credentials and nonstandard ports (32.8196ms)
+✔ Moyasar authenticates events and durably queues repeated refund hints (170.22ms)
+[ERROR] [moyasar.webhook] payment-link dispatch error { error: 'test database unavailable' }
+✔ Moyasar retries a recognized payment link event when queue persistence fails (69.3553ms)
+✔ ordinary Moyasar invoice-paid events still run the subscription renewal handler (1024.6088ms)
+[paymentProvider] active provider: moyasar
+✔ same idempotency key + same input returns one durable intent (1296.478ms)
+✔ same key + different input returns conflict (46.4911ms)
+✔ timeout after dispatch becomes creation_unknown without second create (69.764ms)
+✔ recovery adopts the original invoice by metadata without a second create (62.9229ms)
+✔ verified paid is sticky against stale failed snapshots (131.8792ms)
+✔ authorization: moderator VIEW can manage links; NONE/host/unauth denied (6.9665ms)
+✔ simultaneous creation requests publish one invoice and one intent (56.3628ms)
+✔ guest link invariants reject missing links and entitlement targets (7.5869ms)
+✔ generated operations contract has exact approved rules and hash (1394.0228ms)
+[INFO] [privacy.retention] run complete {
+  runId: 'b6fe80dc-e99c-4333-bba4-6b8f5a3352c9',
+  mode: 'execute',
+  status: 'completed',
+  policyHash: '0422f9bb17578b311c8a214837b3ad987f71ea4932d5a78104cc5fdaadd6333b'
+}
+✔ payment links use financial activity rather than polling timestamps for retention (134.2152ms)
+[INFO] [privacy.retention] run complete {
+  runId: '984cd7dd-02cf-4db7-9368-59a71e0683ed',
+  mode: 'dry_run',
+  status: 'completed',
+  policyHash: '0422f9bb17578b311c8a214837b3ad987f71ea4932d5a78104cc5fdaadd6333b'
+}
+✔ dry-run reports eligible rows but never mutates data (144.6198ms)
+[INFO] [privacy.retention] run complete {
+  runId: '0c9805a4-2be0-4de2-ba7a-da2aaf77ceda',
+  mode: 'execute',
+  status: 'completed',
+  policyHash: '0422f9bb17578b311c8a214837b3ad987f71ea4932d5a78104cc5fdaadd6333b'
+}
+[INFO] [privacy.retention] run complete {
+  runId: '72fb3290-b14b-4efd-bca8-61d29c0306f9',
+  mode: 'execute',
+  status: 'completed',
+  policyHash: '0422f9bb17578b311c8a214837b3ad987f71ea4932d5a78104cc5fdaadd6333b'
+}
+✔ execute purges only expired terminal records and is idempotent (236.8847ms)
+[INFO] [privacy.retention] run complete {
+  runId: '19310bd0-ce97-4ac1-ae00-9315656f0fa5',
+  mode: 'execute',
+  status: 'completed',
+  policyHash: '0422f9bb17578b311c8a214837b3ad987f71ea4932d5a78104cc5fdaadd6333b'
+}
+[INFO] [privacy.retention] run complete {
+  runId: '376debc2-1e84-4cba-ad9d-d6643daabc39',
+  mode: 'execute',
+  status: 'completed',
+  policyHash: '0422f9bb17578b311c8a214837b3ad987f71ea4932d5a78104cc5fdaadd6333b'
+}
+✔ document, subject and collection legal holds prevent purge until released (264.9192ms)
+[INFO] [privacy.retention] run complete {
+  runId: '8c0723c2-bb3d-45b0-927e-b889e2de38ff',
+  mode: 'execute',
+  status: 'completed',
+  policyHash: '0422f9bb17578b311c8a214837b3ad987f71ea4932d5a78104cc5fdaadd6333b'
+}
+[INFO] [privacy.retention] run complete {
+  runId: '1833fad6-67da-44b2-8556-86b6386c92af',
+  mode: 'execute',
+  status: 'completed',
+  policyHash: '0422f9bb17578b311c8a214837b3ad987f71ea4932d5a78104cc5fdaadd6333b'
+}
+✔ bounded batches expose hasMore and converge safely (126.7511ms)
+[INFO] [privacy.retention] run complete {
+  runId: '0173e6b1-db25-4c6a-9c25-8c4c625ddb55',
+  mode: 'execute',
+  status: 'completed',
+  policyHash: '0422f9bb17578b311c8a214837b3ad987f71ea4932d5a78104cc5fdaadd6333b'
+}
+✔ deleted-account marker becomes eligible even when the billing state never became terminal (76.9295ms)
+ℹ tests 71
+ℹ suites 0
+ℹ pass 71
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 11976.088

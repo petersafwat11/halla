@@ -53,3 +53,21 @@
   font-size: 1.4rem;
   color: #e74c3c;
 }
+.mediaCountButton {
+  border: 1px solid #d7c3ac;
+  border-radius: 999px;
+  padding: 5px 10px;
+  background: #faf6f0;
+  color: #76502f;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.mediaCountButton:hover,
+.mediaCountButton:focus-visible {
+  border-color: #c28e5c;
+  background: #f3e9dc;
+}

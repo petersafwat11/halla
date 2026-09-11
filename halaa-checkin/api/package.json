@@ -7,10 +7,18 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/*.test.js",
+    "test:e2e": "node --test ../tests/e2e/*.test.js",
+    "user:provision": "node scripts/provision-user.mjs",
+    "seed:demo": "node scripts/seed-demo.mjs",
+    "db:indexes": "node scripts/ensure-indexes.mjs",
+    "db:backup": "node scripts/backup-db.mjs",
+    "db:restore-verify": "node scripts/restore-verify.mjs",
+    "purge:event": "node scripts/purge-event.mjs"
   },
   "dependencies": {
     "@halaa-checkin/contracts": "*",
+    "content-disposition": "0.5.4",
     "cookie-parser": "1.4.7",
     "cors": "2.8.5",
     "csv-parse": "5.6.0",
@@ -19,7 +27,7 @@
     "express-rate-limit": "7.5.1",
     "helmet": "8.0.0",
     "mongoose": "8.9.7",
-    "playwright-core": "^1.50.1",
+    "playwright-core": "1.50.1",
     "qrcode": "^1.5.4"
   },
   "devDependencies": {

@@ -17,6 +17,7 @@ import { Ionicons } from "@expo/vector-icons";
 import {
   useUpdateAdminEventStatus,
   useDeleteAdminEvent,
+  useMySubscription,
 } from "../../hooks";
 import { useSingleEventStats } from "../../hooks/events/queries";
 import { useEventGuests, useInfiniteEventGuests } from "../../hooks/guests";
@@ -144,6 +145,7 @@ const EventDetailsScreen = () => {
   const canDelete = canDeleteOnPage(role, PAGES.EVENTS);
 
   const { data: resp, isLoading, refetch, isRefetching, error } = useSingleEventStats(eventId);
+  const { data: currentSubscriptionResponse } = useMySubscription({ enabled: !isAdmin });
   // Canonical guest list via `useEventGuests`. Falling back to
   // `event.guestList` only leaves hosts with an empty list when
   // the backend `getEventById` populator hasn't shipped to the env yet
@@ -174,6 +176,11 @@ const EventDetailsScreen = () => {
     () => resp?.event || resp?.data?.event || resp?.data || null,
     [resp]
   );
+  const currentSubscription =
+    currentSubscriptionResponse?.data?.subscription ||
+    currentSubscriptionResponse?.data ||
+    currentSubscriptionResponse?.subscription ||
+    currentSubscriptionResponse;
   const guestsFromStats = resp?.guests || [];
   const staffFromStats =
     (Array.isArray(event?.staffList) && event.staffList.length
@@ -439,7 +446,7 @@ const EventDetailsScreen = () => {
   const handleSendReminder = useCallback(async () => {
     Alert.alert(
       t("events:reminder.confirmTitle"),
-      // The normal reminder is now free and targets CONFIRMED guests only.
+      // This manual SMS nudge targets invited guests who have not responded.
       t("events:reminder.confirmBody"),
       [
         { text: t("events:guest.alerts.cancel"), style: "cancel" },
@@ -447,8 +454,14 @@ const EventDetailsScreen = () => {
           text: t("events:reminder.send"),
           onPress: async () => {
             try {
-              await sendReminderMutation.mutateAsync({ eventId, channel: "sms" });
-              toast.success(t("events:reminder.success"));
+              const result = await sendReminderMutation.mutateAsync({ eventId, channel: "sms" });
+              const data = result?.data || result || {};
+              const successful = data.successful ?? 0;
+              if (!successful) toast.error(t("events:reminder.error"));
+              else if (data.failed > 0) toast.warning(t("events:bulkActions.sentResult", {
+                successful: `${successful}/${data.reminded ?? successful + data.failed}`,
+              }));
+              else toast.success(t("events:reminder.success"));
             } catch (e) {
               toast.error(e?.message || t("events:reminder.error"));
             }
@@ -602,7 +615,7 @@ const EventDetailsScreen = () => {
   const allowGuestMutations = event?.capabilities?.canEditGuest ?? ["pending_review", "pending_scheduling", "scheduled"].includes(event?.status);
 
   // The RSVP reminder nudge is free and targets SENT, UNANSWERED guests during LIVE events.
-  const hasUnansweredSentGuests = isLive && Boolean(resp?.hasUnansweredSentGuests || resp?.unansweredSentCount > 0);
+  const hasUnansweredSentGuests = isLive && event?.invitationType !== "none" && Boolean(resp?.hasUnansweredSentGuests || resp?.unansweredSentCount > 0);
 
   // Pass the full event so `useEventActionGate` sees every field the
   // hook reads (taqnyatTemplate, staffList, status, launchSettings, …).
@@ -849,6 +862,7 @@ const EventDetailsScreen = () => {
           <RemainingInvitesBadge
             remaining={invitesRemaining}
             balance={invitationBalance}
+            currentSubscription={isAdmin ? null : currentSubscription}
             eventId={eventId}
           />
         )}

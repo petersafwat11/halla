@@ -1,6 +1,10 @@
 # Halaa Guest Check-in — implementation handoff
 
-Prepared: 8 September 2026. Status: **plan only; application not implemented or deployed**.
+Prepared: 8 September 2026. Updated: 10 September 2026.
+The independent review found and repaired defects remaining after the F01–F33 implementation.
+Read [06-IMPLEMENTATION-REVIEW-AND-FIXES.md](06-IMPLEMENTATION-REVIEW-AND-FIXES.md)
+for verified local results and remaining release/device verification. Earlier completion
+claims are historical; they are not production certification.
 
 Build a small, standalone Halaa application for the Hilton Riyadh demonstration: manage a guest list, deliver printable QR invitations, admit guests at the gate, and export attendance. It must look like the existing Halaa frontend and run alongside it on the same VPS.
 

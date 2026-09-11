@@ -1,3 +1,4 @@
+import { readTaqnyatTemplates } from '../../../utils/taqnyatTemplates';
 import React from "react";
 import {
   View,
@@ -24,6 +25,7 @@ import LocalizedText from "../../commen/LocalizedText";
  */
 const MessagingTemplatePicker = ({
   eventId,
+  messagePreviews = {},
   selectedTemplateRef,
   t,
   toast,
@@ -34,7 +36,7 @@ const MessagingTemplatePicker = ({
   });
   const updateTemplate = useUpdatePostEventMessagingTemplate();
 
-  const templates = data?.data || [];
+  const templates = readTaqnyatTemplates(data);
   const selectedId =
     selectedTemplateRef?._id || selectedTemplateRef || null;
 
@@ -53,6 +55,7 @@ const MessagingTemplatePicker = ({
     <View style={styles.section}>
       <LocalizedText style={styles.title}>{t("host.messaging.title")}</LocalizedText>
       <LocalizedText style={styles.subtitle}>{t("host.messaging.subtitle")}</LocalizedText>
+      <LocalizedText>{t("host.messaging.previewNote", { defaultValue: currentLanguage === "ar" ? "تستخدم المعاينة بيانات المناسبة وأول ضيف. الرابط ووقت الانتهاء توضيحيان ويُستبدلان ببيانات كل ضيف عند الإرسال." : "Preview uses the first guest and this event. The example link and expiry are replaced with each guest’s private access details when sent." })}</LocalizedText>
 
       {isLoading ? (
         <ActivityIndicator color="#C28E5C" style={{ marginVertical: 24 }} />
@@ -88,12 +91,12 @@ const MessagingTemplatePicker = ({
                     <Ionicons
                       name="checkmark-circle"
                       size={18}
-                      color="#2A8C5B"
+                      color="#C28E5C"
                     />
                   )}
                 </View>
-                <AdaptiveText style={styles.cardBody} numberOfLines={3}>
-                  {tpl.bodyText}
+                <AdaptiveText style={styles.cardBody} >
+                  {messagePreviews[String(tpl._id)] || tpl.bodyText}
                 </AdaptiveText>
                 <Text style={styles.cardMeta}>
                   {t("host.messaging.varCount", {
@@ -158,8 +161,8 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   cardSelected: {
-    borderColor: "#2A8C5B",
-    backgroundColor: "#EAF4EF",
+    borderColor: "#C28E5C",
+    backgroundColor: "#F9F4EF",
   },
   cardHeader: {
     flexDirection: "row",

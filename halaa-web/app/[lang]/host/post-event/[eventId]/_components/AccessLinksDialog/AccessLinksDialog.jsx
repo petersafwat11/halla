@@ -14,9 +14,10 @@ import styles from "./accessLinksDialog.module.css";
 
 const FILTERS = ["attended", "confirmed", "all"];
 
-const AccessLinksDialog = ({ eventId, savedTemplateRef, onClose }) => {
+const AccessLinksDialog = ({ eventId, savedTemplateRef, onClose, messagePreviews = {}, previouslySent = false }) => {
   const { t } = useTranslation("postEvent");
   const [filter, setFilter] = useState("attended");
+  const [confirmedResend, setConfirmedResend] = useState(false);
 
   const initialOverrideId =
     typeof savedTemplateRef === "object" && savedTemplateRef
@@ -28,12 +29,14 @@ const AccessLinksDialog = ({ eventId, savedTemplateRef, onClose }) => {
     type: "post_event",
   });
   const templates = data?.data?.templates || data?.templates || [];
+  const selectedTemplate = templates.find(template => template._id === overrideId);
 
   const generateTokens = useGeneratePostEventTokens();
   const sendLinks = useSendPostEventAccessLinks();
   const isPending = generateTokens.isPending || sendLinks.isPending;
 
   const handleSend = async () => {
+    if (isPending || !selectedTemplate || (previouslySent && !confirmedResend)) return;
     const body = { filter };
     if (overrideId) body.taqnyatTemplateRef = overrideId;
 
@@ -43,7 +46,11 @@ const AccessLinksDialog = ({ eventId, savedTemplateRef, onClose }) => {
       const result = await sendLinks.mutateAsync({ eventId, data: body, attemptId });
       const summary = result?.data || {};
       const breakdown = summary.channelBreakdown || {};
-      toast.success(
+      if (!summary.sent && summary.failed) {
+        toast.error(t('host.errors.sendFailed'));
+        return;
+      }
+      (summary.failed ? toast.warning : toast.success)(
         t("host.accessLinks.success", {
           sent: summary.sent ?? 0,
           whatsapp: breakdown.whatsapp ?? 0,
@@ -124,6 +131,7 @@ const AccessLinksDialog = ({ eventId, savedTemplateRef, onClose }) => {
               value={overrideId}
               onChange={(e) => setOverrideId(e.target.value)}
             >
+              <option value="" disabled>{t('host.accessLinks.templatePicker')}</option>
               {templates.map((tpl) => (
                 <option key={tpl._id} value={tpl._id}>
                   {tpl.templateName}
@@ -131,7 +139,9 @@ const AccessLinksDialog = ({ eventId, savedTemplateRef, onClose }) => {
               ))}
             </select>
           )}
+          {!!selectedTemplate && <p dir="auto" style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', padding: '1.2rem', background: '#F9F4EF', border: '1px solid #C28E5C', borderRadius: '8px' }}>{messagePreviews[selectedTemplate._id] || selectedTemplate.bodyText}</p>}
         </div>
+        {previouslySent && <label className={styles.filterRow}><input type="checkbox" checked={confirmedResend} onChange={event => setConfirmedResend(event.target.checked)} />{t('host.accessLinks.resendConfirmation')}</label>}
 
         <footer className={styles.footer}>
           <Button
@@ -146,7 +156,7 @@ const AccessLinksDialog = ({ eventId, savedTemplateRef, onClose }) => {
             size="small"
             title={isPending ? "…" : t("host.accessLinks.send")}
             onClick={handleSend}
-            disabled={isPending || templates.length === 0}
+            disabled={isPending || !selectedTemplate || (previouslySent && !confirmedResend)}
           />
         </footer>
       </div>

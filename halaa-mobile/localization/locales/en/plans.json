@@ -313,6 +313,7 @@
       "applepayUnavailable": "Apple Pay is not yet available on mobile. Please choose another method.",
       "iapUnavailable": "In-app purchases aren't available on this device.",
       "planUnavailable": "This plan isn't available for purchase right now.",
+      "addonUnavailable": "One of the selected add-ons is not available in the App Store. Refresh the products or remove that add-on before continuing.",
       "addonUnavailable": "This add-on isn't available right now."
     },
     "iap": {

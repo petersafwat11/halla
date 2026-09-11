@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import {
   getScheduleWindow,
+  getScheduleTimeBounds,
   parseClockParts,
   riyadhWallClockInstant,
   validateScheduleSelection,
@@ -13,6 +14,23 @@ test("clock parser accepts the app's 12h and 24h tokens", () => {
   assert.deepEqual(parseClockParts("9:30:PM"), { hour: 21, minute: 30 });
   assert.deepEqual(parseClockParts("23:45"), { hour: 23, minute: 45 });
   assert.equal(parseClockParts("25:00"), null);
+});
+
+test("time bounds disable too-early and too-late clock values on boundary days", () => {
+  const window = getScheduleWindow({
+    isTrial: true,
+    eventDate: "2026-09-03",
+    eventTime: "18:00",
+    now: new Date("2026-08-27T09:00:30.000Z"),
+  });
+  assert.deepEqual(getScheduleTimeBounds("2026-08-27", window), {
+    minimumMinutes: 12 * 60 + 16,
+    maximumMinutes: 1439,
+  });
+  assert.deepEqual(getScheduleTimeBounds("2026-08-31", window), {
+    minimumMinutes: 0,
+    maximumMinutes: 18 * 60,
+  });
 });
 
 test("Riyadh wall-clock conversion matches the backend UTC interpretation", () => {

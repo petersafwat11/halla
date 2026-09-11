@@ -420,6 +420,11 @@
   background: #f7f5f2;
 }
 
+.dropdown_option_active {
+  background: var(--color-primary-50);
+  outline: 1px solid var(--color-primary-500);
+}
+
 /* Selected option styling with checkmark */
 .dropdown_option_selected {
   background: rgba(194, 142, 92, 0.12);

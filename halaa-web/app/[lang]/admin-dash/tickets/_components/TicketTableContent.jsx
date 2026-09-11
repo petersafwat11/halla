@@ -2,6 +2,7 @@
 
 import { useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
+import { useRouter } from "next/navigation";
 import { FiEye, FiUserPlus, FiCheckSquare, FiTrash2 } from "react-icons/fi";
 import Table from "@/ui/commen/new-table/Table";
 import { handleError } from "@/services/errorHandlingService";
@@ -17,6 +18,7 @@ export default function TicketTableContent({
   handleAssignClick, handleResponseClick, handleViewResolutionClick,
 }) {
   const { t: tHook, i18n } = useTranslation("adminTickets");
+  const router = useRouter();
   const i18nT = t || tHook;
 
   const getRowActions = useCallback((row) => {
@@ -73,6 +75,18 @@ export default function TicketTableContent({
     if (key === "subject") {
       return <span className={styles.clickable} onClick={() => handleResponseClick(row)}>{value}</span>;
     }
+    if (key === "attachments") {
+      const count = Array.isArray(value) ? value.length : 0;
+      return count ? (
+        <button
+          type="button"
+          className={styles.mediaCountButton}
+          onClick={() => router.push(`/${i18n.language || "ar"}/admin-dash/tickets/${row.id}`)}
+        >
+          {i18nT("table.mediaCount", { count, defaultValue: "{{count}} files" })}
+        </button>
+      ) : <span>-</span>;
+    }
     if (key === "assignedTo") {
       return value ? <span>{value}</span> : (
         canUpdate ? <span className={styles.assignClickable} onClick={() => handleAssignClick(row)}>{i18nT("actions.assign")}</span> : <span>-</span>
@@ -80,7 +94,7 @@ export default function TicketTableContent({
     }
     if (key === "createdAt" && value) return formatDate(value, i18n?.language || "ar");
     return value;
-  }, [canUpdate, i18nT, i18n, handleResponseClick, handleAssignClick]);
+  }, [canUpdate, i18nT, i18n, handleResponseClick, handleAssignClick, router]);
 
   return (
     <Table
@@ -93,9 +107,10 @@ export default function TicketTableContent({
         i18nT("table.columns.status"),
         i18nT("table.columns.assignedTo"),
         i18nT("table.columns.createdAt"),
+        i18nT("table.columns.media", "Media"),
       ]}
       data={tableData}
-      headerKeys={["subject", "user", "priority", "status", "assignedTo", "createdAt"]}
+      headerKeys={["subject", "user", "priority", "status", "assignedTo", "createdAt", "attachments"]}
       searchValue={filters.search || ""}
       onSearchChange={handleSearchChange}
       activeFilter={filters.status || ""}

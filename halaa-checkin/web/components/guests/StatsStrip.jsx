@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { Notice } from '../ui/Notice.jsx';
 import { getDictionary, t, formatRiyadhDate } from '../../lib/locale.js';
 import styles from './StatsStrip.module.css';
 
@@ -8,9 +9,10 @@ import styles from './StatsStrip.module.css';
  * Event-wide statistics strip with real-time polling indicator.
  * Displays 4 summary cards: Invitations, Expected People, Admitted People, and Pending/No-show.
  */
-export function StatsStrip({ stats, isFetching = false, eventStatus = 'live', lang = 'ar' }) {
+export function StatsStrip({ stats, isFetching = false, statsError = null, onRetry = null, eventStatus = 'live', lang = 'ar' }) {
   const dict = getDictionary(lang);
   const isClosed = eventStatus === 'closed';
+  const hasData = !!stats && (stats.totalInvitations > 0 || !!stats.asOf);
 
   const formatNumber = (val) => {
     return new Intl.NumberFormat(lang === 'en' ? 'en-US' : 'ar-SA').format(val || 0);
@@ -21,8 +23,27 @@ export function StatsStrip({ stats, isFetching = false, eventStatus = 'live', la
     return `${num.toFixed(1)}%`;
   };
 
+  if (!hasData && !statsError) return <section className={styles.strip} role="status">{t(dict, 'common.loading')}</section>;
+
+  // Never render zeros as data when the request failed and we have no snapshot.
+  if (statsError && !hasData) {
+    return (
+      <section className={styles.strip} aria-label={t(dict, 'stats.title') || 'Statistics'} role="alert" data-testid="stats-load-error">
+        <div className={styles.headerRow}>
+          <span>{t(dict, `errors.${statsError.code}`) || statsError.message || 'Failed to load statistics'}</span>
+          {onRetry && (
+            <button type="button" className={styles.rateBadge} onClick={() => onRetry?.()} data-testid="stats-retry-btn">
+              {t(dict, 'common.retry') || (lang === 'ar' ? 'إعادة المحاولة' : 'Retry')}
+            </button>
+          )}
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className={styles.strip} aria-label={t(dict, 'stats.title') || 'Statistics'}>
+      {statsError && <Notice variant="warning">{t(dict, 'gate.connectionStale')} <button onClick={onRetry}>{t(dict, 'common.retry')}</button></Notice>}
       <div className={styles.headerRow}>
         <div className={styles.asOfText}>
           <span

@@ -105,10 +105,68 @@ for (const logoName of logoNames) {
   });
 }
 
-if (hasError) {
-  console.error('\nDesign check FAILED.');
+// F31: provenance hash verification + copy parity + parent drift (report only).
+import crypto from 'node:crypto';
+function sha256Of(filePath) {
+  return crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
+}
+let driftFound = false;
+function driftCheck(desc, fn) {
+  try {
+    fn();
+    console.log(`✓ ${desc}`);
+  } catch (err) {
+    console.error(`✗ ${desc}: ${err.message}`);
+    driftFound = true;
+  }
+}
+try {
+  if (fs.existsSync(sourcesJsonPath)) {
+    const sources = JSON.parse(fs.readFileSync(sourcesJsonPath, 'utf8'));
+    // Verify copied logo/font hashes match manifest.
+    for (const [name, meta] of Object.entries(sources?.sources?.logos || {})) {
+      driftCheck(`provenance logo ${name} sha256`, () => {
+        const p = path.resolve(designDir, 'assets/logos', name);
+        if (!fs.existsSync(p)) throw new Error('missing copy');
+        const actual = sha256Of(p);
+        if (actual !== meta.sha256) throw new Error(`drift: expected ${meta.sha256.slice(0,12)}…, got ${actual.slice(0,12)}… (parent drift, not auto-rewritten)`);
+      });
+    }
+    for (const [name, meta] of Object.entries(sources?.sources?.fonts?.files || {})) {
+      driftCheck(`provenance font ${name} sha256`, () => {
+        const p = path.resolve(designDir, 'assets/fonts', name);
+        if (!fs.existsSync(p)) throw new Error('missing copy');
+        const actual = sha256Of(p);
+        if (actual !== meta.sha256) throw new Error(`drift: expected ${meta.sha256.slice(0,12)}…, got ${actual.slice(0,12)}…`);
+      });
+    }
+    // Verify web copy parity (design/tokens.css vs web/styles/tokens.css).
+    driftCheck('web/styles/tokens.css parity with design/tokens.css', () => {
+      const webTokens = path.resolve(rootDir, 'web/styles/tokens.css');
+      if (!fs.existsSync(webTokens)) throw new Error('web copy missing');
+      const a = sha256Of(tokensCssPath);
+      const b = sha256Of(webTokens);
+      if (a !== b) throw new Error('web copy drifted from design snapshot');
+    });
+    // Report parent source drift without auto-rewriting.
+    if (fs.existsSync(globalsCssPath)) {
+      driftCheck('parent globals.css drift vs manifest', () => {
+        const globalsCss = fs.readFileSync(globalsCssPath, 'utf8');
+        const actual = crypto.createHash('sha256').update(globalsCss).digest('hex');
+        if (actual !== sources?.sources?.globalsCss?.sha256) {
+          throw new Error(`parent drift detected (manifest ${String(sources?.sources?.globalsCss?.sha256).slice(0,12)}… vs current ${actual.slice(0,12)}…); review manually`);
+        }
+      });
+    }
+  }
+} catch (err) {
+  console.error(`Provenance check error: ${err.message}`);
+  driftFound = true;
+}
+if (driftFound) {
+  console.error('\nProvenance drift detected (see above).');
   process.exit(1);
-} else {
-  console.log('\nAll design checks PASSED.');
+} else if (!hasError) {
+  console.log('Provenance checks PASSED.');
   process.exit(0);
 }

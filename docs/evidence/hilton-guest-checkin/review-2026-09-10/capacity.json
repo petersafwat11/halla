@@ -1,0 +1,15 @@
+{
+  "node": "v24.13.1",
+  "invitations": 1000,
+  "pdfPages": 250,
+  "receptionists": 2,
+  "admissions": 200,
+  "exportMs": 39159,
+  "previewPlusAdmissionP95Ms": 541,
+  "previewPlusAdmissionMaxMs": 2386,
+  "pdfBytes": 11176224,
+  "budgets": {
+    "exportMs": 90000,
+    "previewPlusAdmissionP95Ms": 1500
+  }
+}

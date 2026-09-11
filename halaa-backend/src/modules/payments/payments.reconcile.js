@@ -27,6 +27,7 @@ exports.runReconcileTick = async () => {
     status: { $in: [Payment.PAYMENT_STATUS.PENDING, Payment.PAYMENT_STATUS.PENDING_3DS] },
     initiatedAt: { $lte: cutoff },
     moyasarPaymentId: { $ne: null },
+    'metadata.purpose': { $ne: 'admin_payment_link' },
   })
     .sort({ initiatedAt: 1 })
     .limit(BATCH_LIMIT);

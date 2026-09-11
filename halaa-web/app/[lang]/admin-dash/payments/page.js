@@ -5,6 +5,7 @@ import { requirePageAccess } from "@/services/serverAuth";
 import { adminKeys } from "@/hooks/admin/keys";
 import { normalizePaymentsFilters } from "@/utils/filterNormalizer";
 import PaymentsPageHeader from "./_components/PaymentsPageHeader";
+import PaymentsTabs from "./_components/PaymentsTabs";
 import PaymentStats from "./_components/PaymentStats";
 import PaymentsTable from "./_components/PaymentsTable";
 import styles from "./page.module.css";
@@ -34,6 +35,7 @@ export default async function PaymentsPage({ params, searchParams }) {
     <QueryClientServerProvider queryClient={queryClient}>
       <div className={styles.container}>
         <PaymentsPageHeader />
+        <PaymentsTabs />
         <PaymentStats />
         <PaymentsTable />
       </div>

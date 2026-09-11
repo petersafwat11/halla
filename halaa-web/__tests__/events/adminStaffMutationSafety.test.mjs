@@ -63,3 +63,47 @@ test("EVT-14: StaffTokensList supports TanStack Query v5 isPending on revoke mut
     "StaffTokensList revoke button must check isPending || isLoading"
   );
 });
+
+test("EVT-15: live-event update wizard uses dedicated staff mutations", () => {
+  const source = read(
+    "app", "[lang]", "host", "update-event", "_components", "UpdateEventWizard.jsx"
+  );
+
+  for (const action of ["addStaff", "updateStaff", "deleteStaff"]) {
+    assert.match(
+      source,
+      new RegExp(`useEventMutation\\(["']${action}["']\\)`),
+      `UpdateEventWizard must instantiate ${action}`
+    );
+  }
+  assert.match(source, /if \(!isEventLive\)/);
+  assert.match(source, /await\s+addStaffMutation\.mutateAsync/);
+  assert.match(source, /await\s+updateStaffMutation\.mutateAsync/);
+  assert.match(source, /await\s+deleteStaffMutation\.mutateAsync/);
+});
+
+test("EVT-16: send-message dropdown is layered above event content", () => {
+  const headerCss = read("components", "event-detail", "EventHeader.module.css");
+  const menuCss = read(
+    "components", "event-detail", "sendActions", "SendMessagesMenu.module.css"
+  );
+
+  assert.match(headerCss, /\.header\s*\{[^}]*position:\s*relative;/);
+  assert.match(headerCss, /\.header\s*\{[^}]*z-index:\s*20;/);
+  assert.match(menuCss, /\.dropdown\s*\{[^}]*z-index:\s*1000;/s);
+});
+
+test("EVT-17: web template customization offers continue or destructive discard", () => {
+  const form = read(
+    "app", "[lang]", "host", "create-event", "_components", "templateForm", "DynamicTemplateForm.jsx"
+  );
+  const step = read(
+    "app", "[lang]", "host", "create-event", "_components", "stepThree", "StepThree.js"
+  );
+
+  assert.match(form, /if \(isDirty\)/);
+  assert.match(form, /template_continue_editing/);
+  assert.match(form, /template_discard/);
+  assert.match(form, /onDiscard\?\.\(\)/);
+  assert.match(step, /onDiscard=\{handleRemoveSelection\}/);
+});

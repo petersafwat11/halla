@@ -720,3 +720,8 @@
     line-height: 1.85rem;
   }
 }
+
+.replyEditorGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.6rem; align-items: start; }
+.replyEditorGrid > div { min-width: 0; }
+.replyEditorGrid label { display: block; margin-bottom: .8rem; }
+@media (max-width: 800px) { .replyEditorGrid { grid-template-columns: 1fr; } }

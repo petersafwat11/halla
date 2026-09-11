@@ -29,8 +29,10 @@
       "priority": "الأولوية",
       "assignedTo": "المكلف",
       "status": "الحالة",
-      "createdAt": "تاريخ الإنشاء"
-    }
+      "createdAt": "تاريخ الإنشاء",
+      "media": "الوسائط"
+    },
+    "mediaCount": "{{count}} ملفات"
   },
   "status": {
     "open": "مفتوحة",

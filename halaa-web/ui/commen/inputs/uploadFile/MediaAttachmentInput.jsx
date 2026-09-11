@@ -21,39 +21,36 @@ import styles from "./MediaAttachmentInput.module.css";
  */
 const MAX_SIZE = 50 * 1024 * 1024; // 50MB — matches backend uploadMedia cap
 
-const MediaAttachmentInput = ({ value = null, onChange, t, label, disabled = false }) => {
+const MediaAttachmentInput = ({ value = [], onChange, t, label, disabled = false }) => {
   const inputRef = useRef(null);
   const [error, setError] = useState("");
-  const [previewUrl, setPreviewUrl] = useState(null);
+  const files = Array.isArray(value) ? value : value ? [value] : [];
+  const [previewUrls, setPreviewUrls] = useState([]);
 
   // Object URL for the local preview; revoked on change/unmount.
   useEffect(() => {
-    if (value && typeof value !== "string") {
-      const url = URL.createObjectURL(value);
-      setPreviewUrl(url);
-      return () => URL.revokeObjectURL(url);
-    }
-    setPreviewUrl(null);
-    return undefined;
+    const urls = files.map(file => URL.createObjectURL(file));
+    setPreviewUrls(urls);
+    return () => urls.forEach(url => URL.revokeObjectURL(url));
   }, [value]);
 
-  const isVideo = !!value && (value.type || "").startsWith("video/");
-  const isImage = !!value && (value.type || "").startsWith("image/");
-
   const handleSelect = (fileList) => {
-    const file = fileList?.[0];
-    if (!file) return;
-    const type = file.type || "";
-    if (!type.startsWith("image/") && !type.startsWith("video/")) {
+    const selected = Array.from(fileList || []);
+    if (!selected.length) return;
+    if (selected.some(file => !file.type?.startsWith("image/") && !file.type?.startsWith("video/"))) {
       setError(t("popup.attachmentInvalidType", "Only image or video files are allowed"));
       return;
     }
-    if (file.size > MAX_SIZE) {
+    if (selected.some(file => file.size > MAX_SIZE)) {
       setError(t("popup.attachmentTooLarge", "File is too large (max 50MB)"));
       return;
     }
     setError("");
-    onChange?.(file);
+    if (files.length + selected.length > 4) {
+      setError(t("popup.attachmentTooMany", "You can attach up to 4 files"));
+      return;
+    }
+    onChange?.([...files, ...selected]);
   };
 
   const handleInputChange = (e) => {
@@ -66,9 +63,9 @@ const MediaAttachmentInput = ({ value = null, onChange, t, label, disabled = fal
     if (!disabled) inputRef.current?.click();
   };
 
-  const handleRemove = () => {
+  const handleRemove = (index) => {
     setError("");
-    onChange?.(null);
+    onChange?.(files.filter((_, itemIndex) => itemIndex !== index));
   };
 
   const formatSize = (bytes) =>
@@ -80,7 +77,7 @@ const MediaAttachmentInput = ({ value = null, onChange, t, label, disabled = fal
     <div className={styles.container}>
       {label && <p className={styles.label}>{label}</p>}
 
-      {!value ? (
+      {files.length < 4 && (
         <button
           type="button"
           className={styles.dropzone}
@@ -94,47 +91,51 @@ const MediaAttachmentInput = ({ value = null, onChange, t, label, disabled = fal
             {t("popup.attachmentHint", "Optional — image or video, up to 50MB")}
           </span>
         </button>
-      ) : (
-        <div className={styles.preview}>
+      )}
+      {files.map((file, index) => {
+        const isVideo = file.type?.startsWith("video/");
+        const isImage = file.type?.startsWith("image/");
+        return <div className={styles.preview} key={`${file.name}-${file.size}-${index}`}>
           <div className={styles.thumbWrap}>
-            {isImage && previewUrl ? (
+            {isImage && previewUrls[index] ? (
               <Image
-                src={previewUrl}
-                alt={value.name || "attachment"}
+                src={previewUrls[index]}
+                alt={file.name || "attachment"}
                 width={56}
                 height={56}
                 className={styles.thumb}
                 unoptimized
               />
             ) : (
-              <video className={styles.thumb} src={previewUrl || undefined} muted playsInline />
+              <video className={styles.thumb} src={previewUrls[index] || undefined} muted playsInline />
             )}
           </div>
           <div className={styles.fileMeta}>
-            <p className={styles.fileName} title={value.name}>
-              {value.name}
+            <p className={styles.fileName} title={file.name}>
+              {file.name}
             </p>
             <p className={styles.fileSize}>
               {isVideo ? t("popup.video", "Video") : t("popup.image", "Image")} ·{" "}
-              {formatSize(value.size)}
+              {formatSize(file.size)}
             </p>
           </div>
           <button
             type="button"
             className={styles.removeBtn}
-            onClick={handleRemove}
+            onClick={() => handleRemove(index)}
             disabled={disabled}
             aria-label={t("popup.attachmentRemove", "Remove attachment")}
           >
             ×
           </button>
-        </div>
-      )}
+        </div>;
+      })}
 
       <input
         ref={inputRef}
         type="file"
         accept="image/*,video/*"
+        multiple
         onChange={handleInputChange}
         style={{ display: "none" }}
         disabled={disabled}

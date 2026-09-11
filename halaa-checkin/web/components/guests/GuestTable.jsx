@@ -10,12 +10,15 @@ import styles from './GuestTable.module.css';
 /**
  * Paginated, searchable, and filterable guest list table.
  * Admitted guests cannot have ordinary edits or deletion (buttons disabled with explanation).
+ * Admin can correct/reset admissions.
  */
 export function GuestTable({
   guests = [],
-  meta = { page: 1, pageSize: 25, total: 0, totalPages: 1 },
+  meta = { page: 1, pageSize: 25, total: 0 },
   isLoading = false,
   isFetching = false,
+  loadError = null,
+  onRetry = null,
   search = '',
   onSearchChange,
   statusFilter = 'all',
@@ -30,9 +33,12 @@ export function GuestTable({
   lang = 'ar',
   onAddGuest,
   onImportCsv,
+  onExportCsv,
   onViewQr,
   onEditGuest,
   onDeleteGuest,
+  onCorrectAdmission,
+  onResetAdmission,
 }) {
   const dict = getDictionary(lang);
 
@@ -110,7 +116,7 @@ export function GuestTable({
           </div>
         </div>
 
-        {/* Action Buttons: Add Guest / Import CSV */}
+        {/* Action Buttons: Add Guest / Import CSV / Export QR PDFs */}
         <div className={styles.tableActions}>
           <Button
             variant="secondary"
@@ -120,6 +126,17 @@ export function GuestTable({
             data-testid="import-csv-btn"
           >
             📥 {t(dict, 'imports.title')}
+          </Button>
+
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => onExportCsv?.()}
+            disabled={false}
+            title={t(dict, 'exports.title')}
+            data-testid="export-qr-btn"
+          >
+            📄 {t(dict, 'exports.title')}
           </Button>
 
           <Button
@@ -150,11 +167,21 @@ export function GuestTable({
       )}
 
       {/* Table Content */}
+      {loadError && !isLoading && guests.length === 0 ? (
+        <div className={styles.emptyState} role="alert" data-testid="guests-load-error">
+          <div className={styles.emptyIcon}>⚠️</div>
+          <h3 className={styles.emptyTitle}>{t(dict, 'errors.SERVICE_UNAVAILABLE') || loadError.message}</h3>
+          <Button variant="secondary" size="sm" onClick={() => onRetry?.()} data-testid="guests-retry-btn">
+            {t(dict, 'common.retry') || (lang === 'ar' ? 'إعادة المحاولة' : 'Retry')}
+          </Button>
+        </div>
+      ) : (
+      <>
       <div className={styles.tableScrollWrapper}>
         <table className={styles.table} aria-label={t(dict, 'guests.title')}>
           <thead>
             <tr>
-              <th className={`${styles.th} ${styles.thCheckbox}`}>
+              <th scope="col" className={`${styles.th} ${styles.thCheckbox}`}>
                 <input
                   type="checkbox"
                   className={styles.checkbox}
@@ -167,15 +194,15 @@ export function GuestTable({
                   data-testid="select-page-checkbox"
                 />
               </th>
-              <th className={styles.th}>{t(dict, 'qr.shortCode')}</th>
-              <th className={styles.th}>{t(dict, 'guests.guestName')}</th>
-              <th className={styles.th}>{t(dict, 'guests.reference')}</th>
-              <th className={styles.th}>{t(dict, 'guests.allowedCompanions')}</th>
-              <th className={styles.th}>{t(dict, 'guests.totalAllowed')}</th>
-              <th className={styles.th}>{t(dict, 'common.status')}</th>
-              <th className={styles.th}>{t(dict, 'guests.actualParty')}</th>
-              <th className={styles.th}>{t(dict, 'guests.arrival')}</th>
-              <th className={styles.th}>{t(dict, 'guests.actions')}</th>
+              <th scope="col" className={styles.th}>{t(dict, 'qr.shortCode')}</th>
+              <th scope="col" className={styles.th}>{t(dict, 'guests.guestName')}</th>
+              <th scope="col" className={styles.th}>{t(dict, 'guests.reference')}</th>
+              <th scope="col" className={styles.th}>{t(dict, 'guests.allowedCompanions')}</th>
+              <th scope="col" className={styles.th}>{t(dict, 'guests.totalAllowed')}</th>
+              <th scope="col" className={styles.th}>{t(dict, 'common.status')}</th>
+              <th scope="col" className={styles.th}>{t(dict, 'guests.actualParty')}</th>
+              <th scope="col" className={styles.th}>{t(dict, 'guests.arrival')}</th>
+              <th scope="col" className={styles.th}>{t(dict, 'guests.actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -267,7 +294,7 @@ export function GuestTable({
                     <td className={styles.td}>{actualParty}</td>
                     <td className={styles.td}>
                       {isAdmitted ? (
-                        <span>{formatRiyadhDate(guest.checkIn.admittedAt, lang)}</span>
+                        <span>{formatRiyadhDate(guest.checkIn.checkedInAt || guest.checkIn.admittedAt, lang)}</span>
                       ) : (
                         <span style={{ color: 'var(--color-natural-450, #656565)' }}>
                           {t(dict, 'guests.arrivalNone')}
@@ -305,6 +332,28 @@ export function GuestTable({
                         >
                           🗑️ {t(dict, 'guests.delete')}
                         </button>
+                        {isAdmitted && !isClosed && (
+                          <>
+                            <button
+                              type="button"
+                              className={styles.rowActionBtn}
+                              onClick={() => onCorrectAdmission?.(guest)}
+                              title={t(dict, 'guests.admissionCorrection')}
+                              data-testid={`correct-admission-btn-${guest.id}`}
+                            >
+                              🔧 {t(dict, 'guests.admissionCorrection')}
+                            </button>
+                            <button
+                              type="button"
+                              className={`${styles.rowActionBtn} ${styles.rowActionBtnDanger}`}
+                              onClick={() => onResetAdmission?.(guest)}
+                              title={t(dict, 'guests.admissionReset')}
+                              data-testid={`reset-admission-btn-${guest.id}`}
+                            >
+                              ↩️ {t(dict, 'guests.admissionReset')}
+                            </button>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -316,13 +365,20 @@ export function GuestTable({
       </div>
 
       {/* Pagination Controls */}
-      {meta?.totalPages > 1 && (
+      {(meta?.total || 0) > (meta?.pageSize || 25) && (
         <Pagination
-          page={meta.page}
-          totalPages={meta.totalPages}
+          page={meta.page || 1}
+          pageSize={meta.pageSize || 25}
+          total={meta.total || 0}
           onPageChange={onPageChange}
-          lang={lang}
+          previousLabel={t(dict, 'common.previous') || 'Previous'}
+          nextLabel={t(dict, 'common.next') || 'Next'}
+          pageLabel={t(dict, 'common.page') || 'Page'}
+          ofLabel={t(dict, 'common.of') || 'of'}
+          totalLabel={t(dict, 'common.total') || 'Total'}
         />
+      )}
+      </>
       )}
     </div>
   );

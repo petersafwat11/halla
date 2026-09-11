@@ -1,0 +1,31 @@
+
+> halaa-checkin@0.1.0 design:check
+> node scripts/check-design.mjs
+
+Checking Halaa design tokens and presentation snapshot...
+✓ design/tokens.css exists
+✓ design/SOURCES.json exists
+✓ Token --bg-artboard is #f9f4ef
+✓ Token --color-primary-500 is #c28e5c
+✓ Token --font-ar includes Cairo
+✓ Token --radius-12 is 12px
+✓ tokens.css matches parent globals.css :root block
+✓ Font asset design/assets/fonts/Cairo_400Regular.ttf exists
+✓ Font asset design/assets/fonts/Cairo_500Medium.ttf exists
+✓ Font asset design/assets/fonts/Cairo_600SemiBold.ttf exists
+✓ Font asset design/assets/fonts/Cairo_700Bold.ttf exists
+✓ Font asset design/assets/fonts/LICENSE_FONT exists
+✓ Logo asset design/assets/logos/logo.svg exists
+✓ Logo asset design/assets/logos/sidebar-logo.svg exists
+✓ Logo asset design/assets/logos/sidebar-mobile-logo.svg exists
+✓ provenance logo logo.svg sha256
+✓ provenance logo sidebar-logo.svg sha256
+✓ provenance logo sidebar-mobile-logo.svg sha256
+✓ provenance font Cairo_400Regular.ttf sha256
+✓ provenance font Cairo_500Medium.ttf sha256
+✓ provenance font Cairo_600SemiBold.ttf sha256
+✓ provenance font Cairo_700Bold.ttf sha256
+✓ provenance font LICENSE_FONT sha256
+✓ web/styles/tokens.css parity with design/tokens.css
+✓ parent globals.css drift vs manifest
+Provenance checks PASSED.

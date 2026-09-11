@@ -23,6 +23,7 @@ router.use(require('./admin.vendors.routes'));
 router.use(require('./admin.moderators.routes'));
 router.use(require('./admin.events.routes'));
 router.use(require('./admin.payments.routes'));
+router.use(require('../payment-links/paymentLinks.routes'));
 router.use(require('../privacy/privacy.routes'));
 
 module.exports = router;

@@ -26,7 +26,7 @@ export function AdmissionCard({
   // 1. Idle state
   if (gateState === 'idle') {
     return (
-      <div className={styles.emptyCard} data-testid="admission-empty-card">
+      <div className={styles.emptyCard} data-testid="admission-empty-card" role="status" aria-live="polite">
         <span className={styles.emptyIcon}>🎫</span>
         <h3 className={styles.emptyTitle}>{t(dict, 'gate.previewTitle')}</h3>
         <p className={styles.emptyText}>{t(dict, 'gate.cameraHint')}</p>
@@ -37,7 +37,7 @@ export function AdmissionCard({
   // 2. Resolving state
   if (gateState === 'resolving') {
     return (
-      <div className={styles.emptyCard} data-testid="admission-resolving-card">
+      <div className={styles.emptyCard} data-testid="admission-resolving-card" role="status" aria-live="polite">
         <span className={styles.emptyIcon}>⏳</span>
         <h3 className={styles.emptyTitle}>{t(dict, 'common.loading')}</h3>
         <p className={styles.emptyText}>{t(dict, 'gate.cameraStarting')}</p>
@@ -51,6 +51,7 @@ export function AdmissionCard({
       <div
         className={`${styles.resultCard} ${styles.resultError}`}
         data-testid="invalid-invitation-card"
+        role="alert"
       >
         <h3 className={styles.resultTitle}>
           <span>⚠️</span>
@@ -74,19 +75,22 @@ export function AdmissionCard({
     );
   }
 
-  // 4. Closed / Draft Event
-  if (gateState === 'closed_event') {
+  // 4. Closed / Draft Event (distinct wording per product §6)
+  if (gateState === 'closed_event' || gateState === 'draft_event') {
+    const isDraft = gateState === 'draft_event';
     return (
       <div
         className={`${styles.resultCard} ${styles.resultWarning}`}
         data-testid="closed-event-card"
+        role="status"
+        aria-live="polite"
       >
         <h3 className={styles.resultTitle}>
           <span>🛑</span>
-          <span>{t(dict, 'gate.eventClosedTitle')}</span>
+          <span>{isDraft ? t(dict, 'gate.eventDraftTitle') : t(dict, 'gate.eventClosedTitle')}</span>
         </h3>
         <p className={styles.resultDetails}>
-          {t(dict, 'gate.eventClosedMessage')}
+          {isDraft ? t(dict, 'gate.eventDraftMessage') : t(dict, 'gate.eventClosedMessage')}
         </p>
         <div className={styles.actionsRow}>
           <Button
@@ -109,6 +113,7 @@ export function AdmissionCard({
       <div
         className={`${styles.resultCard} ${styles.resultWarning}`}
         data-testid="lost-response-card"
+        role="alert"
       >
         <h3 className={styles.resultTitle}>
           <span>⚠️</span>
@@ -136,15 +141,7 @@ export function AdmissionCard({
           >
             {t(dict, 'gate.verifyStatus')}
           </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="md"
-            onClick={onReset}
-            data-testid="cancel-admission-btn"
-          >
-            {t(dict, 'common.cancel')}
-          </Button>
+
         </div>
       </div>
     );
@@ -156,6 +153,7 @@ export function AdmissionCard({
       <div
         className={`${styles.resultCard} ${styles.resultError}`}
         data-testid="network-error-card"
+        role="alert"
       >
         <h3 className={styles.resultTitle}>
           <span>📡</span>
@@ -179,12 +177,13 @@ export function AdmissionCard({
     );
   }
 
-  // 7. Session expired state
+  // 7. Session expired state (no reload — preserves retry intent, stops camera via parent)
   if (gateState === 'session_expired') {
     return (
       <div
         className={`${styles.resultCard} ${styles.resultError}`}
         data-testid="session-expired-card"
+        role="alert"
       >
         <h3 className={styles.resultTitle}>
           <span>🔒</span>
@@ -198,7 +197,8 @@ export function AdmissionCard({
             type="button"
             variant="primary"
             size="md"
-            onClick={() => window.location.reload()}
+            onClick={() => { window.location.href = `/${lang}/login`; }}
+            data-testid="session-login-btn"
           >
             {t(dict, 'auth.loginButton')}
           </Button>
@@ -208,7 +208,7 @@ export function AdmissionCard({
   }
 
   // 8. Already admitted state (no second confirm allowed)
-  if (gateState === 'already_admitted' && currentGuest) {
+  if (gateState === 'already_admitted' && currentGuest?.checkIn) {
     const checkIn = currentGuest.checkIn || {};
     const formattedTime = checkIn.checkedInAt
       ? formatRiyadhDate(checkIn.checkedInAt, lang)
@@ -222,13 +222,15 @@ export function AdmissionCard({
       <div
         className={`${styles.resultCard} ${styles.resultWarning}`}
         data-testid="already-admitted-card"
+        role="status"
+        aria-live="polite"
       >
         <h3 className={styles.resultTitle}>
           <span>⚠️</span>
           <span>{t(dict, 'gate.alreadyAdmittedTitle')}</span>
         </h3>
         <div className={styles.guestHeading}>
-          <span className={styles.guestName} data-testid="guest-preview-name">
+          <span className={styles.guestName} data-testid="guest-preview-name" dir="auto">
             {currentGuest.name}
           </span>
           <div className={styles.metaRow}>
@@ -261,7 +263,7 @@ export function AdmissionCard({
   }
 
   // 9. Confirmed admitted state (server success)
-  if (gateState === 'admitted' && currentGuest) {
+  if (gateState === 'admitted' && currentGuest?.checkIn) {
     const checkIn = currentGuest.checkIn || {};
     const formattedTime = checkIn.checkedInAt
       ? formatRiyadhDate(checkIn.checkedInAt, lang)
@@ -275,13 +277,15 @@ export function AdmissionCard({
       <div
         className={`${styles.resultCard} ${styles.resultSuccess}`}
         data-testid="admitted-success-card"
+        role="status"
+        aria-live="polite"
       >
         <h3 className={styles.resultTitle}>
           <span>✅</span>
           <span>{t(dict, 'gate.successAdmittedTitle')}</span>
         </h3>
         <div className={styles.guestHeading}>
-          <span className={styles.guestName} data-testid="guest-preview-name">
+          <span className={styles.guestName} data-testid="guest-preview-name" dir="auto">
             {currentGuest.name}
           </span>
           <div className={styles.metaRow}>
@@ -336,10 +340,10 @@ export function AdmissionCard({
   const maxCompanions = currentGuest.allowedCompanions || 0;
 
   return (
-    <div className={styles.card} data-testid="admission-card">
+    <div className={styles.card} data-testid="admission-card" role="status" aria-live="polite">
       <div className={styles.cardHeader}>
         <div className={styles.guestHeading}>
-          <h3 className={styles.guestName} data-testid="guest-preview-name">
+          <h3 className={styles.guestName} data-testid="guest-preview-name" dir="auto">
             {currentGuest.name}
           </h3>
           <div className={styles.metaRow}>
@@ -407,7 +411,7 @@ export function AdmissionCard({
             onClick={() => setActualCompanions(actualCompanions - 1)}
             disabled={isSubmitting || actualCompanions <= 0}
             data-testid="companions-stepper-decrement"
-            aria-label="Decrease companions"
+            aria-label={t(dict, 'gate.decreaseCompanions')}
           >
             -
           </button>
@@ -423,7 +427,7 @@ export function AdmissionCard({
             onClick={() => setActualCompanions(actualCompanions + 1)}
             disabled={isSubmitting || actualCompanions >= maxCompanions}
             data-testid="companions-stepper-increment"
-            aria-label="Increase companions"
+            aria-label={t(dict, 'gate.increaseCompanions')}
           >
             +
           </button>

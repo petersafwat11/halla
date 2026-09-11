@@ -1,6 +1,6 @@
 # Implementation ledger
 
-Status as of 8 September 2026: **T08 complete; ready for T09**.
+Status as of 10 September 2026: **Independent implementation review found and repaired additional defects; see `06-IMPLEMENTATION-REVIEW-AND-FIXES.md`. Local tests/build/browser/operational rehearsal pass. This is not production or physical-device certification; F32 release matrix and A28/A30 remain.**
 
 Only this documentation package and the standalone `halaa-checkin/` mini-app files were authored for this request. No parent Halaa source, dependencies, root package manifests, production configuration, database, DNS or VPS deployment was changed. Existing unrelated repository edits remain untouched.
 
@@ -17,10 +17,10 @@ Only this documentation package and the standalone `halaa-checkin/` mini-app fil
 | T06 PDF/export service | Complete | integration tests pass (61/61 api, 41/41 contracts), Playwright PDF renderer, A6 single pass, 4-up A4 bulk passes, interim/final attendance reports, QR generator with M error correction and verified decode, 24h cleanup, evidence screenshots and sample PDFs |
 | T07 Bilingual shell | Complete | web tests pass (15/15), browser E2E passes (4/4), lint pass, build pass, design:check pass, 1:1 bilingual dictionary parity, role-aware routing, responsive layouts (1440/1024/390/360) without overflow, 9 visual screenshots |
 | T08 Guest management UI | Complete | web tests pass (22/22), browser E2E passes, lint pass, build pass, design:check pass, real-time stats, paginated/searchable guest table, CRUD modals, CSV import preview & commit with stable idempotency, event lifecycle transition guards, responsive screenshots |
-| T09 Gate/scanner UI | Not started | — |
-| T10 Reports/demo polish | Not started | — |
-| T11 Deployment rehearsal | Not started | — |
-| T12 Final acceptance | Not started | — |
+| T09 Gate/scanner UI | Complete | web tests pass (30/30), browser E2E passes, lint pass, build pass, design:check pass, QR resolve without admission, two-context concurrency gate (1 commit, 1 already checked-in), duplicate protection, zero details leaked on invalid invitation, lost response retry with same idempotency key, camera permission fallback, responsive screenshots |
+| T10 Export/report UI and polished demonstration | Complete | web tests pass (30/30), lint pass, build pass, design:check pass, ExportPanel with single/selected/all QR PDFs and attendance reports, polling/download/print/retry states, AdmissionCorrectionDialog for admin correction/reset with reason, demo seed script with Arabic/English/long names and varied allowances, all locales updated, responsive screenshots |
+| T11 Containers/isolation/deployment rehearsal | Complete | production Docker builds + dev-stack rehearsal pass: same-origin login/proxy/PDF verified in containers; measured import 2.3s/1k, admission p95 ~48ms, full-export render ~23s, gate-during-render p95 ~173ms, api mem peak 830MiB/1GiB; backup/restore/purge/restart/rollback rehearsed green; merged Caddyfile validates; 6 rehearsal bugs fixed; full suite 41+61+30+1e2e green (see T11 entry + `docs/evidence/hilton-guest-checkin/t11-containers-deployment.md`) |
+| T12 Final acceptance | Complete | build + lint + design:check 15/15 + 41/41 contracts + 61/61 api + 30/30 web + 1/1 e2e green; screens/PDFs inspected; A01-A27+A29 pass, A28+A30 blocked; 3 doc gaps fixed; see `docs/evidence/hilton-guest-checkin/t12-acceptance-report.md` |
 
 ## Fixed planning decisions
 
@@ -34,7 +34,13 @@ Only this documentation package and the standalone `halaa-checkin/` mini-app fil
 
 ## Next session
 
-Start **T09**. Read `01-PRODUCT-AND-DESIGN.md` §6; `02-TECHNICAL-CONTRACT.md` §5; and `03-IMPLEMENTATION-STEPS.md` under T09. Inspect current working-tree status first. Do not run parent npm install or change Halaa business features.
+T12 complete. No further mini-app implementation tasks remain. Remaining work
+is external only: hostname/DNS, VPS headroom, Atlas credentials/backup
+destination, real event + retention, v1 policy acceptance, named accounts,
+two tested devices + backup connectivity/power, on-site arrangements (see
+`04-VALIDATION-AND-DEPLOYMENT.md` §8 and the T12 report). Do not claim
+deployed/gate-ready until A28 + A30 are executed live. Do not run parent npm
+install or change Halaa business features.
 
 ## Append after each implementation session
 
@@ -618,9 +624,343 @@ Start **T09**. Read `01-PRODUCT-AND-DESIGN.md` §6; `02-TECHNICAL-CONTRACT.md` �
   - Task T09: Gate UI and scanner lifecycle.
   - Read: `01-PRODUCT-AND-DESIGN.md` §6; `02-TECHNICAL-CONTRACT.md` §5; `03-IMPLEMENTATION-STEPS.md` §T09.
 
+### 9 September 2026 / T09 — Gate UI and scanner lifecycle
+- **State**: complete
+- **Commands run**:
+  - `npm --prefix web run build` (Next.js production SSG compilation passes, 12 static pages)
+  - `node --test test/gate-unit.test.js` (derived party calculation, companion clamp, preview staleness detection, idempotency key stability, gate dictionary formatting)
+  - `node --test test/browser-gate.test.js` (Playwright E2E browser test covering two-context concurrency gate, duplicate protection, zero details leaked on invalid invitation, lost response retry with same idempotency key, manual search debounce, and camera fallback)
+  - `npm --prefix web test` (30/30 web tests pass: 15 T07 + 7 T08 + 8 T09)
+  - `npm test` (monorepo full test suite: 41 contracts, 61 api, 30 web = 132/132 tests pass)
+  - `npm run lint` (ESLint clean across workspace)
+  - `npm run design:check` (15/15 design token checks clean)
+- **Files changed**:
+  - `halaa-checkin/web/package.json`
+  - `halaa-checkin/package-lock.json`
+  - `halaa-checkin/web/locales/ar.json`
+  - `halaa-checkin/web/locales/en.json`
+  - `halaa-checkin/web/hooks/useGate.js`
+  - `halaa-checkin/web/components/gate/CameraScanner.jsx`
+  - `halaa-checkin/web/components/gate/CameraScanner.module.css`
+  - `halaa-checkin/web/components/gate/ScannerInput.jsx`
+  - `halaa-checkin/web/components/gate/ScannerInput.module.css`
+  - `halaa-checkin/web/components/gate/GuestLookup.jsx`
+  - `halaa-checkin/web/components/gate/GuestLookup.module.css`
+  - `halaa-checkin/web/components/gate/AdmissionCard.jsx`
+  - `halaa-checkin/web/components/gate/AdmissionCard.module.css`
+  - `halaa-checkin/web/components/gate/GateWorkspace.jsx`
+  - `halaa-checkin/web/components/gate/GateWorkspace.module.css`
+  - `halaa-checkin/web/app/[lang]/(workspace)/gate/page.jsx`
+  - `halaa-checkin/web/test/gate-unit.test.js`
+  - `halaa-checkin/web/test/browser-gate.test.js`
+  - `docs/evidence/hilton-guest-checkin/t09-gate-workspace-ar-1440x900.png`
+  - `docs/evidence/hilton-guest-checkin/t09-gate-workspace-en-1440x900.png`
+  - `docs/evidence/hilton-guest-checkin/t09-gate-workspace-ar-390x844.png`
+  - `docs/evidence/hilton-guest-checkin/t09-gate-workspace-ar-360x800.png`
+  - `docs/implementation/hilton-guest-checkin/PROGRESS.md`
+- **Implemented**:
+  - Pinned `jsqr@^1.4.0` in `@halaa-checkin/web` workspace dependencies without root modifications.
+  - Symmetrical 1:1 bilingual localization keys in `ar.json` and `en.json` for all gate components, states, and helpers.
+  - Gate state machine hook (`useGate.js`) implementing all contracted states: `idle`, `resolving`, `ready`, `submitting`, `admitted`, `already_admitted`, `invalid_invitation`, `closed_event`, `network_failure`, `lost_response`, and `session_expired`.
+  - Non-destructive QR / guestId resolution (`resolveGuest`) strictly decoupled from admission; decoding a test QR enters preview without admitting.
+  - Companion count stepper default to 0, bounded 0..allowedCompanions, with derived party size (`1 + actualCompanions`), "Including invited guest: N people" helper, and "Admit N people" button.
+  - Two-context concurrency gate: Receptionist 1 admits guest; Receptionist 2 receives 409 `ALREADY_CHECKED_IN` warning with original admission time, operator, party size, and no second confirm button.
+  - Zero details leaked on invalid or cross-event QR (returns 404 `INVALID_INVITATION`, shows generic notice without guest details).
+  - Lost-response recovery: simulated dropped connection enters `lost_response` state; "Retry admission" sends the exact same idempotency key and payload.
+  - Stale preview re-verification: previews older than 30 seconds re-resolve against server before admitting.
+  - User-triggered rear-facing camera scanner (`CameraScanner.jsx`) with `jsqr`, bounded decode loop, duplicate frame suppression (<2s), cleanup on unmount/background/stop, and permission-denied fallback keeping scanner and manual lookup usable.
+  - Dedicated hardware barcode scanner input field (`ScannerInput.jsx`) with Enter handling.
+  - Debounced manual guest lookup (`GuestLookup.jsx`, 300ms, 2..120 chars) with search results and status badges.
+  - Admission card (`AdmissionCard.jsx`) handling all preview, stepper, confirm, already-admitted, and success states.
+  - Gate workspace container (`GateWorkspace.jsx`) displaying always-visible event identity, status badge, live/draft/closed warning, online/offline connection pill, asOf refresh timestamp, and recent admissions list (latest 10).
+  - Responsive visual layout verified and captured across 1440x900, 1024x768, 390x844, and 360x800 without horizontal overflow.
+- **Contract changes (if any, with reason)**: None.
+- **Known failures / external blockers**: Physical-device camera verification remains marked pending until performed on live hardware as specified in GEMINI_START_HERE.md and 03-IMPLEMENTATION-STEPS.md.
+- **Remaining work in this task**: None.
+- **Next task and files to read**:
+    - Task T10: Export/report UI and polished demonstration.
+    - Read: `01-PRODUCT-AND-DESIGN.md` §§7–8; `02-TECHNICAL-CONTRACT.md` §7; `03-IMPLEMENTATION-STEPS.md` §T10.
+
+### 9 September 2026 / T10 — Export/report UI and polished demonstration
+- **State**: complete
+- **Commands run**:
+  - `npm run build` (Next.js production SSG compilation passes, 12 static pages)
+  - `npm run lint` (ESLint clean across workspace, 0 errors, 1 warning fixed)
+  - `npm run design:check` (15/15 design token checks clean)
+  - `npm test` (monorepo full test suite: 41 contracts, 61 api, 30 web = 132/132 tests pass)
+- **Files changed**:
+  - `halaa-checkin/web/locales/ar.json`
+  - `halaa-checkin/web/locales/en.json`
+  - `halaa-checkin/web/hooks/useExports.js`
+  - `halaa-checkin/web/components/guests/ExportPanel.jsx`
+  - `halaa-checkin/web/components/guests/ExportPanel.module.css`
+  - `halaa-checkin/web/components/guests/AdmissionCorrectionDialog.jsx`
+  - `halaa-checkin/web/components/guests/AdmissionCorrectionDialog.module.css`
+  - `halaa-checkin/web/components/guests/GuestsWorkspace.jsx`
+  - `halaa-checkin/web/components/guests/GuestTable.jsx`
+  - `halaa-checkin/api/scripts/seed-demo.mjs`
+  - `halaa-checkin/api/package.json`
+  - `halaa-checkin/api/src/config.js`
+  - `halaa-checkin/package.json`
+  - `docs/implementation/hilton-guest-checkin/PROGRESS.md`
+- **Implemented**:
+  - Complete export locale dictionaries in Arabic and English for all export panel states, actions, and messages (scope text explicitly states invitation counts).
+  - `useExports` hook with create, poll (2s interval), download, print, and retry logic; `useAdmissionCorrection` hook for admin correction/reset mutations.
+  - `ExportPanel` component: four export types (single A6 pass, selected 4-up A4 passes, all 4-up A4 passes, attendance report), language selector (ar/en), confirmation dialog with scope text, polling with 2s interval, ready/failed/expired states, download/print/retry actions, and accessible UI.
+  - `AdmissionCorrectionDialog` component: admin-only correction (change companion count with 5..500 char reason, preserves original check-in time/operator, audits change) and reset (clear checkIn, increment version, retain audit history, 5..500 char reason), receptionist forbidden via API 403.
+  - `GuestTable` integration: Export button in table actions, per-row Correction and Reset buttons for admitted guests (admin only).
+  - `GuestsWorkspace` integration: ExportPanel and AdmissionCorrectionDialog state management and handlers.
+  - `seed-demo.mjs` script: idempotent demo event creation ("Hilton Riyadh — Demonstration (Demo)"), one admin (demo_admin) and two receptionists (demo_reception_1, demo_reception_2) with fixed password, 20 synthetic guests covering Arabic/English/long names, varied companions (0-20), mixed scripts, zero and max companions edge cases. `--reset-demo` flag for safe reset. Never runs in production (DEMO_SEED_ENABLED guard).
+  - Config: `demoSeedEnabled` flag added to `config.js`, `DEMO_SEED_ENABLED` in `.env.example`.
+  - Package scripts: `seed:demo` added to API and root workspaces.
+- **Evidence paths**:
+  - `halaa-checkin/web/components/guests/ExportPanel.jsx`
+  - `halaa-checkin/web/components/guests/AdmissionCorrectionDialog.jsx`
+  - `halaa-checkin/web/hooks/useExports.js`
+  - `halaa-checkin/api/scripts/seed-demo.mjs`
+- **Contract changes (if any, with reason)**: None.
+- **Known failures / external blockers**: Physical-device camera verification remains marked pending until performed on live hardware as specified in GEMINI_START_HERE.md and 03-IMPLEMENTATION-STEPS.md. Demo seed requires local MongoDB; tested syntactically, not against live DB.
+- **Remaining work in this task**: None.
+- **Next task and files to read**:
+  - Task T11: Containers, isolation and deployment rehearsal.
+  - Read: `04-VALIDATION-AND-DEPLOYMENT.md`; `02-TECHNICAL-CONTRACT.md` §8; `03-IMPLEMENTATION-STEPS.md` §T11.
+
+### 9 September 2026 / T06–T10 cross-task review and hardening
+- **State**: complete (fixes applied, no new scope)
+- **Files changed**:
+  - `halaa-checkin/web/lib/api.js` (export API_BASE; fixes undefined download/print URL)
+  - `halaa-checkin/web/hooks/useExports.js` (single React-Query 2s poller, no duplicate interval; blob download with deferred revoke; blob print with popup-blocked download fallback)
+  - `halaa-checkin/web/components/guests/GuestTable.jsx` (checkedInAt with admittedAt fallback; Pagination wired to page/pageSize/total + localized labels; load-error + Retry state; scope headers; export button always available so closed-event final report is reachable)
+  - `halaa-checkin/web/components/guests/StatsStrip.jsx` + `GuestsWorkspace.jsx` (stats failure renders error + Retry, never zeros; guests load-error plumbed; event-switch resets page/search/filter/dialogs; single-guest export entry from QR preview; ExportPanel receives eventTotal)
+  - `halaa-checkin/web/components/guests/ExportPanel.jsx` (single-guest prop sync; eventTotal = all active invitations, not current page; visible download/print errors; retry re-opens same-type confirm; errorCode field fix)
+  - `halaa-checkin/web/components/guests/QrPreviewDialog.jsx` (Download PDF (A6) entry into ExportPanel)
+  - `halaa-checkin/web/components/guests/EventHeaderBar.jsx` (draft offers Open + Close per contract)
+  - `halaa-checkin/web/components/guests/EventDialog.jsx` (stale-PDF regenerate warning on edit)
+  - `halaa-checkin/web/components/guests/AdmissionCorrectionDialog.jsx` + `GuestsWorkspace.jsx` (locale-string validation, VERSION_CONFLICT reload offer)
+  - `halaa-checkin/web/locales/ar.json` + `en.json` (common previous/next/page/of/total; stats.title; events.createFirstEventPrompt; correction validation keys; parity preserved)
+  - `halaa-checkin/web/app/[lang]/layout.jsx` (Arabic default)
+  - `halaa-checkin/web/components/ui/Dialog.jsx` + `Dialog.module.css` (inert/aria-hidden background exclusion; 44px close; prefers-reduced-motion)
+  - `halaa-checkin/web/components/ui/Button.module.css` (sm meets 44px; .brand contrast note)
+  - `halaa-checkin/web/components/ui/Pagination.module.css` (44px targets)
+  - `halaa-checkin/web/components/shell/AppHeader.module.css` (product/staff stay visible on mobile; 44px controls)
+  - `halaa-checkin/web/components/shell/EventSelector.jsx` (Escape/Arrow/Home/End + focus return)
+  - `halaa-checkin/web/components/gate/CameraScanner.jsx` (150ms throttle; stopSignal for event-switch/logout/nav)
+  - `halaa-checkin/web/components/gate/GuestLookup.jsx` (clears on event switch; dir=auto names)
+  - `halaa-checkin/web/hooks/useGate.js` (draft_event vs closed_event; offline admit block; stale re-verify checks event status + maps 401/closed; null-key retry resolves fresh; session-expiry hides guest, keeps key)
+  - `halaa-checkin/web/components/gate/GateWorkspace.jsx` (camera stop on event switch; dir=auto identity; aria-live pill + grid; recent sliced to 10)
+  - `halaa-checkin/web/components/gate/AdmissionCard.jsx` + `AdmissionCard.module.css` (draft wording; login navigation instead of reload; dir=auto names; aria-live roles; wrapping actions row)
+  - `halaa-checkin/api/scripts/seed-demo.mjs` (no committed/logged password — DEMO_SEED_PASSWORD env ≥12; normalizeForSearch/normalizeReferenceKey; generateShortCode/generateQrToken; nameSearch/checkIn/deletedAt fields; --reset-demo requires --confirm and prints resolved ID first)
+  - `halaa-checkin/api/Dockerfile` (copies full design/assets so template resolver works in runner + fontconfig registration)
+  - `halaa-checkin/api/src/server.js` (15min periodic export TTL sweep)
+  - `halaa-checkin/api/src/modules/exports/exports.service.js` (queue bounds re-checked inside transaction; expiry strips qrToken from snapshots before file unlink)
+  - `halaa-checkin/api/src/modules/exports/exports.worker.js` (90s render race; snapshotAt passed to pass templates; report uses header/footer page numbers; processJobImmediately respects attempt cap)
+  - `halaa-checkin/api/src/modules/exports/pdfRenderer.js` (per-format margin defaults — A6 full-bleed, A4 safe margins; header/footer page numbers opt-in)
+  - `halaa-checkin/api/src/modules/exports/templates/singlePass.js` + `bulkPasses.js` (snapshotAt line with Asia/Riyadh label; bulk title wraps instead of ellipsis; footer grays use spec token #656565; unified QR instruction wording)
+  - `halaa-checkin/api/src/modules/exports/templates/report.js` (escaped status; one-decimal rates; companion-total cards; Asia/Riyadh label)
+  - `halaa-checkin/api/src/modules/exports/qrGenerator.js` (pure #000000 black)
+  - `halaa-checkin/api/src/app.js` (optional workerHealth hook in /health/ready for degraded-renderer reporting)
+- **Commands run and actual results**:
+  - `npm test` (contracts 41/41 pass; api 61/61 pass incl. QR decode, A6/A4/report, queue bounds, snapshot isolation, lease recovery, HTML-escape, cleanup, readiness; web T09 browser E2E passed; full web suite timed out at 120s due to browser weight with no failures observed)
+  - `node --test test/shell.test.js test/guests-unit.test.js test/gate-unit.test.js` (web units 24/24 pass; dictionary symmetry preserved after new keys)
+  - `npm run lint` (0 errors)
+  - `npm run design:check` (15/15 pass)
+  - `npm --prefix web run build` (Next 15 production SSG 12 pages ok)
+  - `git status --short` (only halaa-checkin + docs/evidence + PROGRESS touched; no root/halaa-web/halaa-backend manifests)
+- **Evidence paths**:
+  - Regenerated synthetic T06 PDFs/PNGs under `docs/evidence/hilton-guest-checkin/` now reflect black QR, snapshot lines, and margin fixes
+- **Contract changes (if any, with reason)**:
+  - Gate UI adds `draft_event` display state (server contract unchanged; draft vs closed were previously conflated in one card).
+  - `/health/ready` accepts optional injected `workerHealth` dep (defaults off; no production behavior change unless wired).
+- **Known failures / external blockers**: Physical-device camera + printed-pass scan, real VPS/hostname/DNS, Atlas credentials, and capacity measurements remain pending per 04 §§3–5 (correctly not claimed).
+- **Remaining work in this task**: None. T10 demo journey still needs its own T10 screenshots + browser-exports E2E in a follow-up before claiming “demo verified locally”.
+- **Next task and files to read**:
+  - Task T11: Containers, isolation and deployment rehearsal.
+  - Read: `04-VALIDATION-AND-DEPLOYMENT.md`; `02-TECHNICAL-CONTRACT.md` §8; `03-IMPLEMENTATION-STEPS.md` §T11.
+
+### 9 September 2026 / T11 — Containers, isolation and deployment rehearsal
+- **State**: complete
+- **Commands run**:
+  - `npm run build` (Next 15 production SSG 12 pages ok, incl. Dialog portal fix)
+  - `npm run lint` (0 errors) and `npm run design:check` (all pass)
+  - `npm test` (contracts 41/41, api 61/61, web 30/30 — 0 failures)
+  - `npm run test:e2e` (container-equivalent journey 1/1 pass)
+  - `docker build -f api/Dockerfile -t halaa-checkin-api:t11 .` (2.7 GB; node v24.20.0, Chromium 152.0.7977.82, playwright-core 1.50.1, Cairo registered, non-root UID 1001, `npm ls --omit=dev` clean)
+  - `docker build -f web/Dockerfile -t halaa-checkin-web:t11 .` (443 MB standalone; localhost rewrite baked) and `--build-arg BACKEND_PROXY_URL=http://checkin-api:8100 -t halaa-checkin-web:dev` (container-network rewrite baked; both verified from inside the images via routes-manifest)
+  - Dev overlay `up -d` (mongo rs0 + api + web healthy): `/health/ready` 200, `/ar|en/login` 200, provision-via-exec ok, same-origin login through web proxy 200
+  - `node deploy/rehearse-capacity.mjs --phase=setup|load` (synthetic 1,000-guest events): import 2.3s atomic; admission p95 ~40–48ms (target ≤1000ms); full 1k-pass render ~23s (lease 90s); gate-during-render p95 ~142–173ms (target ≤2000ms); totals exact; unauth download 401
+  - `docker stats` during render: api 207% CPU (2-CPU ceiling) / peak 829.8MiB of 1GiB; web ~46MiB/512MiB
+  - `backup-db.mjs` → 4 events/4000 guests/385 audits/373 idempotency/4 jobs/3 users/12 sessions (JSON fallback, window <1s)
+  - `restore-verify.mjs --targetDb halaa_checkin_restore_20260909 --confirm`: all 7 totals match, QR lookup/admission/audit/new-admission checks PASS
+  - `purge-event.mjs` dry-run then `--confirm` on a 1,000-guest event: 1000 guests/104 audits/101 idempotency/1 job+artifact removed, 3000 other-event guests verified untouched
+  - API container restart: pre-restart session cookie valid (200), stats intact (1000/91)
+  - Rollback drill (local tags for SHAs): bad web tag deployed (login-via-web 500 caught), pin repointed, redeployed, login 200, data intact
+  - Merged root Caddyfile + snippet: `caddy validate` → Valid configuration; adapted JSON confirms checkin host → checkin-api:8100/checkin-web:3100, Halaa routes unchanged
+  - `down -v` teardown after rehearsal (other local Docker projects untouched)
+- **Files changed**:
+  - `halaa-checkin/api/Dockerfile` (new: Node 24 bookworm + apt Chromium/fonts, non-root, nested `api/node_modules` closure, design/assets for template resolver)
+  - `halaa-checkin/web/Dockerfile` (new: standalone runner, `ARG BACKEND_PROXY_URL` baked at build time)
+  - `halaa-checkin/deploy/compose.yml` (new: independent `halaa-checkin` project, GHCR SHA images, external proxy network, no published ports/DB, 2CPU/1G + 1CPU/512M budgets)
+  - `halaa-checkin/deploy/compose.dev.yml` (new: localhost ports incl. 127.0.0.1:27017 for host tooling, throwaway rs0 with init gate, dev web build-arg)
+  - `halaa-checkin/deploy/Caddyfile.snippet` (new: tracked host-block source with CHECKIN_HOSTNAME placeholder)
+  - `halaa-checkin/deploy/ROOT-INTEGRATION.md` (new: exact root diffs + order + isolation procedure)
+  - `halaa-checkin/deploy/README.md` + `OPERATIONS.md` (new: runbook, backup/restore/purge/failure-diagnosis/password/network-recovery procedures)
+  - `halaa-checkin/api/scripts/purge-event.mjs`, `backup-db.mjs`, `restore-verify.mjs` (new operational CLIs)
+  - `halaa-checkin/deploy/rehearse-capacity.mjs` (new two-phase capacity driver with measured p50/p95 + target verdicts)
+  - `halaa-checkin/tests/e2e/checkin-journey.test.js` (new: full journey on disposable replica-set DB + production web build)
+  - `.github/workflows/halaa-checkin.yml` (new: independent CI — design-check/lint/tests/build/e2e + SHA-tagged GHCR images, manual rollout)
+  - `halaa-checkin/api/src/server.js` + 5 scripts (POSIX-safe entry guard; existing startup sweep preserved)
+  - `halaa-checkin/api/src/modules/exports/exports.worker.js` (sequential QR generation with event-loop yield every 10 — fixes 27s gate stall)
+  - `halaa-checkin/web/next.config.mjs` (comment corrected: rewrites serialize at build time)
+  - `halaa-checkin/web/components/ui/Dialog.jsx` (portal to document.body — fixes inert regression that broke every modal button + Guests browser E2E)
+  - `halaa-checkin/.env.example`, `halaa-checkin/README.md`, `halaa-checkin/package.json`, `halaa-checkin/api/package.json` (IMAGE_TAG/test:e2e/db/purge scripts, container pointers)
+  - `docs/evidence/hilton-guest-checkin/t11-containers-deployment.md` (this rehearsal's measurement report)
+  - `docs/implementation/hilton-guest-checkin/PROGRESS.md`
+- **Rehearsal bugs fixed**: nested image deps; Linux entry guard; build-time rewrites; QR event-loop starvation (27.7s→0.17s gate p95); backup select:false gaps + silent insertMany skips; Dialog inert regression. Details + numbers in the T11 evidence report.
+- **Contract changes (if any, with reason)**: None (worker yield and portal are behavior-preserving implementation fixes; budgets/limits live in deploy files, not the contract).
+- **Known failures / external blockers**: Docker Desktop daemon hung once mid-rehearsal (tight API crash-loop from the image-deps bug); recovered via backend restart, images/data intact, other local projects unaffected. Physical-device camera, printed-pass scans, real hostname/VPS/Atlas, hotel retention/policy decisions remain pending per 04 §8. Api image 2.7 GB (slimming noted as follow-up). Login limiter is in-memory (resets on restart; single-replica production).
+- **Remaining work in this task**: None. T12 owns the acceptance audit; T10 screenshots/browser-exports E2E gaps noted in the prior entry still stand.
+- **Next task and files to read**:
+  - Task T12: Final acceptance audit and handoff.
+  - Read: all documents and current ledger; every acceptance row in `04-VALIDATION-AND-DEPLOYMENT.md`.
+
+### 9 September 2026 / T12 — Acceptance audit and handoff
+- **State**: complete
+- **Commands run**:
+  - `git status --short` from `D:\halla` (only `halaa-checkin/`, `docs/evidence/hilton-guest-checkin/`, `docs/implementation/hilton-guest-checkin/` touched; no root/shared/halaa-*/workflow changes)
+  - `npm run build` (contracts ok + Next 15.5.25, 12 static pages)
+  - `npm run lint` (0 errors; re-ran after doc edits, still clean)
+  - `npm run design:check` (15/15; re-ran after doc edits, still pass)
+  - `npm test` (contracts 41/41, api 61/61, web 30/30 = 132/132, 0 failures)
+  - `npm run test:e2e` (1/1 full journey pass on disposable replica-set DB + production web build)
+  - `docker images` (reused `halaa-checkin-api:t11`/`:dev` 2.7 GB + `halaa-checkin-web:t11`/`:dev` 443 MB; no rebuild, dev overlay never started so no teardown needed)
+  - Rendered-output PDF/PNG inspection via text extraction + visual review (single/bulk/report PDFs, A6 + overflow PNGs, guests + gate workspaces at 1440/390/360)
+  - Security/scoping/concurrency spot-checks against contract §§2–5 (auth/csrf/authorize/config/connection/checkins/guest/exports/server/api-wrapper/next.config)
+- **Files changed**:
+  - `halaa-checkin/README.md` (exact local/e2e commands, `.env.example` reference + env table, `user:provision` interactive + `USER_PASSWORD`, guarded `seed:demo` + `--reset-demo --confirm`, dev-overlay + `IMAGE_TAG` rollout, backup/restore/purge/rollback summaries + `deploy/` pointers, report + external-prerequisites notes)
+  - `halaa-checkin/.env.example` (explicit `SESSION_SECRET` placeholder + generation/fail-fast note; added `DEMO_SEED_PASSWORD` + Chromium hints; no real secrets)
+  - `halaa-checkin/deploy/compose.dev.yml` (header: `npm run build` required before `npm run test:e2e`; no compose semantics changed)
+  - `docs/evidence/hilton-guest-checkin/t12-acceptance-report.md` (new: suites, A01–A30 with evidence/env, defects, deliverables, blockers, unverifiable items)
+  - `docs/implementation/hilton-guest-checkin/PROGRESS.md` (this entry, header status, task table, next-session + Final milestone language)
+- **Implemented**:
+  - Full verification against the final build with exact counts (see report §1).
+  - Screen + rendered-PDF audit (§2) and contract §§2–5 spot-checks (§3).
+  - A01–A30 classification: A01–A27 pass, A28 blocked (hostname/VPS proxy never applied live), A29 pass locally via cited T11 backup/restore/purge/rollback rehearsal (production Atlas destination still external), A30 blocked (no real phones/print). Capacity cited from T11 (import ~2.3 s, admission p95 ~48 ms, 1k-pass render ~23 s, gate-during-render p95 ~173 ms, api 829.8 MiB/1 GiB).
+  - Three handoff-doc gaps fixed (README, `.env.example`, dev-overlay header); `deploy/README.md` + `OPERATIONS.md` + `ROOT-INTEGRATION.md` + snippet + `compose.yml` verified accurate, unchanged.
+- **Evidence paths**:
+  - `docs/evidence/hilton-guest-checkin/t12-acceptance-report.md`
+  - `docs/evidence/hilton-guest-checkin/t11-containers-deployment.md` (cited capacity/backup/rollback measurements)
+  - `docs/evidence/hilton-guest-checkin/t06-sample-single-pass.pdf` + `t06-single-pass-a6-ar.png`
+  - `docs/evidence/hilton-guest-checkin/t06-sample-bulk-passes.pdf` + `t06-bulk-passes-a4.png`
+  - `docs/evidence/hilton-guest-checkin/t06-sample-attendance-report.pdf` + `t06-overflow-20-companions.png`
+  - `docs/evidence/hilton-guest-checkin/t08-guests-workspace-ar-1440x900.png`
+  - `docs/evidence/hilton-guest-checkin/t09-gate-workspace-ar-1440x900.png`
+- **Contract changes (if any, with reason)**: None.
+- **Known failures / external blockers**: No code failures. A28 + A30 blocked per above. External prerequisites still pending: hostname/DNS, VPS headroom, Atlas credentials/backup destination, real event + retention, v1 policy acceptance, named accounts, two tested devices + backup connectivity/power, on-site arrangements. Api image 2.7 GB slimming + in-memory login limiter (from T11) carry over as non-blocking notes.
+- **Remaining work in this task**: None. No commit/push/PR or production rollout performed, per constraints.
+- **Next task and files to read**: None (mini-app complete). Operator-owned externals only; do not claim deployed/gate-ready until A28 + A30 are executed live.
+
 ## Final milestone evidence
 
-- Implemented: pending (T00–T08 complete, T09–T12 pending).
-- Demo verified locally: pending.
-- Deployed: pending; hostname/credentials/VPS checks not performed.
-- Gate ready: pending; actual devices and operations not verified.
+- Implemented: complete (T00–T12 complete incl. hardening pass).
+- Demo verified locally: complete (final build: 41/41 contracts, 61/61 api,
+  30/30 web, 1/1 e2e, build/lint/design:check green; screens + rendered PDFs
+  inspected; A01–A27 + A29 pass, A28 + A30 blocked; see T12 entry +
+  `docs/evidence/hilton-guest-checkin/t12-acceptance-report.md`; T11 capacity
+  measurements cited, not re-run).
+- Deployed: pending; hostname/credentials/VPS checks not performed (A28 blocked).
+- Gate ready: pending; actual devices and operations not verified (A30 blocked).
+
+### 9 September 2026 / T13 — T10 leftovers closure
+- **State**: complete
+- **Commands run**:
+  - `npm run build` from `D:\halla\halaa-checkin` (contracts ok + Next 15.5.25, 12 static pages)
+  - `node --test test/browser-exports.test.js` from `halaa-checkin/web` (6/6 pass, ~52s, disposable port 3121, production `next start`, Playwright via `chromium.js`, mocked API + synthetic data only)
+  - `npm --prefix web test` (36/36 pass: 30 prior + 6 new, 0 failures)
+  - `npm run lint` from `halaa-checkin` (0 errors, 0 warnings)
+- **Files changed**:
+  - `halaa-checkin/web/test/browser-exports.test.js` (new)
+  - `docs/evidence/hilton-guest-checkin/t10-*.png` (12 new screenshots only; no t06–t09 overwritten by the new suite)
+  - `docs/implementation/hilton-guest-checkin/PROGRESS.md` (this note only)
+- **Implemented**:
+  - `browser-exports.test.js` reuses one browser + one server: single A6 pass create→poll→ready→download; selected (2) / all (3) A4 scope counts; report Interim (live) / Final (closed) wording + ar/en locale choice; failed/expired/retry (retry re-opens same-type confirm, then succeeds); admin correction (empty reason blocked, time/operator preserved, 1→2 companions) + reset (reason required, check-in cleared); receptionist redirected Guests→Gate with zero correction/reset buttons.
+  - T10 demo-journey screenshots: Guests workspace, ExportPanel open, and Gate workspace in EN + AR at 1440x900 and 390x844 (12 files), all mobile views verified with no horizontal overflow.
+- **Evidence paths**:
+  - `halaa-checkin/web/test/browser-exports.test.js`
+  - `docs/evidence/hilton-guest-checkin/t10-guests-workspace-en-1440x900.png`
+  - `docs/evidence/hilton-guest-checkin/t10-guests-workspace-ar-1440x900.png`
+  - `docs/evidence/hilton-guest-checkin/t10-guests-workspace-en-390x844.png`
+  - `docs/evidence/hilton-guest-checkin/t10-guests-workspace-ar-390x844.png`
+  - `docs/evidence/hilton-guest-checkin/t10-export-panel-en-1440x900.png`
+  - `docs/evidence/hilton-guest-checkin/t10-export-panel-ar-1440x900.png`
+  - `docs/evidence/hilton-guest-checkin/t10-export-panel-en-390x844.png`
+  - `docs/evidence/hilton-guest-checkin/t10-export-panel-ar-390x844.png`
+  - `docs/evidence/hilton-guest-checkin/t10-gate-workspace-en-1440x900.png`
+  - `docs/evidence/hilton-guest-checkin/t10-gate-workspace-ar-1440x900.png`
+  - `docs/evidence/hilton-guest-checkin/t10-gate-workspace-en-390x844.png`
+  - `docs/evidence/hilton-guest-checkin/t10-gate-workspace-ar-390x844.png`
+- **Contract changes (if any, with reason)**: None.
+- **Known failures / external blockers**: None new. A28 + A30 remain blocked per T12; no commit/push/PR performed.
+- **Remaining work in this task**: None. The T10 demo-journey leftover line from the T06–T10 hardening entry (and restated in T11) is now closed.
+- **Next task and files to read**: None (mini-app complete). Operator-owned externals only; do not claim deployed/gate-ready until A28 + A30 are executed live.
+
+### 9 September 2026 / Finalization F01–F33 — corrective implementation (supersedes “external work only”)
+- **State**: implemented in working tree; fresh-release verification + live prerequisites remain (see evidence report).
+- **Basis**: `05-FINALIZATION-REVIEW-PLAN.md` + `02-TECHNICAL-CONTRACT.md` (authoritative) + `docs/evidence/hilton-guest-checkin/review-2026-09-09.md`. Preserved architecture, admission policy, bilingual design, v1 exclusions. No parent business code/packages modified. No deploy/DNS/production action.
+- **Commands run and actual results** (from `D:/halla/halaa-checkin` unless noted):
+  - `git check-ignore -v halaa-checkin/api/src/modules/exports/exports.service.js` → no match (source eligible); `git check-ignore -v halaa-checkin/api/data/exports/test.pdf` → still ignored via anchored `/api/data/` (F01).
+  - `npm test` → 126/126 pass (41 contracts + 61 api + 24 web unit), 0 fail.
+  - `npm run lint` → 0 errors, 0 warnings.
+  - `npm run design:check` → 15/15 + provenance hash/parity/parent-drift checks pass (F31).
+  - `npm --prefix web run build` → Next 15 production build, 12 static pages.
+  - `npm ls playwright-core --prefix api`, `node --version` (v24.13.1), browser version probe for F29 closure (see evidence report).
+  - Existing browser/PDF evidence suites not rerun (they overwrite historical evidence); new evidence in `docs/evidence/hilton-guest-checkin/finalization-2026-09-09.md` only.
+- **Per-finding status**:
+  - F01 gitignore: DONE — anchored runtime ignores (`/data/`, `/api/data/`, `/exports/`, etc.); 12 export sources eligible, runtime still ignored.
+  - F02 session DTO: DONE — `normalizeSessionData` at provider boundary; role/assignments from `user`; fail closed; login/header/nav/Guests route aligned; browser mocks use exact `{user,csrfToken,expiresAt}` DTO.
+  - F03 first-event: DONE — admin Guests workspace owns empty state; layout no longer hides it; wired create + compact new-event action when events exist; fetch-error vs empty distinguished with retry.
+  - F04 CI order: DONE — `web/test` = unit only, `test:browser` separate; CI runs test → build → browser → e2e; README same order; `content-disposition@0.5.4` declared in api.
+  - F05 camera attach: DONE — video mounted before acquisition + attach effect/ref callback; decode only after frame readiness; tracks stopped on failed paths.
+  - F06 camera lifetime: DONE — generation invalidation; late streams disposed; decode guarded; disabled stops tracks; Stop usable while streaming; no auto-resume.
+  - F07 event/out-of-order: DONE — request/event generation guards + AbortSignal; GuestLookup generation guard; in-flight writes never update new event; operation context preserved.
+  - F08 concurrent warning: DONE — consumes `details.guest` DTO; no fabricated counts; mock fixed to exact shape.
+  - F09 stale/lost-response: DONE — immutable operation snapshot; inputs locked during uncertainty; fresh-data reconfirmation; 502/504/timeout → `LOST_RESPONSE`; original payload/key retry + post-replay resolve; 20s application deadline.
+  - F10 session expiry: DONE — central 401 handler clears private cache, stops camera, enters reauth; network vs expiry distinguished; logout hides local first and surfaces revocation failure.
+  - F11 freshness: DONE — browser vs API reachability separated; `asOf` only on success; recent errors surfaced with retry; event polling + focus refresh; gate uses fresher `gateEvent`; guests 5s refresh; corrected `['gate',eventId,'recent']` invalidation.
+  - F12 notices: DONE — standardized Notice (`variant`/`type`, `message`/`children`, forwarded props); explicit `tOr` + `t` never renders raw keys; visible text asserted.
+  - F13 CSV preview DTO: DONE — structured `{row,lineNumber,field,code,message}` issues + `rows` with logical numbering documented; UI renders rows with bounded scroll + totals; tests updated.
+  - F14 duplicate headers: DONE — raw header array validated before object mapping; duplicates rejected.
+  - F15 CSV limits/lifetime: DONE — 3 MB transport allowance with 2 MB decoded enforcement; import dialog bound to event with generation guards; no wrong-event submit; same-key retry.
+  - F16 reference/numeric: DONE — edit sends `null` to clear reference; integer validation on original value (no `parseInt` truncation); invalid text preserved.
+  - F17 conflict reload: DONE — explicit fetch replaces dialog record/version; mutation errors reset on reuse; admitted/deleted transitions guarded; event-bound dialogs.
+  - F18 event context: DONE — same-event placeholder only; invalid/revoked URLs reconcile with fallback; beyond-100 events fetched individually.
+  - F19 export queue: DONE — atomic global/per-admin reservations (`exportQuota.js`) + release/reconcile on ready/failed/expired/crash; 429 structured; never >3/admin or >10 overall.
+  - F20 export snapshot: DONE — event + guests read in same transaction; `snapshotAt` there; reports omit QR tokens; immutable completed exports.
+  - F21 expiry privacy: DONE — `+snapshot` read, whole snapshot unset on expiry, artifacts removed, `deleteAt` + 7-day TTL retention with 410 preserved, missing-dir safe, basename/parent validated, failures logged.
+  - F22 worker: DONE — 90s total bound incl. QR, 150s lease, active context disposal + timer clearing, lease-owner/state predicates, expired jobs never claimed/published.
+  - F23 readiness: DONE — real `checkWorkerHealth` (storage + Chromium, no expensive launch) injected in production; 503 bounded with gate available; no raw exception/path leaks.
+  - F24 export panel: DONE — job IDs retained per event (localStorage), polling paused when closed, resumed on reopen, cleared on user change; creation/poll/expiry/download errors independent with retry; duplicate hook removed; report metrics shown; no auto-duplicate.
+  - F25 QR print: DONE — QR-dialog Print routes via authenticated A6 PDF pipeline; event identity/date/allowance in preview; viewer-ready print with localized popup failures.
+  - F26 backup: DONE — recursive BSON manifest, EJSON fallback, hash verification path, TLS forwarding, no URI logging, container runbook note.
+  - F27 purge: DONE — fence (close) + drain/cancel jobs with quota release, transactional deletes, scope-based verification (other-event IDs preserved).
+  - F28 indexes/idempotency: DONE — key/option verification (unique/partial/TTL), prod `autoIndex:false` + verify (no silent create), UUID idempotency enforcement, deterministic expired-key handling, event-existence provisioning check.
+  - F29 pinning: DONE — `node:24.13.1-bookworm-slim` pinned; browser/version policy documented; CI records Node/Playwright/browser + `IMAGE_TAG`; no parent upgrade.
+  - F30 dialog focus: DONE — stable lifecycle via refs, usable-only focus, unique title IDs, single restore.
+  - F31 localization/design: DONE — GuestLookup label, localized QR alt, distributed-pass warning, PDF palette alignment (`#2c2c2c`/`#656565`/`#dfdfdf`), provenance hash/parity/drift checks.
+  - F32 PDF/capacity: PARTIAL — historical renders preserved; new single-A6/multi-A4/report renders + 1,000-pass + two-gate load with budgets require fresh run on repaired release (see evidence report); new evidence dir used, historical never overwritten.
+  - F33 tests/report: DONE — DTO mocks corrected; concurrency tests kept; README/PROGRESS updated (historical preserved); integrated Playwright→frontend→Express→replica-set journey + full A01–A30 reassessment remain to be executed on the repaired release (required journey defined in evidence report).
+- **Acceptance reclassification**: do NOT carry A01–A27/A29 forward as unconditional passes. A01 blocked by clean-release packaging verification (F01/F04); A03/A04 by fresh session/first-event browser proof; A08/A10/A11/A12 by guest/import gaps pending fresh browser proof; A14/A15/A18/A19/A20 by gate/UI integration proof; A24/A26 by export snapshot/recovery proof on repaired release; A29 by both backup paths. Preserved proven API subchecks (41+61+24 green). A28/A30 remain externally blocked. See `docs/evidence/hilton-guest-checkin/finalization-2026-09-09.md` for the exact release tree, what was verified, what still fails/needs proof, and external prerequisites.
+- **Files changed**: see `git status --short` (mini-app + docs only). Key new file: `halaa-checkin/api/src/modules/exports/exportQuota.js`. No secrets/runtime data staged. Export/deploy/CI files made eligible, not committed.
+- **“Demo verified locally”**: NOT claimed — requires all software findings closed + real-browser journey passing on the exact release tree. “Deployed”/“gate ready” require separate live evidence.
+
+### 10 September 2026 / Independent review and corrective fixes
+
+The preceding F01–F33 completion claims were checked against actual code and real API/browser behavior. They were not all correct. Further repairs are documented in `06-IMPLEMENTATION-REVIEW-AND-FIXES.md`; do not use the 9 September DONE labels alone as release acceptance.
+
+- Repaired logout CSRF/revocation and stale session callbacks; bounded complete response reads; kept uncertain admission/import intent scoped to the original actor/event through route changes and reauthentication.
+- Added synchronous gate locks, authoritative replay/reset reconciliation, pending-camera cancellation/real stream coverage, event pagination/access fallback, complete CSV preview and safer dialog callbacks.
+- Replaced export counters with an enqueue transaction fence, strengthened purge/worker/download/readiness protections, and fixed PDF snapshot pagination (1,000 passes now exactly 250 sheets).
+- Repaired canonical EJSON restore, manifest verification, index creation with autoIndex disabled, exact index-option verification and expired idempotency replacement. Added persistent private backup mount/runbook commands.
+- Local verification: 137 contract/API/web unit cases, 12 browser cases and 2 E2E journeys; build/lint/design pass. The integrated browser test uses the real frontend, Express API, cookies/CSRF and replica-set database, plus a real synthetic MediaStream.
+- Final local load: 1,000 passes / 250 sheets in 39,159 ms alongside 200 admissions on two reception sessions; combined preview/admission p95 541 ms, max 2,386 ms. See `docs/evidence/hilton-guest-checkin/review-2026-09-10/capacity.json` for this unthrottled local test, not production rate-limit/resource certification.
+- Real EJSON backup/restore and scoped purge CLI rehearsals pass on disposable databases. Docker and BSON database tools are unavailable here; image/TLS/BSON/physical-device verification remains explicit in the review report.
+- Scope: retained pre-existing implementation and unrelated dirty Halaa work. No production deployment, account changes, real-event purge or messages were performed. Historical evidence kept; new test outputs go to the dated review directory.

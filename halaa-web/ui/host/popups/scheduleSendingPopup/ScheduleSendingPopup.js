@@ -15,6 +15,7 @@ import useAuthStore from "@/stores/authStore";
 import { toSubscriptionDTO } from "@halaa/shared/utils";
 import {
   getScheduleWindow,
+  getScheduleTimeBounds,
   validateScheduleSelection,
 } from "@halaa/shared/utils/schedulingWindow";
 
@@ -118,6 +119,24 @@ const ScheduleSendingPopup = ({
       time: fromHHmm(existingSchedule?.scheduledTime),
     },
   });
+  const selectedDate = methods.watch("date");
+  const timeBounds = useMemo(
+    () => getScheduleTimeBounds(selectedDate, scheduleWindow),
+    [selectedDate, scheduleWindow]
+  );
+
+  useEffect(() => {
+    if (!selectedDate) return;
+    const value24 = to24h(methods.getValues("time"));
+    if (!value24) return;
+    const [hour, minute] = value24.split(":").map(Number);
+    const valueMinutes = hour * 60 + minute;
+    if (valueMinutes < timeBounds.minimumMinutes) {
+      methods.setValue("time", fromHHmm(`${String(Math.floor(timeBounds.minimumMinutes / 60)).padStart(2, "0")}:${String(timeBounds.minimumMinutes % 60).padStart(2, "0")}`));
+    } else if (valueMinutes > timeBounds.maximumMinutes) {
+      methods.setValue("time", fromHHmm(`${String(Math.floor(timeBounds.maximumMinutes / 60)).padStart(2, "0")}:${String(timeBounds.maximumMinutes % 60).padStart(2, "0")}`));
+    }
+  }, [selectedDate, timeBounds, methods]);
 
   useEffect(() => {
     methods.reset({
@@ -224,6 +243,8 @@ const ScheduleSendingPopup = ({
               name="time"
               label={t("schedule_time") || "Time"}
               required
+              minimumMinutes={timeBounds.minimumMinutes}
+              maximumMinutes={timeBounds.maximumMinutes}
             />
           </div>
 

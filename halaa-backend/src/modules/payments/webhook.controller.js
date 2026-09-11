@@ -112,19 +112,46 @@ exports.handle = async (req, res) => {
     return res.status(400).json({ status: 'error', message: 'malformed payload' });
   }
 
-  const dedupKey = `${data.id}:${eventType}`;
+  // Payment-link fast path: recognize link invoices/payments via stored
+  // invoice id or verified invoice membership BEFORE unknown-payment ack or
+  // subscription-renewal dispatch. Uses the verified event id in the dedup
+  // key when available so multiple partial refunds (distinct events) all
+  // apply instead of replaying the first delivery.
+  { // Includes events whose invoice_id is absent but payment ID is already known.
+    try {
+      const linkResult = await handlePaymentLinkEvent(eventId, eventType, data);
+      if (linkResult && linkResult.recognized) {
+        return res.status(200).json({ success: true, status: 'success', ...linkResult.result });
+      }
+    } catch (err) {
+      logger.error('[moyasar.webhook] payment-link dispatch error', { error: err?.message });
+      return res.status(500).json({ status: 'error', message: 'internal' });
+    }
+  }
+
+  // Include the verified Moyasar event id in the dedup key when present so
+  // mutable payment updates (partial refunds) with distinct events are not
+  // permanently deduplicated by only `{paymentId,eventType}`.
+  const dedupKey = eventId ? `${data.id}:${eventType}:${eventId}` : `${data.id}:${eventType}`;
 
   try {
     const result = await withIdempotency(
       dedupKey,
       async () => {
-        // Invoice events route through subscription renewal handling.
+        // Invoice events route through subscription renewal handling,
+        // unless already claimed by the payment-link dispatcher above.
         if (eventType === 'invoice_paid' || eventType === 'invoice_failed') {
           return handleInvoiceEvent(eventType, data);
         }
 
         const payment = await Payment.findOne({ moyasarPaymentId: data.id });
         if (!payment) {
+          // A link payment may not exist locally yet (invoice paid before
+          // any Payment row). Try a final link-membership check before ack.
+          try {
+            const linkResult = await handlePaymentLinkEvent(eventId, eventType, data);
+            if (linkResult && linkResult.recognized) return linkResult.result;
+          } catch (error) { throw error; }
           // We never created this Payment — most likely a manual charge
           // from the Moyasar dashboard, or a stale event for a deleted
           // record. Audit-log and 200 so Moyasar stops retrying.
@@ -135,6 +162,18 @@ exports.handle = async (req, res) => {
             metadata: { eventId, eventType, moyasarPaymentId: data.id },
           });
           return { handled: false, reason: 'unknown_payment' };
+        }
+        // Link payments reconcile through the link service (authoritative
+        // invoice fetch) instead of trusting the webhook snapshot alone.
+        if (payment.metadata?.purpose === 'admin_payment_link' && payment.paymentLinkId) {
+          try {
+            const paymentLinksService = require('../payment-links/paymentLinks.service');
+            await paymentLinksService.queueReconciliation(payment.paymentLinkId);
+            return { handled: true, paymentId: payment._id, via: 'payment_link' };
+          } catch (e) {
+            logger.error('[moyasar.webhook] link reconcile failed', { error: e?.message });
+            throw e;
+          }
         }
 
         payment.applyMoyasarSnapshot(data);
@@ -191,6 +230,40 @@ exports.handle = async (req, res) => {
     return res.status(500).json({ status: 'error', message: 'internal' });
   }
 };
+
+/**
+ * Recognize admin payment-link invoices/payments via stored invoice id or
+ * verified invoice membership. Returns `{ recognized: true, result }` when
+ * claimed, or `{ recognized: false }` to fall through to subscription logic.
+ * Acknowledgement follows completed reconciliation or a durable queued wakeup;
+ * database errors throw so Moyasar retries instead of losing work.
+ */
+async function handlePaymentLinkEvent(eventId, eventType, data) {
+  const PaymentLink = require('../../../models/PaymentLinkModel');
+  const invoiceId =
+    eventType === 'invoice_paid' || eventType === 'invoice_failed'
+      ? data.id
+      : (typeof data.invoice_id === 'string' ? data.invoice_id : typeof data.invoice === 'string' ? data.invoice : null);
+  let link = null;
+  if (invoiceId) {
+    link = await PaymentLink.findOne({ providerInvoiceId: invoiceId });
+  }
+  if (!link && data?.metadata?.reference && data?.metadata?.purpose === 'admin_payment_link') {
+    link = await PaymentLink.findOne({ reference: data.metadata.reference });
+  }
+  if (!link && data?.id) {
+    const byPayment = await Payment.findOne({ moyasarPaymentId: data.id });
+    if (byPayment?.metadata?.purpose === 'admin_payment_link' && byPayment.paymentLinkId) {
+      link = await PaymentLink.findById(byPayment.paymentLinkId);
+    }
+  }
+  if (!link) return { recognized: false };
+  const paymentLinksService = require('../payment-links/paymentLinks.service');
+  // Every authenticated event durably wakes reconciliation, including repeated
+  // mutable refund updates without event IDs. No event payload moves money.
+  await paymentLinksService.queueReconciliation(link._id);
+  return { recognized: true, result: { handled: true, paymentLinkId: link._id } };
+}
 
 /**
  * Handle `invoice_paid` / `invoice_failed` (recurring billing).

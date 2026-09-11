@@ -11,7 +11,7 @@ import {
   DEFAULT_PHONE_PLACEHOLDER,
 } from "@halaa/shared/utils/phone";
 
-export default function ModeratorForm() {
+export default function ModeratorForm({ onAdd }) {
   const { t } = useTranslation("createEvent");
   const { setValue, watch } = useFormContext();
   const formData = watch();
@@ -19,19 +19,34 @@ export default function ModeratorForm() {
   const [moderatorName, setModeratorName] = useState("");
   const [moderatorPhone, setModeratorPhone] = useState("");
   const [moderatorErrors, setModeratorErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleAddModerator = useCallback(() => {
+  const handleAddModerator = useCallback(async () => {
     const moderator = { name: moderatorName, phone: moderatorPhone };
     const result = EventsService.addListItem(moderator, formData.staffList || [], "moderator");
     if (result.success) {
-      setValue("staffList", result.list, { shouldValidate: true });
-      setModeratorName("");
-      setModeratorPhone("");
-      setModeratorErrors({});
+      setIsSubmitting(true);
+      try {
+        const addedModerator = typeof onAdd === "function"
+          ? await onAdd(moderator)
+          : result.list[result.list.length - 1];
+        setValue(
+          "staffList",
+          [...(formData.staffList || []), addedModerator || result.list[result.list.length - 1]],
+          { shouldValidate: true }
+        );
+        setModeratorName("");
+        setModeratorPhone("");
+        setModeratorErrors({});
+      } catch {
+        // The update screen presents the API error and leaves the values for retry.
+      } finally {
+        setIsSubmitting(false);
+      }
     } else {
       setModeratorErrors(result.errors);
     }
-  }, [moderatorName, moderatorPhone, formData.staffList, setValue]);
+  }, [moderatorName, moderatorPhone, formData.staffList, onAdd, setValue]);
 
   return (
     <View style={styles.form}>
@@ -64,7 +79,7 @@ export default function ModeratorForm() {
       <Button
         text={t("add_staff")}
         onPress={handleAddModerator}
-        disabled={!moderatorName.trim() || !moderatorPhone.trim()}
+        disabled={isSubmitting || !moderatorName.trim() || !moderatorPhone.trim()}
       />
     </View>
   );

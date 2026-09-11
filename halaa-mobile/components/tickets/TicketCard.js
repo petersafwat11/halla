@@ -22,11 +22,13 @@ const TicketCard = ({ ticket, onDelete, onEdit, onRate, index }) => {
   const { t, currentLanguage } = useTranslation("tickets");
 
   const scaleAnim = React.useRef(new Animated.Value(0)).current;
-  const [imageViewerVisible, setImageViewerVisible] = React.useState(false);
+  const [viewerAttachment, setViewerAttachment] = React.useState(null);
 
-  const attachment = ticket.attachment;
+  const attachments = ticket.attachments?.length
+    ? ticket.attachments
+    : ticket.attachment ? [ticket.attachment] : [];
 
-  const handleOpenVideo = () => {
+  const handleOpenVideo = (attachment) => {
     if (attachment?.url) {
       Linking.openURL(attachment.url).catch(() => {});
     }
@@ -141,12 +143,12 @@ const TicketCard = ({ ticket, onDelete, onEdit, onRate, index }) => {
       </View>
 
       {/* Attachment (image thumbnail -> viewer, or video -> open in browser) */}
-      {attachment && (
-        <View style={styles.attachmentRow}>
+      {attachments.map((attachment, attachmentIndex) => (
+        <View style={styles.attachmentRow} key={`${attachment.url}-${attachmentIndex}`}>
           {attachment.type === "image" ? (
             <TouchableOpacity
               style={styles.attachmentThumbWrap}
-              onPress={() => setImageViewerVisible(true)}
+              onPress={() => setViewerAttachment(attachment)}
               activeOpacity={0.8}
             >
               <Image
@@ -160,7 +162,7 @@ const TicketCard = ({ ticket, onDelete, onEdit, onRate, index }) => {
           ) : (
             <TouchableOpacity
               style={styles.attachmentVideoThumb}
-              onPress={handleOpenVideo}
+              onPress={() => handleOpenVideo(attachment)}
               activeOpacity={0.8}
             >
               <Ionicons name="videocam" size={24} color="#c28e5c" />
@@ -175,7 +177,7 @@ const TicketCard = ({ ticket, onDelete, onEdit, onRate, index }) => {
               : t("card.playVideo")}
           </LocalizedText>
         </View>
-      )}
+      ))}
 
       {/* Existing rating display */}
       {ticket.userRating?.rating > 0 && (
@@ -199,26 +201,26 @@ const TicketCard = ({ ticket, onDelete, onEdit, onRate, index }) => {
       )}
 
       {/* Full-screen image preview */}
-      {attachment?.type === "image" && (
+      {viewerAttachment?.type === "image" && (
         <Modal
-          visible={imageViewerVisible}
+          visible={!!viewerAttachment}
           transparent
           animationType="fade"
-          onRequestClose={() => setImageViewerVisible(false)}
+          onRequestClose={() => setViewerAttachment(null)}
         >
           <TouchableOpacity
             style={styles.viewerOverlay}
             activeOpacity={1}
-            onPress={() => setImageViewerVisible(false)}
+            onPress={() => setViewerAttachment(null)}
           >
             <Image
-              source={{ uri: getImageUrl(attachment.url) }}
+              source={{ uri: getImageUrl(viewerAttachment.url) }}
               style={styles.viewerImage}
               resizeMode="contain"
             />
             <TouchableOpacity
               style={styles.viewerClose}
-              onPress={() => setImageViewerVisible(false)}
+              onPress={() => setViewerAttachment(null)}
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             >
               <Ionicons name="close" size={28} color="#fff" />

@@ -17,7 +17,12 @@
     "staleData": "Data may be stale",
     "networkError": "Unable to connect to server, check network connection",
     "status": "Status",
-    "clear": "Clear"
+    "clear": "Clear",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page",
+    "of": "of",
+    "total": "Total"
   },
   "nav": {
     "guests": "Guests",
@@ -39,7 +44,8 @@
     "invalidCredentials": "Invalid username or password",
     "sessionExpired": "Your session has expired. Please sign in again.",
     "disabledAccount": "This account is disabled. Contact your administrator.",
-    "loginPrompt": "Please sign in to continue"
+    "loginPrompt": "Please sign in to continue",
+    "logoutUncertain": "Server logout could not be confirmed. Retry to revoke the session."
   },
   "roles": {
     "admin": "Administrator",
@@ -51,6 +57,7 @@
     "noEventsAdmin": "No events available. Create your first event.",
     "noEventsReception": "No event assigned. Contact your administrator.",
     "createFirstEvent": "Create new event",
+    "createFirstEventPrompt": "Set up your event details to start managing invitations.",
     "statusDraft": "Draft",
     "statusLive": "Live",
     "statusClosed": "Closed",
@@ -91,6 +98,7 @@
     "closed": "Closed"
   },
   "stats": {
+    "title": "Attendance Statistics",
     "totalInvitations": "Total Invitations",
     "totalExpected": "Expected People",
     "admittedPeople": "Admitted People",
@@ -137,7 +145,24 @@
     "deleteConfirmMessage": "Are you sure you want to delete the invitation for {name}? The reference can be reused.",
     "admittedCannotDelete": "Cannot delete a guest who has already checked in. Requires an audited admission reset first.",
     "admittedCannotEdit": "Cannot edit allowance after check-in. Use admission correction to change party size.",
-    "eventClosedWarning": "Event is closed. Guest additions, edits, and deletions are frozen."
+    "eventClosedWarning": "Event is closed. Guest additions, edits, and deletions are frozen.",
+    "correctAdmission": "Correct Admission",
+    "resetAdmission": "Reset Admission",
+    "applyCorrection": "Apply Correction",
+    "confirmReset": "Confirm Reset",
+    "actualCompanionsLabel": "Actual Companions Present",
+    "correctionReasonLabel": "Correction Reason",
+    "correctionReasonPlaceholder": "Enter correction reason (5 to 500 characters)",
+    "correctionWarning": "This will modify the check-in for {name}. The party count and correction time will be recorded in the audit log.",
+    "resetWarning": "This will completely reset check-in for {name}. They can be checked in again using the same QR code. The previous admission will be retained in the audit log.",
+    "admissionCorrection": "Admission Correction",
+    "admissionReset": "Admission Reset",
+    "companionsRangeError": "Companion count must be between 0 and {max}",
+    "correctionReasonRequired": "Correction reason is required (at least 5 characters)",
+    "correctionReasonTooLong": "Reason exceeds 500 characters",
+    "resetReasonRequired": "Reset reason is required (at least 5 characters)",
+    "resetReasonTooLong": "Reason exceeds 500 characters",
+    "versionConflictReload": "Data was modified by another user. Reload to get the latest version."
   },
   "imports": {
     "title": "Import Guests (CSV)",
@@ -219,7 +244,9 @@
     "connectionStale": "Data may be stale",
     "selectGuest": "Select",
     "admittedBadge": "Admitted",
-    "pendingBadge": "Pending"
+    "pendingBadge": "Pending",
+    "decreaseCompanions": "Decrease companions",
+    "increaseCompanions": "Increase companions"
   },
   "qr": {
     "previewTitle": "Guest Invitation Pass (QR)",
@@ -228,6 +255,57 @@
     "downloadPdf": "Download PDF Pass",
     "print": "Print",
     "close": "Close"
+  },
+  "exports": {
+    "title": "Export & Reports",
+    "singlePass": "Single Pass (A6)",
+    "selectedPasses": "Selected Passes (A4, 4-up)",
+    "allPasses": "All Passes (A4, 4-up)",
+    "attendanceReport": "Attendance Report",
+    "scopeSelected": "Selected ({count} invitations)",
+    "scopeAll": "All ({count} invitations)",
+    "scopeSingle": "Single (1 invitation)",
+    "languageLabel": "Export Language",
+    "languageAr": "Arabic",
+    "languageEn": "English",
+    "createExport": "Create Export",
+    "creating": "Creating export...",
+    "polling": "Processing...",
+    "ready": "Ready to download",
+    "failed": "Export failed",
+    "expired": "Export expired",
+    "download": "Download PDF",
+    "print": "Print",
+    "retry": "Retry",
+    "close": "Close",
+    "emptySelection": "No invitations selected",
+    "noGuests": "No guests to export",
+    "stateQueued": "Queued",
+    "stateRunning": "Processing",
+    "stateReady": "Ready",
+    "stateFailed": "Failed",
+    "stateExpired": "Expired",
+    "confirmTitle": "Confirm Export",
+    "confirmMessage": "This will create a {type} export for {count} invitation(s). Continue?",
+    "singlePassType": "Single A6 pass",
+    "selectedPassesType": "Selected A4 passes",
+    "allPassesType": "All A4 passes",
+    "reportType": "Attendance report",
+    "reportInterim": "Interim report (event is live)",
+    "reportFinal": "Final report (event is closed)",
+    "reportPreview": "Report Preview",
+    "pendingInvitations": "Pending Invitations",
+    "admittedInvitations": "Admitted Invitations",
+    "didNotAttend": "Did Not Attend",
+    "attendanceRate": "Attendance Rate",
+    "capacityRate": "Capacity Rate",
+    "errorNotReady": "Export is not ready yet. Please wait.",
+    "errorFailed": "Export generation failed: {message}",
+    "errorExpired": "Export file has expired. Please create a new export.",
+    "errorNoGuests": "No active invitations in this event.",
+    "rateLimited": "Concurrent export limit reached. Please wait.",
+    "interimNotice": "Interim report — guests listed as \"pending\" have not yet checked in.",
+    "finalNotice": "Final report — \"did not attend\" includes all invitations without a check-in."
   },
   "errors": {
     "VALIDATION_FAILED": "Validation failed",
@@ -249,6 +327,7 @@
     "EXPORT_FAILED": "Export generation failed",
     "RATE_LIMITED": "Rate limit exceeded, please wait",
     "SERVICE_UNAVAILABLE": "Service temporarily unavailable",
-    "UNKNOWN": "An unexpected error occurred"
+    "UNKNOWN": "An unexpected error occurred",
+    "PRINT_POPUP_BLOCKED": "Popup blocked. PDF downloaded instead — open it to print."
   }
 }

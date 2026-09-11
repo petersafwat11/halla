@@ -288,7 +288,7 @@
       "publish": "Publish this event now?",
       "end": "End this event?",
       "cancel": "Cancel this event?",
-      "reschedule": "Reschedule this event?"
+      "reschedule": "Return this event to pending scheduling? The previous sending time will be cleared. Choose and confirm a new schedule before invitations can send."
     },
     "statusUpdateSuccess": "Event status updated"
   },

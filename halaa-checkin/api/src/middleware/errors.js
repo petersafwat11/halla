@@ -69,6 +69,17 @@ export function errorHandler(err, req, res, _next) {
     );
   }
 
+  // 3b. Oversize body (express.json limit). Contract §4 requires 413 oversize.
+  if (err && (err.type === 'entity.too.large' || err.status === 413)) {
+    return res.status(413).json(
+      createErrorEnvelope({
+        code: ERROR_CODES.VALIDATION_FAILED,
+        message: 'Payload exceeds maximum size',
+        requestId,
+      })
+    );
+  }
+
   // 4. MongoDB Duplicate Key (E11000) errors
   if (err && err.code === 11000) {
     const isRefConflict =

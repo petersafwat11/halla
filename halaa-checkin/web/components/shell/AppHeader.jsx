@@ -57,7 +57,7 @@ export function AppHeader() {
           {t(dict, 'nav.languageToggle')}
         </Link>
 
-        {user && (
+        {user && role && (role === 'admin' || role === 'reception') && (
           <div className={styles.staffChip}>
             <span className={styles.staffName}>{user.displayName || user.username}</span>
             <StatusBadge

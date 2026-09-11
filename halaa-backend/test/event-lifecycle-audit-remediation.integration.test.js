@@ -39,6 +39,45 @@ let hostUser;
 let poolSub;
 let realSendSMS;
 
+test("Post-event links dispatch in the template language and retries do not resend", async () => {
+  const dispatch = require('../src/modules/post-event/post-event.dispatch.service');
+  const Template = require('../models/TaqnyatTemplateModel');
+  const Content = require('../models/PostEventContentModel');
+  const Token = require('../models/GuestAccessTokenModel');
+  const { event, guest } = await createScheduledEvent({ status: 'completed' });
+  const template = await Template.create({
+    taqnyatId: 'post-event-test', templateName: 'post_event_test', language: 'ar',
+    type: 'post_event', body: '{{1}} {{2}}',
+    varMapping: [{ placeholder: '{{1}}', sourceKey: 'guest.name' },
+      { placeholder: '{{2}}', sourceKey: 'access.link' }],
+  });
+  await Content.create({ event: event._id, host: hostUser._id, taqnyatTemplate: { templateRef: template._id } });
+  await Token.create({ event: event._id, guest: guest._id, token: 'test-token',
+    expiresAt: new Date(Date.now() + 86400000) });
+  const original = taqnyat.sendWhatsAppTemplate;
+  const originalOrigin = process.env.POST_EVENT_PUBLIC_ORIGIN;
+  const calls = [];
+  process.env.POST_EVENT_PUBLIC_ORIGIN = 'https://halaa.com.sa';
+  taqnyat.sendWhatsAppTemplate = async (...args) => {
+    calls.push(args);
+    return { success: true, messageId: 'mock-post-event', status: 'sent' };
+  };
+  try {
+    const options = { filter: 'all', attemptId: 'post-event-regression' };
+    const result = await dispatch.sendBulkAccessLinks(event._id, hostUser, options);
+    assert.equal(result.sent, 1);
+    assert.equal(result.failed, 0);
+    assert.equal(calls[0][2], 'ar');
+    assert.ok(JSON.stringify(calls[0]).includes('https://halaa.com.sa/ar/post-event?token=test-token'));
+    await dispatch.sendBulkAccessLinks(event._id, hostUser, options);
+    assert.equal(calls.length, 1);
+  } finally {
+    taqnyat.sendWhatsAppTemplate = original;
+    if (originalOrigin === undefined) delete process.env.POST_EVENT_PUBLIC_ORIGIN;
+    else process.env.POST_EVENT_PUBLIC_ORIGIN = originalOrigin;
+  }
+});
+
 test.before(async () => {
   await db.start();
   realSendSMS = taqnyat.sendSMS;
@@ -139,6 +178,10 @@ test("Editing invitation details on a scheduled event atomically auto-unschedule
   assert.equal(reloaded.testMessageFingerprint, null, "testMessageFingerprint must be cleared");
   assert.equal(reloaded.launchSettings?.scheduledDate, undefined, "scheduledDate must be unset");
   assert.equal(reloaded.launchSettings?.scheduledTime, undefined, "scheduledTime must be unset");
+  const Notification = require('../models/NotificationModel');
+  const notices = await Notification.find({userId:hostUser._id,type:'event_unscheduled'});
+  assert.equal(notices.length, 1, 'Host receives one rescheduling notification');
+  assert.match(notices[0].message, /new test message/);
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -639,3 +682,4 @@ test("runEventCompletion retries pending and failed completion notifications", a
   });
   assert.ok(notif, "Event completed notification must be delivered to host");
 });
+

@@ -1,0 +1,57 @@
+react-i18next:: useTranslation: You will need to pass in an i18next instance by using initReactI18next { code: 'NO_I18NEXT_INSTANCE' }
+▶ Session 2 Web Runtime Smoke: All 12 Admin Client Component Roots
+  ✔ 1. Dashboard: RecentActivity renders populated and empty states without throwing (54.458ms)
+  ✔ 2. Hosts: HostsTable renders populated table without throwing (50.1234ms)
+  ✔ 3. Businesses: BusinessesTable renders populated table without throwing (9.8746ms)
+  ✔ 4. Vendors: VendorsTable renders populated table without throwing (9.8794ms)
+  ✔ 5. Moderators: ModeratorsTable renders populated table without throwing (9.1842ms)
+  ✔ 6. Manage Plans: ManagePlansContent renders plan cards without throwing (15.6669ms)
+  ✔ 7. Payments: PaymentsTable renders populated table without throwing (15.935ms)
+  ✔ 8. Events: EventsTable renders populated table without throwing (10.1352ms)
+  ✔ 9. Tickets: TicketsTable renders populated table without throwing (11.5066ms)
+  ✔ 10. Discounts: DiscountsTable renders populated table without throwing (9.629ms)
+  ✔ 11. Taqnyat Templates: TaqnyatTemplatesTable renders populated table without throwing (5.5121ms)
+  ✔ 12. Template Categories: CategoriesTable renders populated table without throwing (4.6069ms)
+  ✔ 13. Error & Loading resilience: all admin tables mount in loading and API error states without unhandled exceptions (28.2187ms)
+✔ Session 2 Web Runtime Smoke: All 12 Admin Client Component Roots (4294.2026ms)
+[API Error] GET /admin/hosts - 500 (73ms): errors.server_error
+[API Error] GET /admin/businesses - 500 (75ms): errors.server_error
+[API Error] GET /admin/vendors - 500 (76ms): errors.server_error
+[API Error] GET /admin/moderators - 500 (76ms): errors.server_error
+[API Error] GET /admin/payments - 500 (77ms): errors.server_error
+[API Error] GET /events/admin/all - 500 (95ms): errors.server_error
+[API Error] GET /tickets - 500 (96ms): errors.server_error
+[API Error] GET /discounts/admin - 500 (96ms): errors.server_error
+[API Error] GET /admin/taqnyat-templates - 500 (97ms): errors.server_error
+[API Error] GET /admin/template-categories - 500 (97ms): errors.server_error
+react-i18next:: useTranslation: You will need to pass in an i18next instance by using initReactI18next { code: 'NO_I18NEXT_INSTANCE' }
+▶ Admin payment links runtime: tabs, filters, table, dialogs
+  ✔ normalizes payment-link filters and strips empties (0.9228ms)
+  ✔ renders links table with seeded rows and status text (154.1431ms)
+  ✔ renders tabs with transactions + payment links entries (10.2137ms)
+✔ Admin payment links runtime: tabs, filters, table, dialogs (883.2285ms)
+[API Error] GET /admin/payment-links/config - 500 (45ms): errors.server_error
+react-i18next:: useTranslation: You will need to pass in an i18next instance by using initReactI18next { code: 'NO_I18NEXT_INSTANCE' }
+▶ Session 1 Web Runtime: HostsTable, BusinessesTable, ModeratorsTable renders
+  ✔ renders HostsTable loading state and populated state without ReferenceError (139.1969ms)
+  ✔ renders BusinessesTable loading state and populated state without ReferenceError (16.2777ms)
+  ✔ renders ModeratorsTable loading state and populated state without ReferenceError (14.0853ms)
+✔ Session 1 Web Runtime: HostsTable, BusinessesTable, ModeratorsTable renders (1024.5086ms)
+[API Error] GET /admin/hosts - 500 (78ms): errors.server_error
+[API Error] GET /admin/businesses - 500 (53ms): errors.server_error
+[API Error] GET /admin/moderators - 500 (50ms): errors.server_error
+react-i18next:: useTranslation: You will need to pass in an i18next instance by using initReactI18next { code: 'NO_I18NEXT_INSTANCE' }
+✔ uncertain creation cannot create another and updates when recovery completes (581.2639ms)
+✔ configured amount limit prevents provider request (27.4934ms)
+✔ remount restores a pending request without submitting another invoice (76.5608ms)
+✔ disabled creation configuration cannot submit (33.7867ms)
+✔ dialog traps Tab and restores focus on close (25.6461ms)
+✔ detail load error displays an error and an available close action (31.4431ms)
+ℹ tests 25
+ℹ suites 3
+ℹ pass 25
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5860.4149

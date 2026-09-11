@@ -1,0 +1,6 @@
+.preview { padding: 1.6rem; border: 1px solid #e2e5df; border-radius: 1rem; background: #f6f8f4; min-width: 0; }
+.heading { margin: 0 0 1rem; font-size: 1.3rem; font-weight: 700; color: #3a3028; }
+.qr { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.2rem; color: #3a3028; }
+.qr span { font-size: 1.1rem; color: #655e55; }
+.message { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 1.3rem; line-height: 1.9; color: #3a3028; text-align: start; }
+.note { margin: 1.2rem 0 0; padding-top: 1rem; border-top: 1px solid #e2e5df; font-size: 1.1rem; line-height: 1.8; color: #655e55; }

@@ -21,10 +21,15 @@ yarn-error.log*
 .env*.local
 config.env
 
-# Runtime export files & temp data
-data/
-exports/
+# Runtime export files & temp data (anchored to mini-app root and API runtime
+# dirs only; must NOT match source such as api/src/modules/exports/)
+/data/
+/api/data/
+/exports/
+/data/exports/
+/api/exports/
 *.pdf
+!design/**/*.pdf
 
 # OS & Editor
 .DS_Store

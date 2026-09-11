@@ -1,4 +1,6 @@
 "use client";
+import { buildReplyPreview } from '@halaa/shared/utils/rsvpMessages';
+import ReplyDeliveryPreview from '@/ui/host/ReplyDeliveryPreview';
 import { hasEventCoordinates } from "@halaa/shared/utils/eventLocation";
 import React, { useMemo, useEffect } from "react";
 import { useFormContext } from "react-hook-form";
@@ -13,7 +15,7 @@ import useAuthStore from "@/stores/authStore";
 import SummaryCards from "./SummaryCards";
 import EventDataDisplay from "./EventDataDisplay";
 import ScheduleSection from "./ScheduleSection";
-import { INVITATION_TYPE_OPTIONS, invitationAllowsReply } from '@/utils/invitationTypes';
+import { getInvitationTypeCopy, invitationAllowsReply } from '@/utils/invitationTypes';
 
 const Summary = ({ owner } = {}) => {
   const { watch, setValue } = useFormContext();
@@ -36,6 +38,8 @@ const Summary = ({ owner } = {}) => {
   const staffList = watch("staffList") || [];
   const invitationType = watch("invitationType") || 'reply_and_qr';
   const guestReplies = watch("guestReplies") || {};
+  const isBusinessEvent = watch("isBusinessEvent");
+  const replyForm = { invitationType, isBusinessEvent, guestReplies, eventName, eventDate, eventTime, address };
   const selectedTemplate = watch("selectedTemplate") || null;
   const launchSettings = watch("launchSettings") || {};
   const scheduleDate = watch("scheduleDate") || launchSettings.scheduledDate || "";
@@ -112,10 +116,10 @@ const Summary = ({ owner } = {}) => {
           <h3>{t('review_delivery', 'Invitation and replies')}</h3>
           <dl>
             <dt>{t('invitation_type', 'Invitation type')}</dt>
-            <dd>{t(INVITATION_TYPE_OPTIONS.find(option => option.value === invitationType)?.labelKey || 'invitation_type')}</dd>
+            <dd>{getInvitationTypeCopy(invitationType, i18n.language, isBusinessEvent).title}</dd>
             {invitationAllowsReply(invitationType) && <>
-              <dt>{t('attendance_auto_reply')}</dt><dd dir="auto">{guestReplies.onAttend}</dd>
-              <dt>{t('absence_auto_reply')}</dt><dd dir="auto">{guestReplies.onAbsent}</dd>
+              <dt>{t('attendance_auto_reply')}</dt><dd><ReplyDeliveryPreview preview={buildReplyPreview({ ...replyForm, response: "confirmed" })} /></dd>
+              <dt>{t('absence_auto_reply')}</dt><dd><ReplyDeliveryPreview preview={buildReplyPreview({ ...replyForm, response: "declined" })} /></dd>
             </>}
           </dl>
           {staffList.length > 0 && <details><summary>{t('review_staff_list', {count: staffList.length, defaultValue: 'Review gate supervisors ({{count}})'})}</summary>

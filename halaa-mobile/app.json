@@ -96,8 +96,14 @@
         {
           "supportsRTL": true,
           "supportedLocales": {
-            "ios": ["ar", "en"],
-            "android": ["ar", "en"]
+            "ios": [
+              "ar",
+              "en"
+            ],
+            "android": [
+              "ar",
+              "en"
+            ]
           }
         }
       ],
@@ -133,7 +139,8 @@
       ],
       "expo-document-picker",
       "expo-splash-screen",
-      "@sentry/react-native/expo"
+      "@sentry/react-native/expo",
+      "expo-video"
     ],
     "newArchEnabled": true,
     "sdkVersion": "54.0.0",

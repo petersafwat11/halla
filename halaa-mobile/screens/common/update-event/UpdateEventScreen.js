@@ -21,6 +21,7 @@ import { useMySubscription } from "../../../hooks";
 import { useTranslation } from "../../../localization";
 import {
   useUpdateEvent, useUpdateEventStep2, useUpdateVisualTemplate, useUpdateTaqnyatTemplate,
+  useAddEventStaff,
 } from "../../../hooks/events/mutations/useEventMutation";
 import EventsService from "../../../hooks/events/useEventForm";
 
@@ -62,6 +63,7 @@ const UpdateEventScreen = () => {
   const updateStep2 = useUpdateEventStep2();
   const updateVisualTemplate = useUpdateVisualTemplate();
   const updateTaqnyatTemplate = useUpdateTaqnyatTemplate();
+  const addStaffMutation = useAddEventStaff();
 
   const methods = useForm({
     mode: "onChange",
@@ -83,6 +85,26 @@ const UpdateEventScreen = () => {
     lockoutActive,
     allowAddOnlyOnStep2,
   } = useEventLoadAndGate({ eventId, currentStep });
+
+  const handleStaffAdd = useCallback(async (staffMember) => {
+    if (!isLive) return staffMember;
+
+    try {
+      const result = await addStaffMutation.mutateAsync({
+        eventId,
+        data: { name: staffMember.name, phone: staffMember.phone },
+      });
+      const created = result?.data?.staff || result?.staff;
+      return {
+        ...staffMember,
+        id: created?._id || created?.id || staffMember.id || Date.now(),
+        phone: created?.phone || staffMember.phone,
+      };
+    } catch (error) {
+      Alert.alert("✗", t("events.update.updateFailed"));
+      throw error;
+    }
+  }, [addStaffMutation, eventId, isLive, t]);
 
   useEffect(() => {
     if (formValues) reset(formValues);
@@ -284,6 +306,7 @@ const UpdateEventScreen = () => {
               subscription={eventData?.subscription || subscription}
               lockoutActive={lockoutActive}
               allowAddOnlyOnStep2={allowAddOnlyOnStep2}
+              onStaffAdd={handleStaffAdd}
             />
           </View>
           {currentStep === 4 && (

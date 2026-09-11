@@ -1,0 +1,203 @@
+
+> halaa-checkin@0.1.0 test
+> npm --prefix contracts test && npm --prefix api test && npm --prefix web test
+
+
+> @halaa-checkin/contracts@0.1.0 test
+> node --test test/*.test.js
+
+✔ errors: all 18 core error codes are defined with appropriate HTTP status codes (1.8995ms)
+✔ DomainError: correctly instantiates with code, message, status, fieldErrors, details (1.465ms)
+✔ createErrorEnvelope: generates exact response shape from Section 4 (0.3686ms)
+✔ createSuccessEnvelope and createPaginatedEnvelope: generate exact response shapes (0.5415ms)
+✔ normalizeForSearch: normalizes Arabic, English, whitespace without mutating original (2.2347ms)
+✔ normalizeReference: trims and handles empty/null references (0.3572ms)
+✔ normalizeReferenceKey: produces uppercase normalized key or undefined (0.3128ms)
+✔ parseExplicitOffsetDate: parses ISO strings with offset and rejects naive strings (2.7286ms)
+✔ validateCsvRow: parses valid CSV rows and flags specific validation errors (2.3579ms)
+✔ guestCreateSchema: accepts valid Arabic, English, and mixed names (6.4384ms)
+✔ guestCreateSchema: rejects empty, whitespace-only, and oversized names (1.3504ms)
+✔ guestCreateSchema: trims leading and trailing whitespace from names (0.4521ms)
+✔ guestCreateSchema: accepts companion boundary values 0 and 20 (1.5411ms)
+✔ guestCreateSchema: rejects negative companion counts (0.7497ms)
+✔ guestCreateSchema: rejects fractional companion counts (0.7608ms)
+✔ guestCreateSchema: rejects companion counts greater than 20 (0.4875ms)
+✔ guestCreateSchema: rejects excess companion names beyond allowance (0.5452ms)
+✔ guestCreateSchema: accepts companion names fewer than allowed count (0.5617ms)
+✔ objectIdSchema: validates 24-character hexadecimal IDs and rejects malformed IDs (1.0048ms)
+✔ shortCodeSchema: validates 10-character Crockford base32 and rejects invalid formats (0.7719ms)
+✔ qrTokenSchema: validates HGC1 prefixed tokens and rejects invalid (0.4186ms)
+✔ guestCreateSchema: strictly rejects unknown writable fields and injection attempts (2.9419ms)
+✔ eventCreateSchema: strictly rejects unknown fields and internal state injections (0.8037ms)
+✔ checkInAdmissionSchema: strictly rejects unknown fields and operator/time injections (0.6377ms)
+✔ admissionCorrectionSchema and admissionResetSchema: strictly reject unknown fields (0.3331ms)
+✔ eventUpdateSchema: requires at least one allowed field in addition to version (0.4661ms)
+✔ guestUpdateSchema: requires at least one allowed field in addition to version (0.6235ms)
+✔ validateEventStatusTransition: enforces allowed lifecycle transitions (0.6302ms)
+✔ eventStatusTransitionSchema: validates status update payloads and bounds (0.576ms)
+✔ gateResolveSchema: accepts exactly one of token or guestId (0.4507ms)
+✔ gateSearchQuerySchema: validates bounds (2..120 chars) (0.3555ms)
+✔ isoTimestampWithOffsetSchema: requires explicit timezone offset or Z (0.6727ms)
+✔ exportCreateSchema: validates QR and Report export constraints (0.8372ms)
+✔ guestDtoSchema: verifies valid DTO shape and rejects qrToken (0.4977ms)
+✔ calculateStats: exact 3-invitation statistics fixture from contract Section 6 (2.2017ms)
+✔ calculateStats: zero totals and empty input handled safely (2.3639ms)
+✔ calculateStats: soft-deleted guests are excluded from calculations (0.4163ms)
+✔ roundToOneDecimal helper works correctly (0.3085ms)
+✔ contracts exports valid metadata and ports (1.6595ms)
+✔ contracts verified design token values (0.3423ms)
+✔ design/tokens.css contains authoritative Halaa tokens and CSS-over-JS precedence (0.9518ms)
+ℹ tests 41
+ℹ suites 0
+ℹ pass 41
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 343.4161
+
+> @halaa-checkin/api@0.1.0 test
+> node --test test/*.test.js
+
+✔ auth: login returns 200, sets cookie, and contains NO password/hash in response (3242.287ms)
+✔ auth: invalid credentials return 401 with UNAUTHENTICATED (307.743ms)
+✔ auth: session persists across app recreation (stateless server) (238.6432ms)
+✔ auth: expired, disabled, and revoked sessions fail immediately (629.3727ms)
+✔ auth: logout revokes session and clears cookie with 204 (277.626ms)
+✔ auth: Origin and CSRF enforcement rejects invalid requests (303.8708ms)
+✔ auth: role and event scope restrictions are strictly enforced (543.2975ms)
+✔ auth: production cookie flags use __Host prefix and Secure (292.0285ms)
+✔ auth: login rate limiting returns 429 with structured error envelope (555.3385ms)
+✔ gate: resolve QR token and guestId returns safe data without writing admission (3397.4877ms)
+✔ gate: cross-event and unknown QR tokens fail with 404 INVALID_INVITATION and zero data leaked (307.9362ms)
+✔ gate: soft-deleted guest cannot resolve (260.1946ms)
+✔ gate: search and recent endpoints return bounded safe matches (356.5536ms)
+✔ admission: fractional, negative, or excess companion counts fail validation (359.9614ms)
+✔ admission: non-live event rejects admission with 409 (428.8933ms)
+✔ admission: same-key retry and simulated lost HTTP response return original result without duplicate write (353.0298ms)
+✔ concurrency: two distinct reception users submit simultaneously: one commit, one duplicate, one audit, correct stats (400.9823ms)
+✔ concurrency: closing event concurrently with admission has serializable result (314.6931ms)
+✔ concurrency: concurrent allowance edit cannot silently overwrite a scan (393.1266ms)
+✔ correction and reset: reception user cannot correct or reset admission (403) (282.9833ms)
+✔ correction: admin corrects actualCompanions, preserves operator/time, audits change and updates stats (601.544ms)
+✔ reset: admin resets admission, retains audit history, and enables another deliberate admission (423.6558ms)
+✔ config: rejects database names from parent Halaa or without allowed prefix (2.8735ms)
+✔ config: accepts valid mini-app database names with required prefix (0.6267ms)
+✔ config: production rules fail fast on insecure defaults, HTTP origin, or weak secrets (0.7732ms)
+✔ config: loadConfig uses production cookie name in production (0.6085ms)
+✔ qr: generated QR buffer decodes back to exact payload with 4-module quiet zone (2945.0527ms)
+✔ qr preview: admin retrieves QR data URL, receptionist is forbidden, payload decodes correctly (818.1428ms)
+✔ single pass: generates A6 PDF, enforces ready state, streams with safe disposition (1868.9708ms)
+✔ bulk passes: renders 4-up A4 pages, spans multiple pages, includes all guests (1755.6169ms)
+✔ reports: interim for live event, final for closed event, exact totals match lists (3141.9232ms)
+✔ rate limits: rejects excess jobs beyond per-admin (3) and global (10) limits with 429 (712.0777ms)
+✔ download guards: 410 for expired jobs, 409 for failed jobs, 404 cross-event, 403 reception (216.8007ms)
+✔ snapshot isolation: subsequent edits or deletes do not alter existing export snapshot (704.3146ms)
+✔ worker recovery: claims expired lease, caps attempts at 2, and marks failed on repeated crash (95.963ms)
+✔ security: HTML tags in guest names are escaped and rendered literal, network requests blocked (8.8484ms)
+✔ cleanup: sweeps expired job files and removes abandoned .tmp files (34.6936ms)
+✔ evidence: renders synthetic sample pages and exports PNG screenshots to evidence directory (1384.055ms)
+✔ explicit index setup repairs missing indexes with autoIndex disabled; readiness rejects wrong TTL options (3192.3499ms)
+✔ expired idempotency record can be atomically replaced before the TTL monitor deletes it (90.1168ms)
+✔ backup and restore CLI rehearsal round trips a real disposable replica-set database (6499.2842ms)
+✔ purge fence rejects reopening and export creation; purge CLI removes only the selected event (1900.5674ms)
+✔ simultaneous enqueue enforces 3/admin and 10 global; terminal and expired jobs free capacity without cleanup counters (1434.7443ms)
+✔ expiry clears hidden snapshot, survives repeated cleanup, and retains an expired status until TTL (51.6055ms)
+✔ download does not expose internal error messages or accept sibling-directory traversal (29.5153ms)
+✔ backup EJSON round trips ObjectId, Date, numeric versions and nested snapshot values; manifest rejects corrupt/unlisted files (19.5705ms)
+✔ readiness: /health/ready passes and all indexes verified on replica set (2914.7075ms)
+✔ events: admin CRUD persistence, versioning, and status transitions (648.2096ms)
+✔ events: reception scope restrictions and event isolation (340.4531ms)
+✔ guests: CRUD, tokens omitted from DTOs, and immutable tokens (528.7043ms)
+✔ guests: duplicate names are allowed with distinct identifiers (338.0962ms)
+✔ guests: references are unique within event, reusable cross-event and after soft-delete (528.9742ms)
+✔ guests: cross-event IDs are strictly rejected (404) (340.0833ms)
+✔ guests: capacity limit (1,000 active invitations) strictly enforced (273.7365ms)
+✔ guests: closed events reject guest mutations (329.5123ms)
+✔ guests: admitted guests cannot be edited or deleted with ordinary CRUD (339.0558ms)
+✔ stats: exact 3-invitation fixture and unchanged by table search/filters (398.2315ms)
+✔ transactions: rollback when audit write fails leaves no partial records (271.7455ms)
+✔ preview: parses UTF-8 BOM, Arabic text, quotes, and writes zero records (3192.434ms)
+✔ preview: English CSV with quotes, commas in names, and warnings for duplicate names (303.8498ms)
+✔ preview: explicit errors for header mismatch, intra-file duplicate references, and empty files (349.7341ms)
+✔ commit: atomic batch import creates guests, audit, and idempotency records (364.1767ms)
+✔ commit: atomic rollback ensures zero guests committed when one row is invalid (249.3659ms)
+✔ commit: reference added after preview causes atomic commit failure (352.2658ms)
+✔ commit: closed event and capacity limit reject imports with zero partial records (364.9012ms)
+✔ idempotency: identical retry returns cached result; different body returns 409 (466.7894ms)
+✔ idempotency: concurrent identical import requests create exactly one batch (407.3387ms)
+✔ template: /imports/template provides UTF-8 BOM CSV in Arabic and English (293.1081ms)
+✔ API liveness endpoint returns 200 and healthy status (152.8686ms)
+ℹ tests 69
+ℹ suites 0
+ℹ pass 69
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 16783.1959
+
+> @halaa-checkin/web@0.1.0 test
+> node --test test/shell.test.js test/guests-unit.test.js test/gate-unit.test.js test/api-regressions.test.js
+
+✔ request deadline includes reading response body, and malformed successful writes remain uncertain (24.0513ms)
+✔ old session 401 cannot invalidate new login; explicit revocation token survives local clear (43.7255ms)
+✔ uncertain admission remains immutable and actor/event scoped across route remount (0.652ms)
+▶ T09 — Gate Unit & Contract Verification
+  ▶ Derived party size and companion boundaries
+    ✔ calculates derived party size as 1 + actualCompanions (1.3195ms)
+    ✔ defaults actualCompanions to 0 for every new invitation preview (0.3037ms)
+    ✔ clamps actual companions within [0, allowedCompanions] (0.2665ms)
+  ✔ Derived party size and companion boundaries (3.2036ms)
+  ▶ Preview staleness detection
+    ✔ detects previews older than 30 seconds as stale (0.3373ms)
+  ✔ Preview staleness detection (0.5704ms)
+  ▶ Idempotency key stability
+    ✔ retains stable idempotency key across retries of the same admission (0.3629ms)
+  ✔ Idempotency key stability (0.6193ms)
+  ▶ Gate localization string completeness
+    ✔ formats party helper text in Arabic and English (0.6276ms)
+    ✔ formats already admitted details in Arabic and English (0.4058ms)
+  ✔ Gate localization string completeness (1.4412ms)
+✔ T09 — Gate Unit & Contract Verification (7.0094ms)
+▶ T08 — Guests Workspace Unit & Contract Verification
+  ▶ Asia/Riyadh Date Formatting and Serialization
+    ✔ toRiyadhDateInput correctly extracts local date and time in Asia/Riyadh (+03:00) (28.1302ms)
+    ✔ toRiyadhIsoString formats date and time with explicit +03:00 offset (0.874ms)
+    ✔ formatRiyadhDate produces consistent Arabic and English representations (3.5689ms)
+  ✔ Asia/Riyadh Date Formatting and Serialization (34.0489ms)
+  ▶ Form Constraints and Limits Verification
+    ✔ limits match Technical Contract specifications (0.3662ms)
+    ✔ companion names count validation logic (0.259ms)
+  ✔ Form Constraints and Limits Verification (0.9626ms)
+  ▶ Technical Contract §6 Statistics Fixture Verification
+    ✔ fixture: A allows 2 & arrives with 1; B allows 0 & pending; C allows 3 & arrives with 3 (0.7656ms)
+  ✔ Technical Contract §6 Statistics Fixture Verification (1.1033ms)
+✔ T08 — Guests Workspace Unit & Contract Verification (37.1372ms)
+▶ T07 — Shell, Localization and UI Primitives
+  ▶ Dictionary symmetry and localization completeness
+    ✔ ar.json and en.json have identical key symmetry (2.1983ms)
+    ✔ no dictionary entries are empty strings (2.4774ms)
+    ✔ covers all 18 core domain error codes from Technical Contract §4 (0.596ms)
+    ✔ locale helper functions return correct directions and dictionary (27.4847ms)
+  ✔ Dictionary symmetry and localization completeness (34.2128ms)
+  ▶ API wrapper, CSRF token and error handling
+    ✔ sets and retrieves CSRF token correctly (0.4738ms)
+    ✔ ApiError instantiates with all contract fields (0.3639ms)
+    ✔ apiRequest handles simulated 204 No Content response without JSON error (38.9357ms)
+    ✔ apiRequest injects X-CSRF-Token on mutations (1.4066ms)
+    ✔ apiRequest extracts structured domain errors from failed requests (1.1354ms)
+  ✔ API wrapper, CSRF token and error handling (42.827ms)
+  ▶ Role-aware navigation and access policies
+    ✔ admin role has access to both guests and gate tabs (0.3113ms)
+    ✔ reception role has access ONLY to gate tab and cannot access guests (0.1487ms)
+  ✔ Role-aware navigation and access policies (0.6189ms)
+✔ T07 — Shell, Localization and UI Primitives (79.6222ms)
+ℹ tests 27
+ℹ suites 13
+ℹ pass 27
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 316.4613

@@ -57,7 +57,7 @@ export function EventLifecycleDialog({
         status: targetStatus,
         reason: isReopen ? reason.trim() : undefined,
       },
-    });
+    }).catch(() => { /* Mutation error is displayed through apiError; preserve the form. */ });
   };
 
   const title = isClose

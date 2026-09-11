@@ -46,6 +46,16 @@ export const adminKeys = {
     paymentId,
   ],
 
+  paymentLinks: (filters) => [...adminKeys.all, "payment-links", filters],
+  paymentLinksAll: () => [...adminKeys.all, "payment-links"],
+  paymentLinkDetail: (linkId) => [
+    ...adminKeys.all,
+    "payment-links",
+    "detail",
+    linkId,
+  ],
+  paymentLinksConfig: () => [...adminKeys.all, "payment-links", "config"],
+
   // Single-event admin view (admin namespace).
   eventDetail: (eventId) => [...adminKeys.all, "events", eventId],
   eventTargets: (type) => [...adminKeys.all, "event-targets", type],

@@ -17,7 +17,12 @@
     "staleData": "البيانات قد تكون غير محدثة",
     "networkError": "تعذر الاتصال بالخادم، يرجى التحقق من اتصال الشبكة",
     "status": "الحالة",
-    "clear": "مسح"
+    "clear": "مسح",
+    "previous": "السابق",
+    "next": "التالي",
+    "page": "صفحة",
+    "of": "من",
+    "total": "الإجمالي"
   },
   "nav": {
     "guests": "قائمة الضيوف",
@@ -39,7 +44,8 @@
     "invalidCredentials": "اسم المستخدم أو كلمة المرور غير صحيحة",
     "sessionExpired": "انتهت صلاحية الجلسة، يرجى تسجيل الدخول مجدداً",
     "disabledAccount": "تم تعطيل هذا الحساب، يرجى التواصل مع المشرف",
-    "loginPrompt": "يرجى تسجيل الدخول للمتابعة"
+    "loginPrompt": "يرجى تسجيل الدخول للمتابعة",
+    "logoutUncertain": "تعذر تأكيد تسجيل الخروج من الخادم. أعد المحاولة لإنهاء الجلسة."
   },
   "roles": {
     "admin": "مشرف",
@@ -51,6 +57,7 @@
     "noEventsAdmin": "لا توجد فعاليات متاحة. أنشئ فعاليتك الأولى.",
     "noEventsReception": "لا توجد فعالية معينة لك. يرجى التواصل مع المشرف.",
     "createFirstEvent": "إنشاء فعالية جديدة",
+    "createFirstEventPrompt": "أنشئ تفاصيل الفعالية لبدء إدارة الدعوات.",
     "statusDraft": "مسودة",
     "statusLive": "مباشر",
     "statusClosed": "مغلقة",
@@ -91,6 +98,7 @@
     "closed": "مغلقة"
   },
   "stats": {
+    "title": "إحصائيات الحضور",
     "totalInvitations": "إجمالي الدعوات",
     "totalExpected": "العدد المتوقع",
     "admittedPeople": "الأفراد الحاضرون",
@@ -127,7 +135,7 @@
     "companionNamesLabel": "أسماء المرافقين (اسم في كل سطر)",
     "companionNamesPlaceholder": "أحمد محمد\nسارة علي",
     "companionNamesLimitError": "عدد أسماء المرافقين لا يمكن أن يتجاوز المرافقين المسموحين ({max})",
-    "noGuests": "لا يوجد ضيوف في هذه الفعالية بعد.",
+    "noGuests": "لا يوجد ضيوف في هذه فعالية بعد.",
     "noGuestsAction": "أضف ضيفك الأول أو استورد قائمة عبر CSV.",
     "noSearchResults": "لا توجد نتائج مطابقة لبحثك.",
     "clearFilters": "إعادة ضبط الفلاتر",
@@ -137,7 +145,24 @@
     "deleteConfirmMessage": "هل أنت متأكد من حذف دعوة {name}؟ يمكن إعادة استخدام المرجع لاحقاً.",
     "admittedCannotDelete": "لا يمكن حذف ضيف تم تسجيل دخوله بالفعل. يتطلب إعادة تعيين الدخول من الإدارة أولاً.",
     "admittedCannotEdit": "لا يمكن تعديل المرافقين بعد تسجيل الدخول. للتصحيح استخدم إجراء تصحيح الدخول.",
-    "eventClosedWarning": "الفعالية مغلقة. لا يمكن إضافة أو تعديل أو حذف الضيوف."
+    "eventClosedWarning": "الفعالية مغلقة. لا يمكن إضافة أو تعديل أو حذف الضيوف.",
+    "correctAdmission": "تصحيح تسجيل الدخول",
+    "resetAdmission": "إعادة تعيين تسجيل الدخول",
+    "applyCorrection": "تطبيق التصحيح",
+    "confirmReset": "تأكيد إعادة التعيين",
+    "actualCompanionsLabel": "عدد المرافقين الحاضرين الفعلي",
+    "correctionReasonLabel": "سبب التصحيح",
+    "correctionReasonPlaceholder": "أدخل سبب التصحيح (5 إلى 500 حرف)",
+    "correctionWarning": "سيتم تعديل تسجيل دخول {name}. سيتم تحديث عدد الحضور وتاريخ التعديل في سجل التدقيق.",
+    "resetWarning": "سيتم إلغاء تسجيل دخول {name} بالكامل. يمكن إعادة تسجيل الدخول لاحقاً باستخدام نفس رمز QR. سيتم الاحتفاظ بسجل الدخول السابق في التدقيق.",
+    "admissionCorrection": "تصحيح الدخول",
+    "admissionReset": "إعادة تعيين الدخول",
+    "companionsRangeError": "عدد المرافقين يجب أن يكون بين 0 و {max}",
+    "correctionReasonRequired": "سبب التصحيح مطلوب (5 أحرف على الأقل)",
+    "correctionReasonTooLong": "السبب يتجاوز 500 حرف",
+    "resetReasonRequired": "سبب إعادة التعيين مطلوب (5 أحرف على الأقل)",
+    "resetReasonTooLong": "السبب يتجاوز 500 حرف",
+    "versionConflictReload": "تم تعديل البيانات بواسطة مستخدم آخر. أعد التحميل للحصول على أحدث نسخة."
   },
   "imports": {
     "title": "استيراد قائمة الضيوف (CSV)",
@@ -219,7 +244,9 @@
     "connectionStale": "بيانات قد تكون غير محدثة",
     "selectGuest": "اختر",
     "admittedBadge": "تم الدخول",
-    "pendingBadge": "في الانتظار"
+    "pendingBadge": "في الانتظار",
+    "decreaseCompanions": "تقليل عدد المرافقين",
+    "increaseCompanions": "زيادة عدد المرافقين"
   },
   "qr": {
     "previewTitle": "بطاقة دخول الضيف (QR)",
@@ -228,6 +255,57 @@
     "downloadPdf": "تحميل بطاقة PDF",
     "print": "طباعة",
     "close": "إغلاق"
+  },
+  "exports": {
+    "title": "تصدير وتقارير",
+    "singlePass": "بطاقة دخول مفردة (A6)",
+    "selectedPasses": "بطاقات مختارة (A4، 4 في الصفحة)",
+    "allPasses": "جميع البطاقات (A4، 4 في الصفحة)",
+    "attendanceReport": "تقرير الحضور",
+    "scopeSelected": "المختارة ({count} دعوة)",
+    "scopeAll": "الكل ({count} دعوة)",
+    "scopeSingle": "مفردة (1 دعوة)",
+    "languageLabel": "لغة التصدير",
+    "languageAr": "العربية",
+    "languageEn": "الإنجليزية",
+    "createExport": "إنشاء التصدير",
+    "creating": "جاري إنشاء التصدير...",
+    "polling": "جاري المعالجة...",
+    "ready": "جاهز للتحميل",
+    "failed": "فشل التصدير",
+    "expired": "انتهت صلاحية التصدير",
+    "download": "تحميل PDF",
+    "print": "طباعة",
+    "retry": "إعادة المحاولة",
+    "close": "إغلاق",
+    "emptySelection": "لم يتم تحديد أي دعوات",
+    "noGuests": "لا يوجد ضيوف لتصديرهم",
+    "stateQueued": "في الانتظار",
+    "stateRunning": "قيد المعالجة",
+    "stateReady": "مكتمل",
+    "stateFailed": "فشل",
+    "stateExpired": "منتهي الصلاحية",
+    "confirmTitle": "تأكيد التصدير",
+    "confirmMessage": "سيتم إنشاء تصدير {type} لـ {count} دعوة. المتابعة؟",
+    "singlePassType": "بطاقة A6 مفردة",
+    "selectedPassesType": "بطاقات A4 مختارة",
+    "allPassesType": "جميع البطاقات A4",
+    "reportType": "تقرير الحضور",
+    "reportInterim": "تقرير مرحلي (الفعالية مباشرة)",
+    "reportFinal": "تقرير نهائي (الفعالية مغلقة)",
+    "reportPreview": "معاينة التقرير",
+    "pendingInvitations": "دعوات في الانتظار",
+    "admittedInvitations": "دعوات مقبولة",
+    "didNotAttend": "لم يحضروا",
+    "attendanceRate": "نسبة الحضور",
+    "capacityRate": "نسبة السعة",
+    "errorNotReady": "التصدير لم يكتمل بعد. يرجى الانتظار.",
+    "errorFailed": "فشل إنشاء التصدير: {message}",
+    "errorExpired": "انتهت صلاحية ملف التصدير. يرجى إنشاء تصدير جديد.",
+    "errorNoGuests": "لا توجد دعوات نشطة في هذه الفعالية.",
+    "rateLimited": "تم تجاوز حد التصدير المتزامن. يرجى الانتظار.",
+    "interimNotice": "تقرير مرحلي — الضيوف المدرجون كـ \"في الانتظار\" لم يتم تسجيل دخولهم بعد.",
+    "finalNotice": "تقرير نهائي — \"لم يحضروا\" يشمل جميع الدعوات دون تسجيل دخول."
   },
   "errors": {
     "VALIDATION_FAILED": "بيانات غير صالحة",
@@ -249,6 +327,7 @@
     "EXPORT_FAILED": "فشلت عملية إنشاء التصدير",
     "RATE_LIMITED": "تم تجاوز حد الطلبات المسموح به، يرجى الانتظار",
     "SERVICE_UNAVAILABLE": "الخدمة غير متوفرة حالياً، يرجى المحاولة لاحقاً",
-    "UNKNOWN": "حدث خطأ غير متوقع"
+    "UNKNOWN": "حدث خطأ غير متوقع",
+    "PRINT_POPUP_BLOCKED": "تم حظر النافذة المنبثقة. تم تنزيل ملف PDF؛ افتحه للطباعة."
   }
 }

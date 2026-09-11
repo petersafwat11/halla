@@ -10,6 +10,8 @@ import ScheduleSendingModal from "./ScheduleSendingModal";
 import { useNotifyStaff, useDeleteEvent } from "../../hooks/events/mutations/useEventMutation";
 import { useToast } from "../../contexts/ToastContext";
 import { useEventActionGate } from "@halaa/shared/hooks/useEventActionGate";
+import { formatDateTime } from "@halaa/shared/utils/locale";
+import { riyadhWallClockInstant } from "@halaa/shared/utils/schedulingWindow";
 
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
@@ -22,7 +24,7 @@ const EVENT_EDIT_STEPS = [
 
 const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete = true }) => {
   const navigation = useNavigation();
-  const { t } = useTranslation(["events", "home"]);
+  const { t, i18n } = useTranslation(["events", "home"]);
   const toast = useToast();
   const [showTestModal, setShowTestModal] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
@@ -77,6 +79,12 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete
   // test/schedule, and an actual staff entry before Notify Staff.
   const { canSendTest, canSchedule, canNotifyStaff, isCompleted } =
     useEventActionGate({ event, testMessageSent });
+  const scheduledSendInstant = event?.launchSettings?.scheduledDate && event?.launchSettings?.scheduledTime
+    ? riyadhWallClockInstant(event.launchSettings.scheduledDate, event.launchSettings.scheduledTime)
+    : null;
+  const scheduledSendText = scheduledSendInstant
+    ? formatDateTime(scheduledSendInstant, i18n.language || "ar", { timeZone: "Asia/Riyadh" })
+    : null;
 
   const handleEditStep = (step) => {
     setShowManageMenu(false);
@@ -199,7 +207,14 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete
           </View>
         )}
 
-        {(canSendTest || canSchedule) && <LocalizedText role="body" style={styles.workflowHint}>{t(canSendTest ? "workflow.testFirst" : event?.status === "scheduled" ? "workflow.scheduled" : "workflow.scheduleNext")}</LocalizedText>}
+        {scheduledSendText ? (
+          <View style={styles.scheduledNotice} accessibilityRole="text">
+            <Ionicons name="calendar-outline" size={18} color="#8A5B31" />
+            <LocalizedText style={styles.scheduledNoticeText}>
+              {t("workflow.scheduledFor", { dateTime: scheduledSendText })}
+            </LocalizedText>
+          </View>
+        ) : (canSendTest || canSchedule) && <LocalizedText role="body" style={styles.workflowHint}>{t(canSendTest ? "workflow.testFirst" : event?.status === "scheduled" ? "workflow.scheduled" : "workflow.scheduleNext")}</LocalizedText>}
         <View style={styles.primaryRow}>
           {!isCompleted && (
             <TouchableOpacity
@@ -291,6 +306,8 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   workflowHint: { fontSize: 14, lineHeight: 23, color: "#756757", marginVertical: 8 },
+  scheduledNotice: { flexDirection: "row", alignItems: "flex-start", gap: 10, padding: 12, borderRadius: 10, borderStartWidth: 3, borderStartColor: "#C28E5C", backgroundColor: "#FAF6F0" },
+  scheduledNoticeText: { flex: 1, fontSize: 13, lineHeight: 21, color: "#5F452F" },
   actionsRow: {
     flexDirection: "column",
     gap: 8,

@@ -1,4 +1,5 @@
 "use client";
+import { riyadhWallClockInstant, instantToPickerDay } from "@halaa/shared/utils/schedulingWindow";
 
 import React, { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -10,35 +11,20 @@ import DatePicker from "@/ui/commen/inputs/datePicker";
 import TimePicker from "@/ui/commen/inputs/TimePicker";
 import { toast } from "react-toastify";
 import { useUpdateReminderSettings } from "@/hooks/events";
-import useAuthStore from "@/stores/authStore";
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
 // Combine a YYYY-MM-DD-ish date and a 24h "HH:mm" string into a single
 // local-time Date. Used to resolve the scheduled-send instant (the lower
 // bound of the paid reminder window).
-const combineDateTime = (date, hhmm) => {
-  if (!date) return null;
-  const base = date instanceof Date ? new Date(date) : new Date(date);
-  if (Number.isNaN(base.getTime())) return null;
-  if (typeof hhmm === "string") {
-    const m = hhmm.match(/^(\d{1,2}):(\d{2})$/);
-    if (m) {
-      base.setHours(parseInt(m[1], 10), parseInt(m[2], 10), 0, 0);
-      return base;
-    }
-  }
-  base.setHours(0, 0, 0, 0);
-  return base;
-};
+const combineDateTime = riyadhWallClockInstant;
 
 const CustomizeReminderPopup = ({ onClose, eventId, event, existingSettings, onSuccess }) => {
   const { t } = useTranslation("home-events");
   const updateReminderSettings = useUpdateReminderSettings();
-  const subscription = useAuthStore((s) => s.subscription);
-  // No event-scoped plan flag is exposed on `event.subscription`; fall back to
-  // the host's current plan code (same heuristic as ScheduleSendingPopup).
-  const isTrial = subscription?.planCode === "trial";
+  // Admins may manage another host's event; use that event's entitlement.
+  const isTrial = event?.capabilities?.isTrial ?? event?.subscription?.isTrial ??
+    (event?.subscription?.planCode === "trial");
 
   // Paid reminder window: [scheduledSend, event − 24h]. Lower bound is the
   // launch send time when scheduled, otherwise "now". Upper bound is 24h
@@ -112,7 +98,7 @@ const CustomizeReminderPopup = ({ onClose, eventId, event, existingSettings, onS
     defaultValues: {
       customReminderTime: !!existingSettings?.customReminderTime,
       date: existingSettings?.scheduledDate
-        ? new Date(existingSettings.scheduledDate)
+        ? instantToPickerDay(existingSettings.scheduledDate)
         : null,
       time: fromHHmm(existingSettings?.scheduledTime),
     },
@@ -124,7 +110,7 @@ const CustomizeReminderPopup = ({ onClose, eventId, event, existingSettings, onS
         ? false
         : !!existingSettings?.customReminderTime,
       date: existingSettings?.scheduledDate
-        ? new Date(existingSettings.scheduledDate)
+        ? instantToPickerDay(existingSettings.scheduledDate)
         : null,
       time: fromHHmm(existingSettings?.scheduledTime),
     });
@@ -254,8 +240,8 @@ const CustomizeReminderPopup = ({ onClose, eventId, event, existingSettings, onS
                   label={t("singleEvent.reminderCustomize.dateLabel", "Date")}
                   placeholder={t("singleEvent.reminderCustomize.selectDate", "Select date")}
                   required
-                  minDate={lowerBound}
-                  maxDate={upperBound || undefined}
+                  minDate={instantToPickerDay(lowerBound)}
+                  maxDate={upperBound ? instantToPickerDay(upperBound) : undefined}
                 />
 
                 <TimePicker

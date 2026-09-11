@@ -29,6 +29,8 @@ const TimePicker = ({
   validations,
   className,
   style,
+  minimumMinutes = 0,
+  maximumMinutes = 1439,
 }) => {
   const { t, i18n } = useTranslation('common');
   const {
@@ -47,6 +49,21 @@ const TimePicker = ({
   });
 
   const time = parseTime(value);
+  const toMinutes = (candidate) => {
+    let hour = candidate.hour % 12;
+    if (candidate.ampm === 'PM') hour += 12;
+    return hour * 60 + candidate.minute;
+  };
+  const fromMinutes = (minutes) => {
+    const safe = Math.max(0, Math.min(1439, minutes));
+    const hour24 = Math.floor(safe / 60);
+    return { hour: hour24 % 12 || 12, minute: safe % 60, ampm: hour24 >= 12 ? 'PM' : 'AM' };
+  };
+  const commitWithinBounds = (candidate) => {
+    const bounded = Math.max(minimumMinutes, Math.min(maximumMinutes, toMinutes(candidate)));
+    const next = fromMinutes(bounded);
+    onChange(formatTime(next.hour, next.minute, next.ampm));
+  };
   const [dialogOpen, setDialogOpen] = useState(false);
   const dialogRef = useRef(null);
 
@@ -72,18 +89,20 @@ const TimePicker = ({
     let next = (time.hour || 12) + delta;
     if (next > 12) next = 1;
     if (next < 1) next = 12;
-    onChange(formatTime(next, time.minute, time.ampm));
+    commitWithinBounds({ hour: next, minute: time.minute, ampm: time.ampm });
   };
   const handleMinute = (delta) => {
     let next = (time.minute || 0) + delta;
     if (next > 59) next = 0;
     if (next < 0) next = 59;
-    onChange(formatTime(time.hour, next, time.ampm));
+    commitWithinBounds({ hour: time.hour, minute: next, ampm: time.ampm });
   };
   const handleAmpm = () => {
-    onChange(
-      formatTime(time.hour, time.minute, time.ampm === 'AM' ? 'PM' : 'AM')
-    );
+    commitWithinBounds({
+      hour: time.hour,
+      minute: time.minute,
+      ampm: time.ampm === 'AM' ? 'PM' : 'AM',
+    });
   };
 
   return (

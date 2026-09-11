@@ -109,7 +109,8 @@
       "varCount": "{{count}} variables",
       "preview": "Preview",
       "saveSuccess": "Template saved",
-      "saveFailed": "Could not save template"
+      "saveFailed": "Could not save template",
+      "previewNote": "Preview uses the first guest and this event. The example link and expiry are replaced with each guest’s private access details when sent."
     },
     "thankYouMessage": {
       "title": "Thank-you message",
@@ -144,7 +145,10 @@
       "publishFailed": "Failed to publish",
       "saveFailed": "Failed to save",
       "sendFailed": "Failed to send access links"
-    }
+    },
+    "viewSharedPage": "View shared page",
+    "closePreview": "Close preview",
+    "sharedPagePreviewNotice": "Read-only preview of your published content. This does not count as a guest visit."
   },
   "hostPostEvent": {
     "title": "Post Event Page",

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, usePathname } from 'next/navigation';
 import { useSession } from '../../../hooks/useSession.jsx';
 import { useEvent } from '../../../hooks/useEvent.jsx';
 import { AppHeader } from '../../../components/shell/AppHeader.jsx';
@@ -16,9 +16,10 @@ export default function WorkspaceLayout({ children }) {
   const lang = params?.lang === 'en' ? 'en' : 'ar';
   const dict = getDictionary(lang);
   const router = useRouter();
+  const pathname = usePathname();
 
   const { user, role, isAuthenticated, isLoading, isExpired, logout } = useSession();
-  const { events, isLoadingEvents, hasEvents } = useEvent();
+  const { events, isLoadingEvents, hasEvents, eventsError, refetchEvents } = useEvent();
 
   // Guard unauthenticated access
   useEffect(() => {
@@ -40,7 +41,14 @@ export default function WorkspaceLayout({ children }) {
     return null; // Will redirect in useEffect
   }
 
-  const showUnassignedState = !isLoadingEvents && !hasEvents;
+  const isGuestsRoute = pathname?.includes('/guests');
+  // Admin Guests workspace owns its empty state (working creation dialog).
+  // Layout only intercepts: fetch errors, reception unassigned, and admin on
+  // non-guests routes with no events.
+  const showUnassignedState =
+    !isLoadingEvents &&
+    !hasEvents &&
+    !(role === 'admin' && isGuestsRoute);
 
   return (
     <div className={styles.shell}>
@@ -48,7 +56,19 @@ export default function WorkspaceLayout({ children }) {
       <WorkspaceNav />
 
       <main className={styles.mainContent}>
-        {showUnassignedState ? (
+        {!isLoadingEvents && eventsError && !hasEvents ? (
+          <div className={styles.unassignedCard} role="alert">
+            <h2 className={styles.unassignedTitle}>
+              {t(dict, 'common.networkError')}
+            </h2>
+            <p className={styles.unassignedDesc}>
+              {eventsError?.message || t(dict, 'common.networkError')}
+            </p>
+            <Button variant="primary" onClick={() => refetchEvents?.()}>
+              {t(dict, 'common.retry')}
+            </Button>
+          </div>
+        ) : showUnassignedState ? (
           <div className={styles.unassignedCard}>
             <div className={styles.unassignedIcon} aria-hidden="true">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -65,11 +85,11 @@ export default function WorkspaceLayout({ children }) {
             </h2>
             <p className={styles.unassignedDesc}>
               {role === 'admin'
-                ? t(dict, 'auth.subtitle')
+                ? t(dict, 'events.createFirstEventPrompt')
                 : t(dict, 'events.noEventsReception')}
             </p>
             {role === 'admin' && (
-              <Button variant="primary">
+              <Button variant="primary" onClick={() => router.push(`/${lang}/guests`)}>
                 {t(dict, 'events.createFirstEvent')}
               </Button>
             )}

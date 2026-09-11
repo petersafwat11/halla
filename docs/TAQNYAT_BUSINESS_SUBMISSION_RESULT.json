@@ -1,0 +1,82 @@
+{
+  "templates": {
+    "halaa_wedding_business_ar_v1": {
+      "success": true,
+      "status": "PENDING",
+      "templateId": "rWOXNcFEGDtTMtpY9bcnWT",
+      "error": null,
+      "submittedAt": "2026-09-09T21:37:51.103Z",
+      "configured": true,
+      "syncedAt": "2026-09-09T21:39:07.442Z"
+    },
+    "halaa_engagement_business_ar_v1": {
+      "success": true,
+      "status": "PENDING",
+      "templateId": "mpZDUwRIefHAG2PxPejjWT",
+      "error": null,
+      "submittedAt": "2026-09-09T21:37:59.221Z",
+      "configured": true,
+      "syncedAt": "2026-09-09T21:39:07.793Z"
+    },
+    "halaa_conference_business_ar_v1": {
+      "success": true,
+      "status": "PENDING",
+      "templateId": "H2VGlUtDlF8EC2TTwNqfWT",
+      "error": null,
+      "submittedAt": "2026-09-09T21:38:09.300Z",
+      "configured": true,
+      "syncedAt": "2026-09-09T21:39:08.150Z"
+    },
+    "halaa_ladies_event_business_ar_v1": {
+      "success": true,
+      "status": "PENDING",
+      "templateId": "L5E9oeKOCdrCQCZrdfLfWT",
+      "error": null,
+      "submittedAt": "2026-09-09T21:38:17.246Z",
+      "configured": true,
+      "syncedAt": "2026-09-09T21:39:08.490Z"
+    },
+    "halaa_baby_shower_business_ar_v1": {
+      "success": true,
+      "status": "PENDING",
+      "templateId": "QoHUxTAf1rBz72yBTpzfWT",
+      "error": null,
+      "submittedAt": "2026-09-09T21:38:25.650Z",
+      "configured": true,
+      "syncedAt": "2026-09-09T21:39:08.849Z"
+    },
+    "halaa_birthday_business_ar_v1": {
+      "success": true,
+      "status": "PENDING",
+      "templateId": "5fv2gPeGWTlzYyusMLh3WT",
+      "error": null,
+      "submittedAt": "2026-09-09T21:38:35.564Z",
+      "configured": true,
+      "syncedAt": "2026-09-09T21:39:09.257Z"
+    },
+    "halaa_general_event_business_ar_v1": {
+      "success": true,
+      "status": "PENDING",
+      "templateId": "5WTADVjV3xMaRaJstxC8WT",
+      "error": null,
+      "submittedAt": "2026-09-09T21:38:49.469Z",
+      "configured": true,
+      "syncedAt": "2026-09-09T21:39:09.632Z"
+    },
+    "halaa_business_attendance_reminder_ar_v1": {
+      "success": true,
+      "status": "PENDING",
+      "templateId": "Vpc5H1X84R3q17SUwYlMWT",
+      "error": null,
+      "submittedAt": "2026-09-09T21:38:57.273Z",
+      "configured": true,
+      "syncedAt": "2026-09-09T21:39:09.991Z"
+    }
+  },
+  "personalReminder": {
+    "name": "halaa_event_attendance_reminder_ar_v1",
+    "status": "APPROVED",
+    "category": null,
+    "active": true
+  }
+}

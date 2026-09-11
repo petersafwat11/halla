@@ -211,7 +211,7 @@ class TicketsService {
    * @param {Object} user
    * @returns {Promise<Object>}
    */
-  async createTicket(ticketData, user, file = null) {
+  async createTicket(ticketData, user, files = []) {
     const { source, priority } = this.getTicketSourceAndPriority(user);
 
     const ticketPayload = {
@@ -223,14 +223,16 @@ class TicketsService {
 
     // Optional attachment (image or video) uploaded via multipart. Persist the
     // S3 key (extractStoredRef); it is signed to a public URL on read.
-    if (file) {
-      const isVideo = (file.mimetype || "").startsWith("video/");
-      ticketPayload.attachment = {
+    const uploadedFiles = Array.isArray(files) ? files : files ? [files] : [];
+    if (uploadedFiles.length) {
+      ticketPayload.attachments = uploadedFiles.map((file) => ({
         url: extractStoredRef(file),
-        type: isVideo ? "video" : "image",
+        type: (file.mimetype || "").startsWith("video/") ? "video" : "image",
         mimeType: file.mimetype,
         size: file.size,
-      };
+      }));
+      // Keep the legacy field populated during the client rollout.
+      ticketPayload.attachment = ticketPayload.attachments[0];
     }
 
     const ticket = await Ticket.create(ticketPayload);
@@ -628,20 +630,23 @@ class TicketsService {
   // ============================================
 
   async _formatTicket(ticket, { includeAssignmentNote = false } = {}) {
+    const storedAttachments = ticket.attachments?.length
+      ? ticket.attachments
+      : ticket.attachment?.url ? [ticket.attachment] : [];
+    const attachments = await Promise.all(storedAttachments.map(async (item) => ({
+      url: await signStoredImage(item.url),
+      type: item.type || null,
+      mimeType: item.mimeType || null,
+      size: item.size || null,
+    })));
     const formatted = {
       id: ticket._id,
       ticketNumber: ticket._id.toString().slice(-6),
       type: ticket.type,
       subject: ticket.subject,
       message: ticket.message,
-      attachment: ticket.attachment?.url
-        ? {
-          url: await signStoredImage(ticket.attachment.url),
-          type: ticket.attachment.type || null,
-          mimeType: ticket.attachment.mimeType || null,
-          size: ticket.attachment.size || null,
-        }
-        : null,
+      attachments,
+      attachment: attachments[0] || null,
       status: ticket.status,
       priority: ticket.priority,
       source: ticket.source,

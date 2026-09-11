@@ -1,0 +1,40 @@
+
+> @halaa-checkin/web@0.1.0 test:browser
+> node --test test/browser-*.test.js
+
+(node:4380) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+▶ T10 — Export/report panel + admission correction Browser E2E
+  ✔ single A6 pass export: create → poll → ready → download state (8010.8709ms)
+  ✔ selected/all A4 scope counts + interim/final report wording + locale choice (3967.6872ms)
+  ✔ failure / expired / retry states (7314.1087ms)
+  ✔ admin correction (reason required, time/operator preserved) + reset dialog (5424.6978ms)
+  ✔ receptionist has no correction access (redirected to gate) (1377.6376ms)
+  ✔ T10 demo-journey screenshots: guests + export panel + gate in EN/AR at 1440x900 and 390x844 (14899.4684ms)
+✔ T10 — Export/report panel + admission correction Browser E2E (44023.6504ms)
+(node:6020) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+▶ T09 — Gate Workspace & Scanner Lifecycle Browser E2E Verification
+  ✔ verifies complete Gate lifecycle: QR resolve without admission, concurrency gate, duplicate protection, lost response retry, invalid invitation isolation, and responsive layout (11180.1224ms)
+✔ T09 — Gate Workspace & Scanner Lifecycle Browser E2E Verification (13586.2467ms)
+(node:8284) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+▶ T08 — Guests Workspace Browser E2E Verification
+  ✔ runs complete Guests workspace workflow: stats, CRUD, selection, CSV import, lifecycle, and mobile containment (9094.0365ms)
+✔ T08 — Guests Workspace Browser E2E Verification (12121.3012ms)
+(node:15516) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+▶ T07 — Browser E2E and Visual Responsive Verification
+  ✔ renders login page in Arabic and English across desktop, tablet, and mobile viewports (5029.9862ms)
+  ✔ renders authenticated admin shell with Guests and Gate navigation (4066.729ms)
+  ✔ receptionist role cannot see Guests navigation and is redirected from /guests to /gate (1429.0911ms)
+  ✔ language toggle switches locale while preserving active eventId (1373.6329ms)
+✔ T07 — Browser E2E and Visual Responsive Verification (13563.8078ms)
+ℹ tests 12
+ℹ suites 4
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 44467.6696

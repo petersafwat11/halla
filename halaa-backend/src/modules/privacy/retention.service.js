@@ -1,6 +1,7 @@
 const crypto = require("crypto");
 const mongoose = require("mongoose");
 const Payment = require("../../../models/PaymentModel");
+const PaymentLink = require("../../../models/PaymentLinkModel");
 const Subscription = require("../../../models/SubscriptionModel");
 const AuditLog = require("../../../models/AuditLogModel");
 const BusinessPlanAssignment = require("../../../models/BusinessPlanAssignmentModel");
@@ -10,7 +11,7 @@ const RetentionRun = require("../../../models/RetentionRunModel");
 const operations = require("../../shared/legal/privacyOperations.generated.json");
 const logger = require("../../shared/utils/logger");
 
-const MODELS = { Payment, Subscription, RevenueCatEvent, AuditLog, BusinessPlanAssignment };
+const MODELS = { Payment, PaymentLink, Subscription, RevenueCatEvent, AuditLog, BusinessPlanAssignment };
 const DEFAULT_BATCH = 250;
 const MAX_BATCH = 1000;
 

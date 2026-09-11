@@ -1,0 +1,107 @@
+name: halaa-checkin
+
+# Independent CI for the halaa-checkin mini-app. Tests, builds and (on master)
+# publishes immutable SHA-tagged images to SEPARATE GHCR repositories.
+# Production rollout stays manual/reviewable: no SSH, no `latest`-only deploy.
+#
+# Required: nothing beyond GITHUB_TOKEN (images are public-scoped under the
+# same owner as the existing halaa images). Rollback = re-run the deploy
+# runbook with a prior SHA (see halaa-checkin/deploy/README.md).
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "halaa-checkin/**"
+      - ".github/workflows/halaa-checkin.yml"
+  pull_request:
+    paths:
+      - "halaa-checkin/**"
+      - ".github/workflows/halaa-checkin.yml"
+
+concurrency:
+  group: halaa-checkin-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  OWNER: petersafwat11
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: halaa-checkin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24.13.1"
+          cache: npm
+          cache-dependency-path: halaa-checkin/package-lock.json
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Design token check
+        run: npm run design:check
+      - name: Lint (scoped to mini-app)
+        run: npm run lint
+      - name: Contract + integration + web unit tests (no build required)
+        run: npm test
+      - name: Production build
+        run: npm run build
+      - name: Record tested versions (F29 release closure)
+        run: |
+          node --version
+          npm ls playwright-core --prefix api || true
+          google-chrome --version || chromium --version || echo "browser version unavailable"
+          echo "IMAGE_TAG=${{ github.sha }}"
+      - name: Browser tests (require production build in .next)
+        run: npm --prefix web run test:browser
+        env:
+          # ubuntu-latest runners ship Google Chrome; the API renderer and the
+          # web browser tests locate it through the existing lookup chain.
+          CHROMIUM_PATH: /usr/bin/google-chrome
+      - name: E2E journey (disposable replica-set DB + local web/API)
+        run: npm run test:e2e
+        env:
+          CHROMIUM_PATH: /usr/bin/google-chrome
+
+  images:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        if: github.event_name == 'push'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build & push API image
+        uses: docker/build-push-action@v6
+        with:
+          context: halaa-checkin
+          file: halaa-checkin/api/Dockerfile
+          push: ${{ github.event_name == 'push' }}
+          tags: |
+            ghcr.io/${{ env.OWNER }}/halaa-checkin-api:${{ github.sha }}
+            ghcr.io/${{ env.OWNER }}/halaa-checkin-api:latest
+          cache-from: type=gha,scope=halaa-checkin-api
+          cache-to: type=gha,mode=max,scope=halaa-checkin-api
+      - name: Build & push Web image
+        uses: docker/build-push-action@v6
+        with:
+          context: halaa-checkin
+          file: halaa-checkin/web/Dockerfile
+          push: ${{ github.event_name == 'push' }}
+          tags: |
+            ghcr.io/${{ env.OWNER }}/halaa-checkin-web:${{ github.sha }}
+            ghcr.io/${{ env.OWNER }}/halaa-checkin-web:latest
+          cache-from: type=gha,scope=halaa-checkin-web
+          cache-to: type=gha,mode=max,scope=halaa-checkin-web
+      - name: Release reference
+        run: echo "IMAGE_TAG=${{ github.sha }} (pin this SHA in /opt/halaa-checkin/.env)"

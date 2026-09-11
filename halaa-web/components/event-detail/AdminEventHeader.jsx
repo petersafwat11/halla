@@ -141,14 +141,6 @@ export default function AdminEventHeader({ data }) {
   // publish / end / cancel / reschedule transitions the mobile screen exposes.
   const status = data?.event?.status;
   const statusActions = [];
-  if (status === "pending_scheduling") {
-    statusActions.push({
-      key: "publish",
-      next: "scheduled",
-      label: t("singleEvent.statusActions.publish", "نشر المناسبة"),
-      confirm: t("singleEvent.statusConfirm.publish", "نشر هذه المناسبة الآن؟"),
-    });
-  }
   if (status === "scheduled" || status === "live") {
     statusActions.push({
       key: "end",

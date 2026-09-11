@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
+import { pendingEventFor } from '../../../lib/pendingAdmissions.js';
 import { useSession } from '../../../hooks/useSession.jsx';
 import { Button } from '../../../components/ui/Button.jsx';
 import { Field } from '../../../components/ui/Field.jsx';
@@ -18,7 +19,7 @@ export default function LoginPage() {
   const dict = getDictionary(lang);
 
   const router = useRouter();
-  const { user, role, isAuthenticated, isLoading, login } = useSession();
+  const { user, role, isAuthenticated, isLoading, login, logoutError, logout } = useSession();
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -28,7 +29,10 @@ export default function LoginPage() {
   // If already authenticated, redirect to appropriate workspace
   useEffect(() => {
     if (!isLoading && isAuthenticated && user) {
-      if (role === 'admin') {
+      const pendingEvent = pendingEventFor(user.id);
+      if (pendingEvent) {
+        router.replace(`/${lang}/gate?eventId=${pendingEvent}`);
+      } else if (role === 'admin') {
         router.replace(`/${lang}/guests`);
       } else {
         router.replace(`/${lang}/gate`);
@@ -46,7 +50,10 @@ export default function LoginPage() {
     try {
       const sessionData = await login({ username: username.trim(), password });
       const userRole = sessionData?.user?.role || sessionData?.role;
-      if (userRole === 'admin') {
+      const pendingEvent = pendingEventFor(sessionData?.user?.id);
+      if (pendingEvent) {
+        router.push(`/${lang}/gate?eventId=${pendingEvent}`);
+      } else if (userRole === 'admin') {
         router.push(`/${lang}/guests`);
       } else {
         router.push(`/${lang}/gate`);
@@ -97,6 +104,7 @@ export default function LoginPage() {
           />
         </div>
 
+        {logoutError && <Notice variant="warning">{t(dict, 'auth.logoutUncertain')} <Button onClick={logout}>{t(dict, 'common.retry')}</Button></Notice>}
         <h1 className={styles.title}>{t(dict, 'auth.title')}</h1>
         <p className={styles.subtitle}>{t(dict, 'auth.subtitle')}</p>
 

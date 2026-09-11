@@ -9,3 +9,4 @@ export const useRouter = () => ({
 
 export const usePathname = () => "/ar/admin-dash";
 export const useSearchParams = () => new URLSearchParams();
+export const useParams = () => ({ lang: "ar" });

@@ -1,8 +1,116 @@
 {
   "header": {
     "title": "Payments",
-    "subtitle": "Monitor and manage platform events",
+    "subtitle": "Track transactions, payment links, and refunds",
     "dateRange": "Date Range"
+  },
+  "tabs": {
+    "label": "Payments sections",
+    "transactions": "Transactions",
+    "paymentLinks": "Payment links"
+  },
+  "links": {
+    "table": {
+      "title": "Payment links"
+    },
+    "columns": {
+      "reference": "Reference",
+      "client": "Reference / client",
+      "description": "Description",
+      "amount": "Amount",
+      "status": "Status",
+      "creator": "Creator",
+      "createdAt": "Created",
+      "expiry": "Expiry"
+    },
+    "status": {
+      "awaiting_payment": "Awaiting payment",
+      "processing": "Processing",
+      "paid": "Paid",
+      "expired": "Expired",
+      "canceled": "Canceled",
+      "partially_refunded": "Partially refunded",
+      "refunded": "Refunded",
+      "needs_review": "Needs review",
+      "unavailable": "Unavailable"
+    },
+    "stats": {
+      "awaiting": "Awaiting payment",
+      "paid": "Paid",
+      "netCollected": "Net collected (SAR)"
+    },
+    "filters": {
+      "from": "Created from",
+      "to": "Created through",
+      "mine": "Created by me",
+      "clear": "Clear filters"
+    },
+    "actions": {
+      "copy": "Copy link",
+      "refresh": "Refresh status",
+      "refreshing": "Checking…",
+      "refreshed": "Status updated",
+      "cancel": "Cancel",
+      "canceled": "Link canceled",
+      "retry": "Retry",
+      "queued": "A status check is scheduled"
+    },
+    "create": {
+      "title": "Create payment link",
+      "amount": "Amount (SAR)",
+      "amountHint": "Fixed SAR. This is the final client charge.",
+      "amountInvalid": "Enter a valid amount, e.g. 250.50 (max two decimals)",
+      "description": "Payment description (client sees this)",
+      "descriptionPlaceholder": "e.g. Event booking balance",
+      "descriptionTooLong": "Description must be at most 200 characters",
+      "clientLabel": "Client label (internal only)",
+      "clientLabelPlaceholder": "Intended recipient, not verified identity",
+      "clientLabelTooLong": "Client label must be at most 100 characters",
+      "expiresAfter": "Expires after",
+      "expiry24h": "24 hours",
+      "expiryDays": "{{count}} days",
+      "expiryPreview": "Expires {{date}}",
+      "summary": "Client will pay SAR {{amount}}",
+      "submit": "Create link",
+      "creating": "Creating…",
+      "failed": "Could not create the link",
+      "stillCreating": "Still creating — checking with the payment provider (ref {{ref}})",
+      "success": "Link ready — copy it and send it using your preferred channel.",
+      "copied": "Copied",
+      "copyHint": "If copying fails, long-press / select the URL above to copy it manually.",
+      "done": "Done",
+      "createAnother": "Create another",
+      "amountRange": "Enter an amount between SAR {{min}} and {{max}}",
+      "rejected": "The provider could not create this link. You can create a new request.",
+      "expiryInvalid": "Choose an available expiry period"
+    },
+    "cancel": {
+      "title": "Cancel payment link",
+      "confirm": "Cancel {{ref}} for SAR {{amount}}? The copied URL will stop working.",
+      "canceling": "Canceling…"
+    },
+    "detail": {
+      "title": "Payment link details",
+      "description": "Description",
+      "clientLabel": "Client label",
+      "creator": "Creator",
+      "expiry": "Expiry",
+      "createdAt": "Created at",
+      "lastSync": "Last provider check",
+      "paidAt": "Paid at",
+      "url": "Payment URL",
+      "lastFailure": "Last attempt",
+      "transactions": "Linked transactions",
+      "syncPending": "Could not confirm the latest state. Another check is scheduled.",
+      "cancelPending": "Cancellation is awaiting provider confirmation.",
+      "refunded": "Refunded (SAR)",
+      "syncStale": "Status is out of date — refresh to check payment"
+    },
+    "empty": {
+      "title": "No payment links yet. Create one and share the link with your client.",
+      "filtered": "No payment links match these filters."
+    },
+    "testMode": "Test mode — these links do not collect live payments."
   },
   "stats": {
     "currentMonthRevenue": "Current Month Revenue",

@@ -29,8 +29,10 @@
       "priority": "Priority",
       "assignedTo": "Assigned To",
       "status": "Status",
-      "createdAt": "Created Date"
-    }
+      "createdAt": "Created Date",
+      "media": "Media"
+    },
+    "mediaCount": "{{count}} files"
   },
   "status": {
     "open": "Open",

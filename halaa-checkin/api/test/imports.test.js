@@ -156,7 +156,7 @@ test('preview: explicit errors for header mismatch, intra-file duplicate referen
 
   assert.equal(missRes.status, 200);
   assert.equal(missRes.body.data.canCommit, false);
-  assert.ok(missRes.body.data.errors.some((e) => e.includes('Missing required header')));
+  assert.ok(missRes.body.data.errors.some((e) => (typeof e === 'string' ? e : e?.message || '').includes('Missing required header')));
 
   // Unexpected header
   const extraRes = await request(app)
@@ -168,7 +168,7 @@ test('preview: explicit errors for header mismatch, intra-file duplicate referen
 
   assert.equal(extraRes.status, 200);
   assert.equal(extraRes.body.data.canCommit, false);
-  assert.ok(extraRes.body.data.errors.some((e) => e.includes('Unexpected header')));
+  assert.ok(extraRes.body.data.errors.some((e) => (typeof e === 'string' ? e : e?.message || '').includes('Unexpected header')));
 
   // Intra-file duplicate reference
   const dupRefRes = await request(app)
@@ -180,7 +180,7 @@ test('preview: explicit errors for header mismatch, intra-file duplicate referen
 
   assert.equal(dupRefRes.status, 200);
   assert.equal(dupRefRes.body.data.canCommit, false);
-  assert.ok(dupRefRes.body.data.errors.some((e) => e.includes('duplicate reference')));
+  assert.ok(dupRefRes.body.data.errors.some((e) => (typeof e === 'string' ? e : e?.message || '').includes('duplicate reference')));
 
   // Header only (0 data rows)
   const emptyRowsRes = await request(app)
@@ -192,7 +192,7 @@ test('preview: explicit errors for header mismatch, intra-file duplicate referen
 
   assert.equal(emptyRowsRes.status, 200);
   assert.equal(emptyRowsRes.body.data.canCommit, false);
-  assert.ok(emptyRowsRes.body.data.errors.some((e) => e.includes('no guest data rows')));
+  assert.ok(emptyRowsRes.body.data.errors.some((e) => (typeof e === 'string' ? e : e?.message || '').includes('no guest data rows')));
 
   // Exceeds 1,000 data rows cap
   const largeCsv = generateLargeCsv(1001);
@@ -205,7 +205,7 @@ test('preview: explicit errors for header mismatch, intra-file duplicate referen
 
   assert.equal(largeRes.status, 200);
   assert.equal(largeRes.body.data.canCommit, false);
-  assert.ok(largeRes.body.data.errors.some((e) => e.includes('exceeds maximum limit of 1,000 data rows')));
+  assert.ok(largeRes.body.data.errors.some((e) => (typeof e === 'string' ? e : e?.message || '').includes('exceeds maximum limit of 1,000 data rows')));
 });
 
 // ============================================================================

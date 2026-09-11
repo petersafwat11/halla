@@ -1,0 +1,826 @@
+{
+  "head": "46895fc2e9acfaba58753b8fa740f3804f934985",
+  "scope": "Local working tree; includes prior implementation and review fixes",
+  "files": [
+    {
+      "path": ".github/workflows/halaa-checkin.yml",
+      "sha256": "e0d220d45446c22114312cb1e058922809caca2ddf1584169ccdde1a097020a3"
+    },
+    {
+      "path": "halaa-checkin/.dockerignore",
+      "sha256": "ddafec4468a5c1cb46017b51dab14d98dc527917e7e96fa0b1a3234c38758b8f"
+    },
+    {
+      "path": "halaa-checkin/.env.example",
+      "sha256": "a324644e0f5de5eb7904acf53f2297d8ef709655fb7449c013d8468513fed9f9"
+    },
+    {
+      "path": "halaa-checkin/.gitignore",
+      "sha256": "61d28fc70607ce42ffd973279b11029b1dcb8b03035a35a2e9a7e17850fa1df5"
+    },
+    {
+      "path": "halaa-checkin/api/Dockerfile",
+      "sha256": "dbac8d93b238b8dafb78b5f448f1f73d7f9dd3b8e3b0c325bd04ab073002470f"
+    },
+    {
+      "path": "halaa-checkin/api/package.json",
+      "sha256": "4f955e83b34cb8fce2685972f171d343261d35fd1af1306252cc4b951a53be4e"
+    },
+    {
+      "path": "halaa-checkin/api/scripts/backup-db.mjs",
+      "sha256": "01ea5c5a5945d54399431596871840a19a7e26471880a234099694433ebae2e4"
+    },
+    {
+      "path": "halaa-checkin/api/scripts/backup-format.mjs",
+      "sha256": "668b27accdd4db63d04f5bf9c3c5f31e80160d68b906afabe57ff45d104751a7"
+    },
+    {
+      "path": "halaa-checkin/api/scripts/ensure-indexes.mjs",
+      "sha256": "3b7db89caa87524172c4ac352256fa57d4fde4413578ee0ad01dd7362eaa77d0"
+    },
+    {
+      "path": "halaa-checkin/api/scripts/provision-user.mjs",
+      "sha256": "b86e6c32f7a1de7d02e300a14620bc49c49eca2027feacea0e3dc46895582701"
+    },
+    {
+      "path": "halaa-checkin/api/scripts/purge-event.mjs",
+      "sha256": "c9bb3567a579788832fab3e21f2f7894bb7145bff59bc809740974ca0756eb28"
+    },
+    {
+      "path": "halaa-checkin/api/scripts/restore-verify.mjs",
+      "sha256": "e007bf207a51b8c68b197e79246bcadf1d937d919215236c82ac2e927698c771"
+    },
+    {
+      "path": "halaa-checkin/api/scripts/seed-demo.mjs",
+      "sha256": "a57feb942a0e354daed3143b4d7a86fb0d541f8624e84ac3981cf535eda27772"
+    },
+    {
+      "path": "halaa-checkin/api/src/app.js",
+      "sha256": "9bb39cca3d693d8c2d67fb6cf46cd5d48326f4fef08791f1922f976d15f761fe"
+    },
+    {
+      "path": "halaa-checkin/api/src/config.js",
+      "sha256": "e596e2516af030cbb4512436c09e7e6df433b18d77a7505eb47ad7a3c9e4f476"
+    },
+    {
+      "path": "halaa-checkin/api/src/db/connection.js",
+      "sha256": "7ca407d28ed24914a9aa1172ed0fa0b9dc136c5c5e13e16424022930dbe1bda1"
+    },
+    {
+      "path": "halaa-checkin/api/src/db/indexes.js",
+      "sha256": "acc158c9c5203a7c07fdf28229ea87c4671656937fc4643261e2918a3c813ddf"
+    },
+    {
+      "path": "halaa-checkin/api/src/db/transaction.js",
+      "sha256": "955c57e673d3fb865846239b4aaa6f3817534638f665bcab324f1a419c8d82cc"
+    },
+    {
+      "path": "halaa-checkin/api/src/middleware/auth.js",
+      "sha256": "b57f86e28e6c3980e877bae25a3fe4da6d05d0dd2ffef9dbd149aacd872077f9"
+    },
+    {
+      "path": "halaa-checkin/api/src/middleware/authorize.js",
+      "sha256": "49004505173ebbd27d211c5b536a06a9f37d9c72e60d6d0eeff59db4b8f37ea2"
+    },
+    {
+      "path": "halaa-checkin/api/src/middleware/csrf.js",
+      "sha256": "e7a8729e98b633d6ca2a627e343cfa2b435f5989274b94a948f672ee010559eb"
+    },
+    {
+      "path": "halaa-checkin/api/src/middleware/errors.js",
+      "sha256": "b9857d98c86d63443d495ef4261adfe34623875a4a131ad7a44f79ae106a016f"
+    },
+    {
+      "path": "halaa-checkin/api/src/middleware/rateLimits.js",
+      "sha256": "ede2c42d9a799f0875c4309eb0b2e854fabfa7830f09fbc0d471fd7063dd00cd"
+    },
+    {
+      "path": "halaa-checkin/api/src/modules/audit/audit.model.js",
+      "sha256": "a4377f57920d1acffe4ebf2c1ec2d3909066e4241567e6e827fb21628914d45f"
+    },
+    {
+      "path": "halaa-checkin/api/src/modules/audit/audit.service.js",
+      "sha256": "fd231a312019a2d979f8ac637b9ee851a52e46b19d481fc78d3afd45bcf7f7d4"
+    },
+    {
+      "path": "halaa-checkin/api/src/modules/auth/auth.routes.js",
+      "sha256": "e84e9c547adaed8210034197ec8a285716545ca59ced1245bae1d1231457813b"
+    },
+    {
+      "path": "halaa-checkin/api/src/modules/auth/auth.service.js",
+      "sha256": "bcb89a66bc5f34a6a3dc35f7c6aed59b2a436f6eb3d81915d220e36e504d3271"
+    },
+    {
+      "path": "halaa-checkin/api/src/modules/auth/session.model.js",
+      "sha256": "fa9cba0606b8b3285b96d32cea346fe264672df2188039a1eeb7578bddf0eae7"
+    },
+    {
+      "path": "halaa-checkin/api/src/modules/auth/user.model.js",
+      "sha256": "bb22b59a89256e8d5c69eeaa16f2a2b1061347c0f72fca08dbdb864a42d1e0a7"
+    },
+    {
+      "path": "halaa-checkin/api/src/modules/checkins/checkins.routes.js",
+      "sha256": "a21bc4b7ea803e0b3033d63866529a5cbeb120232a65b3497cfa40eee9888bd2"
+    },
+    {
+      "path": "halaa-checkin/api/src/modules/checkins/checkins.service.js",
+      "sha256": "2921eee1a6c90453ad887fed253eb2c9703de3dcb0d03e90002a1639bb17ba37"
+    },
+    {
+      "path": "halaa-checkin/api/src/modules/events/event.model.js",
+      "sha256": "f1a51634203227fc4b09bebea56e86856cc331012ff530ecb23852ec58e33dc7"
+    },
+    {
+      "path": "halaa-checkin/api/src/modules/events/events.routes.js",
+      "sha256": "aa04842fc9724536ff3a8f508bd1c5184cef7327d5536c7daa4e5a82cc74f35b"
+    },
+    {
+      "path": "halaa-checkin/api/src/modules/events/events.service.js",
+      "sha256": "ddc7bb6ff47ee2f8da43abf1e69110ea0fc9cd2e29586ddef996db6a9f6b1504"
+    },
+    {
+      "path": "halaa-checkin/api/src/modules/exports/chromium.js",
+      "sha256": "12925c2c864b9d56ea03586cc5f967c399e5277cf50988989e7c8d047f0ee1df"
+    },
+    {
+      "path": "halaa-checkin/api/src/modules/exports/exportJob.model.js",
+      "sha256": "652e153f277f94b17a5a1ff0852e277e14643c670c07729c04a4cec00a44a168"
+    },
+    {
+      "path": "halaa-checkin/api/src/modules/exports/exportQuota.js",
+      "sha256": "f467ecba0261ed3dbe94139661f2d01b8abed1fbb94a73f4d95b4e5c03ad54c0"
+    },
+    {
+      "path": "halaa-checkin/api/src/modules/exports/exports.routes.js",
+      "sha256": "4b8e0445b76795cc688a8c6e07cafcb2627a6e2bc21d42ebbbd5476e53d9b07e"
+    },
+    {
+      "path": "halaa-checkin/api/src/modules/exports/exports.service.js",
+      "sha256": "8fd829ab6163eee8ef3104ff18e7e1612795850c91b22d2ad5f24f5efb3f64ee"
+    },
+    {
+      "path": "halaa-checkin/api/src/modules/exports/exports.worker.js",
+      "sha256": "5082b98abe3666fa4db4c581e7cff78a6b6fd843c4d9b33e11585b5a82d59cd2"
+    },
+    {
+      "path": "halaa-checkin/api/src/modules/exports/pdfRenderer.js",
+      "sha256": "7b9c783c84b586c9edc4510b48e8e20130aa8bb33db8d6fa2311b6b5a93e43d7"
+    },
+    {
+      "path": "halaa-checkin/api/src/modules/exports/qrGenerator.js",
+      "sha256": "51188ff028cdaab79ed1de92673489746af4a0a62f1591f26e7a4b321302c1cd"
+    },
+    {
+      "path": "halaa-checkin/api/src/modules/exports/templates/assets.js",
+      "sha256": "14d12d736a1ec8644535f08bc56332b89b2a5e08c2d0b3f97c288fe0a05bfcf6"
+    },
+    {
+      "path": "halaa-checkin/api/src/modules/exports/templates/bulkPasses.js",
+      "sha256": "a6ec7a4cda252c9c9fde4f8f0ae9739d692435e0247c05f3050303a234c0ea0e"
+    },
+    {
+      "path": "halaa-checkin/api/src/modules/exports/templates/helpers.js",
+      "sha256": "800e3acc3b4af54248d1f42d86524fdbaca4ab115d731675c362a29fecd992d0"
+    },
+    {
+      "path": "halaa-checkin/api/src/modules/exports/templates/report.js",
+      "sha256": "043e11d448eecdb05847383c0fd0eb4d8c54b61bf66984a8df0ac67a387bd6b5"
+    },
+    {
+      "path": "halaa-checkin/api/src/modules/exports/templates/singlePass.js",
+      "sha256": "362df2abe9066eb9f21ce08051e13dbbc17fc6197472d4a958e6d24190364865"
+    },
+    {
+      "path": "halaa-checkin/api/src/modules/guests/guest.model.js",
+      "sha256": "885baefd95aa4c5a378fed5f3cc4e2fda5a34d1db7c2a108f7cdaa75611ff770"
+    },
+    {
+      "path": "halaa-checkin/api/src/modules/guests/guests.repository.js",
+      "sha256": "e493270407bf6f8a626e149ae8b3a0cdbcfcca392536a259c0309d2a62e92d32"
+    },
+    {
+      "path": "halaa-checkin/api/src/modules/guests/guests.routes.js",
+      "sha256": "957ecb864190b19d13a75c55668d6ce045b28f37b37083e53245616730f930f9"
+    },
+    {
+      "path": "halaa-checkin/api/src/modules/guests/guests.service.js",
+      "sha256": "b83faf80585b694e7d7b2a7fe16da7a61ed4e43d0bbc04456b9c68bbe83cad96"
+    },
+    {
+      "path": "halaa-checkin/api/src/modules/idempotency/idempotency.model.js",
+      "sha256": "90a8e12bed697dcdea7354530ddb4b851605b10acf089f530b607596552d6dbd"
+    },
+    {
+      "path": "halaa-checkin/api/src/modules/idempotency/idempotency.service.js",
+      "sha256": "e1213388bcfc838920f2f5e83b777235bfb3401a563bc2141d7da56670ad5d69"
+    },
+    {
+      "path": "halaa-checkin/api/src/modules/imports/imports.routes.js",
+      "sha256": "23a814224d9624ff404d9232769073ee9acf2184c64e8d13bc4003fcc327e495"
+    },
+    {
+      "path": "halaa-checkin/api/src/modules/imports/imports.service.js",
+      "sha256": "95e3ee22da2343157603be75ab130812bb76738202ec42bf6fd457f9ea021c08"
+    },
+    {
+      "path": "halaa-checkin/api/src/server.js",
+      "sha256": "701d0184620063f2ce4e87fd095df79c532639cd36947c4affbe3fdac758dd01"
+    },
+    {
+      "path": "halaa-checkin/api/src/utils/crypto.js",
+      "sha256": "f922c97e9a06a06a3a3516020355394aed95ccc07f3d90f39525067885eeb9c0"
+    },
+    {
+      "path": "halaa-checkin/api/test/auth.test.js",
+      "sha256": "06fa7752d93f5b5c7484c8c25c5e194f26bdbf0bf0dd949686b2293f33efb6d7"
+    },
+    {
+      "path": "halaa-checkin/api/test/checkins.test.js",
+      "sha256": "61909f0d47129c4d7cf4df7e8455a63864d33f2520a363ce351fef4b91bcfae8"
+    },
+    {
+      "path": "halaa-checkin/api/test/config.test.js",
+      "sha256": "3c79f2c866a6231d8b864dcb42dc0dcf0150bd6381626a12e2ddfc48071727cf"
+    },
+    {
+      "path": "halaa-checkin/api/test/exports.test.js",
+      "sha256": "0ea8929330f9ce25847fdf9f2a9bf83e419d9cd9c4818db34c8e8221c1e25aba"
+    },
+    {
+      "path": "halaa-checkin/api/test/finalization-regressions.test.js",
+      "sha256": "8c14617e26928eeb9bfa11593373fc72c119bce8426df558c9ed6bad0a16e720"
+    },
+    {
+      "path": "halaa-checkin/api/test/guests.test.js",
+      "sha256": "b41bb48c66cb685fb1989f0ec432ed14203526f3bc234f70cb18191b99122459"
+    },
+    {
+      "path": "halaa-checkin/api/test/helpers/csvFixtures.js",
+      "sha256": "f1d02e70f6c896473322075e4bde4711930bbec7665c380ba58325507844ebf5"
+    },
+    {
+      "path": "halaa-checkin/api/test/helpers/syntheticFixtures.js",
+      "sha256": "e4c9c0452c52a263c96d4a9cb9f4a3d25792cf264e4a4e5d6e71982975b2ea5b"
+    },
+    {
+      "path": "halaa-checkin/api/test/helpers/testHarness.js",
+      "sha256": "9e53d87f3fd2a2aba5bea75311d0cbd159e7dd0e0c0889fa991a7f79777522b0"
+    },
+    {
+      "path": "halaa-checkin/api/test/imports.test.js",
+      "sha256": "59c911651527127912bd97ab9b44926766c627204326e48b613ff030d255af56"
+    },
+    {
+      "path": "halaa-checkin/api/test/liveness.test.js",
+      "sha256": "0cdea64719a474c66aa7180eb55546f8d4642a9c349d9cdc3fe32cc2a26f4ac2"
+    },
+    {
+      "path": "halaa-checkin/contracts/package.json",
+      "sha256": "12fdb217e60c2fff902210c6077ae8af531316dc7ba81c52391bcc967dbcffdc"
+    },
+    {
+      "path": "halaa-checkin/contracts/README.md",
+      "sha256": "3f66ff021ca1c6e9a85afab15c742141b936edab5adea797036a8ed1f3832bed"
+    },
+    {
+      "path": "halaa-checkin/contracts/src/constants.js",
+      "sha256": "76ce461aeaabae31001b371bc9d5d074f493b4fe23447d0957477d671c6e68b4"
+    },
+    {
+      "path": "halaa-checkin/contracts/src/errors.js",
+      "sha256": "b21c661a7c40c47447334687254f6e3e08cf54c7d34f82c66467228e2b68eeba"
+    },
+    {
+      "path": "halaa-checkin/contracts/src/index.js",
+      "sha256": "d37998ad9a4e9ed49778a8f6e33b4d062b09620dc460b667cbe61f108b5453c1"
+    },
+    {
+      "path": "halaa-checkin/contracts/src/schemas.js",
+      "sha256": "8475f771ac79c0e8733c52d35ba0f5711e0bbca517dfdb0a4c6e6305288edcf5"
+    },
+    {
+      "path": "halaa-checkin/contracts/src/stats.js",
+      "sha256": "98532e28aa568afcff216d1862e495c369d3937d3c917796ff04681088f29efb"
+    },
+    {
+      "path": "halaa-checkin/contracts/test/errors.test.js",
+      "sha256": "fc83dce01d2dece562a62d1a5643a1788788fd066036b741c6df6a0297f8f32f"
+    },
+    {
+      "path": "halaa-checkin/contracts/test/normalization.test.js",
+      "sha256": "735f6abe03f6705dd4a115ed49e6e65bded83a984f0bf8e113a012367863b77f"
+    },
+    {
+      "path": "halaa-checkin/contracts/test/schemas.test.js",
+      "sha256": "33910c101ad16c27f4607a1b80cf8a09f2a1bfa99e3b15ec97fe54382c48c723"
+    },
+    {
+      "path": "halaa-checkin/contracts/test/stats.test.js",
+      "sha256": "f949a9c3419fc2d019d56ee7b788ec1c5cfe36e21362cd8aedbeee9613f3106c"
+    },
+    {
+      "path": "halaa-checkin/contracts/test/tokens.test.js",
+      "sha256": "9cf68cd11ae3522320e5cc7fe290b042889152af1b8a84d4d92ae03d72f42c03"
+    },
+    {
+      "path": "halaa-checkin/deploy/Caddyfile.snippet",
+      "sha256": "8cbdf9452a162b3e00f1fb17936150d921f7e247eb958fdcfecb631adec0c9fe"
+    },
+    {
+      "path": "halaa-checkin/deploy/compose.dev.yml",
+      "sha256": "d0f73bb6bf6cdd16feb784a09663d2ddda03f95917634cc009d1b6f4c2fec32d"
+    },
+    {
+      "path": "halaa-checkin/deploy/compose.yml",
+      "sha256": "9ee5d002caf3547703e16ad98dd1cae7e11d766652eec4e8fae8616a4feb2a12"
+    },
+    {
+      "path": "halaa-checkin/deploy/OPERATIONS.md",
+      "sha256": "73109baba5db5e98c95d2882d4fce5da226a9fb7fab7aba08343a1ae484f6c45"
+    },
+    {
+      "path": "halaa-checkin/deploy/README.md",
+      "sha256": "f7cbcfef54df60ca61af6ffff247e52309493fe4396bf4f34eea6485c9d215d7"
+    },
+    {
+      "path": "halaa-checkin/deploy/rehearse-capacity.mjs",
+      "sha256": "459e8752e967992ee3791633bf1f43500d4f4289a07073c76dff8d10d7b0f85b"
+    },
+    {
+      "path": "halaa-checkin/deploy/ROOT-INTEGRATION.md",
+      "sha256": "43430171edddaa2a017641651b92beac8474cc34ebc1548bad403feb417b33db"
+    },
+    {
+      "path": "halaa-checkin/design/assets/fonts/Cairo_400Regular.ttf",
+      "sha256": "44786a38e27c58262cbd65341beda4fa4f6c7085ec42e830b35ba1ae37807030"
+    },
+    {
+      "path": "halaa-checkin/design/assets/fonts/Cairo_500Medium.ttf",
+      "sha256": "64c7cab8e2cf003c3fc4edca1820e7e1b0ee667373cf8500060bca97262a2b65"
+    },
+    {
+      "path": "halaa-checkin/design/assets/fonts/Cairo_600SemiBold.ttf",
+      "sha256": "3fe2e182a88a5d64a96b289fd1c518bdc9b14ec91525a03990c35e91f7863a2a"
+    },
+    {
+      "path": "halaa-checkin/design/assets/fonts/Cairo_700Bold.ttf",
+      "sha256": "a0e58d71b85b15902ea87914d8e31a6d22da48ac2db70213dcfd1a7dad3f198a"
+    },
+    {
+      "path": "halaa-checkin/design/assets/fonts/LICENSE_FONT",
+      "sha256": "a4554e1799d42e1405924b61eb0e0722ae1623b1f1f07f995348f96c496362a9"
+    },
+    {
+      "path": "halaa-checkin/design/assets/logos/logo.svg",
+      "sha256": "0d334a0c54b889196aefa99483509566caf9e25c545023e51b61ca3af3dd94df"
+    },
+    {
+      "path": "halaa-checkin/design/assets/logos/sidebar-logo.svg",
+      "sha256": "e72be6652aba883886c0613090a84d7dd09f9f9ca260c6fac581cb78b823a670"
+    },
+    {
+      "path": "halaa-checkin/design/assets/logos/sidebar-mobile-logo.svg",
+      "sha256": "6519ab18c9142080772a3b4e03a8c0e5cd0636884889461f6cdd672ee73e3041"
+    },
+    {
+      "path": "halaa-checkin/design/SOURCES.json",
+      "sha256": "a0070b32a33530a18ad21f3664044e88349b52cf03247cea87a925f9722abccc"
+    },
+    {
+      "path": "halaa-checkin/design/tokens.css",
+      "sha256": "1480f0e482168db3e75463723a42845ae5b38f6617656a7eeca278c6723483a2"
+    },
+    {
+      "path": "halaa-checkin/eslint.config.mjs",
+      "sha256": "beeb93c40b1acfbdbb4c0a697023de33cac68651f80e90dffa262e9b78e85dcf"
+    },
+    {
+      "path": "halaa-checkin/package-lock.json",
+      "sha256": "b9ea59e7a2f1f58fc632c51f45f58be55823f2b71501331685a537c9e911fde0"
+    },
+    {
+      "path": "halaa-checkin/package.json",
+      "sha256": "0d6a44b5f34c0dc3a0d907ad2ce46858af0e50fe880304846dddf964f82b363c"
+    },
+    {
+      "path": "halaa-checkin/README.md",
+      "sha256": "d503a3e665f2e1fbb984aae2b9c4499dc5208750abad61aaf2a61fd30ea2388e"
+    },
+    {
+      "path": "halaa-checkin/scripts/check-design.mjs",
+      "sha256": "178cea794620078569678d0aa97eb7676b35f9b85f8fbc9f98890758cad499aa"
+    },
+    {
+      "path": "halaa-checkin/scripts/dev.mjs",
+      "sha256": "3c13ac9ba5ba6925a98f1c69657fcbc6280343ddeaaf5b5adf8edee70626c8d3"
+    },
+    {
+      "path": "halaa-checkin/scripts/sync-design.mjs",
+      "sha256": "e7bfe7b4f0df9212b273b215762b66bcf70f70ddf261acdb1becb1fb873d8677"
+    },
+    {
+      "path": "halaa-checkin/tests/e2e/browser-integrated.test.js",
+      "sha256": "850e5a893b53cc354281fccbd52029fe5c7d2f9fe8bac30974a859168af2b5dd"
+    },
+    {
+      "path": "halaa-checkin/tests/e2e/capacity-rehearsal.mjs",
+      "sha256": "66eb4609e8b58abfa3a441c1112c5c39e8e1bf2fd8d8d95e183dc42f10a2e0d9"
+    },
+    {
+      "path": "halaa-checkin/tests/e2e/checkin-journey.test.js",
+      "sha256": "8ea9132d054609f353431c0ff991c3ac9b4e4ec47f6c1ca9e1aa077569157e50"
+    },
+    {
+      "path": "halaa-checkin/web/app/[lang]/(workspace)/gate/page.jsx",
+      "sha256": "b968952e4813e62e5140c9bd1ef30ac20f60a6ec07e2fee6acff1db4f9788021"
+    },
+    {
+      "path": "halaa-checkin/web/app/[lang]/(workspace)/guests/page.jsx",
+      "sha256": "d52389ce8dcf45c64ee56271357849410cc25b78365ec28e29bcfef71f61e980"
+    },
+    {
+      "path": "halaa-checkin/web/app/[lang]/(workspace)/layout.jsx",
+      "sha256": "eb1979ce524d19fd429b516ee094a91a07058c4a9a9319004ba876a50454618d"
+    },
+    {
+      "path": "halaa-checkin/web/app/[lang]/(workspace)/workspace.module.css",
+      "sha256": "e10c89075ec68231bbb7994218ace2a556ce738da942b5138b018cba03240205"
+    },
+    {
+      "path": "halaa-checkin/web/app/[lang]/HealthProbe.jsx",
+      "sha256": "60aabaacdc268f628da82d8a5e2e54f84474ac677aecc48754dcf23380113d9f"
+    },
+    {
+      "path": "halaa-checkin/web/app/[lang]/layout.jsx",
+      "sha256": "384a9a25f75b84808e47e43fb6ef75c662710af6069f0f46f9421db329f8b3b7"
+    },
+    {
+      "path": "halaa-checkin/web/app/[lang]/login/login.module.css",
+      "sha256": "fc0da634fad963a3dbe53f82749dfe4934a97cf9a562b020d2ac57beb8ff1319"
+    },
+    {
+      "path": "halaa-checkin/web/app/[lang]/login/page.jsx",
+      "sha256": "fa77d96144cbb4f260dae8eed810b4d7b27c9731621b9cdd95cd1720b7443297"
+    },
+    {
+      "path": "halaa-checkin/web/app/[lang]/page.jsx",
+      "sha256": "77e770c4ef9c9c659cec2ec38b40c954eae50ee0fd79f4c26ef5279ecdcb5a76"
+    },
+    {
+      "path": "halaa-checkin/web/app/[lang]/providers.jsx",
+      "sha256": "2e06bba3cf79b308d711cf3a377e8941129d9a41222135a3fd2703f0f1cd57c4"
+    },
+    {
+      "path": "halaa-checkin/web/app/globals.css",
+      "sha256": "b94a4b2c1e03840ef5e64700105e6236a35dc09ae379fff327614687f3d239b3"
+    },
+    {
+      "path": "halaa-checkin/web/app/layout.jsx",
+      "sha256": "862fec0521d5355bd04c5b15a9addc05f35dde845ed901c636283956dc06c064"
+    },
+    {
+      "path": "halaa-checkin/web/app/page.jsx",
+      "sha256": "f02c0ed4a255ed2663857dcaef5a0df5119c14efb68121a97d0a88a95272e88c"
+    },
+    {
+      "path": "halaa-checkin/web/components/gate/AdmissionCard.jsx",
+      "sha256": "ee904d95e27234d23d50223d2084961e90ef4b2c324f27f7fdb6fdffa208fe1e"
+    },
+    {
+      "path": "halaa-checkin/web/components/gate/AdmissionCard.module.css",
+      "sha256": "f289b7842d5c916be7e696f9e938cbadaab9ab1ba80befadb72d3cb91d1c0ace"
+    },
+    {
+      "path": "halaa-checkin/web/components/gate/CameraScanner.jsx",
+      "sha256": "560882258eb313440dc40eddacd1e536f89bdf14cdbff7dd4c52c944a8750c57"
+    },
+    {
+      "path": "halaa-checkin/web/components/gate/CameraScanner.module.css",
+      "sha256": "6d43eca03d8e4d365513a464f11c7e86726e9442afa0e34b3a9941727072cb28"
+    },
+    {
+      "path": "halaa-checkin/web/components/gate/GateWorkspace.jsx",
+      "sha256": "40816f48a0cd847b333b4c913eaa6029d4b1254f48d3ce20bda6391e4d8906d3"
+    },
+    {
+      "path": "halaa-checkin/web/components/gate/GateWorkspace.module.css",
+      "sha256": "618be0c3364d131adb1d1d868704c7a7b9d697f8570778df5888b401b88f65c9"
+    },
+    {
+      "path": "halaa-checkin/web/components/gate/GuestLookup.jsx",
+      "sha256": "f16e816f696b12ac533d276f8aaf48b9e94bfbc33fbaccb27137e07821936d21"
+    },
+    {
+      "path": "halaa-checkin/web/components/gate/GuestLookup.module.css",
+      "sha256": "9cc34e52ecb3fd455d4f28328a4e3cdadc4599299a5fe28466f6a7b81744bc6c"
+    },
+    {
+      "path": "halaa-checkin/web/components/gate/ScannerInput.jsx",
+      "sha256": "c30ff0afff65337b4f40ed03caa914ba43bd3ca0492ec60866cebd6c99197eca"
+    },
+    {
+      "path": "halaa-checkin/web/components/gate/ScannerInput.module.css",
+      "sha256": "7fb28a74a15360ff6adf4230ea289fcd2fd42e0f3282baaef851ab498e30a8d7"
+    },
+    {
+      "path": "halaa-checkin/web/components/guests/AdmissionCorrectionDialog.jsx",
+      "sha256": "593b8e414d6b21be351c6fea5a63f9d4047e77dbb8a8ebdc6ddd14bc963fccb4"
+    },
+    {
+      "path": "halaa-checkin/web/components/guests/AdmissionCorrectionDialog.module.css",
+      "sha256": "a6136b309ba69ab78de5fe2ff776a3ceb9ac3ed96cf0b081d123e7bea6addb6e"
+    },
+    {
+      "path": "halaa-checkin/web/components/guests/EventDialog.jsx",
+      "sha256": "210e1f37942a505585505055dcb51688018a13718c4760bc6d8091c6c3a049a3"
+    },
+    {
+      "path": "halaa-checkin/web/components/guests/EventDialog.module.css",
+      "sha256": "850e384b3b59de9241c70e2f3641759654448328279ee9470f0785c47c07786d"
+    },
+    {
+      "path": "halaa-checkin/web/components/guests/EventHeaderBar.jsx",
+      "sha256": "c5893ee01c9ed833b339c7af94a3e470d295a509fb243738cb6542eb00659648"
+    },
+    {
+      "path": "halaa-checkin/web/components/guests/EventHeaderBar.module.css",
+      "sha256": "34dd95c8fe5d0f2b6aa2d88f8fa51ce818cd59301118923d503a6845ad07ef5c"
+    },
+    {
+      "path": "halaa-checkin/web/components/guests/EventLifecycleDialog.jsx",
+      "sha256": "3106505400143ece3075e7068d1f9045970bf71d7f621c20e09eee162ab06b9e"
+    },
+    {
+      "path": "halaa-checkin/web/components/guests/ExportPanel.jsx",
+      "sha256": "62c6a8fc63898986aadb8b5da133159585cbd9e8f0f6cadf6893de75b8a920be"
+    },
+    {
+      "path": "halaa-checkin/web/components/guests/ExportPanel.module.css",
+      "sha256": "bb63f62046bab2789b85c2bea1d1c4bad03fc9d9bff1926270879a0be76ef204"
+    },
+    {
+      "path": "halaa-checkin/web/components/guests/GuestDeleteDialog.jsx",
+      "sha256": "9334cc585130f8841cf3cefae13626d92fbd2fddeabc6b2ae21eeb45a858fce8"
+    },
+    {
+      "path": "halaa-checkin/web/components/guests/GuestForm.jsx",
+      "sha256": "29e92f8e37c8c45a116b615c29070babb2ac96479553a7dff33e62756d1076e6"
+    },
+    {
+      "path": "halaa-checkin/web/components/guests/GuestForm.module.css",
+      "sha256": "b4a9bcfcab2c3d9f41751ff19486c22c055c2a60d88f89065f2d49da8f1208f4"
+    },
+    {
+      "path": "halaa-checkin/web/components/guests/GuestsWorkspace.jsx",
+      "sha256": "a84c481eaf93d3aa08071e8534cfed679a71135618def78db5fcfc3b734dec62"
+    },
+    {
+      "path": "halaa-checkin/web/components/guests/GuestsWorkspace.module.css",
+      "sha256": "66df9ba7be2222a19a198b4851407accfc461dfbe4e913bc563ea45f97e74391"
+    },
+    {
+      "path": "halaa-checkin/web/components/guests/GuestTable.jsx",
+      "sha256": "c3e86c40424af23c13b72ec5b6e4a903aead1e63b27ced1fb7af2a1fdb7c3596"
+    },
+    {
+      "path": "halaa-checkin/web/components/guests/GuestTable.module.css",
+      "sha256": "af5f2a957945928162db8969879c46ec0185dc9ae7d3e7a0520aa821504825b1"
+    },
+    {
+      "path": "halaa-checkin/web/components/guests/ImportDialog.jsx",
+      "sha256": "c5eaa0814cdb887b1e8aa15e18c47a60351d96e75489986d68e7f062d519bd0d"
+    },
+    {
+      "path": "halaa-checkin/web/components/guests/ImportDialog.module.css",
+      "sha256": "da783f4a926f6c5d29bff6c67d4d86f7948405383d70174051bed60b8df02068"
+    },
+    {
+      "path": "halaa-checkin/web/components/guests/QrPreviewDialog.jsx",
+      "sha256": "3cacbaa04aa832f2b30082642db547865a8cc26eef06cfaeaf8b6b2c47395e3e"
+    },
+    {
+      "path": "halaa-checkin/web/components/guests/QrPreviewDialog.module.css",
+      "sha256": "62254616d3e92548c26b6b642540bd8436ffc9e1ca461f35ea512bcee6228ef7"
+    },
+    {
+      "path": "halaa-checkin/web/components/guests/StatsStrip.jsx",
+      "sha256": "5bb5af0b8df9e1c231b0b392253c28b235ea8146a77ccd688cdcf03729ad5bc5"
+    },
+    {
+      "path": "halaa-checkin/web/components/guests/StatsStrip.module.css",
+      "sha256": "150fe69c1001f59fc4ecf5badbaaac6bc165347a529015829d54035107a74aea"
+    },
+    {
+      "path": "halaa-checkin/web/components/shell/AppHeader.jsx",
+      "sha256": "d8f62536dda63976e77e720eeeafd0113464f42f6568c911949e7515a257cef7"
+    },
+    {
+      "path": "halaa-checkin/web/components/shell/AppHeader.module.css",
+      "sha256": "b7c4f2c9db61f472fe485c73640a2a6f6042830e999878336e8f6bc4ce52b3a2"
+    },
+    {
+      "path": "halaa-checkin/web/components/shell/EventSelector.jsx",
+      "sha256": "f460a032adbe9e906157f05ea529380cb44cbe596c2f2da2e6545e13fc1734e2"
+    },
+    {
+      "path": "halaa-checkin/web/components/shell/EventSelector.module.css",
+      "sha256": "4615c275798f1ec11812de2998d57088aa1dcf8361469c79757c6fb40d159fcb"
+    },
+    {
+      "path": "halaa-checkin/web/components/shell/WorkspaceNav.jsx",
+      "sha256": "6779fd8f19cb8911d43b543d94a5f77182a360ebcf5ffa2de31843428c5ad560"
+    },
+    {
+      "path": "halaa-checkin/web/components/shell/WorkspaceNav.module.css",
+      "sha256": "4490310b770b46b5ad3948330aa15bda86b6e37f9ba912654c350ac1b63c00dd"
+    },
+    {
+      "path": "halaa-checkin/web/components/ui/Button.jsx",
+      "sha256": "19f0baaf484994587a2f9dbbf0f393e7057c1099e9c6f1ef61b9f8a6842ea781"
+    },
+    {
+      "path": "halaa-checkin/web/components/ui/Button.module.css",
+      "sha256": "81058addd93e63c7c7bb7de3ff7c31a55568e59069a2b3df04661fcdb99f30ec"
+    },
+    {
+      "path": "halaa-checkin/web/components/ui/Dialog.jsx",
+      "sha256": "aa38095860157e650409882b571565e1ef174df25bf836a1695b4d19141f5b17"
+    },
+    {
+      "path": "halaa-checkin/web/components/ui/Dialog.module.css",
+      "sha256": "b03f0a7a37aa25210ac94784378bd9a5d0d7a2baf13d837721e3ed8f0a2bc16a"
+    },
+    {
+      "path": "halaa-checkin/web/components/ui/Field.jsx",
+      "sha256": "6e9ef0df323d2b07e731eed1a3c07e6a8331330bbe52985463afcc1ec7d1bcf1"
+    },
+    {
+      "path": "halaa-checkin/web/components/ui/Field.module.css",
+      "sha256": "9fb158cc3a0786901c1a18a5ce31ca12138ecbcd5b5929f7cf1d37c653cdad66"
+    },
+    {
+      "path": "halaa-checkin/web/components/ui/Notice.jsx",
+      "sha256": "6088e6aaaef45d1e35e7293ad1fec026499ff3a84493fde35496ac6c15ad09af"
+    },
+    {
+      "path": "halaa-checkin/web/components/ui/Notice.module.css",
+      "sha256": "f1e6f26e352b8c48d3841c5a072fce4517624056f5e6fdfba58a824d8da4dd17"
+    },
+    {
+      "path": "halaa-checkin/web/components/ui/Pagination.jsx",
+      "sha256": "d3909a2514e2ff58c9d230e1605bc90d5cc7aee0538d73f73ed741bbfdacf502"
+    },
+    {
+      "path": "halaa-checkin/web/components/ui/Pagination.module.css",
+      "sha256": "6e9a3f0f60e50f2f5161109d0d6328caa8206ca9e6b91c9e16b0b980e39089e4"
+    },
+    {
+      "path": "halaa-checkin/web/components/ui/StatusBadge.jsx",
+      "sha256": "c7f59f5bb6400cfbcfe3008b1f239defadb4632ef1f49eb73de738cb04586aee"
+    },
+    {
+      "path": "halaa-checkin/web/components/ui/StatusBadge.module.css",
+      "sha256": "65be57d9079d00d60eb73c7ef37e4fa070dd51b34c56c2ba81bf87ebf617ff6e"
+    },
+    {
+      "path": "halaa-checkin/web/Dockerfile",
+      "sha256": "27e62c6009f267bde7fcbf3c60ede3cf93f3a1fbd564be30a6225df362a5ad39"
+    },
+    {
+      "path": "halaa-checkin/web/hooks/useEvent.jsx",
+      "sha256": "5dc4b45be9ea822b49b20745b3172b2ae3b39cd5c613e2ee2f436059289e25f9"
+    },
+    {
+      "path": "halaa-checkin/web/hooks/useEventSettings.js",
+      "sha256": "99900bc2cf0bca5d8cb28baea5e78fceb81a8369ccfa3c5246e3f4021b141532"
+    },
+    {
+      "path": "halaa-checkin/web/hooks/useExports.js",
+      "sha256": "1e50c82bfe3dafa22d4715dc5729cb988dadd29132e72592968b79e8a73da2ad"
+    },
+    {
+      "path": "halaa-checkin/web/hooks/useGate.js",
+      "sha256": "956392e32ceacf85d066c4caac5dda78000ab200a8dd48737bca21f10f49d41a"
+    },
+    {
+      "path": "halaa-checkin/web/hooks/useGuests.js",
+      "sha256": "e79e14aa051825e928881e9420accb8822c684d1aca94971329e58a36fcc4c22"
+    },
+    {
+      "path": "halaa-checkin/web/hooks/useSession.jsx",
+      "sha256": "5acb840f07098d39266e889c14964d5190247e9f38e15bccb82b7d8f93ffebdc"
+    },
+    {
+      "path": "halaa-checkin/web/hooks/useStats.js",
+      "sha256": "8b3fc36b216684d74de9aae51e21a5d830fafc79cd4210ed239e1e8226ab11a8"
+    },
+    {
+      "path": "halaa-checkin/web/lib/api.js",
+      "sha256": "54742436013f55c4e26697da740df235cf0a295b2b4c1b240c051dc11613b8c6"
+    },
+    {
+      "path": "halaa-checkin/web/lib/locale.js",
+      "sha256": "557bd8a307e9da8141ef700d01d87665915d896c0a0183111cb64aaecf80d0bc"
+    },
+    {
+      "path": "halaa-checkin/web/lib/pendingAdmissions.js",
+      "sha256": "d750b95c6ec196dd2a95e0fd46c3df190a3759af36074e3fb109b916832030ae"
+    },
+    {
+      "path": "halaa-checkin/web/lib/pendingImports.js",
+      "sha256": "921dc97406ac86383cfb53f545f1978c52e6d6798cd5785a5854720a11285e5c"
+    },
+    {
+      "path": "halaa-checkin/web/lib/queryClient.js",
+      "sha256": "b90a21013e2794fb83e36d15632bf20316df2b1b0097f3d7c215656ba2208859"
+    },
+    {
+      "path": "halaa-checkin/web/locales/ar.json",
+      "sha256": "11d8217a6c9cb6e5aba5185b15d0c54ccc3dfa808d6d2011d4d87d2329b56e04"
+    },
+    {
+      "path": "halaa-checkin/web/locales/en.json",
+      "sha256": "8da96dcf5b1d349e77541b07bce702df5fb34a29d7124272e030d1390db4ed8f"
+    },
+    {
+      "path": "halaa-checkin/web/next.config.mjs",
+      "sha256": "d151315106d28620294e4b24fd1a75e1e14fdefd0879d9cfe712dcb547a37076"
+    },
+    {
+      "path": "halaa-checkin/web/package.json",
+      "sha256": "689aa0a2a66a95ca77ad717d1c809107e95f73cd84dcdae3a488ba499bd8bb61"
+    },
+    {
+      "path": "halaa-checkin/web/public/fonts/Cairo_400Regular.ttf",
+      "sha256": "44786a38e27c58262cbd65341beda4fa4f6c7085ec42e830b35ba1ae37807030"
+    },
+    {
+      "path": "halaa-checkin/web/public/fonts/Cairo_500Medium.ttf",
+      "sha256": "64c7cab8e2cf003c3fc4edca1820e7e1b0ee667373cf8500060bca97262a2b65"
+    },
+    {
+      "path": "halaa-checkin/web/public/fonts/Cairo_600SemiBold.ttf",
+      "sha256": "3fe2e182a88a5d64a96b289fd1c518bdc9b14ec91525a03990c35e91f7863a2a"
+    },
+    {
+      "path": "halaa-checkin/web/public/fonts/Cairo_700Bold.ttf",
+      "sha256": "a0e58d71b85b15902ea87914d8e31a6d22da48ac2db70213dcfd1a7dad3f198a"
+    },
+    {
+      "path": "halaa-checkin/web/public/fonts/LICENSE_FONT",
+      "sha256": "a4554e1799d42e1405924b61eb0e0722ae1623b1f1f07f995348f96c496362a9"
+    },
+    {
+      "path": "halaa-checkin/web/public/images/logo.svg",
+      "sha256": "0d334a0c54b889196aefa99483509566caf9e25c545023e51b61ca3af3dd94df"
+    },
+    {
+      "path": "halaa-checkin/web/public/images/sidebar-logo.svg",
+      "sha256": "e72be6652aba883886c0613090a84d7dd09f9f9ca260c6fac581cb78b823a670"
+    },
+    {
+      "path": "halaa-checkin/web/public/images/sidebar-mobile-logo.svg",
+      "sha256": "6519ab18c9142080772a3b4e03a8c0e5cd0636884889461f6cdd672ee73e3041"
+    },
+    {
+      "path": "halaa-checkin/web/styles/theme.css",
+      "sha256": "3dc3b97f83425d72402615a0815ef16005e79af5c37093f80fa655821e059483"
+    },
+    {
+      "path": "halaa-checkin/web/styles/tokens.css",
+      "sha256": "1480f0e482168db3e75463723a42845ae5b38f6617656a7eeca278c6723483a2"
+    },
+    {
+      "path": "halaa-checkin/web/test/api-regressions.test.js",
+      "sha256": "839468f42c24ec6f2890b4360b492b4a2ce001a2101724e7b659b2697861c27b"
+    },
+    {
+      "path": "halaa-checkin/web/test/browser-exports.test.js",
+      "sha256": "1174a6b73c01639f9af8d4e40e08fd52664d9308621a548d8ef143951edc8240"
+    },
+    {
+      "path": "halaa-checkin/web/test/browser-gate.test.js",
+      "sha256": "5862661bb2c96e96353ea289b2c47f933f182bcb2aea9b7f9b2476ff2070abc7"
+    },
+    {
+      "path": "halaa-checkin/web/test/browser-guests.test.js",
+      "sha256": "9a0229094e1987a37eefabc4ffbd929733f393ca70b1945a447a76e2f53e14c7"
+    },
+    {
+      "path": "halaa-checkin/web/test/browser-shell.test.js",
+      "sha256": "0c1bacdff1d156e5aa11768b1af6fcd86466434d50962f917f94c4b8d605ca3e"
+    },
+    {
+      "path": "halaa-checkin/web/test/gate-unit.test.js",
+      "sha256": "eb8df0812568778c30a5193d3b362a981db2984bb567de6ab07db1a4bf19341a"
+    },
+    {
+      "path": "halaa-checkin/web/test/guests-unit.test.js",
+      "sha256": "ae831827182877a486820b978f1467b38c62da14f69a7f0105a09cfed4bd683d"
+    },
+    {
+      "path": "halaa-checkin/web/test/shell.test.js",
+      "sha256": "5f2d9acf5d92e37862ba4b64f67f2f4c9340197b54ef3570c3373cf0ad260352"
+    }
+  ]
+}

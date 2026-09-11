@@ -26,7 +26,7 @@ export function useGuests(eventId, { page = 1, pageSize = 25, search = '', statu
     setSelectedGuestIds(new Set());
   }, [eventId, debouncedSearch, status]);
 
-  // Fetch guests query
+  // Fetch guests query (F11/F18: periodic refresh while visible; no cross-event placeholder)
   const queryKey = ['guests', eventId, { page, pageSize, q: debouncedSearch, status }];
   const {
     data: response,
@@ -48,8 +48,16 @@ export function useGuests(eventId, { page = 1, pageSize = 25, search = '', statu
       return api.get(`/events/${eventId}/guests?${params.toString()}`);
     },
     enabled: !!eventId,
-    placeholderData: (previousData) => previousData,
-    staleTime: 5000,
+    // Retain previous data only within the same event; show loading on event change (F18).
+    placeholderData: (previousData, previousQuery) => {
+      const prevEventId = previousQuery?.queryKey?.[1];
+      if (prevEventId && prevEventId === eventId) return previousData;
+      return undefined;
+    },
+    staleTime: 4000,
+    refetchInterval: 5000,
+    refetchOnWindowFocus: true,
+    refetchIntervalInBackground: false,
   });
 
   const guests = response?.data || [];
@@ -83,6 +91,13 @@ export function useGuests(eventId, { page = 1, pageSize = 25, search = '', statu
       invalidateAll();
     },
   });
+
+  // F17: reset mutation errors when dialogs are reused for another guest.
+  const resetMutations = useCallback(() => {
+    try { createMutation.reset?.(); } catch { /* ignore */ }
+    try { updateMutation.reset?.(); } catch { /* ignore */ }
+    try { deleteMutation.reset?.(); } catch { /* ignore */ }
+  }, [createMutation, updateMutation, deleteMutation]);
 
   // Selection handlers
   const toggleSelect = useCallback((guestId) => {
@@ -137,5 +152,6 @@ export function useGuests(eventId, { page = 1, pageSize = 25, search = '', statu
     deleteGuest: deleteMutation.mutateAsync,
     isDeleting: deleteMutation.isPending,
     deleteError: deleteMutation.error,
+    resetMutations,
   };
 }

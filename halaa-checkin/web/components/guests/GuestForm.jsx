@@ -81,14 +81,23 @@ export function GuestForm({
       errors.reference = lang === 'ar' ? 'الرمز المرجعي يتجاوز 60 حرفاً' : 'Reference exceeds 60 characters';
     }
 
-    const companionsNum = parseInt(allowedCompanions, 10);
-    if (isNaN(companionsNum) || companionsNum < 0 || companionsNum > 20) {
+    // F16: validate the original value; never silently truncate fractions.
+    const rawAllowed = String(allowedCompanions ?? '').trim();
+    let companionsNum = null;
+    if (rawAllowed === '' || !/^\d+$/.test(rawAllowed)) {
       errors.allowedCompanions =
-        lang === 'ar' ? 'عدد المرافقين يجب أن يكون بين 0 و 20' : 'Allowed companions must be between 0 and 20';
+        lang === 'ar' ? 'عدد المرافقين يجب أن يكون عدداً صحيحاً بين 0 و 20' : 'Allowed companions must be an integer between 0 and 20';
     } else {
-      const namesList = parseCompanionNames();
-      if (namesList.length > companionsNum) {
-        errors.companionNames = t(dict, 'guests.companionNamesLimitError', { max: companionsNum });
+      companionsNum = Number(rawAllowed);
+      if (!Number.isInteger(companionsNum) || companionsNum < 0 || companionsNum > 20) {
+        errors.allowedCompanions =
+          lang === 'ar' ? 'عدد المرافقين يجب أن يكون بين 0 و 20' : 'Allowed companions must be between 0 and 20';
+        companionsNum = null;
+      } else {
+        const namesList = parseCompanionNames();
+        if (namesList.length > companionsNum) {
+          errors.companionNames = t(dict, 'guests.companionNamesLimitError', { max: companionsNum });
+        }
       }
     }
 
@@ -101,12 +110,16 @@ export function GuestForm({
     if (isAdmitted || isClosed) return;
     if (!validate()) return;
 
-    const companionsNum = parseInt(allowedCompanions, 10) || 0;
+    const rawAllowed = String(allowedCompanions ?? '').trim();
+    const companionsNum = Number(rawAllowed);
     const companionNames = parseCompanionNames();
+    const trimmedRef = reference.trim();
 
     const payload = {
       name: name.trim(),
-      reference: reference.trim() || undefined,
+      // F16: explicit clearing value on edit (null clears server-side);
+      // undefined on create means "no reference".
+      reference: trimmedRef ? trimmedRef : (isEdit ? null : undefined),
       allowedCompanions: companionsNum,
       companionNames,
     };
@@ -118,7 +131,7 @@ export function GuestForm({
           version: guest.version,
           ...payload,
         },
-      });
+      }).catch(() => { /* Mutation error is displayed through apiError; preserve the form. */ });
     } else {
       await onSubmit(payload);
     }

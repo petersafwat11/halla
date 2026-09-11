@@ -192,6 +192,13 @@ const StepThree = () => {
     setMode("template");
   }, [parentSetValue]);
 
+  const discardIncompleteTemplate = useCallback(() => {
+    setShowFormModal(false);
+    parentSetValue("visualTemplate", null, { shouldValidate: true });
+    parentSetValue("templateImage", null, { shouldValidate: true });
+    setMode("template");
+  }, [parentSetValue]);
+
   // The selection is "confirmed" when the user has completed the
   // customisation modal (template mode) or uploaded an image (upload mode).
   // In template mode, `templateImage` becomes truthy only after bake.
@@ -458,7 +465,7 @@ const StepThree = () => {
         eventTime={eventTime}
         locale={locale}
         t={t}
-        onClose={() => setShowFormModal(false)}
+        onDiscard={discardIncompleteTemplate}
         onSave={(baked, formValues) => {
           parentSetValue(
             "visualTemplate",
@@ -537,7 +544,7 @@ const TemplateFormModal = ({
   eventTime,
   locale,
   t,
-  onClose,
+  onDiscard,
   onSave,
 }) => {
   const insets = useSafeAreaInsets();
@@ -609,13 +616,34 @@ const TemplateFormModal = ({
     }
   });
 
+  const requestClose = useCallback(() => {
+    Alert.alert(
+      t("template_incomplete_title", "Finish your design"),
+      t(
+        "template_incomplete_message",
+        "Complete the required template details and save, or discard this design to choose another option.",
+      ),
+      [
+        {
+          text: t("template_continue_editing", "Continue editing"),
+          style: "cancel",
+        },
+        {
+          text: t("template_discard", "Discard design"),
+          style: "destructive",
+          onPress: onDiscard,
+        },
+      ],
+    );
+  }, [onDiscard, t]);
+
   if (!template) return null;
 
   return (
     <Modal
       visible={visible}
       animationType="slide"
-      onRequestClose={onClose}
+      onRequestClose={requestClose}
       statusBarTranslucent
     >
       <SafeAreaView style={styles.modalContainer} edges={["top"]}>
@@ -624,7 +652,7 @@ const TemplateFormModal = ({
             {t("edit_design_template")}
           </Text>
           <TouchableOpacity
-            onPress={onClose}
+            onPress={requestClose}
             style={styles.modalCloseBtn}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
@@ -687,7 +715,7 @@ const TemplateFormModal = ({
         >
           <TouchableOpacity
             style={[styles.footerBtn, styles.footerBtnSecondary]}
-            onPress={onClose}
+            onPress={requestClose}
             activeOpacity={0.85}
             disabled={baking}
           >

@@ -121,7 +121,9 @@ export default function TaqnyatTemplatesTable({
       );
     }
 
+    if (key === "deliveryMode") return t(value === "portal_link" ? "taqnyat.businessAccount" : "taqnyat.personalAccount");
     if (key === "category") {
+      if (row.type === "reminder_confirmed") return t("taqnyat.allEventCategories");
       return value ? (
         <span className={styles.categoryAssigned}>{value}</span>
       ) : (
@@ -169,6 +171,7 @@ export default function TaqnyatTemplatesTable({
     language: tpl.language || "ar",
     status: tpl.status,
     category: tpl.category,
+    deliveryMode: tpl.deliveryMode || "quick_reply",
     type: tpl.type || null,
     invitationMode: tpl.type === "invite" ? tpl.invitationMode : null,
     mappingCount: tpl.varMapping?.length || 0,
@@ -215,6 +218,7 @@ export default function TaqnyatTemplatesTable({
             t("taqnyat.col.lang", "اللغة"),
             t("taqnyat.col.status", "الحالة"),
             t("taqnyat.col.category", "الفئة"),
+            t("taqnyat.accountType"),
             t("taqnyat.col.type", "النوع"),
             t("taqnyat.col.invitationMode", "وضع الدعوة"),
             t("taqnyat.col.mappingCount", "المتغيرات"),

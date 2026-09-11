@@ -124,7 +124,7 @@ router
   .get(validateZod(listTicketsQuerySchema, 'query'), ticketsController.getTickets)
   .post(
     uploadLimiter,
-    uploadMedia.single("ticketAttachment"),
+    uploadMedia.array("ticketAttachments", 4),
     validateZod(createTicketSchema),
     ticketsController.createTicket
   );

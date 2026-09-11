@@ -18,6 +18,7 @@ import {
   useEventById,
   useEventSubscriptionInfo,
   useEventCapabilities,
+  useEventMutation,
   useEventForm,
   mapEventToFormValues,
 } from "@/hooks/events";
@@ -104,6 +105,67 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
   // allow-add-only branch is locked.
   const isEventLive = eventRaw?.status === "live";
   const isEventCompleted = eventRaw?.status === "completed";
+
+  const addStaffMutation = useEventMutation("addStaff");
+  const updateStaffMutation = useEventMutation("updateStaff");
+  const deleteStaffMutation = useEventMutation("deleteStaff");
+
+  const handleStaffAdd = useCallback(async (staffMember) => {
+    if (!isEventLive) {
+      addStaffMember(staffMember);
+      return;
+    }
+
+    try {
+      const result = await addStaffMutation.mutateAsync({
+        eventId,
+        data: { name: staffMember.name, phone: staffMember.phone },
+      });
+      const created = result?.data?.staff || result?.staff;
+      addStaffMember({
+        ...staffMember,
+        id: created?._id || created?.id || staffMember.id,
+        phone: created?.phone || staffMember.phone,
+      });
+    } catch (error) {
+      handleError(error, t, { fallbackMessage: "errors.update_failed" });
+      throw error;
+    }
+  }, [isEventLive, addStaffMember, addStaffMutation, eventId, t]);
+
+  const handleStaffEdit = useCallback(async (staffMember) => {
+    if (!isEventLive) {
+      editStaffMember(staffMember);
+      return;
+    }
+
+    try {
+      await updateStaffMutation.mutateAsync({
+        eventId,
+        staffId: staffMember.id,
+        data: { name: staffMember.name, phone: staffMember.phone },
+      });
+      editStaffMember(staffMember);
+    } catch (error) {
+      handleError(error, t, { fallbackMessage: "errors.update_failed" });
+      throw error;
+    }
+  }, [isEventLive, editStaffMember, updateStaffMutation, eventId, t]);
+
+  const handleStaffDelete = useCallback(async (staffId) => {
+    if (!isEventLive) {
+      deleteStaffMember(staffId);
+      return;
+    }
+
+    try {
+      await deleteStaffMutation.mutateAsync({ eventId, staffId });
+      deleteStaffMember(staffId);
+    } catch (error) {
+      handleError(error, t, { fallbackMessage: "errors.update_failed" });
+      throw error;
+    }
+  }, [isEventLive, deleteStaffMember, deleteStaffMutation, eventId, t]);
 
   useEffect(() => {
     if (eventRaw) reset(mapEventToFormValues(eventRaw));
@@ -268,9 +330,9 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
           >
             <StaffPopup
               staffList={staffList}
-              onAdd={addStaffMember}
-              onEdit={editStaffMember}
-              onDelete={deleteStaffMember}
+              onAdd={handleStaffAdd}
+              onEdit={handleStaffEdit}
+              onDelete={handleStaffDelete}
               onClose={() => setShowStaffPopup(false)}
             />
           </PopupWrapper>

@@ -40,6 +40,7 @@ const { routes: adminRoutes } = require("./modules/admin");
 const { discountsRoutes } = require("./modules/discounts");
 const addonsRoutes = require("./modules/addons/addons.routes");
 const { routes: paymentsRoutes } = require("./modules/payments");
+const paymentLinksPublicRoutes = require("./modules/payment-links/paymentLinks.public.routes");
 const businessRoutes = require("./modules/business/business.routes");
 const { routes: moderationRoutes } = require("./modules/moderation");
 // Taqnyat-template cache + sync + admin assignment
@@ -172,7 +173,7 @@ const createApp = () => {
   app.use((req, res, next) => {
     if (
       req.originalUrl &&
-      req.originalUrl.includes("/payments/revenuecat/webhook")
+      (req.originalUrl.includes("/payments/revenuecat/webhook") || req.originalUrl.includes("/payment-links/provider-callback"))
     ) {
       return webhookJson(req, res, next);
     }
@@ -295,6 +296,7 @@ const createApp = () => {
     app.use(`${prefix}/discounts`, discountsRoutes);
     app.use(`${prefix}/addons`, addonsRoutes);
     app.use(`${prefix}/payments`, paymentsRoutes);
+    app.use(`${prefix}/payment-links`, paymentLinksPublicRoutes);
     app.use(`${prefix}/business`, businessRoutes);
     app.use(`${prefix}/moderation`, moderationRoutes);
     // Visual templates + categories + Taqnyat templates.

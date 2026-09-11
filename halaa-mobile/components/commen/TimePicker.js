@@ -53,6 +53,8 @@ const TimePickerField = ({
   sheetTitle,
   cancelLabel,
   confirmLabel,
+  minimumDate,
+  maximumDate,
 }) => {
   const [show, setShow] = useState(false);
   // Draft ownership mirrors create/update event Step 1: wheel changes stay
@@ -67,14 +69,19 @@ const TimePickerField = ({
 
   const openPicker = () => {
     if (disabled) return;
-    setDraftTime(selectedTime || new Date());
+    let next = selectedTime || new Date();
+    if (minimumDate && next < minimumDate) next = new Date(minimumDate);
+    if (maximumDate && next > maximumDate) next = new Date(maximumDate);
+    setDraftTime(next);
     setShow(true);
   };
 
   const handleAndroidChange = (event, time) => {
     setShow(false);
     if (event?.type !== "dismissed" && time) {
-      onChange(time);
+      if (minimumDate && time < minimumDate) onChange(new Date(minimumDate));
+      else if (maximumDate && time > maximumDate) onChange(new Date(maximumDate));
+      else onChange(time);
     }
   };
 
@@ -127,6 +134,8 @@ const TimePickerField = ({
           cancelLabel={cancelLabel}
           confirmLabel={confirmLabel}
           locale={locale}
+          minimumDate={minimumDate}
+          maximumDate={maximumDate}
           isRTL={isRTL}
           onChange={(_, time) => {
             if (time) setDraftTime(time);
@@ -148,6 +157,8 @@ const TimePickerField = ({
           onChange={handleAndroidChange}
           textColor="#2C2C2C"
           locale={locale}
+          minimumDate={minimumDate}
+          maximumDate={maximumDate}
         />
       )}
     </View>
@@ -163,6 +174,8 @@ const TimePicker = ({
   sheetTitle,
   cancelLabel,
   confirmLabel,
+  minimumDate,
+  maximumDate,
   ...props
 }) => {
   const { currentLanguage, isRTL } = useTranslation();
@@ -188,6 +201,8 @@ const TimePicker = ({
           sheetTitle={sheetTitle}
           cancelLabel={cancelLabel ?? t("buttons.cancel")}
           confirmLabel={confirmLabel ?? t("buttons.confirm")}
+          minimumDate={minimumDate}
+          maximumDate={maximumDate}
         />
       )}
     />

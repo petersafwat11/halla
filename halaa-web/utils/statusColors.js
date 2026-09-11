@@ -58,6 +58,11 @@ const BASE_TONE = {
   refunded: "info",
   partially_refunded: "info",
   voided: "neutral",
+  awaiting_payment: "warning",
+  processing: "info",
+  needs_review: "warning",
+  canceled: "neutral",
+  unavailable: "danger",
 
   // Subscription
   trial: "purple",

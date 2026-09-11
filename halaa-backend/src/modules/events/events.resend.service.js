@@ -188,6 +188,8 @@ module.exports = {
     // Budget pre-check (402 if over plan).
     await _assertInviteBudget(event.subscriptionId, targetGuests.length);
 
+
+
     const channel = _resolveChannel(event, body.channel);
     const isAdmin = isAdminRole(user?.role);
 
@@ -511,6 +513,21 @@ module.exports = {
     // ---------- Budget pre-check (402 if over plan) ----------
     await _assertInviteBudget(event.subscriptionId, targetGuests.length);
 
+    // Reserve this batch atomically so two concurrent reminder requests cannot
+    // both spend the same remaining invitations. Failed recipients are refunded.
+    const subscription = await Subscription.findById(event.subscriptionId).select('invitePool');
+    const limited = subscription?.invitePool != null;
+    if (limited) {
+      const reservation = await Subscription.updateOne({
+        _id: event.subscriptionId,
+        $expr: { $lte: [
+          { $add: [{ $ifNull: ['$invitesConsumed', 0] }, targetGuests.length] },
+          { $add: [{ $ifNull: ['$invitePool', 0] }, { $ifNull: ['$compensationPool', 0] }] },
+        ] },
+      }, { $inc: { invitesConsumed: targetGuests.length } });
+      if (reservation.modifiedCount !== 1) throw new AppError('Insufficient invitations remaining', 402, 'INSUFFICIENT_INVITES');
+    }
+
     // Unique attempt token so repeated calls genuinely re-send (the batch
     // wraps each send in withIdempotency; a static key would replay a cached
     // success and charge the pool without sending).
@@ -525,7 +542,16 @@ module.exports = {
     });
 
     const successful = result.successful;
-    const failed = result.failed;
+    const failed = result.failed + (result.rateLimited || 0);
+    if (limited && targetGuests.length > successful) {
+      await Subscription.updateOne({ _id: event.subscriptionId }, {
+        $inc: { invitesConsumed: -(targetGuests.length - successful) },
+      });
+    }
+    if (successful > 0) await Subscription.updateOne(
+      { _id: event.subscriptionId, firstSendAt: null },
+      { $set: { firstSendAt: new Date() } }
+    );
 
     // Per-guest tracking writes for successful sends.
     const bulkOps = [];
@@ -536,19 +562,17 @@ module.exports = {
           filter: { _id: detail.guestId },
           update: {
             $set: {
-              "invitation.autoReminderSent": true,
-              "invitation.autoReminderSentAt": new Date(),
-              "invitation.autoReminderType": "reminder_confirmed",
-              "invitation.autoReminderMessageId": detail.messageId || null,
+              "invitation.extraReminderSentAt": new Date(),
+              "invitation.extraReminderMessageId": detail.messageId || null,
             },
+            $inc: { "invitation.extraReminderCount": 1 },
           },
         },
       });
     }
     if (bulkOps.length) await Guest.bulkWrite(bulkOps);
 
-    // Charge one invite per successful send (excludes failures / rate-limited).
-    await _chargeInvites(event.subscriptionId, successful);
+    // Successful recipients retain their reservation; failures were refunded.
 
     try {
       await logAudit({

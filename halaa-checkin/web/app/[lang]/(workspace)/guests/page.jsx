@@ -11,9 +11,10 @@ export default function GuestsPage() {
   const lang = params?.lang === 'en' ? 'en' : 'ar';
   const router = useRouter();
 
-  const { role, isLoading } = useSession();
+  const { role, isLoading, isAuthenticated } = useSession();
 
-  // Role guard: Receptionists are redirected to Gate workspace
+  // Role guard: Receptionists are redirected to Gate workspace.
+  // Fail closed: unknown/null roles never render the admin workspace.
   useEffect(() => {
     if (!isLoading && role === 'reception') {
       const eventId = searchParams?.get('eventId');
@@ -22,8 +23,16 @@ export default function GuestsPage() {
     }
   }, [isLoading, role, lang, router, searchParams]);
 
+  if (isLoading) {
+    return null;
+  }
+
   if (role === 'reception') {
     return null; // Redirecting
+  }
+
+  if (!isAuthenticated || role !== 'admin') {
+    return null; // Fail closed: do not render admin UI without confirmed admin role
   }
 
   return <GuestsWorkspace lang={lang} />;

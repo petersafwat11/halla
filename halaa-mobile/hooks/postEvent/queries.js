@@ -107,12 +107,12 @@ export function usePostEventComments(
     queryFn: () => {
       const { page = 1, limit = 20 } = params || {};
       return _guestRequest(
-        `${API_BASE_URL}${ENDPOINTS.POST_EVENT.GET_COMMENTS(eventId, postId)}?page=${page}&limit=${limit}`,
+        `${API_BASE_URL}${(postId ? ENDPOINTS.POST_EVENT.GET_COMMENTS(eventId, postId) : `/post-event/${eventId}/comments`)}?page=${page}&limit=${limit}`,
         { method: "GET", headers: _withSession(sessionToken) },
         "Failed to load comments",
       );
     },
-    enabled: !!eventId && !!postId && !!sessionToken,
+    enabled: !!eventId && !!sessionToken,
     staleTime: 30 * 1000,
     ...opts,
   });

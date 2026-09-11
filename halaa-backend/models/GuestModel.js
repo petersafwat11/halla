@@ -210,6 +210,10 @@ const guestSchema = new mongoose.Schema(
         enum: ['reminder_confirmed'],
       },
       autoReminderMessageId: { type: String },
+      // Paid extra reminders must not consume the free automatic reminder.
+      extraReminderCount: { type: Number, default: 0 },
+      extraReminderSentAt: { type: Date },
+      extraReminderMessageId: { type: String },
     },
     // Soft-delete tombstone — set instead of deleteMany on guest removal
     deleted: { type: Boolean, default: false },

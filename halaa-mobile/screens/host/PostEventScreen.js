@@ -17,7 +17,7 @@ import {
   useValidatePostEventToken,
 } from "../../hooks/postEvent";
 import PostCard from "../../components/host/post-event/post-card/PostCard";
-import GuestEventHeader from "../../components/host/post-event/GuestEventHeader";
+
 import DirectionalIonicon from "../../components/common/DirectionalIonicon";
 import AdaptiveText from "../../components/commen/AdaptiveText";
 import { layout } from "../../styles/tokens";
@@ -39,21 +39,22 @@ const _resolveQrErrorKey = (error) => {
   }
 };
 
-export default function PostEventScreen({ navigation, route }) {
+export default function PostEventScreen({ navigation, route, previewContent }) {
   const { t } = useTranslation("postEvent");
   const toast = useToast();
-  const { token: accessToken } = route?.params || {};
+  const isPreview = !!previewContent;
+  const accessToken = isPreview ? null : route?.params?.token;
 
   const validateQuery = useValidatePostEventToken(accessToken);
   const validation = validateQuery.data?.data || validateQuery.data || {};
   const sessionToken = validation?.sessionToken || null;
-  const guestInfo = validation?.guest || null;
-  const eventInfo = validation?.event || null;
+
+  const eventInfo = isPreview ? { ...previewContent.event, title: previewContent.event?.eventDetails?.title || previewContent.eventTitle } : validation?.event || null;
   const eventId = eventInfo?._id || eventInfo?.id || null;
 
   const contentQuery = usePostEventContent(eventId, sessionToken);
   const contentPayload =
-    contentQuery.data?.data || contentQuery.data || {};
+    previewContent || contentQuery.data?.data || contentQuery.data || {};
 
   const posts = useMemo(() => {
     const media = Array.isArray(contentPayload.media)
@@ -71,6 +72,10 @@ export default function PostEventScreen({ navigation, route }) {
 
   const [errorKey, setErrorKey] = useState(null);
   useEffect(() => {
+    if (isPreview) {
+      setErrorKey(null);
+      return;
+    }
     if (!accessToken) {
       setErrorKey("errors.qrInvalid");
       return;
@@ -85,6 +90,7 @@ export default function PostEventScreen({ navigation, route }) {
     }
     setErrorKey(null);
   }, [
+    isPreview,
     accessToken,
     validateQuery.isError,
     validateQuery.error,
@@ -97,7 +103,7 @@ export default function PostEventScreen({ navigation, route }) {
     if (navigation?.canGoBack()) navigation.goBack();
   };
 
-  const isValidating = validateQuery.isLoading;
+  const isValidating = !isPreview && validateQuery.isLoading;
   const isLoadingContent =
     !!sessionToken && contentQuery.isLoading && !contentQuery.data;
 
@@ -160,8 +166,8 @@ export default function PostEventScreen({ navigation, route }) {
             virtualization while the keyboard-controller's aware scroll
             component reveals whichever composer input gains focus. */}
         <FlatList
-          data={posts}
-          keyExtractor={(item) => item._id?.toString()}
+          data={[{ ...contentPayload, _id: undefined, type: "gallery", media: posts }]}
+          keyExtractor={() => "shared-post"}
           renderItem={({ item }) => (
             <PostCard
               post={item}
@@ -169,21 +175,17 @@ export default function PostEventScreen({ navigation, route }) {
               sessionToken={sessionToken}
               t={t}
               toast={toast}
+              readOnly={isPreview}
+              settings={contentPayload.settings}
+              host={previewContent?.event?.host || contentPayload.host}
+              eventDate={contentPayload.event?.eventDetails?.date}
+              thankYouMessage={thankYouMessage}
             />
           )}
-          ListHeaderComponent={
-            <GuestEventHeader
-              eventInfo={eventInfo}
-              guestInfo={guestInfo}
-              thankYouMessage={thankYouMessage}
-              postsCount={posts.length}
-              t={t}
-            />
-          }
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
-          renderScrollComponent={KeyboardAwareListScrollComponent}
+          renderScrollComponent={(props) => <KeyboardAwareListScrollComponent {...props} />}
         />
       </View>
     </SafeAreaView>
@@ -259,5 +261,5 @@ const styles = StyleSheet.create({
     color: "#fff",
     textAlign: "center",
   },
-  listContent: { paddingBottom: layout.dashboardPageBottom },
+  listContent: { paddingTop: 16, paddingBottom: layout.dashboardPageBottom, width: '100%', maxWidth: 760, alignSelf: 'center' },
 });

@@ -31,7 +31,7 @@ export function GuestDeleteDialog({
     await onConfirm({
       guestId: guest.id,
       version: guest.version,
-    });
+    }).catch(() => { /* Mutation error is displayed through apiError; preserve the form. */ });
   };
 
   return (

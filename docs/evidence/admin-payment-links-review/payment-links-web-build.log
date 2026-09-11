@@ -1,0 +1,127 @@
+
+> halaa-web@0.1.0 build
+> next build
+
+   ▲ Next.js 15.5.23
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 14.1s
+   Linting and checking validity of types ...
+
+./app/.well-known/assetlinks.json/route.js
+23:5  Warning: Unused eslint-disable directive (no problems were reported from 'no-console').
+
+./app/[lang]/admin-dash/manage-plans/_components/edit-plan/PlanFeatureBulletsSection.js
+35:6  Warning: React Hook React.useEffect has a missing dependency: 'rawText'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/[lang]/host/create-event/_components/summary/Summary.js
+111:22  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./app/[lang]/host/create-event/_components/whatsappPreview/WhatsappPreview.js
+67:6  Warning: React Hook useMemo has missing dependencies: 'entryDate' and 'eventDate'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+   Collecting page data ...
+   Generating static pages (0/8) ...
+ ⚠ metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+   Generating static pages (2/8) 
+   Generating static pages (4/8) 
+   Generating static pages (6/8) 
+ ✓ Generating static pages (8/8)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                                      Size  First Load JS
+┌ ○ /_not-found                                                  1 kB         106 kB
+├ ƒ /.well-known/apple-app-site-association                     157 B         105 kB
+├ ƒ /.well-known/assetlinks.json                                157 B         105 kB
+├ ƒ /[lang]                                                   23.9 kB         200 kB
+├ ƒ /[lang]/admin-dash                                        96.8 kB         328 kB
+├ ƒ /[lang]/admin-dash/businesses                             13.1 kB         271 kB
+├ ƒ /[lang]/admin-dash/businesses/[id]                        7.84 kB         216 kB
+├ ƒ /[lang]/admin-dash/create-event                           5.68 kB         528 kB
+├ ƒ /[lang]/admin-dash/custom-designs                         10.2 kB         214 kB
+├ ƒ /[lang]/admin-dash/discounts                              19.7 kB         267 kB
+├ ƒ /[lang]/admin-dash/events                                 15.2 kB         264 kB
+├ ƒ /[lang]/admin-dash/events/[id]                            2.98 kB         325 kB
+├ ƒ /[lang]/admin-dash/hosts                                  21.4 kB         272 kB
+├ ƒ /[lang]/admin-dash/hosts/[id]                             12.2 kB         207 kB
+├ ƒ /[lang]/admin-dash/manage-plans                           19.1 kB         264 kB
+├ ƒ /[lang]/admin-dash/market-place                             158 B         180 kB
+├ ƒ /[lang]/admin-dash/market-place/vendors/[vendorId]          150 B         177 kB
+├ ƒ /[lang]/admin-dash/moderators                             19.3 kB         270 kB
+├ ƒ /[lang]/admin-dash/payments                               19.1 kB         269 kB
+├ ƒ /[lang]/admin-dash/payments/links                           15 kB         247 kB
+├ ƒ /[lang]/admin-dash/post-event/[eventId]                     206 B         184 kB
+├ ƒ /[lang]/admin-dash/settings                               3.64 kB         223 kB
+├ ƒ /[lang]/admin-dash/taqnyat-templates                      27.4 kB         268 kB
+├ ƒ /[lang]/admin-dash/templates                              7.03 kB         167 kB
+├ ƒ /[lang]/admin-dash/templates/[id]                           13 kB         249 kB
+├ ƒ /[lang]/admin-dash/templates/categories                   15.3 kB         260 kB
+├ ƒ /[lang]/admin-dash/tickets                                  16 kB         267 kB
+├ ƒ /[lang]/admin-dash/tickets/[id]                           5.11 kB         227 kB
+├ ƒ /[lang]/admin-dash/update-event                           3.18 kB         519 kB
+├ ƒ /[lang]/admin-dash/vendors                                17.2 kB         267 kB
+├ ƒ /[lang]/admin-dash/vendors/[id]                           10.1 kB         197 kB
+├ ƒ /[lang]/business-invitation/[code]                        7.17 kB         180 kB
+├ ƒ /[lang]/business/checkout/[token]                         2.84 kB         229 kB
+├ ƒ /[lang]/business/checkout/[token]/return                  1.91 kB         159 kB
+├ ƒ /[lang]/change-password                                   5.15 kB         214 kB
+├ ƒ /[lang]/community-rules                                     151 B         152 kB
+├ ƒ /[lang]/delete-account                                    3.71 kB         184 kB
+├ ƒ /[lang]/forget-password                                   3.41 kB         212 kB
+├ ƒ /[lang]/host                                              23.9 kB         263 kB
+├ ƒ /[lang]/host/create-event                                 4.77 kB         523 kB
+├ ƒ /[lang]/host/events                                       11.6 kB         223 kB
+├ ƒ /[lang]/host/events/[id]                                    384 B         309 kB
+├ ƒ /[lang]/host/market-place                                   158 B         180 kB
+├ ƒ /[lang]/host/market-place/vendors/[vendorId]                150 B         177 kB
+├ ƒ /[lang]/host/payments                                     8.64 kB         194 kB
+├ ƒ /[lang]/host/payments/return                              4.62 kB         161 kB
+├ ƒ /[lang]/host/plans                                        18.5 kB         254 kB
+├ ƒ /[lang]/host/plans/summary                                  393 B         105 kB
+├ ƒ /[lang]/host/post-event/[eventId]                           206 B         184 kB
+├ ƒ /[lang]/host/settings                                     5.23 kB         223 kB
+├ ƒ /[lang]/host/tickets                                      1.37 kB         223 kB
+├ ƒ /[lang]/host/update-event                                   363 B         516 kB
+├ ƒ /[lang]/invitation/[code]                                 4.79 kB         169 kB
+├ ƒ /[lang]/login                                              4.1 kB         217 kB
+├ ƒ /[lang]/market-place                                        157 B         180 kB
+├ ƒ /[lang]/market-place/vendors/[vendorId]                     149 B         177 kB
+├ ƒ /[lang]/post-event                                        5.84 kB         216 kB
+├ ƒ /[lang]/privacy                                             151 B         152 kB
+├ ƒ /[lang]/refund                                              151 B         152 kB
+├ ƒ /[lang]/reset-password                                      157 B         105 kB
+├ ƒ /[lang]/signup                                            2.38 kB         212 kB
+├ ƒ /[lang]/signup-vendor                                     18.1 kB         236 kB
+├ ƒ /[lang]/signup-vendor/pending                             5.71 kB         131 kB
+├ ƒ /[lang]/signup/continue-signup                            4.68 kB         215 kB
+├ ƒ /[lang]/staff                                             14.6 kB         171 kB
+├ ƒ /[lang]/support                                             151 B         152 kB
+├ ƒ /[lang]/terms                                               152 B         152 kB
+├ ƒ /[lang]/ticket-rating/[id]                                7.37 kB         212 kB
+├ ƒ /[lang]/vendor-dashboard                                  10.5 kB         219 kB
+├ ƒ /[lang]/vendor-dashboard/market-place                       158 B         180 kB
+├ ƒ /[lang]/vendor-dashboard/market-place/vendors/[vendorId]    150 B         177 kB
+├ ƒ /[lang]/vendor-dashboard/settings                         19.9 kB         215 kB
+├ ƒ /[lang]/vendor-dashboard/tickets                          1.37 kB         223 kB
+├ ƒ /[lang]/verify-email                                      4.96 kB         192 kB
+├ ƒ /api/proxy/image                                            157 B         105 kB
+├ ○ /apple-icon.png                                               0 B            0 B
+├ ○ /icon.png                                                     0 B            0 B
+├ ○ /manifest.webmanifest                                       157 B         105 kB
+├ ○ /opengraph-image                                            157 B         105 kB
+├ ○ /robots.txt                                                 157 B         105 kB
+└ ƒ /sitemap.xml                                                157 B         105 kB
++ First Load JS shared by all                                  105 kB
+  ├ chunks/3131-3f6001c9c9268389.js                           46.6 kB
+  ├ chunks/c7879cf7-fabe25011515220e.js                       54.2 kB
+  └ other shared chunks (total)                               3.75 kB
+
+
+ƒ Middleware                                                  48.8 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

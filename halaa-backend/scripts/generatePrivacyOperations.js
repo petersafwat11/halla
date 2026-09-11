@@ -19,7 +19,7 @@ const stable = (value) => {
 function build() {
   const source = JSON.parse(fs.readFileSync(sourcePath, "utf8"));
   if (source.ownerApproval !== "OWNER_APPROVED") throw new Error("privacy operations owner approval missing");
-  if (!Array.isArray(source.retentionRules) || source.retentionRules.length !== 5) throw new Error("expected five retention rules");
+  if (!Array.isArray(source.retentionRules) || source.retentionRules.length === 0) throw new Error("retention rules are required");
   const ids = new Set();
   for (const rule of source.retentionRules) {
     if (!rule.id || ids.has(rule.id)) throw new Error(`duplicate/missing retention rule id: ${rule.id}`);

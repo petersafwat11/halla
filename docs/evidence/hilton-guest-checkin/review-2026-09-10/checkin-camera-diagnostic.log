@@ -1,0 +1,57 @@
+Camera diagnostics {
+  text: 'Guest Check-in\n' +
+    'Browser review event\n' +
+    'Live\n' +
+    'العربية\n' +
+    'Browser Admin\n' +
+    'Administrator\n' +
+    'Guests\n' +
+    'Gate\n' +
+    'Browser review event\n' +
+    'Live\n' +
+    '📍 Synthetic hall\n' +
+    '🕒 Oct 10, 2026, 07:00 PM\n' +
+    '🟢\n' +
+    'Online\n' +
+    'As of 03:52:41 PM\n' +
+    '📷\n' +
+    'Camera Scanner\n' +
+    'Stop Camera\n' +
+    '📟\n' +
+    'Barcode Scanner (USB / Bluetooth)\n' +
+    'Verify Code\n' +
+    '🔍\n' +
+    'Manual Guest Lookup\n' +
+    'Manual Guest Lookup\n' +
+    '🎫\n' +
+    'Invitation Details\n' +
+    '\n' +
+    'Point camera at the guest QR code\n' +
+    '\n' +
+    '📋\n' +
+    'Recent Admissions\n' +
+    'No guests checked in yet.',
+  video: { ready: 4, paused: false },
+  tracks: [ 'live' ]
+} []
+✖ real browser → frontend → Express → replica set: first event, guest, CSV, gate uncertainty, reauthentication, reset truth and logout (23348.607ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 24238.1193
+
+✖ failing tests:
+
+test at tests\e2e\browser-integrated.test.js:23:1
+✖ real browser → frontend → Express → replica set: first event, guest, CSV, gate uncertainty, reauthentication, reset truth and logout (23348.607ms)
+  locator.waitFor: Timeout 15000ms exceeded.
+  Call log:
+  [2m  - waiting for getByTestId('admit-guest-btn') to be visible[22m
+  
+      at TestContext.<anonymous> (D:\halla\halaa-checkin\tests\e2e\browser-integrated.test.js:129:47) {
+    name: 'TimeoutError'
+  }

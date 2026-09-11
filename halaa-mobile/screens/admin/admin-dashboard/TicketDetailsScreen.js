@@ -68,7 +68,7 @@ const TicketDetailsScreen = () => {
 
   const [resolveModal, setResolveModal] = useState(false);
   const [assignModal, setAssignModal] = useState(false);
-  const [imageViewerVisible, setImageViewerVisible] = useState(false);
+  const [viewerAttachment, setViewerAttachment] = useState(null);
 
   if (error) toast.error(t("ticketDetails.loadFailed"));
 
@@ -78,7 +78,8 @@ const TicketDetailsScreen = () => {
     message: raw.message, status: raw.status || "open", priority: raw.priority || "medium",
     category: raw.category, submittedBy: raw.user, assignedTo: raw.assignedTo,
     assignmentNote: raw.assignmentNote,
-    attachment: raw.attachment || null,
+    attachments: raw.attachments?.length ? raw.attachments : raw.attachment ? [raw.attachment] : [],
+    attachment: raw.attachment || raw.attachments?.[0] || null,
     resolution: raw.resolution, createdAt: raw.createdAt, updatedAt: raw.updatedAt,
   } : null;
 
@@ -167,17 +168,17 @@ const TicketDetailsScreen = () => {
           </View>
         </TicketSectionCard>
 
-        {ticket.attachment?.url && (
+        {ticket.attachments?.length > 0 && (
           <TicketSectionCard title={t("ticketDetails.attachment", "Attachment")} icon="attach-outline">
-            <View style={styles.attachmentContainer}>
-              {ticket.attachment.type === "image" ? (
+            {ticket.attachments.map((attachment, index) => <View style={styles.attachmentContainer} key={`${attachment.url}-${index}`}>
+              {attachment.type === "image" ? (
                 <TouchableOpacity
                   style={styles.attachmentThumbWrap}
-                  onPress={() => setImageViewerVisible(true)}
+                  onPress={() => setViewerAttachment(attachment)}
                   activeOpacity={0.8}
                 >
                   <Image
-                    source={{ uri: getImageUrl(ticket.attachment.url) }}
+                    source={{ uri: getImageUrl(attachment.url) }}
                     style={styles.attachmentThumb}
                   />
                   <View style={styles.attachmentThumbOverlay}>
@@ -187,7 +188,7 @@ const TicketDetailsScreen = () => {
               ) : (
                 <TouchableOpacity
                   style={styles.attachmentVideoThumb}
-                  onPress={() => Linking.openURL(ticket.attachment.url).catch(() => {})}
+                  onPress={() => Linking.openURL(attachment.url).catch(() => {})}
                   activeOpacity={0.8}
                 >
                   <Ionicons name="videocam" size={24} color="#c28e5c" />
@@ -197,11 +198,11 @@ const TicketDetailsScreen = () => {
                 </TouchableOpacity>
               )}
               <LocalizedText style={styles.attachmentLabel}>
-                {ticket.attachment.type === "image"
+                {attachment.type === "image"
                   ? t("ticketDetails.viewImage", "View Image")
                   : t("ticketDetails.viewVideo", "Play Video")}
               </LocalizedText>
-            </View>
+            </View>)}
           </TicketSectionCard>
         )}
 
@@ -288,26 +289,26 @@ const TicketDetailsScreen = () => {
         <View style={{ height: spacing[32] }} />
       </ScrollView>
 
-      {ticket?.attachment?.type === "image" && (
+      {viewerAttachment?.type === "image" && (
         <Modal
-          visible={imageViewerVisible}
+          visible={!!viewerAttachment}
           transparent
           animationType="fade"
-          onRequestClose={() => setImageViewerVisible(false)}
+          onRequestClose={() => setViewerAttachment(null)}
         >
           <TouchableOpacity
             style={styles.viewerOverlay}
             activeOpacity={1}
-            onPress={() => setImageViewerVisible(false)}
+            onPress={() => setViewerAttachment(null)}
           >
             <Image
-              source={{ uri: getImageUrl(ticket.attachment.url) }}
+              source={{ uri: getImageUrl(viewerAttachment.url) }}
               style={styles.viewerImage}
               resizeMode="contain"
             />
             <TouchableOpacity
               style={styles.viewerClose}
-              onPress={() => setImageViewerVisible(false)}
+              onPress={() => setViewerAttachment(null)}
               accessibilityRole="button"
               accessibilityLabel={t("common.close")}
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}

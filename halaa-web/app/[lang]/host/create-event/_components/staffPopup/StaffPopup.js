@@ -11,6 +11,7 @@ import { FiEdit2, FiTrash2 } from "react-icons/fi";
 import {
   isValidPhone,
   normalizePhoneNumber,
+  toLocalSaudiPhone,
   DEFAULT_PHONE_PLACEHOLDER,
 } from "@halaa/shared/utils/phone";
 
@@ -26,6 +27,7 @@ const StaffPopup = ({
   const [currentItem, setCurrentItem] = useState({ name: "", phone: "" });
   const [localErrors, setLocalErrors] = useState({});
   const [showValidationErrors, setShowValidationErrors] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Reset current item
   const resetCurrentItem = () => {
@@ -89,27 +91,41 @@ const StaffPopup = ({
   }, [currentItem, staffList, t]);
 
   // Add handler
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!validateItem()) return;
     const newItem = {
       name: currentItem.name?.trim() || "",
       phone: currentItem.phone?.trim() || "",
       id: Date.now(),
     };
-    onAdd(newItem);
-    resetCurrentItem();
+    setIsSubmitting(true);
+    try {
+      await onAdd(newItem);
+      resetCurrentItem();
+    } catch {
+      // The caller owns user-facing API error handling.
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Edit handler
-  const handleEditSubmit = () => {
+  const handleEditSubmit = async () => {
     if (!validateItem()) return;
     const updatedItem = {
       name: currentItem.name?.trim() || "",
       phone: currentItem.phone?.trim() || "",
       id: currentItem.id,
     };
-    onEdit(updatedItem);
-    resetCurrentItem();
+    setIsSubmitting(true);
+    try {
+      await onEdit(updatedItem);
+      resetCurrentItem();
+    } catch {
+      // Keep the edited values so the user can retry after an API failure.
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Edit click handler
@@ -119,7 +135,7 @@ const StaffPopup = ({
       if (item) {
         setCurrentItem({
           name: item.name || "",
-          phone: item.phone || "",
+          phone: toLocalSaudiPhone(item.phone || ""),
           id: item.id,
         });
         setLocalErrors({});
@@ -186,6 +202,7 @@ const StaffPopup = ({
                     variant="primary"
                     title={t("staff_update", "تحديث")}
                     onClick={handleEditSubmit}
+                    disabled={isSubmitting}
                   />
                   <Button
                     variant="secondary"
@@ -198,6 +215,7 @@ const StaffPopup = ({
                   variant="primary"
                   title={t("staff_add_to_list", "إضافة إلى القائمة")}
                   onClick={handleAdd}
+                  disabled={isSubmitting}
                 />
               )}
             </div>
@@ -219,7 +237,17 @@ const StaffPopup = ({
                   {
                     icon: <FiTrash2 size={18} />,
                     text: t("staff_delete", "حذف"),
-                    onClick: (row) => onDelete(row.id),
+                    onClick: async (row) => {
+                      if (isSubmitting) return;
+                      setIsSubmitting(true);
+                      try {
+                        await onDelete(row.id);
+                      } catch {
+                        // The caller owns user-facing API error handling.
+                      } finally {
+                        setIsSubmitting(false);
+                      }
+                    },
                   },
                 ]}
                 showSearch={false}

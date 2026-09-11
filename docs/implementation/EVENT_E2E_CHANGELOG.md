@@ -65,3 +65,51 @@ EVENT_MOBILE_PARITY_REVIEW.md records each event-related web repair, its corresp
 - MA01 audit: test message accepted with provider message ID; status scheduled with September 10, 2026 at 02:35 Riyadh. User-edited guest ending 6384 is outside the original QA recipient allowlist; restore an approved recipient before a scoped send.
 - User now owns UI testing. Remaining lifecycle/reminder/device verification is open; this release does not certify those checks as complete.
 - Release checks: backend 585/585, mobile 547/547, web 216/216, check-in contracts/API/web 132/132. Check-in production build passed. Production deployment evidence will be recorded separately.
+
+## September 11 — scheduled launch fingerprint investigation and fix
+
+MA01: durable audit records test at Sep 8 23:27:25 UTC, schedule at 23:29:38 UTC for Sep 10 02:35 Riyadh, and cron-launch abort at Sep 9 23:35:00 UTC. VPS logs independently confirm the fingerprint abort. No event-content edit is audited between scheduling and abort. Current template updatedAt and lastSyncedAt are Sep 9 21:39:03 UTC, before launch. Original test artwork URL matches the current stored artwork path. One provider-accepted test record exists; no bulk records. No historical template-content snapshot is retained, so timestamp-only change is strongly supported but cannot be proved retrospectively.
+
+Fix: versioned v2 fingerprint excludes provider synchronization timestamps while retaining actual template text, mappings, buttons, language, rendered content, event details, replies and artwork. Exact legacy fingerprints remain accepted where still matching; mismatched legacy hashes are never automatically approved. Scheduling upgrades a successfully matched legacy approval to v2. Previously aborted events still require a fresh test and schedule; no DB status/schedule restoration performed.
+
+Related review: scheduling/launch now populate host accountType consistently with test sending, preventing a business-delivery fallback mismatch. MA01 is personal/explicit quick_reply, so this was not its observed cause. Public image origin and formatting changes can also legitimately change a fingerprint; the original local QA harness used the production media origin. No balance/provider failure occurred in this launch path: the fingerprint gate ran before dispatch. No new outbound messages sent during diagnosis.
+
+Focused fingerprint and lifecycle regressions: 17/17 passed. Full current-worktree backend results recorded after completion. Changes remain local pending deployment; the VPS still needs the fix before a future automatic launch.
+
+Full current-worktree backend suite passed: 635/635 tests. No production deployment or event-state mutation was performed.
+
+September 11 reschedule fix: confirmed MA01 returned to scheduled with September 12 02:25 retained after cancellation. Cancellation now clears the launch date/time; reopening cancelled/completed/failed events through the legacy scheduled status action returns pending_scheduling and clears old launch settings. Web/mobile confirmations explain that a new schedule is required. 21 lifecycle regressions passed, including legacy cancelled records retaining old dates. Scoped MA01 repair saved its previous state privately and cleared the obsolete schedule with an updatedAt concurrency check. Local backend restarted; VPS deployment remains pending.
+
+September 11: Added shared event_unscheduled notification for host detail/settings edits and admin message-affecting edits, plus consistent worker notification text. Arabic/English text tells the owner to send a new test and confirm a new time. Existing event-notification preferences are respected. Atomic scheduled-state transitions limit edit notifications to actual unscheduling. Lifecycle regression asserts a persisted owner notification; 21 related tests passed. Local backend restarted; production deployment pending. MA01 currently scheduled September 12 02:37 Riyadh, four guests including unapproved edited number 966505826384; no scoped launch performed.
+
+Post-event access preview: backend host response now renders each eligible template through the same getPostEventBodyParams formatter as dispatch using the first active guest in event order. Web/mobile display full body without line limits; mobile access-link sheet shares previews. Explicit example-link/expiry notice; no token generation or sending. Corrected mobile nested content response parsing (saved media/settings now visible). Live endpoint returned the first guest and rendered Arabic event message, one saved photo. Native browser AX confirmed the full message. Local checks: 14 backend lifecycle and9 mobile post-event checks passed. Web code updated, runtime web validation pending.
+
+### 2026-09-11 — Post-event access-link dispatch failure
+- Both saved MA01 send attempts failed for all four recipients with 'language is not defined', before provider dispatch (no outbound message records).
+- Resolve the selected template language before bulk dispatch; add optional POST_EVENT_PUBLIC_ORIGIN for public guest links when the local frontend uses localhost. Local launcher uses https://halaa.com.sa.
+- Regression verifies Arabic dispatch, public link parameters, and duplicate prevention for the same attempt. Lifecycle integration suite: 15/15 passed with mocked provider.
+- Local backend restarted. Real delivery requires user retry; changes not deployed to VPS.
+
+
+### 2026-09-11 — Reuse existing mobile guest post page
+- Removed the custom host preview layout after review found existing web PublishedView and mobile PostEventScreen.
+- Host preview now renders PostEventScreen with GuestEventHeader, PostCard, and PostInteractions using authenticated host content. Guest token requests remain disabled and preview interaction buttons are disabled.
+- Added immediate localized fallback for View shared page to handle stale translation resources after hot reload; removed the custom preview notice from the UI.
+- Mobile lint and 9 post-event tests pass. Visual verification remains pending: browser is currently on Login.
+
+
+### 2026-09-11 — Mobile post page aligned with web
+- Replaced per-media post rows with the website's single-post model: host/date, localized caption, gallery, shared likes/comments. Uses the same event-level endpoints as web; existing per-media hooks remain compatible.
+- Added full-screen gallery navigation, expo-video playback (SDK-compatible plugin), comment photo attachment/removal, emoji shortcuts, paginated comments, attachment rendering, and existing report/block controls. Preview shows persisted comments without guest mutations.
+- Fixed existing renderScrollComponent callback crash caught during browser verification.
+- Verified actual MA01 preview at 390x844 and full-screen image opening in automated browser. No new outbound messages or guest interactions were sent. Native video/photo picker checks remain open.
+- Validation: ESLint, 12 post-event tests including shared endpoint/auth/pagination and multipart payload regressions; Expo web export succeeded. Local only, not deployed.
+
+
+### 2026-09-11 — Web post-event parity
+See POST_EVENT_WEB_MOBILE_PARITY.md for the issue matrix, fixes, affected routes and verification. Fixed duplicate route implementation, published edit/view/send actions, full rendered template preview, resend confirmation, failed-send feedback and media URL resolution. Local only.
+
+
+### 2026-09-11 — Event management parity audit
+See EVENT_WEB_MOBILE_PARITY_AUDIT.md. Fixed local phone prefill for web guest/staff editors, duplicate phone prevention on Step 2 edit, and removed unsafe direct Publish status action from both apps with a backend guard. Local backend restarted. 52 relevant tests pass; no live sends or lifecycle changes performed.
+

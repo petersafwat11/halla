@@ -1,3 +1,4 @@
+import { riyadhWallClockInstant, instantToPickerDay } from "@halaa/shared/utils/schedulingWindow";
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -12,10 +13,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { useForm, FormProvider } from "react-hook-form";
 import { useTranslation } from "../../../localization";
 import { formatDate, formatTime } from "@halaa/shared/utils/locale";
-import { normalizeSubscriptionResponse } from "@halaa/shared/utils";
 import { useToast } from "../../../contexts/ToastContext";
 import { useUpdateReminderSettings } from "../../../hooks/events/mutations/useEventMutation";
-import { useMySubscription } from "../../../hooks/users";
 import { colors, spacing, textStyles } from "../../../styles/tokens";
 import LocalizedText from "../../commen/LocalizedText";
 import DatePicker from "../../commen/DatePicker";
@@ -26,20 +25,7 @@ const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 // Combine a Date (or date string) with a 24h "HH:mm" string into one local
 // Date. Used to resolve the scheduled-send instant (the lower bound of the
 // free reminder window).
-const combineDateTime = (date, hhmm) => {
-  if (!date) return null;
-  const base = date instanceof Date ? new Date(date) : new Date(date);
-  if (Number.isNaN(base.getTime())) return null;
-  if (typeof hhmm === "string") {
-    const m = hhmm.match(/^(\d{1,2}):(\d{2})$/);
-    if (m) {
-      base.setHours(parseInt(m[1], 10), parseInt(m[2], 10), 0, 0);
-      return base;
-    }
-  }
-  base.setHours(0, 0, 0, 0);
-  return base;
-};
+const combineDateTime = riyadhWallClockInstant;
 
 /**
  * Small inline banner reminding the user that the platform auto-sends a
@@ -56,12 +42,9 @@ const AutoReminderInfoText = ({ event }) => {
   const { t, i18n } = useTranslation("events");
   const toast = useToast();
   const updateReminderMutation = useUpdateReminderSettings();
-  // No event-scoped plan flag is exposed on the event payload — fall back to
-  // the host's current plan code (same heuristic the web popup uses). This is
-  // advisory only; the backend is authoritative for trial reminders.
-  const { data: subData } = useMySubscription();
-  const normalizedSub = normalizeSubscriptionResponse(subData);
-  const isTrial = normalizedSub.subscription?.planCode === "trial";
+  // Admins may manage another host's event; use that event's entitlement.
+  const isTrial = event?.capabilities?.isTrial ?? event?.subscription?.isTrial ??
+    (event?.subscription?.planCode === "trial");
 
   const [modalOpen, setModalOpen] = useState(false);
   const [customReminderTime, setCustomReminderTime] = useState(false);
@@ -80,7 +63,7 @@ const AutoReminderInfoText = ({ event }) => {
       setCustomReminderTime(!!event.reminderSettings.customReminderTime);
 
       const sDate = event.reminderSettings.scheduledDate;
-      const nextDate = sDate ? new Date(sDate) : new Date();
+      const nextDate = sDate ? instantToPickerDay(sDate) : new Date();
 
       const nextTime = new Date();
       const sTime = event.reminderSettings.scheduledTime; // "HH:mm"
@@ -218,7 +201,7 @@ const AutoReminderInfoText = ({ event }) => {
         <View style={styles.iconWrap}>
           <Ionicons name="time-outline" size={16} color={colors.primary[700]} />
         </View>
-        <LocalizedText style={styles.text}>{event.reminderAvailability?.configured === false ? t("reminderUnavailable") : infoText}</LocalizedText>
+        <LocalizedText style={styles.text}>{!isEditable ? t("reminderInactiveEvent") : event.reminderAvailability?.configured === false ? t("reminderUnavailable") : infoText}</LocalizedText>
         {isEditable && !isTrial && event.reminderAvailability?.configured !== false && (
           <TouchableOpacity
             style={styles.customizeButton}
@@ -291,8 +274,8 @@ const AutoReminderInfoText = ({ event }) => {
                     <DatePicker
                       name="reminderDate"
                       label={t("reminderCustomize.dateLabel")}
-                      minimumDate={lowerBound || undefined}
-                      maximumDate={upperBound || undefined}
+                      minimumDate={lowerBound ? instantToPickerDay(lowerBound) : undefined}
+                      maximumDate={upperBound ? instantToPickerDay(upperBound) : undefined}
                     />
                     <TimePicker
                       name="reminderTime"

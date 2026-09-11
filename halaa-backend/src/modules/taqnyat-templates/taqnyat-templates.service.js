@@ -235,8 +235,8 @@ async function listForHost({ category, type = 'invite', invitationMode, delivery
     removedFromMeta: { $ne: true },
     type,
   };
-  if (category) {
-    if (deliveryMode !== 'portal_link' && GENERAL_EVENT_FALLBACK_CATEGORIES.has(category)) {
+  if (category && type !== 'reminder_confirmed') {
+    if (GENERAL_EVENT_FALLBACK_CATEGORIES.has(category)) {
       query.category = 'other';
       query.templateName = /^halaa_general_event_/i;
     } else {
@@ -244,6 +244,7 @@ async function listForHost({ category, type = 'invite', invitationMode, delivery
     }
   }
 
+  if (type === 'reminder_confirmed') query.category = null;
   query.deliveryMode = deliveryMode === 'portal_link' ? 'portal_link' : { $ne: 'portal_link' };
   if (type === 'invite' && invitationMode && deliveryMode !== 'portal_link') {
     query.$or = invitationMode === INVITATION_TYPE.REPLY_AND_QR
@@ -271,26 +272,18 @@ async function listForHost({ category, type = 'invite', invitationMode, delivery
 
 /**
  * Look up the single active template for a (category, type) pair.
- * `staff_access` is global — category is ignored. Used by the auto-reminder
+ * Staff access is global; reminders are global per account delivery mode. Used by the auto-reminder
  * cron, the scheduled-extra-reminder dispatcher, and the staff notify flow.
  */
 async function findActiveByCategoryAndType(category, type, deliveryMode = 'quick_reply') {
-  const filter =
-    type === 'staff_access'
-      ? { type: 'staff_access', active: true, status: 'APPROVED', removedFromMeta: { $ne: true } }
-      : {
-          category,
-          type,
-          active: true,
-          status: 'APPROVED',
-          removedFromMeta: { $ne: true },
-        };
-  if (type === 'reminder_confirmed') filter.deliveryMode = deliveryMode === 'portal_link' ? 'portal_link' : { $ne: 'portal_link' };
-  const categoryTemplate = await TaqnyatTemplate.findOne(filter).lean();
-  if (categoryTemplate || type !== 'reminder_confirmed' || category === 'general_event') return categoryTemplate;
-  // An explicitly mapped general-event reminder is category-neutral. Keep
-  // uncategorized provider imports excluded, and retain delivery-mode isolation.
-  return TaqnyatTemplate.findOne({ ...filter, category: 'general_event' }).lean();
+  const filter = { type, active: true, status: 'APPROVED', removedFromMeta: { $ne: true } };
+  if (type === 'reminder_confirmed') {
+    filter.category = null;
+    filter.deliveryMode = deliveryMode === 'portal_link' ? 'portal_link' : { $ne: 'portal_link' };
+  } else if (type !== 'staff_access') {
+    filter.category = category;
+  }
+  return TaqnyatTemplate.findOne(filter).lean();
 }
 
 async function listForAdmin({ search, includeInactive = true } = {}) {
@@ -351,6 +344,7 @@ async function assignMapping(id, updates, actor) {
   if (updates.varMapping !== undefined) doc.varMapping = updates.varMapping;
   if (updates.category !== undefined) doc.category = updates.category || null;
   if (updates.type !== undefined) doc.type = updates.type || null;
+  if (nextType === 'reminder_confirmed' || nextType === 'staff_access') doc.category = null;
   doc.invitationMode = nextMode;
   if (updates.active !== undefined) doc.active = !!updates.active;
   if (typeof updates.sortOrder === 'number') doc.sortOrder = updates.sortOrder;
@@ -363,7 +357,10 @@ async function assignMapping(id, updates, actor) {
       doc.type === 'staff_access'
         ? { _id: { $ne: doc._id }, type: 'staff_access', active: true }
         : { _id: { $ne: doc._id }, category: doc.category, type: doc.type, active: true };
-    if (doc.type === 'reminder_confirmed') filter.deliveryMode = doc.deliveryMode === 'portal_link' ? 'portal_link' : { $ne: 'portal_link' };
+    if (doc.type === 'reminder_confirmed') {
+      delete filter.category;
+      filter.deliveryMode = doc.deliveryMode === 'portal_link' ? 'portal_link' : { $ne: 'portal_link' };
+    }
     await TaqnyatTemplate.updateMany(filter, { $set: { active: false } });
   }
 

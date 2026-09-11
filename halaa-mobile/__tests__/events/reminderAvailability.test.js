@@ -20,3 +20,15 @@ test('Configured reminder still needs confirmed recipients', async () => {
   assert.equal(states.extraReminder.enabled, false);
   assert.equal(states.extraReminder.reasonKey, 'noConfirmed');
 });
+
+test('web and mobile reminder audiences exclude deleted, declined and unanswered guests', async () => {
+ const webPath=path.join(__dirname,'../../../halaa-web/components/event-detail/sendActions/sendAudiences.js');
+ const web=await import('data:text/javascript;base64,'+Buffer.from(fs.readFileSync(webPath,'utf8')).toString('base64'));
+ const mobile=await load();
+ const guests=[{id:'yes',status:'confirmed'},{id:'checked',status:'checked_in'},{id:'deleted',status:'confirmed',deleted:true},{id:'no',status:'declined'},{id:'pending',status:'pending',invitation:{sent:true}}];
+ for(const helper of [web,mobile]){
+  const audiences=helper.computeSendAudiences(guests);
+  assert.deepEqual(audiences.extraReminder.map(g=>g.id),['yes','checked']);
+  assert.equal(helper.buildSendActionStates({status:'live',reminderAvailability:{configured:false}},audiences).extraReminder.enabled,false);
+ }
+});

@@ -1,4 +1,5 @@
 const { resolveInvitationDelivery } = require('./invitationDelivery');
+const { getReplyDelivery } = require('@halaa/shared/utils/rsvpMessages');
 /**
  * Messaging webhook service.
  * Handles delivery-status updates and WhatsApp button (RSVP) replies
@@ -19,7 +20,6 @@ const logger = require('../../shared/utils/logger');
 const { NotFoundError } = require('../../shared/errors');
 const {
   invitationAllowsReply,
-  invitationIncludesQr,
 } = require('../../shared/constants');
 const { TAQNYAT_SENDER } = require('./messaging.formatting');
 const {
@@ -294,7 +294,7 @@ async function handleButtonResponse({
     sensitive: true,
   };
 
-  const qrReply = isConfirm && invitationIncludesQr(event.invitationType);
+  const qrReply = getReplyDelivery(event.invitationType, newStatus, resolveInvitationDelivery(event)).richCaption;
   const replyText = qrReply
     ? buildConfirmedCaption(event, guest, 'ar')
     : getReplyMessage(newStatus, event, 'ar');

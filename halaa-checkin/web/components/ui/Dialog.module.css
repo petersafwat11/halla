@@ -50,6 +50,8 @@
   color: var(--color-natural-450, #656565);
   cursor: pointer;
   padding: 8px;
+  min-width: 44px;
+  min-height: 44px;
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -95,5 +97,12 @@
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop,
+  .modal {
+    animation: none;
   }
 }

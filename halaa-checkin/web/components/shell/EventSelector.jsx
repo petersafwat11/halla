@@ -18,13 +18,16 @@ export function EventSelector() {
   const { role } = useSession();
   const { events, selectedEvent, selectedEventId, selectEvent, isLoadingEvents } = useEvent();
   const [isOpen, setIsOpen] = useState(false);
+  const [focusIndex, setFocusIndex] = useState(-1);
   const containerRef = useRef(null);
+  const buttonRef = useRef(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (containerRef.current && !containerRef.current.contains(event.target)) {
         setIsOpen(false);
+        setFocusIndex(-1);
       }
     }
     if (isOpen) {
@@ -34,6 +37,46 @@ export function EventSelector() {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isOpen]);
+
+  // Keyboard: Escape closes + returns focus; arrows move between options
+  const handleButtonKeyDown = (e) => {
+    if (e.key === 'Escape' && isOpen) {
+      e.stopPropagation();
+      setIsOpen(false);
+      setFocusIndex(-1);
+    }
+    if ((e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') && !isOpen) {
+      e.preventDefault();
+      setIsOpen(true);
+      setFocusIndex(0);
+    }
+  };
+  const handleListKeyDown = (e) => {
+    const count = events?.length || 0;
+    if (e.key === 'Escape') {
+      e.stopPropagation();
+      setIsOpen(false);
+      setFocusIndex(-1);
+      buttonRef.current?.focus();
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setFocusIndex((i) => Math.min(count - 1, (i < 0 ? -1 : i) + 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setFocusIndex((i) => Math.max(0, (i < 0 ? 1 : i) - 1));
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      setFocusIndex(0);
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      setFocusIndex(count - 1);
+    }
+  };
+  useEffect(() => {
+    if (isOpen && focusIndex >= 0) {
+      containerRef.current?.querySelector(`[data-event-index="${focusIndex}"]`)?.focus();
+    }
+  }, [focusIndex, isOpen]);
 
   if (isLoadingEvents) {
     return (
@@ -50,9 +93,11 @@ export function EventSelector() {
   return (
     <div className={styles.container} ref={containerRef}>
       <button
+        ref={buttonRef}
         type="button"
         className={styles.selectorButton}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => { setIsOpen(!isOpen); setFocusIndex(-1); }}
+        onKeyDown={handleButtonKeyDown}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         aria-label={t(dict, 'events.selectorLabel')}
@@ -84,7 +129,7 @@ export function EventSelector() {
       </button>
 
       {isOpen && (
-        <div className={styles.dropdown} role="listbox">
+        <div className={styles.dropdown} role="listbox" onKeyDown={handleListKeyDown}>
           <div className={styles.dropdownHeader}>
             {t(dict, 'events.selectorLabel')}
           </div>
@@ -96,7 +141,7 @@ export function EventSelector() {
                 : t(dict, 'events.noEventsReception')}
             </div>
           ) : (
-            events.map((event) => {
+            events.map((event, idx) => {
               const isSelected = event.id === selectedEventId;
               return (
                 <button
@@ -104,10 +149,14 @@ export function EventSelector() {
                   type="button"
                   role="option"
                   aria-selected={isSelected}
+                  data-event-index={idx}
+                  tabIndex={focusIndex === idx ? 0 : -1}
                   className={`${styles.eventItem} ${isSelected ? styles.eventItemActive : ''}`}
                   onClick={() => {
                     selectEvent(event.id);
                     setIsOpen(false);
+                    setFocusIndex(-1);
+                    buttonRef.current?.focus();
                   }}
                 >
                   <div className={styles.itemInfo}>

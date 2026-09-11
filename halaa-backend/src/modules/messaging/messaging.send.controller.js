@@ -131,14 +131,13 @@ exports.retryFailed = catchAsync(async (req, res) => {
  *         $ref: '#/components/responses/Unauthorized'
  */
 exports.sendReminder = catchAsync(async (req, res) => {
-  const { eventId, guestIds, channel, customMessage, reminderTemplateName } =
+  const { eventId, guestIds, channel, customMessage } =
     req.body;
   const result = await messagingService.sendReminder({
     eventId,
     guestIds,
     channel,
     customMessage,
-    reminderTemplateName,
     userId: req.user._id,
     isAdmin: isAdminRole(req.user.role),
     actorRole: req.user.role,

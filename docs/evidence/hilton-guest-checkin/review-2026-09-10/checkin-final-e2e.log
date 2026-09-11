@@ -1,0 +1,22 @@
+
+> halaa-checkin@0.1.0 test:e2e
+> npm --prefix api run test:e2e
+
+
+> @halaa-checkin/api@0.1.0 test:e2e
+> node --test ../tests/e2e/*.test.js
+
+✔ real browser → frontend → Express → replica set: first event, guest, CSV, gate uncertainty, reauthentication, reset truth and logout (7786.7433ms)
+(node:6132) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+▶ T11 — Container-equivalent E2E journey on disposable DB
+  ✔ full journey: auth, lifecycle, gate, import, export, restart, logout (1399.3671ms)
+✔ T11 — Container-equivalent E2E journey on disposable DB (4765.4666ms)
+ℹ tests 2
+ℹ suites 1
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8636.4544

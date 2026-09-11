@@ -23,9 +23,12 @@ export async function connectDb(config) {
 
   const { uri, dbName } = config.mongodb;
 
+  const isProd = config.env === 'production' || process.env.NODE_ENV === 'production';
   const options = {
     dbName,
-    autoIndex: true,
+    // F28: production index creation moves to the explicit deployment command
+    // (`npm run db:indexes`); the app must not silently modify indexes on boot.
+    autoIndex: !isProd,
     serverSelectionTimeoutMS: 5000,
   };
 
@@ -40,6 +43,7 @@ export async function connectDb(config) {
 
 /**
  * Check if the connected MongoDB instance supports replica-set transactions.
+ * Uses `hello` (works with DB-scoped users) with `serverStatus` fallback.
  *
  * @returns {Promise<boolean>}
  */
@@ -50,6 +54,16 @@ export async function checkReplicaSet() {
 
   try {
     const adminDb = mongoose.connection.db.admin();
+    // Preferred: hello works without clusterMonitor privileges.
+    try {
+      const hello = await adminDb.command({ hello: 1 });
+      if (hello && (hello.setName || hello.isWritablePrimary !== undefined)) {
+        // setName present => replica set; single-node replset also reports setName.
+        if (hello.setName) return true;
+      }
+    } catch {
+      // Fall through to serverStatus probe below.
+    }
     const serverStatus = await adminDb.serverStatus();
     return !!serverStatus.repl;
   } catch {

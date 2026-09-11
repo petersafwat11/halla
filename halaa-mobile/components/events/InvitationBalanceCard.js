@@ -2,7 +2,7 @@ import React from "react";
 import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { formatCount } from "@halaa/shared/utils/locale";
+import { formatCount, getLocalized } from "@halaa/shared/utils/locale";
 import { useTranslation } from "../../localization";
 import LocalizedText from "../commen/LocalizedText";
 
@@ -31,6 +31,7 @@ export default function InvitationBalanceCard({
   purchasable,
   compact = false,
   style,
+  currentSubscription,
 }) {
   const { t, currentLanguage } = useTranslation("events");
   const navigation = useNavigation();
@@ -60,6 +61,16 @@ export default function InvitationBalanceCard({
   const totalDisplay = isUnlimited
     ? t("invitationBalance.unlimited", "غير محدود")
     : formatCount(balance.total ?? 0, locale);
+  const currentPlan = currentSubscription?.planId || currentSubscription?.plan;
+  const currentPlanName =
+    getLocalized(currentSubscription, "planName", locale) ||
+    getLocalized(currentPlan, "name", locale) ||
+    currentSubscription?.planName?.[locale] ||
+    currentSubscription?.planName ||
+    currentPlan?.name ||
+    currentPlan?.code ||
+    currentSubscription?.planCode ||
+    currentSubscription?.planType;
 
   if (compact) {
     return (
@@ -100,6 +111,18 @@ export default function InvitationBalanceCard({
   }
 
   return (
+    <View style={styles.group}>
+      {currentPlanName ? (
+        <View style={styles.currentPlan} accessibilityRole="summary">
+          <LocalizedText style={styles.currentPlanLabel}>
+            {t("currentPlan.label")}
+          </LocalizedText>
+          <LocalizedText style={styles.currentPlanName}>{currentPlanName}</LocalizedText>
+          <LocalizedText style={styles.currentPlanNote}>
+            {t("currentPlan.eventAllowanceNote")}
+          </LocalizedText>
+        </View>
+      ) : null}
     <View style={[styles.card, style]}>
       <LocalizedText style={styles.title}>{t("invitationBalance.remaining")}</LocalizedText>
       <View style={styles.balanceRow}>
@@ -118,10 +141,16 @@ export default function InvitationBalanceCard({
         <LocalizedText style={styles.helper}>{t("invitationBalance.helper")}</LocalizedText>
       </View>
     </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  group: { gap: 10 },
+  currentPlan: { backgroundColor: "#FFFFFF", borderRadius: 14, borderWidth: 1, borderColor: "#E8D4C4", padding: 14, marginHorizontal: 4, gap: 3 },
+  currentPlanLabel: { fontSize: 12, fontFamily: "Cairo_400Regular", color: "#756757" },
+  currentPlanName: { fontSize: 16, fontFamily: "Cairo_700Bold", color: "#6B4E33" },
+  currentPlanNote: { marginTop: 3, fontSize: 11, lineHeight: 18, fontFamily: "Cairo_400Regular", color: "#756757" },
   card: { backgroundColor: "#FFFFFF", borderRadius: 14, borderWidth: 1, borderColor: "#E8D4C4", padding: 18, marginHorizontal: 4, marginVertical: 6, gap: 12 },
   title: { fontSize: 15, fontFamily: "Cairo_600SemiBold", color: "#4A3D33", lineHeight: 24 },
   balanceRow: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 16 },

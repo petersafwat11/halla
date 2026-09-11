@@ -37,7 +37,7 @@ const TicketDetailView = ({ ticket }) => {
   const { t, i18n } = useTranslation("adminTickets");
   const [isResolvePopupOpen, setIsResolvePopupOpen] = useState(false);
   const [isAssignPopupOpen, setIsAssignPopupOpen] = useState(false);
-  const [isAttachmentOpen, setIsAttachmentOpen] = useState(false);
+  const [openAttachment, setOpenAttachment] = useState(null);
 
   const reopenMutation = useTicketMutation("updateStatus");
 
@@ -75,6 +75,7 @@ const TicketDetailView = ({ ticket }) => {
   const priorityLabel = t(`priority.${ticket.priority}`, ticket.priority);
   const statusClass = STATUS_CLASS_MAP[ticket.status] || styles.badgeClosed;
   const priorityClass = PRIORITY_CLASS_MAP[ticket.priority] || styles.badgeMedium;
+  const attachments = ticket.attachments?.length ? ticket.attachments : ticket.attachment ? [ticket.attachment] : [];
 
   return (
     <div className={styles.container}>
@@ -129,20 +130,21 @@ const TicketDetailView = ({ ticket }) => {
             <p className={styles.message}>{ticket.message}</p>
           </div>
 
-          {ticket.attachment?.url && (
+          {attachments.length > 0 && (
             <div className={styles.section}>
               <h3 className={styles.sectionTitle}>
                 {t("attachment.title", "Attachment")}
               </h3>
-              <button
+              {attachments.map((attachment, index) => <button
+                key={`${attachment.url}-${index}`}
                 type="button"
                 className={styles.attachmentButton}
-                onClick={() => setIsAttachmentOpen(true)}
+                onClick={() => setOpenAttachment(attachment)}
               >
-                {ticket.attachment.type === "video"
+                {attachment.type === "video"
                   ? t("attachment.viewVideo", "View video")
                   : t("attachment.viewImage", "View image")}
-              </button>
+              </button>)}
             </div>
           )}
 
@@ -207,10 +209,10 @@ const TicketDetailView = ({ ticket }) => {
         />
       )}
 
-      {isAttachmentOpen && (
+      {openAttachment && (
         <MediaViewerModal
-          attachment={ticket.attachment}
-          onClose={() => setIsAttachmentOpen(false)}
+          attachment={openAttachment}
+          onClose={() => setOpenAttachment(null)}
           closeLabel={t("attachment.close", "Close")}
           openLabel={t("attachment.openNewTab", "Open in new tab")}
         />

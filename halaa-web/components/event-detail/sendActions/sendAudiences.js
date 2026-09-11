@@ -37,7 +37,7 @@ export function isTerminalEvent(event) {
  * @returns {{ newGuests: Array, resend: Array, extraReminder: Array }}
  */
 export function computeSendAudiences(guests = []) {
-  const list = Array.isArray(guests) ? guests : [];
+  const list = Array.isArray(guests) ? guests.filter(g => g && !g.deleted) : [];
   const newGuests = list.filter(
     (g) => g?.invitation?.sent !== true && !g?.deleted
   );
@@ -71,6 +71,6 @@ export function buildSendActionStates(event, audiences) {
     newGuests: gate(a.newGuests, started ? null : "sendFirst", "noNewGuests"),
     resend: gate(a.resend, started ? null : "sendFirst", "noResend"),
     // Confirmed guests can only exist after a send, so no "send first" gate.
-    extraReminder: gate(a.extraReminder, null, "noConfirmed"),
+    extraReminder: gate(a.extraReminder, event?.reminderAvailability?.configured === false ? "reminderUnavailable" : null, "noConfirmed"),
   };
 }

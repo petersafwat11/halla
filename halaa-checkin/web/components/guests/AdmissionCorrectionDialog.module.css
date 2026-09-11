@@ -1,0 +1,36 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16, 16px);
+}
+
+.warningBox {
+  display: flex;
+  gap: var(--space-10, 10px);
+  padding: var(--space-12, 12px) var(--space-14, 14px);
+  background: var(--color-warning-50, #fbf3e6);
+  border: 1px solid var(--color-warning-200, #f5e6c8);
+  border-radius: var(--radius-md, 8px);
+}
+
+.warningIcon {
+  font-size: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.warningText {
+  margin: 0;
+  font-size: var(--font-size-sm, 14px);
+  line-height: 1.5;
+  color: var(--color-warning-800, #8a5a00);
+}
+
+.footerActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-12, 12px);
+  margin-top: var(--space-8, 8px);
+  padding-top: var(--space-12, 12px);
+  border-top: 1px solid var(--form-border, #dfdfdf);
+}

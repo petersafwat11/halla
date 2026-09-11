@@ -102,12 +102,12 @@ export async function stopReplSet() {
  * @returns {import('express').Application}
  */
 export function createTestApp(options = {}) {
-  const { registerRoutes, loginLimiter, ...configOverrides } = options;
+  const { registerRoutes, loginLimiter, apiLimiter, ...configOverrides } = options;
   const cfg = loadConfig({
     env: 'test',
     appOrigin: 'http://localhost:3100',
     sessionSecret: 'test-session-secret-at-least-32-chars-long!',
     ...configOverrides,
   });
-  return createApp({ config: cfg, registerRoutes, loginLimiter });
+  return createApp({ config: cfg, registerRoutes, loginLimiter, apiLimiter });
 }

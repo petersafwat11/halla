@@ -2,6 +2,7 @@ import Header from "@/ui/landing/Header/Header";
 import HeroSection from "@/ui/landing/HeroSection/HeroSection";
 import FeaturesSection from "@/ui/landing/FeaturesSection/FeaturesSection";
 import HowItWorks from "@/ui/landing/HowItWorks";
+import InvitationTypesSection from "@/ui/landing/InvitationTypesSection/InvitationTypesSection";
 import InvitationsCarousel from "@/ui/landing/InvitationsCarousel/InvitationsCarousel";
 import PricingSection from "@/ui/landing/PricingSection/PricingSection";
 import VendorSearchSection from "@/ui/landing/VendorSearchSection/VendorSearchSection";
@@ -53,6 +54,7 @@ export default async function LandingPage({ params }) {
           <CtaBanner lang={lang} />
           <FeaturesSection lang={lang} />
           <HowItWorks lang={lang} />
+          <InvitationTypesSection lang={lang} />
           <PricingSection lang={lang} initialPlans={initialPlans} />
           <InvitationsCarousel lang={lang} />
           <VendorSearchSection lang={lang} vendors={vendors} />

@@ -89,7 +89,7 @@ export function EventDialog({
         venue: venue.trim(),
         startsAt,
         timezone: 'Asia/Riyadh',
-      });
+      }).catch(() => { /* Mutation error is displayed through apiError; preserve the form. */ });
     } else {
       await onSubmit({
         eventId: event.id,
@@ -99,7 +99,7 @@ export function EventDialog({
           venue: venue.trim(),
           startsAt,
         },
-      });
+      }).catch(() => { /* Mutation error is displayed through apiError; preserve the form. */ });
     }
   };
 
@@ -121,6 +121,15 @@ export function EventDialog({
             variant="error"
             message={t(dict, `errors.${apiError.code}`) || apiError.message}
           />
+        )}
+
+        {/* F31: distributed-pass warning when editing metadata with existing guests. */}
+        {mode === 'edit' && (
+          <Notice variant="warning">
+            {lang === 'ar'
+              ? 'تنبيه: تغيير اسم/موعد الفعالية بعد توزيع التصاريح يتطلب إعادة إصدار التصاريح الموزعة.'
+              : 'Warning: changing event details after passes were distributed requires regenerating distributed passes.'}
+          </Notice>
         )}
 
         <Field
@@ -178,6 +187,13 @@ export function EventDialog({
           <span aria-hidden="true">🌐</span>
           <span>{t(dict, 'events.timezone')}: Asia/Riyadh (+03:00)</span>
         </div>
+
+        {mode === 'edit' && (
+          <div className={styles.tzNote} role="note" data-testid="stale-pdf-warning">
+            <span aria-hidden="true">⚠️</span>
+            <span>{lang === 'ar' ? 'تنبيه: تغيير الاسم أو الموعد يجعل بطاقات PDF الموزعة سابقاً قديمة — أعد إنشاء التصدير بعد الحفظ.' : 'Note: changing name/date makes previously distributed PDF passes stale — regenerate exports after saving.'}</span>
+          </div>
+        )}
 
         <div className={styles.footerActions}>
           <Button

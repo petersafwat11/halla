@@ -8,7 +8,7 @@ import { chromium } from 'playwright-core';
 import { findChromiumExecutable } from '../../api/src/modules/exports/chromium.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const EVIDENCE_DIR = path.resolve(__dirname, '../../../docs/evidence/hilton-guest-checkin');
+const EVIDENCE_DIR = process.env.CHECKIN_EVIDENCE_DIR || path.resolve(__dirname, '../../../docs/evidence/hilton-guest-checkin');
 
 const PORT = 3110;
 const BASE_URL = `http://127.0.0.1:${PORT}`;
@@ -139,17 +139,16 @@ describe('T09 — Gate Workspace & Scanner Lifecycle Browser E2E Verification', 
         const path = url.pathname;
         const method = req.method();
 
-        // Session probe
+        // Session probe (exact DTO: { user, csrfToken, expiresAt })
         if (path === '/api/checkin/v1/auth/session') {
           return route.fulfill({
             status: 200,
             contentType: 'application/json',
             body: JSON.stringify({
               data: {
-                user: { id: `usr-${username}`, username, displayName: username, role: 'reception' },
-                role: 'reception',
+                user: { id: `usr-${username}`, username, displayName: username, role: 'reception', assignedEventIds: ['ev-gate-01', 'ev-gate-02'] },
                 csrfToken: 'mock-csrf-gate',
-                assignedEventIds: ['ev-gate-01', 'ev-gate-02'],
+                expiresAt: new Date(Date.now() + 12 * 3600 * 1000).toISOString(),
               },
             }),
           });
@@ -269,7 +268,7 @@ describe('T09 — Gate Workspace & Scanner Lifecycle Browser E2E Verification', 
             });
           }
 
-          // Concurrency check: already admitted?
+          // Concurrency check: already admitted? (exact API shape: details.guest)
           if (guest.checkIn !== null) {
             return route.fulfill({
               status: 409,
@@ -278,7 +277,7 @@ describe('T09 — Gate Workspace & Scanner Lifecycle Browser E2E Verification', 
                 error: {
                   code: 'ALREADY_CHECKED_IN',
                   message: 'Invitation already admitted',
-                  details: { checkIn: guest.checkIn },
+                  details: { guest },
                 },
               }),
             });

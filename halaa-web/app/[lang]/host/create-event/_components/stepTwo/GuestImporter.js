@@ -57,9 +57,10 @@ const GuestImporter = ({
     } else if (!isValidPhone(mobile)) {
       newErrors.mobile = t("validation.mobile_format");
     }
-    if (mobile && !currentItem.id) {
+    if (mobile) {
       const normInput = normalizePhoneNumber(mobile);
       const mobileExists = guestList.some((item) => {
+        if (currentItem.id && item.id === currentItem.id) return false;
         const itemNorm = normalizePhoneNumber(item.mobile);
         return (normInput && itemNorm && normInput === itemNorm) || item.mobile === mobile;
       });

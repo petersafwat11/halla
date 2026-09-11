@@ -1,0 +1,154 @@
+# Halaa Guest Check-in — development/staging Compose overlay.
+#
+# Local-only rehearsal stack: builds both images from source, publishes ports
+# to localhost, and runs a throwaway single-node MongoDB replica set
+# (transactions require a replica set; a standalone mongod is NOT a valid
+# rehearsal target). Production compose.yml MUST NOT include this database:
+# production data lives in a dedicated Atlas database.
+#
+# Usage (from halaa-checkin/):
+#   docker compose -f deploy/compose.yml -f deploy/compose.dev.yml -p halaa-checkin-dev up -d --build
+#   npm run db:indexes      # explicit index creation (never a destructive migration)
+#   npm run build           # production web bundle (required before test:e2e)
+#   DEMO_SEED_ENABLED=true npm run seed:demo
+#   npm run test:e2e
+# Teardown (data is disposable by design):
+#   docker compose -p halaa-checkin-dev down -v
+#
+# Camera requires HTTPS except localhost: plain http://localhost:3100 is fine
+# for rehearsal; any non-localhost staging host needs TLS.
+
+name: halaa-checkin-dev
+
+services:
+  checkin-api:
+    # Local build instead of GHCR tags.
+    image: halaa-checkin-api:dev
+    build:
+      context: ..
+      dockerfile: api/Dockerfile
+    # Replace (not merge) the production secrets file: dev config comes from
+    # `environment:` below; an optional local file only overrides.
+    env_file: !override
+      - path: ${CHECKIN_ENV_FILE:-../.env.dev.local}
+        required: false
+    environment:
+      NODE_ENV: development
+      PORT: "8100"
+      APP_ORIGIN: http://localhost:3100
+      MONGODB_URI: mongodb://checkin-mongo:27017
+      MONGODB_DB_NAME: halaa_checkin_dev
+      EXPORT_DIR: /app/data/exports
+      TRUST_PROXY_HOPS: "0"
+      DEMO_SEED_ENABLED: "true"
+      SESSION_SECRET: dev-session-secret-at-least-32-chars-long!
+    ports:
+      - "127.0.0.1:8100:8100"
+    volumes:
+      - checkin-dev-exports:/app/data/exports
+    depends_on:
+      mongo-init:
+        condition: service_completed_successfully
+    networks:
+      halaa_checkin_proxy:
+        aliases:
+          - checkin-api
+      checkin-dev-internal: {}
+
+  checkin-web:
+    image: halaa-checkin-web:dev
+    build:
+      context: ..
+      dockerfile: web/Dockerfile
+      # Bake the container-network API target into Next rewrites (serialized
+      # at build time; runtime env cannot change them).
+      args:
+        BACKEND_PROXY_URL: http://checkin-api:8100
+    environment:
+      NODE_ENV: production
+      PORT: "3100"
+      HOSTNAME: "0.0.0.0"
+      # Informational mirror of the baked build arg above: Next serializes
+      # rewrites at build time, so THIS runtime value does not change routing.
+      # (Production Caddy owns /api/* routing and never sends it to web.)
+      BACKEND_PROXY_URL: http://checkin-api:8100
+    ports:
+      - "127.0.0.1:3100:3100"
+    depends_on:
+      checkin-api:
+        condition: service_healthy
+    networks:
+      halaa_checkin_proxy:
+        aliases:
+          - checkin-web
+      checkin-dev-internal: {}
+
+  # Throwaway single-node replica set: deterministic init, health-gated.
+  checkin-mongo:
+    image: mongo:7.0
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
+    volumes:
+      - checkin-dev-mongo:/data/db
+    # Localhost-only, dev rehearsal only: lets backup/restore/provision/purge
+    # scripts run from the host against mongodb://127.0.0.1:27017. Never
+    # published in production (production data lives in Atlas).
+    ports:
+      - "127.0.0.1:27017:27017"
+    networks:
+      checkin-dev-internal:
+        aliases:
+          - checkin-mongo
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  # One-shot replica-set initiator. Exits 0 once `rs.initiate` has succeeded
+  # (or the set is already initialised), so dependents can gate on completion.
+  mongo-init:
+    image: mongo:7.0
+    depends_on:
+      checkin-mongo:
+        condition: service_healthy
+    networks:
+      - checkin-dev-internal
+    command:
+      - mongosh
+      - --host
+      - checkin-mongo:27017
+      - --quiet
+      - --eval
+      - >
+        try { rs.status(); print('replica set already initialised'); }
+        catch (e) {
+          print('initialising single-node replica set rs0');
+          rs.initiate({ _id: 'rs0', members: [{ _id: 0, host: 'checkin-mongo:27017' }] });
+          let tries = 0;
+          while (tries++ < 30) {
+            try {
+              const st = rs.status();
+              if (st.myState === 1) { print('PRIMARY ready'); break; }
+            } catch (_e) {}
+            sleep(1000);
+          }
+        }
+    restart: "no"
+
+networks:
+  # Dev-local stand-in for the shared proxy network: plain (non-external) so
+  # `down -v` on the dev project cleans it up. Production uses the external
+  # `halaa_checkin_proxy` bridge shared with Caddy (see compose.yml).
+  halaa_checkin_proxy: !override
+    name: halaa-checkin-dev_proxy
+  checkin-dev-internal:
+    name: halaa-checkin-dev_internal
+    driver: bridge
+
+volumes:
+  checkin-dev-mongo:
+  checkin-dev-exports:

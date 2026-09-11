@@ -219,6 +219,23 @@ const PERMISSION_TO_PAGE = {
   [PERMISSIONS.MANAGE_TEAM]: ADMIN_PAGES.MODERATORS,
 };
 
+/**
+ * Feature-specific capability for admin payment links.
+ *
+ * Permits super_admin / admin / moderator with any non-NONE Payments page
+ * access to create, refresh, and cancel unpaid payment links — WITHOUT
+ * granting global payment `manage` (refund/capture/void/export). Backend
+ * remains authoritative; frontend mirrors this check for button gating.
+ * Explicit Payments NONE overrides deny even privileged roles.
+ */
+const canManagePaymentLinks = (user) => {
+  if (!user || !user.role) return false;
+  if (![ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.MODERATOR].includes(user.role)) {
+    return false;
+  }
+  return getPageAccess(user, ADMIN_PAGES.PAYMENTS) !== ACCESS_LEVELS.NONE;
+};
+
 module.exports = {
   PERMISSIONS,
   DEFAULT_PERMISSIONS,
@@ -230,4 +247,5 @@ module.exports = {
   getPageAccess,
   canAccessPage,
   hasPageAccess,
+  canManagePaymentLinks,
 };

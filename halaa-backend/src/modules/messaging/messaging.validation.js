@@ -66,10 +66,7 @@ const reminderSchema = z
     guestIds: z.array(objectId).optional(),
     channel: channelEnum.default('sms'),
     customMessage: z.string().max(1000).optional(),
-    reminderTemplateName: z
-      .string()
-      .regex(/^[a-z0-9_]{1,80}$/, 'reminderTemplateName must match /^[a-z0-9_]{1,80}$/')
-      .optional(),
+
   })
   .strict();
 

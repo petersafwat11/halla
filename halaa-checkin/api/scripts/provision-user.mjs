@@ -7,6 +7,8 @@
  */
 
 import readline from 'node:readline';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { Writable } from 'node:stream';
 import { config, validateConfig } from '../src/config.js';
 import { connectDb, disconnectDb } from '../src/db/connection.js';
@@ -151,6 +153,9 @@ async function main() {
   }
 }
 
-if (import.meta.url === `file:///${process.argv[1].replace(/\\/g, '/')}`) {
+const invokedAsMain =
+  typeof process.argv[1] === 'string' &&
+  fileURLToPath(import.meta.url) === path.resolve(process.argv[1]);
+if (invokedAsMain) {
   main();
 }

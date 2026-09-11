@@ -125,6 +125,23 @@ export async function provisionUser({
     throw new Error('Password must be at least 8 characters long');
   }
 
+  // F28: validate assigned event existence; provisioning previously accepted
+  // arbitrary ObjectIds without checking Event records.
+  const assignedIds = Array.isArray(assignedEventIds) ? assignedEventIds : [];
+  if (assignedIds.length > 0) {
+    const { Event } = await import('../events/event.model.js');
+    const { default: mongoose } = await import('mongoose');
+    for (const eid of assignedIds) {
+      if (!mongoose.Types.ObjectId.isValid(String(eid))) {
+        throw new Error(`Invalid event assignment '${eid}': must be a valid ObjectId`);
+      }
+    }
+    const found = await Event.countDocuments({ _id: { $in: assignedIds } });
+    if (found !== assignedIds.length) {
+      throw new Error('One or more assigned events do not exist');
+    }
+  }
+
   const passwordHash = await hashPassword(password);
 
   const existingUser = await User.findOne({ username: normUsername });
@@ -134,7 +151,7 @@ export async function provisionUser({
     existingUser.displayName = normDisplayName;
     existingUser.passwordHash = passwordHash;
     existingUser.role = role;
-    existingUser.assignedEventIds = assignedEventIds;
+    existingUser.assignedEventIds = assignedIds;
     existingUser.disabledAt = null;
     user = await existingUser.save();
 
@@ -146,7 +163,7 @@ export async function provisionUser({
       displayName: normDisplayName,
       passwordHash,
       role,
-      assignedEventIds,
+      assignedEventIds: assignedIds,
     });
   }
 

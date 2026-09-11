@@ -61,5 +61,8 @@ module.exports = {
   capture: (params) => active.capture(params),
   voidPayment: (params) => active.voidPayment(params),
   createInvoice: (params) => active.createInvoice(params),
+  createInvoiceMinor: (params) => active.createInvoiceMinor(params),
   fetchInvoice: (id) => active.fetchInvoice(id),
+  cancelInvoice: (id) => active.cancelInvoice(id),
+  listInvoices: (params) => active.listInvoices(params),
 };

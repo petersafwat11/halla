@@ -59,9 +59,8 @@ const assignMappingSchema = z
   })
   .strict()
   .superRefine((data, ctx) => {
-    // staff_access is global (no category required); all other typed
-    // assignments require a category so cron lookups by (category,type) work.
-    if (data.type && data.type !== 'staff_access' && !data.category) {
+    // Staff access is global; reminders are global per account delivery mode.
+    if (data.type && !['staff_access', 'reminder_confirmed'].includes(data.type) && !data.category) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['category'],

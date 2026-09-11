@@ -11,6 +11,25 @@
   },
   "retentionRules": [
     {
+      "id": "financial-payment-links-6y",
+      "collection": "paymentlinks",
+      "model": "PaymentLink",
+      "triggerField": "financialActivityAt",
+      "durationYears": 6,
+      "retentionAnchor": "end_of_calendar_year",
+      "action": "delete",
+      "legalBasis": "legal_obligation",
+      "subjectField": "createdBy",
+      "eligibleStatuses": [
+        "paid",
+        "refunded",
+        "partially_refunded",
+        "expired",
+        "canceled",
+        "unavailable"
+      ]
+    },
+    {
       "id": "financial-payments-6y",
       "collection": "payments",
       "model": "Payment",

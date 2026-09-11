@@ -28,7 +28,7 @@ export function useTogglePostEventLike() {
   return useMutation({
     mutationFn: ({ eventId, postId, sessionToken }) =>
       postEventGuestRequest(
-        `${API_BASE_URL}${ENDPOINTS.POST_EVENT.TOGGLE_LIKE(eventId, postId)}`,
+        `${API_BASE_URL}${(postId ? ENDPOINTS.POST_EVENT.TOGGLE_LIKE(eventId, postId) : `/post-event/${eventId}/like`)}`,
         { method: "POST", headers: postEventWithSession(sessionToken) },
         "Failed to toggle like",
       ),
@@ -41,6 +41,7 @@ export function useTogglePostEventLike() {
         if (!current) return current;
         const root = current?.data;
         if (!root) return current;
+        if (!postId) return { ...current, data: { ...root, userLiked: !root.userLiked, likesCount: Math.max(0, (root.likesCount || 0) + (root.userLiked ? -1 : 1)) } };
         const media = Array.isArray(root.media) ? root.media : null;
         if (!media) return current;
         const next = media.map((item) => {
@@ -64,6 +65,8 @@ export function useTogglePostEventLike() {
       }
     },
     onSuccess: (response, { eventId, postId }) => {
+      queryClient.invalidateQueries({ queryKey: postEventKeys.content(eventId) });
+      if (!postId) return;
       const result = response?.data || {};
       const liked = result.liked;
       const likesCount = result.likesCount;
@@ -99,7 +102,7 @@ export function useAddPostEventComment() {
         "Failed to accept policies",
       );
       return postEventGuestRequest(
-        `${API_BASE_URL}${ENDPOINTS.POST_EVENT.ADD_COMMENT(eventId, postId)}`,
+        `${API_BASE_URL}${(postId ? ENDPOINTS.POST_EVENT.ADD_COMMENT(eventId, postId) : `/post-event/${eventId}/comments`)}`,
         {
           method: "POST",
           headers: { Authorization: `Bearer ${sessionToken}` },

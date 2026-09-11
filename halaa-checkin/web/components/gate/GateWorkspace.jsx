@@ -19,27 +19,48 @@ import styles from './GateWorkspace.module.css';
 export function GateWorkspace({ lang = 'ar' }) {
   const dict = getDictionary(lang);
   const { selectedEvent, hasEvents } = useEvent();
+  const [cameraStopSignal, setCameraStopSignal] = React.useState(0);
 
   const {
     gateState,
+    errorDetails,
     currentGuest,
+    gateEvent,
     actualCompanions,
     derivedPartySize,
     setActualCompanions,
     isOnline,
+    browserOnline,
+    apiReachable,
+    recentError,
     asOf,
     recentAdmissions,
+    isBusy,
     resolve,
     admit,
     retryAdmission,
     verifyStatus,
     resetToIdle,
+    refetchRecent,
   } = useGate(selectedEvent?.id);
+
+  // Stop camera on event switch (spec §6: stop tracks on event switch/logout/nav)
+  React.useEffect(() => {
+    setCameraStopSignal((n) => n + 1);
+  }, [selectedEvent?.id]);
+
+  // F10: session expiry stops camera and clears no private data stays visible
+  // is handled via central 401 (query cache cleared); stop camera here too.
+  React.useEffect(() => {
+    if (gateState === 'session_expired') {
+      setCameraStopSignal((n) => n + 1);
+    }
+  }, [gateState]);
 
   if (!hasEvents || !selectedEvent) {
     return (
       <div className={styles.container}>
-        <Notice type="info">
+        <Notice variant="info">
           {t(dict, 'events.noEventsReception')}
         </Notice>
       </div>
@@ -48,24 +69,32 @@ export function GateWorkspace({ lang = 'ar' }) {
 
   const isClosed = selectedEvent.status === 'closed';
   const isDraft = selectedEvent.status === 'draft';
-  const isResolvingOrSubmitting = gateState === 'resolving' || gateState === 'submitting';
+  // F11: use the fresher resolved gateEvent when available.
+  const effectiveEvent = gateEvent?.id === selectedEvent.id &&
+    (gateEvent.version ?? 0) >= (selectedEvent.version ?? 0) ? gateEvent : selectedEvent;
+  const effectiveClosed = effectiveEvent?.status === 'closed';
+  const effectiveDraft = effectiveEvent?.status === 'draft';
+  // F09: lock all competing inputs during resolution/submission/uncertainty.
+  const inputsLocked = isClosed || isDraft || effectiveClosed || effectiveDraft || isBusy;
 
   const handleScan = (tokenOrId, scanMethod) => {
+    if (isBusy) return;
     // If it looks like Crockford or ID, resolve by token
     resolve({ token: tokenOrId }, scanMethod);
   };
 
   const handleManualSelect = (guestIdPayload, scanMethod) => {
+    if (isBusy) return;
     resolve(guestIdPayload, scanMethod);
   };
 
   return (
     <div className={styles.container} data-testid="gate-workspace">
-      {/* Event Header Bar */}
+      {/* Event Header Bar (identity always visible) */}
       <header className={styles.eventHeader} data-testid="gate-event-header">
         <div className={styles.eventInfo}>
           <div className={styles.eventTitleRow}>
-            <h1 className={styles.eventName}>{selectedEvent.name}</h1>
+            <h1 className={styles.eventName} dir="auto">{selectedEvent.name}</h1>
             <StatusBadge
               status={selectedEvent.status}
               label={t(dict, `status.${selectedEvent.status}`)}
@@ -73,7 +102,7 @@ export function GateWorkspace({ lang = 'ar' }) {
             />
           </div>
           <div className={styles.eventMeta}>
-            <span>📍 {selectedEvent.venue}</span>
+            <span>📍 <span dir="auto">{selectedEvent.venue}</span></span>
             <span>🕒 {formatRiyadhDate(selectedEvent.startsAt, lang)}</span>
           </div>
         </div>
@@ -82,11 +111,20 @@ export function GateWorkspace({ lang = 'ar' }) {
           <span
             className={`${styles.connectionPill} ${isOnline ? styles.online : styles.offline}`}
             data-testid="connection-status-pill"
+            role="status"
+            aria-live="polite"
+            title={browserOnline ? (apiReachable ? '' : t(dict, 'common.networkError')) : t(dict, 'gate.connectionOffline')}
           >
             <span>{isOnline ? '🟢' : '🔴'}</span>
-            <span>{isOnline ? t(dict, 'gate.connectionOnline') : t(dict, 'gate.connectionOffline')}</span>
+            <span>
+              {!browserOnline
+                ? t(dict, 'gate.connectionOffline')
+                : !apiReachable
+                  ? t(dict, 'gate.connectionStale')
+                  : t(dict, 'gate.connectionOnline')}
+            </span>
           </span>
-          {asOf && (
+          {asOf ? (
             <span className={styles.asOfText}>
               {t(dict, 'common.asOf')}{' '}
               {new Date(asOf).toLocaleTimeString(lang === 'ar' ? 'ar-SA' : 'en-US', {
@@ -96,39 +134,49 @@ export function GateWorkspace({ lang = 'ar' }) {
                 timeZone: 'Asia/Riyadh',
               })}
             </span>
+          ) : (
+            <span className={styles.asOfText}>{t(dict, 'gate.connectionStale')}</span>
+          )}
+          {recentError && (
+            <button type="button" onClick={() => refetchRecent()} data-testid="recent-retry-btn">
+              {t(dict, 'common.retry')}
+            </button>
           )}
         </div>
       </header>
 
       {/* Closed / Draft Warnings */}
-      {isClosed && (
-        <Notice type="warning" data-testid="gate-closed-warning">
+      {(isClosed || effectiveClosed) && (
+        <Notice variant="warning" data-testid="gate-closed-warning">
           {t(dict, 'gate.eventClosedMessage')}
         </Notice>
       )}
-      {isDraft && (
-        <Notice type="info" data-testid="gate-draft-warning">
+      {(isDraft || effectiveDraft) && (
+        <Notice variant="info" data-testid="gate-draft-warning">
           {t(dict, 'gate.eventDraftMessage')}
         </Notice>
       )}
 
+      {errorDetails && gateState === 'ready' && <Notice variant="warning">{t(dict, `errors.${errorDetails.code}`) || t(dict, 'errors.UNKNOWN')}</Notice>}
+
       {/* Main Grid: Input / Scanner on left, Admission Card on right */}
-      <div className={styles.grid}>
+      <div className={styles.grid} aria-live="polite">
         <div className={styles.scannerColumn}>
           <CameraScanner
             onScan={handleScan}
-            disabled={isClosed || isDraft || isResolvingOrSubmitting}
+            disabled={inputsLocked}
             dict={dict}
+            stopSignal={cameraStopSignal}
           />
           <ScannerInput
             onScan={handleScan}
-            disabled={isClosed || isDraft || isResolvingOrSubmitting}
+            disabled={inputsLocked}
             dict={dict}
           />
           <GuestLookup
             eventId={selectedEvent.id}
             onSelect={handleManualSelect}
-            disabled={isClosed || isDraft || isResolvingOrSubmitting}
+            disabled={inputsLocked}
             dict={dict}
           />
         </div>
@@ -157,13 +205,13 @@ export function GateWorkspace({ lang = 'ar' }) {
           <span>{t(dict, 'gate.recentAdmissionsTitle')}</span>
         </h2>
 
-        {recentAdmissions.length === 0 ? (
+        {recentError ? <Notice variant="warning">{t(dict, 'common.networkError')}</Notice> : recentAdmissions.length === 0 ? (
           <div className={styles.emptyRecent} data-testid="empty-recent-admissions">
             {t(dict, 'gate.recentAdmissionsEmpty')}
           </div>
         ) : (
           <div className={styles.recentList} data-testid="recent-admissions-list">
-            {recentAdmissions.map((guest) => {
+            {recentAdmissions.slice(0, 10).map((guest) => {
               const checkIn = guest.checkIn || {};
               const partySize = checkIn.actualPartySize || (1 + (checkIn.actualCompanions || 0));
               const time = checkIn.checkedInAt || checkIn.admittedAt;
@@ -176,7 +224,7 @@ export function GateWorkspace({ lang = 'ar' }) {
                   className={styles.recentCard}
                   data-testid={`recent-admission-card-${guest.id}`}
                 >
-                  <div className={styles.recentGuestName}>{guest.name}</div>
+                  <div className={styles.recentGuestName} dir="auto">{guest.name}</div>
                   <div className={styles.recentMeta}>
                     <span>
                       👥 {t(dict, 'gate.successPartyCount', { count: partySize })}

@@ -17,7 +17,9 @@ export function QrPreviewDialog({
   isOpen,
   onClose,
   eventId,
+  event = null,
   guest,
+  onExportPdf = null,
   lang = 'ar',
 }) {
   const dict = getDictionary(lang);
@@ -34,9 +36,18 @@ export function QrPreviewDialog({
   });
 
   const qrData = qrResponse?.data;
+  const [printError, setPrintError] = React.useState(null);
+  React.useEffect(() => { if (isOpen) setPrintError(null); }, [isOpen]);
 
+  // F25: route single-pass Print through the authenticated A6 PDF pipeline
+  // (same as export-panel), never window.print() of the dashboard.
   const handlePrint = () => {
-    window.print();
+    setPrintError(null);
+    if (guest && typeof onExportPdf === 'function') {
+      onExportPdf(guest);
+    } else {
+      setPrintError(t(dict, 'qr.scanInstruction'));
+    }
   };
 
   const handleDownloadImage = () => {
@@ -62,6 +73,9 @@ export function QrPreviewDialog({
             message={t(dict, `errors.${error.code}`) || error.message}
           />
         )}
+        {printError && (
+          <Notice variant="info" message={printError} />
+        )}
 
         {guest && (
           <div className={styles.guestInfo}>
@@ -73,6 +87,16 @@ export function QrPreviewDialog({
                 {qrData?.shortCode || guest.shortCode}
               </bdi>
             </div>
+            {/* F25: preview shows event identity/date/allowance for correct pass context. */}
+            {event && (
+              <div style={{ fontSize: '12px', color: 'var(--color-natural-700, #454545)', marginTop: 6 }}>
+                <div dir="auto">{event.name}</div>
+                {event.venue && <div dir="auto">{event.venue}</div>}
+                {guest.allowedCompanions != null && (
+                  <div>{t(dict, 'gate.allowedCompanions')}: {guest.allowedCompanions}</div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -84,7 +108,7 @@ export function QrPreviewDialog({
           ) : qrData?.imageDataUrl ? (
             <img
               src={qrData.imageDataUrl}
-              alt={`QR Code for ${guest?.name}`}
+              alt={`${t(dict, 'qr.previewTitle')}: ${guest?.name || ''}`}
               className={styles.qrImage}
               data-testid="qr-image"
             />
@@ -103,6 +127,18 @@ export function QrPreviewDialog({
           >
             💾 {lang === 'ar' ? 'تحميل صورة الرمز' : 'Save QR Image'}
           </Button>
+
+          {onExportPdf && (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => guest && onExportPdf(guest)}
+              disabled={!guest}
+              data-testid="export-single-pdf-btn"
+            >
+              📄 {lang === 'ar' ? 'تحميل PDF (A6)' : 'Download PDF (A6)'}
+            </Button>
+          )}
 
           <Button
             variant="secondary"

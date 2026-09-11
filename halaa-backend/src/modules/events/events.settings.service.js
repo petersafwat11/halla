@@ -1,3 +1,4 @@
+const notifyEventUnscheduled = require('../../shared/utils/notifyEventUnscheduled');
 const { resolveInvitationDelivery } = require('../messaging/invitationDelivery');
 /**
  * Events Service — Settings sub-module
@@ -186,6 +187,7 @@ module.exports = {
     }
 
     if (unscheduled.modifiedCount > 0) {
+      await notifyEventUnscheduled(event);
       event.status = 'pending_scheduling';
       event.testMessageSent = false;
       event.testMessageFingerprint = null;
@@ -297,6 +299,7 @@ module.exports = {
     }
 
     if (unscheduled.modifiedCount > 0) {
+      await notifyEventUnscheduled(event);
       event.status = 'pending_scheduling';
       event.testMessageSent = false;
       event.testMessageFingerprint = null;

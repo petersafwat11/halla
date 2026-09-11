@@ -145,7 +145,7 @@ export default function SendActionPopup({
         return;
       }
 
-      const successful = data.successful ?? guestIds.length;
+      const successful = data.successful ?? 0;
       const notify = successful === 0 ? toast.error : successful < total ? toast.warn : toast.success;
       notify(
         t("singleEvent.bulkActions.sentResult", {

@@ -28,7 +28,7 @@ const {
 
 const buildAccessLink = (token) => {
   const frontendUrl =
-    config.frontend?.url || process.env.FRONTEND_URL || 'https://halaa.sa';
+    process.env.POST_EVENT_PUBLIC_ORIGIN || config.frontend?.url || process.env.FRONTEND_URL || 'https://halaa.sa';
   return `${frontendUrl}/ar/post-event?token=${token}`;
 };
 
@@ -130,6 +130,7 @@ async function sendBulkAccessLinks(
     taqnyatTemplate: { templateRef: effectiveRef },
   });
   if (!template) throw noTemplateError();
+  const language = template.language || 'ar';
 
   const tokenQuery = {
     event: eventId,

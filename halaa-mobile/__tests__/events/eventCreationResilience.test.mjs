@@ -64,6 +64,22 @@ test("F-16 / PR3: presentError maps mobile error codes without exposing raw UUID
   assert.ok(displayEn.includes(presentedEn.supportReference));
 });
 
+test("event entitlement 403 responses explain the actual recovery action", () => {
+  for (const code of [
+    "SUBSCRIPTION_REQUIRED",
+    "EVENT_LIMIT_REACHED",
+    "INVITATION_CAPACITY_EXCEEDED",
+  ]) {
+    const presented = presentError(
+      { code, status: 403, requestId: "398b8e91-4468-aaaa-bbbb-cccccccccccc" },
+      { language: "ar" },
+    );
+    assert.equal(presented.code, code);
+    assert.notEqual(presented.actionMessage, "ليس لديك صلاحية لإجراء هذه العملية. إذا كنت تعتقد أن هذا خطأ، تواصل مع الدعم.");
+    assert.equal(presented.supportReference, "398B8E914468");
+  }
+});
+
 test("PR3: CreateEventScreen and CreateEventForm never expose raw UUID in visible copy", async () => {
   const [screenSrc, formSrc] = await Promise.all([
     read("../../screens/common/CreateEventScreen.js"),

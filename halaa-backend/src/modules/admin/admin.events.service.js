@@ -1,3 +1,4 @@
+const notifyEventUnscheduled = require('../../shared/utils/notifyEventUnscheduled');
 const { resolveInvitationDelivery } = require('../messaging/invitationDelivery');
 /**
  * Admin Events Service
@@ -187,6 +188,7 @@ async function updateEventFull(eventId, updateData, context = {}) {
       );
     }
     if (unscheduled.modifiedCount > 0) {
+      await notifyEventUnscheduled(event);
       event.status = 'pending_scheduling';
       event.testMessageSent = false;
       event.testMessageFingerprint = null;
@@ -281,7 +283,17 @@ async function updateEventStatus(eventId, status, context = {}) {
   }
 
   const prevStatus = event.status;
-  event.status = status;
+  if (prevStatus === EVENT_STATUS.PENDING_SCHEDULING && status === EVENT_STATUS.SCHEDULED) {
+    throw new ValidationError('Use Schedule Delivery after sending a valid test invitation; status changes cannot schedule invitations.');
+  }
+  // Reopening is not authorization to send at a retained historical time.
+  const reopening = status === EVENT_STATUS.SCHEDULED &&
+    [EVENT_STATUS.CANCELLED, EVENT_STATUS.COMPLETED, EVENT_STATUS.FAILED].includes(prevStatus);
+  event.status = reopening ? EVENT_STATUS.PENDING_SCHEDULING : status;
+  if (reopening || status === EVENT_STATUS.CANCELLED) {
+    event.set('launchSettings.scheduledDate', undefined);
+    event.set('launchSettings.scheduledTime', undefined);
+  }
 
   if (status === EVENT_STATUS.CANCELLED) {
     event.previousStatus = prevStatus;

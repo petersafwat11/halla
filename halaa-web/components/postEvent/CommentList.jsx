@@ -1,4 +1,5 @@
 "use client";
+import { postEventMediaUrl } from '@/utils/postEventMedia';
 import React, { useState } from "react";
 import { FaUserCircle, FaEllipsisH } from "react-icons/fa";
 import { toast } from "react-toastify";
@@ -188,7 +189,7 @@ const CommentItem = ({ comment, locale, eventId }) => {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   key={i}
-                  src={img.url}
+                  src={postEventMediaUrl(typeof img === "string" ? img : img.url)}
                   alt=""
                   className={styles.commentImage}
                   loading="lazy"

@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useRouter, useSearchParams } from "next/navigation";
-import { format } from "date-fns";
+import { format, startOfDay, endOfDay } from "date-fns";
 import { ar } from "date-fns/locale";
 import styles from "./header.module.css";
 import Image from "next/image";
@@ -18,6 +18,7 @@ const Header = ({
   addButtonTitle,
   addButtonIcon,
   onAddButtonClick,
+  wholeDays = false,
 }) => {
   const { t, i18n } = useTranslation("adminModerators");
   // Fallbacks for pages that don't load the `adminModerators` namespace —
@@ -46,18 +47,20 @@ const Header = ({
     const params = new URLSearchParams(searchParams.toString());
 
     if (range?.from) {
-      params.set("from", range.from.toISOString());
+      params.set("from", (wholeDays ? startOfDay(range.from) : range.from).toISOString());
     } else {
       params.delete("from");
     }
 
-    if (range?.to) {
-      params.set("to", range.to.toISOString());
+    const through = range?.to || (wholeDays ? range?.from : null);
+    if (through) {
+      params.set("to", (wholeDays ? endOfDay(through) : through).toISOString());
     } else {
       params.delete("to");
     }
 
     // Navigate with new params - triggers server component refetch
+    params.set("page", "1");
     const newUrl = params.toString()
       ? `?${params.toString()}`
       : window.location.pathname;
@@ -74,7 +77,7 @@ const Header = ({
     }
 
     const fromDate = format(selectedDateRange.from, "d MMM yyyy", {
-      locale: ar,
+      locale: isArabic ? ar : undefined,
     });
 
     if (
@@ -84,7 +87,7 @@ const Header = ({
       return fromDate;
     }
 
-    const toDate = format(selectedDateRange.to, "d MMM yyyy", { locale: ar });
+    const toDate = format(selectedDateRange.to, "d MMM yyyy", { locale: isArabic ? ar : undefined });
     return `${fromDate} - ${toDate}`;
   };
 

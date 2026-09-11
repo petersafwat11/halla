@@ -98,6 +98,7 @@ export function loadConfig(overrides = {}) {
       dir: overrides.exportDir || process.env.EXPORT_DIR || './data/exports',
       ttlMs: LIMITS.EXPORT_EXPIRY_MS, // 24 hours
     },
+    demoSeedEnabled: overrides.demoSeedEnabled || process.env.DEMO_SEED_ENABLED === 'true',
   };
 
   return cfg;

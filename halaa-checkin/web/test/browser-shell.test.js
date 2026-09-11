@@ -8,7 +8,7 @@ import { chromium } from 'playwright-core';
 import { findChromiumExecutable } from '../../api/src/modules/exports/chromium.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const EVIDENCE_DIR = path.resolve(__dirname, '../../../docs/evidence/hilton-guest-checkin');
+const EVIDENCE_DIR = process.env.CHECKIN_EVIDENCE_DIR || path.resolve(__dirname, '../../../docs/evidence/hilton-guest-checkin');
 
 const PORT = 3109;
 const BASE_URL = `http://127.0.0.1:${PORT}`;
@@ -160,7 +160,7 @@ describe('T07 — Browser E2E and Visual Responsive Verification', { timeout: 60
   it('renders authenticated admin shell with Guests and Gate navigation', async () => {
     const page = await browser.newPage();
 
-    // Mock API routes for admin session
+    // Mock API routes for admin session (exact DTO: { user, csrfToken, expiresAt })
     await page.route('**/api/checkin/v1/auth/session', async (route) => {
       await route.fulfill({
         status: 200,
@@ -172,10 +172,10 @@ describe('T07 — Browser E2E and Visual Responsive Verification', { timeout: 60
               username: 'admin',
               displayName: 'سارة الأحمد',
               role: 'admin',
+              assignedEventIds: [],
             },
-            role: 'admin',
             csrfToken: 'mock-csrf-admin',
-            assignedEventIds: [],
+            expiresAt: new Date(Date.now() + 12 * 3600 * 1000).toISOString(),
           },
         }),
       });
@@ -255,7 +255,7 @@ describe('T07 — Browser E2E and Visual Responsive Verification', { timeout: 60
   it('receptionist role cannot see Guests navigation and is redirected from /guests to /gate', async () => {
     const page = await browser.newPage();
 
-    // Mock API routes for reception session
+    // Mock API routes for reception session (exact DTO: { user, csrfToken, expiresAt })
     await page.route('**/api/checkin/v1/auth/session', async (route) => {
       await route.fulfill({
         status: 200,
@@ -267,10 +267,10 @@ describe('T07 — Browser E2E and Visual Responsive Verification', { timeout: 60
               username: 'reception',
               displayName: 'أحمد محمود',
               role: 'reception',
+              assignedEventIds: ['ev-hilton-01'],
             },
-            role: 'reception',
             csrfToken: 'mock-csrf-rec',
-            assignedEventIds: ['ev-hilton-01'],
+            expiresAt: new Date(Date.now() + 12 * 3600 * 1000).toISOString(),
           },
         }),
       });
@@ -327,9 +327,9 @@ describe('T07 — Browser E2E and Visual Responsive Verification', { timeout: 60
         contentType: 'application/json',
         body: JSON.stringify({
           data: {
-            user: { id: 'u1', username: 'admin', displayName: 'Admin', role: 'admin' },
-            role: 'admin',
+            user: { id: 'u1', username: 'admin', displayName: 'Admin', role: 'admin', assignedEventIds: [] },
             csrfToken: 'mock-csrf',
+            expiresAt: new Date(Date.now() + 12 * 3600 * 1000).toISOString(),
           },
         }),
       });

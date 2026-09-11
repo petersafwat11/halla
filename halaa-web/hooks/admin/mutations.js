@@ -556,3 +556,62 @@ export const useAdminPaymentsExport = () => {
     },
   });
 };
+
+/**
+ * Admin payment links — create / refresh / cancel.
+ * Creation requires an `Idempotency-Key` stable for one UI submission and
+ * its retries; the same key+input replays the same request, while the same
+ * key with different input surfaces a 409.
+ */
+const newIdempotencyKey = () =>
+  typeof crypto !== "undefined" && crypto.randomUUID
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+export const useCreatePaymentLink = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ data, idempotencyKey }) =>
+      apiRequest({
+        method: "POST",
+        path: API_PATHS.paymentLinks.create,
+        data,
+        config: { headers: { "Idempotency-Key": idempotencyKey || newIdempotencyKey() } },
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.paymentLinksAll() });
+    },
+  });
+};
+
+export const useRefreshPaymentLink = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (linkId) =>
+      apiRequest({ method: "POST", path: API_PATHS.paymentLinks.refresh(linkId) }),
+    onSuccess: (_res, linkId) => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.paymentLinksAll() });
+      if (linkId) {
+        queryClient.invalidateQueries({ queryKey: adminKeys.paymentLinkDetail(linkId) });
+      }
+    },
+  });
+};
+
+export const useCancelPaymentLink = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ linkId, idempotencyKey }) =>
+      apiRequest({
+        method: "POST",
+        path: API_PATHS.paymentLinks.cancel(linkId),
+        config: { headers: { "Idempotency-Key": idempotencyKey || newIdempotencyKey() } },
+      }),
+    onSuccess: (_res, { linkId }) => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.paymentLinksAll() });
+      if (linkId) {
+        queryClient.invalidateQueries({ queryKey: adminKeys.paymentLinkDetail(linkId) });
+      }
+    },
+  });
+};

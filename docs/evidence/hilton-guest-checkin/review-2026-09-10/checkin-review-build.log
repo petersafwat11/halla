@@ -1,0 +1,53 @@
+
+> halaa-checkin@0.1.0 build
+> npm --prefix contracts run build && npm --prefix web run build
+
+
+> @halaa-checkin/contracts@0.1.0 build
+> node -e "console.log('Contracts build ok')"
+
+Contracts build ok
+
+> @halaa-checkin/web@0.1.0 build
+> next build
+
+   ▲ Next.js 15.5.25
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 5.4s
+   Linting and checking validity of types ...
+
+ ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
+   Collecting page data ...
+   Generating static pages (0/12) ...
+   Generating static pages (3/12) 
+   Generating static pages (6/12) 
+   Generating static pages (9/12) 
+ ✓ Generating static pages (12/12)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ○ /                                      123 B         102 kB
+├ ○ /_not-found                            991 B         103 kB
+├ ● /[lang]                               1.2 kB         111 kB
+├   ├ /en
+├   └ /ar
+├ ● /[lang]/gate                         58.7 kB         181 kB
+├   ├ /en/gate
+├   └ /ar/gate
+├ ● /[lang]/guests                         23 kB         148 kB
+├   ├ /en/guests
+├   └ /ar/guests
+└ ● /[lang]/login                        3.81 kB         126 kB
+    ├ /en/login
+    └ /ar/login
++ First Load JS shared by all             102 kB
+  ├ chunks/131-5463452e7de19383.js       45.5 kB
+  ├ chunks/c7879cf7-b5ab1053c1d9a2e7.js  54.2 kB
+  └ other shared chunks (total)          2.03 kB
+
+
+○  (Static)  prerendered as static content
+●  (SSG)     prerendered as static HTML (uses generateStaticParams)
+

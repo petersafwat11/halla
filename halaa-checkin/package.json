@@ -13,10 +13,16 @@
     "build": "npm --prefix contracts run build && npm --prefix web run build",
     "lint": "eslint .",
     "test": "npm --prefix contracts test && npm --prefix api test && npm --prefix web test",
+    "test:e2e": "npm --prefix api run test:e2e",
     "design:sync": "node scripts/sync-design.mjs",
     "design:check": "node scripts/check-design.mjs",
     "user:provision": "node api/scripts/provision-user.mjs",
-    "db:indexes": "node api/scripts/ensure-indexes.mjs"
+    "seed:demo": "node api/scripts/seed-demo.mjs",
+    "db:indexes": "node api/scripts/ensure-indexes.mjs",
+    "db:backup": "node api/scripts/backup-db.mjs",
+    "db:restore-verify": "node api/scripts/restore-verify.mjs",
+    "purge:event": "node api/scripts/purge-event.mjs",
+    "test:capacity": "node tests/e2e/capacity-rehearsal.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",

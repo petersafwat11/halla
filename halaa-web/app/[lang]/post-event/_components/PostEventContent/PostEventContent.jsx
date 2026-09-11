@@ -53,7 +53,7 @@ const PostEventContent = ({ content, eventInfo, guestId, eventId, loading }) => 
             />
           </div>
 
-          {caption && <p className={styles.caption}>{caption}</p>}
+          {caption && <p dir="auto" className={styles.caption}>{caption}</p>}
 
           {media.length > 0 && (
             <PostMediaGallery media={media} eventId={eventId} />

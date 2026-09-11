@@ -33,7 +33,7 @@ const EmptyState = ({ t }) => (
   </div>
 );
 
-const TemplateCard = ({ template, isSelected, onSelect, t }) => (
+const TemplateCard = ({ template, preview, isSelected, onSelect, t }) => (
   <button
     type="button"
     className={`${styles.templateCard} ${isSelected ? styles.templateCardSelected : ""}`}
@@ -49,7 +49,7 @@ const TemplateCard = ({ template, isSelected, onSelect, t }) => (
     </div>
     {template.bodyText && (
       <div className={styles.bubbleWrap}>
-        <p className={styles.bubbleText}>{template.bodyText}</p>
+        <p className={styles.bubbleText}>{preview || template.bodyText}</p>
       </div>
     )}
     {template.varMapping?.length > 0 && (
@@ -60,7 +60,7 @@ const TemplateCard = ({ template, isSelected, onSelect, t }) => (
   </button>
 );
 
-const MessagingTemplatePicker = ({ eventId, savedTemplateRef }) => {
+const MessagingTemplatePicker = ({ eventId, savedTemplateRef, messagePreviews = {} }) => {
   const { t } = useTranslation("postEvent");
   const { data, isLoading } = useHostTaqnyatTemplates({ type: "post_event" });
   const saveTemplate = useUpdatePostEventMessagingTemplate();
@@ -90,6 +90,7 @@ const MessagingTemplatePicker = ({ eventId, savedTemplateRef }) => {
       <div className={styles.headerRow}>
         <h3 className={styles.title}>{t("host.messaging.title")}</h3>
         <p className={styles.subtitle}>{t("host.messaging.subtitle")}</p>
+        <p>{t("host.messaging.previewNote")}</p>
       </div>
 
       {isLoading ? (
@@ -102,6 +103,7 @@ const MessagingTemplatePicker = ({ eventId, savedTemplateRef }) => {
             <TemplateCard
               key={template._id}
               template={template}
+              preview={messagePreviews[String(template._id)]}
               isSelected={String(savedId) === String(template._id)}
               onSelect={handleSelect}
               t={t}

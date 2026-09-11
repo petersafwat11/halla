@@ -382,6 +382,18 @@ const PATHS = {
   },
 
   // ============================================
+  // PAYMENT LINKS (admin payment requests — Moyasar hosted invoices)
+  // ============================================
+  paymentLinks: {
+    config: "/admin/payment-links/config",
+    getAll: "/admin/payment-links",
+    create: "/admin/payment-links",
+    getById: (id) => `/admin/payment-links/${id}`,
+    refresh: (id) => `/admin/payment-links/${id}/refresh`,
+    cancel: (id) => `/admin/payment-links/${id}/cancel`,
+  },
+
+  // ============================================
   // POST-EVENT
   // ============================================
   postEvent: {
@@ -517,6 +529,7 @@ export const {
   taqnyatTemplates,
   plans,
   payments,
+  paymentLinks,
   postEvent,
   vendorServices,
   admin,

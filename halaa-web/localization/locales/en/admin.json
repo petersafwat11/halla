@@ -25,6 +25,11 @@
     "network_error": "Network error"
   },
   "taqnyat": {
+    "accountType": "Account type",
+    "personalAccount": "Personal host",
+    "businessAccount": "Business account",
+    "uniquePerAccountHint": "One active reminder per account type, covering all event categories. Saving deactivates the previous template.",
+    "allEventCategories": "All event categories",
     "title": "WhatsApp Templates (Taqnyat)",
     "subtitle": "Manage Meta-approved WhatsApp templates, assign categories and variables",
     "syncBtn": "Sync from Taqnyat",

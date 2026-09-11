@@ -1,3 +1,4 @@
+const notifyEventUnscheduled = require('./notifyEventUnscheduled');
 const { resolveInvitationDelivery } = require('../../modules/messaging/invitationDelivery');
 /**
  * Scheduled Tasks
@@ -32,7 +33,7 @@ const { getActiveEventGuestsFilter } = require("./guestFilter");
 const { eventInstantOf } = require("./schedulingWindow");
 const {
   resolveTaqnyatTemplate,
-  computeInvitationFingerprint,
+  invitationFingerprintMatches,
 } = require("../../modules/messaging/messaging.formatting");
 const { logAudit } = require("./auditLog");
 const eventLock = require("./eventLock");
@@ -202,16 +203,15 @@ async function runEventLaunch(event, workerId) {
 
   try {
     // Re-read inside the lock in case another worker ran first.
-    const fresh = await Event.findById(eventId).populate('host', 'name email preferredLanguage');
+    const fresh = await Event.findById(eventId).populate('host', 'name email preferredLanguage accountType');
     if (!fresh || fresh.status !== 'scheduled') {
       return { launched: false, reason: "stale" };
     }
 
     // Pre-launch fingerprint validation: test message must match current event content
     const cachedTemplate = await resolveTaqnyatTemplate(fresh);
-    const currentFingerprint = computeInvitationFingerprint(fresh, cachedTemplate);
 
-    if (!fresh.testMessageSent || fresh.testMessageFingerprint !== currentFingerprint) {
+    if (!invitationFingerprintMatches(fresh, cachedTemplate)) {
       console.warn(
         `[Cron] Event ${eventId} launch aborted: test message missing or outdated fingerprint`
       );
@@ -231,18 +231,7 @@ async function runEventLaunch(event, workerId) {
         }
       );
 
-      if (fresh.host) {
-        notificationService
-          .sendToUser(fresh.host, {
-            type: "event_unscheduled",
-            title: "تم إلغاء جدولة الإرسال",
-            titleAr: "تم إلغاء جدولة الإرسال",
-            message: "تم تعديل تفاصيل الفعالية بعد الاختبار، يرجى إرسال رسالة تجريبية وإعادة الجدولة.",
-            messageAr: "تم تعديل تفاصيل الفعالية بعد الاختبار، يرجى إرسال رسالة تجريبية وإعادة الجدولة.",
-            data: { entityType: "event", entityId: fresh._id },
-          })
-          .catch(() => {});
-      }
+      await notifyEventUnscheduled(fresh);
 
       try {
         await logAudit({
@@ -1598,6 +1587,41 @@ const schedulePrivacyRetention = () => {
   });
 };
 
+// ─────────────────────────────────────────────────────────────────
+// Admin payment-link invoice worker (every minute).
+// Reconciles unpaid/unknown/cancel-pending links + final expiry check via
+// fair `nextReconcileAt` scheduling (batch 50, concurrency 2). Lower-frequency
+// rechecks of settled links cover the refund window; refund webhooks give
+// prompt updates. Existing pending-Payment cron alone is insufficient.
+// ─────────────────────────────────────────────────────────────────
+const schedulePaymentLinksReconcile = () => {
+  cron.schedule("* * * * *", async () => {
+    const result = await cronLease.withLease(
+      "payment_links_reconcile",
+      async () => {
+        try {
+          const { runPaymentLinksReconcileTick } = require("../../modules/payment-links/paymentLinks.service");
+          const { scanned, reconciled, errors } = await runPaymentLinksReconcileTick();
+          if (scanned > 0) {
+            // eslint-disable-next-line no-console
+            console.log(
+              `[Cron] payment_links_reconcile: scanned=${scanned} reconciled=${reconciled} errors=${errors}`
+            );
+          }
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.error("[Cron] payment_links_reconcile error:", err.message);
+        }
+      },
+      { ttlMs: 180 * 1000 }
+    );
+    if (!result.ran) {
+      // eslint-disable-next-line no-console
+      console.log("[Cron] payment_links_reconcile — skipped (lease held by another node)");
+    }
+  });
+};
+
 // Expire stale business checkout links hourly. Retained
 // records — `expireStale` only flips pending_payment → expired, never deletes.
 const scheduleBusinessLinkExpiry = () => {
@@ -1625,6 +1649,7 @@ const initScheduledTasks = () => {
   scheduleGuestReminders();
   scheduleNotificationDelivery();
   schedulePaymentReconcile();
+  schedulePaymentLinksReconcile();
   scheduleSubscriptionRenewal();
   scheduleBusinessLinkExpiry();
   scheduleAccountDeletionRetry();
@@ -1643,6 +1668,7 @@ const initScheduledTasks = () => {
   console.log("  - 48h guest reminder SMS: Every 30 minutes");
   console.log("  - Scheduled notification delivery: Every 5 minutes");
   console.log("  - Payment reconciliation: Every 5 minutes");
+  console.log("  - Payment-link invoice reconcile: Every minute (batch 50, concurrency 2)");
   console.log("  - Subscription renewal (Moyasar invoice): Daily at 2:00 AM");
   console.log("  - Privacy retention: Daily at 3:00 AM when explicitly enabled (dry-run unless execution confirmed)");
 };
@@ -1659,6 +1685,7 @@ module.exports = {
   scheduleGuestReminders,
   runAutoReminderForEvent: _runAutoReminderForEvent,
   schedulePaymentReconcile,
+  schedulePaymentLinksReconcile,
   scheduleSubscriptionRenewal,
   runEventLaunch,
   runEventCompletion,

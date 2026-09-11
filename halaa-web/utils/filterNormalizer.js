@@ -160,6 +160,34 @@ export function normalizePaymentsFilters(input, defaults = {}) {
 }
 
 /**
+ * Normalizes admin payment-link list filters.
+ * URL-persisted: page, limit, search (reference/description/client label),
+ * status, creator, from/to (request creation dates).
+ */
+export function normalizePaymentLinksFilters(input, defaults = {}) {
+  const defaultPage = defaults.page ?? 1;
+  const defaultLimit = defaults.limit ?? 20;
+
+  const page = cleanInt(getParam(input, "page"), defaultPage, 1);
+  const limit = cleanInt(getParam(input, "limit"), defaultLimit, 1);
+  const rawSearch = cleanString(getParam(input, "search"));
+  const search = rawSearch !== undefined ? rawSearch.slice(0, 100) : undefined;
+  const status = cleanString(getParam(input, "status"));
+  const creator = cleanString(getParam(input, "creator"));
+  const from = cleanDate(getParam(input, "from"));
+  const to = cleanDate(getParam(input, "to"));
+
+  const normalized = { page, limit };
+  if (search !== undefined) normalized.search = search;
+  if (status !== undefined) normalized.status = status;
+  if (creator !== undefined) normalized.creator = creator;
+  if (from !== undefined) normalized.from = from;
+  if (to !== undefined) normalized.to = to;
+
+  return normalized;
+}
+
+/**
  * Normalizes custom design fulfillment list filters.
  */
 export function normalizeFulfillmentFilters(input, defaults = {}) {

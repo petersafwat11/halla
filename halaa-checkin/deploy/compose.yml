@@ -1,0 +1,118 @@
+# Halaa Guest Check-in — production Compose stack (independent project).
+#
+# Project name: halaa-checkin (directory + `name:` pin it; never merge these
+# services into the root Halaa Compose project: `--remove-orphans`, image
+# updates and rollback must remain independent).
+#
+# Layout on the VPS:
+#   /opt/halaa-checkin/
+#     compose.yml            <- copy of this file (tracked here, deployed by hand)
+#     config.env             <- secrets, mode 600 (NEVER committed)
+#     data/exports/          <- private PDF artifacts, chown 1001:1001
+#     .env                   <- IMAGE_TAG=<immutable SHA> only
+#
+# No service publishes public ports and no local MongoDB is started here:
+# production data lives in a dedicated Atlas database
+# (e.g. halaa_checkin_prod) reached over TLS. Caddy (main Halaa stack,
+# attached to the same external proxy network) is the only public entrypoint.
+#
+# Rollout / rollback (see deploy/README.md):
+#   IMAGE_TAG=<sha> docker compose -p halaa-checkin up -d --wait
+#   # rollback: set IMAGE_TAG to the prior tested SHA and repeat the same line.
+#   # Database and export volume are preserved. Never `down -v`.
+
+name: halaa-checkin
+
+services:
+  checkin-api:
+    image: ghcr.io/petersafwat11/halaa-checkin-api:${IMAGE_TAG:?Set IMAGE_TAG to an immutable release SHA}
+    build:
+      context: ..
+      dockerfile: api/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - path: ${CHECKIN_ENV_FILE:-config.env}
+        required: true
+    environment:
+      NODE_ENV: production
+      PORT: "8100"
+      EXPORT_DIR: /app/data/exports
+      # Proxy trust: exactly one direct hop (Caddy -> api). Verified, not blind.
+      TRUST_PROXY_HOPS: "1"
+    volumes:
+      - ${CHECKIN_DATA_DIR:-./data}/exports:/app/data/exports
+      - ${CHECKIN_DATA_DIR:-./data}/backups:/app/data/backups
+    networks:
+      halaa_checkin_proxy:
+        aliases:
+          - checkin-api
+    # Readiness (DB + indexes); the image HEALTHCHECK covers process liveness.
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:8100/api/checkin/v1/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+    stop_grace_period: 15s
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+    deploy:
+      resources:
+        # Initial budgets; re-tune from measured VPS headroom (see T11 report).
+        # One render slot + gate traffic must coexist with existing Halaa services.
+        limits: { cpus: "2.0", memory: 1G }
+        reservations: { cpus: "0.5", memory: 512M }
+
+  checkin-web:
+    image: ghcr.io/petersafwat11/halaa-checkin-web:${IMAGE_TAG:?Set IMAGE_TAG to an immutable release SHA}
+    build:
+      context: ..
+      dockerfile: web/Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "3100"
+      HOSTNAME: "0.0.0.0"
+    depends_on:
+      checkin-api:
+        condition: service_healthy
+    networks:
+      halaa_checkin_proxy:
+        aliases:
+          - checkin-web
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3100/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    stop_grace_period: 15s
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+    deploy:
+      resources:
+        limits: { cpus: "1.0", memory: 512M }
+        reservations: { cpus: "0.25", memory: 256M }
+
+networks:
+  # Shared with the main Halaa Caddy. External so `docker compose -p
+  # halaa-checkin down` never removes it while Caddy still uses it.
+  # One-time setup (BEFORE first `up` and before the root Compose patch):
+  #   docker network create halaa_checkin_proxy
+  halaa_checkin_proxy:
+    name: halaa_checkin_proxy
+    external: true

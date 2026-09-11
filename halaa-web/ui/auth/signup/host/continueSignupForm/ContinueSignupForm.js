@@ -164,7 +164,7 @@ const ContinueSignupForm = () => {
         </button>
 
         <span className={styles.stepBadge}>
-          {isRTL ? "الخطوة ٢ من ٢" : "Step 2 of 2"}
+          {isRTL ? "الخطوة 2 من 2" : "Step 2 of 2"}
         </span>
       </div>
 

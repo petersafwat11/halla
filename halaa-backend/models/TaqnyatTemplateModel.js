@@ -66,7 +66,7 @@ const taqnyatTemplateSchema = new mongoose.Schema(
     /**
      * Template purpose within a category. Drives the cron + create-event picker:
      *  - 'invite' → many allowed per (category); host picks one in step 4
-     *  - 'reminder_confirmed' → exactly one active per category; auto-reminder cron
+     *  - 'reminder_confirmed' → one active per account delivery mode, category=null; auto-reminder cron
      *                          + pool-charged extra reminder use it (confirmed guests)
      *  - 'post_event' → one active per category; post-event messaging
      *  - 'staff_access' → one active GLOBAL (category may be null); staff notify

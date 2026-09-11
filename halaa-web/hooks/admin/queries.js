@@ -188,6 +188,51 @@ export const useAdminPaymentDetail = (paymentId, options = {}) => {
   });
 };
 
+export const usePaymentLinksConfig = (options = {}) => {
+  return useQuery({
+    queryKey: adminKeys.paymentLinksConfig(),
+    queryFn: () =>
+      apiRequest({ method: "GET", path: API_PATHS.paymentLinks.config }),
+    staleTime: 10 * 60 * 1000,
+    ...options,
+  });
+};
+
+export const useAdminPaymentLinks = (filters = {}, options = {}) => {
+  return useQuery({
+    queryKey: adminKeys.paymentLinks(filters),
+    queryFn: () =>
+      apiRequest({
+        method: "GET",
+        path: API_PATHS.paymentLinks.getAll,
+        params: filters,
+      }),
+    staleTime: 20 * 1000,
+    refetchInterval: 20 * 1000,
+    refetchOnWindowFocus: true,
+    ...options,
+  });
+};
+
+export const useAdminPaymentLinkDetail = (linkId, options = {}) => {
+  return useQuery({
+    queryKey: adminKeys.paymentLinkDetail(linkId),
+    queryFn: () =>
+      apiRequest({
+        method: "GET",
+        path: API_PATHS.paymentLinks.getById(linkId),
+      }),
+    enabled: !!linkId,
+    staleTime: 10 * 1000,
+    refetchInterval: (query) => {
+      const link = query?.state?.data?.data;
+      return link && (["creating", "creation_unknown"].includes(link.creationState) || link.cancelPending || link.syncPending || ["awaiting_payment", "processing"].includes(link.status)) ? 10 * 1000 : false;
+    },
+    refetchOnWindowFocus: true,
+    ...options,
+  });
+};
+
 export const useAdminEvents = (filters = {}, options = {}) => {
   return useQuery({
     queryKey: adminKeys.adminEventsList(filters),

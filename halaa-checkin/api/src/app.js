@@ -14,6 +14,8 @@ import { config as defaultConfig } from './config.js';
 import { requestIdMiddleware, errorHandler } from './middleware/errors.js';
 import { createAuthMiddleware } from './middleware/auth.js';
 import { createCsrfMiddleware } from './middleware/csrf.js';
+import { createApiRateLimiter } from './middleware/rateLimits.js';
+import { checkReplicaSet } from './db/connection.js';
 import { createAuthRouter } from './modules/auth/auth.routes.js';
 import { createEventsRouter } from './modules/events/events.routes.js';
 import { verifyIndexes } from './db/indexes.js';
@@ -54,9 +56,18 @@ export function createApp(deps = {}) {
   );
 
   // 4. Cookie parser and JSON body parser
+  // F15: allow bounded JSON transport overhead above the 2 MB decoded CSV cap.
+  // The service still enforces the 2 MB decoded CSV limit; this only prevents
+  // an otherwise-allowed CSV from failing on JSON quoting/escaping overhead.
   app.use(cookieParser());
-  app.use(express.json({ limit: '2mb' }));
-  app.use(express.urlencoded({ extended: true, limit: '2mb' }));
+  const jsonParser = express.json({ limit: '2mb' });
+  const importJsonParser = express.json({ limit: '13mb' });
+  app.use((req, res, next) => {
+    // A 2 MiB decoded CSV can expand sixfold under JSON escaping.
+    const parser = /\/imports\/(preview|commit)$/.test(req.path) ? importJsonParser : jsonParser;
+    parser(req, res, next);
+  });
+  app.use(express.urlencoded({ extended: true, limit: '3mb' }));
 
   // 5. Root health probe (simple orchestrator liveness)
   app.get('/health', (req, res) => {
@@ -100,17 +111,64 @@ export function createApp(deps = {}) {
 
     try {
       await verifyIndexes();
+      const hasReplicaSet = await checkReplicaSet();
+      if (!hasReplicaSet) {
+        return res.status(503).json(
+          createErrorEnvelope({
+            code: ERROR_CODES.SERVICE_UNAVAILABLE,
+            message: 'Database transaction support not ready (replica set required)',
+            requestId: req.id || '',
+          })
+        );
+      }
+      // PDF worker degradation: export creation depends on a launchable browser.
+      // Gate admission does not, but readiness must reflect degraded exports.
+      // F23: never expose raw renderer filesystem/exception details publicly.
+      if (deps.workerHealth) {
+        try {
+          const workerOk = await deps.workerHealth();
+          if (!workerOk) {
+            return res.status(503).json(
+              createErrorEnvelope({
+                code: ERROR_CODES.SERVICE_UNAVAILABLE,
+                message: 'Export renderer unavailable',
+                requestId: req.id || '',
+              })
+            );
+          }
+        } catch (err) {
+          console.error(`[readiness] export renderer check failed: ${err?.message || err}`);
+          return res.status(503).json(
+            createErrorEnvelope({
+              code: ERROR_CODES.SERVICE_UNAVAILABLE,
+              message: 'Export renderer unavailable',
+              requestId: req.id || '',
+            })
+          );
+        }
+      }
       return res.status(200).json({ status: 'ready', service: 'checkin-api' });
     } catch (err) {
+      // F23: never expose raw readiness exception messages or renderer paths.
+      console.error(`[readiness] check failed: ${err?.message || err}`);
       return res.status(503).json(
         createErrorEnvelope({
           code: ERROR_CODES.SERVICE_UNAVAILABLE,
-          message: `Database readiness check failed: ${err.message}`,
+          message: 'Service temporarily unavailable',
           requestId: req.id || '',
         })
       );
     }
   });
+
+  // General API rate limit (bounded; allows two concurrent receptionists).
+  // Health probes above stay unthrottled; test env uses a high ceiling.
+  const apiLimiter =
+    deps.apiLimiter ||
+    (cfg.env === 'test'
+      ? createApiRateLimiter({ max: 1000 })
+      : createApiRateLimiter());
+  apiRouter.use(apiLimiter);
 
   // Mount Auth routes
   apiRouter.use('/auth', createAuthRouter({ config: cfg, loginLimiter: deps.loginLimiter }));

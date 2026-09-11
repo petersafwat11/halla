@@ -184,7 +184,7 @@ export default function AssignTaqnyatTemplatePopup({ template, categories, onClo
       await assign.mutateAsync({
         id: template._id,
         body: {
-          category: data.category || null,
+          category: ["reminder_confirmed", "staff_access"].includes(data.type) ? null : data.category || null,
           type: data.type || null,
           invitationMode: data.type === "invite" ? data.invitationMode : null,
           deliveryMode: data.deliveryMode,
@@ -215,20 +215,20 @@ export default function AssignTaqnyatTemplatePopup({ template, categories, onClo
 
         <FormProvider {...methods}>
           <form onSubmit={methods.handleSubmit(onSubmit)} className={styles.form}>
-          <label>{t("taqnyat.deliveryMode")}
+          <label>{t("taqnyat.accountType")}
             <select {...methods.register("deliveryMode")}>
-              <option value="quick_reply">{t("taqnyat.personalDelivery")}</option>
-              <option value="portal_link">{t("taqnyat.businessDelivery")}</option>
+              <option value="quick_reply">{t("taqnyat.personalAccount")}</option>
+              <option value="portal_link">{t("taqnyat.businessAccount")}</option>
             </select>
           </label>
           {deliveryMode === "portal_link" && <p>{t("taqnyat.bodyLinkHelp")}</p>}
 
-            <CategorySelect
+            {!["reminder_confirmed", "staff_access"].includes(selectedType) && <CategorySelect
               label={t("taqnyat.fieldCategory", "الفئة")}
               options={categoryOptions}
               placeholder={t("taqnyat.selectCategory", "اختر الفئة")}
               control={methods.control}
-            />
+            />}
 
             <div className={styles.typeField}>
               <label className={styles.typeLabel}>
@@ -250,7 +250,7 @@ export default function AssignTaqnyatTemplatePopup({ template, categories, onClo
               {selectedType && selectedType !== "invite" && (
                 <p className={styles.typeHint}>
                   {t(
-                    "taqnyat.uniquePerCategoryHint",
+                    selectedType === "reminder_confirmed" ? "taqnyat.uniquePerAccountHint" : "taqnyat.uniquePerCategoryHint",
                     "يُسمح بقالب واحد نشط فقط لكل فئة لهذا النوع. الحفظ سيُلغي تفعيل السابق."
                   )}
                 </p>
