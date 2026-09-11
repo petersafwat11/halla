@@ -80,12 +80,17 @@ const startServer = async () => {
       });
     });
 
-    // Handle SIGTERM
-    process.on('SIGTERM', () => {
+    // Handle SIGTERM. Cron timers and the Mongo pool keep the event loop alive,
+    // so exit explicitly; otherwise Docker force-kills after 10s on every recreate.
+    process.once('SIGTERM', () => {
       console.log('👋 SIGTERM received. Shutting down gracefully...');
-      server.close(() => {
+      setTimeout(() => process.exit(0), 8000).unref();
+      server.close(async () => {
+        await require('mongoose').connection.close().catch(() => {});
         console.log('💤 Process terminated!');
+        process.exit(0);
       });
+      server.closeIdleConnections?.();
     });
 
     return server;
