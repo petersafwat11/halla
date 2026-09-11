@@ -9,7 +9,7 @@
     "start": "next start -p 3100",
     "lint": "next lint",
     "test": "node --test test/shell.test.js test/guests-unit.test.js test/gate-unit.test.js test/api-regressions.test.js",
-    "test:browser": "node --test test/browser-*.test.js",
+    "test:browser": "node --test --test-concurrency=1 test/browser-*.test.js",
     "test:all": "node --test test/*.test.js"
   },
   "dependencies": {
