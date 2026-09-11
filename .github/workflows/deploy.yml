@@ -107,9 +107,15 @@ jobs:
         # PAT stored on the server.
         # The repository is public: print only redacted startup errors here. Full
         # logs stay on the VPS under /opt/halaa/deploy-logs.
+        # The script is streamed over ssh stdin. Everything runs inside deploy(),
+        # which bash parses completely before `deploy </dev/null` executes it, so
+        # commands such as `docker compose run` cannot consume the rest of the
+        # script. The runner requires the final marker to catch any early exit.
         run: |
-          ssh -i ~/.ssh/id_deploy "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" bash -s <<'EOF'
+          set -o pipefail
+          ssh -i ~/.ssh/id_deploy "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" bash -s <<'EOF' | tee rollout.log
           set -euo pipefail
+          deploy() {
           cd /opt/halaa
           NEW_TAG="${{ needs.build.outputs.tag }}"
           PREV_TAG="$(sed -n 's/^IMAGE_TAG=//p' .env 2>/dev/null || true)"
@@ -151,6 +157,13 @@ jobs:
             fi
             exit 1
           fi
+          for svc in api web; do
+            running="$(docker inspect --format '{{.Config.Image}}' "$(docker compose ps -q "$svc")")"
+            if [ "$running" != "ghcr.io/petersafwat11/halaa-$svc:$NEW_TAG" ]; then
+              echo "::error::$svc is running $running, expected tag $NEW_TAG"
+              exit 1
+            fi
+          done
           # Caddy's bind-mounted file can change without recreating the
           # long-running container, so explicitly load the synced config.
           docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile
@@ -159,7 +172,11 @@ jobs:
           docker compose exec -T api npm run storage:restore-templates
           docker compose ps
           docker image prune -f
+          echo "ROLLOUT_COMPLETE $NEW_TAG"
+          }
+          deploy </dev/null
           EOF
+          grep -qx "ROLLOUT_COMPLETE ${{ needs.build.outputs.tag }}" rollout.log
       - name: Smoke test public endpoints
         run: |
           for url in https://halaa.com.sa/health https://halaa.com.sa/ar; do
