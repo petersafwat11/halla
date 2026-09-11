@@ -73,19 +73,6 @@ export default function BusinessGuestHub() {
   return (
     <main className={styles.page} dir={direction} lang={language}>
       <div className={styles.shell}>
-        <div className={styles.cover}>
-          {event.branding?.coverUrl && (
-            <Image
-              unoptimized
-              width={1600}
-              height={900}
-              className={styles.coverImage}
-              src={event.branding.coverUrl}
-              alt=""
-              referrerPolicy="no-referrer"
-              fetchPriority="high"
-            />
-          )}
           <div className={styles.business}>
             {event.branding?.logoUrl && (
               <Image
@@ -99,7 +86,14 @@ export default function BusinessGuestHub() {
             )}
             <span>{event.branding?.businessName}</span>
           </div>
-        </div>
+        {event.invitationImageUrl && (
+          <div className={styles.invitationArtwork}>
+            <Image unoptimized width={1200} height={1600}
+              className={styles.invitationImage} src={event.invitationImageUrl}
+              alt={t("invitationImageAlt", { title: event.title })}
+              referrerPolicy="no-referrer" fetchPriority="high" />
+          </div>
+        )}
         <article className={styles.passCard}>
           <header className={styles.event}>
             <h1>{event.title}</h1>

@@ -3,15 +3,20 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname, useSearchParams, useParams } from 'next/navigation';
+import { usePathname, useSearchParams, useParams, useRouter } from 'next/navigation';
 import { useSession } from '../../hooks/useSession.jsx';
 import { EventSelector } from './EventSelector.jsx';
 import { StatusBadge } from '../ui/StatusBadge.jsx';
+import { Icon } from '../ui/Icon.jsx';
+import { Menu } from '../ui/Menu.jsx';
+import { IconButton } from '../ui/IconButton.jsx';
 import { getDictionary, t } from '../../lib/locale.js';
 import styles from './AppHeader.module.css';
 
 /**
- * AppHeader renders the Halaa branding, event selector, language switch, staff info, and logout.
+ * AppHeader renders official Halaa branding, event selector, language switch, staff info, and logout.
+ * Desktop: 64px sticky header with brand/product, event selector, session utilities.
+ * Mobile: compact logo, event selector trigger, session menu.
  */
 export function AppHeader() {
   const params = useParams();
@@ -20,6 +25,7 @@ export function AppHeader() {
   const dict = getDictionary(lang);
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const { user, role, logout } = useSession();
 
   // Create target URL for language toggle, preserving path & search params
@@ -27,15 +33,44 @@ export function AppHeader() {
   const queryString = searchParams?.toString() ? `?${searchParams.toString()}` : '';
   const langToggleUrl = `${targetPath}${queryString}`;
 
+  const mobileMenuItems = [
+    ...(user
+      ? [
+          {
+            key: 'user-info',
+            label: `${user.displayName || user.username} (${t(dict, `roles.${role}`)})`,
+            icon: <Icon name="user" size="sm" />,
+            disabled: true,
+          },
+          { type: 'divider' },
+        ]
+      : []),
+    {
+      key: 'lang-toggle',
+      label: t(dict, 'nav.languageToggle'),
+      icon: <Icon name="globe" size="sm" />,
+      onClick: () => router.push(langToggleUrl),
+    },
+    { type: 'divider' },
+    {
+      key: 'logout',
+      label: t(dict, 'nav.logout'),
+      icon: <Icon name="logout" size="sm" />,
+      danger: true,
+      onClick: logout,
+    },
+  ];
+
   return (
     <header className={styles.header}>
+      {/* Zone 1: Brand & Product title */}
       <div className={styles.startSection}>
         <Link href={`/${lang}/guests`} className={styles.logoLink} aria-label="Halaa Home">
           <Image
-            src="/images/sidebar-logo.svg"
+            src="/images/logo.png"
             alt="Halaa Logo"
-            width={140}
-            height={32}
+            width={34}
+            height={34}
             priority
             className={styles.logo}
           />
@@ -44,11 +79,13 @@ export function AppHeader() {
         <span className={styles.productTitle}>{t(dict, 'common.appName')}</span>
       </div>
 
+      {/* Zone 2: Event Selector */}
       <div className={styles.centerSection}>
         <EventSelector />
       </div>
 
-      <div className={styles.endSection}>
+      {/* Zone 3: Session Utilities (Desktop) */}
+      <div className={`${styles.endSection} ${styles.desktopOnly}`}>
         <Link
           href={langToggleUrl}
           className={styles.langToggle}
@@ -59,7 +96,9 @@ export function AppHeader() {
 
         {user && role && (role === 'admin' || role === 'reception') && (
           <div className={styles.staffChip}>
-            <span className={styles.staffName}>{user.displayName || user.username}</span>
+            <span className={styles.staffName} dir="auto">
+              {user.displayName || user.username}
+            </span>
             <StatusBadge
               status={role}
               label={t(dict, `roles.${role}`)}
@@ -75,12 +114,24 @@ export function AppHeader() {
           title={t(dict, 'nav.logout')}
           aria-label={t(dict, 'nav.logout')}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-            <polyline points="16 17 21 12 16 7" />
-            <line x1="21" y1="12" x2="9" y2="12" />
-          </svg>
+          <Icon name="logout" size="sm" />
         </button>
+      </div>
+
+      {/* Mobile Session Menu */}
+      <div className={`${styles.endSection} ${styles.mobileOnly}`}>
+        <Menu
+          align="end"
+          aria-label={t(dict, 'nav.currentStaff')}
+          trigger={
+            <IconButton
+              icon={<Icon name="user" size="md" />}
+              label={t(dict, 'nav.currentStaff')}
+              variant="outline"
+            />
+          }
+          items={mobileMenuItems}
+        />
       </div>
     </header>
   );

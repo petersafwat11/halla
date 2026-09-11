@@ -45,7 +45,9 @@
     "sessionExpired": "Your session has expired. Please sign in again.",
     "disabledAccount": "This account is disabled. Contact your administrator.",
     "loginPrompt": "Please sign in to continue",
-    "logoutUncertain": "Server logout could not be confirmed. Retry to revoke the session."
+    "logoutUncertain": "Server logout could not be confirmed. Retry to revoke the session.",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
   },
   "roles": {
     "admin": "Administrator",

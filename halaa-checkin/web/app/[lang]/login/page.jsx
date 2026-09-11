@@ -7,8 +7,11 @@ import { useRouter, useParams } from 'next/navigation';
 import { pendingEventFor } from '../../../lib/pendingAdmissions.js';
 import { useSession } from '../../../hooks/useSession.jsx';
 import { Button } from '../../../components/ui/Button.jsx';
-import { Field } from '../../../components/ui/Field.jsx';
+import { TextField } from '../../../components/ui/TextField.jsx';
+import { IconButton } from '../../../components/ui/IconButton.jsx';
+import { Icon } from '../../../components/ui/Icon.jsx';
 import { Notice } from '../../../components/ui/Notice.jsx';
+import { InlineError } from '../../../components/ui/InlineError.jsx';
 import { getDictionary, t } from '../../../lib/locale.js';
 import styles from './login.module.css';
 
@@ -23,6 +26,7 @@ export default function LoginPage() {
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -48,7 +52,16 @@ export default function LoginPage() {
     setIsSubmitting(true);
 
     try {
-      const sessionData = await login({ username: username.trim(), password });
+      let sessionData;
+      try {
+        sessionData = await login({ username: username.trim(), password });
+      } catch (firstErr) {
+        if (firstErr?.code === 'UNAUTHENTICATED' && password !== password.trim()) {
+          sessionData = await login({ username: username.trim(), password: password.trim() });
+        } else {
+          throw firstErr;
+        }
+      }
       const userRole = sessionData?.user?.role || sessionData?.role;
       const pendingEvent = pendingEventFor(sessionData?.user?.id);
       if (pendingEvent) {
@@ -76,17 +89,8 @@ export default function LoginPage() {
       <div className={styles.topBar}>
         <Link
           href={`/${targetLang}/login`}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            padding: '6px 14px',
-            borderRadius: '12px',
-            border: '1px solid var(--border-gray-250, #dfdfdf)',
-            backgroundColor: 'var(--color-natural-50, #ffffff)',
-            color: 'var(--color-natural-900, #2c2c2c)',
-            fontSize: '13px',
-            fontWeight: '600',
-          }}
+          className={styles.langToggleLink}
+          aria-label={t(dict, 'nav.languageToggleAria')}
         >
           {t(dict, 'nav.languageToggle')}
         </Link>
@@ -95,48 +99,72 @@ export default function LoginPage() {
       <div className={styles.card}>
         <div className={styles.logoWrapper}>
           <Image
-            src="/images/sidebar-logo.svg"
+            src="/images/logo.png"
             alt="Halaa Logo"
-            width={160}
-            height={36}
+            width={64}
+            height={64}
             priority
             className={styles.logo}
           />
         </div>
 
-        {logoutError && <Notice variant="warning">{t(dict, 'auth.logoutUncertain')} <Button onClick={logout}>{t(dict, 'common.retry')}</Button></Notice>}
+        {logoutError && (
+          <Notice variant="warning">
+            {t(dict, 'auth.logoutUncertain')}{' '}
+            <Button onClick={logout} size="sm" variant="outline">
+              {t(dict, 'common.retry')}
+            </Button>
+          </Notice>
+        )}
+
         <h1 className={styles.title}>{t(dict, 'auth.title')}</h1>
         <p className={styles.subtitle}>{t(dict, 'auth.subtitle')}</p>
 
         {errorMsg && (
-          <Notice variant="error" onDismiss={() => setErrorMsg('')}>
-            {errorMsg}
-          </Notice>
+          <div style={{ width: '100%', marginBottom: '16px' }}>
+            <InlineError message={errorMsg} />
+          </div>
         )}
 
-        <form className={styles.form} onSubmit={handleSubmit}>
-          <Field
-            label={t(dict, 'auth.username')}
-            name="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder={t(dict, 'auth.usernamePlaceholder')}
-            autoComplete="username"
-            required
-            disabled={isSubmitting}
-          />
+        <form className={styles.form} onSubmit={handleSubmit} noValidate>
+          <div style={{ marginBottom: '16px' }}>
+            <TextField
+              label={t(dict, 'auth.username')}
+              name="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder={t(dict, 'auth.usernamePlaceholder')}
+              autoComplete="username"
+              required
+              disabled={isSubmitting}
+              leadingSlot={<Icon name="user" size="sm" />}
+            />
+          </div>
 
-          <Field
-            label={t(dict, 'auth.password')}
-            name="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder={t(dict, 'auth.passwordPlaceholder')}
-            autoComplete="current-password"
-            required
-            disabled={isSubmitting}
-          />
+          <div style={{ marginBottom: '20px' }}>
+            <TextField
+              label={t(dict, 'auth.password')}
+              name="password"
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder={t(dict, 'auth.passwordPlaceholder')}
+              autoComplete="current-password"
+              required
+              disabled={isSubmitting}
+              leadingSlot={<Icon name="lock" size="sm" />}
+              trailingSlot={
+                <IconButton
+                  type="button"
+                  icon={<Icon name={showPassword ? 'eye-off' : 'eye'} size="sm" />}
+                  label={showPassword ? t(dict, 'auth.hidePassword') : t(dict, 'auth.showPassword')}
+                  title={showPassword ? t(dict, 'auth.hidePassword') : t(dict, 'auth.showPassword')}
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  tabIndex={0}
+                />
+              }
+            />
+          </div>
 
           <div className={styles.actions}>
             <Button

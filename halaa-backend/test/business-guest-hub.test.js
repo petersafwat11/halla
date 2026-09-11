@@ -1,11 +1,9 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const sharp = require('sharp');
 const { resolveInvitationDelivery, buildGuestInvitationUrl, isBusinessTemplate, assertBusinessTemplate } = require('../src/modules/messaging/invitationDelivery');
 const { isTemplateCompatibleWithInvitationMode } = require('../src/modules/taqnyat-templates/taqnyat-template-capabilities');
 const { buildSmsBody, getEventBodyParams } = require('../src/modules/messaging/messaging.formatting');
 const { guestEventActions } = require('../src/modules/guests/guestEventActions');
-const { optimizeCover } = require('../src/modules/events/eventCover');
 
 const modes = ['reply_and_qr', 'reply_only', 'none'];
 const template = { deliveryMode: 'portal_link', buttonsSynced: true, buttons: [], active: true, status: 'APPROVED', compatibleInvitationModes: modes, bodyText: 'Invitation: {{1}}', varMapping: [{ placeholder: '{{1}}', sourceKey: 'invitation.url' }] };
@@ -50,35 +48,9 @@ test('calendar uses Riyadh time, escapes injection, and exposes no guest credent
   assert.equal(guestEventActions({ eventDetails: { location: { latitude: null, longitude: null } } }).ride, undefined);
 });
 
-test('cover optimization enforces decoded format/dimensions and strips metadata', async () => {
-  const buffer = await sharp({ create: { width: 1920, height: 1080, channels: 3, background: '#234567' } }).jpeg().withMetadata().toBuffer();
-  const result = await optimizeCover({ buffer, mimetype: 'image/jpeg' });
-  const meta = await sharp(result).metadata();
-  assert.equal(meta.format, 'webp'); assert.equal(meta.width, 1600); assert.equal(meta.height, 900); assert.equal(meta.exif, undefined);
-  await assert.rejects(() => optimizeCover({ buffer: Buffer.from('not an image') }), { code: 'INVALID_BUSINESS_COVER' });
-  await assert.rejects(() => optimizeCover(null), { code: 'BUSINESS_COVER_REQUIRED' });
-  const small = await sharp({ create: { width: 300, height: 200, channels: 3, background: 'white' } }).png().toBuffer();
-  await assert.rejects(() => optimizeCover({ buffer: small, mimetype: 'image/png' }), { code: 'INVALID_BUSINESS_COVER' });
-  await assert.rejects(() => optimizeCover({ buffer, mimetype: 'image/png' }), { code: 'INVALID_BUSINESS_COVER' });
-  const rotated = await sharp({ create: { width: 540, height: 960, channels: 3, background: 'white' } }).jpeg().withMetadata({ orientation: 6 }).toBuffer();
-  const oriented = await sharp(await optimizeCover({ buffer: rotated, mimetype: 'image/jpeg' })).metadata();
-  assert.equal(oriented.width, 960);
-  assert.equal(oriented.height, 540);
-});
-
-test('cover crop stays in bounds at all positions without upscaling', () => {
-  const { coverCrop, validCoverDimensions } = require('@halaa/shared/constants/businessCover.cjs');
-  for (const [width, height] of [[960, 540], [1920, 1920], [4000, 3000]]) {
-    assert.equal(validCoverDimensions(width, height), true);
-    for (const x of [0, .5, 1]) for (const y of [0, .5, 1]) {
-      const crop = coverCrop(width, height, x, y);
-      assert.ok(crop.originX >= 0 && crop.originY >= 0);
-      assert.ok(crop.originX + crop.width <= width && crop.originY + crop.height <= height);
-      assert.equal(crop.width / crop.height, 16 / 9);
-      assert.ok(crop.outputWidth <= crop.width && crop.outputHeight <= crop.height);
-    }
-  }
-  assert.equal(validCoverDimensions(9000, 540), false);
-  assert.equal(validCoverDimensions(8192, 8192), false);
-  assert.equal(validCoverDimensions(NaN, 540), false);
+test('guest page and sender select the final Step 3 design, with legacy invitation fallback', () => {
+  const { eventInvitationImage } = require('@halaa/shared/utils/eventInvitationImage.cjs');
+  assert.equal(eventInvitationImage({ visualTemplate: { bakedImagePath: 'final.png' }, templateImage: 'old.png', branding: { coverImageKey: 'cover.png' } }), 'final.png');
+  assert.equal(eventInvitationImage({ templateImage: 'legacy.png' }), 'legacy.png');
+  assert.equal(eventInvitationImage({ branding: { coverImageKey: 'cover.png' } }), null);
 });

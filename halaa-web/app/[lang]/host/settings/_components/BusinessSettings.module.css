@@ -3,6 +3,8 @@
   flex-direction: column;
   gap: 2rem;
   width: 100%;
+  box-sizing: border-box;
+  padding: var(--spacing-24, 24px);
 }
 
 .logoSection {
@@ -70,6 +72,10 @@
 }
 
 @media (max-width: 640px) {
+  .container {
+    padding: var(--spacing-16, 16px);
+  }
+
   .logoRow {
     flex-direction: column;
     align-items: flex-start;

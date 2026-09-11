@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '../ui/Button.jsx';
+import { Icon } from '../ui/Icon.jsx';
 import { t } from '../../lib/locale.js';
 import styles from './ScannerInput.module.css';
 
@@ -24,7 +25,7 @@ export function ScannerInput({ onScan, disabled = false, dict }) {
   return (
     <div className={styles.container} data-testid="scanner-input-container">
       <h2 className={styles.title}>
-        <span>📟</span>
+        <Icon name="qr" size="sm" />
         <span>{t(dict, 'gate.scannerTitle')}</span>
       </h2>
       <form onSubmit={handleSubmit} className={styles.form}>

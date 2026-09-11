@@ -5,6 +5,7 @@ import { Dialog } from '../ui/Dialog.jsx';
 import { Button } from '../ui/Button.jsx';
 import { Notice } from '../ui/Notice.jsx';
 import { Field } from '../ui/Field.jsx';
+import { Icon } from '../ui/Icon.jsx';
 import { getDictionary, t, formatRiyadhDate } from '../../lib/locale.js';
 import { useExports } from '../../hooks/useExports.js';
 import { useStats } from '../../hooks/useStats.js';
@@ -234,8 +235,6 @@ export function ExportPanel({
         {/* Export Type Selection */}
         {!activeJobId && !showConfirm && (
           <div className={styles.section}>
-            <h3 className={styles.sectionTitle}>{t(dict, 'exports.title')}</h3>
-
             <div className={styles.optionsGrid}>
               {/* Single Pass */}
               <button
@@ -247,7 +246,9 @@ export function ExportPanel({
                 disabled={!isTypeAvailable('single') || isCreating}
                 data-testid="export-single-pass"
               >
-                <div className={styles.optionIcon}>📱</div>
+                <div className={styles.optionIcon}>
+                  <Icon name="qr" size="md" />
+                </div>
                 <div className={styles.optionLabel}>{t(dict, 'exports.singlePass')}</div>
                 <div className={styles.optionScope}>
                   {singleGuest ? (
@@ -272,7 +273,9 @@ export function ExportPanel({
                 disabled={!isTypeAvailable('selected') || isCreating}
                 data-testid="export-selected-passes"
               >
-                <div className={styles.optionIcon}>📄</div>
+                <div className={styles.optionIcon}>
+                  <Icon name="file" size="md" />
+                </div>
                 <div className={styles.optionLabel}>{t(dict, 'exports.selectedPasses')}</div>
                 <div className={styles.optionScope}>
                   {t(dict, 'exports.scopeSelected', { count: selectedCount })}
@@ -289,7 +292,9 @@ export function ExportPanel({
                 disabled={!isTypeAvailable('all') || isCreating}
                 data-testid="export-all-passes"
               >
-                <div className={styles.optionIcon}>📚</div>
+                <div className={styles.optionIcon}>
+                  <Icon name="users" size="md" />
+                </div>
                 <div className={styles.optionLabel}>{t(dict, 'exports.allPasses')}</div>
                 <div className={styles.optionScope}>
                   {t(dict, 'exports.scopeAll', { count: totalGuests })}
@@ -306,7 +311,9 @@ export function ExportPanel({
                 disabled={!isTypeAvailable('report') || isCreating}
                 data-testid="export-report"
               >
-                <div className={styles.optionIcon}>📊</div>
+                <div className={styles.optionIcon}>
+                  <Icon name="chart" size="md" />
+                </div>
                 <div className={styles.optionLabel}>{t(dict, 'exports.attendanceReport')}</div>
                 <div className={styles.optionScope}>{reportLabel}</div>
                 {/* F24: defined summary metrics, not only the option card. */}
@@ -428,17 +435,19 @@ export function ExportPanel({
                     variant="primary"
                     size="lg"
                     onClick={handleDownload}
+                    leadingIcon="download"
                     data-testid="export-download-btn"
                   >
-                    💾 {t(dict, 'exports.download')}
+                    {t(dict, 'exports.download')}
                   </Button>
                   <Button
                     variant="secondary"
                     size="lg"
                     onClick={handlePrint}
+                    leadingIcon="printer"
                     data-testid="export-print-btn"
                   >
-                    🖨️ {t(dict, 'exports.print')}
+                    {t(dict, 'exports.print')}
                   </Button>
                 </div>
               </div>

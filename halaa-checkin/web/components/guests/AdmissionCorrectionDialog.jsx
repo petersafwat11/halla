@@ -5,7 +5,8 @@ import { Dialog } from '../ui/Dialog.jsx';
 import { Field } from '../ui/Field.jsx';
 import { Button } from '../ui/Button.jsx';
 import { Notice } from '../ui/Notice.jsx';
-import { getDictionary, t } from '../../lib/locale.js';
+import { Icon } from '../ui/Icon.jsx';
+import { getDictionary, t, formatRiyadhDate } from '../../lib/locale.js';
 import styles from './AdmissionCorrectionDialog.module.css';
 
 /**
@@ -143,6 +144,8 @@ export function AdmissionCorrectionDialog({
       onClose={onClose}
       title={title}
       maxWidth="520px"
+      destructive={!isCorrect}
+      closeOnBackdropClick={!isPending}
       closeAriaLabel={t(dict, 'dialog.close')}
     >
       <form onSubmit={handleSubmit} className={styles.form} noValidate>
@@ -154,7 +157,7 @@ export function AdmissionCorrectionDialog({
               message={t(dict, `errors.${apiError.code}`) || apiError.message}
             />
             {apiError.code === 'VERSION_CONFLICT' && onReload && (
-              <Button variant="secondary" size="sm" onClick={() => onReload?.()} data-testid="correction-reload-btn">
+              <Button variant="secondary" size="sm" leadingIcon="refresh" onClick={() => onReload?.()} data-testid="correction-reload-btn">
                 {t(dict, 'guests.versionConflictReload') || t(dict, 'common.retry')}
               </Button>
             )}
@@ -162,9 +165,30 @@ export function AdmissionCorrectionDialog({
         )}
 
         <div className={styles.warningBox}>
-          <span className={styles.warningIcon} aria-hidden="true">⚠️</span>
+          <Icon name="warning" size="md" className={styles.warningIcon} />
           <p className={styles.warningText}>{warningMessage}</p>
         </div>
+
+        {isCorrect && guest?.checkIn && (
+          <div className={styles.comparisonGrid}>
+            <div className={styles.comparisonCard}>
+              <span className={styles.comparisonLabel}>{lang === 'ar' ? 'البيانات الحالية' : 'Current'}</span>
+              <div className={styles.comparisonValue}>
+                {guest.checkIn.actualPartySize || (1 + (guest.checkIn.actualCompanions || 0))} {lang === 'ar' ? 'أشخاص' : 'people'}
+              </div>
+              {guest.checkIn.checkedInAt && (
+                <span className={styles.comparisonMeta}>{formatRiyadhDate(guest.checkIn.checkedInAt, lang)}</span>
+              )}
+            </div>
+            <div className={`${styles.comparisonCard} ${styles.comparisonCardNew}`}>
+              <span className={styles.comparisonLabel}>{lang === 'ar' ? 'القيمة المقترحة' : 'Proposed'}</span>
+              <div className={styles.comparisonValue}>
+                {1 + (parseInt(companions, 10) || 0)} {lang === 'ar' ? 'أشخاص' : 'people'}
+              </div>
+              <span className={styles.comparisonMeta}>{lang === 'ar' ? 'مرافقين:' : 'Companions:'} {companions}</span>
+            </div>
+          </div>
+        )}
 
         {isCorrect && (
           <Field

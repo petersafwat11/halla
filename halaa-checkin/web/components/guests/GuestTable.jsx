@@ -3,14 +3,15 @@
 import React from 'react';
 import { StatusBadge } from '../ui/StatusBadge.jsx';
 import { Button } from '../ui/Button.jsx';
+import { Icon } from '../ui/Icon.jsx';
 import { Pagination } from '../ui/Pagination.jsx';
 import { getDictionary, t, formatRiyadhDate } from '../../lib/locale.js';
 import styles from './GuestTable.module.css';
 
 /**
  * Paginated, searchable, and filterable guest list table.
- * Admitted guests cannot have ordinary edits or deletion (buttons disabled with explanation).
- * Admin can correct/reset admissions.
+ * Desktop: Sticky table header, 44px minimum targets, bidi safety with bdi.
+ * Mobile: Responsive card layout preventing horizontal scrolling.
  */
 export function GuestTable({
   guests = [],
@@ -58,7 +59,7 @@ export function GuestTable({
           {/* Server-side Search Input */}
           <div className={styles.searchWrapper}>
             <span className={styles.searchIcon} aria-hidden="true">
-              🔍
+              <Icon name="search" size="sm" />
             </span>
             <input
               type="text"
@@ -76,7 +77,7 @@ export function GuestTable({
                 onClick={() => onSearchChange?.('')}
                 aria-label={t(dict, 'common.clear')}
               >
-                ✕
+                <Icon name="x" size="xs" />
               </button>
             )}
           </div>
@@ -116,269 +117,343 @@ export function GuestTable({
           </div>
         </div>
 
-        {/* Action Buttons: Add Guest / Import CSV / Export QR PDFs */}
+        {/* Action Buttons: Add Guest (Primary), Import CSV & Export (Secondary) */}
         <div className={styles.tableActions}>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={onImportCsv}
-            disabled={isClosed}
-            data-testid="import-csv-btn"
-          >
-            📥 {t(dict, 'imports.title')}
-          </Button>
-
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => onExportCsv?.()}
-            disabled={false}
-            title={t(dict, 'exports.title')}
-            data-testid="export-qr-btn"
-          >
-            📄 {t(dict, 'exports.title')}
-          </Button>
-
           <Button
             variant="primary"
             size="sm"
             onClick={onAddGuest}
             disabled={isClosed}
             data-testid="add-guest-btn"
+            leadingIcon={<Icon name="plus" size="xs" />}
           >
-            ➕ {t(dict, 'guests.addGuest')}
+            {t(dict, 'guests.addGuest')}
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onImportCsv}
+            disabled={isClosed}
+            data-testid="import-csv-btn"
+            leadingIcon={<Icon name="upload" size="xs" />}
+          >
+            {t(dict, 'imports.title')}
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onExportCsv?.()}
+            disabled={false}
+            title={t(dict, 'exports.title')}
+            data-testid="export-qr-btn"
+            leadingIcon={<Icon name="download" size="xs" />}
+          >
+            {t(dict, 'exports.title')}
           </Button>
         </div>
       </div>
 
-      {/* Selection Summary Bar */}
+      {/* Selection Command Bar */}
       {selectedCount > 0 && (
         <div className={styles.selectionBar} data-testid="selection-bar">
           <span>{t(dict, 'guests.selectedCount', { count: selectedCount })}</span>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={clearSelection}
-            data-testid="clear-selection-btn"
-          >
-            {t(dict, 'guests.clearSelection')}
-          </Button>
+          <div className={styles.selectionActions}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onExportCsv?.()}
+              leadingIcon={<Icon name="download" size="xs" />}
+            >
+              {t(dict, 'exports.selectedPasses')}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearSelection}
+              data-testid="clear-selection-btn"
+              leadingIcon={<Icon name="x" size="xs" />}
+            >
+              {t(dict, 'guests.clearSelection')}
+            </Button>
+          </div>
         </div>
       )}
 
       {/* Table Content */}
       {loadError && !isLoading && guests.length === 0 ? (
         <div className={styles.emptyState} role="alert" data-testid="guests-load-error">
-          <div className={styles.emptyIcon}>⚠️</div>
-          <h3 className={styles.emptyTitle}>{t(dict, 'errors.SERVICE_UNAVAILABLE') || loadError.message}</h3>
-          <Button variant="secondary" size="sm" onClick={() => onRetry?.()} data-testid="guests-retry-btn">
+          <div className={styles.emptyIcon}>
+            <Icon name="alert-triangle" size="xl" />
+          </div>
+          <h3 className={styles.emptyTitle}>
+            {t(dict, 'errors.SERVICE_UNAVAILABLE') || loadError.message}
+          </h3>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => onRetry?.()}
+            data-testid="guests-retry-btn"
+            leadingIcon={<Icon name="refresh" size="xs" />}
+          >
             {t(dict, 'common.retry') || (lang === 'ar' ? 'إعادة المحاولة' : 'Retry')}
           </Button>
         </div>
       ) : (
-      <>
-      <div className={styles.tableScrollWrapper}>
-        <table className={styles.table} aria-label={t(dict, 'guests.title')}>
-          <thead>
-            <tr>
-              <th scope="col" className={`${styles.th} ${styles.thCheckbox}`}>
-                <input
-                  type="checkbox"
-                  className={styles.checkbox}
-                  checked={isAllPageSelected}
-                  ref={(el) => {
-                    if (el) el.indeterminate = isSomePageSelected;
-                  }}
-                  onChange={() => selectAllCurrentPage?.(guests)}
-                  aria-label="Select all on current page"
-                  data-testid="select-page-checkbox"
-                />
-              </th>
-              <th scope="col" className={styles.th}>{t(dict, 'qr.shortCode')}</th>
-              <th scope="col" className={styles.th}>{t(dict, 'guests.guestName')}</th>
-              <th scope="col" className={styles.th}>{t(dict, 'guests.reference')}</th>
-              <th scope="col" className={styles.th}>{t(dict, 'guests.allowedCompanions')}</th>
-              <th scope="col" className={styles.th}>{t(dict, 'guests.totalAllowed')}</th>
-              <th scope="col" className={styles.th}>{t(dict, 'common.status')}</th>
-              <th scope="col" className={styles.th}>{t(dict, 'guests.actualParty')}</th>
-              <th scope="col" className={styles.th}>{t(dict, 'guests.arrival')}</th>
-              <th scope="col" className={styles.th}>{t(dict, 'guests.actions')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading && !guests.length ? (
-              <tr>
-                <td colSpan={10} className={styles.loadingOverlay}>
-                  {t(dict, 'common.loading')}
-                </td>
-              </tr>
-            ) : guests.length === 0 ? (
-              <tr>
-                <td colSpan={10}>
-                  <div className={styles.emptyState}>
-                    <div className={styles.emptyIcon}>📋</div>
-                    {search || statusFilter !== 'all' ? (
-                      <>
-                        <h3 className={styles.emptyTitle}>{t(dict, 'guests.noSearchResults')}</h3>
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={handleClearFilters}
-                          data-testid="clear-filters-btn"
-                        >
-                          {t(dict, 'guests.clearFilters')}
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <h3 className={styles.emptyTitle}>{t(dict, 'guests.noGuests')}</h3>
-                        <p className={styles.emptyDesc}>{t(dict, 'guests.noGuestsAction')}</p>
-                        {!isClosed && (
-                          <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
-                            <Button variant="primary" size="sm" onClick={onAddGuest}>
-                              ➕ {t(dict, 'guests.addGuest')}
-                            </Button>
-                            <Button variant="secondary" size="sm" onClick={onImportCsv}>
-                              📥 {t(dict, 'imports.title')}
-                            </Button>
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ) : (
-              guests.map((guest) => {
-                const isSelected = selectedGuestIds.has(guest.id);
-                const isAdmitted = !!guest.checkIn;
-                const actualParty = isAdmitted
-                  ? (guest.checkIn.actualPartySize ?? 1 + (guest.checkIn.actualCompanions || 0))
-                  : '—';
-
-                return (
-                  <tr
-                    key={guest.id}
-                    className={`${styles.tr} ${isSelected ? styles.trSelected : ''}`}
-                    data-testid={`guest-row-${guest.id}`}
-                  >
-                    <td className={`${styles.td} ${styles.tdCheckbox}`}>
-                      <input
-                        type="checkbox"
-                        className={styles.checkbox}
-                        checked={isSelected}
-                        onChange={() => toggleSelect?.(guest.id)}
-                        aria-label={`Select ${guest.name}`}
-                        data-testid={`guest-checkbox-${guest.id}`}
-                      />
+        <>
+          <div className={styles.tableScrollWrapper}>
+            <table className={styles.table} aria-label={t(dict, 'guests.title')}>
+              <thead>
+                <tr>
+                  <th scope="col" className={`${styles.th} ${styles.thCheckbox}`}>
+                    <input
+                      type="checkbox"
+                      className={styles.checkbox}
+                      checked={isAllPageSelected}
+                      ref={(el) => {
+                        if (el) el.indeterminate = isSomePageSelected;
+                      }}
+                      onChange={() => selectAllCurrentPage?.(guests)}
+                      aria-label="Select all on current page"
+                      data-testid="select-page-checkbox"
+                    />
+                  </th>
+                  <th scope="col" className={styles.th}>{t(dict, 'qr.shortCode')}</th>
+                  <th scope="col" className={styles.th}>{t(dict, 'guests.guestName')}</th>
+                  <th scope="col" className={styles.th}>{t(dict, 'guests.reference')}</th>
+                  <th scope="col" className={styles.th}>{t(dict, 'guests.allowedCompanions')}</th>
+                  <th scope="col" className={styles.th}>{t(dict, 'guests.totalAllowed')}</th>
+                  <th scope="col" className={styles.th}>{t(dict, 'common.status')}</th>
+                  <th scope="col" className={styles.th}>{t(dict, 'guests.actualParty')}</th>
+                  <th scope="col" className={styles.th}>{t(dict, 'guests.arrival')}</th>
+                  <th scope="col" className={styles.th}>{t(dict, 'guests.actions')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {isLoading && !guests.length ? (
+                  <tr>
+                    <td colSpan={10} className={styles.loadingOverlay}>
+                      {t(dict, 'common.loading')}
                     </td>
-                    <td className={styles.td}>
-                      <bdi className={styles.codeCell}>{guest.shortCode}</bdi>
-                    </td>
-                    <td className={styles.td}>
-                      <span dir="auto" className={styles.nameCell}>
-                        {guest.name}
-                      </span>
-                    </td>
-                    <td className={styles.td}>
-                      {guest.reference ? <bdi>{guest.reference}</bdi> : '—'}
-                    </td>
-                    <td className={styles.td}>{guest.allowedCompanions}</td>
-                    <td className={styles.td}>{guest.totalAllowed}</td>
-                    <td className={styles.td}>
-                      <StatusBadge
-                        status={isAdmitted ? 'admitted' : 'pending'}
-                        label={t(dict, isAdmitted ? 'status.admitted' : 'status.pending')}
-                      />
-                    </td>
-                    <td className={styles.td}>{actualParty}</td>
-                    <td className={styles.td}>
-                      {isAdmitted ? (
-                        <span>{formatRiyadhDate(guest.checkIn.checkedInAt || guest.checkIn.admittedAt, lang)}</span>
-                      ) : (
-                        <span style={{ color: 'var(--color-natural-450, #656565)' }}>
-                          {t(dict, 'guests.arrivalNone')}
-                        </span>
-                      )}
-                    </td>
-                    <td className={styles.td}>
-                      <div className={styles.actionsCell}>
-                        <button
-                          type="button"
-                          className={styles.rowActionBtn}
-                          onClick={() => onViewQr?.(guest)}
-                          title={t(dict, 'guests.viewQr')}
-                          data-testid={`view-qr-btn-${guest.id}`}
-                        >
-                          📱 {t(dict, 'guests.viewQr')}
-                        </button>
-                        <button
-                          type="button"
-                          className={styles.rowActionBtn}
-                          onClick={() => onEditGuest?.(guest)}
-                          disabled={isClosed || isAdmitted}
-                          title={isAdmitted ? t(dict, 'guests.admittedCannotEdit') : t(dict, 'guests.edit')}
-                          data-testid={`edit-guest-btn-${guest.id}`}
-                        >
-                          ✏️ {t(dict, 'guests.edit')}
-                        </button>
-                        <button
-                          type="button"
-                          className={`${styles.rowActionBtn} ${styles.rowActionBtnDanger}`}
-                          onClick={() => onDeleteGuest?.(guest)}
-                          disabled={isClosed || isAdmitted}
-                          title={isAdmitted ? t(dict, 'guests.admittedCannotDelete') : t(dict, 'guests.delete')}
-                          data-testid={`delete-guest-btn-${guest.id}`}
-                        >
-                          🗑️ {t(dict, 'guests.delete')}
-                        </button>
-                        {isAdmitted && !isClosed && (
+                  </tr>
+                ) : guests.length === 0 ? (
+                  <tr>
+                    <td colSpan={10}>
+                      <div className={styles.emptyState}>
+                        <div className={styles.emptyIcon}>
+                          <Icon name="users" size="xl" />
+                        </div>
+                        {search || statusFilter !== 'all' ? (
                           <>
-                            <button
-                              type="button"
-                              className={styles.rowActionBtn}
-                              onClick={() => onCorrectAdmission?.(guest)}
-                              title={t(dict, 'guests.admissionCorrection')}
-                              data-testid={`correct-admission-btn-${guest.id}`}
+                            <h3 className={styles.emptyTitle}>
+                              {t(dict, 'guests.noSearchResults')}
+                            </h3>
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              onClick={handleClearFilters}
+                              data-testid="clear-filters-btn"
                             >
-                              🔧 {t(dict, 'guests.admissionCorrection')}
-                            </button>
-                            <button
-                              type="button"
-                              className={`${styles.rowActionBtn} ${styles.rowActionBtnDanger}`}
-                              onClick={() => onResetAdmission?.(guest)}
-                              title={t(dict, 'guests.admissionReset')}
-                              data-testid={`reset-admission-btn-${guest.id}`}
-                            >
-                              ↩️ {t(dict, 'guests.admissionReset')}
-                            </button>
+                              {t(dict, 'guests.clearFilters')}
+                            </Button>
+                          </>
+                        ) : (
+                          <>
+                            <h3 className={styles.emptyTitle}>{t(dict, 'guests.noGuests')}</h3>
+                            <p className={styles.emptyDesc}>{t(dict, 'guests.noGuestsAction')}</p>
+                            {!isClosed && (
+                              <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                                <Button
+                                  variant="primary"
+                                  size="sm"
+                                  onClick={onAddGuest}
+                                  leadingIcon={<Icon name="plus" size="xs" />}
+                                >
+                                  {t(dict, 'guests.addGuest')}
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={onImportCsv}
+                                  leadingIcon={<Icon name="upload" size="xs" />}
+                                >
+                                  {t(dict, 'imports.title')}
+                                </Button>
+                              </div>
+                            )}
                           </>
                         )}
                       </div>
                     </td>
                   </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+                ) : (
+                  guests.map((guest) => {
+                    const isSelected = selectedGuestIds.has(guest.id);
+                    const isAdmitted = !!guest.checkIn;
+                    const actualParty = isAdmitted
+                      ? (guest.checkIn.actualPartySize ??
+                        1 + (guest.checkIn.actualCompanions || 0))
+                      : '—';
 
-      {/* Pagination Controls */}
-      {(meta?.total || 0) > (meta?.pageSize || 25) && (
-        <Pagination
-          page={meta.page || 1}
-          pageSize={meta.pageSize || 25}
-          total={meta.total || 0}
-          onPageChange={onPageChange}
-          previousLabel={t(dict, 'common.previous') || 'Previous'}
-          nextLabel={t(dict, 'common.next') || 'Next'}
-          pageLabel={t(dict, 'common.page') || 'Page'}
-          ofLabel={t(dict, 'common.of') || 'of'}
-          totalLabel={t(dict, 'common.total') || 'Total'}
-        />
-      )}
-      </>
+                    return (
+                      <tr
+                        key={guest.id}
+                        className={`${styles.tr} ${isSelected ? styles.trSelected : ''}`}
+                        data-testid={`guest-row-${guest.id}`}
+                      >
+                        <td className={`${styles.td} ${styles.tdCheckbox}`}>
+                          <input
+                            type="checkbox"
+                            className={styles.checkbox}
+                            checked={isSelected}
+                            onChange={() => toggleSelect?.(guest.id)}
+                            aria-label={`Select ${guest.name}`}
+                            data-testid={`guest-checkbox-${guest.id}`}
+                          />
+                        </td>
+                        <td className={styles.td}>
+                          <span className={styles.mobileLabel}>{t(dict, 'qr.shortCode')}:</span>
+                          <bdi className={styles.codeCell}>{guest.shortCode}</bdi>
+                        </td>
+                        <td className={styles.td}>
+                          <span className={styles.mobileLabel}>{t(dict, 'guests.guestName')}:</span>
+                          <span dir="auto" className={styles.nameCell}>
+                            {guest.name}
+                          </span>
+                        </td>
+                        <td className={styles.td}>
+                          <span className={styles.mobileLabel}>{t(dict, 'guests.reference')}:</span>
+                          {guest.reference ? <bdi>{guest.reference}</bdi> : '—'}
+                        </td>
+                        <td className={styles.td}>
+                          <span className={styles.mobileLabel}>{t(dict, 'guests.allowedCompanions')}:</span>
+                          <span>{guest.allowedCompanions}</span>
+                        </td>
+                        <td className={styles.td}>
+                          <span className={styles.mobileLabel}>{t(dict, 'guests.totalAllowed')}:</span>
+                          <span>{guest.totalAllowed}</span>
+                        </td>
+                        <td className={styles.td}>
+                          <span className={styles.mobileLabel}>{t(dict, 'common.status')}:</span>
+                          <StatusBadge
+                            status={isAdmitted ? 'admitted' : 'pending'}
+                            label={t(dict, isAdmitted ? 'status.admitted' : 'status.pending')}
+                          />
+                        </td>
+                        <td className={styles.td}>
+                          <span className={styles.mobileLabel}>{t(dict, 'guests.actualParty')}:</span>
+                          <span>{actualParty}</span>
+                        </td>
+                        <td className={styles.td}>
+                          <span className={styles.mobileLabel}>{t(dict, 'guests.arrival')}:</span>
+                          {isAdmitted ? (
+                            <bdi>
+                              {formatRiyadhDate(
+                                guest.checkIn.checkedInAt || guest.checkIn.admittedAt,
+                                lang
+                              )}
+                            </bdi>
+                          ) : (
+                            <span style={{ color: 'var(--ops-muted, #68615B)' }}>
+                              {t(dict, 'guests.arrivalNone')}
+                            </span>
+                          )}
+                        </td>
+                        <td className={styles.td}>
+                          <div className={styles.actionsCell}>
+                            <button
+                              type="button"
+                              className={styles.rowActionBtn}
+                              onClick={() => onViewQr?.(guest)}
+                              title={t(dict, 'guests.viewQr')}
+                              data-testid={`view-qr-btn-${guest.id}`}
+                            >
+                              <Icon name="qr" size="xs" />
+                              <span>{t(dict, 'guests.viewQr')}</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              className={styles.rowActionBtn}
+                              onClick={() => onEditGuest?.(guest)}
+                              disabled={isClosed || isAdmitted}
+                              title={
+                                isAdmitted
+                                  ? t(dict, 'guests.admittedCannotEdit')
+                                  : t(dict, 'guests.edit')
+                              }
+                              data-testid={`edit-guest-btn-${guest.id}`}
+                            >
+                              <Icon name="edit" size="xs" />
+                              <span>{t(dict, 'guests.edit')}</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              className={`${styles.rowActionBtn} ${styles.rowActionBtnDanger}`}
+                              onClick={() => onDeleteGuest?.(guest)}
+                              disabled={isClosed || isAdmitted}
+                              title={
+                                isAdmitted
+                                  ? t(dict, 'guests.admittedCannotDelete')
+                                  : t(dict, 'guests.delete')
+                              }
+                              data-testid={`delete-guest-btn-${guest.id}`}
+                            >
+                              <Icon name="trash" size="xs" />
+                              <span>{t(dict, 'guests.delete')}</span>
+                            </button>
+
+                            {isAdmitted && !isClosed && (
+                              <>
+                                <button
+                                  type="button"
+                                  className={styles.rowActionBtn}
+                                  onClick={() => onCorrectAdmission?.(guest)}
+                                  title={t(dict, 'guests.admissionCorrection')}
+                                  data-testid={`correct-admission-btn-${guest.id}`}
+                                >
+                                  <Icon name="settings" size="xs" />
+                                  <span>{t(dict, 'guests.admissionCorrection')}</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  className={`${styles.rowActionBtn} ${styles.rowActionBtnDanger}`}
+                                  onClick={() => onResetAdmission?.(guest)}
+                                  title={t(dict, 'guests.admissionReset')}
+                                  data-testid={`reset-admission-btn-${guest.id}`}
+                                >
+                                  <Icon name="refresh" size="xs" />
+                                  <span>{t(dict, 'guests.admissionReset')}</span>
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination Controls */}
+          {(meta?.total || 0) > (meta?.pageSize || 25) && (
+            <Pagination
+              page={meta.page || 1}
+              pageSize={meta.pageSize || 25}
+              total={meta.total || 0}
+              onPageChange={onPageChange}
+              previousLabel={t(dict, 'common.previous') || 'Previous'}
+              nextLabel={t(dict, 'common.next') || 'Next'}
+              pageLabel={t(dict, 'common.page') || 'Page'}
+              ofLabel={t(dict, 'common.of') || 'of'}
+              totalLabel={t(dict, 'common.total') || 'Total'}
+            />
+          )}
+        </>
       )}
     </div>
   );

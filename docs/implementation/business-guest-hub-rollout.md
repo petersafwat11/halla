@@ -4,10 +4,10 @@ The implementation uses `/{lang}/business-invitation/{code}`. Business WhatsApp 
 
 ## Delivered
 
-- Business-only cover crop/preview in web and mobile Step 1, including administrator-created events. New business events require a logo and cover. Hosts can open settings and refresh the logo without discarding the form.
-- Multipart creation preserves the existing invitation-image storage adapter; the cover is checked and decoded server-side, optimized to WebP, then stored alongside the event-owned branding snapshot. Failed creation cleans up finalized assets. There are no standalone temporary cover uploads to collect.
-- Cover limits: JPEG/PNG/WebP; 10 MB; at least 960 × 540; at most 8,192 pixels per side and 40 megapixels; still images only. Output is at most 1,600 × 900, without upscaling.
-- Responsive cover and overlapping pass card, Arabic RTL/English LTR, RSVP fields, response changes, loading/error/closed states, and server-issued business QR passes.
+- Step 1 has no separate cover upload on web or mobile, including administrator-created events. Business events still require the account logo; hosts can open settings and refresh it without discarding the form.
+- The final Step 3 invitation image is shared by WhatsApp and the guest hub. Both use the same resolver: `visualTemplate.bakedImagePath`, then the existing `templateImage` fallback. Logo and business name remain account snapshots.
+- The guest page displays the whole invitation at its natural proportions, with responsive width and automatic height. It has no cover crop or overlapping details. Business identity and the event/RSVP card are separate from the artwork. Arabic RTL/English LTR, response changes, loading/error/closed states, and server-issued QR passes remain supported.
+- Legacy `branding.coverImageKey` remains in the schema for existing records and storage cleanup only; it is neither required nor displayed. Creation stores only the invitation `templateImage` upload. For older mobile clients, the legacy `coverImage` multipart field is accepted and discarded before storage; it never becomes guest-page artwork.
 - Business entry QR uses a signed entry credential distinct from the invitation URL code. The scanner checks current confirmation and invitation mode. Old raw business invitation codes are not valid entry passes.
 - Business RSVP uses revision-based optimistic concurrency and existing idempotency infrastructure; omitted optional values are retained. The business WhatsApp response handler ignores stale button/text replies.
 - Server-generated Google Maps/Uber action URLs and calendar data. ICS contains start time only; Google Calendar gets a one-hour editable calendar default. Neither adds an event end-time field. Careem is not enabled.
@@ -19,7 +19,7 @@ The implementation uses `/{lang}/business-invitation/{code}`. Business WhatsApp 
 ## Required production preparation
 
 1. Obtain approved Meta/Taqnyat zero-button business templates for the launch languages and invite/reminder purposes. Use mode-neutral wording. A dynamic URL **button** template is incompatible.
-2. Sync provider definitions in template administration. Assign `deliveryMode: portal_link`, the relevant purpose/category, and map a real body placeholder to `invitation.url`. The admin form assigns all three compatible invitation modes. Ensure each required business reminder category has an active template.
+2. Sync provider definitions in template administration. Assign `deliveryMode: portal_link`, the relevant purpose/category, and map a real body placeholder to `invitation.url`. The admin form assigns all three compatible invitation modes. Reminders are category-independent and require an active template for the appropriate account type (personal or business).
 3. Verify an actual approved template's delivered body link on test devices. Automated tests stub the provider; they do not demonstrate Meta approval or WhatsApp clickability.
 4. Run the migration report against the intended database:
 
@@ -33,11 +33,18 @@ The implementation uses `/{lang}/business-invitation/{code}`. Business WhatsApp 
    node scripts/migrate-business-guest-hub.js --apply
    ```
 
-   The migration does not overwrite branding, invent cover images, or automatically assign templates. Existing events without covers use the hub's neutral cover treatment.
+   The migration does not overwrite branding or automatically assign templates. Its report counts business events without invitation artwork. Events without artwork still show their identity and event details.
 5. Deploy the backend, web app, proxy headers, and updated mobile client together with the reviewed template assignments. Confirm configured frontend origin, storage driver, and JWT secret. Existing deployed clients can require an update to handle old app-intercepted business URLs.
 6. Verify iOS/Android link opening from WhatsApp with and without Halaa installed, camera QR scanning, Apple/Outlook/Google calendar import, and Uber navigation/fallback on physical devices. Automated desktop-browser tests cannot verify native app handoff or calendar applications.
 
-## Verification
+## Current image-change verification (2026-09-11)
+
+- Focused backend tests: 12 passed; web suite: 242 passed; mobile suite: 564 passed; web production build passed.
+- Full backend suite: 640/641 passed. The unrelated architecture guard in `no-user-username.test.js` flags URL credential checks in `paymentLinks.service.js`.
+- An isolated browser layout fixture using the new stylesheet preserved the full portrait image at 390px and 1440px with no horizontal overflow. This was not a full application or physical mobile-device test.
+- No deployment or production data changes were performed for this image change.
+
+## Earlier verification (before the image change)
 
 - Backend full suite: 566 passing tests after review, including business contract, cover, HTTP routes, RSVP/check-in concurrency, and messaging-path integration tests.
 - Web full suite: 211 passing tests.

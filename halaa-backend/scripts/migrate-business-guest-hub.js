@@ -8,7 +8,7 @@ require('../models/UserModel');
 const { isBusinessTemplate } = require('../src/modules/messaging/invitationDelivery');
 
 async function migrate({ apply = false } = {}) {
-  const report = { apply, classifiedBusiness: 0, classifiedPersonal: 0, unknownOwner: 0, businessWithoutCover: 0, incompatibleBusinessTemplates: 0 };
+  const report = { apply, classifiedBusiness: 0, classifiedPersonal: 0, unknownOwner: 0, businessWithoutInvitationImage: 0, incompatibleBusinessTemplates: 0 };
   const cursor = Event.find({}).populate('host', 'accountType').cursor();
   for await (const event of cursor) {
     let delivery = event.invitationDeliveryMode;
@@ -19,7 +19,7 @@ async function migrate({ apply = false } = {}) {
       if (apply) await Event.updateOne({ _id: event._id, invitationDeliveryMode: null }, { $set: { invitationDeliveryMode: delivery } });
     }
     if (delivery === 'portal_link') {
-      if (!event.branding?.coverImageKey) report.businessWithoutCover++;
+      if (!require('@halaa/shared/utils/eventInvitationImage.cjs').eventInvitationImage(event)) report.businessWithoutInvitationImage++;
       const template = event.taqnyatTemplate?.templateRef ? await Template.findById(event.taqnyatTemplate.templateRef).lean() : null;
       if (!isBusinessTemplate(template) || template.status !== 'APPROVED' || !template.active || template.removedFromMeta || !template.compatibleInvitationModes?.includes(event.invitationType)) report.incompatibleBusinessTemplates++;
     }

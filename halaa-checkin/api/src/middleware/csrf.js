@@ -24,7 +24,15 @@ export function createCsrfMiddleware(config) {
 
     // 2. Strict Origin check on all unsafe browser API routes
     const origin = req.headers.origin;
-    if (!origin || origin !== config.appOrigin) {
+    const isDev = config.env !== 'production' && !config.isProd;
+    const isAllowedOrigin =
+      origin === config.appOrigin ||
+      (isDev &&
+        origin &&
+        ((config.appOrigin?.includes('localhost') && origin.includes('127.0.0.1')) ||
+          (config.appOrigin?.includes('127.0.0.1') && origin.includes('localhost'))));
+
+    if (!origin || !isAllowedOrigin) {
       return next(
         new DomainError({
           code: ERROR_CODES.FORBIDDEN,

@@ -2,38 +2,81 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background-color: var(--color-natural-50, #ffffff);
-  border-bottom: 1px solid var(--border-gray-200, #f2f2f2);
-  padding: 0 clamp(16px, 4vw, 48px);
-  height: 48px;
+  background-color: var(--color-natural-100, #fdfdfd);
+  border-bottom: 1px solid var(--ops-border, #E4DDD6);
+  padding: 0 clamp(16px, 3vw, 36px);
+  height: 52px;
+  position: sticky;
+  top: 64px;
+  z-index: 39;
+  box-sizing: border-box;
+}
+
+.segmentedWrapper {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--color-natural-200, #f2f2f2);
+  border: 1px solid var(--ops-border, #E4DDD6);
+  border-radius: var(--radius-sm, 8px);
+  padding: 3px;
+  gap: 3px;
 }
 
 .navLink {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  height: 48px;
+  min-height: 40px;
   padding: 0 16px;
+  border-radius: 6px;
   font-family: var(--font-cairo, "Cairo", sans-serif);
   font-size: 14px;
   font-weight: 600;
-  color: var(--color-natural-450, #656565);
+  color: var(--ops-muted, #68615B);
   text-decoration: none;
-  border-bottom: 2px solid transparent;
-  transition: all 0.15s;
+  transition: all 0.15s ease-in-out;
   box-sizing: border-box;
 }
 
-.navLink:hover {
-  color: var(--color-natural-900, #2c2c2c);
+.navLink:hover:not(.active) {
+  background-color: var(--color-natural-150, #f7f7f7);
+  color: var(--ops-ink, #2C2926);
 }
 
+.navLink:focus-visible {
+  outline: 2px solid var(--ops-brand, #A87545);
+  outline-offset: 1px;
+}
+
+/* Compact selected surface (07-UI-UX-RECOVERY-PLAN §4) */
 .active {
-  color: var(--color-primary-800, #6b4e33) !important;
-  border-bottom-color: var(--color-primary-500, #c28e5c) !important;
+  background-color: var(--ops-surface, #ffffff);
+  color: var(--ops-brand-strong, #75502F);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .icon {
   display: flex;
   align-items: center;
+  color: currentColor;
+}
+
+@media (max-width: 640px) {
+  .navBar {
+    top: 56px;
+    height: 48px;
+    padding: 0 12px;
+  }
+
+  .segmentedWrapper {
+    width: 100%;
+  }
+
+  .navLink {
+    flex: 1;
+    min-height: 40px;
+    font-size: 13px;
+    padding: 0 8px;
+  }
 }

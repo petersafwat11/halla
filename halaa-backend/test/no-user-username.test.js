@@ -111,7 +111,15 @@ test("PR1R Architecture Guard: No user-domain username across production source"
         return;
       }
 
-      // Allowlist 5: CSS class names
+      // Allowlist 5: WHATWG URL credentials (not user identity)
+      if (
+        trimmed.includes("url.username") ||
+        trimmed.includes("parsed.username")
+      ) {
+        return;
+      }
+
+      // Allowlist 6: CSS class names
       if (
         trimmed.includes("className={styles.userName}") ||
         trimmed.includes("className={styles.userNameContainer}") ||

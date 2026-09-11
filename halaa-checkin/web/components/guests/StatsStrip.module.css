@@ -1,35 +1,133 @@
 .strip {
   display: flex;
   flex-direction: column;
-  gap: 12px;
   width: 100%;
+  background-color: var(--ops-surface, #ffffff);
+  border: 1px solid var(--ops-border, #E4DDD6);
+  border-radius: var(--radius-md, 12px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .headerRow {
   display: flex;
   align-items: center;
-  justifyContent: space-between;
-  font-size: 13px;
-  color: var(--color-natural-450, #656565);
+  justify-content: space-between;
+  padding: 8px 16px;
+  background-color: var(--color-natural-100, #fdfdfd);
+  border-bottom: 1px solid var(--ops-border, #E4DDD6);
+  font-size: 12px;
+  color: var(--ops-muted, #68615B);
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .asOfText {
   display: flex;
   align-items: center;
   gap: 6px;
+  font-family: var(--font-cairo, "Cairo", sans-serif);
 }
 
 .liveDot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: var(--color-success, #2a8c5b);
+  background-color: var(--color-success-500, #2a8c5b);
   display: inline-block;
   animation: pulse 2s infinite;
 }
 
 .fetchingDot {
-  background-color: var(--color-primary-600, #c28e5c);
+  background-color: var(--ops-brand, #A87545);
+}
+
+.progressWrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.progressBar {
+  width: 100px;
+  height: 6px;
+  background-color: var(--color-natural-250, #dfdfdf);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background-color: var(--color-success-500, #2a8c5b);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.rateBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm, 8px);
+  font-size: 11px;
+  font-weight: 600;
+  background-color: var(--color-primary-100, #f5ece4);
+  color: var(--ops-brand-strong, #75502F);
+  font-variant-numeric: tabular-nums;
+}
+
+.cardsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background-color: var(--ops-border, #E4DDD6);
+  gap: 1px;
+}
+
+.card {
+  background-color: var(--ops-surface, #ffffff);
+  padding: 12px 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  box-sizing: border-box;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-cairo, "Cairo", sans-serif);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ops-muted, #68615B);
+}
+
+.cardIcon {
+  color: var(--ops-muted, #68615B);
+  display: flex;
+  align-items: center;
+}
+
+.cardValue {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--ops-ink, #2C2926);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-cairo, "Cairo", sans-serif);
+}
+
+.cardSubtext {
+  font-size: 11px;
+  color: var(--ops-muted, #68615B);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-cairo, "Cairo", sans-serif);
 }
 
 @keyframes pulse {
@@ -47,78 +145,19 @@
   }
 }
 
-.cardsGrid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-}
-
-@media (max-width: 1024px) {
+/* Mobile: 2x2 grid with 72-88px cells (07-UI-UX-RECOVERY-PLAN §5.2) */
+@media (max-width: 768px) {
   .cardsGrid {
     grid-template-columns: repeat(2, 1fr);
   }
-}
 
-@media (max-width: 480px) {
-  .cardsGrid {
-    grid-template-columns: 1fr;
-    gap: 12px;
+  .card {
+    min-height: 72px;
+    height: auto;
+    padding: 8px 12px;
   }
-}
 
-.card {
-  background-color: var(--color-natural-50, #ffffff);
-  border: 1px solid var(--border-gray-250, #dfdfdf);
-  border-radius: var(--radius-default, 12px);
-  padding: 16px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.cardHeader {
-  display: flex;
-  align-items: center;
-  justifyContent: space-between;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-natural-450, #656565);
-}
-
-.cardValue {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--color-natural-900, #2c2c2c);
-  line-height: 1.1;
-  font-variant-numeric: tabular-nums;
-}
-
-.cardSubtext {
-  font-size: 12px;
-  color: var(--color-natural-450, #656565);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.rateBadge {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 600;
-  background-color: var(--color-primary-100, #f5ece4);
-  color: var(--color-primary-800, #6b4e33);
-}
-
-.rateBadgeSuccess {
-  background-color: #e8f5e9;
-  color: #2a8c5b;
+  .cardValue {
+    font-size: 20px;
+  }
 }

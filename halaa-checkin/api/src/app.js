@@ -48,7 +48,18 @@ export function createApp(deps = {}) {
   // 3. CORS
   app.use(
     cors({
-      origin: cfg.appOrigin,
+      origin: (origin, callback) => {
+        if (!origin || origin === cfg.appOrigin) return callback(null, true);
+        if (!cfg.isProd && cfg.env !== 'production') {
+          if (
+            (cfg.appOrigin?.includes('localhost') && origin?.includes('127.0.0.1')) ||
+            (cfg.appOrigin?.includes('127.0.0.1') && origin?.includes('localhost'))
+          ) {
+            return callback(null, true);
+          }
+        }
+        return callback(null, false);
+      },
       credentials: true,
       methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'X-CSRF-Token', 'X-Requested-With', 'Idempotency-Key'],

@@ -1,3 +1,4 @@
+const { eventInvitationImage } = require('@halaa/shared/utils/eventInvitationImage.cjs');
 const { resolveInvitationDelivery } = require('./invitationDelivery');
 /**
  * Messaging formatting helpers.
@@ -169,7 +170,7 @@ function getEventImageUrl(event, taqnyatTemplate = null) {
   if (!hasImageHeader) return null;
 
   const imagePath =
-    event.visualTemplate?.bakedImagePath || event.templateImage;
+    eventInvitationImage(event);
   if (!imagePath) return null;
   if (imagePath.startsWith('http')) return imagePath;
   if (imagePath.startsWith('/uploads/') || imagePath.startsWith('uploads/')) {
@@ -334,7 +335,7 @@ function computeInvitationFingerprint(event, resolvedTemplate = null, { legacy =
     }),
     visualTemplateRef: vt.templateRef?.toString?.() || null,
     fieldValues: deepSortObject(vt.fieldValues || {}),
-    bakedImagePath: vt.bakedImagePath || event.templateImage || null,
+    bakedImagePath: eventInvitationImage(event),
     resolvedImageUrl: resolvedImageUrl || null,
     renderedBodyParams,
     title: (ed.title || '').trim(),

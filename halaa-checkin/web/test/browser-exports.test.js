@@ -1,6 +1,7 @@
+
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -130,7 +131,7 @@ describe('T10 — Export/report panel + admission correction Browser E2E', { tim
     if (browser) await browser.close();
     if (nextProcess?.pid) {
       try {
-        if (process.platform === 'win32') spawn('taskkill', ['/pid', String(nextProcess.pid), '/T', '/F']);
+        if (process.platform === 'win32') spawnSync('taskkill', ['/pid', String(nextProcess.pid), '/T', '/F']);
         else process.kill(-nextProcess.pid, 'SIGTERM');
       } catch { /* ignore */ }
     }

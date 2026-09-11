@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import jsQR from 'jsqr';
 import { Button } from '../ui/Button.jsx';
 import { Notice } from '../ui/Notice.jsx';
+import { Icon } from '../ui/Icon.jsx';
 import { t } from '../../lib/locale.js';
 import styles from './CameraScanner.module.css';
 
@@ -279,7 +280,7 @@ export function CameraScanner({ onScan, disabled = false, dict, stopSignal = 0 }
     <div className={styles.container} data-testid="camera-scanner-container">
       <div className={styles.header}>
         <h2 className={styles.title}>
-          <span>📷</span>
+          <Icon name="camera" size="sm" />
           <span>{t(dict, 'gate.cameraTitle')}</span>
         </h2>
         <Button
@@ -289,6 +290,7 @@ export function CameraScanner({ onScan, disabled = false, dict, stopSignal = 0 }
           onClick={isStreaming ? stopCamera : startCamera}
           disabled={!isStreaming && disabled}
           loading={isStarting && !isStreaming}
+          leadingIcon={<Icon name="camera" size="xs" />}
           data-testid="toggle-camera-btn"
         >
           {isStreaming ? t(dict, 'gate.stopCamera') : t(dict, 'gate.startCamera')}
@@ -322,13 +324,11 @@ export function CameraScanner({ onScan, disabled = false, dict, stopSignal = 0 }
               <div className={styles.scanCornerTR} />
               <div className={styles.scanCornerBL} />
               <div className={styles.scanCornerBR} />
-              <div className={styles.scanLine} />
             </div>
           </div>
         </div>
       ) : (
         <div className={styles.placeholder} data-testid="camera-placeholder">
-          <span className={styles.placeholderIcon}>📷</span>
           <p className={styles.hint}>{t(dict, 'gate.cameraHint')}</p>
         </div>
       )}

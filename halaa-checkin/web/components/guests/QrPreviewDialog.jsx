@@ -5,6 +5,8 @@ import { useQuery } from '@tanstack/react-query';
 import { Dialog } from '../ui/Dialog.jsx';
 import { Button } from '../ui/Button.jsx';
 import { Notice } from '../ui/Notice.jsx';
+import { Skeleton } from '../ui/Skeleton.jsx';
+import { Icon } from '../ui/Icon.jsx';
 import { api } from '../../lib/api.js';
 import { getDictionary, t } from '../../lib/locale.js';
 import styles from './QrPreviewDialog.module.css';
@@ -28,6 +30,7 @@ export function QrPreviewDialog({
     data: qrResponse,
     isLoading,
     error,
+    refetch,
   } = useQuery({
     queryKey: ['qr', eventId, guest?.id],
     queryFn: () => api.get(`/events/${eventId}/guests/${guest.id}/qr`),
@@ -102,8 +105,8 @@ export function QrPreviewDialog({
 
         <div className={styles.qrWrapper} data-testid="qr-container">
           {isLoading ? (
-            <div style={{ color: 'var(--color-natural-450, #656565)', fontSize: '13px' }}>
-              {t(dict, 'common.loading')}
+            <div className={styles.skeletonWrapper}>
+              <Skeleton width="180px" height="180px" />
             </div>
           ) : qrData?.imageDataUrl ? (
             <img
@@ -112,7 +115,15 @@ export function QrPreviewDialog({
               className={styles.qrImage}
               data-testid="qr-image"
             />
-          ) : null}
+          ) : (
+            <div className={styles.emptyErrorState}>
+              <Icon name="warning" size="lg" />
+              <p style={{ margin: 0, fontSize: '13px' }}>{t(dict, 'common.networkError')}</p>
+              <Button variant="secondary" size="sm" leadingIcon={<Icon name="refresh" size="xs" />} onClick={() => refetch()}>
+                {t(dict, 'common.retry')}
+              </Button>
+            </div>
+          )}
         </div>
 
         <p className={styles.instruction}>{t(dict, 'qr.scanInstruction')}</p>
@@ -123,9 +134,10 @@ export function QrPreviewDialog({
             size="sm"
             onClick={handleDownloadImage}
             disabled={!qrData?.imageDataUrl}
+            leadingIcon={<Icon name="download" size="xs" />}
             data-testid="download-qr-img-btn"
           >
-            💾 {lang === 'ar' ? 'تحميل صورة الرمز' : 'Save QR Image'}
+            {lang === 'ar' ? 'تحميل صورة الرمز' : 'Save QR Image'}
           </Button>
 
           {onExportPdf && (
@@ -134,9 +146,10 @@ export function QrPreviewDialog({
               size="sm"
               onClick={() => guest && onExportPdf(guest)}
               disabled={!guest}
+              leadingIcon={<Icon name="file-text" size="xs" />}
               data-testid="export-single-pdf-btn"
             >
-              📄 {lang === 'ar' ? 'تحميل PDF (A6)' : 'Download PDF (A6)'}
+              {lang === 'ar' ? 'تحميل PDF (A6)' : 'Download PDF (A6)'}
             </Button>
           )}
 
@@ -145,9 +158,10 @@ export function QrPreviewDialog({
             size="sm"
             onClick={handlePrint}
             disabled={!qrData?.imageDataUrl}
+            leadingIcon={<Icon name="printer" size="xs" />}
             data-testid="print-qr-btn"
           >
-            🖨️ {t(dict, 'qr.print')}
+            {t(dict, 'qr.print')}
           </Button>
 
           <Button variant="primary" size="sm" onClick={onClose}>

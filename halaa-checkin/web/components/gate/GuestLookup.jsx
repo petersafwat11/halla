@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Notice } from '../ui/Notice.jsx';
 import { api } from '../../lib/api.js';
 import { StatusBadge } from '../ui/StatusBadge.jsx';
+import { Icon } from '../ui/Icon.jsx';
 import { t } from '../../lib/locale.js';
 import styles from './GuestLookup.module.css';
 
@@ -98,7 +99,7 @@ export function GuestLookup({ eventId, onSelect, disabled = false, dict }) {
     <div className={styles.container} data-testid="guest-lookup-container">
       {searchError && <Notice variant="warning">{t(dict, 'common.networkError')}</Notice>}
       <h2 className={styles.title}>
-        <span>🔍</span>
+        <Icon name="search" size="sm" />
         <span>{t(dict, 'gate.manualSearchTitle')}</span>
       </h2>
 

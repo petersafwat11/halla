@@ -1,11 +1,12 @@
 .button {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   font-family: var(--font-cairo, "Cairo", sans-serif);
   font-weight: 600;
-  border-radius: var(--radius-12, 12px);
+  border-radius: var(--radius-sm, 8px);
   border: 1px solid transparent;
   cursor: pointer;
   transition: all 0.15s ease-in-out;
@@ -20,50 +21,41 @@
   outline-offset: 2px;
 }
 
-/* Sizes (spec §8: touch targets >= 44px; sm keeps compact padding but meets height) */
+/* Sizes (touch targets >= 44px; lg for primary gate controls is 48px) */
 .sm {
   min-height: 44px;
-  padding: 6px 12px;
+  padding: 6px 14px;
   font-size: 13px;
 }
 
 .md {
+  min-height: 44px;
   height: 44px;
   padding: 0 18px;
   font-size: 14px;
 }
 
 .lg {
+  min-height: 48px;
   height: 48px;
   padding: 0 24px;
-  font-size: 15px;
+  font-size: 16px;
 }
 
 /* Variants */
 .primary {
-  background-color: var(--btn-primary-contrast-bg, #6b4e33);
+  background-color: var(--ops-brand-strong, #75502F);
   color: #ffffff;
   border-color: transparent;
 }
 
 .primary:hover:not(:disabled) {
   background-color: var(--btn-primary-contrast-hover, #513c27);
+  color: #ffffff;
 }
 
 .primary:active:not(:disabled) {
   background-color: var(--btn-primary-contrast-active, #513c27);
-}
-
-/* NOTE: .brand is white-on-primary-500 and fails normal-text contrast (spec §3).
-   Retained only for large/bold decorative accents; prefer .primary for text buttons. */
-.brand {
-  background-color: var(--btn-brand-bg, #c28e5c);
-  color: #ffffff;
-  border-color: transparent;
-}
-
-.brand:hover:not(:disabled) {
-  background-color: var(--btn-brand-hover, #b18154);
 }
 
 .secondary {
@@ -79,7 +71,7 @@
 .outline {
   background-color: var(--color-natural-50, #ffffff);
   color: var(--color-natural-900, #2c2c2c);
-  border-color: var(--border-gray-250, #dfdfdf);
+  border-color: var(--ops-border, #E4DDD6);
 }
 
 .outline:hover:not(:disabled) {
@@ -95,6 +87,7 @@
 
 .danger:hover:not(:disabled) {
   background-color: var(--color-error-600, #af3427);
+  color: #ffffff;
 }
 
 .ghost {
@@ -120,9 +113,31 @@
   width: 100%;
 }
 
+/* Width-preserving loading state */
+.contentWrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.loadingContent {
+  visibility: hidden;
+}
+
+.spinnerOverlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .spinner {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border: 2px solid currentColor;
   border-right-color: transparent;
   border-radius: 50%;

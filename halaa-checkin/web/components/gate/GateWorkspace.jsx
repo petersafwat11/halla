@@ -9,6 +9,7 @@ import { GuestLookup } from './GuestLookup.jsx';
 import { AdmissionCard } from './AdmissionCard.jsx';
 import { StatusBadge } from '../ui/StatusBadge.jsx';
 import { Notice } from '../ui/Notice.jsx';
+import { Icon } from '../ui/Icon.jsx';
 import { getDictionary, t, formatRiyadhDate } from '../../lib/locale.js';
 import styles from './GateWorkspace.module.css';
 
@@ -102,8 +103,14 @@ export function GateWorkspace({ lang = 'ar' }) {
             />
           </div>
           <div className={styles.eventMeta}>
-            <span>📍 <span dir="auto">{selectedEvent.venue}</span></span>
-            <span>🕒 {formatRiyadhDate(selectedEvent.startsAt, lang)}</span>
+            <span className={styles.metaItem}>
+              <Icon name="location" size="xs" />
+              <span dir="auto">{selectedEvent.venue}</span>
+            </span>
+            <span className={styles.metaItem}>
+              <Icon name="clock" size="xs" />
+              <span>{formatRiyadhDate(selectedEvent.startsAt, lang)}</span>
+            </span>
           </div>
         </div>
 
@@ -115,7 +122,7 @@ export function GateWorkspace({ lang = 'ar' }) {
             aria-live="polite"
             title={browserOnline ? (apiReachable ? '' : t(dict, 'common.networkError')) : t(dict, 'gate.connectionOffline')}
           >
-            <span>{isOnline ? '🟢' : '🔴'}</span>
+            <span className={`${styles.statusDot} ${isOnline ? styles.dotOnline : styles.dotOffline}`} aria-hidden="true" />
             <span>
               {!browserOnline
                 ? t(dict, 'gate.connectionOffline')
@@ -138,7 +145,12 @@ export function GateWorkspace({ lang = 'ar' }) {
             <span className={styles.asOfText}>{t(dict, 'gate.connectionStale')}</span>
           )}
           {recentError && (
-            <button type="button" onClick={() => refetchRecent()} data-testid="recent-retry-btn">
+            <button
+              type="button"
+              onClick={() => refetchRecent()}
+              data-testid="recent-retry-btn"
+              className={styles.retryBtn}
+            >
               {t(dict, 'common.retry')}
             </button>
           )}
@@ -157,7 +169,11 @@ export function GateWorkspace({ lang = 'ar' }) {
         </Notice>
       )}
 
-      {errorDetails && gateState === 'ready' && <Notice variant="warning">{t(dict, `errors.${errorDetails.code}`) || t(dict, 'errors.UNKNOWN')}</Notice>}
+      {errorDetails && gateState === 'ready' && (
+        <Notice variant="warning">
+          {t(dict, `errors.${errorDetails.code}`) || t(dict, 'errors.UNKNOWN')}
+        </Notice>
+      )}
 
       {/* Main Grid: Input / Scanner on left, Admission Card on right */}
       <div className={styles.grid} aria-live="polite">
@@ -201,11 +217,13 @@ export function GateWorkspace({ lang = 'ar' }) {
       {/* Recent Admissions Section */}
       <section className={styles.recentSection} data-testid="recent-admissions-section">
         <h2 className={styles.recentTitle}>
-          <span>📋</span>
+          <Icon name="clipboard-list" size="sm" />
           <span>{t(dict, 'gate.recentAdmissionsTitle')}</span>
         </h2>
 
-        {recentError ? <Notice variant="warning">{t(dict, 'common.networkError')}</Notice> : recentAdmissions.length === 0 ? (
+        {recentError ? (
+          <Notice variant="warning">{t(dict, 'common.networkError')}</Notice>
+        ) : recentAdmissions.length === 0 ? (
           <div className={styles.emptyRecent} data-testid="empty-recent-admissions">
             {t(dict, 'gate.recentAdmissionsEmpty')}
           </div>
@@ -226,14 +244,23 @@ export function GateWorkspace({ lang = 'ar' }) {
                 >
                   <div className={styles.recentGuestName} dir="auto">{guest.name}</div>
                   <div className={styles.recentMeta}>
-                    <span>
-                      👥 {t(dict, 'gate.successPartyCount', { count: partySize })}
+                    <span className={styles.metaItem}>
+                      <Icon name="users" size="xs" />
+                      <span>{t(dict, 'gate.successPartyCount', { count: partySize })}</span>
                     </span>
-                    {operator && <span>👤 {operator}</span>}
+                    {operator && (
+                      <span className={styles.metaItem}>
+                        <Icon name="user" size="xs" />
+                        <span>{operator}</span>
+                      </span>
+                    )}
                   </div>
                   {formattedTime && (
                     <div className={styles.recentMeta}>
-                      <span>🕒 {formattedTime}</span>
+                      <span className={styles.metaItem}>
+                        <Icon name="clock" size="xs" />
+                        <span>{formattedTime}</span>
+                      </span>
                     </div>
                   )}
                 </div>

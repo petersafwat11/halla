@@ -65,6 +65,7 @@ export function EventProvider({ children }) {
   // Sync state with urlEventId or default to first event (F18: deterministic).
   useEffect(() => {
     if (isLoadingEvents) return;
+    if (pathname?.includes('/login')) return;
     if (allEvents.length > 0) {
       if (urlEventId && allEvents.some(e => e.id === urlEventId)) {
         setInvalidEventId(null);

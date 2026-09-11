@@ -1,6 +1,7 @@
+
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -37,7 +38,7 @@ describe('T09 — Gate Workspace & Scanner Lifecycle Browser E2E Verification', 
     );
 
     let isReady = false;
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < 60; i++) {
       try {
         const res = await fetch(`${BASE_URL}/ar/gate`);
         if (res.ok) {
@@ -69,7 +70,7 @@ describe('T09 — Gate Workspace & Scanner Lifecycle Browser E2E Verification', 
     if (nextProcess && nextProcess.pid) {
       try {
         if (process.platform === 'win32') {
-          spawn('taskkill', ['/pid', String(nextProcess.pid), '/T', '/F']);
+          spawnSync('taskkill', ['/pid', String(nextProcess.pid), '/T', '/F']);
         } else {
           process.kill(-nextProcess.pid, 'SIGTERM');
         }

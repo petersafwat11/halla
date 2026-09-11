@@ -3,6 +3,7 @@
 import React from 'react';
 import { Button } from '../ui/Button.jsx';
 import { StatusBadge } from '../ui/StatusBadge.jsx';
+import { Icon } from '../ui/Icon.jsx';
 import { t, formatRiyadhDate } from '../../lib/locale.js';
 import styles from './AdmissionCard.module.css';
 
@@ -23,11 +24,18 @@ export function AdmissionCard({
   lang,
   dict,
 }) {
+  const isVip = Boolean(
+    currentGuest?.reference?.toUpperCase()?.includes('VIP') ||
+    currentGuest?.name?.toUpperCase()?.includes('VIP')
+  );
+
   // 1. Idle state
   if (gateState === 'idle') {
     return (
       <div className={styles.emptyCard} data-testid="admission-empty-card" role="status" aria-live="polite">
-        <span className={styles.emptyIcon}>🎫</span>
+        <div className={styles.emptyIcon}>
+          <Icon name="ticket" size="xl" />
+        </div>
         <h3 className={styles.emptyTitle}>{t(dict, 'gate.previewTitle')}</h3>
         <p className={styles.emptyText}>{t(dict, 'gate.cameraHint')}</p>
       </div>
@@ -38,7 +46,9 @@ export function AdmissionCard({
   if (gateState === 'resolving') {
     return (
       <div className={styles.emptyCard} data-testid="admission-resolving-card" role="status" aria-live="polite">
-        <span className={styles.emptyIcon}>⏳</span>
+        <div className={styles.emptyIcon}>
+          <Icon name="refresh" size="xl" />
+        </div>
         <h3 className={styles.emptyTitle}>{t(dict, 'common.loading')}</h3>
         <p className={styles.emptyText}>{t(dict, 'gate.cameraStarting')}</p>
       </div>
@@ -54,7 +64,7 @@ export function AdmissionCard({
         role="alert"
       >
         <h3 className={styles.resultTitle}>
-          <span>⚠️</span>
+          <Icon name="warning" size="md" />
           <span>{t(dict, 'gate.invalidInvitationTitle')}</span>
         </h3>
         <p className={styles.resultDetails}>
@@ -86,7 +96,7 @@ export function AdmissionCard({
         aria-live="polite"
       >
         <h3 className={styles.resultTitle}>
-          <span>🛑</span>
+          <Icon name="warning" size="md" />
           <span>{isDraft ? t(dict, 'gate.eventDraftTitle') : t(dict, 'gate.eventClosedTitle')}</span>
         </h3>
         <p className={styles.resultDetails}>
@@ -116,7 +126,7 @@ export function AdmissionCard({
         role="alert"
       >
         <h3 className={styles.resultTitle}>
-          <span>⚠️</span>
+          <Icon name="warning" size="md" />
           <span>{t(dict, 'gate.lostResponseTitle')}</span>
         </h3>
         <p className={styles.resultDetails}>
@@ -156,7 +166,7 @@ export function AdmissionCard({
         role="alert"
       >
         <h3 className={styles.resultTitle}>
-          <span>📡</span>
+          <Icon name="wifi-off" size="md" />
           <span>{t(dict, 'gate.networkErrorTitle')}</span>
         </h3>
         <p className={styles.resultDetails}>
@@ -186,7 +196,7 @@ export function AdmissionCard({
         role="alert"
       >
         <h3 className={styles.resultTitle}>
-          <span>🔒</span>
+          <Icon name="lock" size="md" />
           <span>{t(dict, 'gate.sessionExpiredTitle')}</span>
         </h3>
         <p className={styles.resultDetails}>
@@ -226,7 +236,7 @@ export function AdmissionCard({
         aria-live="polite"
       >
         <h3 className={styles.resultTitle}>
-          <span>⚠️</span>
+          <Icon name="warning" size="md" />
           <span>{t(dict, 'gate.alreadyAdmittedTitle')}</span>
         </h3>
         <div className={styles.guestHeading}>
@@ -237,6 +247,11 @@ export function AdmissionCard({
             <bdi className={styles.shortCode} data-testid="guest-preview-shortcode">
               {currentGuest.shortCode}
             </bdi>
+            {isVip && (
+              <span className={styles.vipBadge}>
+                <Icon name="vip" size="xs" /> VIP
+              </span>
+            )}
             {currentGuest.reference && <span>{currentGuest.reference}</span>}
           </div>
         </div>
@@ -281,7 +296,7 @@ export function AdmissionCard({
         aria-live="polite"
       >
         <h3 className={styles.resultTitle}>
-          <span>✅</span>
+          <Icon name="check-circle" size="md" />
           <span>{t(dict, 'gate.successAdmittedTitle')}</span>
         </h3>
         <div className={styles.guestHeading}>
@@ -292,6 +307,11 @@ export function AdmissionCard({
             <bdi className={styles.shortCode} data-testid="guest-preview-shortcode">
               {currentGuest.shortCode}
             </bdi>
+            {isVip && (
+              <span className={styles.vipBadge}>
+                <Icon name="vip" size="xs" /> VIP
+              </span>
+            )}
             {currentGuest.reference && <span>{currentGuest.reference}</span>}
           </div>
         </div>
@@ -350,6 +370,11 @@ export function AdmissionCard({
             <bdi className={styles.shortCode} data-testid="guest-preview-shortcode">
               {currentGuest.shortCode}
             </bdi>
+            {isVip && (
+              <span className={styles.vipBadge}>
+                <Icon name="vip" size="xs" /> VIP
+              </span>
+            )}
             {currentGuest.reference && <span>{currentGuest.reference}</span>}
           </div>
         </div>
@@ -401,10 +426,32 @@ export function AdmissionCard({
 
       {/* Stepper for actual companions present */}
       <div className={styles.stepperSection}>
-        <span className={styles.stepperLabel}>
-          {t(dict, 'gate.companionCountLabel')} (0 .. {maxCompanions})
-        </span>
-        <div className={styles.stepperControls}>
+        <div className={styles.stepperHeader}>
+          <span className={styles.stepperLabel}>
+            {t(dict, 'gate.companionCountLabel')}
+          </span>
+          <span className={styles.stepperLimit}>
+            (0 .. {maxCompanions})
+          </span>
+        </div>
+        <div
+          className={styles.stepperControls}
+          role="group"
+          aria-label={t(dict, 'gate.companionCountLabel')}
+          onKeyDown={(e) => {
+            if (e.key === '+' || e.key === 'ArrowUp') {
+              e.preventDefault();
+              if (!isSubmitting && actualCompanions < maxCompanions) {
+                setActualCompanions(actualCompanions + 1);
+              }
+            } else if (e.key === '-' || e.key === 'ArrowDown') {
+              e.preventDefault();
+              if (!isSubmitting && actualCompanions > 0) {
+                setActualCompanions(actualCompanions - 1);
+              }
+            }
+          }}
+        >
           <button
             type="button"
             className={styles.stepperButton}
@@ -418,6 +465,7 @@ export function AdmissionCard({
           <span
             className={styles.stepperValue}
             data-testid="companions-stepper-value"
+            aria-live="polite"
           >
             {actualCompanions}
           </span>
@@ -449,7 +497,7 @@ export function AdmissionCard({
           disabled={isSubmitting}
           loading={isSubmitting}
           data-testid="admit-guest-btn"
-          style={{ flex: 1 }}
+          style={{ flex: 1, minHeight: '48px' }}
         >
           {derivedPartySize === 1
             ? t(dict, 'gate.admitSingleButton')
@@ -462,6 +510,7 @@ export function AdmissionCard({
           onClick={onReset}
           disabled={isSubmitting}
           data-testid="cancel-admission-btn"
+          style={{ minHeight: '48px' }}
         >
           {t(dict, 'common.cancel')}
         </Button>

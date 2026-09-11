@@ -5,6 +5,7 @@ import { Dialog } from '../ui/Dialog.jsx';
 import { Field } from '../ui/Field.jsx';
 import { Button } from '../ui/Button.jsx';
 import { Notice } from '../ui/Notice.jsx';
+import { Icon } from '../ui/Icon.jsx';
 import { getDictionary, t, toRiyadhDateInput, toRiyadhIsoString } from '../../lib/locale.js';
 import styles from './EventDialog.module.css';
 
@@ -184,13 +185,13 @@ export function EventDialog({
         </div>
 
         <div className={styles.tzNote}>
-          <span aria-hidden="true">🌐</span>
+          <Icon name="globe" size="sm" aria-hidden="true" />
           <span>{t(dict, 'events.timezone')}: Asia/Riyadh (+03:00)</span>
         </div>
 
         {mode === 'edit' && (
           <div className={styles.tzNote} role="note" data-testid="stale-pdf-warning">
-            <span aria-hidden="true">⚠️</span>
+            <Icon name="warning" size="sm" aria-hidden="true" />
             <span>{lang === 'ar' ? 'تنبيه: تغيير الاسم أو الموعد يجعل بطاقات PDF الموزعة سابقاً قديمة — أعد إنشاء التصدير بعد الحفظ.' : 'Note: changing name/date makes previously distributed PDF passes stale — regenerate exports after saving.'}</span>
           </div>
         )}

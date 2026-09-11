@@ -49,6 +49,21 @@
   border-radius: 6px;
 }
 
+.vipBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: var(--ops-gold-soft, #fef9ee);
+  color: var(--ops-gold-ink, #92400e);
+  border: 1px solid var(--ops-gold-border, #fde68a);
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
 .detailsGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -119,10 +134,23 @@
   border: 1px solid rgba(194, 142, 92, 0.3);
 }
 
+.stepperHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .stepperLabel {
   font-size: 14px;
   font-weight: 700;
   color: var(--color-primary-800, #6b4e33);
+}
+
+.stepperLimit {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-natural-500, #555555);
 }
 
 .stepperControls {
@@ -132,24 +160,32 @@
 }
 
 .stepperButton {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  border-radius: 12px;
   border: 1px solid var(--color-primary-500, #c28e5c);
   background-color: var(--color-natural-50, #ffffff);
   color: var(--color-primary-800, #6b4e33);
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.15s ease;
+  user-select: none;
 }
 
 .stepperButton:hover:not(:disabled) {
   background-color: var(--color-primary-500, #c28e5c);
   color: #ffffff;
+}
+
+.stepperButton:focus-visible {
+  outline: 2px solid var(--ops-focus, #3b82f6);
+  outline-offset: 2px;
 }
 
 .stepperButton:disabled {
@@ -159,9 +195,10 @@
 }
 
 .stepperValue {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 800;
-  min-width: 44px;
+  font-variant-numeric: tabular-nums;
+  min-width: 48px;
   text-align: center;
   color: var(--color-natural-900, #2c2c2c);
 }

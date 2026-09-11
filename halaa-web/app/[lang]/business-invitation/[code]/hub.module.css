@@ -59,50 +59,29 @@
   margin: 0 auto;
 }
 
-/* Event Cover Header */
-.cover {
-  aspect-ratio: 16 / 9;
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(135deg, #43382d 0%, #241c14 100%);
-  border-radius: 20px 20px 0 0;
-}
-
-.cover::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(34, 29, 24, 0.4) 0%, rgba(34, 29, 24, 0.05) 50%, transparent 100%);
-  pointer-events: none;
-}
-
-.coverImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-/* Floating Business Identity */
+/* Identity and complete Step 3 invitation artwork, in normal document flow. */
 .business {
-  position: absolute;
-  inset-inline-start: 24px;
-  top: 24px;
-  z-index: 2;
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 12px;
-  max-width: calc(100% - 48px);
-  padding: 10px 18px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  gap: var(--spacing-12, 12px);
+  padding: var(--spacing-20, 20px) var(--spacing-24, 24px);
+  margin-bottom: var(--spacing-16, 16px);
   color: var(--hub-ink);
+  font-size: 16px;
   font-weight: 700;
-  font-size: 15px;
-  box-shadow: var(--hub-shadow-float);
-  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+.invitationArtwork {
+  margin: 0 0 var(--spacing-24, 24px);
+  padding: var(--spacing-16, 16px);
+  background: var(--hub-card);
+  border: 1px solid var(--hub-border-subtle);
+  border-radius: 16px;
+}
+.invitationImage {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
 }
 
 .business img {
@@ -118,10 +97,10 @@
   letter-spacing: -0.01em;
 }
 
-/* Overlapping Invitation & Pass Card */
+/* Event details and response card */
 .passCard {
   position: relative;
-  margin: -64px 20px 0;
+  margin: 0;
   padding: 42px 46px;
   border-radius: 20px;
   background: var(--hub-card);
@@ -801,18 +780,13 @@ html[dir="rtl"] .failure {
     padding: 0 0 24px;
   }
 
-  .cover {
-    border-radius: 0;
-    aspect-ratio: 16 / 10;
-  }
 
   .business {
-    top: 16px;
-    inset-inline-start: 16px;
-    max-width: calc(100% - 32px);
     padding: 8px 14px;
     font-size: 14px;
   }
+
+  .invitationArtwork { margin-inline: 8px; padding: 8px; }
 
   .business img {
     width: 36px;
@@ -820,7 +794,7 @@ html[dir="rtl"] .failure {
   }
 
   .passCard {
-    margin: -36px 8px 0;
+    margin: 0 8px;
     padding: 28px 18px;
     border-radius: 16px;
   }
@@ -902,7 +876,7 @@ html[dir="rtl"] .failure {
 
 @media (max-width: 360px) {
   .passCard {
-    margin: -24px 4px 0;
+    margin: 0 4px;
     padding: 20px 12px;
     border-radius: 14px;
   }

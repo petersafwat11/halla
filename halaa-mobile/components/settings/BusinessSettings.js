@@ -170,7 +170,7 @@ const BusinessSettings = ({ user = {}, onProfileUpdate }) => {
 const styles = StyleSheet.create({
   section: {
     marginBottom: 32,
-    paddingTop: 8,
+    padding: 16,
     borderTopWidth: 1,
     borderTopColor: "#eee",
   },

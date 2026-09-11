@@ -1,41 +1,43 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   width: 100%;
 }
 
 .bar {
-  background-color: var(--color-natural-50, #ffffff);
-  border-radius: var(--radius-default, 12px);
-  border: 1px solid var(--border-gray-250, #dfdfdf);
-  padding: 20px 24px;
+  background-color: var(--ops-surface, #ffffff);
+  border-radius: var(--radius-md, 12px);
+  border: 1px solid var(--ops-border, #E4DDD6);
+  padding: 14px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 14px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  box-sizing: border-box;
 }
 
 .eventMeta {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   min-width: 240px;
 }
 
 .titleRow {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
 .eventName {
-  font-size: 20px;
+  font-family: var(--font-cairo, "Cairo", sans-serif);
+  font-size: 18px;
   font-weight: 700;
-  color: var(--color-natural-900, #2c2c2c);
+  color: var(--ops-ink, #2C2926);
   margin: 0;
   line-height: 1.2;
 }
@@ -45,7 +47,7 @@
   align-items: center;
   gap: 16px;
   font-size: 13px;
-  color: var(--color-natural-450, #656565);
+  color: var(--ops-muted, #68615B);
   flex-wrap: wrap;
 }
 
@@ -55,32 +57,58 @@
   gap: 6px;
 }
 
+.detailIcon {
+  color: var(--ops-muted, #68615B);
+  display: flex;
+  align-items: center;
+}
+
 .actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
 .closedBanner {
-  background-color: #fef3f2;
-  border: 1px solid #fecdca;
-  border-radius: var(--radius-default, 12px);
-  padding: 12px 16px;
+  background-color: var(--color-error-50, #f9ebea);
+  border: 1px solid var(--color-error-200, #e2a49d);
+  border-radius: var(--radius-sm, 8px);
+  padding: 10px 16px;
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #b42318;
+  color: var(--color-error-700, #88281f);
+  font-family: var(--font-cairo, "Cairo", sans-serif);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .bar {
-    padding: 16px;
+    padding: 10px 14px;
+    gap: 8px;
+  }
+  .eventMeta {
+    min-width: 0;
+    flex: 1;
+    gap: 2px;
+  }
+  .eventName {
+    font-size: 15px;
+  }
+  .detailRow {
+    gap: 10px;
+    font-size: 12px;
   }
   .actions {
     width: 100%;
-    justifyContent: flex-start;
+    gap: 6px;
+  }
+  .actions button {
+    flex: 1;
+    min-height: 40px;
+    padding: 0 8px;
+    font-size: 12px;
   }
 }

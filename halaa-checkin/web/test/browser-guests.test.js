@@ -1,6 +1,7 @@
+
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -69,7 +70,7 @@ describe('T08 — Guests Workspace Browser E2E Verification', { timeout: 90000 }
     if (nextProcess && nextProcess.pid) {
       try {
         if (process.platform === 'win32') {
-          spawn('taskkill', ['/pid', String(nextProcess.pid), '/T', '/F']);
+          spawnSync('taskkill', ['/pid', String(nextProcess.pid), '/T', '/F']);
         } else {
           process.kill(-nextProcess.pid, 'SIGTERM');
         }

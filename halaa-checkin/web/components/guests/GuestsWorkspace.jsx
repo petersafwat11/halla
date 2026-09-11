@@ -19,6 +19,7 @@ import { ImportDialog } from './ImportDialog.jsx';
 import { ExportPanel } from './ExportPanel.jsx';
 import { AdmissionCorrectionDialog } from './AdmissionCorrectionDialog.jsx';
 import { Button } from '../ui/Button.jsx';
+import { EmptyState } from '../ui/EmptyState.jsx';
 import { getDictionary, t } from '../../lib/locale.js';
 import styles from './GuestsWorkspace.module.css';
 
@@ -258,20 +259,21 @@ export function GuestsWorkspace({ lang = 'ar' }) {
   if (!hasEvents && !isLoadingEvents) {
     return (
       <div className={styles.workspace}>
-        <div className={styles.emptyEvents}>
-          <div style={{ fontSize: '48px' }} aria-hidden="true">
-            🏛️
-          </div>
-          <h2 className={styles.emptyEventsTitle}>{t(dict, 'events.noEventsAdmin')}</h2>
-          <p className={styles.emptyEventsDesc}>{t(dict, 'events.createFirstEventPrompt')}</p>
-          <Button
-            variant="primary"
-            onClick={() => setEventDialog({ isOpen: true, mode: 'create' })}
-            data-testid="create-first-event-btn"
-          >
-            ➕ {t(dict, 'events.createFirstEvent')}
-          </Button>
-        </div>
+        <EmptyState
+          icon="calendar"
+          title={t(dict, 'events.noEventsAdmin')}
+          description={t(dict, 'events.createFirstEventPrompt')}
+          action={
+            <Button
+              variant="primary"
+              leadingIcon="plus"
+              onClick={() => setEventDialog({ isOpen: true, mode: 'create' })}
+              data-testid="create-first-event-btn"
+            >
+              {t(dict, 'events.createFirstEvent')}
+            </Button>
+          }
+        />
 
         <EventDialog
           isOpen={eventDialog.isOpen}
@@ -363,6 +365,7 @@ export function GuestsWorkspace({ lang = 'ar' }) {
       <EventLifecycleDialog
         isOpen={lifecycleDialog.isOpen}
         event={selectedEvent}
+        stats={stats}
         targetStatus={lifecycleDialog.targetStatus}
         onClose={() => setLifecycleDialog({ isOpen: false, targetStatus: 'live' })}
         onSubmit={handleStatusTransition}

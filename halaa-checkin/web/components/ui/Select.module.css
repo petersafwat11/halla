@@ -1,0 +1,101 @@
+.container {
+  position: relative;
+  width: 100%;
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 14px;
+  background-color: var(--ops-surface, #ffffff);
+  border: 1px solid var(--ops-border, #E4DDD6);
+  border-radius: var(--radius-sm, 8px);
+  font-family: var(--font-cairo, "Cairo", sans-serif);
+  font-size: 14px;
+  color: var(--ops-ink, #2C2926);
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
+  text-align: start;
+}
+
+.trigger:focus-visible {
+  outline: none;
+  border-color: var(--ops-brand, #A87545);
+  box-shadow: 0 0 0 2px rgba(168, 117, 69, 0.2);
+}
+
+.trigger:disabled {
+  background-color: var(--color-natural-150, #f7f7f7);
+  color: var(--color-natural-400, #767676);
+  cursor: not-allowed;
+}
+
+.triggerValue {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.triggerIcon {
+  color: var(--ops-muted, #68615B);
+  flex-shrink: 0;
+  margin-inline-start: 8px;
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  inset-inline-start: 0;
+  width: 100%;
+  max-height: 240px;
+  overflow-y: auto;
+  background-color: var(--ops-surface, #ffffff);
+  border: 1px solid var(--ops-border, #E4DDD6);
+  border-radius: var(--radius-sm, 8px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  z-index: 50;
+  padding: 4px;
+  box-sizing: border-box;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  font-family: var(--font-cairo, "Cairo", sans-serif);
+  font-size: 14px;
+  color: var(--ops-ink, #2C2926);
+  cursor: pointer;
+  text-align: start;
+  transition: background-color 0.1s ease;
+}
+
+.option:hover,
+.option:focus-visible {
+  background-color: var(--color-natural-150, #f7f7f7);
+  outline: none;
+}
+
+.option.selected {
+  background-color: var(--color-primary-100, #f5ece4);
+  color: var(--ops-brand-strong, #75502F);
+  font-weight: 600;
+}
+
+.emptyState {
+  padding: 12px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--ops-muted, #68615B);
+}

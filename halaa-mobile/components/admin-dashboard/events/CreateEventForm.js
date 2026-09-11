@@ -176,7 +176,6 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
       try {
         const payload = EventsService.transformFormDataToPayload(data);
         const formDataObj = new FormData();
-        if (payload.coverImage?.uri) formDataObj.append("coverImage", payload.coverImage);
 
         if (payload.guestList) {
           formDataObj.append("guestList", JSON.stringify(payload.guestList));

@@ -48,6 +48,12 @@
   flex-wrap: wrap;
 }
 
+.metaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .statusPillRow {
   display: flex;
   align-items: center;
@@ -57,26 +63,65 @@
 .connectionPill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
+  gap: 8px;
+  padding: 4px 12px;
   border-radius: 20px;
   font-size: 12px;
   font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.dotOnline {
+  background-color: var(--color-success-500, #2a8c5b);
+  box-shadow: 0 0 0 2px rgba(42, 140, 91, 0.2);
+}
+
+.dotOffline {
+  background-color: var(--color-error-500, #c0392b);
+  box-shadow: 0 0 0 2px rgba(192, 57, 43, 0.2);
 }
 
 .online {
   background-color: var(--color-success-50, #eaf4ef);
   color: var(--color-success-500, #2a8c5b);
+  border-color: rgba(42, 140, 91, 0.2);
 }
 
 .offline {
   background-color: var(--color-error-50, #f9ebea);
   color: var(--color-error-500, #c0392b);
+  border-color: rgba(192, 57, 43, 0.2);
 }
 
 .asOfText {
   font-size: 11px;
   color: var(--color-natural-450, #656565);
+}
+
+.retryBtn {
+  min-height: 36px;
+  padding: 6px 12px;
+  background: var(--ops-surface, #ffffff);
+  border: 1px solid var(--border-gray-250, #dfdfdf);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ops-ink, #2c2c2c);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.retryBtn:hover {
+  background: var(--ops-surface-muted, #f8f8f8);
+  border-color: var(--ops-border-strong, #b0b0b0);
 }
 
 .grid {

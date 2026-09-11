@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Dialog } from '../ui/Dialog.jsx';
 import { Button } from '../ui/Button.jsx';
 import { Notice } from '../ui/Notice.jsx';
+import { Icon } from '../ui/Icon.jsx';
 import { useSession } from '../../hooks/useSession.jsx';
 import { pendingImports } from '../../lib/pendingImports.js';
 import { api } from '../../lib/api.js';
@@ -43,6 +44,7 @@ export function ImportDialog({
 
   const [step, setStep] = useState('upload'); // 'upload' | 'preview'
   const [file, setFile] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
   const [csvContent, setCsvContent] = useState('');
   const [idempotencyKey, setIdempotencyKey] = useState('');
 
@@ -65,6 +67,7 @@ export function ImportDialog({
     const pending = pendingImports.get(actorId, eventId);
     setStep(pending ? 'preview' : 'upload');
     setFile(null);
+    setIsDragging(false);
     setCsvContent(pending?.csv || '');
     setIdempotencyKey(pending?.key || '');
     setPreviewData(pending?.preview || null);
@@ -86,8 +89,7 @@ export function ImportDialog({
     URL.revokeObjectURL(url);
   };
 
-  const handleFileChange = (e) => {
-    const selected = e.target.files?.[0];
+  const processFile = (selected) => {
     if (!selected || uncertain) return;
     fileGenRef.current += 1;
     setCsvContent('');
@@ -117,6 +119,11 @@ export function ImportDialog({
       setPreviewError({ message: t(dict, 'imports.maxFileNotice') });
     };
     reader.readAsText(selected, 'UTF-8');
+  };
+
+  const handleFileChange = (e) => {
+    const selected = e.target.files?.[0];
+    processFile(selected);
   };
 
   const handleGeneratePreview = async () => {
@@ -198,8 +205,9 @@ export function ImportDialog({
 
             {/* Template Download Section */}
             <div className={styles.templateRow}>
-              <span className={styles.templateText}>
-                📄 {t(dict, 'imports.downloadTemplate')}:
+              <span className={styles.templateText} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Icon name="file" size="sm" />
+                <span>{t(dict, 'imports.downloadTemplate')}:</span>
               </span>
               <div className={styles.templateButtons}>
                 <Button
@@ -233,27 +241,38 @@ export function ImportDialog({
 
             {!file ? (
               <div
-                className={styles.dropzone}
+                className={`${styles.dropzone} ${isDragging ? styles.dropzoneDragging : ''}`}
                 onClick={() => fileInputRef.current?.click()}
+                onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                onDragLeave={() => setIsDragging(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setIsDragging(false);
+                  if (e.dataTransfer.files?.[0]) processFile(e.dataTransfer.files[0]);
+                }}
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && fileInputRef.current?.click()}
               >
-                <span style={{ fontSize: '32px' }} aria-hidden="true">
-                  📂
-                </span>
+                <div className={styles.dropzoneIcon}>
+                  <Icon name="upload" size="xl" />
+                </div>
                 <span className={styles.dropzoneText}>{t(dict, 'imports.dropCsv')}</span>
                 <span className={styles.dropzoneSubtext}>{t(dict, 'imports.maxFileNotice')}</span>
-                <Button variant="secondary" size="sm" type="button">
+                <Button variant="secondary" size="sm" type="button" leadingIcon="upload">
                   {t(dict, 'imports.chooseFile')}
                 </Button>
               </div>
             ) : (
               <div className={styles.selectedFileBar}>
-                <span>📄 {file.name} ({(file.size / 1024).toFixed(1)} KB)</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Icon name="file" size="sm" />
+                  <span>{file.name} ({(file.size / 1024).toFixed(1)} KB)</span>
+                </div>
                 <Button
                   variant="ghost"
                   size="sm"
+                  leadingIcon="close"
                   onClick={() => {
                     fileGenRef.current += 1;
                     setIsLoadingPreview(false);
@@ -263,7 +282,7 @@ export function ImportDialog({
                     setCsvContent('');
                   }}
                 >
-                  ✕ {lang === 'ar' ? 'إزالة' : 'Remove'}
+                  {lang === 'ar' ? 'إزالة' : 'Remove'}
                 </Button>
               </div>
             )}
@@ -278,9 +297,10 @@ export function ImportDialog({
                 onClick={handleGeneratePreview}
                 disabled={!file || !csvContent}
                 loading={isLoadingPreview}
+                leadingIcon="eye"
                 data-testid="preview-csv-btn"
               >
-                👁️ {lang === 'ar' ? 'معاينة الملف' : 'Preview Import'}
+                {lang === 'ar' ? 'معاينة الملف' : 'Preview Import'}
               </Button>
             </div>
           </>
@@ -327,7 +347,7 @@ export function ImportDialog({
             {/* List of row errors if any (F13: structured + legacy string tolerance) */}
             {(previewData?.errors?.length || 0) > 0 && (
               <div>
-                <span style={{ fontSize: '12px', fontWeight: '600', color: '#b42318' }}>
+                <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-error, #b42318)' }}>
                   {t(dict, 'imports.cannotCommitErrors')}
                 </span>
                 <div className={styles.issuesList} data-testid="import-errors-list">
@@ -350,13 +370,15 @@ export function ImportDialog({
             {/* Valid/invalid preview rows (F13: review records before commit) */}
             {(previewData?.rows?.length || 0) > 0 && (
               <div>
-                <span style={{ fontSize: '12px', fontWeight: '600' }}>
-                  {t(dict, 'imports.previewTitle')} ({previewData.rows.length})
-                </span>
+                <div className={styles.previewHeaderRow}>
+                  <span style={{ fontSize: '13px', fontWeight: '600' }}>
+                    {t(dict, 'imports.previewTitle')} ({previewData.rows.length})
+                  </span>
+                </div>
                 <div
                   className={styles.issuesList}
                   data-testid="import-preview-rows"
-                  style={{ maxHeight: '220px', overflowY: 'auto' }}
+                  style={{ maxHeight: '240px', overflowY: 'auto' }}
                 >
                   {previewData.rows.map((r, idx) => (
                     <div key={idx} className={`${styles.issueItem} ${r.valid ? '' : styles.issueError}`}>
@@ -365,11 +387,12 @@ export function ImportDialog({
                       {t(dict, 'guests.allowedCompanions')}: {r.data?.allowedCompanions ?? '—'}{' '}
                       {Array.isArray(r.data?.companionNames) ? r.data.companionNames.join('، ') : ''}
                       {r.data?.reference ? ` (${r.data.reference})` : ''}{' '}
-                      — {r.valid ? '✓' : '✗'}{' '}
+                      — <span style={{ display: 'inline-flex', verticalAlign: 'middle' }}>
+                        <Icon name={r.valid ? 'check' : 'close'} size="xs" style={{ color: r.valid ? 'var(--color-success, #087443)' : 'var(--color-error, #b42318)' }} />
+                      </span>{' '}
                       {(r.errors || []).map((e) => (typeof e === 'string' ? e : e?.message)).filter(Boolean).join('; ')}
                     </div>
                   ))}
-
                 </div>
               </div>
             )}
@@ -377,8 +400,9 @@ export function ImportDialog({
             {/* List of warnings if any (F13: structured + legacy tolerance) */}
             {(previewData?.warnings?.length || 0) > 0 && (
               <div>
-                <span style={{ fontSize: '12px', fontWeight: '600', color: '#b54708' }}>
-                  ⚠️ {t(dict, 'imports.warnings', { count: previewData.warnings.length })}:
+                <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-warning-text, #b54708)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Icon name="warning" size="sm" />
+                  <span>{t(dict, 'imports.warnings', { count: previewData.warnings.length })}:</span>
                 </span>
                 <div className={styles.issuesList}>
                   {previewData.warnings.map((warn, idx) => {
@@ -400,8 +424,9 @@ export function ImportDialog({
                 variant="ghost"
                 onClick={() => { setStep('upload'); setIdempotencyKey(''); }}
                 disabled={isCommitting || uncertain}
+                leadingIcon={lang === 'ar' ? 'arrow-right' : 'arrow-left'}
               >
-                ← {lang === 'ar' ? 'اختيار ملف آخر' : 'Back to upload'}
+                {lang === 'ar' ? 'اختيار ملف آخر' : 'Back to upload'}
               </Button>
 
               <Button

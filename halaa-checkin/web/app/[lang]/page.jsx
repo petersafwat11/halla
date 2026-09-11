@@ -31,12 +31,12 @@ export default async function LangPage({ params }) {
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <Image
-            src="/images/sidebar-logo.svg"
+            src="/images/logo.png"
             alt="Halaa Logo"
-            width={140}
-            height={32}
+            width={36}
+            height={36}
             priority
-            style={{ height: '32px', width: 'auto' }}
+            style={{ height: '36px', width: '36px', objectFit: 'contain' }}
           />
           <span
             style={{

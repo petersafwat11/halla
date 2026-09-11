@@ -1,0 +1,38 @@
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  vertical-align: middle;
+  color: currentColor;
+}
+
+.xs {
+  width: 12px;
+  height: 12px;
+}
+
+.sm {
+  width: 16px;
+  height: 16px;
+}
+
+.md {
+  width: 20px;
+  height: 20px;
+}
+
+.lg {
+  width: 24px;
+  height: 24px;
+}
+
+.xl {
+  width: 32px;
+  height: 32px;
+}
+
+/* Direction mirroring for directional icons in RTL */
+:global([dir="rtl"]) .mirrored {
+  transform: scaleX(-1);
+}

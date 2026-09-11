@@ -2,14 +2,24 @@
 
 import React from 'react';
 import { Notice } from '../ui/Notice.jsx';
+import { Skeleton } from '../ui/Skeleton.jsx';
+import { Icon } from '../ui/Icon.jsx';
 import { getDictionary, t, formatRiyadhDate } from '../../lib/locale.js';
 import styles from './StatsStrip.module.css';
 
 /**
  * Event-wide statistics strip with real-time polling indicator.
- * Displays 4 summary cards: Invitations, Expected People, Admitted People, and Pending/No-show.
+ * Displays 4 summary cells: Invitations, Expected People, Admitted People, and Waiting/No-show.
+ * Responsive: Desktop 4 columns with dividers, Mobile 2x2 grid with 72-88px cells.
  */
-export function StatsStrip({ stats, isFetching = false, statsError = null, onRetry = null, eventStatus = 'live', lang = 'ar' }) {
+export function StatsStrip({
+  stats,
+  isFetching = false,
+  statsError = null,
+  onRetry = null,
+  eventStatus = 'live',
+  lang = 'ar',
+}) {
   const dict = getDictionary(lang);
   const isClosed = eventStatus === 'closed';
   const hasData = !!stats && (stats.totalInvitations > 0 || !!stats.asOf);
@@ -23,17 +33,31 @@ export function StatsStrip({ stats, isFetching = false, statsError = null, onRet
     return `${num.toFixed(1)}%`;
   };
 
-  if (!hasData && !statsError) return <section className={styles.strip} role="status">{t(dict, 'common.loading')}</section>;
+  const attendancePercent = stats?.attendanceRate || 0;
 
   // Never render zeros as data when the request failed and we have no snapshot.
   if (statsError && !hasData) {
     return (
-      <section className={styles.strip} aria-label={t(dict, 'stats.title') || 'Statistics'} role="alert" data-testid="stats-load-error">
+      <section
+        className={styles.strip}
+        aria-label={t(dict, 'stats.title') || 'Statistics'}
+        role="alert"
+        data-testid="stats-load-error"
+      >
         <div className={styles.headerRow}>
-          <span>{t(dict, `errors.${statsError.code}`) || statsError.message || 'Failed to load statistics'}</span>
+          <span>
+            {t(dict, `errors.${statsError.code}`) ||
+              statsError.message ||
+              'Failed to load statistics'}
+          </span>
           {onRetry && (
-            <button type="button" className={styles.rateBadge} onClick={() => onRetry?.()} data-testid="stats-retry-btn">
-              {t(dict, 'common.retry') || (lang === 'ar' ? 'إعادة المحاولة' : 'Retry')}
+            <button
+              type="button"
+              className={styles.rateBadge}
+              onClick={() => onRetry?.()}
+              data-testid="stats-retry-btn"
+            >
+              {t(dict, 'common.retry')}
             </button>
           )}
         </div>
@@ -43,7 +67,14 @@ export function StatsStrip({ stats, isFetching = false, statsError = null, onRet
 
   return (
     <section className={styles.strip} aria-label={t(dict, 'stats.title') || 'Statistics'}>
-      {statsError && <Notice variant="warning">{t(dict, 'gate.connectionStale')} <button onClick={onRetry}>{t(dict, 'common.retry')}</button></Notice>}
+      {statsError && (
+        <Notice variant="warning">
+          {t(dict, 'gate.connectionStale')}{' '}
+          <button onClick={onRetry}>{t(dict, 'common.retry')}</button>
+        </Notice>
+      )}
+
+      {/* Shared header line: Live dot, updated time, attendance progress bar */}
       <div className={styles.headerRow}>
         <div className={styles.asOfText}>
           <span
@@ -56,77 +87,117 @@ export function StatsStrip({ stats, isFetching = false, statsError = null, onRet
             ) : stats?.asOf ? (
               <span>
                 {lang === 'ar' ? 'تحديث: ' : 'Updated: '}
-                {formatRiyadhDate(stats.asOf, lang, { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                <bdi>
+                  {formatRiyadhDate(stats.asOf, lang, {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                  })}
+                </bdi>
               </span>
-            ) : null}
+            ) : (
+              <span>{t(dict, 'stats.title')}</span>
+            )}
           </span>
         </div>
 
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div className={styles.progressWrapper}>
           <span className={styles.rateBadge}>
-            {t(dict, 'stats.attendanceRate')}: {formatRate(stats?.attendanceRate)}
+            {t(dict, 'stats.attendanceRate')}: {formatRate(attendancePercent)}
           </span>
-          <span className={`${styles.rateBadge} ${styles.rateBadgeSuccess}`}>
-            {t(dict, 'stats.headCountRate')}: {formatRate(stats?.headCountRate)}
-          </span>
+          <div
+            className={styles.progressBar}
+            role="progressbar"
+            aria-valuenow={Math.min(100, Math.max(0, attendancePercent))}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={t(dict, 'stats.attendanceRate')}
+          >
+            <div
+              className={styles.progressFill}
+              style={{ width: `${Math.min(100, Math.max(0, attendancePercent))}%` }}
+            />
+          </div>
         </div>
       </div>
 
       <div className={styles.cardsGrid}>
-        {/* Card 1: Total Invitations */}
+        {/* Cell 1: Total Invitations */}
         <div className={styles.card} data-testid="stat-total-invitations">
           <div className={styles.cardHeader}>
             <span>{t(dict, 'stats.totalInvitations')}</span>
-            <span>✉️</span>
+            <span className={styles.cardIcon}>
+              <Icon name="file-text" size="xs" />
+            </span>
           </div>
-          <div className={styles.cardValue}>{formatNumber(stats?.totalInvitations)}</div>
+          <div className={styles.cardValue}>
+            {hasData ? formatNumber(stats?.totalInvitations) : <Skeleton width="48px" height="24px" />}
+          </div>
           <div className={styles.cardSubtext}>
             <span>{t(dict, 'stats.attendanceRate')}:</span>
             <strong>{formatRate(stats?.attendanceRate)}</strong>
           </div>
         </div>
 
-        {/* Card 2: Expected People */}
+        {/* Cell 2: Expected People */}
         <div className={styles.card} data-testid="stat-total-expected">
           <div className={styles.cardHeader}>
             <span>{t(dict, 'stats.totalExpected')}</span>
-            <span>👥</span>
+            <span className={styles.cardIcon}>
+              <Icon name="users" size="xs" />
+            </span>
           </div>
-          <div className={styles.cardValue}>{formatNumber(stats?.totalExpected)}</div>
+          <div className={styles.cardValue}>
+            {hasData ? formatNumber(stats?.totalExpected) : <Skeleton width="48px" height="24px" />}
+          </div>
           <div className={styles.cardSubtext}>
             <span>{t(dict, 'stats.headCountRate')}:</span>
             <strong>{formatRate(stats?.headCountRate)}</strong>
           </div>
         </div>
 
-        {/* Card 3: Admitted People / Attendees */}
+        {/* Cell 3: Admitted People */}
         <div className={styles.card} data-testid="stat-total-attendees">
           <div className={styles.cardHeader}>
             <span>{t(dict, 'stats.admittedPeople')}</span>
-            <span>✅</span>
+            <span className={styles.cardIcon}>
+              <Icon name="check" size="xs" />
+            </span>
           </div>
-          <div className={styles.cardValue}>{formatNumber(stats?.totalAttendees)}</div>
+          <div className={styles.cardValue}>
+            {hasData ? formatNumber(stats?.totalAttendees) : <Skeleton width="48px" height="24px" />}
+          </div>
           <div className={styles.cardSubtext}>
-            <span>{formatNumber(stats?.admittedInvitations)}</span>
-            <span>{t(dict, 'stats.admittedInvitations')}</span>
+            <span>
+              {formatNumber(stats?.admittedInvitations)} {t(dict, 'stats.admittedInvitations')}
+            </span>
           </div>
         </div>
 
-        {/* Card 4: Pending Invitations or Did Not Attend (if closed) */}
+        {/* Cell 4: Waiting / Pending Invitations */}
         <div className={styles.card} data-testid="stat-pending-invitations">
           <div className={styles.cardHeader}>
-            <span>{isClosed ? t(dict, 'stats.didNotAttend') : t(dict, 'stats.pendingInvitations')}</span>
-            <span>⏳</span>
+            <span>
+              {isClosed ? t(dict, 'stats.didNotAttend') : t(dict, 'stats.pendingInvitations')}
+            </span>
+            <span className={styles.cardIcon}>
+              <Icon name="clock" size="xs" />
+            </span>
           </div>
           <div className={styles.cardValue}>
-            {formatNumber(isClosed ? stats?.didNotAttendInvitations : stats?.pendingInvitations)}
+            {hasData ? (
+              formatNumber(isClosed ? stats?.didNotAttendInvitations : stats?.pendingInvitations)
+            ) : (
+              <Skeleton width="48px" height="24px" />
+            )}
           </div>
           <div className={styles.cardSubtext}>
             {isClosed ? (
               <span>{t(dict, 'events.statusClosed')}</span>
             ) : (
               <span>
-                {formatNumber(stats?.totalInvitations - (stats?.admittedInvitations || 0))} {t(dict, 'status.pending')}
+                {formatNumber(stats?.totalInvitations - (stats?.admittedInvitations || 0))}{' '}
+                {t(dict, 'status.pending')}
               </span>
             )}
           </div>

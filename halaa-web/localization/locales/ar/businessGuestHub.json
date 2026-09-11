@@ -47,5 +47,6 @@
   "guestCount_few": "{{count}} ضيوف",
   "guestCount_many": "{{count}} ضيفًا",
   "guestCount_other": "{{count}} ضيف",
-  "previewGuest": "ضيف تجريبي"
+  "previewGuest": "ضيف تجريبي",
+  "invitationImageAlt": "تصميم دعوة {{title}}"
 }

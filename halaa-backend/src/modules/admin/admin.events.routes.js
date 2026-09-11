@@ -1,4 +1,4 @@
-const { uploadEventImages } = require('../events/eventCover');
+const { uploadEventImages } = require('../events/eventImages');
 const express = require('express');
 const router = express.Router();
 const adminController = require('./admin.controller');

@@ -15,6 +15,7 @@ export function EventLifecycleDialog({
   isOpen,
   onClose,
   event,
+  stats = null,
   targetStatus, // 'live' | 'closed'
   onSubmit,
   isPending = false,
@@ -72,6 +73,8 @@ export function EventLifecycleDialog({
       onClose={onClose}
       title={title}
       maxWidth="480px"
+      destructive={isClose}
+      closeOnBackdropClick={!isPending}
       closeAriaLabel={t(dict, 'dialog.close')}
     >
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -86,6 +89,47 @@ export function EventLifecycleDialog({
           variant={isClose ? 'warning' : 'info'}
           message={isClose ? t(dict, 'events.closeEventWarning') : t(dict, 'events.reopenEventWarning')}
         />
+
+        {isClose && stats && (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: '8px',
+              padding: '12px',
+              backgroundColor: 'var(--ops-canvas, #f8f5f1)',
+              borderRadius: '8px',
+              border: '1px solid var(--ops-border, #e4ddd6)',
+              textAlign: 'center',
+              fontSize: '13px',
+            }}
+          >
+            <div>
+              <div style={{ color: 'var(--ops-muted, #68615b)', fontSize: '11px', fontWeight: 600 }}>
+                {t(dict, 'stats.totalInvitations')}
+              </div>
+              <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--ops-ink, #2c2926)' }}>
+                {stats.totalInvitations ?? 0}
+              </div>
+            </div>
+            <div>
+              <div style={{ color: 'var(--ops-muted, #68615b)', fontSize: '11px', fontWeight: 600 }}>
+                {t(dict, 'stats.admittedPeople')}
+              </div>
+              <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-success, #2a8c5b)' }}>
+                {stats.totalAttendees ?? stats.admittedInvitations ?? 0}
+              </div>
+            </div>
+            <div>
+              <div style={{ color: 'var(--ops-muted, #68615b)', fontSize: '11px', fontWeight: 600 }}>
+                {t(dict, 'stats.pendingInvitations')}
+              </div>
+              <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--ops-brand-strong, #75502f)' }}>
+                {stats.pendingInvitations ?? 0}
+              </div>
+            </div>
+          </div>
+        )}
 
         {isReopen && (
           <Field

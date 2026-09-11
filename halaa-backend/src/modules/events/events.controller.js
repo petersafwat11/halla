@@ -176,7 +176,6 @@ exports.createEvent = catchAsync(async (req, res) => {
     userRole: req.user.role,
     subscription: req.subscription,
     file: req.file,
-    coverFile: req.coverFile,
     requestId: req.requestId || null,
   };
 

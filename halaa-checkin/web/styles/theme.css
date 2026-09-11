@@ -4,6 +4,27 @@
  */
 
 :root {
+  /* ── Halaa Operations Palette (07-UI-UX-RECOVERY-PLAN §3.1) ── */
+  --ops-canvas: #F8F5F1;
+  --ops-surface: #FFFFFF;
+  --ops-ink: #2C2926;
+  --ops-muted: #68615B;
+  --ops-brand: #A87545;
+  --ops-brand-strong: #75502F;
+  --ops-border: #E4DDD6;
+
+  /* ── Geometry & Radii (07-UI-UX-RECOVERY-PLAN §3.1) ── */
+  --radius-default: 12px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  /* ── Consolidated Aliases (07-UI-UX-RECOVERY-PLAN §8) ── */
+  --font-cairo: "Cairo", sans-serif;
+  --color-success: var(--color-success-500, #2a8c5b);
+  --color-error: var(--color-error-500, #c0392b);
+  --color-warning: var(--color-warning-500, #d38200);
+
   /* High contrast solid primary button background for AAA compliance on white text */
   --btn-primary-contrast-bg: var(--color-primary-800, #6b4e33);
   --btn-primary-contrast-hover: var(--color-primary-900, #513c27);

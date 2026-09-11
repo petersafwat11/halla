@@ -26,11 +26,56 @@
   color: var(--color-warning-800, #8a5a00);
 }
 
+.comparisonGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 480px) {
+  .comparisonGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.comparisonCard {
+  background: var(--ops-canvas, #f8f5f1);
+  border: 1px solid var(--ops-border, #e4ddd6);
+  border-radius: var(--radius-sm, 8px);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.comparisonCardNew {
+  background: var(--color-primary-100, #f5ece4);
+  border-color: var(--ops-brand, #a87545);
+}
+
+.comparisonLabel {
+  font-size: 12px;
+  color: var(--ops-muted, #68615b);
+  font-weight: 500;
+}
+
+.comparisonValue {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ops-ink, #2c2926);
+  font-variant-numeric: tabular-nums;
+}
+
+.comparisonMeta {
+  font-size: 12px;
+  color: var(--ops-muted, #68615b);
+}
+
 .footerActions {
   display: flex;
   justify-content: flex-end;
   gap: var(--space-12, 12px);
   margin-top: var(--space-8, 8px);
   padding-top: var(--space-12, 12px);
-  border-top: 1px solid var(--form-border, #dfdfdf);
+  border-top: 1px solid var(--ops-border, #e4ddd6);
 }

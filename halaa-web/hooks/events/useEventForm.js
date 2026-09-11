@@ -183,7 +183,6 @@ export const buildEventPayload = (data = {}) => ({
   },
   invitationType: data.invitationType || DEFAULT_INVITATION_TYPE,
   templateImage: data.templateImage,
-  coverImage: data.coverImage,
   launchSettings: {
     scheduledDate: data.scheduleDate || undefined,
     scheduledTime: data.scheduleTime || undefined,

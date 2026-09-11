@@ -24,10 +24,19 @@
 **/*.orig
 
 # Logs
+*.log
 **/npm-debug.log*
 **/yarn-debug.log*
 **/yarn-error.log*
 **/.pnpm-debug.log*
+
+# Local runtime & test artifacts
+data/
+qa-evidence/
+halaa-checkin/ui-ux-audit-screenshots/
+halaa-backend/public/uploads/temp/
+halaa-backend/public/uploads/events/
+halaa-backend/public/uploads/templates/*/
 
 # Cache
 **/.cache/

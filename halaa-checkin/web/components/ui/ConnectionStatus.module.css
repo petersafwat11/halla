@@ -1,0 +1,65 @@
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm, 8px);
+  font-family: var(--font-cairo, "Cairo", sans-serif);
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.online {
+  background-color: var(--color-success-50, #eaf4ef);
+  color: var(--color-success-700, #1e6341);
+  border-color: var(--color-success-200, #9dcab4);
+}
+
+.offline {
+  background-color: var(--color-error-50, #f9ebea);
+  color: var(--color-error-700, #88281f);
+  border-color: var(--color-error-200, #e2a49d);
+}
+
+.pending {
+  background-color: var(--color-warning-50, #fbf3e6);
+  color: var(--color-warning-800, #744800);
+  border-color: var(--color-warning-200, #ebc68a);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.online .dot {
+  background-color: var(--color-success-500, #2a8c5b);
+}
+
+.offline .dot {
+  background-color: var(--color-error-500, #c0392b);
+}
+
+.pending .dot {
+  background-color: var(--color-warning-500, #d38200);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.85);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

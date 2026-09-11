@@ -9,6 +9,7 @@
     "web"
   ],
   "scripts": {
+    "demo": "node scripts/demo-runner.mjs",
     "dev": "node scripts/dev.mjs",
     "build": "npm --prefix contracts run build && npm --prefix web run build",
     "lint": "eslint .",

@@ -1,4 +1,4 @@
-const { uploadEventImages } = require('../events/eventCover');
+const { uploadEventImages } = require('../events/eventImages');
 /**
  * Events Routes
  * Route definitions for event management module

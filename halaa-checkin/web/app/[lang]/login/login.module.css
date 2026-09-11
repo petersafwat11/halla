@@ -14,6 +14,33 @@
   inset-inline-end: 24px;
 }
 
+.langToggleLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: var(--radius-sm, 8px);
+  border: 1px solid var(--ops-border, #E4DDD6);
+  background-color: var(--ops-surface, #ffffff);
+  color: var(--ops-ink, #2C2926);
+  font-family: var(--font-cairo, "Cairo", sans-serif);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.15s ease-in-out;
+}
+
+.langToggleLink:hover {
+  background-color: var(--color-natural-150, #f7f7f7);
+  border-color: var(--color-natural-350, #a0a0a0);
+}
+
+.langToggleLink:focus-visible {
+  outline: 2px solid var(--ops-brand, #A87545);
+  outline-offset: 2px;
+}
+
 .card {
   width: 100%;
   max-width: 440px;
@@ -36,8 +63,9 @@
 }
 
 .logo {
-  height: 36px;
-  width: auto;
+  height: 64px;
+  width: 64px;
+  object-fit: contain;
 }
 
 .title {

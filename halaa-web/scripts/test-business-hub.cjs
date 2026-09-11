@@ -68,7 +68,7 @@ const realisticLogoSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" hei
           date: '2026-10-20',
           time: '18:30',
           location: { address: lang === 'ar' ? 'مركز الملك عبدالله المالي (KAFD)، الرياض' : 'King Abdullah Financial District (KAFD), Riyadh' },
-          branding: { businessName: lang === 'ar' ? 'شركة الأفق للاستثمار' : 'Horizon Investment Group', coverUrl: '/qa-cover.svg', logoUrl: '/qa-logo.svg' },
+          branding: { businessName: lang === 'ar' ? 'شركة الأفق للاستثمار' : 'Horizon Investment Group', logoUrl: '/qa-logo.svg' },
           actions: { startAt: '2026-10-20T15:30:00Z', directionsUrl: 'https://www.google.com/maps/dir/?api=1&destination=24.7,46.6', calendarIcs: 'BEGIN:VCALENDAR\r\nEND:VCALENDAR\r\n', googleCalendarUrl: 'https://calendar.google.com/calendar/render?action=TEMPLATE', ride: { url: 'https://m.uber.com/ul/', fallbackUrl: 'https://www.google.com/maps/dir/?api=1&destination=24.7,46.6' } }
         };
         const realisticMsg = lang === 'ar'

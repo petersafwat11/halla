@@ -172,3 +172,17 @@ test('test sends, initial sends, resends, reminders and SMS all use body links w
     }
   }
 });
+
+
+test('guest DTO displays the final Step 3 image instead of the legacy cover', async () => {
+  const { eventId } = await fixture();
+  await Event.collection.updateOne({ _id: eventId }, { $set: {
+    visualTemplate: { bakedImagePath: 'https://example.com/final-invitation.png' },
+    templateImage: 'https://example.com/old-invitation.png',
+    branding: { businessName: 'Demo business', coverImageKey: 'https://example.com/cover.png' },
+  } });
+  const result = await service.getGuestByCode('private-code');
+  assert.equal(result.event.invitationImageUrl, 'https://example.com/final-invitation.png');
+  assert.equal(result.event.branding.businessName, 'Demo business');
+  assert.equal(result.event.branding.coverUrl, undefined);
+});

@@ -1,0 +1,88 @@
+.container {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--color-natural-200, #f2f2f2);
+  border: 1px solid var(--ops-border, #E4DDD6);
+  border-radius: var(--radius-sm, 8px);
+  padding: 3px;
+  gap: 3px;
+  box-sizing: border-box;
+}
+
+.fullWidth {
+  display: flex;
+  width: 100%;
+}
+
+.option {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: 1;
+  min-height: 40px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--ops-muted, #68615B);
+  font-family: var(--font-cairo, "Cairo", sans-serif);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  white-space: nowrap;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.option:focus-visible {
+  outline: 2px solid var(--ops-brand, #A87545);
+  outline-offset: 1px;
+}
+
+.option:hover:not(:disabled):not(.selected) {
+  background-color: var(--color-natural-150, #f7f7f7);
+  color: var(--ops-ink, #2C2926);
+}
+
+.selected {
+  background-color: var(--ops-surface, #ffffff);
+  color: var(--ops-ink, #2C2926);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.disabled,
+.option:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.countBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  background-color: var(--color-natural-250, #dfdfdf);
+  color: var(--ops-ink, #2C2926);
+  font-variant-numeric: tabular-nums;
+}
+
+.selected .countBadge {
+  background-color: var(--color-primary-100, #f5ece4);
+  color: var(--ops-brand-strong, #75502F);
+}
+
+@media (max-width: 640px) {
+  .option {
+    min-height: 44px;
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+}

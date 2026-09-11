@@ -1,15 +1,18 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { useEvent } from '../../hooks/useEvent.jsx';
 import { useSession } from '../../hooks/useSession.jsx';
 import { StatusBadge } from '../ui/StatusBadge.jsx';
-import { getDictionary, t } from '../../lib/locale.js';
+import { Icon } from '../ui/Icon.jsx';
+import { getDictionary, t, formatRiyadhDate } from '../../lib/locale.js';
 import styles from './EventSelector.module.css';
 
 /**
  * EventSelector allows administrators and receptionists to choose their active event.
+ * Features clamp width, full event name in listbox, optional search when > 8 events,
+ * bidi-safe content with dir="auto" and bdi, and mobile sheet mode.
  */
 export function EventSelector() {
   const params = useParams();
@@ -19,8 +22,10 @@ export function EventSelector() {
   const { events, selectedEvent, selectedEventId, selectEvent, isLoadingEvents } = useEvent();
   const [isOpen, setIsOpen] = useState(false);
   const [focusIndex, setFocusIndex] = useState(-1);
+  const [searchQuery, setSearchQuery] = useState('');
   const containerRef = useRef(null);
   const buttonRef = useRef(null);
+  const searchInputRef = useRef(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -28,6 +33,7 @@ export function EventSelector() {
       if (containerRef.current && !containerRef.current.contains(event.target)) {
         setIsOpen(false);
         setFocusIndex(-1);
+        setSearchQuery('');
       }
     }
     if (isOpen) {
@@ -38,12 +44,24 @@ export function EventSelector() {
     };
   }, [isOpen]);
 
+  const filteredEvents = useMemo(() => {
+    if (!events) return [];
+    if (!searchQuery.trim()) return events;
+    const q = searchQuery.toLowerCase();
+    return events.filter(
+      (ev) =>
+        ev.name?.toLowerCase().includes(q) ||
+        ev.venue?.toLowerCase().includes(q)
+    );
+  }, [events, searchQuery]);
+
   // Keyboard: Escape closes + returns focus; arrows move between options
   const handleButtonKeyDown = (e) => {
     if (e.key === 'Escape' && isOpen) {
       e.stopPropagation();
       setIsOpen(false);
       setFocusIndex(-1);
+      setSearchQuery('');
     }
     if ((e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') && !isOpen) {
       e.preventDefault();
@@ -51,12 +69,14 @@ export function EventSelector() {
       setFocusIndex(0);
     }
   };
+
   const handleListKeyDown = (e) => {
-    const count = events?.length || 0;
+    const count = filteredEvents.length;
     if (e.key === 'Escape') {
       e.stopPropagation();
       setIsOpen(false);
       setFocusIndex(-1);
+      setSearchQuery('');
       buttonRef.current?.focus();
     } else if (e.key === 'ArrowDown') {
       e.preventDefault();
@@ -72,11 +92,21 @@ export function EventSelector() {
       setFocusIndex(count - 1);
     }
   };
+
   useEffect(() => {
     if (isOpen && focusIndex >= 0) {
       containerRef.current?.querySelector(`[data-event-index="${focusIndex}"]`)?.focus();
     }
   }, [focusIndex, isOpen]);
+
+  // Auto-focus search input if search is enabled
+  useEffect(() => {
+    if (isOpen && events && events.length > 8) {
+      setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 50);
+    }
+  }, [isOpen, events]);
 
   if (isLoadingEvents) {
     return (
@@ -89,6 +119,7 @@ export function EventSelector() {
   }
 
   const hasEvents = events && events.length > 0;
+  const showSearch = events && events.length > 8;
 
   return (
     <div className={styles.container} ref={containerRef}>
@@ -96,42 +127,57 @@ export function EventSelector() {
         ref={buttonRef}
         type="button"
         className={styles.selectorButton}
-        onClick={() => { setIsOpen(!isOpen); setFocusIndex(-1); }}
+        onClick={() => {
+          setIsOpen(!isOpen);
+          setFocusIndex(-1);
+          setSearchQuery('');
+        }}
         onKeyDown={handleButtonKeyDown}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         aria-label={t(dict, 'events.selectorLabel')}
       >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-          <line x1="16" y1="2" x2="16" y2="6" />
-          <line x1="8" y1="2" x2="8" y2="6" />
-          <line x1="3" y1="10" x2="21" y2="10" />
-        </svg>
+        <span className={styles.eventIcon} aria-hidden="true">
+          <Icon name="calendar" size="sm" />
+        </span>
 
-        <span className={styles.eventName}>
+        <span className={styles.eventName} dir="auto">
           {selectedEvent ? selectedEvent.name : t(dict, 'events.selectorPlaceholder')}
         </span>
 
         {selectedEvent && (
-          <StatusBadge
-            status={selectedEvent.status}
-            label={t(dict, `status.${selectedEvent.status}`)}
-            size="sm"
-          />
+          <span className={styles.badgeWrapper}>
+            <StatusBadge
+              status={selectedEvent.status}
+              label={t(dict, `status.${selectedEvent.status}`)}
+              size="sm"
+            />
+          </span>
         )}
 
-        <span className={`${styles.chevron} ${isOpen ? styles.chevronOpen : ''}`}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
+        <span className={`${styles.chevron} ${isOpen ? styles.chevronOpen : ''}`} aria-hidden="true">
+          <Icon name="chevron-down" size="xs" />
         </span>
       </button>
 
       {isOpen && (
         <div className={styles.dropdown} role="listbox" onKeyDown={handleListKeyDown}>
           <div className={styles.dropdownHeader}>
-            {t(dict, 'events.selectorLabel')}
+            <span className={styles.dropdownTitle}>{t(dict, 'events.selectorLabel')}</span>
+            {showSearch && (
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setFocusIndex(0);
+                }}
+                placeholder={t(dict, 'common.search')}
+                className={styles.searchInput}
+                aria-label={t(dict, 'common.search')}
+              />
+            )}
           </div>
 
           {!hasEvents ? (
@@ -140,8 +186,10 @@ export function EventSelector() {
                 ? t(dict, 'events.noEventsAdmin')
                 : t(dict, 'events.noEventsReception')}
             </div>
+          ) : filteredEvents.length === 0 ? (
+            <div className={styles.emptyState}>{t(dict, 'guests.noResults')}</div>
           ) : (
-            events.map((event, idx) => {
+            filteredEvents.map((event, idx) => {
               const isSelected = event.id === selectedEventId;
               return (
                 <button
@@ -156,12 +204,23 @@ export function EventSelector() {
                     selectEvent(event.id);
                     setIsOpen(false);
                     setFocusIndex(-1);
+                    setSearchQuery('');
                     buttonRef.current?.focus();
                   }}
                 >
                   <div className={styles.itemInfo}>
-                    <span className={styles.itemName}>{event.name}</span>
-                    <span className={styles.itemVenue}>{event.venue}</span>
+                    <span className={styles.itemName} dir="auto">
+                      {event.name}
+                    </span>
+                    <span className={styles.itemVenue} dir="auto">
+                      {event.venue}
+                      {event.startsAt && (
+                        <>
+                          {' • '}
+                          <bdi>{formatRiyadhDate(event.startsAt, lang)}</bdi>
+                        </>
+                      )}
+                    </span>
                   </div>
                   <StatusBadge
                     status={event.status}

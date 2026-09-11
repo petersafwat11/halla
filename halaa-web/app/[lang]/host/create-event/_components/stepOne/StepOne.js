@@ -1,5 +1,5 @@
 "use client";
-import BusinessCoverInput from "@/components/events/BusinessCoverInput";
+import BusinessLogoNotice from "@/components/events/BusinessLogoNotice";
 import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import styles from "./stepOne.module.css";
@@ -42,7 +42,7 @@ const StepOne = ({ constraints, owner } = {}) => {
 
   return (
     <div className={styles.step_one}>
-      {!constraints && <BusinessCoverInput owner={owner} />}
+      {!constraints && <BusinessLogoNotice owner={owner} />}
       <div className={styles.form_container}>
         {/* First Row: Event Type and Event Name */}
         <div className={styles.form_row}>

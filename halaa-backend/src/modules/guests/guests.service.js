@@ -1,3 +1,4 @@
+const { eventInvitationImage } = require('@halaa/shared/utils/eventInvitationImage.cjs');
 const { isOpen, businessPass, resolveInvitationDelivery } = require('./businessGuestPolicy');
 /**
  * Guests Service
@@ -97,7 +98,7 @@ class GuestsService {
           throw new Error('invalid preview token');
         }
         const event = await Event.findById(decoded.eventId)
-          .select('eventDetails status host branding invitationDeliveryMode invitationType guestReplies')
+          .select('eventDetails status host branding visualTemplate templateImage invitationDeliveryMode invitationType guestReplies')
           .populate('host', 'name accountType');
         if (!event) throw new Error('preview event not found');
         return {
@@ -120,7 +121,7 @@ class GuestsService {
       deleted: { $ne: true },
     }).populate({
       path: 'event',
-      select: 'eventDetails status host branding invitationDeliveryMode invitationType guestReplies',
+      select: 'eventDetails status host branding visualTemplate templateImage invitationDeliveryMode invitationType guestReplies',
       populate: { path: 'host', select: 'name accountType' },
     });
 
@@ -862,12 +863,12 @@ class GuestsService {
       branding = {
         logoUrl: b.logoKey ? await signStoredImage(b.logoKey) : null,
         businessName: b.businessName || null,
-        coverUrl: b.coverImageKey ? await signStoredImage(b.coverImageKey) : null,
       };
     }
 
     return {
       id: event._id,
+      invitationImageUrl: eventInvitationImage(event) ? await signStoredImage(eventInvitationImage(event)) : null,
       title: event.eventDetails?.title,
       date: event.eventDetails?.date,
       time: event.eventDetails?.time,

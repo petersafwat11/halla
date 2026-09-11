@@ -166,7 +166,6 @@ export default function AdminCreateEvent() {
     try {
       const payload = buildEventPayload(formData);
       const fd = new FormData();
-      if (formData.coverImage instanceof File) fd.append("coverImage", formData.coverImage);
       fd.append("eventDetails", JSON.stringify(payload.eventDetails));
       fd.append("guestList", JSON.stringify(payload.guestList));
       fd.append("staffList", JSON.stringify(payload.staffList));

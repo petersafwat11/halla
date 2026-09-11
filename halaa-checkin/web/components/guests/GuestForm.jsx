@@ -5,6 +5,7 @@ import { Dialog } from '../ui/Dialog.jsx';
 import { Field } from '../ui/Field.jsx';
 import { Button } from '../ui/Button.jsx';
 import { Notice } from '../ui/Notice.jsx';
+import { Icon } from '../ui/Icon.jsx';
 import { getDictionary, t } from '../../lib/locale.js';
 import styles from './GuestForm.module.css';
 
@@ -172,70 +173,126 @@ export function GuestForm({
             />
             {isConflict && onReload && (
               <div style={{ marginTop: '8px' }}>
-                <Button variant="secondary" size="sm" onClick={onReload}>
-                  🔄 {lang === 'ar' ? 'إعادة تحميل البيانات' : 'Reload data'}
+                <Button variant="secondary" size="sm" leadingIcon="refresh" onClick={onReload}>
+                  {lang === 'ar' ? 'إعادة تحميل البيانات' : 'Reload data'}
                 </Button>
               </div>
             )}
           </div>
         )}
 
-        <Field
-          label={t(dict, 'guests.guestName')}
-          required
-          name="guestName"
-          value={name}
-          onChange={(e) => {
-            setName(e.target.value);
-            if (fieldErrors.name) setFieldErrors((p) => ({ ...p, name: undefined }));
-          }}
-          placeholder={t(dict, 'guests.guestNamePlaceholder')}
-          error={fieldErrors.name}
-          disabled={isPending || isAdmitted || isClosed}
-          data-testid="guest-name-input"
-        />
+        {isAdmitted && guest?.checkIn && (
+          <div className={styles.admissionSummary}>
+            <Icon name="check-circle" size="sm" />
+            <span>
+              {t(dict, 'gate.alreadyAdmittedTitle')} — {guest.checkIn.actualPartySize || (1 + (guest.checkIn.actualCompanions || 0))} {lang === 'ar' ? 'أشخاص' : 'people'}
+            </span>
+          </div>
+        )}
 
-        <div className={styles.row}>
+        <div className={styles.formGrid}>
           <Field
-            label={t(dict, 'guests.reference')}
-            name="reference"
-            value={reference}
+            label={t(dict, 'guests.guestName')}
+            required
+            name="guestName"
+            value={name}
             onChange={(e) => {
-              setReference(e.target.value);
-              if (fieldErrors.reference) setFieldErrors((p) => ({ ...p, reference: undefined }));
+              setName(e.target.value);
+              if (fieldErrors.name) setFieldErrors((p) => ({ ...p, name: undefined }));
             }}
-            placeholder={t(dict, 'guests.referencePlaceholder')}
-            error={fieldErrors.reference}
+            placeholder={t(dict, 'guests.guestNamePlaceholder')}
+            error={fieldErrors.name}
             disabled={isPending || isAdmitted || isClosed}
-            data-testid="guest-reference-input"
+            data-testid="guest-name-input"
           />
 
-          <Field
-            label={t(dict, 'guests.allowedCompanions')}
-            type="number"
-            min="0"
-            max="20"
-            name="allowedCompanions"
-            value={allowedCompanions}
-            onChange={(e) => {
-              setAllowedCompanions(e.target.value);
-              if (fieldErrors.allowedCompanions) {
-                setFieldErrors((p) => ({ ...p, allowedCompanions: undefined }));
-              }
-            }}
-            error={fieldErrors.allowedCompanions}
-            disabled={isPending || isAdmitted || isClosed}
-            data-testid="guest-companions-input"
-          />
+          <div className={styles.referenceGroup}>
+            <Field
+              label={t(dict, 'guests.reference')}
+              name="reference"
+              value={reference}
+              onChange={(e) => {
+                setReference(e.target.value);
+                if (fieldErrors.reference) setFieldErrors((p) => ({ ...p, reference: undefined }));
+              }}
+              placeholder={t(dict, 'guests.referencePlaceholder')}
+              error={fieldErrors.reference}
+              disabled={isPending || isAdmitted || isClosed}
+              data-testid="guest-reference-input"
+            />
+            <label className={styles.vipToggle}>
+              <input
+                type="checkbox"
+                checked={reference.trim().toUpperCase().startsWith('VIP')}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    if (!reference.trim().toUpperCase().startsWith('VIP')) {
+                      setReference(reference.trim() ? `VIP-${reference.trim()}` : 'VIP-');
+                    }
+                  } else {
+                    setReference(reference.replace(/^VIP-?/i, ''));
+                  }
+                }}
+                disabled={isPending || isAdmitted || isClosed}
+                className={styles.vipCheckbox}
+              />
+              <Icon name="vip" size="sm" className={styles.vipIcon} />
+              <span>{lang === 'ar' ? 'كبار الشخصيات (VIP)' : 'VIP Guest'}</span>
+            </label>
+          </div>
         </div>
 
-        <div className={styles.helperBox}>
-          <span aria-hidden="true">💡</span>
-          <span>
-            {t(dict, 'guests.companionsHelper', {
-              count: 1 + (parseInt(allowedCompanions, 10) || 0),
-            })}
-          </span>
+        <div className={styles.companionsSection}>
+          <label className={styles.label}>{t(dict, 'guests.allowedCompanions')}</label>
+          <div className={styles.stepperRow}>
+            <div className={styles.stepper}>
+              <button
+                type="button"
+                className={styles.stepperBtn}
+                onClick={() => setAllowedCompanions(Math.max(0, (parseInt(allowedCompanions, 10) || 0) - 1))}
+                disabled={isPending || isAdmitted || isClosed || (parseInt(allowedCompanions, 10) || 0) <= 0}
+                aria-label={lang === 'ar' ? 'إنقاص المرافقين' : 'Decrease companions'}
+              >
+                <Icon name="minus" size="sm" />
+              </button>
+              <input
+                type="number"
+                min="0"
+                max="20"
+                className={styles.stepperInput}
+                name="allowedCompanions"
+                value={allowedCompanions}
+                onChange={(e) => {
+                  setAllowedCompanions(e.target.value);
+                  if (fieldErrors.allowedCompanions) {
+                    setFieldErrors((p) => ({ ...p, allowedCompanions: undefined }));
+                  }
+                }}
+                disabled={isPending || isAdmitted || isClosed}
+                data-testid="guest-companions-input"
+              />
+              <button
+                type="button"
+                className={styles.stepperBtn}
+                onClick={() => setAllowedCompanions(Math.min(20, (parseInt(allowedCompanions, 10) || 0) + 1))}
+                disabled={isPending || isAdmitted || isClosed || (parseInt(allowedCompanions, 10) || 0) >= 20}
+                aria-label={lang === 'ar' ? 'زيادة المرافقين' : 'Increase companions'}
+              >
+                <Icon name="plus" size="sm" />
+              </button>
+            </div>
+            <div className={styles.helperBox}>
+              <Icon name="info" size="sm" />
+              <span>
+                {t(dict, 'guests.companionsHelper', {
+                  count: 1 + (parseInt(allowedCompanions, 10) || 0),
+                })}
+              </span>
+            </div>
+          </div>
+          {fieldErrors.allowedCompanions && (
+            <p className={styles.errorText}>{fieldErrors.allowedCompanions}</p>
+          )}
         </div>
 
         <Field

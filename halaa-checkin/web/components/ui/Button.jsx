@@ -1,10 +1,15 @@
 'use client';
 
 import React from 'react';
+import { Icon } from './Icon.jsx';
 import styles from './Button.module.css';
 
 /**
- * Button primitive matching Halaa design tokens and interaction states.
+ * Button primitive matching Halaa Operations tokens and interaction guidelines.
+ * Supports primary, secondary, outline, ghost, danger variants.
+ * sm (44px min), md (44px), lg (48px) sizes.
+ * Leading/trailing icon slots.
+ * Width-preserving loading state.
  */
 export function Button({
   children,
@@ -15,11 +20,23 @@ export function Button({
   fullWidth = false,
   type = 'button',
   icon = null,
+  leadingIcon = null,
+  trailingIcon = null,
   className = '',
   onClick,
   ...props
 }) {
   const isDisabled = disabled || loading;
+  const effectiveLeadingIcon = leadingIcon || icon;
+
+  const renderIcon = (iconItem, defaultSize = 'xs') => {
+    if (!iconItem) return null;
+    if (React.isValidElement(iconItem)) return iconItem;
+    if (typeof iconItem === 'string') {
+      return <Icon name={iconItem} size={size === 'lg' ? 'sm' : defaultSize} />;
+    }
+    return iconItem;
+  };
 
   const classes = [
     styles.button,
@@ -40,17 +57,16 @@ export function Button({
       onClick={isDisabled ? undefined : onClick}
       {...props}
     >
-      {loading ? (
-        <>
-          <span className={styles.spinner} aria-hidden="true" />
-          <span>{children}</span>
-        </>
-      ) : (
-        <>
-          {icon && <span aria-hidden="true">{icon}</span>}
-          <span>{children}</span>
-        </>
+      {loading && (
+        <span className={styles.spinnerOverlay} aria-hidden="true">
+          <span className={styles.spinner} />
+        </span>
       )}
+      <span className={`${styles.contentWrapper} ${loading ? styles.loadingContent : ''}`.trim()}>
+        {effectiveLeadingIcon && <span aria-hidden="true">{renderIcon(effectiveLeadingIcon)}</span>}
+        {children && <span>{children}</span>}
+        {trailingIcon && <span aria-hidden="true">{renderIcon(trailingIcon)}</span>}
+      </span>
     </button>
   );
 }

@@ -1,4 +1,4 @@
-import BusinessCoverInput from "./BusinessCoverInput";
+import BusinessLogoNotice from "./BusinessLogoNotice";
 import React, { useState, useMemo } from "react";
 import {
   View,
@@ -219,7 +219,7 @@ const StepOne = ({ constraints, owner } = {}) => {
 
   return (
     <View style={styles.container}>
-      {!constraints && <BusinessCoverInput owner={owner} />}
+      {!constraints && <BusinessLogoNotice owner={owner} />}
       {/* Event Name — arbitrary host content: the empty placeholder follows
           the UI locale while a filled value follows its first strong Arabic
           or Latin character (blueprint §5.3). */}
