@@ -30,6 +30,7 @@ describe('T09 — Gate Workspace & Scanner Lifecycle Browser E2E Verification', 
       {
         cwd: webDir,
         env: { ...process.env, PORT: String(PORT), NODE_ENV: 'production' },
+        detached: process.platform !== 'win32',
         shell: true,
         stdio: 'pipe',
       }
@@ -70,7 +71,7 @@ describe('T09 — Gate Workspace & Scanner Lifecycle Browser E2E Verification', 
         if (process.platform === 'win32') {
           spawn('taskkill', ['/pid', String(nextProcess.pid), '/T', '/F']);
         } else {
-          nextProcess.kill('SIGTERM');
+          process.kill(-nextProcess.pid, 'SIGTERM');
         }
       } catch {
         // Ignore

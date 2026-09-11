@@ -111,7 +111,7 @@ describe('T10 — Export/report panel + admission correction Browser E2E', { tim
     nextProcess = spawn(
       process.platform === 'win32' ? 'npx.cmd' : 'npx',
       ['next', 'start', '-p', String(PORT)],
-      { cwd: webDir, env: { ...process.env, PORT: String(PORT), NODE_ENV: 'production' }, shell: true, stdio: 'pipe' }
+      { cwd: webDir, env: { ...process.env, PORT: String(PORT), NODE_ENV: 'production' }, detached: process.platform !== 'win32', shell: true, stdio: 'pipe' }
     );
     let ready = false;
     for (let i = 0; i < 40; i++) {
@@ -131,7 +131,7 @@ describe('T10 — Export/report panel + admission correction Browser E2E', { tim
     if (nextProcess?.pid) {
       try {
         if (process.platform === 'win32') spawn('taskkill', ['/pid', String(nextProcess.pid), '/T', '/F']);
-        else nextProcess.kill('SIGTERM');
+        else process.kill(-nextProcess.pid, 'SIGTERM');
       } catch { /* ignore */ }
     }
   });

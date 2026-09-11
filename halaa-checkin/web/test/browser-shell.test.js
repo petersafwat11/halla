@@ -31,6 +31,7 @@ describe('T07 — Browser E2E and Visual Responsive Verification', { timeout: 60
       {
         cwd: webDir,
         env: { ...process.env, PORT: String(PORT), NODE_ENV: 'production' },
+        detached: process.platform !== 'win32',
         shell: true,
         stdio: 'pipe',
       }
@@ -73,7 +74,7 @@ describe('T07 — Browser E2E and Visual Responsive Verification', { timeout: 60
         if (process.platform === 'win32') {
           spawn('taskkill', ['/pid', String(nextProcess.pid), '/T', '/F']);
         } else {
-          nextProcess.kill('SIGTERM');
+          process.kill(-nextProcess.pid, 'SIGTERM');
         }
       } catch {
         // Ignore termination error

@@ -30,6 +30,7 @@ describe('T08 — Guests Workspace Browser E2E Verification', { timeout: 90000 }
       {
         cwd: webDir,
         env: { ...process.env, PORT: String(PORT), NODE_ENV: 'production' },
+        detached: process.platform !== 'win32',
         shell: true,
         stdio: 'pipe',
       }
@@ -70,7 +71,7 @@ describe('T08 — Guests Workspace Browser E2E Verification', { timeout: 90000 }
         if (process.platform === 'win32') {
           spawn('taskkill', ['/pid', String(nextProcess.pid), '/T', '/F']);
         } else {
-          nextProcess.kill('SIGTERM');
+          process.kill(-nextProcess.pid, 'SIGTERM');
         }
       } catch {
         // Ignore termination error
