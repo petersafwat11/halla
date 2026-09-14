@@ -33,8 +33,17 @@ const optionalPasswordSchema = z
 // HOST
 // ============================================
 
+// Backend `createHostSchema` / `createModeratorSchema` require `name` to be at
+// least 2 characters. These schemas allowed 1, so a single-character name
+// passed the form and came back as an opaque 400.
+const nameSchema = z
+  .string()
+  .min(1, "الاسم مطلوب")
+  .min(2, "الاسم يجب أن يكون حرفين على الأقل")
+  .max(100, "الاسم يجب أن لا يتجاوز 100 حرف");
+
 export const addHostSchema = z.object({
-  name: z.string().min(1, "الاسم مطلوب").max(100),
+  name: nameSchema,
   email: z.string().email("يرجى إدخال بريد إلكتروني صحيح"),
   phoneNumber: phoneSchema,
   password: optionalPasswordSchema,
@@ -51,7 +60,7 @@ export const subscriptionAssignmentSchema = hostSubscriptionSchema;
 // ============================================
 
 export const addModeratorSchema = z.object({
-  name: z.string().min(1, "الاسم مطلوب").max(100),
+  name: nameSchema,
   email: z.string().email("يرجى إدخال بريد إلكتروني صحيح"),
   phoneNumber: phoneSchema,
   password: optionalPasswordSchema,
@@ -59,7 +68,7 @@ export const addModeratorSchema = z.object({
 });
 
 export const editModeratorSchema = z.object({
-  name: z.string().min(1, "الاسم مطلوب").max(100),
+  name: nameSchema,
   email: z.string().email("يرجى إدخال بريد إلكتروني صحيح"),
   phoneNumber: phoneSchema,
   role: z.string().min(1, "الرجاء اختيار الدور"),
@@ -97,7 +106,8 @@ export const categoryFormSchema = z.object({
   code: z.string().min(1, "الكود مطلوب"),
   nameEn: z.string().min(1, "الاسم بالإنجليزية مطلوب"),
   nameAr: z.string().min(1, "الاسم بالعربية مطلوب"),
-  sortOrder: z.coerce.number().min(0).default(0),
+  // Backend `createCategorySchema` requires an integer.
+  sortOrder: z.coerce.number().int("الترتيب يجب أن يكون رقماً صحيحاً").min(0).default(0),
 });
 
 // ============================================
@@ -216,7 +226,12 @@ export const discountSchema = z
     descriptionAr: z.string().optional().or(z.literal("")),
     discountType: z.enum(["percentage", "fixed"]),
     value: z.coerce.number().min(0.01, "القيمة يجب أن تكون أكبر من 0"),
-    maxUses: z.coerce.number().min(0, "الحد الأدنى 0").default(0),
+    // Backend `createDiscountSchema` requires an integer for maxUses.
+    maxUses: z.coerce
+      .number()
+      .int("عدد مرات الاستخدام يجب أن يكون رقماً صحيحاً")
+      .min(0, "الحد الأدنى 0")
+      .default(0),
     minimumAmount: z.coerce.number().min(0, "الحد الأدنى 0").default(0),
     validFrom: z.date().nullable().optional(),
     validUntil: z.date().nullable().optional(),

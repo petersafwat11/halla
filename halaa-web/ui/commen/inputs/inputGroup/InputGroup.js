@@ -31,6 +31,7 @@ const InputGroup = ({
   inputMode,
   pattern,
   lang,
+  rules,
 }) => {
   const { t, i18n } = useTranslation("common");
   const [showPassword, setShowPassword] = useState(false);
@@ -54,6 +55,27 @@ const InputGroup = ({
       ? DEFAULT_PHONE_PLACEHOLDER
       : placeholder;
   const effectiveSanitize = sanitize || (type === "tel" ? clampPhoneInput : undefined);
+
+  // `required` used to render the red asterisk without registering any rule,
+  // so a field marked required could still be submitted empty and was only
+  // rejected by the backend as a generic 400. Register the rule so the
+  // asterisk matches the actual behaviour. Whitespace-only counts as empty.
+  const registerRules = { ...rules };
+  if (required) {
+    const requiredMessage = rules?.required || t("validation.required");
+    registerRules.required = requiredMessage;
+    // `rules.validate` may be a bare function; keep it under a named key so
+    // spreading never silently drops it.
+    const callerValidate =
+      typeof rules?.validate === "function"
+        ? { custom: rules.validate }
+        : rules?.validate || {};
+    registerRules.validate = {
+      ...callerValidate,
+      notBlank: (value) =>
+        typeof value === "string" && value.trim() === "" ? requiredMessage : true,
+    };
+  }
 
   const controlledChange = (event) => {
     if (effectiveSanitize) event.target.value = effectiveSanitize(event.target.value);
@@ -131,7 +153,7 @@ const InputGroup = ({
           aria-invalid={Boolean(formError || externalError)}
           {...(isControlled 
             ? { value: inputValue, onChange: controlledChange }
-            : register ? register(name) : {}
+            : register ? register(name, registerRules) : {}
           )}
           onInput={effectiveSanitize ? (event) => {
             const sanitized = effectiveSanitize(event.currentTarget.value);

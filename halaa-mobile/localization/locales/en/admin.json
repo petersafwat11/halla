@@ -1348,6 +1348,8 @@
   },
   "validation": {
     "nameRequired": "Name is required",
+    "nameMin": "Name must be at least 2 characters",
+    "nameMax": "Name must not exceed 100 characters",
     "namesRequired": "Both Arabic and English names are required",
     "invalidEmail": "Please enter a valid email address",
     "phoneRequired": "Phone number is required",
@@ -1378,7 +1380,9 @@
     "valueMin": "Value must be greater than 0",
     "percentageMax": "Percentage cannot exceed 100%",
     "dateOrderInvalid": "End date must be after start date",
-    "invalidSaudiPhone": "Phone number must be 10 digits (starting with 05) or 9 digits (starting with 5)"
+    "invalidSaudiPhone": "Phone number must be 10 digits (starting with 05) or 9 digits (starting with 5)",
+    "passwordMinLength": "Password must be at least 8 characters",
+    "passwordMaxLength": "Password must not exceed 128 characters"
   },
   "sendNotification": {
     "sendTitle": "Send Notification",

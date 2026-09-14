@@ -219,6 +219,8 @@
     "invalidSaudiPhone": "Phone number must be 10 digits (starting with 05) or 9 digits (starting with 5)",
     "invalidEmail": "Please enter a valid email address",
     "required": "This field is required",
+    "minLength": "This field must be at least {{count}} characters",
+    "maxLength": "This field must not exceed {{count}} characters",
     "passwordMinLength": "Password must be at least 8 characters",
     "passwordMaxLength": "Password must not exceed 128 characters",
     "passwordComplexity": "Use at least one letter and one number; symbols are allowed",

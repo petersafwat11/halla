@@ -111,6 +111,10 @@ const ACTION_MESSAGES = {
     ar: "يرجى التحقق من صحة البيانات المدخلة والمحاولة مجدداً.",
     en: "Please check the entered information and try again.",
   },
+  CONFLICT: {
+    ar: "تتعارض البيانات المُدخلة مع سجل موجود بالفعل. يرجى مراجعتها والمحاولة مجدداً.",
+    en: "The information you entered conflicts with an existing record. Please review it and try again.",
+  },
   SERVER_ERROR: {
     ar: "حدث خطأ غير متوقع أثناء معالجة طلبك. يرجى المحاولة لاحقاً.",
     en: "An unexpected error occurred while processing your request. Please try again later.",
@@ -222,6 +226,12 @@ export function presentError(error, { language = "ar" } = {}) {
     isRetryable = false;
   } else if (status === 403) {
     resolvedKey = "FORBIDDEN";
+    isRetryable = false;
+  } else if (rawCode === "CONFLICT" || status === 409) {
+    // A duplicate email/phone used to fall through to SERVER_ERROR, telling
+    // the user an unexpected error occurred and to retry — which never
+    // succeeds. Retrying the same payload cannot resolve a conflict.
+    resolvedKey = "CONFLICT";
     isRetryable = false;
   } else if (rawCode === "NETWORK_ERROR" || status === 0) {
     resolvedKey = "NETWORK_ERROR";

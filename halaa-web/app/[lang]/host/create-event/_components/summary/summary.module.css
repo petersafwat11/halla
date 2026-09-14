@@ -48,56 +48,61 @@
   border-radius: 0.8rem;
 }
 
+/* Compact stat tiles: the icon carries the brand colour, so the card border
+   stays neutral instead of ringing every tile in gold. */
 .statsCards {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.2rem;
   padding: 0 1.2rem;
-  align-items: center;
-  gap: 2.4rem;
   align-self: stretch;
 }
 
 .statCard {
   display: flex;
-  padding: 1.6rem;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 1.6rem;
-  flex: 1 0 0;
-  border-radius: 1.2rem;
-  border: 1px solid var(--Content-Border-Border-brand, #c28e5c);
-  background: var(--Content-bg-Card-bg-1, #fff);
+  padding: 1.4rem 1.2rem;
   flex-direction: column;
+  justify-content: center;
   align-items: center;
+  gap: 0.8rem;
+  min-width: 0;
+  border-radius: 1.2rem;
+  border: 1px solid var(--Content-Border-Border-Gray250, #ece3d8);
+  background: var(--Content-bg-Card-bg-1, #fff);
+  text-align: center;
 }
 
 .iconContainer {
   display: flex;
-  width: 2.4rem;
-  height: 2.4rem;
-  padding: 0.462rem;
+  width: 3.6rem;
+  height: 3.6rem;
   justify-content: center;
   align-items: center;
-  gap: 0.462rem;
-  border-radius: 0.554rem;
+  border-radius: 1rem;
   background: var(--Content-bg-Card-bg-5, #f9f4ef);
+  color: #c28e5c;
+  flex-shrink: 0;
 }
 
 .statValue {
   color: var(--Content-Text-Text-title-black, #2c2c2c);
-  font-size: 1.6rem;
+  font-size: 1.9rem;
   font-style: normal;
   font-weight: 700;
-  line-height: 2.4rem;
+  line-height: 1.35;
   letter-spacing: 0.024rem;
+  /* The date value is the longest of the four — wrap rather than overflow. */
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .statLabel {
   color: var(--Content-Text-Text-body-discription, #656565);
   font-size: 1.2rem;
   font-style: normal;
-  font-weight: 400;
-  line-height: 1.6rem;
-  letter-spacing: 0.06rem;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: 0.02rem;
 }
 
 .detailsSection {
@@ -193,26 +198,15 @@
   background: var(--Content-bg-Card-bg-6, #f5ece4);
 }
 
+/* Plain explanatory copy, not a status card: the green panel and its heading
+   read as a success state the host has not reached yet. */
 .scheduleSection {
   display: flex;
-  padding: 1.6rem;
+  padding: 0 1.2rem;
   flex-direction: column;
   align-items: flex-start;
   gap: 1.2rem;
   align-self: stretch;
-  border-radius: 0.8rem;
-  border: 1px solid var(--Content-Border-Text-body-Activr, #2a8c5b);
-  background: var(--Content-bg-Card-bg-10, #eaf4ef);
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-}
-
-.scheduleHeader {
-  color: #14532d;
-  font-size: 1.6rem;
-  font-style: normal;
-  font-weight: 700;
-  line-height: 2.4rem;
-  letter-spacing: 0.024rem;
 }
 
 .scheduleContent {
@@ -224,12 +218,12 @@
 }
 
 .scheduleText {
-  color: #15803d;
-  text-align: right;
+  color: #996b40;
+  text-align: start;
   font-size: 1.4rem;
   font-style: normal;
-  font-weight: 500;
-  line-height: 2rem;
+  font-weight: 600;
+  line-height: 2.2rem;
   letter-spacing: 0.014rem;
 }
 
@@ -419,11 +413,51 @@
     max-height: 42rem;
   }
 }
-.reviewDetails { padding: 20px; border: 1px solid #e6ddd3; border-radius: 12px; width: 100%; font-size: 1.4rem; line-height: 1.6; }
-.reviewDetails h3 { font-size: 1.6rem; margin: 0 0 16px; }
-.reviewDetails dl { display: grid; gap: 6px; margin: 0; }
-.reviewDetails dt { color: #71675d; }
-.reviewDetails dd { margin: 0 0 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
-.reviewDetails details { border-top: 1px solid #eee5dc; padding-block: 12px; }
-.reviewDetails summary { cursor: pointer; font-weight: 600; min-height: 32px; }
-.reviewDetails li { padding-block: 4px; }
+/* Invitation + replies review: give the term/definition pairs a real
+   hierarchy so the labels read as labels and the values stand out. */
+.reviewDetails {
+  padding: 2rem;
+  border: 1px solid #e6ddd3;
+  border-radius: 1.2rem;
+  background: #fff;
+  width: 100%;
+  font-size: 1.4rem;
+  line-height: 1.6;
+}
+.reviewDetails h3 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #2c2c2c;
+  margin: 0 0 1.6rem;
+  padding-bottom: 1.2rem;
+  border-bottom: 1px solid #f0e7dc;
+}
+.reviewDetails dl { display: grid; gap: 0; margin: 0; }
+.reviewDetails dt {
+  color: #857a6e;
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin-bottom: 0.6rem;
+}
+.reviewDetails dd {
+  margin: 0 0 1.8rem;
+  color: #2c2c2c;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.reviewDetails dd:last-of-type { margin-bottom: 0; }
+.reviewDetails details {
+  margin-top: 1.8rem;
+  border-top: 1px solid #f0e7dc;
+  padding-block: 1.2rem 0;
+}
+.reviewDetails summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #996b40;
+  min-height: 32px;
+  padding-block: 0.4rem;
+}
+.reviewDetails ul { margin: 0.8rem 0 0; padding-inline-start: 1.8rem; }
+.reviewDetails li { padding-block: 0.4rem; color: #3a3028; }

@@ -29,17 +29,73 @@
   to   { height: 100%; }
 }
 
-/* ─── Layout ──────────────────────────────────── */
-.choiceList { display: grid; gap: 10px; }
-.choiceOption { display: flex; align-items: center; gap: 14px; width: 100%; padding: 16px; border: 1px solid #ded7cf; border-radius: 10px; background: #fff; color: #302b27; text-align: start; cursor: pointer; font: inherit; }
-.choiceOption[aria-pressed="true"] { border-color: #996b40; background: #fcf8f3; }
+/* ─── Invitation type cards ───────────────────────
+   Mirrors the landing page's InvitationTypesSection so the three types look
+   the same wherever they appear: same icon chip, palette and type scale.
+   Adds the selection affordance the landing does not need. */
+.choiceList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(24rem, 1fr));
+  gap: 1rem;
+  width: 100%;
+}
+.choiceOption {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.2rem;
+  width: 100%;
+  padding: 1.6rem;
+  border: 1px solid #e3d9cf;
+  border-radius: 1rem;
+  background: var(--color-natural-50, #fdfbf8);
+  color: #3a3028;
+  text-align: start;
+  cursor: pointer;
+  font: inherit;
+  transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+}
+.choiceOption:hover { border-color: #cbb79f; }
+.choiceOption[aria-pressed="true"] {
+  border-color: #996b40;
+  background: #fcf8f3;
+  box-shadow: 0 0 0 1px #996b40 inset;
+}
 .choiceOption:focus-visible { outline: 3px solid #b98249; outline-offset: 3px; }
-.choiceIcon { display: flex; color: #876342; flex-shrink: 0; }
-.choiceCopy { display: grid; gap: 5px; flex: 1; min-width: 0; }
-.choiceTitle { font-size: 1.5rem; line-height: 1.5; font-weight: 600; }
-.choiceDescription { color: #69625b; font-size: 1.3rem; line-height: 1.6; max-width: 65ch; }
-.choiceRadio { display: grid; place-items: center; width: 20px; height: 20px; border: 1px solid #b8afa4; border-radius: 50%; flex-shrink: 0; }
+
+/* The coloured tile behind the glyph — the piece the wizard was missing. */
+.choiceIcon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 4.4rem;
+  height: 4.4rem;
+  border-radius: 1rem;
+  background: #f3e8dc;
+  color: #805b3a;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+.choiceOption[aria-pressed="true"] .choiceIcon { background: #e9d7c2; color: #7a5330; }
+
+.choiceCopy { display: grid; gap: 0.6rem; flex: 1; min-width: 0; }
+.choiceTitle { font-size: 1.5rem; line-height: 1.6; font-weight: 600; color: #3a3028; }
+.choiceDescription { color: #71665d; font-size: 1.2rem; line-height: 1.8; }
+.choiceRadio {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  margin-top: 0.2rem;
+  border: 1px solid #b8afa4;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
 .choiceOption[aria-pressed="true"] .choiceRadio { background: #876342; color: #fff; border-color: #876342; }
+
+@media (max-width: 760px) {
+  .choiceList { grid-template-columns: 1fr; gap: 0.8rem; }
+  .choiceOption { padding: 1.2rem 1.4rem; }
+  .choiceIcon { flex-basis: 4rem; height: 4rem; }
+  .choiceTitle { font-size: 1.4rem; }
+}
 
 .stepFour {
   display: flex;

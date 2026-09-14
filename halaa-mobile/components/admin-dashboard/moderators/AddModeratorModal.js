@@ -98,7 +98,15 @@ const AddModeratorModal = ({ visible, onClose, moderator, onSave }) => {
 
   const validate = () => {
     const e = {};
-    if (!formData.name.trim()) e.name = t("moderators.add.nameRequired");
+    const trimmedName = formData.name.trim();
+    if (!trimmedName) {
+      e.name = t("moderators.add.nameRequired");
+    } else if (trimmedName.length < 2) {
+      // Backend createModeratorSchema/updateModeratorSchema require min 2.
+      e.name = t("validation.nameMin");
+    } else if (trimmedName.length > 100) {
+      e.name = t("validation.nameMax");
+    }
     if (!formData.email.trim()) {
       e.email = t("moderators.add.emailRequired");
     } else if (!EMAIL_RE.test(formData.email)) {
