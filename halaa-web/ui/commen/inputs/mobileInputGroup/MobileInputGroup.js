@@ -2,9 +2,11 @@ import React from "react";
 import styles from "./inputGroup.module.css";
 import { FiPhone } from "react-icons/fi";
 import { get, useFormContext } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import {
   clampPhoneInput,
   getPhoneMaxLength,
+  isValidSaudiMobile,
   DEFAULT_PHONE_PLACEHOLDER,
 } from "@halaa/shared/utils/phone";
 
@@ -19,6 +21,7 @@ const MobileInputGroup = ({
   error: externalError,
   hintMessage,
 }) => {
+  const { t } = useTranslation("common");
   const formContext = useFormContext();
   const {
     register,
@@ -78,7 +81,18 @@ const MobileInputGroup = ({
   const currentVal = formValue || "";
   const regProps = register
     ? register(name, {
-        required: required && "This field is required",
+        required: required && t("validation.required"),
+        validate: {
+          // The input already clamps to Saudi shapes, so anything that is
+          // non-empty but not a valid Saudi mobile is a half-typed number.
+          // Catching it here replaces an opaque backend 400 with an inline
+          // message on the field that is actually wrong.
+          saudiMobile: (value) => {
+            const raw = typeof value === "string" ? value.trim() : "";
+            if (!raw) return true; // emptiness is the `required` rule's job
+            return isValidSaudiMobile(raw) || t("validation.invalidSaudiPhone");
+          },
+        },
         onChange: (e) => {
           const clamped = clampPhoneInput(e.target.value);
           e.target.value = clamped;

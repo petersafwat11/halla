@@ -106,6 +106,27 @@ test("presentError: maps IDEMPOTENCY_CONFLICT and IDEMPOTENCY_PENDING", () => {
   assert.match(pending.actionMessage, /جاري إنشاء المناسبة حالياً/);
 });
 
+test("presentError: maps a duplicate-record 409 to CONFLICT, not SERVER_ERROR", () => {
+  // Creating a business account with an email/phone that already exists returns
+  // ConflictError (409, code CONFLICT). It used to fall through to
+  // SERVER_ERROR, which told the user to retry a request that can never
+  // succeed with the same payload.
+  const byCode = presentError({ code: "CONFLICT", status: 409 });
+  assert.equal(byCode.code, "CONFLICT");
+  assert.equal(byCode.isRetryable, false);
+  assert.match(byCode.actionMessage, /تتعارض البيانات/);
+
+  const byStatus = presentError({ response: { status: 409, data: {} } }, { language: "en" });
+  assert.equal(byStatus.code, "CONFLICT");
+  assert.match(byStatus.actionMessage, /conflicts with an existing record/);
+
+  // The more specific idempotency code still wins over the generic 409.
+  assert.equal(
+    presentError({ code: "IDEMPOTENCY_CONFLICT", status: 409 }).code,
+    "IDEMPOTENCY_CONFLICT"
+  );
+});
+
 test("presentError: preserves fullRequestId for telemetry without leaking to display", () => {
   const fullUuid = "f47ac10b-58cc-4372-a567-0e02b2c3d479";
   const presented = presentError({
