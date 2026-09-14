@@ -259,21 +259,23 @@ export function GuestsWorkspace({ lang = 'ar' }) {
   if (!hasEvents && !isLoadingEvents) {
     return (
       <div className={styles.workspace}>
-        <EmptyState
-          icon="calendar"
-          title={t(dict, 'events.noEventsAdmin')}
-          description={t(dict, 'events.createFirstEventPrompt')}
-          action={
-            <Button
-              variant="primary"
-              leadingIcon="plus"
-              onClick={() => setEventDialog({ isOpen: true, mode: 'create' })}
-              data-testid="create-first-event-btn"
-            >
-              {t(dict, 'events.createFirstEvent')}
-            </Button>
-          }
-        />
+        <div className={styles.emptyCard}>
+          <EmptyState
+            icon="calendar-plus"
+            title={t(dict, 'events.noEventsAdmin')}
+            description={t(dict, 'events.createFirstEventPrompt')}
+            action={
+              <Button
+                variant="primary"
+                leadingIcon="plus"
+                onClick={() => setEventDialog({ isOpen: true, mode: 'create' })}
+                data-testid="create-first-event-btn"
+              >
+                {t(dict, 'events.createFirstEvent')}
+              </Button>
+            }
+          />
+        </div>
 
         <EventDialog
           isOpen={eventDialog.isOpen}

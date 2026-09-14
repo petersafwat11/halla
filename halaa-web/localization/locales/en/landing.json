@@ -39,7 +39,10 @@
   "invitations": {
     "imageAlts": ["Black and gold wedding invitation with a groom portrait","White and navy geometric wedding invitation","Navy wedding invitation with a white geometric border","White and gold wedding invitation with a groom portrait","Pale pink floral wedding invitation","Burgundy calligraphy wedding invitation with roses","Wedding invitation with a green and pink floral arch","Soft pink wedding invitation with bride and groom illustrations","Cream and gold wedding invitation with floral corners","Eid al-Adha invitation with flowers, a butterfly and a lamb","Ramadan iftar invitation with lanterns and a crescent","Pink birthday invitation with candles","Blue newborn announcement with flowers and a pram","Pink newborn announcement with a carousel","Graduation invitation with burgundy flowers and a graduation cap","Cream engagement announcement with pearl-edged flowers"],
     "title": "Explore Our Innovative Invitation Templates",
-    "description": "Elegant, fully customizable designs for weddings, formal events, and special celebrations — all sent automatically via WhatsApp."
+    "description": "Elegant, fully customizable designs for weddings, formal events, and special celebrations — all sent automatically via WhatsApp.",
+    "previewCard": "Preview invitation {{number}}",
+    "previewTitle": "Invitation preview",
+    "closePreview": "Close preview"
   },
   "howItWorks": {
     "eyebrow": "Your guide to Halaa",

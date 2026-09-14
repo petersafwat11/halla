@@ -3,24 +3,28 @@
 import React from 'react';
 import { useEvent } from '../../hooks/useEvent.jsx';
 import { useGate } from '../../hooks/useGate.js';
+import { useStats } from '../../hooks/useStats.js';
 import { CameraScanner } from './CameraScanner.jsx';
 import { ScannerInput } from './ScannerInput.jsx';
 import { GuestLookup } from './GuestLookup.jsx';
 import { AdmissionCard } from './AdmissionCard.jsx';
 import { StatusBadge } from '../ui/StatusBadge.jsx';
 import { Notice } from '../ui/Notice.jsx';
+import { EmptyState } from '../ui/EmptyState.jsx';
 import { Icon } from '../ui/Icon.jsx';
 import { getDictionary, t, formatRiyadhDate } from '../../lib/locale.js';
 import styles from './GateWorkspace.module.css';
 
 /**
- * Main Gate Workspace Component.
- * Adheres to Technical Contract Section 5 and Product Section 6.
+ * Gate reception workspace.
+ * Layout: event strip with live counters, a single scan panel (scanner, manual
+ * search, camera), the admission panel, and the recent admissions log.
  */
 export function GateWorkspace({ lang = 'ar' }) {
   const dict = getDictionary(lang);
   const { selectedEvent, hasEvents } = useEvent();
   const [cameraStopSignal, setCameraStopSignal] = React.useState(0);
+  const numberFormat = new Intl.NumberFormat(lang === 'en' ? 'en-US' : 'ar-SA');
 
   const {
     gateState,
@@ -45,13 +49,15 @@ export function GateWorkspace({ lang = 'ar' }) {
     refetchRecent,
   } = useGate(selectedEvent?.id);
 
+  const { stats } = useStats(selectedEvent?.id);
+  const hasStats = !!stats?.asOf;
+
   // Stop camera on event switch (spec §6: stop tracks on event switch/logout/nav)
   React.useEffect(() => {
     setCameraStopSignal((n) => n + 1);
   }, [selectedEvent?.id]);
 
-  // F10: session expiry stops camera and clears no private data stays visible
-  // is handled via central 401 (query cache cleared); stop camera here too.
+  // F10: session expiry stops the camera too.
   React.useEffect(() => {
     if (gateState === 'session_expired') {
       setCameraStopSignal((n) => n + 1);
@@ -60,10 +66,8 @@ export function GateWorkspace({ lang = 'ar' }) {
 
   if (!hasEvents || !selectedEvent) {
     return (
-      <div className={styles.container}>
-        <Notice variant="info">
-          {t(dict, 'events.noEventsReception')}
-        </Notice>
+      <div className={styles.emptyCard}>
+        <EmptyState icon="calendar" title={t(dict, 'events.noEventsReception')} />
       </div>
     );
   }
@@ -80,7 +84,6 @@ export function GateWorkspace({ lang = 'ar' }) {
 
   const handleScan = (tokenOrId, scanMethod) => {
     if (isBusy) return;
-    // If it looks like Crockford or ID, resolve by token
     resolve({ token: tokenOrId }, scanMethod);
   };
 
@@ -89,9 +92,15 @@ export function GateWorkspace({ lang = 'ar' }) {
     resolve(guestIdPayload, scanMethod);
   };
 
+  const connectionLabel = !browserOnline
+    ? t(dict, 'gate.connectionOffline')
+    : !apiReachable
+      ? t(dict, 'gate.connectionStale')
+      : t(dict, 'gate.connectionOnline');
+
   return (
     <div className={styles.container} data-testid="gate-workspace">
-      {/* Event Header Bar (identity always visible) */}
+      {/* Event strip */}
       <header className={styles.eventHeader} data-testid="gate-event-header">
         <div className={styles.eventInfo}>
           <div className={styles.eventTitleRow}>
@@ -104,60 +113,76 @@ export function GateWorkspace({ lang = 'ar' }) {
           </div>
           <div className={styles.eventMeta}>
             <span className={styles.metaItem}>
-              <Icon name="location" size="xs" />
+              <Icon name="map-pin" size="sm" />
               <span dir="auto">{selectedEvent.venue}</span>
             </span>
             <span className={styles.metaItem}>
-              <Icon name="clock" size="xs" />
-              <span>{formatRiyadhDate(selectedEvent.startsAt, lang)}</span>
+              <Icon name="calendar-days" size="sm" />
+              <bdi>{formatRiyadhDate(selectedEvent.startsAt, lang)}</bdi>
             </span>
           </div>
         </div>
 
-        <div className={styles.statusPillRow}>
-          <span
-            className={`${styles.connectionPill} ${isOnline ? styles.online : styles.offline}`}
-            data-testid="connection-status-pill"
-            role="status"
-            aria-live="polite"
-            title={browserOnline ? (apiReachable ? '' : t(dict, 'common.networkError')) : t(dict, 'gate.connectionOffline')}
-          >
-            <span className={`${styles.statusDot} ${isOnline ? styles.dotOnline : styles.dotOffline}`} aria-hidden="true" />
-            <span>
-              {!browserOnline
-                ? t(dict, 'gate.connectionOffline')
-                : !apiReachable
-                  ? t(dict, 'gate.connectionStale')
-                  : t(dict, 'gate.connectionOnline')}
-            </span>
-          </span>
-          {asOf ? (
-            <span className={styles.asOfText}>
-              {t(dict, 'common.asOf')}{' '}
-              {new Date(asOf).toLocaleTimeString(lang === 'ar' ? 'ar-SA' : 'en-US', {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                timeZone: 'Asia/Riyadh',
-              })}
-            </span>
-          ) : (
-            <span className={styles.asOfText}>{t(dict, 'gate.connectionStale')}</span>
+        <div className={styles.headerSide}>
+          {hasStats && (
+            <div className={styles.liveCounters}>
+              <div className={styles.counter}>
+                <span className={styles.counterLabel}>{t(dict, 'gate.liveAdmitted')}</span>
+                <span className={`${styles.counterValue} tabular`}>
+                  {numberFormat.format(stats.totalAttendees)}
+                  <span className={styles.counterTotal}> / {numberFormat.format(stats.totalExpected)}</span>
+                </span>
+              </div>
+              <span className={styles.counterDivider} aria-hidden="true" />
+              <div className={styles.counter}>
+                <span className={styles.counterLabel}>{t(dict, 'gate.liveInvitations')}</span>
+                <span className={`${styles.counterValue} tabular`}>
+                  {numberFormat.format(stats.admittedInvitations)}
+                  <span className={styles.counterTotal}> / {numberFormat.format(stats.totalInvitations)}</span>
+                </span>
+              </div>
+            </div>
           )}
-          {recentError && (
-            <button
-              type="button"
-              onClick={() => refetchRecent()}
-              data-testid="recent-retry-btn"
-              className={styles.retryBtn}
+
+          <div className={styles.connectionBlock}>
+            <span
+              className={`${styles.connectionPill} ${isOnline ? styles.online : styles.offline}`}
+              data-testid="connection-status-pill"
+              role="status"
+              aria-live="polite"
             >
-              {t(dict, 'common.retry')}
-            </button>
-          )}
+              <span className={styles.statusDot} aria-hidden="true" />
+              <span>{connectionLabel}</span>
+            </span>
+            <span className={`${styles.asOfText} tabular`}>
+              {asOf ? (
+                <>
+                  {t(dict, 'common.asOf')}{' '}
+                  {new Date(asOf).toLocaleTimeString(lang === 'ar' ? 'ar-SA' : 'en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    timeZone: 'Asia/Riyadh',
+                  })}
+                </>
+              ) : (
+                t(dict, 'gate.connectionStale')
+              )}
+            </span>
+            {recentError && (
+              <button
+                type="button"
+                onClick={() => refetchRecent()}
+                data-testid="recent-retry-btn"
+                className={styles.retryBtn}
+              >
+                {t(dict, 'common.retry')}
+              </button>
+            )}
+          </div>
         </div>
       </header>
 
-      {/* Closed / Draft Warnings */}
       {(isClosed || effectiveClosed) && (
         <Notice variant="warning" data-testid="gate-closed-warning">
           {t(dict, 'gate.eventClosedMessage')}
@@ -168,36 +193,36 @@ export function GateWorkspace({ lang = 'ar' }) {
           {t(dict, 'gate.eventDraftMessage')}
         </Notice>
       )}
-
       {errorDetails && gateState === 'ready' && (
         <Notice variant="warning">
           {t(dict, `errors.${errorDetails.code}`) || t(dict, 'errors.UNKNOWN')}
         </Notice>
       )}
 
-      {/* Main Grid: Input / Scanner on left, Admission Card on right */}
-      <div className={styles.grid} aria-live="polite">
-        <div className={styles.scannerColumn}>
-          <CameraScanner
-            onScan={handleScan}
-            disabled={inputsLocked}
-            dict={dict}
-            stopSignal={cameraStopSignal}
-          />
-          <ScannerInput
-            onScan={handleScan}
-            disabled={inputsLocked}
-            dict={dict}
-          />
-          <GuestLookup
-            eventId={selectedEvent.id}
-            onSelect={handleManualSelect}
-            disabled={inputsLocked}
-            dict={dict}
-          />
-        </div>
+      <div className={styles.grid}>
+        <section className={styles.scanCard} aria-label={t(dict, 'gate.workspaceTitle')}>
+          <div className={styles.scanSection}>
+            <ScannerInput onScan={handleScan} disabled={inputsLocked} dict={dict} />
+          </div>
+          <div className={styles.scanSection}>
+            <GuestLookup
+              eventId={selectedEvent.id}
+              onSelect={handleManualSelect}
+              disabled={inputsLocked}
+              dict={dict}
+            />
+          </div>
+          <div className={`${styles.scanSection} ${styles.scanSectionMuted}`}>
+            <CameraScanner
+              onScan={handleScan}
+              disabled={inputsLocked}
+              dict={dict}
+              stopSignal={cameraStopSignal}
+            />
+          </div>
+        </section>
 
-        <div className={styles.previewColumn}>
+        <div className={styles.previewColumn} aria-live="polite">
           <AdmissionCard
             gateState={gateState}
             currentGuest={currentGuest}
@@ -212,63 +237,66 @@ export function GateWorkspace({ lang = 'ar' }) {
             dict={dict}
           />
         </div>
-      </div>
 
-      {/* Recent Admissions Section */}
-      <section className={styles.recentSection} data-testid="recent-admissions-section">
-        <h2 className={styles.recentTitle}>
-          <Icon name="clipboard-list" size="sm" />
-          <span>{t(dict, 'gate.recentAdmissionsTitle')}</span>
-        </h2>
-
-        {recentError ? (
-          <Notice variant="warning">{t(dict, 'common.networkError')}</Notice>
-        ) : recentAdmissions.length === 0 ? (
-          <div className={styles.emptyRecent} data-testid="empty-recent-admissions">
-            {t(dict, 'gate.recentAdmissionsEmpty')}
+        <section className={styles.recentSection} data-testid="recent-admissions-section">
+          <div className={styles.recentHeader}>
+            <h2 className={styles.recentTitle}>
+              <Icon name="history" size="sm" />
+              <span>{t(dict, 'gate.recentAdmissionsTitle')}</span>
+            </h2>
           </div>
-        ) : (
-          <div className={styles.recentList} data-testid="recent-admissions-list">
-            {recentAdmissions.slice(0, 10).map((guest) => {
-              const checkIn = guest.checkIn || {};
-              const partySize = checkIn.actualPartySize || (1 + (checkIn.actualCompanions || 0));
-              const time = checkIn.checkedInAt || checkIn.admittedAt;
-              const formattedTime = time ? formatRiyadhDate(time, lang) : '';
-              const operator = checkIn.operatorName || checkIn.operatorUsername || '';
 
-              return (
-                <div
-                  key={guest.id}
-                  className={styles.recentCard}
-                  data-testid={`recent-admission-card-${guest.id}`}
-                >
-                  <div className={styles.recentGuestName} dir="auto">{guest.name}</div>
-                  <div className={styles.recentMeta}>
-                    <span className={styles.metaItem}>
-                      <Icon name="users" size="xs" />
-                      <span>{t(dict, 'gate.successPartyCount', { count: partySize })}</span>
+          {recentError ? (
+            <div className={styles.recentBody}>
+              <Notice variant="warning">{t(dict, 'common.networkError')}</Notice>
+            </div>
+          ) : recentAdmissions.length === 0 ? (
+            <div className={styles.emptyRecent} data-testid="empty-recent-admissions">
+              {t(dict, 'gate.recentAdmissionsEmpty')}
+            </div>
+          ) : (
+            <ul className={styles.recentList} data-testid="recent-admissions-list">
+              {recentAdmissions.slice(0, 10).map((guest) => {
+                const checkIn = guest.checkIn || {};
+                const partySize = checkIn.actualPartySize || (1 + (checkIn.actualCompanions || 0));
+                const time = checkIn.checkedInAt || checkIn.admittedAt;
+                const formattedTime = time
+                  ? formatRiyadhDate(time, lang, { year: undefined, month: undefined, day: undefined })
+                  : '';
+                const operator = checkIn.operatorName || checkIn.operatorUsername || '';
+
+                return (
+                  <li
+                    key={guest.id}
+                    className={styles.recentItem}
+                    data-testid={`recent-admission-card-${guest.id}`}
+                  >
+                    <span className={styles.recentIcon} aria-hidden="true">
+                      <Icon name="check" size="sm" />
                     </span>
-                    {operator && (
-                      <span className={styles.metaItem}>
-                        <Icon name="user" size="xs" />
-                        <span>{operator}</span>
-                      </span>
-                    )}
-                  </div>
-                  {formattedTime && (
-                    <div className={styles.recentMeta}>
-                      <span className={styles.metaItem}>
-                        <Icon name="clock" size="xs" />
-                        <span>{formattedTime}</span>
+                    <div className={styles.recentText}>
+                      <span className={styles.recentGuestName} dir="auto">{guest.name}</span>
+                      <span className={styles.recentMeta}>
+                        <span className={styles.metaItem}>
+                          <Icon name="users" size="xs" />
+                          <span>{t(dict, 'gate.successPartyCount', { count: partySize })}</span>
+                        </span>
+                        {operator && (
+                          <span className={styles.metaItem}>
+                            <Icon name="user" size="xs" />
+                            <bdi>{operator}</bdi>
+                          </span>
+                        )}
                       </span>
                     </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </section>
+                    {formattedTime && <bdi className={`${styles.recentTime} tabular`}>{formattedTime}</bdi>}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
+      </div>
     </div>
   );
 }

@@ -2,7 +2,7 @@
  * Id-preserving migration from the two legacy template-card seed waves to
  * precisionTemplateSpecs.js.
  *
- * Default is strictly read-only. No DB or S3 write occurs without --apply.
+ * Default is strictly read-only. No DB or VPS storage write occurs without --apply.
  * Fresh source images are uploaded only with BOTH --apply --replace-images.
  *
  * Usage:
@@ -153,7 +153,7 @@ async function main() {
     if (REPLACE_IMAGES) console.log(`  image: replace from ${path.join(CARDS_DIR, spec.file)}`);
     if (!APPLY) continue;
 
-    let s3Key;
+    let imageRef;
     if (REPLACE_IMAGES) {
       const filePath = path.join(CARDS_DIR, spec.file);
       if (!fs.existsSync(filePath)) throw new Error(`missing source image: ${filePath}`);
@@ -163,14 +163,14 @@ async function main() {
         contentType: "image/jpeg",
         templateId: String(doc._id),
       });
-      s3Key = uploaded.s3Key;
+      imageRef = uploaded.imageRef;
     }
 
     await service.updateTemplate(
       String(doc._id),
       {
         ...desired,
-        ...(s3Key ? { s3Key } : {}),
+        ...(imageRef ? { imageRef } : {}),
         expectedVersion: doc.version || 0,
       },
       actor

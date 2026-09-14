@@ -217,7 +217,7 @@ describe('Phase 1: Backend Vendor Signup Contract & Security', () => {
   });
 
   test('vendorSignupFilter rejects SVG and non-allowed file types', () => {
-    const { vendorSignupFilter } = require('../src/shared/utils/s3Upload');
+    const { vendorSignupFilter } = require('../src/shared/utils/localUpload');
     
     // SVG upload for logo should be rejected
     let svgRejected = false;
@@ -296,7 +296,7 @@ describe('Phase 1: Backend Vendor Signup Contract & Security', () => {
   });
 
   test('cleanupUploadedFiles safely handles empty or non-empty file objects without throwing', async () => {
-    const { cleanupUploadedFiles } = require('../src/shared/utils/s3Upload');
+    const { cleanupUploadedFiles } = require('../src/shared/utils/localUpload');
     await assert.doesNotReject(async () => {
       await cleanupUploadedFiles(null);
       await cleanupUploadedFiles({});

@@ -132,19 +132,6 @@
       "dpaStatus": "OWNER_CONFIRMATION_REQUIRED"
     },
     {
-      "id": "aws-s3",
-      "purpose": "file and media storage",
-      "data": [
-        "uploads",
-        "vendor documents",
-        "event media"
-      ],
-      "region": "ACCOUNT_CONFIRMATION_REQUIRED",
-      "retention": "object lifecycle/account deletion",
-      "transfer": "ACCOUNT_CONFIRMATION_REQUIRED",
-      "dpaStatus": "OWNER_CONFIRMATION_REQUIRED"
-    },
-    {
       "id": "moyasar",
       "purpose": "web payment processing",
       "data": [
@@ -267,5 +254,5 @@
       "dpaStatus": "PLATFORM_TERMS_CONFIRMATION_REQUIRED"
     }
   ],
-  "policyHash": "0422f9bb17578b311c8a214837b3ad987f71ea4932d5a78104cc5fdaadd6333b"
+  "policyHash": "ccf3ce9891df5d6575a614ece96ba39eb199524525ef94b7616635f8a40e5864"
 }

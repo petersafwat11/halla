@@ -424,12 +424,14 @@ describe('T08 — Guests Workspace Browser E2E Verification', { timeout: 90000 }
     assert.equal(guestRows.length, 3, 'Must render 3 guest rows in table');
 
     // 2. Check Admitted Guest row actions
-    // 'g-01' is admitted: edit and delete buttons must be disabled
+    // 'g-01' is admitted: edit and delete actions (row menu) must be disabled
+    await page.click('[data-testid="row-actions-btn-g-01"]');
     const editBtnG1 = page.locator('[data-testid="edit-guest-btn-g-01"]');
     assert.equal(await editBtnG1.isDisabled(), true, 'Admitted guest ordinary edit must be disabled');
 
     const deleteBtnG1 = page.locator('[data-testid="delete-guest-btn-g-01"]');
     assert.equal(await deleteBtnG1.isDisabled(), true, 'Admitted guest delete must be disabled');
+    await page.keyboard.press('Escape');
 
     // 3. Test QR Preview Modal
     const qrBtnG1 = page.locator('[data-testid="view-qr-btn-g-01"]');
@@ -503,6 +505,7 @@ describe('T08 — Guests Workspace Browser E2E Verification', { timeout: 90000 }
 
     // 10. Test Event Close Lifecycle
     await page.setViewportSize({ width: 1440, height: 900 });
+    await page.click('[data-testid="event-actions-btn"]');
     await page.click('[data-testid="close-event-btn"]');
     await page.click('[data-testid="lifecycle-confirm-btn"]');
     await page.waitForSelector('[data-testid="event-closed-banner"]');
@@ -533,6 +536,7 @@ describe('T08 — Guests Workspace Browser E2E Verification', { timeout: 90000 }
     await page.keyboard.press('Escape');
 
     // 12. Test Soft-Delete on unadmitted guest
+    await page.click('[data-testid="row-actions-btn-g-02"]');
     await page.click('[data-testid="delete-guest-btn-g-02"]');
     await page.waitForSelector('[data-testid="confirm-delete-guest-btn"]');
     await page.click('[data-testid="confirm-delete-guest-btn"]');

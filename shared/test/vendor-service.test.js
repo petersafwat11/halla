@@ -7,7 +7,7 @@ import {
   normalizeArabicDigits as _normalizeArabicDigits,
   vendorServiceFormSchema,
 } from "../src/schemas/vendor.js";
-import { keyFromSignedUrl, resolveImageUrl } from "../src/utils/media.js";
+import { storedRefFromUrl, resolveImageUrl } from "../src/utils/media.js";
 
 test("Vendor Service Form: canonical limits and constants", () => {
   assert.equal(SERVICE_LIMITS.NAME_MIN, 2);
@@ -113,14 +113,13 @@ test("Vendor Service Form Schema: validates boundaries, optional Arabic fields, 
   assert.equal(longDesc.success, false);
 });
 
-test("Media Utilities: keyFromSignedUrl and resolveImageUrl", () => {
-  // S3 signed URL
-  const signedUrl = "https://halla-uploads.s3.eu-central-1.amazonaws.com/services/srv_123.jpg?X-Amz-Signature=abc";
-  assert.equal(keyFromSignedUrl(signedUrl), "services/srv_123.jpg");
+test("Media Utilities: storedRefFromUrl and resolveImageUrl", () => {
+  const absoluteUrl = "https://api.halaa.app/uploads/services/srv_123.jpg";
+  assert.equal(storedRefFromUrl(absoluteUrl), "uploads/services/srv_123.jpg");
 
   // Relative path
-  assert.equal(keyFromSignedUrl("/uploads/services/srv_123.jpg"), "uploads/services/srv_123.jpg");
-  assert.equal(keyFromSignedUrl(null), null);
+  assert.equal(storedRefFromUrl("/uploads/services/srv_123.jpg"), "uploads/services/srv_123.jpg");
+  assert.equal(storedRefFromUrl(null), null);
 
   // resolveImageUrl with absolute URL
   assert.equal(resolveImageUrl("https://cdn.example.com/photo.jpg"), "https://cdn.example.com/photo.jpg");

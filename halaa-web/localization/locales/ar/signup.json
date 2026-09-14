@@ -908,7 +908,9 @@
         "confirmPassword": {
           "label": "تأكيد كلمة المرور",
           "placeholder": "أعد ادخال كلمة المرور الجديدة"
-        }
+        },
+        "passwordRequirement": "8 أحرف على الأقل، منها حرف ورقم",
+        "passwordsMatch": "كلمتا المرور متطابقتان"
       },
       "serviceSelection": {
         "title": "اختر الخدمة المقدمة",

@@ -27,6 +27,21 @@ export const toLocalSaudiPhone = (value) => {
 export const SAUDI_PHONE_REGEX = /^(\+966|966|0)?5\d{8}$/;
 
 /**
+ * Saudi mobile check with exactly the backend event schema's semantics
+ * (halaa-backend events.validation.js `saudiPhone`): string input, Arabic/
+ * Persian digits normalized, spaces/()/+/- stripped, then SAUDI_PHONE_REGEX.
+ * Use this — not the multi-country `isValidPhone` — for event guests/staff.
+ *
+ * @param {unknown} value
+ * @returns {boolean}
+ */
+export const isValidSaudiMobile = (value) => {
+  if (typeof value !== "string") return false;
+  const digits = normalizeDigits(value).replace(/[\s()+-]/g, "");
+  return SAUDI_PHONE_REGEX.test(digits);
+};
+
+/**
  * Dynamic input clamp for real-time typing / pasting in UI components.
  * 1. Normalizes Eastern Arabic / Persian digits to standard ASCII 0-9.
  * 2. Strips all non-digit characters.

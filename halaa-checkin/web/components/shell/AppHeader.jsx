@@ -6,17 +6,22 @@ import Link from 'next/link';
 import { usePathname, useSearchParams, useParams, useRouter } from 'next/navigation';
 import { useSession } from '../../hooks/useSession.jsx';
 import { EventSelector } from './EventSelector.jsx';
-import { StatusBadge } from '../ui/StatusBadge.jsx';
+import { WorkspaceNav } from './WorkspaceNav.jsx';
 import { Icon } from '../ui/Icon.jsx';
 import { Menu } from '../ui/Menu.jsx';
 import { IconButton } from '../ui/IconButton.jsx';
 import { getDictionary, t } from '../../lib/locale.js';
 import styles from './AppHeader.module.css';
 
+function initialOf(name) {
+  const clean = String(name || '').replace(/[()[\]{}]/g, '').trim();
+  return clean ? Array.from(clean)[0].toUpperCase() : '?';
+}
+
 /**
- * AppHeader renders official Halaa branding, event selector, language switch, staff info, and logout.
- * Desktop: 64px sticky header with brand/product, event selector, session utilities.
- * Mobile: compact logo, event selector trigger, session menu.
+ * Application top bar: brand, workspace navigation, event switcher and session.
+ * Desktop: one 64px row. Below 960px: brand + event + account on the first row,
+ * workspace tabs on a second full-width row.
  */
 export function AppHeader() {
   const params = useParams();
@@ -28,34 +33,37 @@ export function AppHeader() {
   const router = useRouter();
   const { user, role, logout } = useSession();
 
-  // Create target URL for language toggle, preserving path & search params
   const targetPath = pathname ? pathname.replace(`/${lang}`, `/${targetLang}`) : `/${targetLang}`;
   const queryString = searchParams?.toString() ? `?${searchParams.toString()}` : '';
   const langToggleUrl = `${targetPath}${queryString}`;
 
+  const displayName = user?.displayName || user?.username || '';
+  const roleLabel = role ? t(dict, `roles.${role}`) : '';
+  const eventId = searchParams?.get('eventId');
+  const homeHref = `/${lang}/${role === 'reception' ? 'gate' : 'guests'}${eventId ? `?eventId=${encodeURIComponent(eventId)}` : ''}`;
+
+  const accountHeader = user ? (
+    <div className={styles.menuIdentity}>
+      <span className={styles.avatar} aria-hidden="true">{initialOf(displayName)}</span>
+      <span className={styles.staffText}>
+        <span className={styles.staffName} dir="auto">{displayName}</span>
+        <span className={styles.staffRole}>{roleLabel}</span>
+      </span>
+    </div>
+  ) : null;
+
   const mobileMenuItems = [
-    ...(user
-      ? [
-          {
-            key: 'user-info',
-            label: `${user.displayName || user.username} (${t(dict, `roles.${role}`)})`,
-            icon: <Icon name="user" size="sm" />,
-            disabled: true,
-          },
-          { type: 'divider' },
-        ]
-      : []),
     {
       key: 'lang-toggle',
       label: t(dict, 'nav.languageToggle'),
-      icon: <Icon name="globe" size="sm" />,
+      icon: <Icon name="languages" size="sm" />,
       onClick: () => router.push(langToggleUrl),
     },
     { type: 'divider' },
     {
       key: 'logout',
       label: t(dict, 'nav.logout'),
-      icon: <Icon name="logout" size="sm" />,
+      icon: <Icon name="logout" size="sm" mirror />,
       danger: true,
       onClick: logout,
     },
@@ -63,75 +71,81 @@ export function AppHeader() {
 
   return (
     <header className={styles.header}>
-      {/* Zone 1: Brand & Product title */}
-      <div className={styles.startSection}>
-        <Link href={`/${lang}/guests`} className={styles.logoLink} aria-label="Halaa Home">
-          <Image
-            src="/images/logo.png"
-            alt="Halaa Logo"
-            width={34}
-            height={34}
-            priority
-            className={styles.logo}
+      <div className={styles.inner}>
+        <Link href={homeHref} className={styles.brand} aria-label="Halaa">
+          <span className={styles.logoTile}>
+            <Image
+              src="/images/logo.png"
+              alt=""
+              width={40}
+              height={40}
+              priority
+              className={styles.logo}
+            />
+          </span>
+          <span className={styles.brandText}>
+            <span className={styles.productName}>{t(dict, 'common.appName')}</span>
+            <span className={styles.brandSub}>Halaa · هلا</span>
+          </span>
+        </Link>
+
+        <div className={styles.nav}>
+          <WorkspaceNav />
+        </div>
+
+        <div className={styles.event}>
+          <EventSelector />
+        </div>
+
+        <div className={`${styles.session} ${styles.desktopOnly}`}>
+          <Link
+            href={langToggleUrl}
+            className={styles.langToggle}
+            aria-label={t(dict, 'nav.languageToggleAria')}
+          >
+            <Icon name="languages" size="sm" />
+            <span>{t(dict, 'nav.languageToggle')}</span>
+          </Link>
+
+          <span className={styles.vDivider} aria-hidden="true" />
+
+          {user && (
+            <div className={styles.staff} title={`${displayName} · ${roleLabel}`}>
+              <span className={styles.avatar} aria-hidden="true">{initialOf(displayName)}</span>
+              <span className={styles.staffText}>
+                <span className={styles.staffName} dir="auto">{displayName}</span>
+                <span className={styles.staffRole}>{roleLabel}</span>
+              </span>
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={logout}
+            className={styles.logoutBtn}
+            title={t(dict, 'nav.logout')}
+            aria-label={t(dict, 'nav.logout')}
+          >
+            <Icon name="logout" size="sm" mirror />
+          </button>
+        </div>
+
+        <div className={`${styles.session} ${styles.mobileOnly}`}>
+          <Menu
+            align="end"
+            aria-label={t(dict, 'nav.currentStaff')}
+            header={accountHeader}
+            minWidth={220}
+            trigger={
+              <IconButton
+                icon={<span className={styles.avatar} aria-hidden="true">{initialOf(displayName)}</span>}
+                label={t(dict, 'nav.currentStaff')}
+                variant="ghost"
+              />
+            }
+            items={mobileMenuItems}
           />
-        </Link>
-        <span className={styles.divider} aria-hidden="true" />
-        <span className={styles.productTitle}>{t(dict, 'common.appName')}</span>
-      </div>
-
-      {/* Zone 2: Event Selector */}
-      <div className={styles.centerSection}>
-        <EventSelector />
-      </div>
-
-      {/* Zone 3: Session Utilities (Desktop) */}
-      <div className={`${styles.endSection} ${styles.desktopOnly}`}>
-        <Link
-          href={langToggleUrl}
-          className={styles.langToggle}
-          aria-label={t(dict, 'nav.languageToggleAria')}
-        >
-          {t(dict, 'nav.languageToggle')}
-        </Link>
-
-        {user && role && (role === 'admin' || role === 'reception') && (
-          <div className={styles.staffChip}>
-            <span className={styles.staffName} dir="auto">
-              {user.displayName || user.username}
-            </span>
-            <StatusBadge
-              status={role}
-              label={t(dict, `roles.${role}`)}
-              size="sm"
-            />
-          </div>
-        )}
-
-        <button
-          type="button"
-          onClick={logout}
-          className={styles.logoutBtn}
-          title={t(dict, 'nav.logout')}
-          aria-label={t(dict, 'nav.logout')}
-        >
-          <Icon name="logout" size="sm" />
-        </button>
-      </div>
-
-      {/* Mobile Session Menu */}
-      <div className={`${styles.endSection} ${styles.mobileOnly}`}>
-        <Menu
-          align="end"
-          aria-label={t(dict, 'nav.currentStaff')}
-          trigger={
-            <IconButton
-              icon={<Icon name="user" size="md" />}
-              label={t(dict, 'nav.currentStaff')}
-              variant="outline"
-            />
-          }
-          items={mobileMenuItems}
-        />
+        </div>
       </div>
     </header>
   );

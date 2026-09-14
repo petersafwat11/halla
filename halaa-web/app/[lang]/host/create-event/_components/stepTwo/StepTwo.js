@@ -13,6 +13,10 @@ import ReuseGuestsModal from "@/components/guests/reuseGuests/ReuseGuestsModal";
 import VCardImportModal from "@/components/guests/vcardImport/VCardImportModal";
 import CategoryAssignModal from "@/components/guests/categoryAssign/CategoryAssignModal";
 import { toLocalSaudiPhone } from "@halaa/shared/utils/phone";
+import {
+  eventPersonPhone,
+  findInvalidEventPeople,
+} from "@halaa/shared/utils/eventWizard";
 import { useMyContacts } from "@/hooks/guests/queries";
 import { toastUtils } from "@/utils/toastUtils";
 import { FiUsers, FiShield } from "react-icons/fi";
@@ -20,6 +24,8 @@ import {
   isContactPickerSupported,
   pickPhoneContacts,
 } from "@/utils/contacts/phoneContacts";
+
+const MAX_INVALID_ROWS_SHOWN = 5;
 
 /**
  * When an event is `live`, the update wizard passes `allowAddOnly={true}`
@@ -83,6 +89,25 @@ const StepTwo = ({ subscription, allowAddOnly = false, staffCount = 0, onManageS
   // Watch guest list from form
   const watchedGuestList = watch("guestList");
   const guestList = useMemo(() => watchedGuestList || [], [watchedGuestList]);
+  const watchedStaffList = watch("staffList");
+
+  // Rows the backend would reject at submit (blank name or non-Saudi mobile),
+  // listed so the host knows exactly which entry keeps Next disabled.
+  const invalidRows = useMemo(() => {
+    const { guests, staff } = findInvalidEventPeople({
+      guestList,
+      staffList: watchedStaffList || [],
+    });
+    const toRow = (kind, labelKey) => ({ index, person }) => ({
+      key: `${kind}-${index}`,
+      label: t(labelKey, { row: index + 1, name: person?.name?.trim() || "—" }),
+      phone: eventPersonPhone(person),
+    });
+    return [
+      ...guests.map(toRow("guest", "invalid_guest_row")),
+      ...staff.map(toRow("staff", "invalid_staff_row")),
+    ];
+  }, [guestList, watchedStaffList, t]);
 
   // Backend shape: { guestLimit, isGuestUnlimited, isPoolPlan, invitationBalance }
   // Pool plans report `isGuestUnlimited: true` (no per-event cap) but the global
@@ -363,6 +388,27 @@ const StepTwo = ({ subscription, allowAddOnly = false, staffCount = 0, onManageS
               {t("row")} {error.row}: {error.errors.join(", ")}
             </div>
           ))}
+        </div>
+      )}
+
+      {invalidRows.length > 0 && (
+        <div className={styles.invalidPeople} role="status" aria-live="polite">
+          <p className={styles.invalidPeopleTitle}>{t("invalid_people_title")}</p>
+          <ul className={styles.invalidPeopleList}>
+            {invalidRows.slice(0, MAX_INVALID_ROWS_SHOWN).map((row) => (
+              <li key={row.key}>
+                <span dir="auto">{row.label}</span>
+                {row.phone && (
+                  <bdi dir="ltr" className={styles.invalidPeoplePhone}>{row.phone}</bdi>
+                )}
+              </li>
+            ))}
+          </ul>
+          {invalidRows.length > MAX_INVALID_ROWS_SHOWN && (
+            <p className={styles.invalidPeopleMore}>
+              {t("invalid_people_more", { count: invalidRows.length - MAX_INVALID_ROWS_SHOWN })}
+            </p>
+          )}
         </div>
       )}
 

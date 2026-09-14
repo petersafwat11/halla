@@ -166,8 +166,6 @@ export default function PricingSection({ lang = "ar", initialPlans = null }) {
         <div className={styles.prHdr}>
           <h2 className={styles.prTitle}>{t("pricing.title")}</h2>
         </div>
-        {(error || now - landingData.fetchedAt > PLAN_REFRESH_SECONDS * 1000) && <p role="status">{t('pricing.refreshUnavailable')}</p>}
-
         <div className={styles.prSelector}>
 
           <div className={styles.prSegWrap}>

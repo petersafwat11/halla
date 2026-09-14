@@ -211,12 +211,12 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete
 };
 
 const styles = StyleSheet.create({
-  container: { gap: spacing[12], width: '100%' },
+  container: { gap: 10, width: '100%' },
   actionsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing[8] },
-  outlineButton: { flexGrow: 1, flexBasis: 150, minHeight: 48, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing[8], padding: spacing[12], borderRadius: 12, borderWidth: 1, borderColor: colors.primary[200], backgroundColor: colors.natural[50] },
+  outlineButton: { flexGrow: 1, flexBasis: 132, minHeight: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing[8], paddingVertical: 9, paddingHorizontal: 14, borderRadius: 10, borderWidth: 1, borderColor: '#D6B392', backgroundColor: colors.natural[50] },
   outlineButtonText: { flexShrink: 1, fontFamily: 'Cairo_600SemiBold', fontSize: 14, color: colors.primary[800] },
   outlineButtonDisabled: { opacity: 0.5 },
-  workflowHint: { fontSize: 14, lineHeight: 23, color: colors.secondary[400] },
+  workflowHint: { fontSize: 13, lineHeight: 21, color: colors.secondary[400], paddingTop: 10, borderTopWidth: 1, borderTopColor: '#F0E8E0' },
   scheduledNotice: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing[12], padding: spacing[12], borderRadius: 12, borderStartWidth: 3, borderStartColor: colors.primary[500], backgroundColor: colors.primary[50] },
   scheduledNoticeText: { flex: 1, fontSize: 13, lineHeight: 21, color: colors.primary[800] },
 });

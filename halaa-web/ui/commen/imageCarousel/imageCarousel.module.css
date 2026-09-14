@@ -49,12 +49,6 @@
 .arabic_title {
   color: #c28e5c;
 }
-.description {
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 2.18rem;
-  font-weight: 500;
-  line-height: 3.19rem;
-}
 .dots {
   display: flex;
   gap: 1.1rem;

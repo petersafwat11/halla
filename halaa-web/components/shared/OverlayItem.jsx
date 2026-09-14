@@ -10,10 +10,11 @@
  * caller side; this component is dumb about ordering.
  */
 
-import React, { useLayoutEffect, useRef } from "react";
+import React, { memo, useLayoutEffect, useRef } from "react";
 import { renderIconByName } from "@/app/[lang]/admin-dash/templates/_components/IconPicker";
 
-export function OverlayItem({
+// Memoized: typing into one template field re-renders only its own overlay.
+export const OverlayItem = memo(function OverlayItem({
   overlay,
   containerWidth,
   containerHeight,
@@ -25,6 +26,7 @@ export function OverlayItem({
   onClick,
   dir,
   style,
+  isPlaceholder = false,
 }) {
   const left = (overlay.leftPct / 100) * containerWidth;
   const top = (overlay.topPct / 100) * containerHeight;
@@ -54,7 +56,7 @@ export function OverlayItem({
       // Clamping alone silently removed venue/name text from exported cards.
       element.style.WebkitLineClamp = "unset";
       element.style.overflow = "visible";
-      let low = fontSize * 0.35;
+      let low = fontSize * 0.55;
       let high = fontSize;
       const fits = size => {
         element.style.fontSize = `${size}px`;
@@ -70,7 +72,11 @@ export function OverlayItem({
       element.style.fontSize = `${low}px`;
     };
     fit();
-    document.fonts?.ready.then(fit);
+    // Refit once late web fonts arrive; skipping it when fonts are already
+    // loaded keeps every keystroke from queuing a second measuring pass.
+    if (document.fonts && document.fonts.status !== "loaded") {
+      document.fonts.ready.then(fit);
+    }
     return () => { cancelled = true; };
   }, [text, width, fontSize, overlay.maxLines, overlay.lineHeight, overlay.type, overlay.fontWeight, overlay.fontFamily, fontFamilyOverride]);
 
@@ -78,6 +84,7 @@ export function OverlayItem({
     <div
       ref={textRef}
       onClick={onClick}
+      data-template-placeholder={isPlaceholder ? "" : undefined}
       style={{
         position: "absolute",
         left,
@@ -91,17 +98,13 @@ export function OverlayItem({
         whiteSpace: "pre-wrap",
         overflowWrap: "anywhere",
         direction: dir && dir !== "auto" ? dir : undefined,
-        ...(overlay.maxLines
-          ? {
-              display: "-webkit-box",
-              WebkitBoxOrient: "vertical",
-              WebkitLineClamp: overlay.maxLines,
-              overflow: "hidden",
-            }
-          : {}),
+        // Never clamp invitation copy. The layout effect above fits authored
+        // text to the overlay's line budget; hiding overflow would silently
+        // replace valid, within-limit content with an ellipsis in the export.
         color,
         fontSize,
         zIndex: overlay.zIndex || 0,
+        opacity: isPlaceholder ? 0.5 : undefined,
         outline: selected ? "2px solid #c28e5c" : "none",
         cursor: onClick ? "pointer" : "default",
         ...style,
@@ -112,6 +115,6 @@ export function OverlayItem({
         : text}
     </div>
   );
-}
+});
 
 export default OverlayItem;

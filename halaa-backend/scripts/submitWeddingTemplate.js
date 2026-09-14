@@ -24,8 +24,7 @@ const WA_BASE_URL = process.env.TAQNYAT_WA_BASE_URL || 'https://api.taqnyat.sa/w
 
 // Public URL of the sample image for template header example
 // Taqnyat/360dialog requires a publicly accessible URL for header_handle
-const SAMPLE_IMAGE_URL =
-  'https://hallamangement.s3.eu-north-1.amazonaws.com/template-samples/wedding-sample.png';
+const SAMPLE_IMAGE_URL = process.env.WHATSAPP_TEMPLATE_SAMPLE_IMAGE_URL;
 
 const waClient = axios.create({
   baseURL: WA_BASE_URL,
@@ -129,6 +128,10 @@ async function submitTemplate(template) {
 async function main() {
   if (!TAQNYAT_API_KEY) {
     console.error('❌ TAQNYAT_API_KEY is not set in config.env — aborting.');
+    process.exit(1);
+  }
+  if (!SAMPLE_IMAGE_URL) {
+    console.error('❌ WHATSAPP_TEMPLATE_SAMPLE_IMAGE_URL is not set — aborting.');
     process.exit(1);
   }
 

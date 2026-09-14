@@ -51,7 +51,7 @@
   border: 1px solid color-mix(in srgb, var(--color-primary-500) 18%, transparent);
   border-radius: 1.6rem;
   overflow: hidden;
-  background: #ffffff;
+  background: var(--landing-card-background, var(--color-natural-50));
   transition: border-color .2s ease, box-shadow .2s ease;
 }
 

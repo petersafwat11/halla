@@ -18,20 +18,13 @@ const {
 } = require("../../shared/errors");
 
 const {
-  S3Client,
-  PutObjectCommand,
-  DeleteObjectCommand,
-  GetObjectCommand,
-} = require("@aws-sdk/client-s3");
-const {
-  isLocalStorage,
   normalizeObjectKey,
   localRefForKey,
   writeLocalObject,
   readLocalObject,
   deleteLocalObject,
   contentTypeForRef,
-} = require("../../shared/utils/storageDriver");
+} = require("../../shared/utils/localStorage");
 
 // `sharp` is loaded lazily so a dev environment without `npm install`
 // still boots; the admin upload path surfaces a clear error otherwise.
@@ -42,66 +35,21 @@ try {
   sharp = null;
 }
 
-const isS3Configured = () =>
-  !!(
-    !isLocalStorage() &&
-    process.env.AWS_ACCESS_KEY_ID &&
-    process.env.AWS_SECRET_ACCESS_KEY &&
-    process.env.AWS_REGION &&
-    process.env.AWS_S3_BUCKET
-  );
-
-let s3Client = null;
-function getS3() {
-  if (s3Client) return s3Client;
-  if (!isS3Configured()) return null;
-  s3Client = new S3Client({
-    region: process.env.AWS_REGION,
-    credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    },
-  });
-  return s3Client;
+function storedImageUrl(ref) {
+  return localRefForKey(ref);
 }
 
-// CloudFront when provisioned, otherwise the bucket URL.
-function s3KeyToUrl(key) {
-  if (!key) return null;
-  if (isLocalStorage()) return localRefForKey(key);
-  if (process.env.CLOUDFRONT_DOMAIN) {
-    return `https://${process.env.CLOUDFRONT_DOMAIN}/${key}`;
-  }
-  if (process.env.AWS_S3_BASE_URL) {
-    return `${process.env.AWS_S3_BASE_URL}/${key}`;
-  }
-  return `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
-}
-
-async function deleteS3Key(key) {
-  if (!key) return;
-  if (isLocalStorage()) {
-    try {
-      await deleteLocalObject(key);
-    } catch (err) {
-      logger.error("[templates.service] local delete failed", { message: err.message });
-    }
-    return;
-  }
-  const client = getS3();
-  if (!client) return;
+async function deleteStoredImage(ref) {
+  if (!ref) return;
   try {
-    await client.send(
-      new DeleteObjectCommand({ Bucket: process.env.AWS_S3_BUCKET, Key: key })
-    );
+    await deleteLocalObject(ref);
   } catch (err) {
-    logger.error("[templates.service] S3 delete failed", { message: err.message });
+    logger.error("[templates.service] local delete failed", { message: err.message });
   }
 }
 
 /**
- * Accept a file buffer from the backend (proxy upload) and PUT it
- * directly to S3. Generates the same key format used by processImage.
+ * Persist a template image under the VPS upload root.
  */
 async function handleImageUpload({ fileBuffer, filename, contentType, templateId = "new" }) {
   if (!/^image\/(jpeg|png|webp)$/.test(contentType)) {
@@ -113,85 +61,36 @@ async function handleImageUpload({ fileBuffer, filename, contentType, templateId
   const safeFilename = String(filename).replace(/[^a-zA-Z0-9._-]/g, "-");
   const key = `templates/${templateId}/original-${Date.now()}-${safeFilename}`;
 
-  if (isLocalStorage()) {
-    const storedRef = await writeLocalObject({ key, body: fileBuffer });
-    return { s3Key: storedRef };
-  }
-
-  const client = getS3();
-  if (!client) throw new AppError("S3 is not configured", 500, "S3_NOT_CONFIGURED");
-
-  await client.send(
-    new PutObjectCommand({
-      Bucket: process.env.AWS_S3_BUCKET,
-      Key: key,
-      Body: fileBuffer,
-      ContentType: contentType,
-    })
-  );
-
-  return { s3Key: key };
+  const imageRef = await writeLocalObject({ key, body: fileBuffer });
+  return { imageRef };
 }
 
 /**
- * Process the uploaded original — fetch from S3, generate webp
- * thumbnail (320 wide), upload thumbnail, return natural dimensions
- * plus thumbnail key.
+ * Generate a 320px webp thumbnail and return its local reference.
  */
-async function processImage(s3Key) {
+async function processImage(imageRef) {
   if (!sharp) {
     // Dev-mode fallback: accept the original as-is, no thumbnail.
     return {
-      thumbnailS3Key: null,
+      thumbnailRef: null,
       naturalWidth: 1080,
       naturalHeight: 1350,
     };
   }
-  let buffer;
-  if (isLocalStorage()) {
-    buffer = await readLocalObject(s3Key);
-  } else {
-    const client = getS3();
-    if (!client) {
-      throw new AppError("S3 is not configured", 500, "S3_NOT_CONFIGURED");
-    }
-    const obj = await client.send(
-      new GetObjectCommand({ Bucket: process.env.AWS_S3_BUCKET, Key: s3Key })
-    );
-    const chunks = [];
-    for await (const chunk of obj.Body) chunks.push(chunk);
-    buffer = Buffer.concat(chunks);
-  }
+  const buffer = await readLocalObject(imageRef);
 
   const meta = await sharp(buffer).metadata();
   const naturalWidth = meta.width || 1080;
   const naturalHeight = meta.height || 1350;
 
   const thumbBuffer = await sharp(buffer).resize({ width: 320 }).webp({ quality: 80 }).toBuffer();
-  const originalKey = normalizeObjectKey(s3Key);
+  const originalKey = normalizeObjectKey(imageRef);
   const thumbnailKey = originalKey.replace(/^(templates\/[^/]+)\/original-(.+)$/, (_m, dir, name) => {
     return `${dir}/thumb-${name}.webp`;
   });
 
-  // Cache-Control set so CloudFront/browsers cache aggressively — the S3 key
-  // includes a Date.now() suffix so changes always produce a fresh URL.
-  if (isLocalStorage()) {
-    const thumbnailRef = await writeLocalObject({ key: thumbnailKey, body: thumbBuffer });
-    return { thumbnailS3Key: thumbnailRef, naturalWidth, naturalHeight };
-  }
-
-  const client = getS3();
-  await client.send(
-    new PutObjectCommand({
-      Bucket: process.env.AWS_S3_BUCKET,
-      Key: thumbnailKey,
-      Body: thumbBuffer,
-      ContentType: "image/webp",
-      CacheControl: "public, max-age=31536000, immutable",
-    })
-  );
-
-  return { thumbnailS3Key: thumbnailKey, naturalWidth, naturalHeight };
+  const thumbnailRef = await writeLocalObject({ key: thumbnailKey, body: thumbBuffer });
+  return { thumbnailRef, naturalWidth, naturalHeight };
 }
 
 // ============================================
@@ -215,10 +114,8 @@ function publicMediaOrigin() {
 }
 
 /**
- * Template objects live in a private S3 bucket in production. Exposing the
- * stored bucket URL made every mobile card fail with 403. Return stable API
- * asset URLs instead; the asset route below authenticates the caller and
- * streams the object through the backend.
+ * Return stable API asset URLs; the authenticated asset route streams files
+ * from the persistent VPS upload volume.
  */
 function withAssetUrls(doc) {
   if (!doc) return doc;
@@ -250,7 +147,7 @@ async function listForHost({ category } = {}) {
   }
 
   const docs = await Template.find(query)
-    .select("-imageS3Key -createdBy -updatedBy -version -__v")
+    .select("-imageRef -createdBy -updatedBy -version -__v")
     .sort({ sortOrder: 1, createdAt: -1 })
     .limit(LIST_LIMIT)
     .lean();
@@ -289,65 +186,40 @@ async function getById(id) {
 
 async function getAsset(id, variant = "thumbnail") {
   const doc = await Template.findById(id)
-    .select("imageS3Key thumbnailS3Key active deletedAt")
+    .select("imageRef thumbnailRef active deletedAt")
     .lean();
   if (!doc || doc.deletedAt || !doc.active) throw new NotFoundError("Template");
 
   const key =
     variant === "original"
-      ? doc.imageS3Key
-      : doc.thumbnailS3Key || doc.imageS3Key;
+      ? doc.imageRef
+      : doc.thumbnailRef || doc.imageRef;
   if (!key) throw new NotFoundError("Template image");
 
-  if (isLocalStorage()) {
-    try {
-      const body = await readLocalObject(key);
-      return {
-        body,
-        contentType: contentTypeForRef(key),
-        etag: null,
-      };
-    } catch (err) {
-      if (err.code === "ENOENT") throw new NotFoundError("Template image");
-      throw err;
-    }
+  try {
+    return {
+      body: await readLocalObject(key),
+      contentType: contentTypeForRef(key),
+      etag: null,
+    };
+  } catch (err) {
+    if (err.code === "ENOENT") throw new NotFoundError("Template image");
+    throw err;
   }
-
-  const client = getS3();
-  if (!client) {
-    throw new AppError("Template storage is not configured", 503, "S3_NOT_CONFIGURED");
-  }
-
-  const object = await client.send(
-    new GetObjectCommand({ Bucket: process.env.AWS_S3_BUCKET, Key: key })
-  );
-  const bytes = object.Body?.transformToByteArray
-    ? await object.Body.transformToByteArray()
-    : Buffer.concat(await (async () => {
-        const chunks = [];
-        for await (const chunk of object.Body) chunks.push(chunk);
-        return chunks;
-      })());
-
-  return {
-    body: Buffer.isBuffer(bytes) ? bytes : Buffer.from(bytes),
-    contentType: object.ContentType || (key.endsWith(".webp") ? "image/webp" : "image/jpeg"),
-    etag: object.ETag || null,
-  };
 }
 
 async function createTemplate(payload, actor) {
-  const { s3Key, ...templateFields } = payload;
+  const { imageRef, ...templateFields } = payload;
 
   let processed;
   try {
-    processed = await processImage(s3Key);
+    processed = await processImage(imageRef);
     const doc = await Template.create({
       ...templateFields,
-      imageS3Key: s3Key,
-      imageUrl: s3KeyToUrl(s3Key),
-      thumbnailS3Key: processed.thumbnailS3Key,
-      thumbnailUrl: processed.thumbnailS3Key ? s3KeyToUrl(processed.thumbnailS3Key) : null,
+      imageRef,
+      imageUrl: storedImageUrl(imageRef),
+      thumbnailRef: processed.thumbnailRef,
+      thumbnailUrl: processed.thumbnailRef ? storedImageUrl(processed.thumbnailRef) : null,
       naturalWidth: processed.naturalWidth,
       naturalHeight: processed.naturalHeight,
       createdBy: actor?._id || null,
@@ -364,8 +236,8 @@ async function createTemplate(payload, actor) {
 
     return withAssetUrls(doc);
   } catch (err) {
-    await deleteS3Key(s3Key).catch(() => {});
-    if (processed?.thumbnailS3Key) await deleteS3Key(processed.thumbnailS3Key).catch(() => {});
+    await deleteStoredImage(imageRef).catch(() => {});
+    if (processed?.thumbnailRef) await deleteStoredImage(processed.thumbnailRef).catch(() => {});
     throw err;
   }
 }
@@ -374,7 +246,7 @@ async function updateTemplate(id, payload, actor) {
   const doc = await Template.findById(id);
   if (!doc || doc.deletedAt) throw new NotFoundError("Template");
 
-  const { s3Key, expectedVersion, ...rest } = payload;
+  const { imageRef, expectedVersion, ...rest } = payload;
 
   // Optimistic locking: editor sends the version it loaded; if another
   // admin saved in the meantime the stamp won't match and we 409 instead
@@ -392,15 +264,15 @@ async function updateTemplate(id, payload, actor) {
   let oldThumbKey = null;
 
   try {
-    if (s3Key && s3Key !== doc.imageS3Key) {
-      newProcessed = await processImage(s3Key);
-      oldImageKey = doc.imageS3Key;
-      oldThumbKey = doc.thumbnailS3Key;
-      doc.imageS3Key = s3Key;
-      doc.imageUrl = s3KeyToUrl(s3Key);
-      doc.thumbnailS3Key = newProcessed.thumbnailS3Key;
-      doc.thumbnailUrl = newProcessed.thumbnailS3Key
-        ? s3KeyToUrl(newProcessed.thumbnailS3Key)
+    if (imageRef && imageRef !== doc.imageRef) {
+      newProcessed = await processImage(imageRef);
+      oldImageKey = doc.imageRef;
+      oldThumbKey = doc.thumbnailRef;
+      doc.imageRef = imageRef;
+      doc.imageUrl = storedImageUrl(imageRef);
+      doc.thumbnailRef = newProcessed.thumbnailRef;
+      doc.thumbnailUrl = newProcessed.thumbnailRef
+        ? storedImageUrl(newProcessed.thumbnailRef)
         : null;
       doc.naturalWidth = newProcessed.naturalWidth;
       doc.naturalHeight = newProcessed.naturalHeight;
@@ -424,8 +296,8 @@ async function updateTemplate(id, payload, actor) {
 
     await doc.save();
 
-    if (oldImageKey) await deleteS3Key(oldImageKey).catch(() => {});
-    if (oldThumbKey) await deleteS3Key(oldThumbKey).catch(() => {});
+    if (oldImageKey) await deleteStoredImage(oldImageKey).catch(() => {});
+    if (oldThumbKey) await deleteStoredImage(oldThumbKey).catch(() => {});
 
     await logAudit({
       action: "template.update",
@@ -437,8 +309,8 @@ async function updateTemplate(id, payload, actor) {
 
     return withAssetUrls(doc);
   } catch (err) {
-    if (s3Key && s3Key !== oldImageKey) await deleteS3Key(s3Key).catch(() => {});
-    if (newProcessed?.thumbnailS3Key) await deleteS3Key(newProcessed.thumbnailS3Key).catch(() => {});
+    if (imageRef && imageRef !== oldImageKey) await deleteStoredImage(imageRef).catch(() => {});
+    if (newProcessed?.thumbnailRef) await deleteStoredImage(newProcessed.thumbnailRef).catch(() => {});
     throw err;
   }
 }
@@ -471,9 +343,9 @@ async function duplicateTemplate(id, actor) {
     nameAr: `${src.nameAr} (نسخة)`,
     categories: src.categories,
     imageUrl: src.imageUrl,
-    imageS3Key: src.imageS3Key, // shares the original — admin should re-upload before publishing
+    imageRef: src.imageRef, // shares the original — admin should re-upload before publishing
     thumbnailUrl: src.thumbnailUrl,
-    thumbnailS3Key: src.thumbnailS3Key,
+    thumbnailRef: src.thumbnailRef,
     naturalWidth: src.naturalWidth,
     naturalHeight: src.naturalHeight,
     fields: src.fields,
@@ -573,8 +445,8 @@ module.exports = {
   // Upload
   handleImageUpload,
   processImage,
-  s3KeyToUrl,
-  deleteS3Key,
+  storedImageUrl,
+  deleteStoredImage,
   // Asset URL helpers (reused by events.crud for populated templateRefs)
   publicMediaOrigin,
   withAssetUrls,

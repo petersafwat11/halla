@@ -6,11 +6,16 @@ import {
   StyleSheet,
   TouchableOpacity,
   Pressable,
+  useWindowDimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Controller, useFormContext } from "react-hook-form";
 import { useTranslation } from "../../localization";
 import { useFieldDirection } from "../../hooks/useInputDirection";
+
+// Above this system font scale a one-line helper would shrink below a
+// readable size or ellipsize, so it wraps instead.
+const MAX_SINGLE_LINE_FONT_SCALE = 1.15;
 
 /**
  * Hoisted field renderer to satisfy Rules-of-Hooks and stabilize focus state.
@@ -22,6 +27,7 @@ const PasswordInputField = ({
   value,
   error,
   helper,
+  helperNumberOfLines,
   onChange,
   onBlur,
   fieldRef,
@@ -31,6 +37,11 @@ const PasswordInputField = ({
   const [isSecure, setIsSecure] = useState(true);
   const inputRef = useRef(null);
   const { t } = useTranslation("common");
+  const { fontScale } = useWindowDimensions();
+  const helperLines =
+    helperNumberOfLines === 1 && fontScale > MAX_SINGLE_LINE_FONT_SCALE
+      ? undefined
+      : helperNumberOfLines;
   // Alignment mirrors the plain TextInput: placeholder/chrome follow the UI
   // locale and stay put while typing. The previous forced-LTR policy made iOS
   // render the Arabic placeholder right-aligned, then snap the masked dots
@@ -99,7 +110,14 @@ const PasswordInputField = ({
         <Text style={[styles.errorText, fieldDirection.text]}>{error.message}</Text>
       )}
       {!error && helper ? (
-        <Text style={[styles.helperText, fieldDirection.text]}>{helper}</Text>
+        <Text
+          style={[styles.helperText, fieldDirection.text]}
+          numberOfLines={helperLines}
+          adjustsFontSizeToFit={helperLines === 1}
+          minimumFontScale={0.85}
+        >
+          {helper}
+        </Text>
       ) : null}
     </View>
   );
@@ -111,6 +129,7 @@ const PasswordInput = ({
   placeholder,
   disabled = false,
   helper,
+  helperNumberOfLines,
   rules,
   ...props
 }) => {
@@ -132,6 +151,7 @@ const PasswordInput = ({
           value={value}
           error={error}
           helper={helper}
+          helperNumberOfLines={helperNumberOfLines}
           onChange={onChange}
           onBlur={onBlur}
           fieldRef={ref}

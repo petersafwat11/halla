@@ -151,6 +151,17 @@ export const GuestsRepository = {
   },
 
   /**
+   * Find an active guest by the human-readable short code printed on passes.
+   *
+   * @param {string} eventId
+   * @param {string} shortCode normalized Crockford base32 code
+   * @param {{ session?: import('mongoose').ClientSession }} [options]
+   */
+  async findByShortCode(eventId, shortCode, { session } = {}) {
+    return Guest.findOne({ eventId, shortCode, deletedAt: null }).session(session || null);
+  },
+
+  /**
    * Search active guests for gate lookup (at most 20 safe matches).
    * Supports Arabic/English name normalization, short code, and reference.
    *

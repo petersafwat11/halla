@@ -19,7 +19,7 @@ Part of the [Halaa monorepo](../README.md).
 | Validation      | **Zod** for request validation; Joi only for env-var validation   |
 | Payments        | **Moyasar** (card, Apple Pay, STC Pay, 3-D Secure)                |
 | SMS / WhatsApp  | **Taqnyat**                                                        |
-| File storage    | **AWS S3** (`@aws-sdk`, multer-s3) + Sharp for image processing    |
+| File storage    | Persistent VPS volume (`UPLOAD_PATH`) + Sharp image processing     |
 | API docs        | Swagger / OpenAPI 3 (`swagger-jsdoc` + `swagger-ui-express`)      |
 | Scheduling      | `node-cron` (event lifecycle, reminders, bulk sends)             |
 | Observability   | Winston (logs), `prom-client` (Prometheus metrics)               |
@@ -32,7 +32,7 @@ Part of the [Halaa monorepo](../README.md).
 
 - Node.js 20 LTS
 - A MongoDB connection string (the project uses MongoDB Atlas)
-- Credentials for Moyasar, Taqnyat, and AWS S3 for full functionality
+- Credentials for Moyasar and Taqnyat for full functionality
 
 ---
 
@@ -110,12 +110,9 @@ WHATSAPP_WEBHOOK_VERIFY_TOKEN=
 # WHATSAPP_APP_SECRET=                # HMAC verify (optional)
 # TAQNYAT_REMINDER_TEMPLATE_NAME=
 
-# ── File storage (AWS S3) ──────────────────────────────
-AWS_ACCESS_KEY_ID=
-AWS_SECRET_ACCESS_KEY=
-AWS_REGION=eu-north-1
-AWS_S3_BUCKET=hallamangement
-AWS_S3_BASE_URL=https://hallamangement.s3.eu-north-1.amazonaws.com
+# ── Persistent VPS file storage ─────────────────────────
+# Mount this path to durable storage and include it in backups.
+UPLOAD_PATH=./public/uploads
 # UPLOAD_PATH=./public/uploads        # local fallback
 # MAX_FILE_SIZE=5242880
 

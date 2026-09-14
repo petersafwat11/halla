@@ -18,8 +18,7 @@ FROM base AS runner
 RUN groupadd -g 1001 nodejs && useradd -u 1001 -g nodejs -m appuser
 COPY --from=deps /app/node_modules ./node_modules
 COPY halaa-backend/ ./
-# Canonical invitation backgrounds used by the idempotent S3-to-local
-# restoration script. They are tracked source assets, not runtime uploads.
+# Canonical invitation backgrounds used by template seeding and local recovery.
 COPY template-cards ./template-cards
 # Preserve Node's normal package resolution for backend imports such as
 # `@halaa/shared/constants/eventCategories.cjs`. Shared dependencies used by

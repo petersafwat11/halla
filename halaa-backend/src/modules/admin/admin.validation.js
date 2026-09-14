@@ -4,6 +4,10 @@
  */
 const { z } = require('zod');
 const { isValidPhone, normalizePhoneNumber } = require('../../shared/utils/phone');
+const {
+  createEventFields,
+  applyTaqnyatTemplateAliases,
+} = require('../events/events.validation');
 
 const objectId = z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid ObjectId format');
 const phonePattern = z
@@ -232,7 +236,35 @@ const bulkEventStatusSchema = z
     path: ['ids'],
   });
 
+/**
+ * Admin create-for-host: the host create contract plus the target the
+ * controller resolves — `createForSelf`, an existing `targetUserId`, or a
+ * `phoneNumber` (+ optional `hostName`) to find or create the host.
+ */
+const createEventForHostSchema = z
+  .object({
+    ...createEventFields,
+    targetUserId: objectId.optional(),
+    createForSelf: z
+      .union([z.boolean(), z.enum(['true', 'false'])])
+      .optional()
+      .transform((value) => value === true || value === 'true'),
+    phoneNumber: phonePattern.optional(),
+    hostName: z.string().trim().min(1).max(100).optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (!data.createForSelf && !data.targetUserId && !data.phoneNumber) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['targetUserId'],
+        message: 'Target user is required',
+      });
+    }
+  })
+  .transform(applyTaqnyatTemplateAliases);
+
 module.exports = {
+  createEventForHostSchema,
   createHostSchema,
   findOrCreateHostSchema,
   updateHostStatusSchema,

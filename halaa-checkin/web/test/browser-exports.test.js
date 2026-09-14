@@ -396,6 +396,8 @@ describe('T10 — Export/report panel + admission correction Browser E2E', { tim
     const state = await setupAdminPage(page);
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(`${BASE_URL}/en/guests?eventId=ev-exp-01`, { waitUntil: 'networkidle' });
+    await page.waitForSelector('[data-testid="row-actions-btn-g-exp-1"]');
+    await page.click('[data-testid="row-actions-btn-g-exp-1"]');
     await page.waitForSelector('[data-testid="correct-admission-btn-g-exp-1"]');
 
     const originalAt = state.guestsList[0].checkIn.checkedInAt;
@@ -411,7 +413,7 @@ describe('T10 — Export/report panel + admission correction Browser E2E', { tim
     assert.ok(await page.locator('[data-testid="correction-submit-btn"]').isVisible(), 'dialog stays open on validation failure');
 
     // Fill reason + change companions 1→2, submit
-    await page.fill('input[name="reason"]', 'Guest arrived with one extra companion, verified at door');
+    await page.fill('textarea[name="reason"]', 'Guest arrived with one extra companion, verified at door');
     await page.fill('input[name="actualCompanions"]', '2');
     await page.click('[data-testid="correction-submit-btn"]');
     await page.waitForTimeout(1200);
@@ -422,13 +424,14 @@ describe('T10 — Export/report panel + admission correction Browser E2E', { tim
     assert.equal(state.guestsList[0].checkIn.operatorName, originalOp, 'original operator preserved');
 
     // Reset dialog: requires reason too, then clears check-in
+    await page.click('[data-testid="row-actions-btn-g-exp-1"]');
     await page.waitForSelector('[data-testid="reset-admission-btn-g-exp-1"]');
     await page.click('[data-testid="reset-admission-btn-g-exp-1"]');
     await page.waitForSelector('[data-testid="reset-submit-btn"]');
     await page.click('[data-testid="reset-submit-btn"]');
     await page.waitForTimeout(300);
     assert.ok((await page.locator('[role="alert"]').count()) > 0, 'reset without reason shows validation error');
-    await page.fill('input[name="reason"]', 'Duplicate scan — reset to allow deliberate re-admission');
+    await page.fill('textarea[name="reason"]', 'Duplicate scan — reset to allow deliberate re-admission');
     await page.click('[data-testid="reset-submit-btn"]');
     await page.waitForTimeout(1200);
     assert.equal(state.guestsList[0].checkIn, null, 'reset clears admission');

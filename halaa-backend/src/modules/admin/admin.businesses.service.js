@@ -22,7 +22,7 @@ const { ROLES, USER_STATUS, ACCOUNT_TYPES } = require('../../shared/constants');
 const { businessHostFilter } = require('../../shared/utils/accountScope');
 const { buildSearchQuery, buildDateRangeQuery, formatUserResponse } = require('./admin.shared.service');
 const { normalizePhoneNumber } = require('../../shared/utils/phone');
-const { deleteFromS3, signStoredImage } = require('../../shared/utils/s3Upload');
+const { deleteStoredFile, resolveStoredImage } = require('../../shared/utils/localUpload');
 const notificationService = require('../notifications/notifications.service');
 const assignmentService = require('../business/business.assignment.service');
 const setupFeeService = require('../business/business.setupFee.service');
@@ -32,9 +32,9 @@ const subscriptionLifecycle = require('../subscriptions/subscriptionLifecycle.se
 const safeDeleteOldKey = async (oldKey) => {
   if (!oldKey) return;
   try {
-    await deleteFromS3(oldKey);
+    await deleteStoredFile(oldKey);
   } catch (err) {
-    logger.warn('[admin.businesses] failed to delete old S3 key', { oldKey, error: err?.message });
+    logger.warn('[admin.businesses] failed to delete old local reference', { oldKey, error: err?.message });
   }
 };
 
@@ -105,7 +105,7 @@ async function getBusinessById(businessId) {
   ]);
 
   const formatted = formatUserResponse(business);
-  formatted.avatarUrl = await signStoredImage(business.avatar);
+  formatted.avatarUrl = await resolveStoredImage(business.avatar);
 
   return {
     ...formatted,
@@ -213,7 +213,7 @@ async function updateBusiness(businessId, { name, description }) {
   return formatUserResponse(business);
 }
 
-/** Replace the business logo (S3 key) and clean up the old object. [#9] */
+/** Replace the business logo (local reference) and clean up the old object. [#9] */
 async function updateBusinessLogo(businessId, logoKey) {
   if (!logoKey) throw new ValidationError('No logo uploaded');
   const business = await User.findOne(businessHostFilter({ _id: businessId }));
@@ -224,7 +224,7 @@ async function updateBusinessLogo(businessId, logoKey) {
   await business.save();
   await safeDeleteOldKey(oldKey);
 
-  return { avatar: await signStoredImage(logoKey) };
+  return { avatar: await resolveStoredImage(logoKey) };
 }
 
 /** Assign a plan — mode A (grant) or mode B (checkout link). */

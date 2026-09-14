@@ -23,12 +23,15 @@ export const renderTemplateField = (field, locale, t) => {
   const label = locale === "ar" ? field.labelAr : field.labelEn;
   const placeholder = locale === "ar" ? field.placeholderAr : field.placeholderEn;
   const name = field.key;
-  const contentDirection = field.dir === "ltr" ? "ltr" : field.dir === "rtl" ? "rtl" : "localized";
+  // Empty fields must follow the form language so English examples never
+  // render backwards. Explicit Latin-only fields remain LTR; all other
+  // invitation copy follows the language the host is currently editing in.
+  const contentDirection = field.dir === "ltr" ? "ltr" : locale === "en" ? "ltr" : "rtl";
 
   switch (field.type) {
     case "text":
       return (
-        <TextInput key={name} name={name} label={label} placeholder={placeholder} keyboardType={INPUT_MODE_TO_KEYBOARD[field.inputMode] ?? "default"} autoCapitalize={field.autoCapitalize ?? "sentences"} contentDirection={contentDirection} />
+        <TextInput key={name} name={name} label={label} placeholder={placeholder} keyboardType={INPUT_MODE_TO_KEYBOARD[field.inputMode] ?? "default"} autoCapitalize={field.autoCapitalize ?? "sentences"} contentDirection={contentDirection} maxLength={field.maxLength} showCounter={Boolean(field.maxLength)} />
       );
     case "textarea":
       return (
@@ -39,15 +42,15 @@ export const renderTemplateField = (field, locale, t) => {
     case "time":
       return <TimePicker key={name} name={name} label={label} />;
     case "color":
-      return <ColorPicker key={name} name={name} label={label} showPresets={true} />;
+      return <ColorPicker key={name} name={name} label={label} />;
     case "font":
       return <DropdownInput key={name} name={name} label={label} placeholder={placeholder} options={FONT_OPTIONS} />;
     case "number":
-      return <TextInput key={name} name={name} label={label} placeholder={placeholder} keyboardType={INPUT_MODE_TO_KEYBOARD[field.inputMode] ?? "numeric"} contentDirection="ltr" />;
+      return <TextInput key={name} name={name} label={label} placeholder={placeholder} keyboardType={INPUT_MODE_TO_KEYBOARD[field.inputMode] ?? "numeric"} contentDirection="ltr" maxLength={field.maxLength} />;
     case "email":
-      return <TextInput key={name} name={name} label={label} placeholder={placeholder} keyboardType="email-address" autoCapitalize="none" contentDirection="ltr" />;
+      return <TextInput key={name} name={name} label={label} placeholder={placeholder} keyboardType="email-address" autoCapitalize="none" contentDirection="ltr" maxLength={field.maxLength} />;
     case "password":
-      return <TextInput key={name} name={name} label={label} placeholder={placeholder} secureTextEntry={true} autoCapitalize="none" contentDirection="ltr" />;
+      return <TextInput key={name} name={name} label={label} placeholder={placeholder} secureTextEntry={true} autoCapitalize="none" contentDirection="ltr" maxLength={field.maxLength} />;
     default:
       return null;
   }

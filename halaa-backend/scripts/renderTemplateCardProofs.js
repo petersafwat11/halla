@@ -2,7 +2,7 @@
  * Render non-DB visual proofs for precisionTemplateSpecs.js.
  *
  * This intentionally writes only to plans/template-audit-corrected/proofs.
- * It never connects to MongoDB or S3.
+ * It never connects to MongoDB or VPS storage.
  */
 
 const fs = require("fs");

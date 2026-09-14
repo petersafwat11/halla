@@ -1,10 +1,8 @@
 /**
- * Runtime file-storage driver.
+ * Durable VPS-local file storage.
  *
- * S3 remains available for rollback/migration, but production may explicitly
- * select durable VPS storage with FILE_STORAGE_DRIVER=local. Local objects are
- * stored under UPLOAD_PATH (a Docker bind mount in production) and exposed as
- * stable /uploads/... references.
+ * Uploads live below UPLOAD_PATH (a persistent bind mount in production) and
+ * are exposed by the API as stable /uploads/... references.
  */
 
 const fs = require("fs");
@@ -12,21 +10,6 @@ const path = require("path");
 
 const PROJECT_ROOT = path.resolve(__dirname, "../../..");
 const PUBLIC_PREFIX = "/uploads/";
-
-const getStorageDriver = () =>
-  String(process.env.FILE_STORAGE_DRIVER || "s3").trim().toLowerCase();
-
-const isLocalStorage = () => getStorageDriver() === "local";
-
-const assertStorageDriver = () => {
-  const driver = getStorageDriver();
-  if (!new Set(["s3", "local"]).has(driver)) {
-    throw new Error(
-      `Unsupported FILE_STORAGE_DRIVER=${driver}; expected "s3" or "local"`
-    );
-  }
-  return driver;
-};
 
 const getLocalUploadRoot = () => {
   const configured = process.env.UPLOAD_PATH || "./public/uploads";
@@ -55,8 +38,7 @@ const normalizeObjectKey = (value) => {
 
 const localRefForKey = (key) => {
   const normalized = normalizeObjectKey(key);
-  if (!normalized) return null;
-  return `${PUBLIC_PREFIX}${normalized}`;
+  return normalized ? `${PUBLIC_PREFIX}${normalized}` : null;
 };
 
 const resolveLocalPath = (refOrKey) => {
@@ -74,9 +56,7 @@ const localRefFromAbsolutePath = (absolutePath) => {
   const root = getLocalUploadRoot();
   const target = path.resolve(absolutePath);
   const relative = path.relative(root, target);
-  if (!relative || relative.startsWith("..") || path.isAbsolute(relative)) {
-    return null;
-  }
+  if (!relative || relative.startsWith("..") || path.isAbsolute(relative)) return null;
   return localRefForKey(relative.split(path.sep).join("/"));
 };
 
@@ -97,9 +77,9 @@ const writeLocalObject = async ({ key, body }) => {
 const readLocalObject = async (refOrKey) => {
   const target = resolveLocalPath(refOrKey);
   if (!target) {
-    const err = new Error("Invalid local storage reference");
-    err.code = "ENOENT";
-    throw err;
+    const error = new Error("Invalid local storage reference");
+    error.code = "ENOENT";
+    throw error;
   }
   return fs.promises.readFile(target);
 };
@@ -110,9 +90,9 @@ const deleteLocalObject = async (refOrKey) => {
   try {
     await fs.promises.unlink(target);
     return true;
-  } catch (err) {
-    if (err.code === "ENOENT") return true;
-    throw err;
+  } catch (error) {
+    if (error.code === "ENOENT") return true;
+    throw error;
   }
 };
 
@@ -141,9 +121,6 @@ const contentTypeForRef = (ref = "") => {
 
 module.exports = {
   PUBLIC_PREFIX,
-  getStorageDriver,
-  isLocalStorage,
-  assertStorageDriver,
   getLocalUploadRoot,
   normalizeObjectKey,
   localRefForKey,

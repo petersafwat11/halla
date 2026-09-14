@@ -2,12 +2,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
-  gap: 16px;
   flex-wrap: wrap;
-  font-family: var(--font-cairo, "Cairo", sans-serif);
-  font-size: 14px;
-  color: var(--color-natural-700, #454545);
+  gap: 12px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--ops-divider);
+  font-size: var(--text-sm);
+  color: var(--ops-muted);
 }
 
 .info {
@@ -16,41 +16,67 @@
   gap: 8px;
 }
 
+.info strong {
+  color: var(--ops-ink);
+  font-weight: 600;
+}
+
 .controls {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
+.pageIndicator {
+  padding: 0 6px;
+  white-space: nowrap;
+}
+
 .pageBtn {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  min-width: 44px;
-  min-height: 44px;
+  gap: 4px;
+  height: 34px;
   padding: 0 10px;
-  border-radius: var(--radius-8, 8px);
-  border: 1px solid var(--border-gray-250, #dfdfdf);
-  background-color: var(--color-natural-50, #ffffff);
-  color: var(--color-natural-900, #2c2c2c);
-  font-size: 13px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--ops-border-strong);
+  background-color: var(--ops-surface);
+  color: var(--ops-ink-soft);
+  font-size: var(--text-sm);
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s;
+  box-shadow: var(--shadow-xs);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+@media (pointer: coarse) {
+  .pageBtn {
+    height: 44px;
+  }
 }
 
 .pageBtn:hover:not(:disabled) {
-  background-color: var(--color-natural-150, #f7f7f7);
-  border-color: var(--color-natural-350, #a0a0a0);
+  background-color: var(--ops-surface-muted);
+  border-color: #c7bcb0;
+}
+
+.pageBtn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
 .pageBtn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
-.active {
-  background-color: var(--btn-primary-contrast-bg, #6b4e33) !important;
-  color: #ffffff !important;
-  border-color: transparent !important;
+@media (max-width: 640px) {
+  .pagination {
+    padding: 12px 14px;
+  }
+
+  .btnLabel {
+    display: none;
+  }
 }

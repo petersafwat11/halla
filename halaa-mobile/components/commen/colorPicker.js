@@ -11,21 +11,6 @@ import { useFormContext, Controller } from "react-hook-form";
 import { Ionicons } from "@expo/vector-icons";
 import KeyboardSafeModalSheet from "./keyboard/KeyboardSafeModalSheet";
 
-const presetColors = [
-  { color: "#c28e5c", name: "ذهبي" },
-  { color: "#d6b392", name: "بيج فاتح" },
-  { color: "#8b6f47", name: "بني" },
-  { color: "#a0845c", name: "كراميل" },
-  { color: "#e74c3c", name: "أحمر" },
-  { color: "#3498db", name: "أزرق" },
-  { color: "#2ecc71", name: "أخضر" },
-  { color: "#f39c12", name: "برتقالي" },
-  { color: "#9b59b6", name: "بنفسجي" },
-  { color: "#1abc9c", name: "تركواز" },
-  { color: "#34495e", name: "رمادي داكن" },
-  { color: "#95a5a6", name: "رمادي فاتح" },
-];
-
 /**
  * Inner field renderer. Hoisted out of the Controller `render` prop so the
  * `useState` hooks live at the top level of a real component — calling hooks
@@ -39,7 +24,6 @@ const ColorPickerField = ({
   label,
   placeholder,
   disabled,
-  showPresets,
   value,
   error,
   onChange,
@@ -47,19 +31,11 @@ const ColorPickerField = ({
   const [showModal, setShowModal] = useState(false);
   const [customColor, setCustomColor] = useState(value || "#c28e5c");
 
-  const handleColorSelect = (color) => {
-    setCustomColor(color);
-    onChange(color);
-  };
-
   const handleCustomColorChange = (text) => {
     const hexPattern = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
     setCustomColor(text);
     if (hexPattern.test(text)) onChange(text);
   };
-
-  const isColorSelected = (color) =>
-    value?.toLowerCase() === color.toLowerCase();
 
   const closeModal = () => {
     Keyboard.dismiss();
@@ -115,38 +91,6 @@ const ColorPickerField = ({
         sheetStyle={styles.modalContent}
         accessibilityLabel="اختر اللون"
       >
-              {showPresets && (
-                <View style={styles.presetsSection}>
-                  <Text style={[styles.sectionTitle]}>الألوان الشائعة</Text>
-
-                  <View style={styles.colorGrid}>
-                    {presetColors.map((item) => (
-                      <TouchableOpacity
-                        key={item.color}
-                        style={[
-                          styles.colorOption,
-                          isColorSelected(item.color) &&
-                            styles.colorOptionSelected,
-                        ]}
-                        onPress={() => handleColorSelect(item.color)}
-                      >
-                        <View
-                          style={[
-                            styles.colorCircle,
-                            { backgroundColor: item.color },
-                          ]}
-                        >
-                          {isColorSelected(item.color) && (
-                            <Ionicons name="checkmark" size={20} color="#fff" />
-                          )}
-                        </View>
-                        <Text style={[styles.colorName]}>{item.name}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-              )}
-
               <View style={styles.customSection}>
                 <Text style={[styles.sectionTitle]}>لون مخصص</Text>
 
@@ -186,7 +130,6 @@ const ColorPicker = ({
   label,
   placeholder,
   disabled = false,
-  showPresets = true,
   rules
 }) => {
   const { control } = useFormContext();
@@ -201,7 +144,6 @@ const ColorPicker = ({
           label={label}
           placeholder={placeholder}
           disabled={disabled}
-          showPresets={showPresets}
           value={value}
           error={error}
           onChange={onChange}
@@ -287,48 +229,11 @@ const styles = StyleSheet.create({
 
   modalBodyContent: { padding: 20 },
 
-  presetsSection: { marginBottom: 24 },
-
   sectionTitle: {
     fontSize: 14,
     fontFamily: "Cairo_600SemiBold",
     color: "#2c2c2c",
     marginBottom: 12
-  },  colorGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12
-  },
-
-  colorOption: {
-    alignItems: "center",
-    gap: 6,
-    width: "22%"
-  },
-  colorOptionSelected: {
-    transform: [{ scale: 1.05 }]
-  },
-
-  colorCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    borderWidth: 2,
-    borderColor: "#e0e0e0",
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2
-  },
-
-  colorName: {
-    fontSize: 11,
-    fontFamily: "Cairo_400Regular",
-    color: "#656565",
-    textAlign: "center"
   },
 
   customSection: { marginBottom: 20 },

@@ -908,7 +908,9 @@
         "confirmPassword": {
           "label": "Confirm Password",
           "placeholder": "**********"
-        }
+        },
+        "passwordRequirement": "8+ characters, including a letter and a number",
+        "passwordsMatch": "Passwords match"
       },
       "serviceSelection": {
         "title": "Choose the Service Provided",

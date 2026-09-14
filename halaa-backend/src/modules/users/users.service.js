@@ -5,8 +5,8 @@ const Subscription = require("../../../models/SubscriptionModel");
 const AccountDeletionRequest = require("../../../models/AccountDeletionRequestModel");
 const {
   processUploadedFiles,
-  deleteFromS3,
-} = require("../../shared/utils/s3Upload");
+  deleteStoredFile,
+} = require("../../shared/utils/localUpload");
 const otpService = require("../auth/otp.service");
 const authService = require("../auth/auth.service");
 const { logAudit } = require("../../shared/utils/auditLog");
@@ -48,9 +48,9 @@ const safeDeleteOldKey = async (oldKey) => {
   if (!oldKey || typeof oldKey !== "string") return;
   if (oldKey.startsWith("http")) return; // legacy URL — ignore
   try {
-    await deleteFromS3(oldKey);
+    await deleteStoredFile(oldKey);
   } catch (err) {
-    logger.warn("[users.service] failed to delete old S3 object", {
+    logger.warn("[users.service] failed to delete old local upload", {
       key: oldKey,
       error: err.message,
     });
@@ -379,7 +379,7 @@ class UsersService {
    * - Array fields (portfolioImages, pricePackages) — `key` must match an
    *   element exactly; that element is removed from the array.
    *
-   * Deletes the underlying S3 object on a best-effort basis.
+   * Deletes the underlying local upload on a best-effort basis.
    */
   async deleteVendorImage(userId, field, key) {
     const user = await User.findById(userId);
@@ -590,8 +590,8 @@ class UsersService {
    *    explicit DELETED-status branch in protect as a belt-and-suspenders guard;
    *  - deletes/anonymizes ALL personal data: User PII + nested profile, owned
    *    events, third-party guest names/phones/RSVP, post-event photos/videos/
-   *    comments (+ their S3), vendor services (+ S3), support tickets,
-   *    notifications, and every collected S3 object;
+   *    comments (+ their local storage), vendor services (+ local storage), support tickets,
+   *    notifications, and every collected local upload;
    *  - RETAINS only the legal/accounting rows in the (configurable) retention
    *    matrix, pseudonymized (the referenced user is anonymized);
    *  - records a durable AccountDeletionRequest (requestId + status + steps) and
@@ -603,10 +603,10 @@ class UsersService {
    */
   async deleteMyAccount(userId, { channel = "app" } = {}) {
     // Delegates to the dedicated, retryable deletion pipeline (DEL-01/02).
-    // The pipeline covers the full model/processor matrix, deletes ALL S3
+    // The pipeline covers the full model/processor matrix, deletes ALL local storage
     // object variants (including full-URL post-event media the old code
     // skipped), records downstream processor-erasure obligations, and returns a
-    // TRUTHFUL status: it never reports `completed` while personal S3 objects
+    // TRUTHFUL status: it never reports `completed` while personal local uploads
     // remain — those yield `pending_retry` and the deletion-retry cron
     // converges the request. See modules/account-deletion/deletion.service.js.
     try {

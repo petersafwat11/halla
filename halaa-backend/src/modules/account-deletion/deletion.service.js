@@ -9,11 +9,11 @@
  * Completion semantics (the P1-02 fix):
  *   - account-closed  — sessions revoked + user PII anonymized. MANDATORY, runs
  *                       to completion regardless so the account is always closed.
- *   - request-completed — additionally requires that all personal S3 objects are
+ *   - request-completed — additionally requires that all personal local uploads are
  *                       gone and every processor-erasure obligation is recorded.
- *   A failure to delete personal S3 objects (or record processor erasure) yields
+ *   A failure to delete personal local uploads (or record processor erasure) yields
  *   `pending_retry` (NOT `completed`): the durable retry worker
- *   (deletion.retry.js, wired into the cron in scheduledTasks) re-runs the S3
+ *   (deletion.retry.js, wired into the cron in scheduledTasks) re-runs the local storage
  *   deletes until clean and then flips the request to `completed`. This makes a
  *   "completed" claim provably truthful — no undeleted personal file can coexist
  *   with a completed status.
@@ -60,33 +60,33 @@ const GuestAccessToken = require("../../../models/GuestAccessTokenModel");
 const StaffAccessToken = require("../../../models/StaffAccessTokenModel");
 const AccountDeletionRequest = require("../../../models/AccountDeletionRequestModel");
 
-// Imported as a namespace (not destructured) so `deleteFromS3` is resolved at
-// call time — this lets integration tests stub S3 by overriding
-// `s3.deleteFromS3` without hitting real S3 (the shared bucket is never touched
+// Imported as a namespace (not destructured) so `deleteStoredFile` is resolved at
+// call time — this lets integration tests stub local storage by overriding
+// `localUpload.deleteStoredFile` without touching the real VPS upload directory
 // in tests).
-const s3 = require("../../shared/utils/s3Upload");
+const localUpload = require("../../shared/utils/localUpload");
 const logger = require("../../shared/utils/logger");
 const { logAudit } = require("../../shared/utils/auditLog");
 const { RETAINED, LEGAL_FINALIZED } = require("../../shared/constants/dataRetention");
 const { USER_STATUS, EVENT_STATUS } = require("../../shared/constants/status");
-const { collectS3Keys } = require("./deletion.collect");
+const { collectUploadRefs } = require("./deletion.collect");
 const processorErasure = require("./deletion.processors");
 
 /**
- * Delete a single S3 object idempotently. An already-absent object
+ * Delete a single local upload idempotently. An already-absent object
  * (NoSuchKey / 404) counts as SUCCESS so a retried deletion can converge to
  * `completed` — otherwise a re-run over the residual list would never clear.
- * `deleteFromS3` returns true on a successful DeleteObject (S3 returns 204 even
- * for a missing key). It returns false only when S3 is unconfigured or the SDK
+ * `deleteStoredFile` returns true on a successful DeleteObject (local storage returns 204 even
+ * for a missing key). It returns false only when local storage is unconfigured or the SDK
  * call threw (e.g. AccessDenied) — those stay in the residual list for retry.
  * @returns {Promise<boolean>} true if the key is confirmed gone/absent.
  */
 async function deleteKeySafe(key) {
   try {
-    const ok = await s3.deleteFromS3(key);
+    const ok = await localUpload.deleteStoredFile(key);
     return ok === true;
   } catch (err) {
-    logger.warn("[deletion] S3 delete threw", { error: err.message });
+    logger.warn("[deletion] local storage delete threw", { error: err.message });
     return false;
   }
 }
@@ -160,14 +160,14 @@ async function runDeletion({ userId, channel = "app" }) {
     }
   };
 
-  // Collect ALL owned S3 keys + event ids up-front (reads pre-anonymize).
-  let s3Keys = [];
+  // Collect ALL owned local upload references + event ids up-front (reads pre-anonymize).
+  let uploadRefs = [];
   let eventIds = [];
   await run(
     "collect_assets",
     async () => {
-      const collected = await collectS3Keys(user);
-      s3Keys = collected.keys;
+      const collected = await collectUploadRefs(user);
+      uploadRefs = collected.keys;
       eventIds = collected.eventIds;
     },
     true
@@ -241,7 +241,7 @@ async function runDeletion({ userId, channel = "app" }) {
   );
 
   // 3) Delete post-event content (media/comments + their images already in the
-  //    S3 key set).
+  //    local upload reference set).
   await run(
     "delete_post_event_content",
     async () => {
@@ -250,7 +250,7 @@ async function runDeletion({ userId, channel = "app" }) {
     true
   );
 
-  // 4) Delete vendor services (+ images in S3 set).
+  // 4) Delete vendor services (+ images in local storage set).
   await run(
     "delete_vendor_services",
     async () => {
@@ -428,15 +428,15 @@ async function runDeletion({ userId, channel = "app" }) {
     false
   );
 
-  // 12) Delete personal S3 objects. NON-blocking for account CLOSURE but it
+  // 12) Delete personal local uploads. NON-blocking for account CLOSURE but it
   //     GATES a truthful `completed` — residual keys go to pending_retry.
   let residualKeys = [];
   await run(
-    "delete_s3_objects",
+    "delete_uploaded_files",
     async () => {
-      residualKeys = await deleteKeys(s3Keys);
+      residualKeys = await deleteKeys(uploadRefs);
       if (residualKeys.length) {
-        throw new Error(`${residualKeys.length} S3 object(s) not deleted`);
+        throw new Error(`${residualKeys.length} local upload(s) not deleted`);
       }
     },
     false
@@ -444,7 +444,7 @@ async function runDeletion({ userId, channel = "app" }) {
 
   // Determine final status. `partial` = a MANDATORY step failed (account may
   // not be fully closed — needs investigation). `pending_retry` = account
-  // closed but S3/processor cleanup incomplete (worker will converge).
+  // closed but upload/processor cleanup incomplete (worker will converge).
   const cleanupIncomplete =
     residualKeys.length > 0 ||
     steps.some(
@@ -452,7 +452,7 @@ async function runDeletion({ userId, channel = "app" }) {
     );
 
   reqDoc.steps = steps;
-  reqDoc.pendingS3Keys = residualKeys;
+  reqDoc.pendingUploadRefs = residualKeys;
   if (mandatoryFailed) {
     reqDoc.status = "partial";
   } else if (cleanupIncomplete) {
@@ -473,7 +473,7 @@ async function runDeletion({ userId, channel = "app" }) {
       requestId: reqDoc.requestId,
       channel,
       status: reqDoc.status,
-      residualS3: residualKeys.length,
+      residualUploads: residualKeys.length,
     },
     status: mandatoryFailed ? "failure" : "success",
   }).catch(() => {});
@@ -483,21 +483,21 @@ async function runDeletion({ userId, channel = "app" }) {
 
 /**
  * Retry the outstanding cleanup for one deletion request that is in
- * `pending_retry`. Re-attempts residual S3 deletes (idempotent) and flips to
+ * `pending_retry`. Re-attempts residual local storage deletes (idempotent) and flips to
  * `completed` once nothing remains. Called by the durable worker.
  * @param {import("mongoose").Document} reqDoc
  * @returns {Promise<{completed:boolean, residual:number}>}
  */
 // After this many failed retries, stop looping and surface the request as a
-// terminal `failed` so ops sees a persistent-failure signal (e.g. a systemic S3
+// terminal `failed` so ops sees a persistent-failure signal (e.g. a systemic local storage
 // AccessDenied) instead of a silently-growing pending_retry queue. The account
 // is already CLOSED; this only concerns residual object cleanup. Read at call
 // time so it can be tuned per environment.
 const maxDeletionRetries = () => Number(process.env.DELETION_MAX_RETRIES || 12);
 
 async function retryCleanup(reqDoc) {
-  const residual = await deleteKeys(reqDoc.pendingS3Keys || []);
-  reqDoc.pendingS3Keys = residual;
+  const residual = await deleteKeys(reqDoc.pendingUploadRefs || []);
+  reqDoc.pendingUploadRefs = residual;
   reqDoc.retryCount = (reqDoc.retryCount || 0) + 1;
   reqDoc.lastRetryAt = new Date();
 
@@ -525,7 +525,7 @@ async function retryCleanup(reqDoc) {
       targetId: reqDoc.userId,
       metadata: {
         requestId: reqDoc.requestId,
-        residualS3: residual.length,
+        residualUploads: residual.length,
         retryCount: reqDoc.retryCount,
       },
       status: "failure",

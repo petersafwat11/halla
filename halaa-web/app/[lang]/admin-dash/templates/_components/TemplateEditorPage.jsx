@@ -28,7 +28,7 @@ const FIELD_TYPES = [
 
 function makeEmptyTemplate() {
   return {
-    nameEn: "", nameAr: "", categories: [], imageUrl: "", s3Key: "",
+    nameEn: "", nameAr: "", categories: [], imageUrl: "", imageRef: "",
     naturalWidth: 1080, naturalHeight: 1350,
     fields: [], overlays: [], decorations: [], sortOrder: 0, active: true,
     version: 0,
@@ -42,8 +42,7 @@ function normalize(tpl) {
     nameAr: tpl.nameAr || "",
     categories: tpl.categories || [],
     imageUrl: tpl.imageUrl || "",
-    imageS3Key: tpl.imageS3Key || "",
-    s3Key: "",
+    imageRef: tpl.imageRef || "",
     thumbnailUrl: tpl.thumbnailUrl || "",
     naturalWidth: tpl.naturalWidth || 1080,
     naturalHeight: tpl.naturalHeight || 1350,

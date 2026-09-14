@@ -13,7 +13,7 @@
  *  - official Latin company name    Afaq hala Company For Communications and Information
  *  - store names                    App Store / Google Play
  *  - vendor/technical brand runs    Apple, Google, Apple/Google, MongoDB Atlas,
- *                                   AWS/S3, Google Maps, Meta/WhatsApp,
+ *                                   Google Maps, Meta/WhatsApp,
  *                                   RevenueCat, APNs, FCM, Expo, Sentry,
  *                                   Moyasar, Taqnyat, IP …
  *  - percentages                    15% (refund commission note)

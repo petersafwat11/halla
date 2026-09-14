@@ -18,7 +18,7 @@
  *
  * Boundary: the pluggable scanner INTERFACE + the fail-closed policy live here
  * and are unit-tested (incl. malicious fixtures). Standing up the real scanner
- * (ClamAV / a scanning service) and the physical quarantine S3 bucket is
+ * (ClamAV / a scanning service) and the physical quarantine local storage bucket is
  * infrastructure (EXTERNAL §6) and is wired via `setScanner` when available; the
  * DEFAULT scanner is fail-closed-aware and treated as "no verdict".
  */

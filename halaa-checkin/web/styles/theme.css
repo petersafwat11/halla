@@ -1,43 +1,102 @@
 /*
- * Local semantic theme aliases and contrast-safe tokens
- * Per Product Contract §3 and Technical Contract §1
+ * Halaa Check-in semantic theme.
+ * Local tokens only — tokens.css is a provenance-locked snapshot of the parent
+ * Halaa palette (see design:check), so every product-level decision lives here.
  */
 
 :root {
-  /* ── Halaa Operations Palette (07-UI-UX-RECOVERY-PLAN §3.1) ── */
-  --ops-canvas: #F8F5F1;
-  --ops-surface: #FFFFFF;
-  --ops-ink: #2C2926;
-  --ops-muted: #68615B;
-  --ops-brand: #A87545;
-  --ops-brand-strong: #75502F;
-  --ops-border: #E4DDD6;
+  /* ── Surfaces ── */
+  --ops-canvas: #f6f3ef;
+  --ops-surface: #ffffff;
+  --ops-surface-muted: #faf8f5;
+  --ops-surface-sunken: #f2eee9;
 
-  /* ── Geometry & Radii (07-UI-UX-RECOVERY-PLAN §3.1) ── */
-  --radius-default: 12px;
+  /* ── Text ── */
+  --ops-ink: #1f1b17;
+  --ops-ink-soft: #3b352f;
+  --ops-muted: #6b635b;
+  /* ≥4.5:1 on every surface token (sunken included) so small meta text passes AA. */
+  --ops-subtle: #736b62;
+
+  /* ── Lines ── */
+  --ops-border: #e8e2db;
+  --ops-border-strong: #d7cec4;
+  --ops-divider: #efeae4;
+
+  /* ── Brand (Halaa bronze) ── */
+  --ops-brand: #a87545;
+  --ops-brand-strong: #7a5433;
+  --ops-brand-hover: #634328;
+  --ops-brand-soft: #f4ebe1;
+  --ops-brand-softer: #faf5ef;
+  --ops-brand-border: #e6d3bf;
+
+  /* ── Semantic status ── */
+  --ops-success: #237a50;
+  --ops-success-strong: #1b6341;
+  --ops-success-soft: #e9f5ef;
+  --ops-success-border: #bfe0cf;
+  --ops-warning: #9a5b00;
+  --ops-warning-strong: #7a4800;
+  --ops-warning-soft: #fdf4e4;
+  --ops-warning-border: #f0d4a2;
+  --ops-danger: #b3362a;
+  --ops-danger-strong: #922b21;
+  --ops-danger-soft: #fcedeb;
+  --ops-danger-border: #f0c5bf;
+  --ops-info: #2f5f8c;
+  --ops-info-soft: #ebf2f9;
+  --ops-info-border: #c6d9ea;
+
+  /* ── Elevation ── */
+  --shadow-xs: 0 1px 2px rgba(31, 27, 23, 0.05);
+  --shadow-sm: 0 1px 3px rgba(31, 27, 23, 0.07), 0 1px 2px rgba(31, 27, 23, 0.04);
+  --shadow-md: 0 6px 16px -4px rgba(31, 27, 23, 0.1), 0 2px 4px -2px rgba(31, 27, 23, 0.05);
+  --shadow-lg: 0 24px 48px -12px rgba(31, 27, 23, 0.22);
+  --focus-ring: 0 0 0 3px rgba(168, 117, 69, 0.3);
+  --focus-ring-danger: 0 0 0 3px rgba(179, 54, 42, 0.25);
+
+  /* ── Geometry ── */
+  --radius-xs: 6px;
   --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-pill: 999px;
+  --radius-default: var(--radius-md);
 
-  /* ── Consolidated Aliases (07-UI-UX-RECOVERY-PLAN §8) ── */
-  --font-cairo: "Cairo", sans-serif;
-  --color-success: var(--color-success-500, #2a8c5b);
-  --color-error: var(--color-error-500, #c0392b);
-  --color-warning: var(--color-warning-500, #d38200);
+  --control-h-sm: 36px;
+  --control-h-md: 44px;
+  --control-h-lg: 52px;
 
-  /* High contrast solid primary button background for AAA compliance on white text */
-  --btn-primary-contrast-bg: var(--color-primary-800, #6b4e33);
-  --btn-primary-contrast-hover: var(--color-primary-900, #513c27);
-  --btn-primary-contrast-active: var(--color-primary-900, #513c27);
+  --header-h: 64px;
+  --page-max: 1360px;
+  --page-pad: clamp(16px, 3vw, 32px);
+
+  /* ── Type ── */
+  --font-cairo: "Cairo", system-ui, sans-serif;
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-md: 14px;
+  --text-lg: 16px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 30px;
+
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* ── Legacy aliases still referenced by older modules ── */
+  --color-success: var(--ops-success);
+  --color-error: var(--ops-danger);
+  --color-warning: var(--ops-warning);
+  --btn-primary-contrast-bg: var(--ops-brand-strong);
+  --btn-primary-contrast-hover: var(--ops-brand-hover);
+  --btn-primary-contrast-active: var(--ops-brand-hover);
   --btn-primary-contrast-fg: #ffffff;
-
-  /* Standard brand primary */
   --btn-brand-bg: var(--color-primary-500, #c28e5c);
   --btn-brand-hover: var(--color-primary-600, #b18154);
-
-  /* Contrast-safe status badge foregrounds (WCAG AA/AAA on respective light backgrounds) */
-  --status-success-contrast-fg: var(--color-success-700, #1e6341);
-  --status-warning-contrast-fg: var(--color-warning-800, #744800);
-  --status-error-contrast-fg: var(--color-error-700, #88281f);
-  --status-neutral-contrast-fg: var(--color-natural-700, #454545);
+  --status-success-contrast-fg: var(--ops-success-strong);
+  --status-warning-contrast-fg: var(--ops-warning-strong);
+  --status-error-contrast-fg: var(--ops-danger-strong);
+  --status-neutral-contrast-fg: var(--ops-ink-soft);
 }

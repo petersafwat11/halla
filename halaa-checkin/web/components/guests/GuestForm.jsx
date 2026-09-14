@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useId } from 'react';
 import { Dialog } from '../ui/Dialog.jsx';
 import { Field } from '../ui/Field.jsx';
 import { Button } from '../ui/Button.jsx';
@@ -26,6 +26,7 @@ export function GuestForm({
   lang = 'ar',
 }) {
   const dict = getDictionary(lang);
+  const formId = useId();
   const isEdit = !!guest;
   const isAdmitted = !!guest?.checkIn;
 
@@ -139,6 +140,9 @@ export function GuestForm({
   };
 
   const isConflict = apiError?.code === 'VERSION_CONFLICT';
+  const locked = isPending || isAdmitted || isClosed;
+  const companionsValue = parseInt(allowedCompanions, 10) || 0;
+  const isVip = reference.trim().toUpperCase().startsWith('VIP');
 
   const title = isEdit ? t(dict, 'guests.editGuest') : t(dict, 'guests.addGuest');
 
@@ -147,47 +151,44 @@ export function GuestForm({
       isOpen={isOpen}
       onClose={onClose}
       title={title}
-      maxWidth="500px"
+      description={isEdit ? null : t(dict, 'guests.formSubtitleAdd')}
+      icon={isEdit ? 'edit' : 'user-plus'}
+      maxWidth="580px"
       closeAriaLabel={t(dict, 'dialog.close')}
+      footer={
+        <>
+          <Button variant="ghost" onClick={onClose} disabled={isPending}>
+            {t(dict, 'common.cancel')}
+          </Button>
+          <Button
+            type="submit"
+            form={formId}
+            variant="primary"
+            loading={isPending}
+            disabled={isAdmitted || isClosed}
+            data-testid="guest-submit-btn"
+          >
+            {isEdit ? t(dict, 'common.save') : t(dict, 'guests.addGuest')}
+          </Button>
+        </>
+      }
     >
-      <form onSubmit={handleSubmit} className={styles.form} noValidate>
-        {isClosed && (
-          <Notice
-            variant="warning"
-            message={t(dict, 'guests.eventClosedWarning')}
-          />
-        )}
+      <form id={formId} onSubmit={handleSubmit} className={styles.form} noValidate>
+        {isClosed && <Notice variant="warning" message={t(dict, 'guests.eventClosedWarning')} />}
 
-        {isAdmitted && (
-          <Notice
-            variant="warning"
-            message={t(dict, 'guests.admittedCannotEdit')}
-          />
-        )}
+        {isAdmitted && <Notice variant="warning" message={t(dict, 'guests.admittedCannotEdit')} />}
 
         {apiError && !isAdmitted && (
-          <div>
-            <Notice
-              variant="error"
-              message={t(dict, `errors.${apiError.code}`) || apiError.message}
-            />
+          <Notice variant="error">
+            <span>{t(dict, `errors.${apiError.code}`) || apiError.message}</span>
             {isConflict && onReload && (
-              <div style={{ marginTop: '8px' }}>
-                <Button variant="secondary" size="sm" leadingIcon="refresh" onClick={onReload}>
-                  {lang === 'ar' ? 'إعادة تحميل البيانات' : 'Reload data'}
+              <span className={styles.noticeAction}>
+                <Button variant="outline" size="sm" leadingIcon="refresh" onClick={onReload}>
+                  {t(dict, 'guests.reloadData')}
                 </Button>
-              </div>
+              </span>
             )}
-          </div>
-        )}
-
-        {isAdmitted && guest?.checkIn && (
-          <div className={styles.admissionSummary}>
-            <Icon name="check-circle" size="sm" />
-            <span>
-              {t(dict, 'gate.alreadyAdmittedTitle')} — {guest.checkIn.actualPartySize || (1 + (guest.checkIn.actualCompanions || 0))} {lang === 'ar' ? 'أشخاص' : 'people'}
-            </span>
-          </div>
+          </Notice>
         )}
 
         <div className={styles.formGrid}>
@@ -202,103 +203,107 @@ export function GuestForm({
             }}
             placeholder={t(dict, 'guests.guestNamePlaceholder')}
             error={fieldErrors.name}
-            disabled={isPending || isAdmitted || isClosed}
+            disabled={locked}
+            autoComplete="off"
             data-testid="guest-name-input"
           />
 
-          <div className={styles.referenceGroup}>
-            <Field
-              label={t(dict, 'guests.reference')}
-              name="reference"
-              value={reference}
-              onChange={(e) => {
-                setReference(e.target.value);
-                if (fieldErrors.reference) setFieldErrors((p) => ({ ...p, reference: undefined }));
-              }}
-              placeholder={t(dict, 'guests.referencePlaceholder')}
-              error={fieldErrors.reference}
-              disabled={isPending || isAdmitted || isClosed}
-              data-testid="guest-reference-input"
-            />
-            <label className={styles.vipToggle}>
-              <input
-                type="checkbox"
-                checked={reference.trim().toUpperCase().startsWith('VIP')}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    if (!reference.trim().toUpperCase().startsWith('VIP')) {
-                      setReference(reference.trim() ? `VIP-${reference.trim()}` : 'VIP-');
-                    }
-                  } else {
-                    setReference(reference.replace(/^VIP-?/i, ''));
-                  }
-                }}
-                disabled={isPending || isAdmitted || isClosed}
-                className={styles.vipCheckbox}
-              />
-              <Icon name="vip" size="sm" className={styles.vipIcon} />
-              <span>{lang === 'ar' ? 'كبار الشخصيات (VIP)' : 'VIP Guest'}</span>
-            </label>
-          </div>
+          <Field
+            label={t(dict, 'guests.reference')}
+            name="reference"
+            value={reference}
+            onChange={(e) => {
+              setReference(e.target.value);
+              if (fieldErrors.reference) setFieldErrors((p) => ({ ...p, reference: undefined }));
+            }}
+            placeholder={t(dict, 'guests.referencePlaceholder')}
+            error={fieldErrors.reference}
+            disabled={locked}
+            autoComplete="off"
+            data-testid="guest-reference-input"
+          />
         </div>
 
+        <label className={`${styles.vipToggle} ${isVip ? styles.vipToggleOn : ''}`}>
+          <input
+            type="checkbox"
+            checked={isVip}
+            onChange={(e) => {
+              if (e.target.checked) {
+                if (!isVip) {
+                  setReference(reference.trim() ? `VIP-${reference.trim()}` : 'VIP-');
+                }
+              } else {
+                setReference(reference.replace(/^VIP-?/i, ''));
+              }
+            }}
+            disabled={locked}
+            className={styles.vipCheckbox}
+          />
+          <span className={styles.vipIcon} aria-hidden="true">
+            <Icon name="vip" size="sm" />
+          </span>
+          <span className={styles.vipText}>
+            <span className={styles.vipLabel}>{t(dict, 'guests.vipGuest')}</span>
+            <span className={styles.vipHint}>{t(dict, 'guests.vipHint')}</span>
+          </span>
+        </label>
+
         <div className={styles.companionsSection}>
-          <label className={styles.label}>{t(dict, 'guests.allowedCompanions')}</label>
-          <div className={styles.stepperRow}>
-            <div className={styles.stepper}>
-              <button
-                type="button"
-                className={styles.stepperBtn}
-                onClick={() => setAllowedCompanions(Math.max(0, (parseInt(allowedCompanions, 10) || 0) - 1))}
-                disabled={isPending || isAdmitted || isClosed || (parseInt(allowedCompanions, 10) || 0) <= 0}
-                aria-label={lang === 'ar' ? 'إنقاص المرافقين' : 'Decrease companions'}
-              >
-                <Icon name="minus" size="sm" />
-              </button>
-              <input
-                type="number"
-                min="0"
-                max="20"
-                className={styles.stepperInput}
-                name="allowedCompanions"
-                value={allowedCompanions}
-                onChange={(e) => {
-                  setAllowedCompanions(e.target.value);
-                  if (fieldErrors.allowedCompanions) {
-                    setFieldErrors((p) => ({ ...p, allowedCompanions: undefined }));
-                  }
-                }}
-                disabled={isPending || isAdmitted || isClosed}
-                data-testid="guest-companions-input"
-              />
-              <button
-                type="button"
-                className={styles.stepperBtn}
-                onClick={() => setAllowedCompanions(Math.min(20, (parseInt(allowedCompanions, 10) || 0) + 1))}
-                disabled={isPending || isAdmitted || isClosed || (parseInt(allowedCompanions, 10) || 0) >= 20}
-                aria-label={lang === 'ar' ? 'زيادة المرافقين' : 'Increase companions'}
-              >
-                <Icon name="plus" size="sm" />
-              </button>
-            </div>
-            <div className={styles.helperBox}>
-              <Icon name="info" size="sm" />
-              <span>
-                {t(dict, 'guests.companionsHelper', {
-                  count: 1 + (parseInt(allowedCompanions, 10) || 0),
-                })}
-              </span>
-            </div>
+          <div className={styles.companionsText}>
+            <span className={styles.label}>{t(dict, 'guests.allowedCompanions')}</span>
+            <span className={styles.helper}>
+              <Icon name="users" size="sm" />
+              {t(dict, 'guests.companionsHelper', { count: 1 + companionsValue })}
+            </span>
           </div>
-          {fieldErrors.allowedCompanions && (
-            <p className={styles.errorText}>{fieldErrors.allowedCompanions}</p>
-          )}
+          <div className={styles.stepper}>
+            <button
+              type="button"
+              className={styles.stepperBtn}
+              onClick={() => setAllowedCompanions(Math.max(0, companionsValue - 1))}
+              disabled={locked || companionsValue <= 0}
+              aria-label={t(dict, 'gate.decreaseCompanions')}
+            >
+              <Icon name="minus" size="sm" />
+            </button>
+            <input
+              type="number"
+              min="0"
+              max="20"
+              inputMode="numeric"
+              className={styles.stepperInput}
+              name="allowedCompanions"
+              aria-label={t(dict, 'guests.allowedCompanions')}
+              value={allowedCompanions}
+              onChange={(e) => {
+                setAllowedCompanions(e.target.value);
+                if (fieldErrors.allowedCompanions) {
+                  setFieldErrors((p) => ({ ...p, allowedCompanions: undefined }));
+                }
+              }}
+              disabled={locked}
+              data-testid="guest-companions-input"
+            />
+            <button
+              type="button"
+              className={styles.stepperBtn}
+              onClick={() => setAllowedCompanions(Math.min(20, companionsValue + 1))}
+              disabled={locked || companionsValue >= 20}
+              aria-label={t(dict, 'gate.increaseCompanions')}
+            >
+              <Icon name="plus" size="sm" />
+            </button>
+          </div>
         </div>
+        {fieldErrors.allowedCompanions && (
+          <p className={styles.errorText} role="alert">{fieldErrors.allowedCompanions}</p>
+        )}
 
         <Field
           label={t(dict, 'guests.companionNamesLabel')}
           error={fieldErrors.companionNames}
-          hint={lang === 'ar' ? 'اختياري، اسم في كل سطر' : 'Optional, one per line'}
+          hint={t(dict, 'guests.companionNamesHint')}
         >
           <textarea
             name="companionNames"
@@ -311,27 +316,10 @@ export function GuestForm({
               }
             }}
             placeholder={t(dict, 'guests.companionNamesPlaceholder')}
-            disabled={isPending || isAdmitted || isClosed}
-            className={`${styles.textarea} ${fieldErrors.companionNames ? styles.hasError : ''}`}
+            disabled={locked}
             data-testid="guest-companion-names-input"
           />
         </Field>
-
-        <div className={styles.footerActions}>
-          <Button variant="ghost" onClick={onClose} disabled={isPending}>
-            {t(dict, 'common.cancel')}
-          </Button>
-
-          <Button
-            type="submit"
-            variant="primary"
-            loading={isPending}
-            disabled={isAdmitted || isClosed}
-            data-testid="guest-submit-btn"
-          >
-            {isEdit ? t(dict, 'common.save') : t(dict, 'guests.addGuest')}
-          </Button>
-        </div>
       </form>
     </Dialog>
   );

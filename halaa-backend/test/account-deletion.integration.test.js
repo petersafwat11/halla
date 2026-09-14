@@ -3,15 +3,15 @@
  * LEGAL-PARITY-PLAN §7/§9).
  *
  * Runs the REAL deletion pipeline against an ephemeral MongoMemoryReplSet with
- * an isolated in-memory S3 stub (deleteFromS3 overridden). NEVER touches the
- * shared DB and NEVER calls real S3. Proves:
+ * an isolated in-memory local-storage stub (deleteStoredFile overridden). It
+ * never touches the shared database or filesystem. Proves:
  *   1. No non-retained PII remains (User anonymized; events/guests/post-event/
  *      services/tickets/notifications/moderation/tokens gone or scrubbed;
  *      full-URL post-event media collected + deleted).
  *   2. Auth token invalidation (refresh tokens deleted; deleted user excluded
  *      from default finds).
  *   3. Idempotence (second delete is a no-op returning the same request).
- *   4. Truthful completion + partial-retry: an S3 failure yields `pending_retry`
+ *   4. Truthful completion + partial-retry: a storage failure yields `pending_retry`
  *      (NOT `completed`) with residual keys; the retry worker converges it.
  *   5. Retained rows (Payment/Subscription) survive, pseudonymized.
  *   6. Post-deletion RevenueCat webhook → `account_deleted` (not dead_letter).
@@ -21,9 +21,9 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const db = require("./helpers/memoryDb");
 
-const s3 = require("../src/shared/utils/s3Upload");
+const localUpload = require("../src/shared/utils/localUpload");
 const deletionService = require("../src/modules/account-deletion/deletion.service");
-const { collectS3Keys } = require("../src/modules/account-deletion/deletion.collect");
+const { collectUploadRefs } = require("../src/modules/account-deletion/deletion.collect");
 const { runDeletionRetryTick } = require("../src/modules/account-deletion/deletion.retry");
 
 const User = require("../models/UserModel");
@@ -49,31 +49,24 @@ const AccountDeletionRequest = require("../models/AccountDeletionRequestModel");
 const ProcessorErasure = require("../models/ProcessorErasureModel");
 const StaffAccessToken = require("../models/StaffAccessTokenModel");
 
-const BASE_URL = "https://cdn.halaa.example/hallamangement";
-let deleted; // Set<string> of keys the S3 stub has "deleted"
-let s3ShouldFail; // Set<string> of keys whose delete fails
+let deleted;
+let storageShouldFail;
 
-const origDelete = s3.deleteFromS3;
+const origDelete = localUpload.deleteStoredFile;
 
 test.before(async () => {
-  process.env.AWS_ACCESS_KEY_ID = "test";
-  process.env.AWS_SECRET_ACCESS_KEY = "test";
-  process.env.AWS_REGION = "us-east-1";
-  process.env.AWS_S3_BUCKET = "hallamangement";
-  process.env.AWS_S3_BASE_URL = BASE_URL;
   await db.start();
 });
 test.after(async () => {
-  s3.deleteFromS3 = origDelete;
+  localUpload.deleteStoredFile = origDelete;
   await db.stop();
 });
 test.beforeEach(async () => {
   await db.clearAll();
   deleted = new Set();
-  s3ShouldFail = new Set();
-  // In-memory S3 stub — records deletes, honors a configurable failure set.
-  s3.deleteFromS3 = async (key) => {
-    if (s3ShouldFail.has(key)) return false;
+  storageShouldFail = new Set();
+  localUpload.deleteStoredFile = async (key) => {
+    if (storageShouldFail.has(key)) return false;
     deleted.add(key);
     return true;
   };
@@ -130,10 +123,10 @@ async function seedFullGraph(user) {
     phone: "500111222",
     staffName: "Bob Staff",
   }).catch(() => {});
-  // Post-event content with a FULL-URL media (the P1-02 case) + nested comment
+  // Post-event content with a public local reference plus nested comment
   // image. Raw insert bypasses subdoc `required` validators (guest/type) — the
   // deletion pipeline reads with `.lean()` and deletes by `host`, so the exact
-  // sub-field validity is irrelevant; only the S3 refs + host matter here.
+  // sub-field validity is irrelevant; only the upload refs + host matter here.
   await PostEventContent.collection.insertOne({
     event: event._id,
     host: user._id,
@@ -141,7 +134,7 @@ async function seedFullGraph(user) {
     media: [
       {
         type: "photo",
-        url: `${BASE_URL}/events/post-event/e1/photos/full.jpg`, // full URL!
+        url: "/uploads/events/post-event/e1/photos/full.jpg",
         thumbnailUrl: "events/post-event/e1/photos/thumb.jpg",
         comments: [
           { text: "nice", images: [{ url: "events/post-event/e1/comments/c1.jpg", thumbnail: "events/post-event/e1/comments/c1t.jpg" }] },
@@ -202,11 +195,11 @@ async function seedFullGraph(user) {
   return event;
 }
 
-test("collectS3Keys gathers ALL variants incl. full-URL media + nested comment images", async () => {
+test("collectUploadRefs gathers every local media variant and nested comment image", async () => {
   const user = await seedUser();
   await seedFullGraph(user);
   const loaded = await User.findById(user._id);
-  const { keys } = await collectS3Keys(loaded);
+  const { keys } = await collectUploadRefs(loaded);
   const set = new Set(keys);
   // profile
   assert.ok(set.has("users/avatars/alice/av.jpg"));
@@ -216,8 +209,7 @@ test("collectS3Keys gathers ALL variants incl. full-URL media + nested comment i
   assert.ok(set.has("events/templates/e1/hdr.jpg"));
   assert.ok(set.has("events/branding/e1/logo.png"));
   assert.ok(set.has("events/templates/e1/baked.png"), "baked visual template must be collected");
-  // post-event — the full-URL media must be normalized to a key
-  assert.ok(set.has("events/post-event/e1/photos/full.jpg"), "full-URL media key must be collected (P1-02)");
+  assert.ok(set.has("events/post-event/e1/photos/full.jpg"));
   assert.ok(set.has("events/post-event/e1/photos/thumb.jpg"));
   assert.ok(set.has("events/post-event/e1/cover.jpg"), "cover image must be collected");
   assert.ok(set.has("events/post-event/e1/comments/c1.jpg"), "media-comment image must be collected");
@@ -297,10 +289,10 @@ test("full deletion → no non-retained PII remains; retained rows survive; stat
   assert.deepEqual(audit.metadata, {});
   assert.equal(await OutboundMessage.countDocuments({ user: user._id }), 0);
 
-  // All personal S3 objects were deleted.
+  // All personal uploads were deleted.
   assert.ok(deleted.has("events/post-event/e1/photos/full.jpg"));
   assert.ok(deleted.has("users/avatars/alice/av.jpg"));
-  assert.equal(res.pendingS3Keys.length, 0);
+  assert.equal(res.pendingUploadRefs.length, 0);
 
   // Processor obligations recorded (RevenueCat retained_by_policy; DEC-04).
   const rc = await ProcessorErasure.findOne({ deletionRequestId: res.requestId, processor: "revenuecat" }).lean();
@@ -325,41 +317,41 @@ test("idempotent: second delete returns same request, no throw", async () => {
   assert.equal(await AccountDeletionRequest.countDocuments({ userId: user._id }), 1);
 });
 
-test("partial S3 failure → pending_retry (NOT completed) with residual; worker converges", async () => {
+test("partial storage failure → pending_retry with residual; worker converges", async () => {
   const user = await seedUser();
   await seedFullGraph(user);
   // Fail exactly the full-URL media key on the first pass.
-  s3ShouldFail.add("events/post-event/e1/photos/full.jpg");
+  storageShouldFail.add("events/post-event/e1/photos/full.jpg");
 
   const res = await deletionService.runDeletion({ userId: user._id });
   assert.equal(res.status, "pending_retry", "must NOT be completed while a personal object remains");
-  assert.ok(res.pendingS3Keys.includes("events/post-event/e1/photos/full.jpg"));
+  assert.ok(res.pendingUploadRefs.includes("events/post-event/e1/photos/full.jpg"));
   // Account is still CLOSED despite the residual.
   assert.equal(await User.findById(user._id), null);
 
   // Force nextRetryAt into the past, clear the failure, run the worker.
   await AccountDeletionRequest.updateOne({ requestId: res.requestId }, { $set: { nextRetryAt: new Date(0) } });
-  s3ShouldFail.clear();
+  storageShouldFail.clear();
   const tick = await runDeletionRetryTick();
   assert.equal(tick.completed, 1);
   const done = await AccountDeletionRequest.findOne({ requestId: res.requestId }).lean();
   assert.equal(done.status, "completed");
-  assert.equal(done.pendingS3Keys.length, 0);
+  assert.equal(done.pendingUploadRefs.length, 0);
   assert.ok(deleted.has("events/post-event/e1/photos/full.jpg"), "residual key deleted on retry");
 });
 
-test("idempotent S3 retry: an already-absent key counts as gone", async () => {
+test("idempotent local retry: an already-absent path counts as gone", async () => {
   const user = await seedUser();
-  // No failures configured; deleteFromS3 returns true even for absent keys.
+  // No failures configured; deleteStoredFile returns true even for absent keys.
   const res = await deletionService.runDeletion({ userId: user._id });
   assert.equal(res.status, "completed");
 });
 
-test("persistent S3 failure → terminal `failed` after max retries (ops signal, never false completed)", async () => {
+test("persistent storage failure → terminal `failed` after max retries", async () => {
   process.env.DELETION_MAX_RETRIES = "2";
   const user = await seedUser();
   await seedFullGraph(user);
-  s3ShouldFail.add("events/post-event/e1/photos/full.jpg");
+  storageShouldFail.add("events/post-event/e1/photos/full.jpg");
 
   const res = await deletionService.runDeletion({ userId: user._id });
   assert.equal(res.status, "pending_retry");
@@ -373,7 +365,7 @@ test("persistent S3 failure → terminal `failed` after max retries (ops signal,
   }
   const done = await AccountDeletionRequest.findOne({ requestId: res.requestId }).lean();
   assert.equal(done.status, "failed", "must terminate as failed, not loop forever");
-  assert.ok(done.pendingS3Keys.length > 0, "residual preserved for manual cleanup");
+  assert.ok(done.pendingUploadRefs.length > 0, "residual preserved for manual cleanup");
   assert.notEqual(done.status, "completed", "never a false completed while objects remain");
   delete process.env.DELETION_MAX_RETRIES;
 });

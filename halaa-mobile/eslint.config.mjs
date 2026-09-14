@@ -83,6 +83,7 @@ export default [
       'node_modules/**',
       'dist/**',
       '.expo/**',
+      '.cache/**',
       'android/**',
       'ios/**',
       'web-build/**',

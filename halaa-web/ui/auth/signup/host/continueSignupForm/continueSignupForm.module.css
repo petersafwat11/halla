@@ -117,6 +117,66 @@
   min-width: 0;
 }
 
+/* Password + confirm side by side; the requirement spans both columns so it
+   has the full form width. Phones stack it directly under the password. */
+.passwordGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas:
+    "password confirm"
+    "requirement requirement";
+  column-gap: 1.6rem;
+  row-gap: 0.8rem;
+  width: 100%;
+}
+
+.passwordField {
+  grid-area: password;
+  min-width: 0;
+}
+
+.confirmField {
+  grid-area: confirm;
+  min-width: 0;
+}
+
+.passwordRequirement {
+  grid-area: requirement;
+  justify-self: start;
+  max-width: 100%;
+  margin: 0;
+  padding: 0.6rem 1.2rem;
+  border: 1px solid #e9ecef;
+  border-radius: 0.6rem;
+  background: #f8f9fa;
+  color: #666;
+  font-size: 1.2rem;
+  font-weight: 500;
+  line-height: 1.6rem;
+  overflow-wrap: anywhere;
+}
+
+.passwordRequirementMet {
+  border-color: #c3e6cb;
+  background: #d4edda;
+  color: #155724;
+}
+
+@media screen and (max-width: 768px) {
+  .passwordGrid {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "password"
+      "requirement"
+      "confirm";
+  }
+
+  .passwordRequirement {
+    font-size: 1.1rem;
+    padding: 0.5rem 1rem;
+  }
+}
+
 .errorMessage {
   background-color: #fef2f2;
   border: 1px solid #fecaca;

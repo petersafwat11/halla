@@ -69,6 +69,7 @@ const CompleteProfileForm = ({ onSubmit, loading = false }) => {
             label={t("signup.password")}
             placeholder={t("signup.passwordPlaceholder")}
             helper={t("signupForm.vendor.identity.passwordHint")}
+            helperNumberOfLines={1}
             disabled={loading}
           />
 

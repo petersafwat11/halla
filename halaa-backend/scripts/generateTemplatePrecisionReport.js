@@ -28,7 +28,7 @@ async function main() {
   const lines = [
     "# Template-card precision audit — corrected implementation specification",
     "",
-    "> Status: code and visual-proof preparation complete; database and S3 apply mode have **not** been run.",
+    "> Status: code and visual-proof preparation complete; database and VPS storage apply mode have **not** been run.",
     "",
     "## Locked standards",
     "",
@@ -120,7 +120,7 @@ async function main() {
     "- `renameFreshTemplateCards.js`: applied successfully to the 20 fresh downloads; dry-run remains safe for future batches.",
     "- `updateTemplateCardsPrecision.js`: dry-run found exactly one live row for each source and reports 20 id-preserving updates. `--apply` is required for DB writes; `--replace-images` additionally requires `--apply`.",
     "- `migrateEventTemplateFieldKeys.js`: dry-run scanned three dependent events and would add canonical aliases without deleting legacy values.",
-    "- `renderTemplateCardProofs.js`: generated 20 local proofs without DB/S3 access.",
+    "- `renderTemplateCardProofs.js`: generated 20 local proofs without database/storage access.",
     "",
     "## Remaining approval blocker",
     "",

@@ -6,7 +6,7 @@ export {
   buildVendorContactMessage,
   buildWhatsAppUrl,
 } from "./marketplace.js";
-export { getMediaUrl, getStaticAssetBaseUrl, keyFromSignedUrl, resolveImageUrl } from "./media.js";
+export { getMediaUrl, getStaticAssetBaseUrl, storedRefFromUrl, resolveImageUrl } from "./media.js";
 export { useDebounce } from "./useDebounce.js";
 export {
   formatTimeAgo,
@@ -88,6 +88,7 @@ export {
 export {
   DEFAULT_PHONE_PLACEHOLDER,
   SAUDI_PHONE_REGEX,
+  isValidSaudiMobile,
   clampPhoneInput,
   getPhoneMaxLength,
   normalizePhoneNumber,
@@ -136,4 +137,8 @@ export {
   resolveWebCompletionUrl,
   resolveMobileCompletionRoute,
 } from "../schemas/completionDestination.js";
+export {
+  getTemplateFieldCapacity,
+  withTemplateTextLimits,
+} from "./templateTextLimits.js";
 

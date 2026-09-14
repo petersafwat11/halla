@@ -41,9 +41,6 @@ const ImageCarousel = () => {
         <h1 className={styles.title}>
           Halaa <span className={styles.arabic_title}> هلا </span>
         </h1>
-        <p className={styles.description}>
-          {`region's most distinguished gatherings.`}
-        </p>
         <div className={styles.dots}>
           {SLIDES.map((src, index) => (
             <div

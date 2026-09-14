@@ -97,43 +97,54 @@ export function GuestLookup({ eventId, onSelect, disabled = false, dict }) {
 
   return (
     <div className={styles.container} data-testid="guest-lookup-container">
-      {searchError && <Notice variant="warning">{t(dict, 'common.networkError')}</Notice>}
-      <h2 className={styles.title}>
-        <Icon name="search" size="sm" />
-        <span>{t(dict, 'gate.manualSearchTitle')}</span>
-      </h2>
+      <label htmlFor="gate-manual-search" className={styles.title}>
+        {t(dict, 'gate.manualSearchTitle')}
+      </label>
 
       <div className={styles.inputWrapper}>
-        <label htmlFor="gate-manual-search" className={styles.srOnly || ''}>
-          {t(dict, 'gate.manualSearchTitle')}
-        </label>
+        <span className={styles.inputIcon} aria-hidden="true">
+          {isSearching ? <span className={styles.spinner} /> : <Icon name="search" size="sm" />}
+        </span>
         <input
           id="gate-manual-search"
-          type="text"
+          type="search"
           className={styles.input}
           placeholder={t(dict, 'gate.manualSearchPlaceholder')}
-          aria-label={t(dict, 'gate.manualSearchTitle')}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           disabled={disabled}
           maxLength={120}
+          autoComplete="off"
           data-testid="gate-manual-search-input"
         />
+        {query && !disabled && (
+          <button
+            type="button"
+            className={styles.clearBtn}
+            onClick={() => setQuery('')}
+            aria-label={t(dict, 'common.clear')}
+          >
+            <Icon name="x" size="sm" />
+          </button>
+        )}
       </div>
 
-      {isSearching && (
-        <div className={styles.emptyState}>
+      {searchError && <Notice variant="warning">{t(dict, 'common.networkError')}</Notice>}
+
+      {isSearching && results.length === 0 && (
+        <div className={styles.statusText} role="status">
           {t(dict, 'gate.manualSearchSearching')}
         </div>
       )}
 
       {!isSearching && hasSearched && results.length === 0 && (
-        <div className={styles.emptyState} data-testid="no-search-results">
-          {t(dict, 'gate.manualSearchNoResults')}
+        <div className={styles.statusText} data-testid="no-search-results" role="status">
+          <Icon name="user-x" size="sm" />
+          <span>{t(dict, 'gate.manualSearchNoResults')}</span>
         </div>
       )}
 
-      {!isSearching && results.length > 0 && (
+      {results.length > 0 && (
         <div className={styles.resultsList} data-testid="gate-search-results-list">
           {results.map((guest) => {
             const isAdmitted = guest.checkIn !== null;
@@ -146,27 +157,28 @@ export function GuestLookup({ eventId, onSelect, disabled = false, dict }) {
                 disabled={disabled}
                 data-testid={`gate-search-result-${guest.id}`}
               >
-                <div className={styles.guestInfo}>
+                <span className={`${styles.resultIcon} ${isAdmitted ? styles.resultIconDone : ''}`} aria-hidden="true">
+                  <Icon name={isAdmitted ? 'check' : 'user'} size="sm" />
+                </span>
+                <span className={styles.guestInfo}>
                   <span className={styles.guestName} dir="auto">{guest.name}</span>
-                  <div className={styles.guestMeta}>
+                  <span className={styles.guestMeta}>
                     <bdi className={styles.shortCode}>{guest.shortCode}</bdi>
-                    {guest.reference && <span>{guest.reference}</span>}
-                    <span>
-                      {t(dict, 'guests.totalAllowed')}: {guest.totalAllowed}
+                    {guest.reference && <bdi>{guest.reference}</bdi>}
+                    <span className={styles.metaParty}>
+                      <Icon name="users" size="xs" />
+                      {guest.totalAllowed}
                     </span>
-                  </div>
-                </div>
-                <div className={styles.statusWrapper}>
-                  <StatusBadge
-                    status={isAdmitted ? 'admitted' : 'pending'}
-                    label={
-                      isAdmitted
-                        ? t(dict, 'gate.admittedBadge')
-                        : t(dict, 'gate.pendingBadge')
-                    }
-                    size="sm"
-                  />
-                </div>
+                  </span>
+                </span>
+                <StatusBadge
+                  status={isAdmitted ? 'admitted' : 'pending'}
+                  label={isAdmitted ? t(dict, 'gate.admittedBadge') : t(dict, 'gate.pendingBadge')}
+                  size="sm"
+                />
+                <span className={styles.chevron} aria-hidden="true">
+                  <Icon name="chevron-right" size="sm" mirror />
+                </span>
               </button>
             );
           })}

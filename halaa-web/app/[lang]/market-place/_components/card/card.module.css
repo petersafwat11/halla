@@ -142,7 +142,7 @@
   min-height: calc(1.6em * 2);
 }
 
-/* ── Meta (rating + location) ── */
+/* ── Meta (location + rating) ── */
 .meta {
   display: flex;
   align-items: center;

@@ -18,7 +18,6 @@ import { PASSWORD_COMPLEXITY_REGEX } from "@halaa/shared/schemas/_shared";
 
 const ContinueSignupForm = () => {
   const { t, i18n } = useTranslation("signup");
-  const { t: tContinue } = useTranslation("continueSignup");
   const { t: tCommon } = useTranslation("common");
   const { currentLocale } = useLanguageChange();
   const router = useRouter();
@@ -65,30 +64,17 @@ const ContinueSignupForm = () => {
   const password = formValues?.password || "";
   const passwordConfirm = formValues?.passwordConfirm || "";
 
-  // Password live validation pills
-  const passwordValidations = [
-    {
-      text: tContinue(
-        "continueSignup.errors.passwordMinLength",
-        isRTL ? "على الأقل 8 أحرف" : "At least 8 characters"
-      ),
-      isValid: Boolean(password && password.length >= 8),
-    },
-    {
-      text: tContinue(
-        "continueSignup.errors.passwordComplexity",
-        isRTL
-          ? "استخدم حرفاً واحداً ورقماً واحداً على الأقل، ويمكن استخدام الرموز"
-          : "Use at least one letter and one number; symbols are allowed"
-      ),
-      isValid: Boolean(password && PASSWORD_COMPLEXITY_REGEX.test(password)),
-    },
-  ];
+  // Password requirement: rendered as a full-width row under both password
+  // fields so the short copy has room to stay on one line (it still wraps
+  // rather than overflowing on narrow screens or large text sizes).
+  const passwordRequirementMet = Boolean(
+    password && password.length >= 8 && PASSWORD_COMPLEXITY_REGEX.test(password)
+  );
 
   const confirmValidations = password
     ? [
         {
-          text: isRTL ? "كلمتا المرور متطابقتان" : "Passwords match",
+          text: t("signupForm.continueSignup.personalInfo.passwordsMatch"),
           isValid: Boolean(
             passwordConfirm && password === passwordConfirm
           ),
@@ -208,33 +194,44 @@ const ContinueSignupForm = () => {
                 iconPath="auth/email.svg"
               />
             </div>
-            <div className={styles.row}>
-              <InputGroup
-                label={t(
-                  "signupForm.continueSignup.personalInfo.newPassword.label"
-                )}
-                type="password"
-                placeholder={t(
-                  "signupForm.continueSignup.personalInfo.newPassword.placeholder"
-                )}
-                name="password"
-                disabled={isLoading}
-                iconPath="auth/password.svg"
-                validations={passwordValidations}
-              />
-              <InputGroup
-                label={t(
-                  "signupForm.continueSignup.personalInfo.confirmPassword.label"
-                )}
-                type="password"
-                placeholder={t(
-                  "signupForm.continueSignup.personalInfo.confirmPassword.placeholder"
-                )}
-                name="passwordConfirm"
-                disabled={isLoading}
-                iconPath="auth/password.svg"
-                validations={confirmValidations}
-              />
+            <div className={styles.passwordGrid}>
+              <div className={styles.passwordField}>
+                <InputGroup
+                  label={t(
+                    "signupForm.continueSignup.personalInfo.newPassword.label"
+                  )}
+                  type="password"
+                  placeholder={t(
+                    "signupForm.continueSignup.personalInfo.newPassword.placeholder"
+                  )}
+                  name="password"
+                  disabled={isLoading}
+                  iconPath="auth/password.svg"
+                />
+              </div>
+              <p
+                className={`${styles.passwordRequirement} ${
+                  passwordRequirementMet ? styles.passwordRequirementMet : ""
+                }`}
+                aria-live="polite"
+              >
+                {t("signupForm.continueSignup.personalInfo.passwordRequirement")}
+              </p>
+              <div className={styles.confirmField}>
+                <InputGroup
+                  label={t(
+                    "signupForm.continueSignup.personalInfo.confirmPassword.label"
+                  )}
+                  type="password"
+                  placeholder={t(
+                    "signupForm.continueSignup.personalInfo.confirmPassword.placeholder"
+                  )}
+                  name="passwordConfirm"
+                  disabled={isLoading}
+                  iconPath="auth/password.svg"
+                  validations={confirmValidations}
+                />
+              </div>
             </div>
           </div>
 

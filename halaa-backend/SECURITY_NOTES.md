@@ -28,7 +28,6 @@ Because they were in git history, treat all of these as compromised and
 
 - `JWT_SECRET` (invalidates all sessions — expected)
 - `MOYASAR_API_KEY`, `MOYASAR_PUBLISHABLE_KEY`, `MOYASAR_WEBHOOK_SECRET`
-- `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` (rotate the IAM key)
 - MongoDB credentials / re-issue the X.509 cert (`DATABASE`, `DATABASE_PASSWORD`)
 - `TAQNYAT_API_KEY`, `EMAIL_PASSWORD`, `WHATSAPP_WEBHOOK_VERIFY_TOKEN`
 - Set `WHATSAPP_APP_SECRET` to the real Meta App Secret (required to enforce

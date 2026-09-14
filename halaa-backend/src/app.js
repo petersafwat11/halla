@@ -10,7 +10,7 @@ const cookieParser = require("cookie-parser");
 const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
 const compression = require("compression");
-const { getLocalUploadRoot } = require("./shared/utils/storageDriver");
+const { getLocalUploadRoot } = require("./shared/utils/localStorage");
 const crypto = require("crypto");
 const swaggerUi = require("swagger-ui-express");
 

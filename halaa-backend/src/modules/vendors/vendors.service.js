@@ -14,7 +14,7 @@ const {
   SERVICE_CATEGORY_LABELS,
 } = require("../../shared/constants");
 const { NotFoundError } = require("../../shared/errors");
-const { signStoredImage, signStoredImages } = require("../../shared/utils/s3Upload");
+const { resolveStoredImage, resolveStoredImages } = require("../../shared/utils/localUpload");
 const { normalizePhoneNumber, validateAndFormatPhone } = require("../../shared/utils/phone");
 const moderationService = require("../moderation/moderation.service");
 
@@ -174,7 +174,7 @@ class VendorsService {
     const vd = vendor.profile?.vendorData || {};
     const copy = localizeVendorCopy(vd, language);
     const imageRef = vd.portfolioImages?.[0] || serviceSummary?.firstServiceImage || vd.businessLogo || null;
-    const presentationImage = await signStoredImage(imageRef);
+    const presentationImage = await resolveStoredImage(imageRef);
     const startingPrice = Number.isFinite(serviceSummary?.minPrice)
       ? { amount: serviceSummary.minPrice, currency: serviceSummary.currency || "SAR" }
       : null;
@@ -187,7 +187,7 @@ class VendorsService {
       aboutExcerpt: excerpt(copy.about),
       presentationImage,
       heroImage: presentationImage,
-      logo: await signStoredImage(vd.businessLogo),
+      logo: await resolveStoredImage(vd.businessLogo),
       rating: Number.isFinite(vd.rating) ? vd.rating : null,
       badges: [],
       categories: getCategories(vd),
@@ -370,9 +370,9 @@ class VendorsService {
     const summary = await this._formatVendorSummary(vendor, summaryMap.get(String(vendor._id)), language);
     const phone = publicPhone(vendor.mobile || vendor.phoneNumber);
     const whatsapp = publicPhone(vd.socialLinks?.whatsapp) || phone;
-    const portfolio = await signStoredImages(vd.portfolioImages || []);
+    const portfolio = await resolveStoredImages(vd.portfolioImages || []);
     const serviceImage = services.find((service) => service.image)?.image || null;
-    const heroImage = await signStoredImage(vd.portfolioImages?.[0] || serviceImage || vd.businessLogo || null);
+    const heroImage = await resolveStoredImage(vd.portfolioImages?.[0] || serviceImage || vd.businessLogo || null);
 
     return { vendor: {
       ...summary,
@@ -395,7 +395,7 @@ class VendorsService {
         category: service.category,
         price: Number.isFinite(service.price) ? service.price : null,
         currency: service.currency || "SAR",
-        image: await signStoredImage(service.image),
+        image: await resolveStoredImage(service.image),
         tags: service.tags || [],
         included: service.included || [],
         location: service.serviceLocation || null,

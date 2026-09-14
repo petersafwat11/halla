@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const express = require('express');
 const { once } = require('node:events');
-const { s3Storage } = require('../src/shared/utils/s3Upload');
+const { localStorage } = require('../src/shared/utils/localUpload');
 const { uploadEventImages } = require('../src/modules/events/eventImages');
 
 function app() {
@@ -29,7 +29,7 @@ async function send(t, images = []) {
 
 test('legacy cover is discarded; only the invitation reaches the existing storage adapter', async t => {
   const stored = [];
-  t.mock.method(s3Storage, '_handleFile', (req, file, cb) => {
+  t.mock.method(localStorage, '_handleFile', (req, file, cb) => {
     stored.push(file.fieldname);
     file.stream.resume();
     file.stream.on('end', () => cb(null, { key: 'invitation.png' }));

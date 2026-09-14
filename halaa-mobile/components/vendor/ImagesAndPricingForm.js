@@ -18,18 +18,17 @@ import { usersApi } from "../../hooks/users/_api";
 import { getImageUrl } from "../../utils/imageUtils";
 
 /**
- * Extract the S3 key from a backend-signed URL.
- * Backend serves images as `https://bucket.s3.region.amazonaws.com/<key>?X-Amz-…`
- * — the path between the host and `?` is the key, which DELETE needs.
+ * Extract the stable VPS upload reference from a rendered backend URL.
  */
-const keyFromSignedUrl = (url) => {
+const storedRefFromUrl = (url) => {
   if (!url || typeof url !== "string") return null;
   try {
     const u = new URL(url);
     const path = u.pathname.startsWith("/") ? u.pathname.slice(1) : u.pathname;
     return path ? decodeURIComponent(path) : null;
   } catch {
-    return null;
+    const clean = url.split("?")[0].replace(/^\//, "");
+    return clean || null;
   }
 };
 
@@ -53,7 +52,7 @@ const ImageGridItem = React.memo(({ uri, onRemove, deleting }) => (
 /**
  * Images & Pricing form.
  *
- * `data.portfolioImages` and `data.pricePackages` are arrays of signed URLs
+ * `data.portfolioImages` and `data.pricePackages` are arrays of upload paths
  * (server-side state). Newly-picked files live in `newPortfolioFiles` and
  * `newPriceFiles` until the user saves. Deletes hit the server directly via
  * DELETE /users/profile/vendorData/image and then ask the parent to refetch.
@@ -62,8 +61,7 @@ const ImagesAndPricingForm = ({ data, onSave, onRefetch, loading }) => {
   const { t } = useTranslation("vendor");
   const toast = useToast();
 
-  // Backend refs are relative "/uploads/…" paths — absolutize so they render
-  // in RN Image AND parse in keyFromSignedUrl (new URL needs an absolute URL).
+  // Backend refs are relative "/uploads/…" paths — absolutize for RN Image.
   const existingPortfolio = Array.isArray(data?.portfolioImages)
     ? data.portfolioImages.map((u) => getImageUrl(u)).filter(Boolean)
     : [];
@@ -116,7 +114,7 @@ const ImagesAndPricingForm = ({ data, onSave, onRefetch, loading }) => {
   };
 
   const deleteExistingImage = async (field, url) => {
-    const key = keyFromSignedUrl(url);
+    const key = storedRefFromUrl(url);
     if (!key) {
       toast.error(t("settings.imagesAndPricing.deleteFailed", "Failed to delete image"));
       return;

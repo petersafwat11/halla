@@ -82,7 +82,7 @@ const ServiceDetailsEditForm = ({
 
   // Single-value document images live on the server; deletion hits the
   // shared DELETE endpoint with `{ field }` (no key — backend wipes the
-  // stored value + S3 object) and asks the parent to refetch so the
+  // stored value + VPS file) and asks the parent to refetch so the
   // form re-renders without the old preview.
   const handleDeleteExisting = async (field) => {
     if (

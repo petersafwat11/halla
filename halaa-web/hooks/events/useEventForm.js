@@ -1,11 +1,20 @@
 "use client";
-import { normalizeEventLocation } from "@halaa/shared/utils/eventLocation";
+import {
+  normalizeEventCoordinates,
+  normalizeEventLocation,
+} from "@halaa/shared/utils/eventLocation";
+import { resolveReferenceId } from "@halaa/shared/utils/referenceId";
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter, usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { toastUtils } from "@/utils/toastUtils";
 import { DEFAULT_INVITATION_TYPE } from "@/utils/invitationTypes";
+import {
+  resolveTaqnyatTemplateRef,
+  resolveVisualTemplateRef,
+  validateEventStep,
+} from "./eventFormValidation.js";
 
 // Constants
 const DEFAULT_ADDRESS = {
@@ -74,18 +83,19 @@ const populatedVisualTemplate = (event) => {
     };
   }
   const ref = vt.templateRef;
-  if (!ref) return null;
+  const templateRef = resolveReferenceId(ref);
+  if (!templateRef) return null;
   if (typeof ref === "object" && ref !== null) {
     return {
       ...ref,
-      templateRef: ref._id,
+      templateRef,
       fieldValues: vt.fieldValues || {},
       bakedImagePath: vt.bakedImagePath || null,
       isCustomUpload: false,
     };
   }
   return {
-    templateRef: ref,
+    templateRef,
     fieldValues: vt.fieldValues || {},
     bakedImagePath: vt.bakedImagePath || null,
     isCustomUpload: false,
@@ -94,11 +104,12 @@ const populatedVisualTemplate = (event) => {
 
 const populatedSelectedTemplate = (event) => {
   const ref = event.taqnyatTemplate?.templateRef;
-  if (!ref) return null;
+  const id = resolveReferenceId(ref);
+  if (!id) return null;
   if (typeof ref === "object" && ref !== null) {
     return {
-      _id: ref._id,
-      id: ref._id,
+      _id: id,
+      id,
       name: ref.templateName || ref.name,
       templateName: ref.templateName,
       bodyText: ref.bodyText,
@@ -108,7 +119,42 @@ const populatedSelectedTemplate = (event) => {
       deliveryMode: ref.deliveryMode || event.invitationDeliveryMode || 'quick_reply',
     };
   }
-  return { _id: ref, id: ref };
+  return { _id: id, id };
+};
+
+// GET /events/:id populates `taqnyatTemplate.templateRef`; the form keeps the
+// id only so validation and every payload builder see a string ObjectId.
+const normalizedTaqnyatTemplate = (event) => {
+  if (!event.taqnyatTemplate) return null;
+  return {
+    ...event.taqnyatTemplate,
+    templateRef: resolveReferenceId(event.taqnyatTemplate.templateRef),
+  };
+};
+
+const payloadLocation = (address) => ({
+  ...(address || {}),
+  ...normalizeEventCoordinates(address),
+});
+
+const payloadVisualTemplate = (visualTemplate) =>
+  visualTemplate
+    ? visualTemplate.isCustomUpload
+      ? {
+          isCustomUpload: true,
+          fieldValues: {},
+        }
+      : {
+          templateRef: resolveVisualTemplateRef(visualTemplate),
+          fieldValues:
+            visualTemplate.fieldValues || visualTemplate.data || {},
+          isCustomUpload: false,
+        }
+    : undefined;
+
+const payloadTaqnyatTemplate = (data) => {
+  const templateRef = resolveTaqnyatTemplateRef(data);
+  return templateRef ? { templateRef } : undefined;
 };
 
 export const mapEventToFormValues = (event) => ({
@@ -125,7 +171,7 @@ export const mapEventToFormValues = (event) => ({
     event.visualTemplate?.bakedImagePath || event.templateImage || "",
   visualTemplate: populatedVisualTemplate(event),
   selectedTemplate: populatedSelectedTemplate(event),
-  taqnyatTemplate: event.taqnyatTemplate || null,
+  taqnyatTemplate: normalizedTaqnyatTemplate(event),
   invitationType: event.invitationType || DEFAULT_INVITATION_TYPE,
   guestReplies: {
     onAttend: event.guestReplies?.onAttend || "",
@@ -142,7 +188,7 @@ export const buildEventPayload = (data = {}) => ({
     type: data.eventType,
     date: data.eventDate,
     time: data.eventTime,
-    location: data.address,
+    location: payloadLocation(data.address),
   },
   guestList: (data.guestList || []).map((guest) => ({
     name: guest.name,
@@ -153,30 +199,8 @@ export const buildEventPayload = (data = {}) => ({
     name: s.name,
     phone: s.mobile || s.phone,
   })),
-  visualTemplate: data.visualTemplate
-    ? data.visualTemplate.isCustomUpload
-      ? {
-          isCustomUpload: true,
-          fieldValues: {},
-        }
-      : {
-          templateRef:
-            data.visualTemplate.templateRef ||
-            data.visualTemplate._id ||
-            data.visualTemplate.id,
-          fieldValues:
-            data.visualTemplate.fieldValues || data.visualTemplate.data || {},
-          isCustomUpload: false,
-        }
-    : undefined,
-  taqnyatTemplate: data.selectedTemplate
-    ? {
-        templateRef:
-          data.taqnyatTemplate?.templateRef ||
-          data.selectedTemplate._id ||
-          data.selectedTemplate.id,
-      }
-    : undefined,
+  visualTemplate: payloadVisualTemplate(data.visualTemplate),
+  taqnyatTemplate: payloadTaqnyatTemplate(data),
   guestReplies: {
     onAttend: data.guestReplies?.onAttend || "",
     onAbsent: data.guestReplies?.onAbsent || "",
@@ -189,7 +213,6 @@ export const buildEventPayload = (data = {}) => ({
   },
 });
 
-import { validateEventStep } from "./eventFormValidation.js";
 export { validateEventStep };
 
 /**
@@ -321,7 +344,7 @@ export const useEventForm = (options = {}) => {
               type: formData.eventType,
               date: formData.eventDate,
               time: formData.eventTime,
-              location: formData.address,
+              location: payloadLocation(formData.address),
               description: formData.description,
             },
           };
@@ -343,38 +366,14 @@ export const useEventForm = (options = {}) => {
         case 3:
           return {
             type: "visualTemplate",
-            data: formData.visualTemplate
-              ? formData.visualTemplate.isCustomUpload
-                ? {
-                    isCustomUpload: true,
-                    fieldValues: {},
-                  }
-                : {
-                    templateRef:
-                      formData.visualTemplate.templateRef ||
-                      formData.visualTemplate._id ||
-                      formData.visualTemplate.id,
-                    fieldValues:
-                      formData.visualTemplate.fieldValues ||
-                      formData.visualTemplate.data ||
-                      {},
-                    isCustomUpload: false,
-                  }
-              : undefined,
+            data: payloadVisualTemplate(formData.visualTemplate),
             templateImage: formData.templateImage,
           };
         case 4:
           return {
             type: "invitationSettings",
             data: {
-              taqnyatTemplate: formData.selectedTemplate
-                ? {
-                    templateRef:
-                      formData.taqnyatTemplate?.templateRef ||
-                      formData.selectedTemplate._id ||
-                      formData.selectedTemplate.id,
-                  }
-                : undefined,
+              taqnyatTemplate: payloadTaqnyatTemplate(formData),
               guestReplies: {
                 onAttend: formData.guestReplies?.onAttend || "",
                 onAbsent: formData.guestReplies?.onAbsent || "",

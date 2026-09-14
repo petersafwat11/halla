@@ -7,7 +7,7 @@ const crypto = require('crypto');
 const businessesService = require('./admin.businesses.service');
 const catchAsync = require('../../shared/utils/catchAsync');
 const { sendSuccess } = require('../../shared/utils/responseHelper');
-const { processUploadedFiles } = require('../../shared/utils/s3Upload');
+const { processUploadedFiles } = require('../../shared/utils/localUpload');
 
 exports.getBusinesses = catchAsync(async (req, res) => {
   const { page, limit, search, status, from, to } = req.query;

@@ -35,6 +35,17 @@ import { resolveMediaUri } from "../../utils/resolveMediaUri";
 import { useAuthStore } from "../../stores/authStore";
 
 const cmpZ = (a, b) => (a.zIndex || 0) - (b.zIndex || 0);
+const PLACEHOLDER_STYLE = { opacity: 0.5 };
+
+function estimateFittedFontSize(text, width, fontSize, maxLines) {
+  if (!text || !width || !maxLines) return fontSize;
+  const glyphCount = Array.from(String(text)).length;
+  if (!glyphCount) return fontSize;
+  // Cairo's Arabic and Latin glyphs average below 0.7em. Starting from this
+  // conservative estimate prevents a fast Save press from capturing before
+  // native onTextLayout has completed its exact correction pass.
+  return Math.min(fontSize, (width * maxLines) / (glyphCount * 0.7));
+}
 
 // Render `time`-typed values as "HH:MM" 24h.
 function formatFieldValue(field, raw, locale = "ar") {
@@ -116,7 +127,8 @@ function getBackgroundSource(template, token) {
   return uri ? sourceWithAuth(uri, token) : null;
 }
 
-function DecorationItem({ decoration, containerWidth, containerHeight, primaryColor, token }) {
+// Memoized items: a keystroke re-renders only the overlay whose text changed.
+const DecorationItem = React.memo(function DecorationItem({ decoration, containerWidth, containerHeight, primaryColor, token }) {
   const left = (decoration.leftPct / 100) * containerWidth;
   const top = (decoration.topPct / 100) * containerHeight;
   const iconSize = decoration.iconSizeVh
@@ -162,9 +174,9 @@ function DecorationItem({ decoration, containerWidth, containerHeight, primaryCo
   }
 
   return null;
-}
+});
 
-function OverlayItem({ overlay, containerWidth, containerHeight, text, primaryColor }) {
+const OverlayItem = React.memo(function OverlayItem({ overlay, containerWidth, containerHeight, text, primaryColor, isPlaceholder = false }) {
   const left = (overlay.leftPct / 100) * containerWidth;
   const top = (overlay.topPct / 100) * containerHeight;
   const width = overlay.widthPct
@@ -173,6 +185,13 @@ function OverlayItem({ overlay, containerWidth, containerHeight, text, primaryCo
   const fontSize = overlay.fontSizeVh
     ? Math.max(8, (overlay.fontSizeVh / 100) * containerHeight)
     : 14;
+  const minimumFontSize = Math.max(4, fontSize * 0.55);
+  const estimatedFontSize = Math.max(minimumFontSize, estimateFittedFontSize(text, width, fontSize, overlay.maxLines));
+  const [fittedFontSize, setFittedFontSize] = useState(estimatedFontSize);
+
+  useEffect(() => {
+    setFittedFontSize(estimatedFontSize);
+  }, [estimatedFontSize]);
 
   const color =
     overlay.colorBinding === "custom"
@@ -191,7 +210,7 @@ function OverlayItem({ overlay, containerWidth, containerHeight, text, primaryCo
 
   const textStyle = {
     color,
-    fontSize,
+    fontSize: fittedFontSize,
     fontWeight: overlay.fontWeight || "normal",
     fontFamily: resolveFontFamily(overlay.fontFamily, overlay.fontWeight),
     textAlign: overlay.textAlign || "center",
@@ -199,11 +218,18 @@ function OverlayItem({ overlay, containerWidth, containerHeight, text, primaryCo
 
   return (
     <View pointerEvents="none" style={wrapperStyle}>
-      <Text style={textStyle} numberOfLines={overlay.maxLines || undefined}
-        adjustsFontSizeToFit={Boolean(overlay.maxLines)} minimumFontScale={0.35}>{text}</Text>
+      <Text
+        style={isPlaceholder ? [textStyle, PLACEHOLDER_STYLE] : textStyle}
+        onTextLayout={overlay.maxLines ? (event) => {
+          const lineCount = event?.nativeEvent?.lines?.length || 0;
+          if (lineCount > overlay.maxLines && fittedFontSize > minimumFontSize) {
+            setFittedFontSize((current) => Math.max(minimumFontSize, current * 0.9));
+          }
+        } : undefined}
+      >{text}</Text>
     </View>
   );
-}
+});
 
 export default function TemplatePreviewCanvas({
   template,
@@ -212,6 +238,8 @@ export default function TemplatePreviewCanvas({
   width: widthProp,
   onBackgroundReady,
   onBackgroundError,
+  // Editor previews label empty slots; the modal turns this off before capture.
+  showPlaceholders = false,
 }) {
   const { t, currentLanguage } = useTranslation("common");
   const token = useAuthStore((state) => state.token);
@@ -232,13 +260,20 @@ export default function TemplatePreviewCanvas({
     }
   }, [primarySource, onBackgroundReady, onBackgroundError]);
 
-  if (!template) return null;
-
-  const decorations = [...(template.decorations || [])].sort(cmpZ);
-  const overlays = [...(template.overlays || [])].sort(cmpZ);
-  const fieldsByKey = Object.fromEntries(
-    (template.fields || []).map((f) => [f.key, f])
+  const decorations = useMemo(
+    () => [...(template?.decorations || [])].sort(cmpZ),
+    [template?.decorations]
   );
+  const overlays = useMemo(
+    () => [...(template?.overlays || [])].sort(cmpZ),
+    [template?.overlays]
+  );
+  const fieldsByKey = useMemo(
+    () => Object.fromEntries((template?.fields || []).map((f) => [f.key, f])),
+    [template?.fields]
+  );
+
+  if (!template) return null;
 
   const aspectRatio =
     template.naturalWidth && template.naturalHeight
@@ -292,14 +327,21 @@ export default function TemplatePreviewCanvas({
         const field = fieldsByKey[o.fieldKey];
         const raw = data?.[o.fieldKey];
         const formatted = formatFieldValue(field, raw, currentLanguage || "ar");
-        const display = formatted ?? '';
+        const placeholder =
+          showPlaceholders && formatted == null && field
+            ? (currentLanguage === "en" ? field.labelEn : field.labelAr) ||
+              field.labelAr ||
+              field.labelEn ||
+              ""
+            : "";
         return (
           <OverlayItem
             key={`ov-${i}`}
             overlay={o}
             containerWidth={width}
             containerHeight={height}
-            text={display}
+            text={formatted ?? placeholder}
+            isPlaceholder={!!placeholder}
             primaryColor={primaryColor}
           />
         );

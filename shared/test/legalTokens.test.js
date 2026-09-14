@@ -38,11 +38,10 @@ test("legal matcher: official company name and store names stay atomic", () => {
 
 test("legal matcher: proven vendor brand runs are isolated (blueprint §4.5 expansion)", () => {
   const body =
-    "نستخدم MongoDB Atlas وAWS/S3 وMoyasar وApple/Google وRevenueCat وSentry وTaqnyat وGoogle Maps وMeta/WhatsApp وExpo وAPNs وFCM لتشغيل المنصة.";
+    "نستخدم MongoDB Atlas وMoyasar وApple/Google وRevenueCat وSentry وTaqnyat وGoogle Maps وMeta/WhatsApp وExpo وAPNs وFCM لتشغيل المنصة.";
   const out = isolateLegalLtrTokens(body, true);
   for (const token of [
     "MongoDB Atlas",
-    "AWS/S3",
     "Moyasar",
     "Apple/Google",
     "RevenueCat",

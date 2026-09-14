@@ -4,7 +4,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Dialog } from '../ui/Dialog.jsx';
 import { Button } from '../ui/Button.jsx';
 import { Notice } from '../ui/Notice.jsx';
-import { Field } from '../ui/Field.jsx';
 import { Icon } from '../ui/Icon.jsx';
 import { getDictionary, t, formatRiyadhDate } from '../../lib/locale.js';
 import { useExports } from '../../hooks/useExports.js';
@@ -46,8 +45,6 @@ export function ExportPanel({
     jobQueryError,
     downloadExport,
     printExport,
-    startPolling,
-    cleanup,
     clearRetainedJob,
     refetchJob,
   } = useExports(eventId, { pollingEnabled: isOpen });
@@ -73,50 +70,30 @@ export function ExportPanel({
     setExportLocale(lang);
   }, [lang]);
 
-  // Determine scope text for confirm dialog
   const getScopeText = useCallback(() => {
-    if (exportType === 'report') {
-      return t(dict, 'exports.reportType');
-    }
-    if (exportType === 'single') {
-      return t(dict, 'exports.scopeSingle');
-    }
-    if (exportType === 'selected') {
-      return t(dict, 'exports.scopeSelected', { count: selectedCount });
-    }
-    if (exportType === 'all') {
-      return t(dict, 'exports.scopeAll', { count: totalGuests });
-    }
+    if (exportType === 'report') return t(dict, 'exports.reportType');
+    if (exportType === 'single') return t(dict, 'exports.scopeSingle');
+    if (exportType === 'selected') return t(dict, 'exports.scopeSelected', { count: selectedCount });
+    if (exportType === 'all') return t(dict, 'exports.scopeAll', { count: totalGuests });
     return '';
   }, [exportType, selectedCount, totalGuests, dict]);
 
-  // Determine export type display name
   const getExportTypeLabel = useCallback(() => {
-    if (exportType === 'report') {
-      return t(dict, 'exports.reportType');
-    }
-    if (exportType === 'single') {
-      return t(dict, 'exports.singlePassType');
-    }
-    if (exportType === 'selected') {
-      return t(dict, 'exports.selectedPassesType');
-    }
-    if (exportType === 'all') {
-      return t(dict, 'exports.allPassesType');
-    }
+    if (exportType === 'report') return t(dict, 'exports.reportType');
+    if (exportType === 'single') return t(dict, 'exports.singlePassType');
+    if (exportType === 'selected') return t(dict, 'exports.selectedPassesType');
+    if (exportType === 'all') return t(dict, 'exports.allPassesType');
     return '';
   }, [exportType, dict]);
 
-  // Check if export type is available
   const isTypeAvailable = useCallback((type) => {
     if (type === 'single') return !!singleGuest;
     if (type === 'selected') return selectedCount > 0;
     if (type === 'all') return totalGuests > 0;
-    if (type === 'report') return true; // Report is always available
+    if (type === 'report') return true;
     return false;
   }, [singleGuest, selectedCount, totalGuests]);
 
-  // Handle export creation
   const handleCreateExport = async () => {
     if (!isTypeAvailable(exportType)) return;
 
@@ -142,13 +119,11 @@ export function ExportPanel({
       await createExport(payload);
       setShowConfirm(false);
       setPendingConfirmType(null);
-    } catch (err) {
+    } catch {
       // Error handled by createError state
-      console.error('Export creation failed:', err);
     }
   };
 
-  // Handle confirm dialog open
   const handleOpenConfirm = (type, guest = null) => {
     if (!isTypeAvailable(type)) return;
     setExportType(type);
@@ -159,7 +134,6 @@ export function ExportPanel({
     setShowConfirm(true);
   };
 
-  // Handle download (surface failures in the panel, not only console)
   const handleDownload = async () => {
     if (!job?.id) return;
     setActionError(null);
@@ -170,7 +144,6 @@ export function ExportPanel({
     }
   };
 
-  // Handle print (blob-based, with popup-blocked fallback inside the hook)
   const handlePrint = async () => {
     if (!job?.id) return;
     setActionError(null);
@@ -181,7 +154,6 @@ export function ExportPanel({
     }
   };
 
-  // Handle retry: re-open confirmation for the same export type
   const handleRetry = () => {
     setActionError(null);
     const retryType = pendingConfirmType || exportType;
@@ -190,8 +162,13 @@ export function ExportPanel({
     setShowConfirm(true);
   };
 
+  const startNewExport = () => {
+    clearRetainedJob();
+    setShowConfirm(false);
+    setActionError(null);
+  };
+
   // Cleanup on close (F24: retain job ID across closure; pause polling via isOpen).
-  // Clear retained IDs on logout/user change (F24).
   const userId = user?.id || user?.username || null;
   useEffect(() => {
     if (!isOpen) {
@@ -209,126 +186,154 @@ export function ExportPanel({
     }
   }, [userId, eventId]);
 
-  // Check if job is in terminal state
-  const isTerminalState = jobState === 'ready' || jobState === 'failed' || jobState === 'expired';
-
-  // Report type label based on event status
   const reportLabel = event?.status === 'closed'
     ? t(dict, 'exports.reportFinal')
     : t(dict, 'exports.reportInterim');
 
-  // Job state label
   const getJobStateLabel = () => {
     if (!jobState) return '';
     return t(dict, `exports.state${jobState.charAt(0).toUpperCase() + jobState.slice(1)}`) || jobState;
   };
+
+  const isTerminalFailure = jobState === 'failed' || jobState === 'expired';
+  const view = showConfirm ? 'confirm' : activeJobId ? 'job' : 'select';
+
+  const options = [
+    {
+      type: 'single',
+      icon: 'qr',
+      label: t(dict, 'exports.singlePass'),
+      scope: singleGuest ? (
+        <>
+          <bdi>{singleGuest.name}</bdi> (<bdi>{singleGuest.shortCode}</bdi>)
+        </>
+      ) : t(dict, 'exports.scopeSingle'),
+      testId: 'export-single-pass',
+    },
+    {
+      type: 'selected',
+      icon: 'check-circle',
+      label: t(dict, 'exports.selectedPasses'),
+      scope: t(dict, 'exports.scopeSelected', { count: selectedCount }),
+      testId: 'export-selected-passes',
+    },
+    {
+      type: 'all',
+      icon: 'users',
+      label: t(dict, 'exports.allPasses'),
+      scope: t(dict, 'exports.scopeAll', { count: totalGuests }),
+      testId: 'export-all-passes',
+    },
+    {
+      type: 'report',
+      icon: 'chart',
+      label: t(dict, 'exports.attendanceReport'),
+      scope: reportLabel,
+      extra: (
+        <span className={styles.optionMetrics} data-testid="export-report-metrics">
+          {t(dict, 'exports.pendingInvitations')}: {exportStats?.pendingInvitations ?? 0} •{' '}
+          {t(dict, 'exports.admittedInvitations')}: {exportStats?.admittedInvitations ?? 0} •{' '}
+          {t(dict, 'exports.attendanceRate')}: {exportStats?.invitationAttendanceRate ?? exportStats?.attendanceRate ?? 0}% •{' '}
+          {t(dict, 'exports.capacityRate')}: {exportStats?.capacityAttendanceRate ?? exportStats?.headCountRate ?? 0}%
+        </span>
+      ),
+      testId: 'export-report',
+    },
+  ];
+
+  let footer;
+  if (view === 'confirm') {
+    footer = (
+      <>
+        <Button variant="ghost" onClick={() => setShowConfirm(false)} disabled={isCreating}>
+          {t(dict, 'common.cancel')}
+        </Button>
+        <Button
+          variant="primary"
+          onClick={handleCreateExport}
+          loading={isCreating}
+          leadingIcon="file-down"
+          data-testid="export-confirm-btn"
+        >
+          {t(dict, 'exports.createExport')}
+        </Button>
+      </>
+    );
+  } else if (view === 'job' && (jobState === 'ready' || isTerminalFailure)) {
+    footer = (
+      <>
+        <Button variant="outline" onClick={startNewExport} leadingIcon="plus" data-testid="export-new-btn">
+          {t(dict, 'exports.createExport')}
+        </Button>
+        {isTerminalFailure ? (
+          <Button variant="primary" onClick={handleRetry} disabled={isCreating} leadingIcon="refresh">
+            {t(dict, 'exports.retry')}
+          </Button>
+        ) : (
+          <Button variant="ghost" onClick={onClose}>
+            {t(dict, 'exports.close')}
+          </Button>
+        )}
+      </>
+    );
+  } else {
+    footer = (
+      <Button variant="ghost" onClick={onClose}>
+        {t(dict, 'exports.close')}
+      </Button>
+    );
+  }
 
   return (
     <Dialog
       isOpen={isOpen}
       onClose={onClose}
       title={t(dict, 'exports.title')}
-      maxWidth="640px"
+      description={t(dict, 'exports.subtitle')}
+      icon="download"
+      maxWidth="680px"
       closeAriaLabel={t(dict, 'dialog.close')}
+      footer={footer}
     >
       <div className={styles.container}>
-        {/* Export Type Selection */}
-        {!activeJobId && !showConfirm && (
-          <div className={styles.section}>
+        {view === 'select' && (
+          <>
+            <span className={styles.sectionLabel}>{t(dict, 'exports.chooseType')}</span>
             <div className={styles.optionsGrid}>
-              {/* Single Pass */}
-              <button
-                type="button"
-                className={`${styles.optionCard} ${exportType === 'single' ? styles.optionCardSelected : ''} ${
-                  !isTypeAvailable('single') ? styles.optionCardDisabled : ''
-                }`}
-                onClick={() => handleOpenConfirm('single')}
-                disabled={!isTypeAvailable('single') || isCreating}
-                data-testid="export-single-pass"
-              >
-                <div className={styles.optionIcon}>
-                  <Icon name="qr" size="md" />
-                </div>
-                <div className={styles.optionLabel}>{t(dict, 'exports.singlePass')}</div>
-                <div className={styles.optionScope}>
-                  {singleGuest ? (
-                    <>
-                      <bdi>{singleGuest.name}</bdi> {'('}
-                      <bdi>{singleGuest.shortCode}</bdi>
-                      {')'}
-                    </>
-                  ) : (
-                    t(dict, 'exports.scopeSingle')
-                  )}
-                </div>
-              </button>
-
-              {/* Selected Passes */}
-              <button
-                type="button"
-                className={`${styles.optionCard} ${exportType === 'selected' ? styles.optionCardSelected : ''} ${
-                  !isTypeAvailable('selected') ? styles.optionCardDisabled : ''
-                }`}
-                onClick={() => handleOpenConfirm('selected')}
-                disabled={!isTypeAvailable('selected') || isCreating}
-                data-testid="export-selected-passes"
-              >
-                <div className={styles.optionIcon}>
-                  <Icon name="file" size="md" />
-                </div>
-                <div className={styles.optionLabel}>{t(dict, 'exports.selectedPasses')}</div>
-                <div className={styles.optionScope}>
-                  {t(dict, 'exports.scopeSelected', { count: selectedCount })}
-                </div>
-              </button>
-
-              {/* All Passes */}
-              <button
-                type="button"
-                className={`${styles.optionCard} ${exportType === 'all' ? styles.optionCardSelected : ''} ${
-                  !isTypeAvailable('all') ? styles.optionCardDisabled : ''
-                }`}
-                onClick={() => handleOpenConfirm('all')}
-                disabled={!isTypeAvailable('all') || isCreating}
-                data-testid="export-all-passes"
-              >
-                <div className={styles.optionIcon}>
-                  <Icon name="users" size="md" />
-                </div>
-                <div className={styles.optionLabel}>{t(dict, 'exports.allPasses')}</div>
-                <div className={styles.optionScope}>
-                  {t(dict, 'exports.scopeAll', { count: totalGuests })}
-                </div>
-              </button>
-
-              {/* Attendance Report */}
-              <button
-                type="button"
-                className={`${styles.optionCard} ${exportType === 'report' ? styles.optionCardSelected : ''} ${
-                  !isTypeAvailable('report') ? styles.optionCardDisabled : ''
-                }`}
-                onClick={() => handleOpenConfirm('report')}
-                disabled={!isTypeAvailable('report') || isCreating}
-                data-testid="export-report"
-              >
-                <div className={styles.optionIcon}>
-                  <Icon name="chart" size="md" />
-                </div>
-                <div className={styles.optionLabel}>{t(dict, 'exports.attendanceReport')}</div>
-                <div className={styles.optionScope}>{reportLabel}</div>
-                {/* F24: defined summary metrics, not only the option card. */}
-                <div className={styles.optionScope} data-testid="export-report-metrics">
-                  {t(dict, 'exports.pendingInvitations')}: {exportStats?.pendingInvitations ?? 0} •{' '}
-                  {t(dict, 'exports.admittedInvitations')}: {exportStats?.admittedInvitations ?? 0} •{' '}
-                  {t(dict, 'exports.attendanceRate')}: {exportStats?.invitationAttendanceRate ?? exportStats?.attendanceRate ?? 0}% •{' '}
-                  {t(dict, 'exports.capacityRate')}: {exportStats?.capacityAttendanceRate ?? exportStats?.headCountRate ?? 0}%
-                </div>
-              </button>
+              {options.map((option) => {
+                const available = isTypeAvailable(option.type);
+                return (
+                  <button
+                    key={option.type}
+                    type="button"
+                    className={[
+                      styles.optionCard,
+                      exportType === option.type && available ? styles.optionCardSelected : '',
+                      !available ? styles.optionCardDisabled : '',
+                    ].filter(Boolean).join(' ')}
+                    onClick={() => handleOpenConfirm(option.type)}
+                    disabled={!available || isCreating}
+                    data-testid={option.testId}
+                  >
+                    <span className={styles.optionIcon} aria-hidden="true">
+                      <Icon name={option.icon} size="md" />
+                    </span>
+                    <span className={styles.optionText}>
+                      <span className={styles.optionLabel}>{option.label}</span>
+                      <span className={styles.optionScope}>{option.scope}</span>
+                      {option.extra}
+                    </span>
+                    <span className={styles.optionChevron} aria-hidden="true">
+                      <Icon name="chevron-right" size="sm" mirror />
+                    </span>
+                  </button>
+                );
+              })}
             </div>
 
-            {/* Language Selector */}
             <div className={styles.languageSelector}>
               <label htmlFor="export-locale" className={styles.fieldLabel}>
+                <Icon name="languages" size="sm" />
                 {t(dict, 'exports.languageLabel')}
               </label>
               <select
@@ -342,69 +347,85 @@ export function ExportPanel({
                 <option value="en">{t(dict, 'exports.languageEn')}</option>
               </select>
             </div>
-          </div>
+
+            {createError && (
+              <Notice variant="error" data-testid="export-create-error">
+                {t(dict, `errors.${createError.code}`) || createError.message}
+                {createError.code === 'RATE_LIMITED' ? ` — ${t(dict, 'exports.rateLimited')}` : ''}
+              </Notice>
+            )}
+          </>
         )}
 
-        {/* Creation errors surface independently (F24: not hidden when no job ID). */}
-        {!activeJobId && !showConfirm && createError && (
-          <Notice variant="error" data-testid="export-create-error">
-            {t(dict, `errors.${createError.code}`) || createError.message}
-            {createError.code === 'RATE_LIMITED' ? ` — ${t(dict, 'exports.rateLimited')}` : ''}
-          </Notice>
-        )}
-
-        {/* Confirmation Dialog */}
-        {showConfirm && (
+        {view === 'confirm' && (
           <div className={styles.confirmSection}>
-            <h3 className={styles.sectionTitle}>{t(dict, 'exports.confirmTitle')}</h3>
-            <p className={styles.confirmMessage}>
-              {t(dict, 'exports.confirmMessage', {
-                type: getExportTypeLabel(),
-                count: exportType === 'report' ? totalGuests : (exportType === 'selected' ? selectedCount : (exportType === 'all' ? totalGuests : 1)),
-              })}
-            </p>
-            <div className={styles.confirmActions}>
-              <Button variant="ghost" onClick={() => setShowConfirm(false)} disabled={isCreating}>
-                {t(dict, 'common.cancel')}
-              </Button>
-              <Button
-                variant="primary"
-                onClick={handleCreateExport}
-                loading={isCreating}
-                data-testid="export-confirm-btn"
-              >
-                {t(dict, 'exports.createExport')}
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Processing / Result State */}
-        {activeJobId && !showConfirm && (
-          <div className={styles.jobSection}>
-            <div className={`${styles.jobStatus} ${styles[jobState] || ''}`}>
-              <div className={styles.jobStateInfo}>
-                <span className={styles.jobStateLabel}>
-                  {isPolling ? (
-                    <>
-                      <span className={styles.spinner} aria-hidden="true"></span>
-                      {t(dict, 'exports.polling')}
-                    </>
-                  ) : (
-                    getJobStateLabel()
-                  )}
-                </span>
-                {job?.snapshotAt && (
-                  <span className={styles.jobSnapshotTime}>
-                    {t(dict, 'common.asOf')} {formatRiyadhDate(job.snapshotAt, lang)}
-                  </span>
-                )}
+            <div className={styles.confirmCard}>
+              <span className={styles.confirmIcon} aria-hidden="true">
+                <Icon name={options.find((o) => o.type === exportType)?.icon || 'file'} size="lg" />
+              </span>
+              <div className={styles.confirmText}>
+                <h3 className={styles.confirmTitle}>{t(dict, 'exports.confirmTitle')}</h3>
+                <p className={styles.confirmMessage}>
+                  {t(dict, 'exports.confirmMessage', {
+                    type: getExportTypeLabel(),
+                    count: exportType === 'report' ? totalGuests : (exportType === 'selected' ? selectedCount : (exportType === 'all' ? totalGuests : 1)),
+                  })}
+                </p>
+                <div className={styles.confirmMeta}>
+                  <span>{getScopeText()}</span>
+                  <span className={styles.metaDot} aria-hidden="true" />
+                  <span>{exportLocale === 'ar' ? t(dict, 'exports.languageAr') : t(dict, 'exports.languageEn')}</span>
+                  <span className={styles.metaDot} aria-hidden="true" />
+                  <span>PDF</span>
+                </div>
               </div>
             </div>
+            {createError && (
+              <Notice variant="error" data-testid="export-create-error">
+                {t(dict, `errors.${createError.code}`) || createError.message}
+                {createError.code === 'RATE_LIMITED' ? ` — ${t(dict, 'exports.rateLimited')}` : ''}
+              </Notice>
+            )}
+          </div>
+        )}
 
-            {/* Error State (creation, polling, download/print, or terminal failure) */}
-            {(createError || actionError || jobQueryError || (jobState === 'failed' || jobState === 'expired')) && (
-              <Notice variant="error" className={styles.errorNotice} data-testid="export-job-error">
+        {view === 'job' && (
+          <div className={styles.jobSection}>
+            {['queued', 'running'].includes(jobState) || (isPolling && !jobState) ? (
+              <div className={styles.jobCard}>
+                <span className={styles.bigSpinner} aria-hidden="true" />
+                <h3 className={styles.jobTitle}>{t(dict, 'exports.processingTitle')}</h3>
+                <p className={styles.jobHint}>{t(dict, 'exports.processingHint')}</p>
+                <span className={styles.jobState}>{getJobStateLabel() || t(dict, 'exports.polling')}</span>
+              </div>
+            ) : jobState === 'ready' ? (
+              <div className={`${styles.jobCard} ${styles.jobReady}`}>
+                <span className={styles.readyIcon} aria-hidden="true">
+                  <Icon name="check-circle" size="xl" />
+                </span>
+                <h3 className={styles.jobTitle}>{t(dict, 'exports.ready')}</h3>
+                {job?.snapshotAt && (
+                  <p className={styles.jobHint}>
+                    {t(dict, 'common.asOf')} <bdi>{formatRiyadhDate(job.snapshotAt, lang)}</bdi>
+                  </p>
+                )}
+                <div className={styles.readyActions}>
+                  <Button variant="primary" size="lg" onClick={handleDownload} leadingIcon="download" data-testid="export-download-btn">
+                    {t(dict, 'exports.download')}
+                  </Button>
+                  <Button variant="outline" size="lg" onClick={handlePrint} leadingIcon="printer" data-testid="export-print-btn">
+                    {t(dict, 'exports.print')}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className={styles.jobCard}>
+                <span className={styles.jobState}>{getJobStateLabel()}</span>
+              </div>
+            )}
+
+            {(createError || actionError || jobQueryError || isTerminalFailure) && (
+              <Notice variant="error" data-testid="export-job-error">
                 {createError
                   ? `${t(dict, `errors.${createError.code}`) || createError.message}${createError.code === 'RATE_LIMITED' ? ` — ${t(dict, 'exports.rateLimited')}` : ''}`
                   : jobQueryError
@@ -417,76 +438,9 @@ export function ExportPanel({
               </Notice>
             )}
             {jobQueryError && (
-              <div style={{ marginTop: 8 }}>
-                <Button variant="secondary" size="sm" onClick={() => refetchJob()} data-testid="export-poll-retry-btn">
+              <div>
+                <Button variant="outline" size="sm" leadingIcon="refresh" onClick={() => refetchJob()} data-testid="export-poll-retry-btn">
                   {t(dict, 'common.retry')}
-                </Button>
-              </div>
-            )}
-
-            {/* Success State - Ready Actions */}
-            {jobState === 'ready' && (
-              <div className={styles.successActions}>
-                <p className={styles.successMessage}>
-                  {t(dict, 'exports.ready')}
-                </p>
-                <div className={styles.actionButtons}>
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    onClick={handleDownload}
-                    leadingIcon="download"
-                    data-testid="export-download-btn"
-                  >
-                    {t(dict, 'exports.download')}
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="lg"
-                    onClick={handlePrint}
-                    leadingIcon="printer"
-                    data-testid="export-print-btn"
-                  >
-                    {t(dict, 'exports.print')}
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Processing State */}
-            {['queued', 'running'].includes(jobState) && (
-              <div className={styles.processingMessage}>
-                <span className={styles.spinner} aria-hidden="true"></span>
-                {t(dict, 'exports.polling')}
-              </div>
-            )}
-
-            {/* Retry/Close Actions for terminal states */}
-            {(jobState === 'failed' || jobState === 'expired') && (
-              <div className={styles.retryActions}>
-                <Button variant="primary" onClick={handleRetry} disabled={isCreating}>
-                  {t(dict, 'exports.retry')}
-                </Button>
-                <Button variant="ghost" onClick={() => { clearRetainedJob(); setShowConfirm(false); }}>
-                  {t(dict, 'exports.close')}
-                </Button>
-              </div>
-            )}
-
-            {/* New export without duplicating (F24: explicit, never automatic). */}
-            {(jobState === 'ready' || jobState === 'failed' || jobState === 'expired') && (
-              <div style={{ marginTop: 8 }}>
-                <Button variant="secondary" size="sm" onClick={() => { clearRetainedJob(); setShowConfirm(false); setActionError(null); }} data-testid="export-new-btn">
-                  {t(dict, 'exports.createExport')}
-                </Button>
-              </div>
-            )}
-
-            {/* Close button for ready state */}
-            {jobState === 'ready' && (
-              <div className={styles.closeActions}>
-                <Button variant="ghost" onClick={onClose} size="sm">
-                  {t(dict, 'exports.close')}
                 </Button>
               </div>
             )}

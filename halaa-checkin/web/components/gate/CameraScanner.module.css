@@ -1,48 +1,66 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  background-color: var(--color-natural-50, #ffffff);
-  border: 1px solid var(--border-gray-250, #dfdfdf);
-  border-radius: 16px;
-  padding: 20px;
+  gap: 12px;
 }
 
 .header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
 }
 
-.title {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--color-natural-900, #2c2c2c);
-  margin: 0;
+.iconTile {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  background-color: var(--ops-surface-sunken);
+  color: var(--ops-ink-soft);
+}
+
+.iconTileLive {
+  background-color: var(--ops-danger-soft);
+  color: var(--ops-danger);
+}
+
+.headerText {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.title {
+  font-size: var(--text-md);
+  font-weight: 700;
+  color: var(--ops-ink);
+}
+
+.subtitle {
+  font-size: var(--text-sm);
+  color: var(--ops-muted);
 }
 
 .viewfinderContainer {
   position: relative;
   width: 100%;
   aspect-ratio: 4 / 3;
-  max-height: 320px;
-  background-color: #111111;
-  border-radius: 12px;
+  max-height: 360px;
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border-radius: var(--radius-lg);
+  background-color: #14110e;
 }
 
 .video {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  direction: ltr !important;
+  display: block;
 }
 
 .canvas {
@@ -56,15 +74,13 @@
   align-items: center;
   justify-content: center;
   pointer-events: none;
+  background: radial-gradient(circle at center, transparent 34%, rgba(0, 0, 0, 0.35) 70%);
 }
 
 .scanBox {
-  width: 200px;
-  height: 200px;
-  border: 2px solid rgba(194, 142, 92, 0.8);
-  border-radius: 16px;
   position: relative;
-  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45);
+  width: min(62%, 240px);
+  aspect-ratio: 1;
 }
 
 .scanCornerTL,
@@ -72,89 +88,62 @@
 .scanCornerBL,
 .scanCornerBR {
   position: absolute;
-  width: 20px;
-  height: 20px;
-  border-color: var(--color-primary-500, #c28e5c);
+  width: 34px;
+  height: 34px;
+  border-color: #ffffff;
   border-style: solid;
+  border-width: 0;
 }
 
 .scanCornerTL {
-  top: -2px;
-  inset-inline-start: -2px;
-  border-width: 4px 0 0 4px;
-  border-top-left-radius: 16px;
+  top: 0;
+  left: 0;
+  border-top-width: 4px;
+  border-left-width: 4px;
+  border-top-left-radius: 12px;
 }
 
 .scanCornerTR {
-  top: -2px;
-  inset-inline-end: -2px;
-  border-width: 4px 4px 0 0;
-  border-top-right-radius: 16px;
+  top: 0;
+  right: 0;
+  border-top-width: 4px;
+  border-right-width: 4px;
+  border-top-right-radius: 12px;
 }
 
 .scanCornerBL {
-  bottom: -2px;
-  inset-inline-start: -2px;
-  border-width: 0 0 4px 4px;
-  border-bottom-left-radius: 16px;
+  bottom: 0;
+  left: 0;
+  border-bottom-width: 4px;
+  border-left-width: 4px;
+  border-bottom-left-radius: 12px;
 }
 
 .scanCornerBR {
-  bottom: -2px;
-  inset-inline-end: -2px;
-  border-width: 0 4px 4px 0;
-  border-bottom-right-radius: 16px;
+  bottom: 0;
+  right: 0;
+  border-bottom-width: 4px;
+  border-right-width: 4px;
+  border-bottom-right-radius: 12px;
 }
 
-.scanLine {
+.viewfinderHint {
   position: absolute;
-  top: 10%;
-  left: 5%;
-  right: 5%;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--color-primary-500, #c28e5c), transparent);
-  animation: scanSweep 2s ease-in-out infinite alternate;
-}
-
-@keyframes scanSweep {
-  0% {
-    top: 10%;
-    opacity: 0.4;
-  }
-  100% {
-    top: 90%;
-    opacity: 1;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .scanLine {
-    animation: none;
-    top: 50%;
-  }
-}
-
-.placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 12px 16px;
+  inset-inline: 0;
+  bottom: 12px;
   text-align: center;
-  color: var(--ops-muted, #68615b);
-  background-color: var(--ops-canvas, #f8f5f1);
-  border: 1px dashed var(--ops-border, #e4ddd6);
-  border-radius: var(--radius-sm, 8px);
+  color: #ffffff;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 }
 
-.placeholderIcon {
-  font-size: 36px;
-  opacity: 0.6;
-}
+@media (max-width: 480px) {
+  .header {
+    flex-wrap: wrap;
+  }
 
-.hint {
-  font-size: 13px;
-  color: var(--color-natural-450, #656565);
-  margin: 0;
+  .header > button {
+    width: 100%;
+  }
 }

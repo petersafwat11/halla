@@ -1,43 +1,36 @@
-/**
- * File Upload Utility
- * Thin wrapper that delegates to s3Upload (which handles local fallback internally)
- * @module shared/utils/fileUpload
- */
+/** Thin wrapper around durable VPS-local uploads. */
 
-const s3Upload = require("./s3Upload");
+const localUpload = require("./localUpload");
 
 module.exports = {
   // Storage configuration
-  storage: s3Upload.s3Storage,
-  useS3: s3Upload.isS3Configured(),
+  storage: localUpload.localStorage,
 
   // Multer instances
-  uploadImage: s3Upload.uploadImage,
-  uploadMedia: s3Upload.uploadMedia,
-  uploadGeneral: s3Upload.uploadGeneral,
+  uploadImage: localUpload.uploadImage,
+  uploadMedia: localUpload.uploadMedia,
+  uploadGeneral: localUpload.uploadGeneral,
 
   // File utilities
-  getFileUrl: s3Upload.getFileUrl,
-  getRelativeFilePath: s3Upload.getFileUrl,
-  deleteFile: s3Upload.deleteFile,
-  cleanupUploadedFiles: s3Upload.cleanupUploadedFiles,
-  processVendorFiles: s3Upload.processUploadedFiles,
-  processUploadedFiles: s3Upload.processUploadedFiles,
+  getFileUrl: localUpload.getFileUrl,
+  getRelativeFilePath: localUpload.getFileUrl,
+  deleteFile: localUpload.deleteFile,
+  cleanupUploadedFiles: localUpload.cleanupUploadedFiles,
+  processVendorFiles: localUpload.processUploadedFiles,
+  processUploadedFiles: localUpload.processUploadedFiles,
 
   // File filters
-  vendorSignupFilter: s3Upload.vendorSignupFilter,
+  vendorSignupFilter: localUpload.vendorSignupFilter,
 
   // Pre-configured upload middlewares
-  uploadLogo: s3Upload.uploadLogo,
-  uploadMultipleImages: s3Upload.uploadMultipleImages,
-  uploadPortfolio: s3Upload.uploadPortfolio,
-  uploadTemplateImage: s3Upload.uploadTemplateImage,
-  uploadServiceImage: s3Upload.uploadServiceImage,
-  uploadAvatar: s3Upload.uploadAvatar,
-  uploadVendorFiles: s3Upload.uploadVendorFiles,
-  uploadUserProfile: s3Upload.uploadUserProfile,
-  uploadPostEventMedia: s3Upload.uploadPostEventMedia,
-
-  // Re-export S3 utilities for direct access
-  s3Upload,
+  uploadLogo: localUpload.uploadLogo,
+  uploadMultipleImages: localUpload.uploadMultipleImages,
+  uploadPortfolio: localUpload.uploadPortfolio,
+  uploadTemplateImage: localUpload.uploadTemplateImage,
+  uploadServiceImage: localUpload.uploadServiceImage,
+  uploadAvatar: localUpload.uploadAvatar,
+  uploadVendorFiles: localUpload.uploadVendorFiles,
+  uploadUserProfile: localUpload.uploadUserProfile,
+  uploadPostEventMedia: localUpload.uploadPostEventMedia,
+  localUpload,
 };

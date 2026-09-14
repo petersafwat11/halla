@@ -1096,10 +1096,10 @@ const styles = StyleSheet.create({
   },
 
   actionsWrapper: {
-    gap: spacing[12],
+    gap: 10,
     backgroundColor: "#FFF",
     borderRadius: borderRadius[12] || 12,
-    padding: spacing[12],
+    padding: 10,
     borderWidth: 1,
     borderColor: colors.natural[200] || "#EEE",
   },

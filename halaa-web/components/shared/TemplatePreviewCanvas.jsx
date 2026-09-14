@@ -8,7 +8,9 @@
  * Renders the background image + decorations + text overlays at the
  * template's natural aspect ratio. Caller hands in `data` (the
  * fieldKey → value map) and we resolve each overlay.fieldKey against
- * it. Empty fields stay empty so labels are never baked into invitations.
+ * it. Empty fields stay empty unless `showPlaceholders` is set (the Step 3
+ * editor), which labels them faintly; bakes skip those placeholder nodes so
+ * labels are never baked into invitations.
  *
  * For the admin canvas (drag-resize), wrap each OverlayItem in <Rnd>
  * inside the editor — this component stays stateless.
@@ -52,7 +54,7 @@ function formatFieldValue(field, raw, locale = "ar") {
 }
 
 const TemplatePreviewCanvas = forwardRef(function TemplatePreviewCanvas(
-  { template, data = {}, primaryColor, fontFamilyOverride, width, style },
+  { template, data = {}, primaryColor, fontFamilyOverride, width, style, showPlaceholders = false },
   ref
 ) {
   const { t, i18n } = useTranslation("common");
@@ -88,11 +90,21 @@ const TemplatePreviewCanvas = forwardRef(function TemplatePreviewCanvas(
     setImageUrl(preferredImageUrl);
   }, [preferredImageUrl]);
 
-  if (!preferredImageUrl) return null;
+  // Stable across keystrokes so memoized overlays skip unchanged fields.
+  const decorations = useMemo(
+    () => [...(template?.decorations || [])].sort(cmpZ),
+    [template?.decorations]
+  );
+  const overlays = useMemo(
+    () => [...(template?.overlays || [])].sort(cmpZ),
+    [template?.overlays]
+  );
+  const fieldsByKey = useMemo(
+    () => Object.fromEntries((template?.fields || []).map((f) => [f.key, f])),
+    [template?.fields]
+  );
 
-  const decorations = [...(template.decorations || [])].sort(cmpZ);
-  const overlays = [...(template.overlays || [])].sort(cmpZ);
-  const fieldsByKey = Object.fromEntries((template.fields || []).map((f) => [f.key, f]));
+  if (!preferredImageUrl) return null;
   const effectivePrimaryColor = primaryColor || data?.primaryColor;
 
   return (
@@ -144,17 +156,24 @@ const TemplatePreviewCanvas = forwardRef(function TemplatePreviewCanvas(
         const field = fieldsByKey[o.fieldKey];
         const raw = data?.[o.fieldKey];
         const formatted = formatFieldValue(field, raw, currentLocale);
-        const display = formatted ?? '';
+        const placeholder =
+          showPlaceholders && formatted == null && field
+            ? (currentLocale === "ar" ? field.labelAr : field.labelEn) ||
+              field.labelEn ||
+              field.labelAr ||
+              ""
+            : "";
         return (
           <OverlayItem
             key={`ov-${i}`}
             overlay={o}
             containerWidth={containerSize.width}
             containerHeight={containerSize.height}
-            text={display}
+            text={formatted ?? placeholder}
+            isPlaceholder={!!placeholder}
             primaryColor={effectivePrimaryColor}
             fontFamilyOverride={fontFamilyOverride}
-            dir={field?.dir}
+            dir={placeholder ? undefined : field?.dir}
           />
         );
       })}

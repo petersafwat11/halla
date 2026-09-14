@@ -1,7 +1,7 @@
 /**
  * Durable account-deletion retry worker (DEL-02 · P1-02).
  *
- * Re-runs the outstanding cleanup (residual S3 object deletes) for deletion
+ * Re-runs the outstanding cleanup (residual local upload deletes) for deletion
  * requests left in `pending_retry` after the initial pass, converging them to
  * `completed` once no personal object remains. Wired into the cron scheduler
  * (scheduledTasks.scheduleAccountDeletionRetry) behind `cronLease.withLease` so

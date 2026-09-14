@@ -3,13 +3,16 @@
 import React from 'react';
 import { StatusBadge } from '../ui/StatusBadge.jsx';
 import { Button } from '../ui/Button.jsx';
+import { IconButton } from '../ui/IconButton.jsx';
+import { Menu } from '../ui/Menu.jsx';
 import { Icon } from '../ui/Icon.jsx';
 import { getDictionary, t, formatRiyadhDate } from '../../lib/locale.js';
 import styles from './EventHeaderBar.module.css';
 
 /**
- * Compact event summary bar displaying event name, venue, Riyadh start time, status badge,
- * and event lifecycle actions for administrators.
+ * Page header for the Guests workspace: event identity, lifecycle state and
+ * administrator actions. Rare or destructive lifecycle actions live in the
+ * overflow menu so the primary path stays uncluttered.
  */
 export function EventHeaderBar({
   event,
@@ -23,8 +26,32 @@ export function EventHeaderBar({
   if (!event) return null;
 
   const isDraft = event.status === 'draft';
-  const isLive = event.status === 'live';
   const isClosed = event.status === 'closed';
+
+  const overflowItems = [
+    ...(typeof onCreateEvent === 'function'
+      ? [{
+          key: 'new-event',
+          label: t(dict, 'events.createFirstEvent'),
+          icon: <Icon name="calendar-plus" size="sm" />,
+          onClick: onCreateEvent,
+          testId: 'new-event-btn',
+        }]
+      : []),
+    ...(!isClosed
+      ? [
+          { type: 'divider' },
+          {
+            key: 'close-event',
+            label: t(dict, 'events.closeEvent'),
+            icon: <Icon name="lock" size="sm" />,
+            danger: true,
+            onClick: () => onOpenLifecycle('closed'),
+            testId: 'close-event-btn',
+          },
+        ]
+      : []),
+  ].filter((item, index, list) => !(item.type === 'divider' && index === 0 && list.length > 0));
 
   return (
     <div className={styles.container}>
@@ -37,21 +64,18 @@ export function EventHeaderBar({
             <StatusBadge
               status={event.status}
               label={t(dict, `status.${event.status}`)}
-              size="sm"
+              size="md"
             />
           </div>
 
           <div className={styles.detailRow}>
             <span className={styles.detailItem}>
-              <span className={styles.detailIcon} aria-hidden="true">
-                <Icon name="map-pin" size="xs" />
-              </span>
+              <Icon name="map-pin" size="sm" />
               <span dir="auto">{event.venue}</span>
             </span>
+            <span className={styles.detailDot} aria-hidden="true" />
             <span className={styles.detailItem}>
-              <span className={styles.detailIcon} aria-hidden="true">
-                <Icon name="clock" size="xs" />
-              </span>
+              <Icon name="calendar-days" size="sm" />
               <bdi>{formatRiyadhDate(event.startsAt, lang)}</bdi>
             </span>
           </div>
@@ -59,79 +83,57 @@ export function EventHeaderBar({
 
         {isAdmin && (
           <div className={styles.actions}>
-            {typeof onCreateEvent === 'function' && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onCreateEvent}
-                data-testid="new-event-btn"
-                leadingIcon={<Icon name="plus" size="xs" />}
-              >
-                {t(dict, 'events.createFirstEvent')}
-              </Button>
-            )}
-
             <Button
               variant="outline"
-              size="sm"
               onClick={onOpenSettings}
               data-testid="event-settings-btn"
-              leadingIcon={<Icon name="settings" size="xs" />}
+              leadingIcon="settings"
             >
               {t(dict, 'events.editSettings')}
             </Button>
 
             {isDraft && (
-              <>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => onOpenLifecycle('live')}
-                  data-testid="open-event-btn"
-                  leadingIcon={<Icon name="play" size="xs" />}
-                >
-                  {t(dict, 'events.openEvent')}
-                </Button>
-                <Button
-                  variant="danger"
-                  size="sm"
-                  onClick={() => onOpenLifecycle('closed')}
-                  data-testid="close-event-btn"
-                  leadingIcon={<Icon name="lock" size="xs" />}
-                >
-                  {t(dict, 'events.closeEvent')}
-                </Button>
-              </>
-            )}
-
-            {isLive && (
               <Button
-                variant="danger"
-                size="sm"
-                onClick={() => onOpenLifecycle('closed')}
-                data-testid="close-event-btn"
-                leadingIcon={<Icon name="lock" size="xs" />}
+                variant="success"
+                onClick={() => onOpenLifecycle('live')}
+                data-testid="open-event-btn"
+                leadingIcon="play"
               >
-                {t(dict, 'events.closeEvent')}
+                {t(dict, 'events.openEvent')}
               </Button>
             )}
 
             {isClosed && (
               <Button
                 variant="primary"
-                size="sm"
                 onClick={() => onOpenLifecycle('live')}
                 data-testid="reopen-event-btn"
-                leadingIcon={<Icon name="refresh" size="xs" />}
+                leadingIcon="rotate-ccw"
               >
                 {t(dict, 'events.reopenEvent')}
               </Button>
+            )}
+
+            {overflowItems.length > 0 && (
+              <Menu
+                align="end"
+                aria-label={t(dict, 'events.moreActions')}
+                items={overflowItems}
+                minWidth={220}
+                trigger={
+                  <IconButton
+                    icon={<Icon name="more-horizontal" size="md" />}
+                    label={t(dict, 'events.moreActions')}
+                    variant="outline"
+                    data-testid="event-actions-btn"
+                  />
+                }
+              />
             )}
           </div>
         )}
       </div>
 
-      {/* Prominent warning banner when event is closed */}
       {isClosed && (
         <div className={styles.closedBanner} role="alert" data-testid="event-closed-banner">
           <Icon name="lock" size="sm" aria-hidden="true" />

@@ -9,7 +9,7 @@ import Button from "@/ui/commen/button/Button";
 import Table from "@/ui/commen/new-table/Table";
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
 import {
-  isValidPhone,
+  isValidSaudiMobile,
   normalizePhoneNumber,
   toLocalSaudiPhone,
   DEFAULT_PHONE_PLACEHOLDER,
@@ -59,7 +59,7 @@ const StaffPopup = ({
 
     if (!phone) {
       newErrors.phone = t("staff_phone_required", "رقم الجوال مطلوب");
-    } else if (!isValidPhone(phone)) {
+    } else if (!isValidSaudiMobile(phone)) {
       newErrors.phone = t(
         "staff_phone_invalid_pattern",
         "رقم الجوال يجب أن يكون 10 أرقام ويبدأ بـ 05 أو 9 أرقام ويبدأ بـ 5"

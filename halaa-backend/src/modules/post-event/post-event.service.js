@@ -26,7 +26,7 @@ const logger = require('../../shared/utils/logger');
 const { GUEST_STATUS, EVENT_LIFECYCLE_ALLOWED } = require('../../shared/constants');
 const { ROLES } = require('../../shared/constants/roles');
 const { resolveTaqnyatTemplateRef } = require('../events/templateRefResolver');
-const { extractStoredRef, deleteFromS3 } = require('../../shared/utils/s3Upload');
+const { extractStoredRef, deleteStoredFile } = require('../../shared/utils/localUpload');
 const { getActiveEventGuestsFilter } = require('../../shared/utils/guestFilter');
 
 const dispatchService = require('./post-event.dispatch.service');
@@ -285,7 +285,7 @@ class PostEventService {
 
     const removed = await content.removeMedia(mediaId);
     if (!removed) throw new NotFoundError('Media');
-    await deleteFromS3(item.url).catch((err) => {
+    await deleteStoredFile(item.url).catch((err) => {
       logger.warn('[post-event] failed to delete media object', {
         mediaId,
         error: err.message,
@@ -601,7 +601,7 @@ class PostEventService {
     const commentData = {
       text: body.text.trim(),
       // extractStoredRef persists the canonical ref (local "/uploads/…" path
-      // or S3 key). `f.location`/`f.path` would store a private bucket URL /
+      // or local reference). `f.location`/`f.path` would store a private bucket URL /
       // absolute filesystem path no client can render.
       images: (files || []).map((f) => ({ url: extractStoredRef(f) })),
       // When `requireApproval` is enabled, hide the comment until the host

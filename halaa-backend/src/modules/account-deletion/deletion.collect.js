@@ -1,23 +1,23 @@
 /**
  * Account-deletion asset + reference collector (DEL-01/DEL-02 · P1-02).
  *
- * PURE, DB-reading helpers that build the exhaustive set of S3 object keys owned
+ * PURE, DB-reading helpers that build the exhaustive set of local upload references owned
  * by a user across EVERY model in the deletion matrix
  * (docs/evidence/store-readiness/DELETION-MATRIX.md). Separated from the
  * mutation pipeline so the key-collection logic — the part that previously
  * missed post-event cover/thumbnail/comment images and full-URL media
  * (REVIEW-FINDINGS P1-02) — is independently unit-testable.
  *
- * `collectS3Keys` NEVER calls S3 and NEVER mutates; it only reads the owning
+ * `collectUploadRefs` NEVER calls local storage and NEVER mutates; it only reads the owning
  * user's documents and normalizes every stored image reference (bare key OR
  * full bucket URL, in any of our three URL shapes) into a deletable key via
- * `resolveDeletableS3Key`. Local-disk dev paths and external URLs are dropped.
+ * `resolveOwnedUploadRef`. Local-disk dev paths and external URLs are dropped.
  */
 
 const Event = require("../../../models/EventModel");
 const PostEventContent = require("../../../models/PostEventContentModel");
 const Service = require("../../../models/ServiceModel");
-const { resolveDeletableS3Key } = require("../../shared/utils/s3Upload");
+const { resolveOwnedUploadRef } = require("../../shared/utils/localUpload");
 
 /**
  * Push every deletable key from an arbitrary stored-ref list into the set.
@@ -26,13 +26,13 @@ const { resolveDeletableS3Key } = require("../../shared/utils/s3Upload");
  */
 function addRefs(set, refs) {
   for (const ref of refs) {
-    const key = resolveDeletableS3Key(ref);
+    const key = resolveOwnedUploadRef(ref);
     if (key) set.add(key);
   }
 }
 
 /**
- * Collect the user's own profile/avatar/vendor-document S3 keys from a loaded
+ * Collect the user's own profile/avatar/vendor-document local upload references from a loaded
  * user document. Pure (no I/O).
  * @param {object} user mongoose user doc or plain object
  * @returns {string[]}
@@ -55,7 +55,7 @@ function collectUserKeys(user) {
 }
 
 /**
- * Collect S3 keys for a user's owned events (branding logo, baked visual
+ * Collect local upload references for a user's owned events (branding logo, baked visual
  * template image, fallback template header). Reads events by host.
  * @param {import("mongoose").Types.ObjectId|string} userId
  * @returns {Promise<{keys:string[], eventIds:any[]}>}
@@ -78,7 +78,7 @@ async function collectEventKeys(userId) {
 }
 
 /**
- * Collect EVERY S3 key referenced by a user's post-event content, including the
+ * Collect EVERY local upload reference referenced by a user's post-event content, including the
  * nested paths the old deletion code missed (P1-02): cover image, per-media
  * thumbnail, media-comment images (+ their thumbnails), and post-level comment
  * images (+ thumbnails). Handles both bare keys and full bucket URLs.
@@ -116,12 +116,12 @@ async function collectServiceKeys(userId) {
 }
 
 /**
- * Aggregate ALL deletable S3 keys owned by the user across every collection.
+ * Aggregate ALL deletable local upload references owned by the user across every collection.
  * `user` must be the loaded user doc (so profile keys can be read pre-anonymize).
  * @param {object} user
  * @returns {Promise<{keys:string[], eventIds:any[]}>}
  */
-async function collectS3Keys(user) {
+async function collectUploadRefs(user) {
   const userId = user._id;
   const [{ keys: eventKeys, eventIds }, postEventKeys, serviceKeys] =
     await Promise.all([
@@ -144,5 +144,5 @@ module.exports = {
   collectEventKeys,
   collectPostEventKeys,
   collectServiceKeys,
-  collectS3Keys,
+  collectUploadRefs,
 };

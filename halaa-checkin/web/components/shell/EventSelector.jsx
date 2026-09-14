@@ -138,11 +138,14 @@ export function EventSelector() {
         aria-label={t(dict, 'events.selectorLabel')}
       >
         <span className={styles.eventIcon} aria-hidden="true">
-          <Icon name="calendar" size="sm" />
+          <Icon name="calendar-days" size="sm" />
         </span>
 
-        <span className={styles.eventName} dir="auto">
-          {selectedEvent ? selectedEvent.name : t(dict, 'events.selectorPlaceholder')}
+        <span className={styles.triggerText}>
+          <span className={styles.triggerLabel}>{t(dict, 'events.selectorLabel')}</span>
+          <span className={styles.eventName} dir="auto">
+            {selectedEvent ? selectedEvent.name : t(dict, 'events.selectorPlaceholder')}
+          </span>
         </span>
 
         {selectedEvent && (
@@ -155,8 +158,8 @@ export function EventSelector() {
           </span>
         )}
 
-        <span className={`${styles.chevron} ${isOpen ? styles.chevronOpen : ''}`} aria-hidden="true">
-          <Icon name="chevron-down" size="xs" />
+        <span className={styles.chevron} aria-hidden="true">
+          <Icon name="chevrons-up-down" size="sm" />
         </span>
       </button>
 

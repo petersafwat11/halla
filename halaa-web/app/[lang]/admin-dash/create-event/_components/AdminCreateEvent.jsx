@@ -22,6 +22,10 @@ import HostSelector from "./HostSelector/HostSelector";
 import EventLimitReached from "@/ui/host/subscription/EventLimitReached";
 import useAuthStore from "@/stores/authStore";
 import { useEventForm, buildEventPayload } from "@/hooks/events/useEventForm";
+import {
+  findEventStepForServerError,
+  findFirstInvalidEventStep,
+} from "@/hooks/events/eventFormValidation";
 import { useAdminEventMutation } from "@/hooks/admin";
 import { toastUtils } from "@/utils/toastUtils";
 import { handleError } from "@/services/errorHandlingService";
@@ -111,6 +115,7 @@ export default function AdminCreateEvent() {
     methods,
     formData,
     currentStep,
+    goToStep,
     goToNextStep,
     goToPreviousStep,
     isStepValid,
@@ -121,6 +126,7 @@ export default function AdminCreateEvent() {
     deleteStaffMember,
     locale,
     handleSubmit,
+    setValue,
   } = useEventForm({ mode: "create", totalSteps: 5 });
 
   // Invalidate idempotency key whenever any field is edited
@@ -155,6 +161,16 @@ export default function AdminCreateEvent() {
 
   const onSubmit = useCallback(async () => {
     if (isSubmittingRef.current) return;
+    const invalidStep = findFirstInvalidEventStep(formData, 5);
+    if (invalidStep) {
+      goToStep(invalidStep);
+      if (invalidStep === 1 && formData.isBusinessEvent && formData.businessLogoMissing) {
+        setValue("businessLogoCheckRequested", true);
+      } else {
+        toastUtils.error(t("errors.complete_required_fields"));
+      }
+      return;
+    }
     isSubmittingRef.current = true;
     setIsSubmitting(true);
     setElapsedSeconds(0);
@@ -207,13 +223,15 @@ export default function AdminCreateEvent() {
       router.push(`/${locale}/admin-dash/events`);
     } catch (error) {
       handleError(error, t, { fallbackMessage: "errors.create_failed", language: locale });
+      const serverStep = findEventStepForServerError(error);
+      if (serverStep) goToStep(serverStep);
     } finally {
       clearInterval(timer);
       isSubmittingRef.current = false;
       setIsSubmitting(false);
       setElapsedSeconds(0);
     }
-  }, [formData, selectedHost, createForHost, router, locale, t, tAdmin]);
+  }, [formData, selectedHost, createForHost, router, locale, t, tAdmin, goToStep, setValue]);
 
   const onNext = useCallback(() => {
     if (!validateStep(currentStep)) {

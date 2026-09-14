@@ -19,7 +19,7 @@ const Subscription = require('../../../models/SubscriptionModel');
 const Ticket = require('../../../models/TicketModel');
 const Guest = require('../../../models/GuestModel');
 const Service = require('../../../models/ServiceModel');
-const { signStoredImage } = require('../../shared/utils/s3Upload');
+const { resolveStoredImage } = require('../../shared/utils/localUpload');
 const {
   personalHostFilter,
   businessHostFilter,
@@ -385,8 +385,8 @@ class DashboardService {
       const invitationBalance = calculateInvitationBalance(quotaSub, quotaSub?.planId);
 
       // Step-3 invitation image (baked template or custom upload). Stored as a
-      // bare S3 key / path → sign it into a renderable URL for the dashboard card.
-      const templateImage = await signStoredImage(
+      // bare local reference / path → sign it into a renderable URL for the dashboard card.
+      const templateImage = await resolveStoredImage(
         lastEvent.visualTemplate?.bakedImagePath ||
           lastEvent.templateImage ||
           null

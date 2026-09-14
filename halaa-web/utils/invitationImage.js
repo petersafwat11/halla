@@ -1,4 +1,5 @@
 import { UPLOAD_LIMITS } from "@halaa/shared/constants";
+import { canSkipInvitationReencode } from "@halaa/shared/utils/invitationImagePlan";
 
 export const INVITATION_UPLOAD_TARGET_BYTES = UPLOAD_LIMITS.CLIENT_INVITATION_TARGET_BYTES;
 export const INVITATION_MAX_DIMENSION = UPLOAD_LIMITS.INVITATION_MAX_DIMENSION;
@@ -8,6 +9,9 @@ const PASSES = [
   { maxDimension: 1600, quality: 0.76 },
   { maxDimension: 1280, quality: 0.64 },
 ];
+
+const jpegName = (file) =>
+  `${String(file.name || "invitation").replace(/\.[^.]+$/, "")}.jpg`;
 
 const canvasToBlob = (canvas, quality) =>
   new Promise((resolve, reject) => {
@@ -38,9 +42,32 @@ const loadBitmap = async (file) => {
   }
 };
 
-/** Downscale and encode any supported browser image into a bounded JPEG. */
-export async function normalizeInvitationImageFile(file) {
+/**
+ * Downscale and encode any supported browser image into a bounded JPEG.
+ * When the caller already knows the encoded dimensions (a template bake), a
+ * JPEG that fits the upload contract is returned without another decode and
+ * re-encode. Picked uploads never pass dimensions, so they are always
+ * normalized.
+ */
+export async function normalizeInvitationImageFile(file, { width, height } = {}) {
   if (!(file instanceof Blob)) throw new Error("INVITATION_IMAGE_MISSING");
+
+  if (
+    canSkipInvitationReencode({
+      type: file.type,
+      width,
+      height,
+      bytes: file.size,
+      maxDimension: INVITATION_MAX_DIMENSION,
+      targetBytes: INVITATION_UPLOAD_TARGET_BYTES,
+    })
+  ) {
+    const name = jpegName(file);
+    return file instanceof File && file.name === name && file.type === "image/jpeg"
+      ? file
+      : new File([file], name, { type: "image/jpeg", lastModified: Date.now() });
+  }
+
   const bitmap = await loadBitmap(file);
   const sourceWidth = bitmap.width || bitmap.naturalWidth;
   const sourceHeight = bitmap.height || bitmap.naturalHeight;
@@ -66,8 +93,7 @@ export async function normalizeInvitationImageFile(file) {
       canvas.width = 1;
       canvas.height = 1;
       if (blob.size <= INVITATION_UPLOAD_TARGET_BYTES) {
-        const baseName = String(file.name || "invitation").replace(/\.[^.]+$/, "");
-        return new File([blob], `${baseName}.jpg`, {
+        return new File([blob], jpegName(file), {
           type: "image/jpeg",
           lastModified: Date.now(),
         });
@@ -81,4 +107,3 @@ export async function normalizeInvitationImageFile(file) {
   err.code = "EVENT_IMAGE_TOO_LARGE";
   throw err;
 }
-

@@ -19,10 +19,10 @@ const User = require("../models/UserModel");
 const RevenueCatEvent = require("../models/RevenueCatEventModel");
 const AccountDeletionRequest = require("../models/AccountDeletionRequestModel");
 const deletionService = require("../src/modules/account-deletion/deletion.service");
-const s3 = require("../src/shared/utils/s3Upload");
+const localUpload = require("../src/shared/utils/localUpload");
 
 const AUTH = "post-del-auth";
-const origDelete = s3.deleteFromS3;
+const origDelete = localUpload.deleteStoredFile;
 
 const mkReq = (body, auth = AUTH) => ({ body, get: (h) => (h.toLowerCase() === "authorization" ? auth : undefined) });
 const call = (body, auth) =>
@@ -57,11 +57,11 @@ test.before(async () => {
   delete process.env.REVENUECAT_APP_ID;
   delete process.env.REVENUECAT_ENVIRONMENT;
   rcApi.getRecurringSnapshot = async () => ({ available: true, entitlementActive: false, effectiveProductId: null, expiresAtMs: Date.now(), reason: null });
-  // Isolated S3 stub — deletion must not touch real S3.
-  s3.deleteFromS3 = async () => true;
+  // Isolated storage stub — deletion must not touch the real upload directory.
+  localUpload.deleteStoredFile = async () => true;
 });
 test.after(async () => {
-  s3.deleteFromS3 = origDelete;
+  localUpload.deleteStoredFile = origDelete;
   await db.stop();
 });
 test.beforeEach(async () => { await db.clearAll(); });

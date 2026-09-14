@@ -124,7 +124,7 @@ const eventDetailsSchema = new mongoose.Schema(
 //   - templateRef:     ObjectId reference to TemplateModel
 //   - fieldValues:     map of { [fieldKey]: value } — host's per-field
 //                      input, validated server-side via templateDataValidator
-//   - bakedImagePath:  S3 key/URL for the canvas-baked WhatsApp header.
+//   - bakedImagePath:  local reference for the canvas-baked WhatsApp header.
 //                      Web bakes via html2canvas; mobile via
 //                      react-native-view-shot.
 //   - isCustomUpload:  true when the host uploaded their own invitation
@@ -300,7 +300,7 @@ const eventSchema = new mongoose.Schema(
       enum: Object.values(INVITATION_TYPE),
       default: INVITATION_TYPE.REPLY_AND_QR,
     },
-    // Header image uploaded by host (S3/local URL). Optional fallback
+    // Header image uploaded by host (local URL). Optional fallback
     // when the canvas-bake on the client fails — backend reads
     // `visualTemplate.bakedImagePath` first.
     templateImage: String,
@@ -336,12 +336,12 @@ const eventSchema = new mongoose.Schema(
     // ─── Business-account branding + delivery SNAPSHOT
     // Server-owned, snapshotted at creation, NEVER read live and NEVER client-
     // submitted. For business hosts the logo is copied to an event-owned
-    // immutable S3 key and the business NAME is snapshotted too, so a later
+    // immutable local reference and the business NAME is snapshotted too, so a later
     // rename/logo-swap does not change already-issued invitations.
     branding: {
       // Legacy separate cover; retained only for existing records/storage cleanup.
       coverImageKey: { type: String, default: null },
-      logoKey: { type: String, default: null }, // event-owned S3 key (signed on read)
+      logoKey: { type: String, default: null }, // event-owned local reference (signed on read)
       businessName: { type: String, default: null },
     },
     // Deterministic delivery mode (no per-business choice v1):

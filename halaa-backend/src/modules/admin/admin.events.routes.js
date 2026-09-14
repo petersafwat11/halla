@@ -8,14 +8,14 @@ const { validateObjectId, validateZod, parseFormDataJsonFields } = require('../.
 const { auditLog } = require('../../shared/middleware/auditLog');
 const { bulkOperationLimiter } = require('../../shared/middleware/rateLimiter');
 const adminValidation = require('./admin.validation');
-const { uploadTemplateImage, deleteFile, s3Upload } = require('../../shared/utils/fileUpload');
+const { uploadTemplateImage, deleteFile, localUpload } = require('../../shared/utils/fileUpload');
 const { idempotency } = require('../../shared/middleware/idempotency');
 
 const cleanupRejectedTemplateUpload = (req, res, next) => {
   res.once('finish', () => {
     if (res.statusCode < 400 || !req.file) return;
     const cleanup = req.file.key
-      ? s3Upload.deleteFromS3(req.file.key)
+      ? localUpload.deleteStoredFile(req.file.key)
       : deleteFile(req.file.location || req.file.path || req.file.filename);
     Promise.resolve(cleanup).catch(() => {});
   });
@@ -77,6 +77,7 @@ router.post('/events/create-for-host',
     "guestReplies",
     "launchSettings",
   ]),
+  validateZod(adminValidation.createEventForHostSchema),
   idempotency({ scope: "admin.events.create", required: true }),
   adminController.createEventForHost
 );

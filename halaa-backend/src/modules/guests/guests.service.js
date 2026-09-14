@@ -20,7 +20,7 @@ const {
   invitationIncludesQr,
 } = require('../../shared/constants');
 const logger = require('../../shared/utils/logger');
-const { signStoredImage } = require('../../shared/utils/s3Upload');
+const { resolveStoredImage } = require('../../shared/utils/localUpload');
 
 // Import existing models during migration
 const Event = require('../../../models/EventModel');
@@ -861,14 +861,14 @@ class GuestsService {
     const b = event.branding;
     if (b && (b.logoKey || b.businessName)) {
       branding = {
-        logoUrl: b.logoKey ? await signStoredImage(b.logoKey) : null,
+        logoUrl: b.logoKey ? await resolveStoredImage(b.logoKey) : null,
         businessName: b.businessName || null,
       };
     }
 
     return {
       id: event._id,
-      invitationImageUrl: eventInvitationImage(event) ? await signStoredImage(eventInvitationImage(event)) : null,
+      invitationImageUrl: eventInvitationImage(event) ? await resolveStoredImage(eventInvitationImage(event)) : null,
       title: event.eventDetails?.title,
       date: event.eventDetails?.date,
       time: event.eventDetails?.time,

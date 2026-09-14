@@ -14,7 +14,7 @@ const {
   validateZod,
   parseFormDataJsonFields,
 } = require("../../shared/middleware/validation");
-const { uploadUserProfile } = require("../../shared/utils/s3Upload");
+const { uploadUserProfile } = require("../../shared/utils/localUpload");
 const {
   otpLimiter,
   otpHourlyLimiter,
@@ -86,7 +86,7 @@ router.patch(
  * REAUTHENTICATED — body carries `{ password }` or `{ otp }` (§4.1). Idempotent;
  * returns `{ requestId, status }`. Anonymizes the user's PII + nested profile,
  * third-party guest names/phones, post-event media/comments, vendor services,
- * support tickets, notifications, and all S3 assets; revokes every session
+ * support tickets, notifications, and all local uploads; revokes every session
  * (issued access JWTs also stop working via the protect DELETED-status check);
  * retains only the pseudonymized legal/accounting rows in the retention matrix.
  */
@@ -118,7 +118,7 @@ router.patch(
 /**
  * DELETE /users/profile/vendorData/image
  * Removes a single image from a vendor's profile and deletes the underlying
- * S3 object. For array fields the request body must include the `key` to
+ * local upload. For array fields the request body must include the `key` to
  * identify which element to remove.
  */
 router.delete(

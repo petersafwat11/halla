@@ -1,14 +1,15 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useId } from 'react';
 import { Dialog } from '../ui/Dialog.jsx';
 import { Field } from '../ui/Field.jsx';
 import { Button } from '../ui/Button.jsx';
 import { Notice } from '../ui/Notice.jsx';
 import { getDictionary, t } from '../../lib/locale.js';
+import styles from './EventLifecycleDialog.module.css';
 
 /**
- * Dialog for confirming event status transitions (Close or Reopen).
+ * Dialog for confirming event status transitions (Open, Close or Reopen).
  * Reopening strictly enforces a 5..500 character reason recorded for audit.
  */
 export function EventLifecycleDialog({
@@ -23,11 +24,14 @@ export function EventLifecycleDialog({
   lang = 'ar',
 }) {
   const dict = getDictionary(lang);
+  const formId = useId();
   const [reason, setReason] = useState('');
   const [error, setError] = useState('');
 
   const isReopen = targetStatus === 'live' && event?.status === 'closed';
   const isClose = targetStatus === 'closed';
+  const isOpenFromDraft = targetStatus === 'live' && !isReopen;
+  const numberFormat = new Intl.NumberFormat(lang === 'en' ? 'en-US' : 'ar-SA');
 
   useEffect(() => {
     if (isOpen) {
@@ -64,69 +68,77 @@ export function EventLifecycleDialog({
   const title = isClose
     ? t(dict, 'events.closeEventConfirmTitle')
     : isReopen
-    ? t(dict, 'events.reopenEventConfirmTitle')
-    : t(dict, 'dialog.confirmTitle');
+      ? t(dict, 'events.reopenEventConfirmTitle')
+      : t(dict, 'events.openEventConfirmTitle');
+
+  const description = isClose
+    ? t(dict, 'events.closeEventWarning')
+    : isReopen
+      ? t(dict, 'events.reopenEventWarning')
+      : t(dict, 'events.openEventWarning');
+
+  const submitLabel = isClose
+    ? t(dict, 'events.closeEvent')
+    : isReopen
+      ? t(dict, 'events.reopenEvent')
+      : t(dict, 'events.openEvent');
 
   return (
     <Dialog
       isOpen={isOpen}
       onClose={onClose}
       title={title}
-      maxWidth="480px"
-      destructive={isClose}
+      description={description}
+      icon={isClose ? 'lock' : isReopen ? 'rotate-ccw' : 'play'}
+      tone={isClose ? 'danger' : isReopen ? 'warning' : 'success'}
+      size="sm"
+      maxWidth="500px"
       closeOnBackdropClick={!isPending}
       closeAriaLabel={t(dict, 'dialog.close')}
+      footer={
+        <>
+          <Button variant="ghost" onClick={onClose} disabled={isPending}>
+            {t(dict, 'common.cancel')}
+          </Button>
+          <Button
+            type="submit"
+            form={formId}
+            variant={isClose ? 'danger' : isOpenFromDraft ? 'success' : 'primary'}
+            loading={isPending}
+            data-testid="lifecycle-confirm-btn"
+          >
+            {submitLabel}
+          </Button>
+        </>
+      }
     >
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <form id={formId} onSubmit={handleSubmit} className={styles.form}>
         {apiError && (
-          <Notice
-            variant="error"
-            message={t(dict, `errors.${apiError.code}`) || apiError.message}
-          />
+          <Notice variant="error" message={t(dict, `errors.${apiError.code}`) || apiError.message} />
         )}
 
-        <Notice
-          variant={isClose ? 'warning' : 'info'}
-          message={isClose ? t(dict, 'events.closeEventWarning') : t(dict, 'events.reopenEventWarning')}
-        />
+        {event && (
+          <div className={styles.eventCard}>
+            <span className={styles.eventName} dir="auto">{event.name}</span>
+            {event.venue && <span className={styles.eventVenue} dir="auto">{event.venue}</span>}
+          </div>
+        )}
 
         {isClose && stats && (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: '8px',
-              padding: '12px',
-              backgroundColor: 'var(--ops-canvas, #f8f5f1)',
-              borderRadius: '8px',
-              border: '1px solid var(--ops-border, #e4ddd6)',
-              textAlign: 'center',
-              fontSize: '13px',
-            }}
-          >
-            <div>
-              <div style={{ color: 'var(--ops-muted, #68615b)', fontSize: '11px', fontWeight: 600 }}>
-                {t(dict, 'stats.totalInvitations')}
-              </div>
-              <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--ops-ink, #2c2926)' }}>
-                {stats.totalInvitations ?? 0}
-              </div>
+          <div className={styles.statsGrid}>
+            <div className={styles.statItem}>
+              <span className={styles.statLabel}>{t(dict, 'stats.totalInvitations')}</span>
+              <span className={styles.statValue}>{numberFormat.format(stats.totalInvitations ?? 0)}</span>
             </div>
-            <div>
-              <div style={{ color: 'var(--ops-muted, #68615b)', fontSize: '11px', fontWeight: 600 }}>
-                {t(dict, 'stats.admittedPeople')}
-              </div>
-              <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-success, #2a8c5b)' }}>
-                {stats.totalAttendees ?? stats.admittedInvitations ?? 0}
-              </div>
+            <div className={styles.statItem}>
+              <span className={styles.statLabel}>{t(dict, 'stats.admittedPeople')}</span>
+              <span className={`${styles.statValue} ${styles.statSuccess}`}>
+                {numberFormat.format(stats.totalAttendees ?? stats.admittedInvitations ?? 0)}
+              </span>
             </div>
-            <div>
-              <div style={{ color: 'var(--ops-muted, #68615b)', fontSize: '11px', fontWeight: 600 }}>
-                {t(dict, 'stats.pendingInvitations')}
-              </div>
-              <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--ops-brand-strong, #75502f)' }}>
-                {stats.pendingInvitations ?? 0}
-              </div>
+            <div className={styles.statItem}>
+              <span className={styles.statLabel}>{t(dict, 'stats.pendingInvitations')}</span>
+              <span className={styles.statValue}>{numberFormat.format(stats.pendingInvitations ?? 0)}</span>
             </div>
           </div>
         )}
@@ -136,7 +148,7 @@ export function EventLifecycleDialog({
             label={t(dict, 'events.reopenReason')}
             required
             error={error}
-            hint={lang === 'ar' ? 'من 5 إلى 500 حرف' : '5 to 500 characters'}
+            hint={t(dict, 'events.reasonLength')}
           >
             <textarea
               name="reopenReason"
@@ -148,34 +160,10 @@ export function EventLifecycleDialog({
               rows={3}
               placeholder={t(dict, 'events.reopenReasonPlaceholder')}
               disabled={isPending}
-              style={{
-                width: '100%',
-                padding: '10px 12px',
-                borderRadius: '8px',
-                border: '1px solid var(--border-gray-250, #dfdfdf)',
-                fontFamily: 'inherit',
-                fontSize: '14px',
-                resize: 'vertical',
-              }}
               data-testid="reopen-reason-input"
             />
           </Field>
         )}
-
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '8px' }}>
-          <Button variant="ghost" onClick={onClose} disabled={isPending}>
-            {t(dict, 'common.cancel')}
-          </Button>
-
-          <Button
-            type="submit"
-            variant={isClose ? 'danger' : 'primary'}
-            loading={isPending}
-            data-testid="lifecycle-confirm-btn"
-          >
-            {isClose ? t(dict, 'events.closeEvent') : t(dict, 'events.reopenEvent')}
-          </Button>
-        </div>
       </form>
     </Dialog>
   );

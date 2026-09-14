@@ -1,82 +1,67 @@
 .navBar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  background-color: var(--color-natural-100, #fdfdfd);
-  border-bottom: 1px solid var(--ops-border, #E4DDD6);
-  padding: 0 clamp(16px, 3vw, 36px);
-  height: 52px;
-  position: sticky;
-  top: 64px;
-  z-index: 39;
-  box-sizing: border-box;
-}
-
-.segmentedWrapper {
-  display: inline-flex;
-  align-items: center;
-  background-color: var(--color-natural-200, #f2f2f2);
-  border: 1px solid var(--ops-border, #E4DDD6);
-  border-radius: var(--radius-sm, 8px);
-  padding: 3px;
-  gap: 3px;
+  gap: 4px;
 }
 
 .navLink {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   gap: 8px;
-  min-height: 40px;
-  padding: 0 16px;
-  border-radius: 6px;
-  font-family: var(--font-cairo, "Cairo", sans-serif);
-  font-size: 14px;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: var(--radius-md);
+  color: var(--ops-muted);
+  font-size: var(--text-md);
   font-weight: 600;
-  color: var(--ops-muted, #68615B);
-  text-decoration: none;
-  transition: all 0.15s ease-in-out;
-  box-sizing: border-box;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
-.navLink:hover:not(.active) {
-  background-color: var(--color-natural-150, #f7f7f7);
-  color: var(--ops-ink, #2C2926);
+.navLink:hover {
+  color: var(--ops-ink);
+  background-color: var(--ops-surface-sunken);
 }
 
 .navLink:focus-visible {
-  outline: 2px solid var(--ops-brand, #A87545);
-  outline-offset: 1px;
-}
-
-/* Compact selected surface (07-UI-UX-RECOVERY-PLAN §4) */
-.active {
-  background-color: var(--ops-surface, #ffffff);
-  color: var(--ops-brand-strong, #75502F);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
 .icon {
-  display: flex;
-  align-items: center;
-  color: currentColor;
+  display: inline-flex;
+  color: var(--ops-subtle);
 }
 
-@media (max-width: 640px) {
-  .navBar {
-    top: 56px;
-    height: 48px;
-    padding: 0 12px;
-  }
+.active,
+.active:hover {
+  color: var(--ops-brand-strong);
+  background-color: var(--ops-brand-soft);
+}
 
-  .segmentedWrapper {
+.active .icon {
+  color: var(--ops-brand);
+}
+
+@media (max-width: 960px) {
+  .navBar {
     width: 100%;
+    padding: 3px;
+    gap: 3px;
+    border-radius: var(--radius-lg);
+    background-color: var(--ops-surface-sunken);
   }
 
   .navLink {
     flex: 1;
-    min-height: 40px;
-    font-size: 13px;
-    padding: 0 8px;
+    justify-content: center;
+    height: 40px;
+  }
+
+  .active,
+  .active:hover {
+    background-color: var(--ops-surface);
+    box-shadow: var(--shadow-sm);
   }
 }

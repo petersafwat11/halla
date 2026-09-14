@@ -67,7 +67,6 @@ export function renderField(field, locale, fontOptions = []) {
           name={name}
           label={label}
           customColorPlaceholder={placeholder}
-          options={true}
         />
       );
 

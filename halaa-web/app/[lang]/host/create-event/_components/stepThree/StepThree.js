@@ -376,7 +376,7 @@ const StepThree = () => {
                   <div className={styles.uploadPreviewWrapper}>
                     <div className={styles.uploadPreview}>
                       {/* next/image with `unoptimized` because blob: and
-                          freshly uploaded S3 URLs aren't in next.config.
+                          freshly uploaded backend URLs are not in next.config.
                           Plain <img> avoids the loader warning. */}
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img

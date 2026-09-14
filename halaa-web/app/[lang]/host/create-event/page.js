@@ -28,6 +28,10 @@ import useAuthStore from "@/stores/authStore";
 import { toastUtils } from "@/utils/toastUtils";
 
 import { handleError } from "@/services/errorHandlingService";
+import {
+  findEventStepForServerError,
+  findFirstInvalidEventStep,
+} from "@/hooks/events/eventFormValidation";
 
 const CreateEventV2 = () => {
   const [showMobilePreview, setShowMobilePreview] = useState(false);
@@ -56,6 +60,7 @@ const CreateEventV2 = () => {
     buildEventPayload,
     t,
     handleSubmit,
+    setValue,
   } = useEventForm({ mode: "create", totalSteps: 5 });
 
   // Invalidate idempotency key whenever any field is edited
@@ -88,10 +93,43 @@ const CreateEventV2 = () => {
   const canCreateEvent =
     !subscriptionInfo?.hasSubscription || subscriptionInfo?.canCreateEvent !== false;
 
+  // Every forward step pushes one history entry and Previous/Back pops one,
+  // so an earlier step already exists behind the current entry: travel back
+  // to it instead of stacking a new entry (Back would otherwise reopen the
+  // later step). Out-of-sync history falls back to replacing the entry.
+  const navigateToWizardStep = useCallback(
+    (step) => {
+      if (!step || step === currentStep) return;
+      if (step < currentStep && window.history.state?.halaaCreateEventStep === currentStep) {
+        window.history.go(step - currentStep);
+        return;
+      }
+      goToStep(step);
+      const url = new URL(window.location.href);
+      url.searchParams.set("step", String(step));
+      window.history.replaceState(
+        { ...window.history.state, halaaCreateEventStep: step },
+        "",
+        url
+      );
+    },
+    [currentStep, goToStep]
+  );
+
   // Submit handler using unified payload builder
   const onSubmit = useCallback(
-    async (data) => {
+    async () => {
       if (isSubmittingRef.current) return;
+      const invalidStep = findFirstInvalidEventStep(formData, 5);
+      if (invalidStep) {
+        navigateToWizardStep(invalidStep);
+        if (invalidStep === 1 && formData.isBusinessEvent && formData.businessLogoMissing) {
+          setValue("businessLogoCheckRequested", true);
+        } else {
+          toastUtils.error(t("errors.complete_required_fields"));
+        }
+        return;
+      }
       isSubmittingRef.current = true;
       setIsSubmitting(true);
       setIsCompleting(true);
@@ -102,7 +140,6 @@ const CreateEventV2 = () => {
       }, 1000);
 
       try {
-        void data;
         const eventPayload = buildEventPayload();
 
         // One idempotency key per logical submit attempt; reused on retry unless edited
@@ -126,6 +163,7 @@ const CreateEventV2 = () => {
         // Form state preserved on failure; allow retry
         setIsCompleting(false);
         handleError(error, t, { fallbackMessage: "errors.create_failed", language: locale });
+        navigateToWizardStep(findEventStepForServerError(error));
       } finally {
         clearInterval(timer);
         isSubmittingRef.current = false;
@@ -133,7 +171,7 @@ const CreateEventV2 = () => {
         setElapsedSeconds(0);
       }
     },
-    [createEvent, router, locale, t, buildEventPayload]
+    [createEvent, router, locale, t, buildEventPayload, formData, navigateToWizardStep, setValue]
   );
 
   const onNext = useCallback(() => {

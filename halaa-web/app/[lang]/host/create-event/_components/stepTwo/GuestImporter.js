@@ -8,7 +8,7 @@ import CategorySelect from "@/ui/commen/inputs/CategorySelect/CategorySelect";
 import ActionButtons from "./actionButtons/ActionButtons";
 import { exportToXLSX, importFromXLSX } from "@/utils/xlsxUtils";
 import {
-  isValidPhone,
+  isValidSaudiMobile,
   normalizePhoneNumber,
   DEFAULT_PHONE_PLACEHOLDER,
 } from "@halaa/shared/utils/phone";
@@ -54,7 +54,7 @@ const GuestImporter = ({
     if (!name) newErrors.name = t("validation.guest_name_required");
     if (!mobile) {
       newErrors.mobile = t("validation.mobile_required");
-    } else if (!isValidPhone(mobile)) {
+    } else if (!isValidSaudiMobile(mobile)) {
       newErrors.mobile = t("validation.mobile_format");
     }
     if (mobile) {
@@ -159,7 +159,7 @@ const GuestImporter = ({
           const rowMobile = String(row.mobile || "").trim();
           if (!rowMobile) {
             errors.push(t("validation.mobile_required"));
-          } else if (!isValidPhone(rowMobile)) {
+          } else if (!isValidSaudiMobile(rowMobile)) {
             errors.push(t("validation.mobile_format_import"));
           }
           return { isValid: errors.length === 0, errors };

@@ -106,10 +106,9 @@ export const templateSchema = z.object({
   nameEn:      z.string().min(1, "English name is required"),
   nameAr:      z.string().min(1, "Arabic name is required"),
   categories:  z.array(z.string()).min(1, "At least one category is required"),
-  // imageUrl / s3Key are handled manually in onSubmit; don't fail form validation
+  // imageUrl / imageRef are handled manually in onSubmit; don't fail form validation
   imageUrl:    z.string().optional(),
-  s3Key:       z.string().optional(),
-  imageS3Key:  z.string().optional(),
+  imageRef:    z.string().optional(),
   naturalWidth:  z.preprocess(toOptNum, z.number().optional()),
   naturalHeight: z.preprocess(toOptNum, z.number().optional()),
   fields:      z.array(fieldDefSchema),

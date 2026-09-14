@@ -279,18 +279,22 @@ export function CameraScanner({ onScan, disabled = false, dict, stopSignal = 0 }
   return (
     <div className={styles.container} data-testid="camera-scanner-container">
       <div className={styles.header}>
-        <h2 className={styles.title}>
-          <Icon name="camera" size="sm" />
-          <span>{t(dict, 'gate.cameraTitle')}</span>
-        </h2>
+        <span className={`${styles.iconTile} ${isStreaming ? styles.iconTileLive : ''}`} aria-hidden="true">
+          <Icon name="camera" size="md" />
+        </span>
+        <div className={styles.headerText}>
+          <h2 className={styles.title}>{t(dict, 'gate.cameraTitle')}</h2>
+          <p className={styles.subtitle}>
+            {isStarting ? t(dict, 'gate.cameraStarting') : t(dict, 'gate.cameraSubtitle')}
+          </p>
+        </div>
         <Button
           type="button"
-          variant={isStreaming ? 'outline' : 'primary'}
-          size="sm"
+          variant={isStreaming ? 'dangerOutline' : 'outline'}
           onClick={isStreaming ? stopCamera : startCamera}
           disabled={!isStreaming && disabled}
           loading={isStarting && !isStreaming}
-          leadingIcon={<Icon name="camera" size="xs" />}
+          leadingIcon={isStreaming ? 'camera-off' : 'camera'}
           data-testid="toggle-camera-btn"
         >
           {isStreaming ? t(dict, 'gate.stopCamera') : t(dict, 'gate.startCamera')}
@@ -307,7 +311,7 @@ export function CameraScanner({ onScan, disabled = false, dict, stopSignal = 0 }
         </Notice>
       )}
 
-      {isStreaming ? (
+      {isStreaming && (
         <div className={styles.viewfinderContainer}>
           <video
             ref={videoRef}
@@ -326,10 +330,7 @@ export function CameraScanner({ onScan, disabled = false, dict, stopSignal = 0 }
               <div className={styles.scanCornerBR} />
             </div>
           </div>
-        </div>
-      ) : (
-        <div className={styles.placeholder} data-testid="camera-placeholder">
-          <p className={styles.hint}>{t(dict, 'gate.cameraHint')}</p>
+          <p className={styles.viewfinderHint}>{t(dict, 'gate.cameraHint')}</p>
         </div>
       )}
     </div>

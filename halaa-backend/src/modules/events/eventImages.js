@@ -1,7 +1,7 @@
 const multer = require('multer');
-const { s3Storage, imageFilter } = require('../../shared/utils/s3Upload');
+const { localStorage, imageFilter } = require('../../shared/utils/localUpload');
 
-const receive = multer({ storage: s3Storage,
+const receive = multer({ storage: localStorage,
   fileFilter(req, file, cb) {
     // Older mobile clients still submit this field. Discard it before storage.
     if (file.fieldname === 'coverImage') return cb(null, false);

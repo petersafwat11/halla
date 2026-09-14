@@ -19,7 +19,7 @@ const Guest = require("../../../models/GuestModel");
 const Subscription = require("../../../models/SubscriptionModel");
 const User = require("../../../models/UserModel");
 const { ACCOUNT_TYPES } = require("../../shared/constants");
-const { copyS3Object, deleteFromS3 } = require("../../shared/utils/s3Upload");
+const { copyStoredFile, deleteStoredFile } = require("../../shared/utils/localUpload");
 const mongoose = require("mongoose");
 const {
   isTrialFromPlan,
@@ -215,7 +215,7 @@ module.exports = {
     await require('./eventTestState').applyEventTestState(event);
 
     // The populate above returns the RAW stored image columns, which can be
-    // stale/private (S3 bucket URLs 403 on mobile). Rebuild them through the
+    // stale/private (local storage bucket URLs 403 on mobile). Rebuild them through the
     // same asset-proxy URL builder the /templates list uses so update-wizard
     // Step 3 renders the same background as create.
     if (event.visualTemplate?.templateRef?._id) {
@@ -465,11 +465,15 @@ module.exports = {
 
     // ─── STAGE 1: VALIDATION ───
     if (!eventData.eventDetails) {
-      throw new ValidationError("Event details are required");
+      throw new ValidationError("Event details are required", [
+        { field: "eventDetails", message: "Event details are required" },
+      ]);
     }
 
     if (!guestList || guestList.length === 0) {
-      throw new ValidationError("At least one guest is required");
+      throw new ValidationError("At least one guest is required", [
+        { field: "guestList", message: "At least one guest is required" },
+      ]);
     }
 
     const guestCount = guestList.length;
@@ -574,7 +578,7 @@ module.exports = {
       // ─── STAGE 2: IMAGE HANDLING ───
       stageStart = Date.now();
 
-      // Handle file upload — resolves correctly for both S3 (file.location) and local (file.path/filename)
+      // Handle file upload — resolves correctly for both local storage (file.location) and local (file.path/filename)
       // Stored on the canonical `visualTemplate.bakedImagePath`. The
       // top-level `templateImage` field is kept as an optional
       // fallback for legacy reads.
@@ -637,7 +641,7 @@ module.exports = {
       // ─── Business-account branding + delivery SNAPSHOT (server-owned) ───
       // Deterministic delivery mode + (for business hosts) an immutable logo
       // copy + snapshotted business name. Pre-generate the event _id so the
-      // copied S3 key is event-owned. Reject creation if the copy fails; the
+      // copied local reference is event-owned. Reject creation if the copy fails; the
       // copied object is cleaned up if the event create later throws.
       const preEventId = new mongoose.Types.ObjectId();
       eventData._id = preEventId;
@@ -647,7 +651,7 @@ module.exports = {
         if (owner.avatar) {
           const ext = owner.avatar.includes('.') ? owner.avatar.split('.').pop() : 'png';
           const destKey = `events/${preEventId}/branding/logo.${ext}`;
-          logoKey = await copyS3Object(owner.avatar, destKey);
+          logoKey = await copyStoredFile(owner.avatar, destKey);
           if (!logoKey) {
             throw new ValidationError('Failed to snapshot business logo; please retry');
           }
@@ -742,7 +746,7 @@ module.exports = {
         }
       }
       if (copiedLogoKey) {
-        await deleteFromS3(copiedLogoKey).catch((cleanupError) => {
+        await deleteStoredFile(copiedLogoKey).catch((cleanupError) => {
           logger.error('event logo cleanup failed', {
             eventId: createdEventId ? String(createdEventId) : null,
             error: cleanupError?.message,

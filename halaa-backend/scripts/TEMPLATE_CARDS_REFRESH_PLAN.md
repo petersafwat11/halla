@@ -201,7 +201,7 @@ We have no host-facing data referencing these templates yet (no events were buil
 
 ### 6.4 Risks
 
-- **Stale S3 keys.** Re-running creates fresh S3 uploads for every replaced template; the old ones become orphans. Run `scripts/gcOrphanTemplateImages.js` afterward (already exists).
+- **Stale local file references.** Re-running creates fresh local uploads for every replaced template; the old ones become orphans. Run `scripts/gcOrphanTemplateImages.js` afterward (already exists).
 - **Position drift between mockup and background.** The polished PNGs are renders of the *background + text*, but the editor only stores the background. If a mockup positions text relative to art that isn't perfectly centered in the background (e.g. asymmetric floral corners), overlays might look slightly off. Mitigation: measure relative to the background image dimensions, not the mockup's text, and spot-check in the editor.
 - **Arabic text reflow.** A field with `maxLength: 240` and `rows: 3` may render on 2 lines in some fonts and 4 in others. Pick the overlay's vertical centre on the mockup's longest realistic line, not the visible mockup line.
 
@@ -237,6 +237,6 @@ This is the authoritative spec — no open questions remain.
 
 8. **No `defaultValue` on any field.** Placeholders only. Hosts always type their own data. Today's seed sets things like `defaultValue: "20:00"` on `eventTime` and Arabic default messages — all of that goes away.
 
-9. **Replace, don't mutate.** Soft-delete every previously-seeded template by `nameEn`, then create **20 new templates** (16 polished + 4 borrowed-layout backgrounds). Run `gcOrphanTemplateImages.js` afterwards to clean stale S3 keys.
+9. **Replace, don't mutate.** Soft-delete every previously-seeded template by `nameEn`, then create **20 new templates** (16 polished + 4 borrowed-layout backgrounds). Run `gcOrphanTemplateImages.js` afterwards to clean stale local file references.
 
 10. **Aspect-ratio guard.** Sharp check at script startup that the source JPG and the polished PNG share W/H ratio (within 1%). Hard-fail with a clear message if any pair mismatches, so overlays never render at the wrong spot silently.

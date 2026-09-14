@@ -174,6 +174,39 @@ test('gate: cross-event and unknown QR tokens fail with 404 INVALID_INVITATION a
   assert.equal(resUnknown.body.error.code, ERROR_CODES.INVALID_INVITATION);
 });
 
+test('gate: typed short code resolves within its event only', async () => {
+  const eventA = await createTestEvent({ status: EVENT_STATUSES.LIVE });
+  const eventB = await createTestEvent({ status: EVENT_STATUSES.LIVE });
+  const guestA = await createTestGuest(eventA._id, { name: 'ضيف الرمز المختصر' });
+
+  const app = createTestApp({ mongodbDbName: testEnv.dbName });
+  const reception = await loginUser(app, {
+    username: 'reception_shortcode',
+    displayName: 'Receptionist Short Code',
+    role: ROLES.RECEPTION,
+    assignedEventIds: [eventA._id, eventB._id],
+  });
+
+  const resolveWith = (eventId, token) =>
+    request(app)
+      .post(`/api/checkin/v1/events/${eventId}/gate/resolve`)
+      .set('Cookie', reception.cookie)
+      .set('Origin', 'http://localhost:3100')
+      .set('X-CSRF-Token', reception.csrfToken)
+      .send({ token });
+
+  // Lower-case with a separator, as staff might type it from a printed pass
+  const typed = `${guestA.shortCode.slice(0, 5)}-${guestA.shortCode.slice(5)}`.toLowerCase();
+  const resOwn = await resolveWith(eventA._id, typed);
+  assert.equal(resOwn.status, 200);
+  assert.equal(resOwn.body.data.guest.id, guestA._id.toString());
+  assert.equal(resOwn.body.data.guest.qrToken, undefined);
+
+  const resCross = await resolveWith(eventB._id, guestA.shortCode);
+  assert.equal(resCross.status, 404);
+  assert.equal(resCross.body.error.code, ERROR_CODES.INVALID_INVITATION);
+});
+
 test('gate: soft-deleted guest cannot resolve', async () => {
   const event = await createTestEvent({ status: EVENT_STATUSES.LIVE });
   const guest = await createTestGuest(event._id, {

@@ -6,7 +6,7 @@
  *
  * The seeded Templates use placeholder image references that an admin
  * replaces via `/admin-dash/templates/[id]` once real artwork is
- * available. The script DOES NOT upload anything to S3 — it only
+ * available. The script DOES NOT upload anything to VPS storage — it only
  * writes the database row so the editor surfaces the placeholders.
  *
  * Re-running is safe: lookups are by `nameEn` for templates and `code`
@@ -71,10 +71,10 @@ async function ensureTemplate({ key, names }) {
     nameAr: names.ar,
     categories: [names.category],
     // Placeholder image refs — admins replace via the editor.
-    // Using a sentinel S3 key avoids any chance of overwriting a real
+    // Using a sentinel local file reference avoids any chance of overwriting a real
     // asset; the URL points at a known-empty placeholder so consumers
     // get a graceful broken-image rather than a 404 to a real key.
-    imageS3Key: `templates/placeholders/${key.toLowerCase()}.png`,
+    imageRef: `templates/placeholders/${key.toLowerCase()}.png`,
     imageUrl: `https://placeholder.invalid/${key.toLowerCase()}.png`,
     naturalWidth: PLACEHOLDER_NATURAL_WIDTH,
     naturalHeight: PLACEHOLDER_NATURAL_HEIGHT,

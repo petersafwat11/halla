@@ -58,8 +58,8 @@ export function useDuplicateTemplate() {
 }
 
 /**
- * Upload a template image. Backend proxies to S3 to avoid browser→S3 CORS.
- * Returns `{ s3Key }`. Optional `onProgress` callback (0–100).
+ * Upload a template image to persistent VPS storage.
+ * Returns `{ imageRef }`. Optional `onProgress` callback (0–100).
  */
 export function useAdminUploadTemplateImage() {
   return useMutation({
@@ -83,8 +83,8 @@ export function useAdminUploadTemplateImage() {
         },
       });
 
-      const { s3Key } = result?.data || result;
-      return { s3Key };
+      const { imageRef } = result?.data || result;
+      return { imageRef };
     },
   });
 }

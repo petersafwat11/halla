@@ -42,8 +42,8 @@
         "article-11"
       ],
       "contentHash": {
-        "ar": "309aa68fa29d7876cbfee472ee9f1ee6d857318c0236617c8926b43ad14b3309",
-        "en": "2ffc78e00d25e6ef14db11b327e3b60193938fa3f216ac829514afef47141aaa"
+        "ar": "14f9575ab04074954d469c137ec1a34dd5cc708a27dc2b86f1fad736e3c1230f",
+        "en": "76f596f9003cff3e0b3ede9bb08395c4c96d8fad45b6bb014cfe13dc465886f8"
       }
     },
     {
@@ -237,5 +237,5 @@
       }
     }
   ],
-  "manifestHash": "ced26afab346aba7c02ed297b6a534bfdaa564561c13321de176c093d79b2159"
+  "manifestHash": "2c67c11f589fd018bcb0111190bc12b6e08426797c24c524725964aad4989097"
 }

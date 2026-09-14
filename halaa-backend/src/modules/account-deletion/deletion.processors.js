@@ -103,7 +103,7 @@ async function recordObligations({ deletionRequestId, userId, billingUserId }) {
  * which would keep a request in `pending_retry` indefinitely. That is
  * intentional ONLY if an automated resolver exists; since resolution here is a
  * manual ops action, we treat `pending` processor rows as NON-blocking for the
- * user-facing completion (the S3 residual is the hard gate) unless
+ * user-facing completion (the upload residual is the hard gate) unless
  * `DELETION_PROCESSOR_BLOCKS_COMPLETION=true` is set. This keeps the user's
  * request truthful about FILES while not stranding it on a manual step.
  * @param {string} deletionRequestId

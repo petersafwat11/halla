@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import styles from "./inputGroup.module.css";
 import Image from "next/image";
-import { get, useFormContext } from "react-hook-form";
+import { get, useFormContext, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
 const InputSelect = ({
@@ -19,13 +19,14 @@ const InputSelect = ({
   const { t, i18n } = useTranslation("common");
   const {
     register,
+    control,
     formState: { errors },
-    watch,
     setValue,
     clearErrors,
   } = useFormContext();
   const error = get(errors, name)?.message;
-  const watchedValue = watch(name);
+  // Field-scoped subscription instead of `watch`, which re-renders the form host.
+  const watchedValue = useWatch({ control, name });
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");

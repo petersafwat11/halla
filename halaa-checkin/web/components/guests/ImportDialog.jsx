@@ -11,13 +11,13 @@ import { api } from '../../lib/api.js';
 import { getDictionary, t } from '../../lib/locale.js';
 import styles from './ImportDialog.module.css';
 
-const AR_CSV_TEMPLATE = `\uFEFFname,allowedCompanions,companionNames,reference
+const AR_CSV_TEMPLATE = `﻿name,allowedCompanions,companionNames,reference
 أحمد حسن,2,سارة حسن|عمر حسن,INV-001
 نورة عبدالله,0,,INV-002
 محمد المنصور,1,فيصل المنصور,INV-003
 `;
 
-const EN_CSV_TEMPLATE = `\uFEFFname,allowedCompanions,companionNames,reference
+const EN_CSV_TEMPLATE = `﻿name,allowedCompanions,companionNames,reference
 Ahmed Hassan,2,Sara Hassan|Omar Hassan,INV-001
 Noura Abdullah,0,,INV-002
 Mohammed Al-Mansoor,1,Faisal Al-Mansoor,INV-003
@@ -126,6 +126,16 @@ export function ImportDialog({
     processFile(selected);
   };
 
+  const removeFile = () => {
+    fileGenRef.current += 1;
+    setIsLoadingPreview(false);
+    setIdempotencyKey('');
+    setPreviewData(null);
+    setFile(null);
+    setCsvContent('');
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
   const handleGeneratePreview = async () => {
     if (!csvContent || uncertain || isLoadingPreview) return;
     // F15: preview is bound to its event; stale results cannot populate a new event.
@@ -185,56 +195,74 @@ export function ImportDialog({
     }
   };
 
+  const errorsCount = previewData?.errors?.length || 0;
+  const warningsCount = previewData?.warnings?.length || 0;
+  const numberFormat = new Intl.NumberFormat(lang === 'en' ? 'en-US' : 'ar-SA');
+
+  const footer = step === 'upload' ? (
+    <>
+      <Button variant="ghost" onClick={onClose}>
+        {t(dict, 'common.cancel')}
+      </Button>
+      <Button
+        variant="primary"
+        onClick={handleGeneratePreview}
+        disabled={!file || !csvContent}
+        loading={isLoadingPreview}
+        leadingIcon="eye"
+        data-testid="preview-csv-btn"
+      >
+        {t(dict, 'imports.previewButton')}
+      </Button>
+    </>
+  ) : (
+    <>
+      <Button
+        variant="ghost"
+        onClick={() => { setStep('upload'); setIdempotencyKey(''); }}
+        disabled={isCommitting || uncertain}
+        leadingIcon={<Icon name="arrow-left" size="sm" mirror />}
+      >
+        {t(dict, 'imports.backToUpload')}
+      </Button>
+      <Button
+        variant="primary"
+        onClick={handleCommit}
+        disabled={!previewData?.canCommit || errorsCount > 0}
+        loading={isCommitting}
+        leadingIcon="check"
+        data-testid="commit-import-btn"
+      >
+        {t(dict, 'imports.commitButton', { count: previewData?.validCount || 0 })}
+      </Button>
+    </>
+  );
+
   return (
     <Dialog
       isOpen={isOpen}
       onClose={onClose}
       title={t(dict, 'imports.title')}
-      maxWidth="540px"
+      description={step === 'upload' ? t(dict, 'imports.subtitle') : t(dict, 'imports.previewTitle')}
+      icon="file-spreadsheet"
+      size="lg"
+      maxWidth="720px"
       closeAriaLabel={t(dict, 'dialog.close')}
+      footer={footer}
     >
       <div className={styles.container}>
         {step === 'upload' ? (
           <>
             {previewError && (
-              <Notice
-                variant="error"
-                message={t(dict, `errors.${previewError.code}`) || previewError.message}
-              />
+              <Notice variant="error" message={t(dict, `errors.${previewError.code}`) || previewError.message} />
             )}
 
-            {/* Template Download Section */}
-            <div className={styles.templateRow}>
-              <span className={styles.templateText} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Icon name="file" size="sm" />
-                <span>{t(dict, 'imports.downloadTemplate')}:</span>
-              </span>
-              <div className={styles.templateButtons}>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => downloadTemplate(AR_CSV_TEMPLATE, 'guests-template-ar.csv')}
-                  data-testid="template-ar-btn"
-                >
-                  {t(dict, 'imports.templateAr')}
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => downloadTemplate(EN_CSV_TEMPLATE, 'guests-template-en.csv')}
-                  data-testid="template-en-btn"
-                >
-                  {t(dict, 'imports.templateEn')}
-                </Button>
-              </div>
-            </div>
-
-            {/* File Upload Dropzone */}
             <input
               type="file"
               ref={fileInputRef}
               accept=".csv,text/csv"
-              style={{ display: 'none' }}
+              className="sr-only"
+              tabIndex={-1}
               onChange={handleFileChange}
               data-testid="csv-file-input"
             />
@@ -254,191 +282,164 @@ export function ImportDialog({
                 tabIndex={0}
                 onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && fileInputRef.current?.click()}
               >
-                <div className={styles.dropzoneIcon}>
-                  <Icon name="upload" size="xl" />
-                </div>
+                <span className={styles.dropzoneIcon} aria-hidden="true">
+                  <Icon name="upload" size="lg" />
+                </span>
                 <span className={styles.dropzoneText}>{t(dict, 'imports.dropCsv')}</span>
                 <span className={styles.dropzoneSubtext}>{t(dict, 'imports.maxFileNotice')}</span>
-                <Button variant="secondary" size="sm" type="button" leadingIcon="upload">
-                  {t(dict, 'imports.chooseFile')}
-                </Button>
+                <span className={styles.dropzoneButton}>{t(dict, 'imports.chooseFile')}</span>
               </div>
             ) : (
-              <div className={styles.selectedFileBar}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Icon name="file" size="sm" />
-                  <span>{file.name} ({(file.size / 1024).toFixed(1)} KB)</span>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  leadingIcon="close"
-                  onClick={() => {
-                    fileGenRef.current += 1;
-                    setIsLoadingPreview(false);
-                    setIdempotencyKey('');
-                    setPreviewData(null);
-                    setFile(null);
-                    setCsvContent('');
-                  }}
-                >
-                  {lang === 'ar' ? 'إزالة' : 'Remove'}
+              <div className={styles.selectedFile}>
+                <span className={styles.fileIcon} aria-hidden="true">
+                  <Icon name="file-spreadsheet" size="md" />
+                </span>
+                <span className={styles.fileInfo}>
+                  <span className={styles.fileName} dir="auto">{file.name}</span>
+                  <span className={styles.fileSize}>{(file.size / 1024).toFixed(1)} KB</span>
+                </span>
+                <Button variant="ghost" size="sm" leadingIcon="x" onClick={removeFile}>
+                  {t(dict, 'imports.removeFile')}
                 </Button>
               </div>
             )}
 
-            <div className={styles.footerActions}>
-              <Button variant="ghost" onClick={onClose}>
-                {t(dict, 'common.cancel')}
-              </Button>
-
-              <Button
-                variant="primary"
-                onClick={handleGeneratePreview}
-                disabled={!file || !csvContent}
-                loading={isLoadingPreview}
-                leadingIcon="eye"
-                data-testid="preview-csv-btn"
-              >
-                {lang === 'ar' ? 'معاينة الملف' : 'Preview Import'}
-              </Button>
+            <div className={styles.templateRow}>
+              <div className={styles.templateText}>
+                <span className={styles.templateTitle}>{t(dict, 'imports.templateTitle')}</span>
+                <span className={styles.templateHint}>{t(dict, 'imports.templateHint')}</span>
+              </div>
+              <div className={styles.templateButtons}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  leadingIcon="download"
+                  onClick={() => downloadTemplate(AR_CSV_TEMPLATE, 'guests-template-ar.csv')}
+                  data-testid="template-ar-btn"
+                >
+                  {t(dict, 'imports.templateAr')}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  leadingIcon="download"
+                  onClick={() => downloadTemplate(EN_CSV_TEMPLATE, 'guests-template-en.csv')}
+                  data-testid="template-en-btn"
+                >
+                  {t(dict, 'imports.templateEn')}
+                </Button>
+              </div>
             </div>
           </>
         ) : (
-          /* Step 2: Preview & Commit */
           <div className={styles.previewSummary}>
             {commitError && (
-              <Notice
-                variant="error"
-                message={t(dict, `errors.${commitError.code}`) || commitError.message}
-              />
+              <Notice variant="error" message={t(dict, `errors.${commitError.code}`) || commitError.message} />
             )}
 
             <div className={styles.summaryCards}>
-              <div className={`${styles.summaryCard} ${previewData?.canCommit ? styles.summaryCardSuccess : ''}`}>
-                <span className={styles.summaryTitle}>
-                  {t(dict, 'imports.validRows', { count: previewData?.validCount || 0 })}
-                </span>
-                <span className={`${styles.summaryCount} ${styles.summaryCountSuccess}`}>
-                  {previewData?.validCount || 0}
-                </span>
+              <div className={`${styles.summaryCard} ${previewData?.canCommit ? styles.summarySuccess : ''}`}>
+                <span className={styles.summaryLabel}>{t(dict, 'imports.readyCount')}</span>
+                <span className={styles.summaryCount}>{numberFormat.format(previewData?.validCount || 0)}</span>
               </div>
-
-              <div
-                className={`${styles.summaryCard} ${(previewData?.errors?.length || 0) > 0 ? styles.summaryCardError : ''}`}
-              >
-                <span className={styles.summaryTitle}>
-                  {t(dict, 'imports.invalidRows', { count: previewData?.errors?.length || 0 })}
-                </span>
-                <span
-                  className={`${styles.summaryCount} ${(previewData?.errors?.length || 0) > 0 ? styles.summaryCountError : ''}`}
-                >
-                  {previewData?.errors?.length || 0}
-                </span>
+              <div className={`${styles.summaryCard} ${errorsCount > 0 ? styles.summaryError : ''}`}>
+                <span className={styles.summaryLabel}>{t(dict, 'imports.errorCount')}</span>
+                <span className={styles.summaryCount}>{numberFormat.format(errorsCount)}</span>
               </div>
+              <div className={`${styles.summaryCard} ${warningsCount > 0 ? styles.summaryWarning : ''}`}>
+                <span className={styles.summaryLabel}>{t(dict, 'imports.warningCount')}</span>
+                <span className={styles.summaryCount}>{numberFormat.format(warningsCount)}</span>
+              </div>
+              {previewData?.remainingCapacity !== undefined && (
+                <div className={styles.summaryCard}>
+                  <span className={styles.summaryLabel}>{t(dict, 'imports.capacityLeft')}</span>
+                  <span className={styles.summaryCount}>{numberFormat.format(previewData.remainingCapacity)}</span>
+                </div>
+              )}
             </div>
 
-            {previewData?.remainingCapacity !== undefined && (
-              <div style={{ fontSize: '13px', color: 'var(--color-natural-450, #656565)' }}>
-                {t(dict, 'imports.remainingCapacity', { count: previewData.remainingCapacity })}
-              </div>
-            )}
-
-            {/* List of row errors if any (F13: structured + legacy string tolerance) */}
-            {(previewData?.errors?.length || 0) > 0 && (
-              <div>
-                <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-error, #b42318)' }}>
+            {errorsCount > 0 && (
+              <div className={styles.issueBlock}>
+                <span className={styles.issueHeading}>
+                  <Icon name="alert-circle" size="sm" />
                   {t(dict, 'imports.cannotCommitErrors')}
                 </span>
-                <div className={styles.issuesList} data-testid="import-errors-list">
+                <ul className={styles.issuesList} data-testid="import-errors-list">
                   {previewData.errors.map((err, idx) => {
                     const msg = typeof err === 'string' ? err : (err?.message || '');
                     const row = typeof err === 'string' ? null : (err?.row ?? err?.lineNumber ?? null);
                     const field = typeof err === 'string' ? null : (err?.field || null);
                     return (
-                      <div key={idx} className={`${styles.issueItem} ${styles.issueError}`}>
-                        {row != null && <><strong>{t(dict, 'imports.line', { line: row })}:</strong>{' '}</>}
-                        {field ? `[${field}] ` : ''}
-                        {msg}
-                      </div>
+                      <li key={idx} className={`${styles.issueItem} ${styles.issueError}`}>
+                        {row != null && <strong>{t(dict, 'imports.line', { line: row })}</strong>}
+                        <span>{field ? `[${field}] ` : ''}{msg}</span>
+                      </li>
                     );
                   })}
-                </div>
+                </ul>
               </div>
             )}
 
-            {/* Valid/invalid preview rows (F13: review records before commit) */}
-            {(previewData?.rows?.length || 0) > 0 && (
-              <div>
-                <div className={styles.previewHeaderRow}>
-                  <span style={{ fontSize: '13px', fontWeight: '600' }}>
-                    {t(dict, 'imports.previewTitle')} ({previewData.rows.length})
-                  </span>
-                </div>
-                <div
-                  className={styles.issuesList}
-                  data-testid="import-preview-rows"
-                  style={{ maxHeight: '240px', overflowY: 'auto' }}
-                >
-                  {previewData.rows.map((r, idx) => (
-                    <div key={idx} className={`${styles.issueItem} ${r.valid ? '' : styles.issueError}`}>
-                      <strong>{t(dict, 'imports.line', { line: r.row ?? r.lineNumber ?? (idx + 2) })}:</strong>{' '}
-                      {r.data?.name || ''}{' '}
-                      {t(dict, 'guests.allowedCompanions')}: {r.data?.allowedCompanions ?? '—'}{' '}
-                      {Array.isArray(r.data?.companionNames) ? r.data.companionNames.join('، ') : ''}
-                      {r.data?.reference ? ` (${r.data.reference})` : ''}{' '}
-                      — <span style={{ display: 'inline-flex', verticalAlign: 'middle' }}>
-                        <Icon name={r.valid ? 'check' : 'close'} size="xs" style={{ color: r.valid ? 'var(--color-success, #087443)' : 'var(--color-error, #b42318)' }} />
-                      </span>{' '}
-                      {(r.errors || []).map((e) => (typeof e === 'string' ? e : e?.message)).filter(Boolean).join('; ')}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* List of warnings if any (F13: structured + legacy tolerance) */}
-            {(previewData?.warnings?.length || 0) > 0 && (
-              <div>
-                <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-warning-text, #b54708)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            {warningsCount > 0 && (
+              <div className={styles.issueBlock}>
+                <span className={`${styles.issueHeading} ${styles.issueHeadingWarning}`}>
                   <Icon name="warning" size="sm" />
-                  <span>{t(dict, 'imports.warnings', { count: previewData.warnings.length })}:</span>
+                  {t(dict, 'imports.warnings', { count: warningsCount })}
                 </span>
-                <div className={styles.issuesList}>
+                <ul className={styles.issuesList}>
                   {previewData.warnings.map((warn, idx) => {
                     const msg = typeof warn === 'string' ? warn : (warn?.message || '');
                     const row = typeof warn === 'string' ? null : (warn?.row ?? warn?.lineNumber ?? null);
                     return (
-                      <div key={idx} className={`${styles.issueItem} ${styles.issueWarning}`}>
-                        {row != null && <><strong>{t(dict, 'imports.line', { line: row })}:</strong>{' '}</>}
-                        {msg}
-                      </div>
+                      <li key={idx} className={`${styles.issueItem} ${styles.issueWarning}`}>
+                        {row != null && <strong>{t(dict, 'imports.line', { line: row })}</strong>}
+                        <span>{msg}</span>
+                      </li>
                     );
                   })}
-                </div>
+                </ul>
               </div>
             )}
 
-            <div className={styles.footerActions}>
-              <Button
-                variant="ghost"
-                onClick={() => { setStep('upload'); setIdempotencyKey(''); }}
-                disabled={isCommitting || uncertain}
-                leadingIcon={lang === 'ar' ? 'arrow-right' : 'arrow-left'}
-              >
-                {lang === 'ar' ? 'اختيار ملف آخر' : 'Back to upload'}
-              </Button>
-
-              <Button
-                variant="primary"
-                onClick={handleCommit}
-                disabled={!previewData?.canCommit || (previewData?.errors?.length || 0) > 0}
-                loading={isCommitting}
-                data-testid="commit-import-btn"
-              >
-                {t(dict, 'imports.commitButton', { count: previewData?.validCount || 0 })}
-              </Button>
-            </div>
+            {(previewData?.rows?.length || 0) > 0 && (
+              <div className={styles.previewTableWrap} data-testid="import-preview-rows">
+                <table className={styles.previewTable}>
+                  <thead>
+                    <tr>
+                      <th>{t(dict, 'imports.columnLine')}</th>
+                      <th>{t(dict, 'imports.columnGuest')}</th>
+                      <th>{t(dict, 'imports.columnCompanions')}</th>
+                      <th>{t(dict, 'imports.columnReference')}</th>
+                      <th aria-label={t(dict, 'common.status')} />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {previewData.rows.map((r, idx) => {
+                      const rowErrors = (r.errors || []).map((e) => (typeof e === 'string' ? e : e?.message)).filter(Boolean);
+                      return (
+                        <tr key={idx} className={r.valid ? '' : styles.rowInvalid}>
+                          <td className="tabular">{r.row ?? r.lineNumber ?? idx + 2}</td>
+                          <td>
+                            <span dir="auto" className={styles.rowName}>{r.data?.name || '—'}</span>
+                            {Array.isArray(r.data?.companionNames) && r.data.companionNames.length > 0 && (
+                              <span dir="auto" className={styles.rowSub}>{r.data.companionNames.join('، ')}</span>
+                            )}
+                            {rowErrors.length > 0 && <span className={styles.rowError}>{rowErrors.join('; ')}</span>}
+                          </td>
+                          <td className="tabular">{r.data?.allowedCompanions ?? '—'}</td>
+                          <td><bdi>{r.data?.reference || '—'}</bdi></td>
+                          <td>
+                            <span className={`${styles.rowStatus} ${r.valid ? styles.rowStatusOk : styles.rowStatusBad}`}>
+                              <Icon name={r.valid ? 'check' : 'x'} size="sm" />
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
       </div>

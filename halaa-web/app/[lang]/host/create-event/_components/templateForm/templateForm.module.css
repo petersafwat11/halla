@@ -46,7 +46,7 @@
   background: #fff;
   border-radius: 12px;
   width: 100%;
-  height: auto;
+  height: 100%;
   flex: 1;
   min-height: 0;
   max-width: 100%;
@@ -63,7 +63,7 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 1.6rem;
+  gap: 1.8rem;
   min-width: 0;
   max-height: 100%;
   overflow-y: auto;
@@ -73,7 +73,7 @@
 .formGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
+  gap: 1.6rem;
 }
 
 .formGrid > *[style*="span 2"] {
@@ -82,6 +82,18 @@
 
 .fullWidth {
   grid-column: span 2;
+}
+
+.styleControls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.6rem;
+  padding-top: 1.6rem;
+  border-top: 1px solid #eee7df;
+}
+
+.styleControl {
+  min-width: 0;
 }
 
 /* ========================================
@@ -94,8 +106,10 @@
 .leftPreview {
   position: fixed;
   left: -99999px;
+  right: auto;
   top: 0;
   width: 42rem;
+  contain: layout paint style;
   pointer-events: none;
   z-index: -1;
 }
@@ -110,6 +124,8 @@
     position: sticky;
     top: 0;
     left: auto;
+    right: auto;
+    contain: none;
     pointer-events: auto;
     z-index: auto;
     display: block;
@@ -121,6 +137,62 @@
     aspect-ratio: var(--preview-ar, 0.8);
     max-width: 42rem;
   }
+}
+
+/* ========================================
+   SAVE STATUS / ERROR
+======================================== */
+.bakeStatus {
+  margin: 0;
+  padding: 1rem 1.2rem;
+  border-radius: 0.8rem;
+  background: #f9f4ef;
+  color: #6b4e33;
+  font-size: 1.3rem;
+  font-weight: 600;
+  line-height: 1.8rem;
+}
+
+.bakeError {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1.2rem;
+  padding: 1.2rem;
+  border-radius: 0.8rem;
+  border: 1px solid #f1c7c7;
+  background: #fff5f5;
+  color: #8a2d2d;
+  font-size: 1.3rem;
+  line-height: 1.8rem;
+}
+
+.bakeError strong {
+  flex-basis: 100%;
+  font-weight: 700;
+}
+
+.bakeError span {
+  flex: 1 1 18rem;
+  min-width: 0;
+}
+
+.bakeRetry {
+  flex: 0 0 auto;
+  min-height: 4.4rem;
+  padding: 0 1.6rem;
+  border-radius: 0.8rem;
+  border: 1px solid #c28e5c;
+  background: #fff;
+  color: #7c5734;
+  font-size: 1.3rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.bakeRetry:focus-visible {
+  outline: 3px solid rgba(124, 87, 52, 0.55);
+  outline-offset: 2px;
 }
 
 /* ========================================
@@ -294,6 +366,10 @@
 
   .fullWidth {
     grid-column: span 1;
+  }
+
+  .styleControls {
+    grid-template-columns: 1fr;
   }
 
   .formGrid > *[style*="span 2"] {

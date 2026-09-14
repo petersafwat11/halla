@@ -544,6 +544,11 @@ const styles = StyleSheet.create({
   },
   repliesSection: {
     width: "100%",
+    padding: 16,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#F0E6DB",
+    backgroundColor: "#FFF",
   },
   hint: { fontSize: 12, color: "#666", marginBottom: 12 },
   textArea: {

@@ -16,7 +16,7 @@ const {
   otpHourlyLimiter,
   uploadLimiter,
 } = require("../../shared/middleware/rateLimiter");
-const { uploadMedia } = require("../../shared/utils/s3Upload");
+const { uploadMedia } = require("../../shared/utils/localUpload");
 const { requireUserUgcTerms } = require("../moderation/requireUgcTerms");
 const {
   uploadMediaSchema,

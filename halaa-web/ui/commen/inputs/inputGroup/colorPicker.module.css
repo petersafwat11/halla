@@ -14,29 +14,11 @@
   margin: 0 0 0.4rem 0;
 }
 
-.color_active {
-  border: 3px solid var(--color-title);
-  transform: scale(1.1);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-}
-
-.check_icon {
-  filter: invert(1);
-}
-
-.colors,
-.color_inputs {
-  display: flex;
-  gap: 1.2rem;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
 .custom_color {
   display: flex;
   align-items: center;
   gap: 1.2rem;
-  margin-top: 1rem;
+  margin-top: 0.4rem;
 }
 
 .color_picker {
@@ -85,4 +67,19 @@
   border-bottom: 1px solid #dfdfdf;
   border-left: 1.5px solid #dfdfdf;
   background: #fff;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+@media (max-width: 600px) {
+  .color_picker {
+    width: 4.4rem;
+    height: 4.4rem;
+  }
+
+  .color_picker_input {
+    height: 4.8rem;
+    font-size: 1.4rem;
+  }
 }

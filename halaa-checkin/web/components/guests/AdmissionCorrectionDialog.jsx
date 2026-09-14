@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useId } from 'react';
 import { Dialog } from '../ui/Dialog.jsx';
 import { Field } from '../ui/Field.jsx';
 import { Button } from '../ui/Button.jsx';
@@ -25,6 +25,7 @@ export function AdmissionCorrectionDialog({
   lang = 'ar',
 }) {
   const dict = getDictionary(lang);
+  const formId = useId();
   const isCorrect = mode === 'correct';
 
   const [companions, setCompanions] = useState(0);
@@ -38,11 +39,7 @@ export function AdmissionCorrectionDialog({
 
   useEffect(() => {
     if (isOpen) {
-      if (isCorrect) {
-        setCompanions(currentCompanions);
-      } else {
-        setCompanions(0);
-      }
+      setCompanions(isCorrect ? currentCompanions : 0);
       setReason('');
       setFieldErrors({});
       setTouched({});
@@ -87,7 +84,6 @@ export function AdmissionCorrectionDialog({
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!guest?.checkIn || isPending) return;
-    // Mark all fields as touched for validation display
     setTouched({ companions: true, reason: true });
     if (!validate()) return;
 
@@ -103,8 +99,7 @@ export function AdmissionCorrectionDialog({
   };
 
   const handleCompanionsChange = (value) => {
-    // F16: preserve entered text (including "1.5"/blank) for validation;
-    // do not silently truncate via parseInt.
+    // F16: preserve entered text (including "1.5"/blank) for validation.
     setCompanions(value);
     if (touched.companions && fieldErrors.actualCompanions) {
       setFieldErrors((prev) => ({ ...prev, actualCompanions: undefined }));
@@ -118,74 +113,84 @@ export function AdmissionCorrectionDialog({
     }
   };
 
-  const handleReasonBlur = () => {
-    setTouched((prev) => ({ ...prev, reason: true }));
-  };
-
-  const handleCompanionsBlur = () => {
-    setTouched((prev) => ({ ...prev, companions: true }));
-  };
-
-  const title = isCorrect
-    ? t(dict, 'guests.correctAdmission')
-    : t(dict, 'guests.resetAdmission');
-
-  const submitLabel = isCorrect
-    ? t(dict, 'guests.applyCorrection')
-    : t(dict, 'guests.confirmReset');
-
-  const warningMessage = isCorrect
-    ? t(dict, 'guests.correctionWarning', { name: guest?.name })
-    : t(dict, 'guests.resetWarning', { name: guest?.name });
+  const currentParty = guest?.checkIn
+    ? guest.checkIn.actualPartySize || (1 + (guest.checkIn.actualCompanions || 0))
+    : 0;
+  const proposedParty = 1 + (parseInt(companions, 10) || 0);
 
   return (
     <Dialog
       isOpen={isOpen}
       onClose={onClose}
-      title={title}
-      maxWidth="520px"
-      destructive={!isCorrect}
+      title={isCorrect ? t(dict, 'guests.correctAdmission') : t(dict, 'guests.resetAdmission')}
+      description={
+        isCorrect
+          ? t(dict, 'guests.correctionWarning', { name: guest?.name })
+          : t(dict, 'guests.resetWarning', { name: guest?.name })
+      }
+      icon={isCorrect ? 'sliders' : 'rotate-ccw'}
+      tone={isCorrect ? 'default' : 'danger'}
+      maxWidth="540px"
       closeOnBackdropClick={!isPending}
       closeAriaLabel={t(dict, 'dialog.close')}
+      footer={
+        <>
+          <Button variant="ghost" onClick={onClose} disabled={isPending}>
+            {t(dict, 'common.cancel')}
+          </Button>
+          <Button
+            type="submit"
+            form={formId}
+            variant={isCorrect ? 'primary' : 'danger'}
+            loading={isPending}
+            disabled={!guest?.checkIn}
+            data-testid={isCorrect ? 'correction-submit-btn' : 'reset-submit-btn'}
+          >
+            {isCorrect ? t(dict, 'guests.applyCorrection') : t(dict, 'guests.confirmReset')}
+          </Button>
+        </>
+      }
     >
-      <form onSubmit={handleSubmit} className={styles.form} noValidate>
-        {!guest?.checkIn && <Notice variant="warning">{t(dict, 'errors.NOT_CHECKED_IN') || t(dict, 'errors.VERSION_CONFLICT')}</Notice>}
+      <form id={formId} onSubmit={handleSubmit} className={styles.form} noValidate>
+        {!guest?.checkIn && (
+          <Notice variant="warning">{t(dict, 'errors.NOT_CHECKED_IN')}</Notice>
+        )}
         {apiError && !Object.keys(apiError.fieldErrors || {}).length && (
-          <>
-            <Notice
-              variant="error"
-              message={t(dict, `errors.${apiError.code}`) || apiError.message}
-            />
+          <Notice variant="error">
+            <span>{t(dict, `errors.${apiError.code}`) || apiError.message}</span>
             {apiError.code === 'VERSION_CONFLICT' && onReload && (
-              <Button variant="secondary" size="sm" leadingIcon="refresh" onClick={() => onReload?.()} data-testid="correction-reload-btn">
-                {t(dict, 'guests.versionConflictReload') || t(dict, 'common.retry')}
-              </Button>
+              <span className={styles.noticeAction}>
+                <Button variant="outline" size="sm" leadingIcon="refresh" onClick={() => onReload?.()} data-testid="correction-reload-btn">
+                  {t(dict, 'guests.reloadData')}
+                </Button>
+              </span>
             )}
-          </>
+          </Notice>
         )}
 
-        <div className={styles.warningBox}>
-          <Icon name="warning" size="md" className={styles.warningIcon} />
-          <p className={styles.warningText}>{warningMessage}</p>
-        </div>
+        {guest && (
+          <div className={styles.guestCard}>
+            <span className={styles.guestName} dir="auto">{guest.name}</span>
+            <bdi className={styles.code}>{guest.shortCode}</bdi>
+          </div>
+        )}
 
         {isCorrect && guest?.checkIn && (
           <div className={styles.comparisonGrid}>
             <div className={styles.comparisonCard}>
-              <span className={styles.comparisonLabel}>{lang === 'ar' ? 'البيانات الحالية' : 'Current'}</span>
-              <div className={styles.comparisonValue}>
-                {guest.checkIn.actualPartySize || (1 + (guest.checkIn.actualCompanions || 0))} {lang === 'ar' ? 'أشخاص' : 'people'}
-              </div>
+              <span className={styles.comparisonLabel}>{t(dict, 'guests.currentAdmission')}</span>
+              <span className={styles.comparisonValue}>{t(dict, 'guests.peopleCount', { count: currentParty })}</span>
               {guest.checkIn.checkedInAt && (
-                <span className={styles.comparisonMeta}>{formatRiyadhDate(guest.checkIn.checkedInAt, lang)}</span>
+                <bdi className={styles.comparisonMeta}>{formatRiyadhDate(guest.checkIn.checkedInAt, lang)}</bdi>
               )}
             </div>
+            <span className={styles.comparisonArrow} aria-hidden="true">
+              <Icon name="arrow-right" size="md" mirror />
+            </span>
             <div className={`${styles.comparisonCard} ${styles.comparisonCardNew}`}>
-              <span className={styles.comparisonLabel}>{lang === 'ar' ? 'القيمة المقترحة' : 'Proposed'}</span>
-              <div className={styles.comparisonValue}>
-                {1 + (parseInt(companions, 10) || 0)} {lang === 'ar' ? 'أشخاص' : 'people'}
-              </div>
-              <span className={styles.comparisonMeta}>{lang === 'ar' ? 'مرافقين:' : 'Companions:'} {companions}</span>
+              <span className={styles.comparisonLabel}>{t(dict, 'guests.proposedAdmission')}</span>
+              <span className={styles.comparisonValue}>{t(dict, 'guests.peopleCount', { count: proposedParty })}</span>
+              <span className={styles.comparisonMeta}>{t(dict, 'guests.companionsCount', { count: companions })}</span>
             </div>
           </div>
         )}
@@ -196,52 +201,36 @@ export function AdmissionCorrectionDialog({
             required
             name="actualCompanions"
             type="number"
+            inputMode="numeric"
             value={companions}
             onChange={(e) => handleCompanionsChange(e.target.value)}
-            onBlur={handleCompanionsBlur}
+            onBlur={() => setTouched((prev) => ({ ...prev, companions: true }))}
             min={0}
             max={allowedCompanions}
             step={1}
             placeholder="0"
             error={touched.companions ? fieldErrors.actualCompanions : undefined}
             disabled={isPending}
-            helperText={t(dict, 'guests.companionsHelper', { count: allowedCompanions + 1 })}
+            hint={t(dict, 'guests.companionsHelper', { count: allowedCompanions + 1 })}
           />
         )}
 
         <Field
           label={t(dict, 'guests.correctionReasonLabel')}
           required
-          name="reason"
-          value={reason}
-          onChange={(e) => handleReasonChange(e.target.value)}
-          onBlur={handleReasonBlur}
-          placeholder={t(dict, 'guests.correctionReasonPlaceholder')}
           error={touched.reason ? fieldErrors.reason : undefined}
-          disabled={isPending}
-          multiline
-          rows={4}
-        />
-
-        <div className={styles.footerActions}>
-          <Button
-            variant="ghost"
-            onClick={onClose}
+          hint={t(dict, 'events.reasonLength')}
+        >
+          <textarea
+            name="reason"
+            rows={3}
+            value={reason}
+            onChange={(e) => handleReasonChange(e.target.value)}
+            onBlur={() => setTouched((prev) => ({ ...prev, reason: true }))}
+            placeholder={t(dict, 'guests.correctionReasonPlaceholder')}
             disabled={isPending}
-          >
-            {t(dict, 'common.cancel')}
-          </Button>
-
-          <Button
-            type="submit"
-            variant={isCorrect ? 'primary' : 'danger'}
-            loading={isPending}
-            disabled={!guest?.checkIn}
-            data-testid={isCorrect ? 'correction-submit-btn' : 'reset-submit-btn'}
-          >
-            {submitLabel}
-          </Button>
-        </div>
+          />
+        </Field>
       </form>
     </Dialog>
   );

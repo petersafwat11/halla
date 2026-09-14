@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import ImagePreviewModal from "@/ui/vendor/modals/ImagePreviewModal";
 import ImagesAndPricingEditForm from "./ImagesAndPricingEditForm";
-import { keyFromSignedUrl } from "@/utils/vendorHelpers";
+import { storedRefFromUrl } from "@/utils/vendorHelpers";
 import { apiRequest } from "@/services/http";
 import { API_PATHS } from "@halaa/shared/api/paths";
 import {
@@ -21,7 +21,7 @@ import styles from "./imagesAndPricingSection.module.css";
  * Read-only summary card + edit popup for the Images & Pricing section.
  * Inline thumbnails expose quick delete buttons; both the inline path and the
  * edit-form path hit the same `DELETE /users/profile/vendorImage` endpoint
- * with `{ field, key }` (key extracted from the signed URL) and refetch.
+ * with `{ field, key }` (the stable upload reference) and refetch.
  */
 const ImagesAndPricingSection = ({ data, onSave, onRefetch }) => {
   const { t } = useTranslation("vendorSettings");
@@ -44,8 +44,8 @@ const ImagesAndPricingSection = ({ data, onSave, onRefetch }) => {
     }
   };
 
-  const handleDelete = async (field, signedUrl) => {
-    const key = keyFromSignedUrl(signedUrl);
+  const handleDelete = async (field, storedUrl) => {
+    const key = storedRefFromUrl(storedUrl);
     if (!key) {
       toast.error(t("messages.deleteFailed", "Failed to delete image"));
       return;
@@ -80,7 +80,7 @@ const ImagesAndPricingSection = ({ data, onSave, onRefetch }) => {
           {images.map((img, index) => {
             const url = typeof img === "string" ? img : img?.url;
             if (!url) return null;
-            const key = keyFromSignedUrl(url);
+            const key = storedRefFromUrl(url);
             return (
               <DocThumb
                 key={`${field}-${index}-${url}`}

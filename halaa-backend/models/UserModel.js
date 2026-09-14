@@ -22,7 +22,7 @@ const {
   getPhoneLookupVariants,
   normalizePhoneNumber,
 } = require("../src/shared/utils/phone");
-const { signStoredImage, signStoredImages } = require("../src/shared/utils/s3Upload");
+const { resolveStoredImage, resolveStoredImages } = require("../src/shared/utils/localUpload");
 
 // ============================================
 // SUB-SCHEMAS
@@ -47,7 +47,7 @@ const hostDataSchema = new mongoose.Schema(
  * Business-account profile data (role:host + accountType:'business').
  *
  * Minimal + server-owned: the public-facing organization name IS the user's
- * top-level `name`, and the logo IS the top-level `avatar` (S3 key). Only the
+ * top-level `name`, and the logo IS the top-level `avatar` (local reference). Only the
  * free-text description lives here. No colors/website (global tokens, owner
  * decision). Event branding is SNAPSHOTTED onto the event at creation, never
  * read live from here.
@@ -729,9 +729,9 @@ userSchema.methods.softDelete = async function (deletedBy) {
 };
 
 /**
- * Get public profile (remove sensitive data, sign S3 image refs).
+ * Get public profile (remove sensitive data, sign local storage image refs).
  *
- * Async because every image field stored in the DB is an S3 key — we mint a
+ * Async because every image field stored in the DB is an local reference — we mint a
  * 1-hour pre-signed URL for each at serialization. Callers MUST await.
  *
  * @returns {Promise<Object>}
@@ -748,7 +748,7 @@ userSchema.methods.toPublicJSON = async function (options = {}) {
   delete obj.__v;
 
   // Sign top-level avatar
-  obj.avatar = await signStoredImage(obj.avatar);
+  obj.avatar = await resolveStoredImage(obj.avatar);
 
   // Role-data flattening: copy the role-specific subdoc to `roleData` and
   // drop the rest of `profile` from the response.
@@ -781,14 +781,14 @@ userSchema.methods.toPublicJSON = async function (options = {}) {
   if (obj.roleData) {
     const rd = obj.roleData;
     if (obj.role === ROLES.VENDOR) {
-      rd.businessLogo = await signStoredImage(rd.businessLogo);
-      rd.profileFile = await signStoredImage(rd.profileFile);
-      rd.portfolioImages = await signStoredImages(rd.portfolioImages);
-      rd.pricePackages = await signStoredImages(rd.pricePackages);
+      rd.businessLogo = await resolveStoredImage(rd.businessLogo);
+      rd.profileFile = await resolveStoredImage(rd.profileFile);
+      rd.portfolioImages = await resolveStoredImages(rd.portfolioImages);
+      rd.pricePackages = await resolveStoredImages(rd.pricePackages);
 
       if (options && options.includePrivateDocuments) {
-        rd.nationalIdImage = await signStoredImage(rd.nationalIdImage);
-        rd.commercialRecordImage = await signStoredImage(rd.commercialRecordImage);
+        rd.nationalIdImage = await resolveStoredImage(rd.nationalIdImage);
+        rd.commercialRecordImage = await resolveStoredImage(rd.commercialRecordImage);
       } else {
         delete rd.nationalId;
         delete rd.nationalIdImage;

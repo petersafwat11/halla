@@ -36,7 +36,7 @@ const otpService = require('./otp.service');
 const notificationService = require('../notifications/notifications.service');
 const emailModule = require('../../infrastructure/email');
 const { normalizePhoneNumber, validateAndFormatPhone } = require('../../shared/utils/phone');
-const { processUploadedFiles } = require('../../shared/utils/s3Upload');
+const { processUploadedFiles } = require('../../shared/utils/localUpload');
 const { logAudit } = require('../../shared/utils/auditLog');
 const logger = require('../../shared/utils/logger');
 
@@ -638,7 +638,7 @@ class AuthService {
         commercialRecordNumber: userData.commercialRecordNumber || userData.commercialRegistrationNumber || '',
       };
 
-      // Handle file uploads via S3 utility
+      // Handle file uploads via local storage utility
       const uploadedPaths = processUploadedFiles(files);
       if (uploadedPaths.businessLogo) vendorData.businessLogo = uploadedPaths.businessLogo;
       if (uploadedPaths.nationalIdImage) vendorData.nationalIdImage = uploadedPaths.nationalIdImage;

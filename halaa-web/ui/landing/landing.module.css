@@ -11,6 +11,16 @@
 }
 .skipLink:focus { transform: translateY(0); }
 .landing section[id] { scroll-margin-top: 100px; }
+/* Continue the alternating surfaces after invitation types, using rendered
+   sections so the rhythm also holds when the vendor list is empty. */
+.landing > main > :global(#invitation-types) ~ section:nth-of-type(even) {
+  background: var(--color-natural-50);
+  --landing-card-background: var(--color-primary-50);
+}
+.landing > main > :global(#invitation-types) ~ section:nth-of-type(odd) {
+  background: var(--color-primary-50);
+  --landing-card-background: var(--color-natural-50);
+}
 .landing :is(a, button, summary, input, [tabindex]):focus-visible {
   outline: 3px solid var(--color-secondary-700);
   outline-offset: 4px;

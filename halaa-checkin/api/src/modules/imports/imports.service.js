@@ -562,6 +562,15 @@ export const ImportsService = {
           key: idempotencyKey,
         });
         if (existing) {
+          // The winning request may have committed different CSV bytes under
+          // the same key; never report its result as this request's success.
+          if (existing.requestHash !== canonicalHash) {
+            throw new DomainError({
+              code: ERROR_CODES.IDEMPOTENCY_CONFLICT,
+              message: 'Idempotency key was previously used with different content',
+              status: 409,
+            });
+          }
           return existing.response.body.data;
         }
       }

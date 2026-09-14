@@ -1,0 +1,44 @@
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.guestCard {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--ops-border);
+  background-color: var(--ops-surface-muted);
+}
+
+.guestName {
+  font-size: var(--text-lg);
+  color: var(--ops-ink);
+  overflow-wrap: anywhere;
+}
+
+.guestMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: var(--text-xs);
+  color: var(--ops-muted);
+}
+
+.code {
+  padding: 1px 6px;
+  border-radius: var(--radius-xs);
+  background-color: var(--ops-surface-sunken);
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.message {
+  font-size: var(--text-md);
+  line-height: 1.6;
+  color: var(--ops-muted);
+}

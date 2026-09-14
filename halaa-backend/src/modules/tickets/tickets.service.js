@@ -28,7 +28,7 @@ const User = require("../../../models/UserModel");
 const notificationService = require('../notifications/notifications.service');
 const { logAudit } = require('../../shared/utils/auditLog');
 const logger = require('../../shared/utils/logger');
-const { extractStoredRef, signStoredImage } = require('../../shared/utils/s3Upload');
+const { extractStoredRef, resolveStoredImage } = require('../../shared/utils/localUpload');
 
 // Ticket source constants
 const TICKET_SOURCE = {
@@ -222,7 +222,7 @@ class TicketsService {
     };
 
     // Optional attachment (image or video) uploaded via multipart. Persist the
-    // S3 key (extractStoredRef); it is signed to a public URL on read.
+    // local reference (extractStoredRef); it is signed to a public URL on read.
     const uploadedFiles = Array.isArray(files) ? files : files ? [files] : [];
     if (uploadedFiles.length) {
       ticketPayload.attachments = uploadedFiles.map((file) => ({
@@ -634,7 +634,7 @@ class TicketsService {
       ? ticket.attachments
       : ticket.attachment?.url ? [ticket.attachment] : [];
     const attachments = await Promise.all(storedAttachments.map(async (item) => ({
-      url: await signStoredImage(item.url),
+      url: await resolveStoredImage(item.url),
       type: item.type || null,
       mimeType: item.mimeType || null,
       size: item.size || null,

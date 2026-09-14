@@ -39,7 +39,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const cleanupUploadedFile = (req) => {
   if (!req?.file) return;
   const cleanup = req.file.key
-    ? fileUpload.s3Upload?.deleteFromS3?.(req.file.key)
+    ? fileUpload.localUpload?.deleteStoredFile?.(req.file.key)
     : fileUpload.deleteFile?.(req.file.location || req.file.path || req.file.filename);
   Promise.resolve(cleanup).catch(() => {});
 };

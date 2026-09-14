@@ -18,7 +18,7 @@ const { protect } = require("../../shared/middleware/auth");
 const { restrictTo, requirePageAccess } = require("../../shared/middleware/rbac");
 const { ADMIN_PAGES } = require("../../shared/constants");
 const { validateObjectId, validateZod } = require("../../shared/middleware/validation");
-const { uploadMedia } = require("../../shared/utils/s3Upload");
+const { uploadMedia } = require("../../shared/utils/localUpload");
 const { uploadLimiter } = require("../../shared/middleware/rateLimiter");
 const { ROLES } = require("../../shared/constants");
 const {

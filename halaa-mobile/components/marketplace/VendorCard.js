@@ -115,10 +115,19 @@ const VendorCard = ({ vendor, onPress, index = 0 }) => {
           </AdaptiveText>
         ) : null}
 
-        {/* Meta cluster — rating and location sit TOGETHER at the logical
+        {/* Meta cluster — location then rating sit TOGETHER at the logical
             reading start under the name (never pinned to opposite edges).
             The star/pin glyphs are semantic and are never mirrored. */}
         <View style={styles.meta}>
+          {vendor.location ? (
+            <View style={styles.locationRow}>
+              <Ionicons name="location-outline" size={14} color="#C0A483" />
+              {/* Location is arbitrary backend content → first-strong. */}
+              <AdaptiveText numberOfLines={1} style={styles.location}>
+                {vendor.location}
+              </AdaptiveText>
+            </View>
+          ) : null}
           {hasRating ? (
             <View style={styles.rating}>
               {/* The numeric rating is one LTR-isolated locale-formatted
@@ -133,15 +142,6 @@ const VendorCard = ({ vendor, onPress, index = 0 }) => {
                   })
                 )}
               </LocalizedText>
-            </View>
-          ) : null}
-          {vendor.location ? (
-            <View style={styles.locationRow}>
-              <Ionicons name="location-outline" size={14} color="#C0A483" />
-              {/* Location is arbitrary backend content → first-strong. */}
-              <AdaptiveText numberOfLines={1} style={styles.location}>
-                {vendor.location}
-              </AdaptiveText>
             </View>
           ) : null}
         </View>
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 
-  /* ────── META (rating + location cluster) ────── */
+  /* ────── META (location + rating cluster) ────── */
   meta: {
     flexDirection: "row",
     alignItems: "center",

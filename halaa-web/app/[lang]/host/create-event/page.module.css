@@ -7,6 +7,9 @@
 }
 
 .main_content {
+  /* One column for the page header, stepper and step content on every
+     create/update wizard, so their start edges and titles line up. */
+  --wizard-column-max: 112rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -18,7 +21,7 @@
 .header_wrapper,
 .stepper_wrapper {
   width: 100%;
-  max-width: 96rem;
+  max-width: var(--wizard-column-max);
 }
 
 .content_wrapper {
@@ -28,7 +31,7 @@
   gap: 2.4rem;
   position: relative;
   justify-content: center;
-  max-width: 100%;
+  max-width: var(--wizard-column-max);
   min-width: 0;
 }
 
@@ -39,7 +42,7 @@
   align-items: flex-start;
   gap: 1rem;
   width: 100%;
-  max-width: 85rem;
+  max-width: 100%;
   min-width: 0;
 }
 

@@ -52,7 +52,7 @@
         "num": "6",
         "label": "البند السادس",
         "title": "مشاركة البيانات والإفصاح عنها",
-        "body": "لا تبيع هلا البيانات الشخصية ولا تستخدمها للتتبع الإعلاني عبر تطبيقات أو مواقع شركات أخرى. وقد تعالج البيانات، حسب الميزة المستخدمة، لدى MongoDB Atlas وAWS/S3 للاستضافة والتخزين، وMoyasar لمدفوعات الويب، وApple وGoogle وRevenueCat للمشتريات داخل التطبيق، وExpo وAPNs وFCM للإشعارات، وSentry للتشخيص، وGoogle Maps للخرائط، وTaqnyat ومزوّدي الرسائل والبريد، وMeta/WhatsApp كقناة إرسال يختارها المستخدم. تُشارك البيانات بالقدر اللازم لتقديم الخدمة أو الأمن أو الامتثال، وقد تختلف صفة كل طرف بين معالج ومستلم مستقل وفق الخدمة وشروطه. كما يجوز الإفصاح عند وجود التزام نظامي أو أمر من جهة مختصة أو لحماية الحقوق ومنع الاحتيال وإساءة الاستخدام."
+        "body": "لا تبيع هلا البيانات الشخصية ولا تستخدمها للتتبع الإعلاني عبر تطبيقات أو مواقع شركات أخرى. وقد تعالج البيانات، حسب الميزة المستخدمة، على خوادم هلا الخاصة للملفات والوسائط، ولدى MongoDB Atlas لاستضافة قاعدة البيانات، وMoyasar لمدفوعات الويب، وApple وGoogle وRevenueCat للمشتريات داخل التطبيق، وExpo وAPNs وFCM للإشعارات، وSentry للتشخيص، وGoogle Maps للخرائط، وTaqnyat ومزوّدي الرسائل والبريد، وMeta/WhatsApp كقناة إرسال يختارها المستخدم. تُشارك البيانات بالقدر اللازم لتقديم الخدمة أو الأمن أو الامتثال، وقد تختلف صفة كل طرف بين معالج ومستلم مستقل وفق الخدمة وشروطه. كما يجوز الإفصاح عند وجود التزام نظامي أو أمر من جهة مختصة أو لحماية الحقوق ومنع الاحتيال وإساءة الاستخدام."
       },
       {
         "id": "article-7",
@@ -144,7 +144,7 @@
         "num": "6",
         "label": "Article Six",
         "title": "Data Sharing and Disclosure",
-        "body": "Halaa does not sell personal data and does not use it to track users for advertising across other companies' apps or websites. Depending on the feature used, data may be processed by MongoDB Atlas and AWS/S3 for hosting and storage; Moyasar for web payments; Apple, Google, and RevenueCat for in-app purchases; Expo, APNs, and FCM for notifications; Sentry for diagnostics; Google Maps for maps; Taqnyat and email/SMS providers; and Meta/WhatsApp as a user-selected messaging channel. Data is disclosed only as needed for service delivery, security, compliance, or support, and a provider may act as a processor or independent recipient under its own terms. Data may also be disclosed to satisfy law or a competent-authority order, protect rights, or prevent fraud and abuse."
+        "body": "Halaa does not sell personal data and does not use it to track users for advertising across other companies' apps or websites. Depending on the feature used, data may be processed by MongoDB Atlas for database hosting, while files and media are stored on Halaa-operated servers; Moyasar for web payments; Apple, Google, and RevenueCat for in-app purchases; Expo, APNs, and FCM for notifications; Sentry for diagnostics; Google Maps for maps; Taqnyat and email/SMS providers; and Meta/WhatsApp as a user-selected messaging channel. Data is disclosed only as needed for service delivery, security, compliance, or support, and a provider may act as a processor or independent recipient under its own terms. Data may also be disclosed to satisfy law or a competent-authority order, protect rights, or prevent fraud and abuse."
       },
       {
         "id": "article-7",

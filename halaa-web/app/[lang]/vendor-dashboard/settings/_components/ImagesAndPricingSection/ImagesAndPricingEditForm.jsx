@@ -5,7 +5,7 @@ import Image from "next/image";
 import { toast } from "react-toastify";
 
 import styles from "./imagesAndPricingEditForm.module.css";
-import { keyFromSignedUrl } from "@/utils/vendorHelpers";
+import { storedRefFromUrl } from "@/utils/vendorHelpers";
 import { apiRequest } from "@/services/http";
 import { API_PATHS } from "@halaa/shared/api/paths";
 
@@ -122,7 +122,7 @@ const ImagesAndPricingEditForm = ({
   };
 
   const deleteExisting = async (field, signedUrl) => {
-    const key = keyFromSignedUrl(signedUrl);
+    const key = storedRefFromUrl(signedUrl);
     if (!key) {
       toast.error(t("messages.deleteFailed", "Failed to delete image"));
       return;
@@ -211,7 +211,7 @@ const ImagesAndPricingEditForm = ({
       )}
       <div className={styles.grid}>
         {existing.map((url, i) => {
-          const key = keyFromSignedUrl(url);
+          const key = storedRefFromUrl(url);
           return (
             <ImageTile
               key={`existing-${field}-${i}-${url}`}

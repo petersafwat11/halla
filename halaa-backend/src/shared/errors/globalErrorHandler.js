@@ -4,9 +4,23 @@
  * @module shared/errors/globalErrorHandler
  */
 
+const mongoose = require('mongoose');
 const config = require('../../config');
 const AppError = require('./AppError');
 const { ValidationError } = require('./errorTypes');
+
+/**
+ * Log-safe request path: no query string, and id/token-like path segments
+ * (16+ URL-safe chars, e.g. ObjectIds or portal tokens) replaced by `:param`.
+ * @param {string} [url]
+ * @returns {string}
+ */
+const redactLogPath = (url = '') =>
+  String(url)
+    .split('?')[0]
+    .split('/')
+    .map((segment) => (/^[A-Za-z0-9_-]{16,}$/.test(segment) ? ':param' : segment))
+    .join('/');
 
 /**
  * Handle MongoDB CastError (invalid ObjectId)
@@ -187,6 +201,15 @@ module.exports = (err, req, res, next) => {
       console.error(err.stack);
     }
   }
+  if (err.code === 'VALIDATION_ERROR') {
+    console.warn(`[${new Date().toISOString()}] [${req.requestId || 'no-request-id'}] 400 - validation rejected`, {
+      route: redactLogPath(req.originalUrl),
+      method: req.method,
+      fields: Array.isArray(err.errors)
+        ? err.errors.map((item) => item?.field).filter(Boolean)
+        : Object.keys(err.fieldErrors || {}),
+    });
+  }
 
   // Transform known error types in both dev and prod
   let error = Object.create(err);
@@ -199,7 +222,9 @@ module.exports = (err, req, res, next) => {
   if (err.name === 'CastError') error = handleCastErrorDB(err);
   if (err.name === 'MulterError') error = handleMulterError(err, req);
   if (err.code === 11000) error = handleDuplicateFieldsDB(err);
-  if (err.name === 'ValidationError' && err.errors) error = handleValidationErrorDB(err);
+  // Only real Mongoose validation errors are converted. Operational
+  // ValidationErrors already carry structured `errors`/`fieldErrors`.
+  if (err instanceof mongoose.Error.ValidationError) error = handleValidationErrorDB(err);
   if (err.name === 'JsonWebTokenError') error = handleJWTError();
   if (err.name === 'TokenExpiredError') error = handleJWTExpiredError();
   if (err.message && err.message.includes('Only image files are allowed')) {

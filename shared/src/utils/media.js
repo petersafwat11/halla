@@ -1,8 +1,8 @@
 /**
  * Cross-app media URL helpers.
  *
- * Both apps need to resolve a stored media reference (S3/CloudFront URL,
- * backend-relative `/uploads/...` path, or a hand-uploaded `File`/`Blob`)
+ * Both apps need to resolve a stored media reference (a backend-relative
+ * `/uploads/...` path or a hand-uploaded `File`/`Blob`)
  * to something the platform's image renderer can consume. Web reads from
  * `NEXT_PUBLIC_BACKEND_URL`; mobile strips the `/api/v2` suffix from its
  * `API_BASE_URL`. To keep this module platform-agnostic, callers pass
@@ -47,7 +47,8 @@ export function getMediaUrl(pathOrUrl, opts = {}) {
   return pathOrUrl;
 }
 
-export function keyFromSignedUrl(url) {
+/** Return the VPS upload reference represented by a relative or absolute URL. */
+export function storedRefFromUrl(url) {
   if (!url || typeof url !== "string") return null;
   try {
     const u = new URL(url);

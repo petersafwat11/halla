@@ -11,13 +11,10 @@ export default function InvitationTypesSection({ lang = 'ar' }) {
   const { t } = useTranslation('landing');
   return <section id="invitation-types" className={styles.root} aria-labelledby="invitation-types-title">
     <div className={styles.inner}>
-      <div className={styles.header}>
-        <div><span className={styles.eyebrow}>{t('invitationTypes.eyebrow')}</span>
-          <h2 id="invitation-types-title">{t('invitationTypes.title')}</h2>
-          <p>{t('invitationTypes.sub')}</p>
-        </div>
-        <a href={`/${lang}/signup`} className={styles.cta}>{t('invitationTypes.cta')}</a>
-      </div>
+      <header className={styles.header}>
+        <h2 id="invitation-types-title">{t('invitationTypes.eyebrow')}</h2>
+        <p>{t('invitationTypes.sub')}</p>
+      </header>
       <div className={styles.options}>
         {INVITATION_TYPE_OPTIONS.map(option => {
           const copy = getInvitationTypeCopy(option.value, lang);

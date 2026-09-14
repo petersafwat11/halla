@@ -79,7 +79,16 @@
     "reopenReason": "سبب إعادة الفتح",
     "reopenReasonPlaceholder": "أدخل سبباً مفصلاً (5 إلى 500 حرف)",
     "reopenReasonRequired": "سبب إعادة الفتح مطلوب (5 أحرف على الأقل)",
-    "eventClosedBanner": "الفعالية مغلقة حالياً. تم تجميد تسجيل الدخول وإدارة الضيوف."
+    "eventClosedBanner": "الفعالية مغلقة حالياً. تم تجميد تسجيل الدخول وإدارة الضيوف.",
+    "moreActions": "إجراءات إضافية للفعالية",
+    "openEventConfirmTitle": "فتح الفعالية لتسجيل الدخول",
+    "openEventWarning": "بعد فتح الفعالية يمكن لموظفي الاستقبال تسجيل دخول الضيوف عند البوابة.",
+    "startDate": "تاريخ البدء",
+    "startTime": "وقت البدء",
+    "editWarning": "تغيير الاسم أو الموقع أو الموعد بعد توزيع البطاقات يجعل ملفات PDF السابقة قديمة. أعد تصدير البطاقات بعد الحفظ.",
+    "namePlaceholder": "مثال: حفل فندق هيلتون الرياض السنوي",
+    "venuePlaceholder": "مثال: قاعة الاحتفالات الكبرى",
+    "reasonLength": "من 5 إلى 500 حرف"
   },
   "dialog": {
     "close": "إغلاق النافذة",
@@ -164,7 +173,24 @@
     "correctionReasonTooLong": "السبب يتجاوز 500 حرف",
     "resetReasonRequired": "سبب إعادة التعيين مطلوب (5 أحرف على الأقل)",
     "resetReasonTooLong": "السبب يتجاوز 500 حرف",
-    "versionConflictReload": "تم تعديل البيانات بواسطة مستخدم آخر. أعد التحميل للحصول على أحدث نسخة."
+    "rowActions": "إجراءات {name}",
+    "selectGuest": "تحديد {name}",
+    "selectPage": "تحديد كل ضيوف هذه الصفحة",
+    "partyColumn": "عدد الأفراد",
+    "partyGuestOnly": "الضيف فقط",
+    "partyWithCompanions": "الضيف + {count} مرافقين",
+    "partyArrivedOf": "حضروا من {count}",
+    "guestCount": "{count} دعوة",
+    "versionConflictReload": "تم تعديل البيانات بواسطة مستخدم آخر. أعد التحميل للحصول على أحدث نسخة.",
+    "vipGuest": "ضيف مميز (VIP)",
+    "vipHint": "يضيف البادئة VIP إلى المرجع ليتم إبراز الضيف عند البوابة.",
+    "companionNamesHint": "اختياري — اسم واحد في كل سطر",
+    "reloadData": "إعادة تحميل أحدث البيانات",
+    "formSubtitleAdd": "يحصل الضيف على بطاقة QR فريدة بعد الحفظ.",
+    "currentAdmission": "الحالي",
+    "proposedAdmission": "المقترح",
+    "peopleCount": "{count} أشخاص",
+    "companionsCount": "المرافقون: {count}"
   },
   "imports": {
     "title": "استيراد قائمة الضيوف (CSV)",
@@ -183,7 +209,21 @@
     "commitButton": "تأكيد استيراد ({count}) ضيف",
     "commitSuccess": "تم استيراد {count} ضيف بنجاح!",
     "importing": "جاري الاستيراد الآمن...",
-    "cannotCommitErrors": "يرجى تصحيح الأخطاء في ملف CSV قبل المتابعة. لن يتم حفظ أي بيانات غير مكتملة."
+    "cannotCommitErrors": "يرجى تصحيح الأخطاء في ملف CSV قبل المتابعة. لن يتم حفظ أي بيانات غير مكتملة.",
+    "subtitle": "ارفع ملف CSV. لن يُحفظ أي شيء قبل المراجعة والتأكيد.",
+    "previewButton": "معاينة الملف",
+    "backToUpload": "اختيار ملف آخر",
+    "removeFile": "إزالة",
+    "templateTitle": "تحتاج الصيغة الصحيحة؟",
+    "templateHint": "ابدأ من قالب يحتوي على الأعمدة المطلوبة.",
+    "readyCount": "جاهزة",
+    "errorCount": "أخطاء",
+    "warningCount": "تنبيهات",
+    "capacityLeft": "السعة المتبقية",
+    "columnLine": "السطر",
+    "columnGuest": "الضيف",
+    "columnCompanions": "المرافقون",
+    "columnReference": "المرجع"
   },
   "gate": {
     "workspaceTitle": "بوابة الدخول",
@@ -195,7 +235,15 @@
     "cameraUnavailable": "الكاميرا غير متوفرة على هذا الجهاز.",
     "cameraHint": "وجّه الكاميرا نحو رمز QR الخاص بالدعوة",
     "scannerTitle": "قارئ الباركود (USB / Bluetooth)",
-    "scannerPlaceholder": "امسح الرمز أو أدخله هنا واضغط Enter...",
+    "scannerHint": "يعمل مع قارئات USB والبلوتوث. اضغط Enter بعد كتابة الرمز.",
+    "cameraSubtitle": "استخدم كاميرا هذا الجهاز لمسح رمز QR الخاص بالضيف",
+    "readyTitle": "جاهز لاستقبال الضيف التالي",
+    "readyHint": "امسح بطاقة الضيف، أو اكتب الرمز المختصر، أو ابحث بالاسم.",
+    "enteringNow": "الداخلون الآن",
+    "liveAdmitted": "الحاضرون",
+    "liveInvitations": "الدعوات",
+    "checkingInvitation": "جاري التحقق من الدعوة…",
+    "scannerPlaceholder": "امسح البطاقة أو اكتب الرمز المختصر…",
     "scannerSubmit": "تحقق من الرمز",
     "manualSearchTitle": "البحث اليدوي عن ضيف",
     "manualSearchPlaceholder": "ابحث بالاسم، المرجع، أو الرمز المختصر (حرفان على الأقل)...",
@@ -256,7 +304,9 @@
     "scanInstruction": "يُبرز هذا الرمز عند بوابة الدخول",
     "downloadPdf": "تحميل بطاقة PDF",
     "print": "طباعة",
-    "close": "إغلاق"
+    "close": "إغلاق",
+    "saveImage": "حفظ الصورة",
+    "downloadPdfA6": "بطاقة PDF (A6)"
   },
   "exports": {
     "title": "تصدير وتقارير",
@@ -307,7 +357,11 @@
     "errorNoGuests": "لا توجد دعوات نشطة في هذه الفعالية.",
     "rateLimited": "تم تجاوز حد التصدير المتزامن. يرجى الانتظار.",
     "interimNotice": "تقرير مرحلي — الضيوف المدرجون كـ \"في الانتظار\" لم يتم تسجيل دخولهم بعد.",
-    "finalNotice": "تقرير نهائي — \"لم يحضروا\" يشمل جميع الدعوات دون تسجيل دخول."
+    "finalNotice": "تقرير نهائي — \"لم يحضروا\" يشمل جميع الدعوات دون تسجيل دخول.",
+    "subtitle": "أنشئ بطاقات جاهزة للطباعة أو تقرير حضور بصيغة PDF.",
+    "chooseType": "ماذا تريد أن تصدّر؟",
+    "processingTitle": "جاري تجهيز ملف PDF…",
+    "processingHint": "قد يستغرق التصدير الكبير حتى دقيقة. يمكنك إبقاء النافذة مفتوحة."
   },
   "errors": {
     "VALIDATION_FAILED": "بيانات غير صالحة",
@@ -330,6 +384,8 @@
     "RATE_LIMITED": "تم تجاوز حد الطلبات المسموح به، يرجى الانتظار",
     "SERVICE_UNAVAILABLE": "الخدمة غير متوفرة حالياً، يرجى المحاولة لاحقاً",
     "UNKNOWN": "حدث خطأ غير متوقع",
-    "PRINT_POPUP_BLOCKED": "تم حظر النافذة المنبثقة. تم تنزيل ملف PDF؛ افتحه للطباعة."
+    "PRINT_POPUP_BLOCKED": "تم حظر النافذة المنبثقة. تم تنزيل ملف PDF؛ افتحه للطباعة.",
+    "LOST_RESPONSE": "انقطع الاتصال قبل تأكيد الخادم. إعادة المحاولة تستخدم نفس الطلب، فلن يتكرر أي شيء.",
+    "NOT_CHECKED_IN": "لم يتم تسجيل دخول هذا الضيف بعد، فلا يوجد دخول لتعديله."
   }
 }

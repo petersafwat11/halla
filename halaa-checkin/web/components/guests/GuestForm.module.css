@@ -1,106 +1,132 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
+}
+
+.noticeAction {
+  display: block;
+  margin-top: 8px;
 }
 
 .formGrid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-@media (max-width: 600px) {
-  .formGrid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.referenceGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 14px;
 }
 
 .vipToggle {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 8px;
-  min-height: 44px;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--ops-border);
+  background-color: var(--ops-surface-muted);
   cursor: pointer;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--ops-brand-strong, #75502f);
-  user-select: none;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.vipToggle:hover {
+  border-color: var(--ops-border-strong);
+}
+
+.vipToggleOn {
+  border-color: #e6c98f;
+  background-color: #fdf7ea;
 }
 
 .vipCheckbox {
   width: 18px;
   height: 18px;
-  accent-color: var(--ops-brand, #a87545);
+  flex-shrink: 0;
+  accent-color: var(--ops-brand-strong);
   cursor: pointer;
 }
 
 .vipIcon {
-  color: var(--color-warning-text, #b54708);
-}
-
-.admissionSummary {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  background-color: var(--color-success-bg, #edfcf2);
-  color: var(--color-success-text, #087443);
-  border: 1px solid var(--color-success-border, #a6f4c5);
-  border-radius: var(--radius-sm, 8px);
-  font-size: 13px;
-  font-weight: 600;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #f7e7c6, #eed29c);
+  color: #6a4a12;
+}
+
+.vipText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.vipLabel {
+  font-size: var(--text-md);
+  font-weight: 700;
+  color: var(--ops-ink);
+}
+
+.vipHint {
+  font-size: var(--text-xs);
+  color: var(--ops-muted);
 }
 
 .companionsSection {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+}
+
+.companionsText {
+  display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .label {
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: 600;
-  color: var(--ops-ink, #2c2926);
+  color: var(--ops-ink-soft);
 }
 
-.stepperRow {
-  display: flex;
+.helper {
+  display: inline-flex;
   align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
+  gap: 6px;
+  font-size: var(--text-xs);
+  color: var(--ops-muted);
 }
 
 .stepper {
   display: inline-flex;
   align-items: center;
-  border: 1px solid var(--ops-border, #e4ddd6);
-  border-radius: var(--radius-sm, 8px);
+  border: 1px solid var(--ops-border-strong);
+  border-radius: var(--radius-md);
+  background-color: var(--ops-surface);
+  box-shadow: var(--shadow-xs);
   overflow: hidden;
-  background-color: var(--ops-surface, #ffffff);
 }
 
 .stepperBtn {
-  display: inline-flex;
+  width: 42px;
+  height: 42px;
+  display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 44px;
-  min-height: 44px;
   border: none;
-  background-color: transparent;
-  color: var(--ops-ink, #2c2926);
+  background-color: var(--ops-surface-muted);
+  color: var(--ops-ink-soft);
   cursor: pointer;
   transition: background-color 0.15s ease;
 }
 
 .stepperBtn:hover:not(:disabled) {
-  background-color: var(--ops-canvas, #f8f5f1);
+  background-color: var(--ops-brand-soft);
+  color: var(--ops-brand-strong);
 }
 
 .stepperBtn:disabled {
@@ -110,17 +136,15 @@
 
 .stepperInput {
   width: 56px;
-  min-height: 44px;
-  text-align: center;
-  font-size: 16px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
+  height: 42px;
   border: none;
-  border-left: 1px solid var(--ops-border, #e4ddd6);
-  border-right: 1px solid var(--ops-border, #e4ddd6);
-  outline: none;
+  border-inline: 1px solid var(--ops-border);
+  text-align: center;
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--ops-ink);
   background: transparent;
-  color: var(--ops-ink, #2c2926);
+  outline: none;
   -moz-appearance: textfield;
 }
 
@@ -130,51 +154,23 @@
   margin: 0;
 }
 
-.helperBox {
-  background-color: var(--color-primary-100, #f5ece4);
-  color: var(--color-primary-800, #6b4e33);
-  padding: 8px 12px;
-  border-radius: var(--radius-sm, 8px);
-  font-size: 13px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 44px;
+.stepperInput:focus {
+  background-color: var(--ops-brand-softer);
 }
 
 .errorText {
-  font-size: 12px;
-  color: var(--color-error, #b42318);
-  margin: 0;
+  margin-top: -10px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--ops-danger);
 }
 
-.textarea {
-  width: 100%;
-  padding: 10px 12px;
-  border-radius: var(--radius-sm, 8px);
-  border: 1px solid var(--ops-border, #e4ddd6);
-  font-family: inherit;
-  font-size: 14px;
-  resize: vertical;
-  background-color: var(--ops-surface, #ffffff);
-  color: var(--ops-ink, #2c2926);
-  outline: none;
-  transition: border-color 0.15s ease;
-}
+@media (max-width: 640px) {
+  .formGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 
-.textarea:focus {
-  border-color: var(--ops-brand, #a87545);
-  box-shadow: 0 0 0 3px rgba(168, 117, 69, 0.15);
-}
-
-.hasError {
-  border-color: var(--color-error, #b42318);
-}
-
-.footerActions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 8px;
+  .stepperInput {
+    font-size: 16px;
+  }
 }

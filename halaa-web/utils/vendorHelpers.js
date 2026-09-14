@@ -5,20 +5,18 @@ import { useMemo } from "react";
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 
 /**
- * Recover the S3 key from a backend-signed URL.
- *
- * The backend stores images as keys and serializes them as pre-signed
- * S3 URLs of the shape `https://bucket.s3.region.amazonaws.com/<key>?X-Amz-...`.
- * The DELETE endpoint needs the key, so we extract it here.
+ * Recover the VPS upload reference from a rendered backend URL.
+ * The DELETE endpoint accepts this stable reference rather than a host URL.
  */
-export const keyFromSignedUrl = (url) => {
+export const storedRefFromUrl = (url) => {
   if (!url || typeof url !== "string") return null;
   try {
     const u = new URL(url);
     const path = u.pathname.startsWith("/") ? u.pathname.slice(1) : u.pathname;
     return path ? decodeURIComponent(path) : null;
   } catch {
-    return null;
+    const clean = url.split("?")[0].replace(/^\//, "");
+    return clean || null;
   }
 };
 

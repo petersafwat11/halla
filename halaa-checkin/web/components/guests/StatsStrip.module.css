@@ -1,163 +1,230 @@
 .strip {
   display: flex;
   flex-direction: column;
-  width: 100%;
-  background-color: var(--ops-surface, #ffffff);
-  border: 1px solid var(--ops-border, #E4DDD6);
-  border-radius: var(--radius-md, 12px);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
-  overflow: hidden;
-  box-sizing: border-box;
+  gap: 12px;
 }
 
 .headerRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 16px;
-  background-color: var(--color-natural-100, #fdfdfd);
-  border-bottom: 1px solid var(--ops-border, #E4DDD6);
-  font-size: 12px;
-  color: var(--ops-muted, #68615B);
+  gap: 12px;
   flex-wrap: wrap;
-  gap: 8px;
 }
 
-.asOfText {
-  display: flex;
+.sectionTitle {
+  font-size: var(--text-md);
+  font-weight: 700;
+  color: var(--ops-ink-soft);
+}
+
+.liveStatus {
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-family: var(--font-cairo, "Cairo", sans-serif);
+  gap: 8px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--ops-muted);
 }
 
 .liveDot {
+  position: relative;
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: var(--color-success-500, #2a8c5b);
-  display: inline-block;
-  animation: pulse 2s infinite;
+  background-color: var(--ops-success);
+  box-shadow: 0 0 0 3px var(--ops-success-soft);
 }
 
 .fetchingDot {
-  background-color: var(--ops-brand, #A87545);
+  background-color: var(--ops-brand);
+  box-shadow: 0 0 0 3px var(--ops-brand-soft);
 }
 
-.progressWrapper {
+.staleStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ops-warning);
+}
+
+.inlineRetry {
+  background: none;
+  border: none;
+  color: var(--ops-brand-strong);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.cardsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 16px 18px 16px;
+  background-color: var(--ops-surface);
+  border: 1px solid var(--ops-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+}
+
+.cardHighlight {
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdfb 100%);
+}
+
+.cardTop {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
 }
 
+.cardLabel {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--ops-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardIcon {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+}
+
+.toneBrand {
+  background-color: var(--ops-brand-soft);
+  color: var(--ops-brand-strong);
+}
+
+.toneInfo {
+  background-color: var(--ops-info-soft);
+  color: var(--ops-info);
+}
+
+.toneSuccess {
+  background-color: var(--ops-success-soft);
+  color: var(--ops-success);
+}
+
+.toneWarning {
+  background-color: var(--ops-warning-soft);
+  color: var(--ops-warning);
+}
+
+.toneNeutral {
+  background-color: var(--ops-surface-sunken);
+  color: var(--ops-muted);
+}
+
+.cardValue {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--ops-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.cardFoot {
+  font-size: var(--text-xs);
+  color: var(--ops-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardFoot strong,
+.progressLabel strong {
+  color: var(--ops-ink-soft);
+  font-weight: 700;
+}
+
+.progressRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 .progressBar {
-  width: 100px;
   height: 6px;
-  background-color: var(--color-natural-250, #dfdfdf);
-  border-radius: 3px;
+  width: 100%;
+  border-radius: var(--radius-pill);
+  background-color: var(--ops-surface-sunken);
   overflow: hidden;
 }
 
 .progressFill {
   height: 100%;
-  background-color: var(--color-success-500, #2a8c5b);
-  border-radius: 3px;
-  transition: width 0.3s ease;
+  border-radius: inherit;
+  background-color: var(--ops-success);
+  transition: width 0.4s var(--ease-out);
 }
 
-.rateBadge {
-  display: inline-flex;
+.progressLabel {
+  font-size: var(--text-xs);
+  color: var(--ops-muted);
+}
+
+.errorStrip {
+  display: flex;
   align-items: center;
-  padding: 2px 8px;
-  border-radius: var(--radius-sm, 8px);
-  font-size: 11px;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: var(--radius-lg);
+  background-color: var(--ops-warning-soft);
+  border: 1px solid var(--ops-warning-border);
+  color: var(--ops-warning-strong);
+}
+
+.errorText {
+  flex: 1;
   font-weight: 600;
-  background-color: var(--color-primary-100, #f5ece4);
-  color: var(--ops-brand-strong, #75502F);
-  font-variant-numeric: tabular-nums;
 }
 
-.cardsGrid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  background-color: var(--ops-border, #E4DDD6);
-  gap: 1px;
-}
-
-.card {
-  background-color: var(--ops-surface, #ffffff);
-  padding: 12px 18px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 4px;
-  box-sizing: border-box;
-}
-
-.cardHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-family: var(--font-cairo, "Cairo", sans-serif);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--ops-muted, #68615B);
-}
-
-.cardIcon {
-  color: var(--ops-muted, #68615B);
-  display: flex;
-  align-items: center;
-}
-
-.cardValue {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--ops-ink, #2C2926);
-  line-height: 1.1;
-  font-variant-numeric: tabular-nums;
-  font-family: var(--font-cairo, "Cairo", sans-serif);
-}
-
-.cardSubtext {
-  font-size: 11px;
-  color: var(--ops-muted, #68615B);
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-family: var(--font-cairo, "Cairo", sans-serif);
-}
-
-@keyframes pulse {
-  0% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.4;
-    transform: scale(0.85);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* Mobile: 2x2 grid with 72-88px cells (07-UI-UX-RECOVERY-PLAN §5.2) */
-@media (max-width: 768px) {
+@media (max-width: 1100px) {
   .cardsGrid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .cardsGrid {
+    gap: 10px;
   }
 
   .card {
-    min-height: 72px;
-    height: auto;
-    padding: 8px 12px;
+    padding: 12px 14px;
+    gap: 4px;
+  }
+
+  .cardIcon {
+    width: 28px;
+    height: 28px;
   }
 
   .cardValue {
-    font-size: 20px;
+    min-height: 32px;
+    font-size: var(--text-2xl);
+  }
+
+  .cardLabel {
+    font-size: var(--text-xs);
   }
 }

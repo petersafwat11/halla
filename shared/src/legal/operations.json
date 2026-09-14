@@ -96,7 +96,6 @@
   ],
   "processors": [
     { "id": "mongodb-atlas", "purpose": "database hosting", "data": ["accounts", "events", "guests", "billing", "ugc"], "region": "ACCOUNT_CONFIRMATION_REQUIRED", "retention": "Halaa policy plus provider backups", "transfer": "ACCOUNT_CONFIRMATION_REQUIRED", "dpaStatus": "OWNER_CONFIRMATION_REQUIRED" },
-    { "id": "aws-s3", "purpose": "file and media storage", "data": ["uploads", "vendor documents", "event media"], "region": "ACCOUNT_CONFIRMATION_REQUIRED", "retention": "object lifecycle/account deletion", "transfer": "ACCOUNT_CONFIRMATION_REQUIRED", "dpaStatus": "OWNER_CONFIRMATION_REQUIRED" },
     { "id": "moyasar", "purpose": "web payment processing", "data": ["transaction", "payment method metadata"], "region": "PROVIDER_CONFIRMATION_REQUIRED", "retention": "provider/legal requirements", "transfer": "PROVIDER_CONFIRMATION_REQUIRED", "dpaStatus": "OWNER_CONFIRMATION_REQUIRED" },
     { "id": "apple", "purpose": "iOS distribution and purchases", "data": ["store account", "purchase history"], "region": "provider controlled", "retention": "provider/legal requirements", "transfer": "provider terms", "dpaStatus": "PLATFORM_TERMS_CONFIRMATION_REQUIRED" },
     { "id": "google", "purpose": "Android distribution, purchases and push", "data": ["store account", "purchase history", "push token"], "region": "provider controlled", "retention": "provider/legal requirements", "transfer": "provider terms", "dpaStatus": "PLATFORM_TERMS_CONFIRMATION_REQUIRED" },

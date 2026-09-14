@@ -1529,7 +1529,7 @@ const scheduleSubscriptionRenewal = () => {
 // ─────────────────────────────────────────────────────────────────
 // Account-deletion cleanup retry cron (every 5 minutes).
 // Converges deletion requests stuck in `pending_retry` (account closed but
-// residual personal S3 objects not yet deleted) to `completed`. Leased so a
+// residual personal local uploads not yet deleted) to `completed`. Leased so a
 // multi-node deploy doesn't double-process. DEL-02 / P1-02.
 // ─────────────────────────────────────────────────────────────────
 const scheduleAccountDeletionRetry = () => {

@@ -2,83 +2,84 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
-  min-height: 44px;
-  border-radius: var(--radius-sm, 8px);
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  padding: 0;
+  border-radius: var(--radius-md);
   border: 1px solid transparent;
   background-color: transparent;
-  color: var(--color-natural-700, #454545);
+  color: var(--ops-muted);
   cursor: pointer;
-  transition: all 0.15s ease-in-out;
-  padding: 0;
-  box-sizing: border-box;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (pointer: coarse) {
+  .iconButton {
+    width: 44px;
+    height: 44px;
+  }
 }
 
 .iconButton:focus-visible {
-  outline: 2px solid var(--color-primary-500, #c28e5c);
-  outline-offset: 2px;
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
 .iconButton:hover:not(:disabled) {
-  background-color: var(--color-natural-150, #f7f7f7);
-  color: var(--color-natural-900, #2c2c2c);
-}
-
-.iconButton:active:not(:disabled) {
-  background-color: var(--color-natural-200, #f2f2f2);
+  background-color: var(--ops-surface-sunken);
+  color: var(--ops-ink);
 }
 
 .primary {
-  background-color: var(--btn-primary-contrast-bg, #6b4e33);
+  background-color: var(--ops-brand-strong);
   color: #ffffff;
 }
 
 .primary:hover:not(:disabled) {
-  background-color: var(--btn-primary-contrast-hover, #513c27);
+  background-color: var(--ops-brand-hover);
   color: #ffffff;
 }
 
 .secondary {
-  background-color: var(--color-primary-100, #f5ece4);
-  color: var(--color-primary-800, #6b4e33);
-  border-color: var(--color-primary-200, #e3cbb4);
+  background-color: var(--ops-brand-soft);
+  color: var(--ops-brand-strong);
+  border-color: var(--ops-brand-border);
 }
 
 .secondary:hover:not(:disabled) {
-  background-color: var(--color-primary-200, #e3cbb4);
+  background-color: #eedfcf;
+  color: var(--ops-brand-strong);
 }
 
 .outline {
-  background-color: var(--color-natural-50, #ffffff);
-  border-color: var(--border-gray-250, #dfdfdf);
-  color: var(--color-natural-900, #2c2c2c);
+  background-color: var(--ops-surface);
+  border-color: var(--ops-border-strong);
+  color: var(--ops-ink-soft);
+  box-shadow: var(--shadow-xs);
 }
 
 .outline:hover:not(:disabled) {
-  background-color: var(--color-natural-150, #f7f7f7);
-  border-color: var(--color-natural-350, #a0a0a0);
+  background-color: var(--ops-surface-muted);
+  border-color: #c7bcb0;
 }
 
 .ghost {
   background-color: transparent;
-  border-color: transparent;
 }
 
 .danger {
-  background-color: transparent;
-  color: var(--color-error-500, #c0392b);
+  color: var(--ops-danger);
 }
 
 .danger:hover:not(:disabled) {
-  background-color: var(--color-error-50, #f9ebea);
-  color: var(--color-error-700, #88281f);
+  background-color: var(--ops-danger-soft);
+  color: var(--ops-danger-strong);
 }
 
 .disabled,
 .iconButton:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
-  pointer-events: none;
 }

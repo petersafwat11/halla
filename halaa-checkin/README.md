@@ -119,6 +119,20 @@ DEMO_SEED_ENABLED=true DEMO_SEED_PASSWORD=<same> npm run seed:demo -- --reset-de
 
 Production demonstration records are entered/imported deliberately, never seeded.
 
+### Local UI preview (in-memory database)
+
+`npm run demo` starts an in-memory MongoDB replica set, seeds a live event,
+and runs the API (port 8100) and web app (port 3100) for UI review. Logins are
+printed on start. Nothing persists after the process exits.
+
+```bash
+# Production build of the web app (run `npm --prefix web run build` first):
+npm run demo
+# Hot-reloading Next.js dev server instead (stop it before running `next build`,
+# both share web/.next):
+npm run demo -- --dev
+```
+
 ## Containers & deployment (T11)
 
 Independent Compose project `halaa-checkin` (never merged into the root Halaa

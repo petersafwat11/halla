@@ -41,7 +41,8 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html className={cairo.variable}>
+    // dir/lang are applied by the [lang] layout script before hydration.
+    <html className={cairo.variable} suppressHydrationWarning>
       <body className={cairo.className}>
         {children}
       </body>

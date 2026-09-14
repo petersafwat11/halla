@@ -6,13 +6,13 @@ import Svg, { Path } from "react-native-svg";
 import { exportTemplateXLSX, importFromXLSX } from "../../../utils/xlsxUtils";
 
 const UploadIcon = ({ disabled }) => (
-  <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+  <Svg width="16" height="16" viewBox="0 0 24 24" fill="none">
     <Path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke={disabled ? "#AAAAAA" : "#C28E5C"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
   </Svg>
 );
 
 const DownloadIcon = () => (
-  <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+  <Svg width="16" height="16" viewBox="0 0 24 24" fill="none">
     <Path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="#C28E5C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
   </Svg>
 );
@@ -168,19 +168,27 @@ const styles = StyleSheet.create({
   importExportRow: { flexDirection: "row", gap: 10, marginTop: 12 },
   importExportBtn: {
     flex: 1,
+    height: 44,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 6,
-    paddingVertical: 11,
-    paddingHorizontal: 12,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
     borderRadius: 10,
     borderWidth: 1.5,
     borderColor: "#C28E5C",
     backgroundColor: "#FFF",
   },
   importExportBtnDisabled: { borderColor: "#E0E0E0", backgroundColor: "#F9F9F9" },
-  importExportBtnText: { fontSize: 13, fontFamily: "Cairo_600SemiBold", color: "#C28E5C" },
+  importExportBtnText: {
+    flexShrink: 1,
+    fontSize: 11.5,
+    lineHeight: 15,
+    textAlign: "center",
+    fontFamily: "Cairo_600SemiBold",
+    color: "#C28E5C",
+  },
   importExportBtnTextDisabled: { color: "#AAAAAA" },
   importErrorsBox: {
     marginTop: 12,

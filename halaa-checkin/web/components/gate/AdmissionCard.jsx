@@ -7,9 +7,71 @@ import { Icon } from '../ui/Icon.jsx';
 import { t, formatRiyadhDate } from '../../lib/locale.js';
 import styles from './AdmissionCard.module.css';
 
+function GuestIdentity({ guest, isVip, size = 'md' }) {
+  return (
+    <div className={`${styles.identity} ${size === 'lg' ? styles.identityLg : ''}`}>
+      <span className={styles.guestName} data-testid="guest-preview-name" dir="auto">
+        {guest.name}
+      </span>
+      <div className={styles.metaRow}>
+        <bdi className={styles.shortCode} data-testid="guest-preview-shortcode">
+          {guest.shortCode}
+        </bdi>
+        {isVip && (
+          <span className={styles.vipBadge}>
+            <Icon name="vip" size="xs" /> VIP
+          </span>
+        )}
+        {guest.reference && <bdi className={styles.reference}>{guest.reference}</bdi>}
+      </div>
+    </div>
+  );
+}
+
+function ResultPanel({ tone, icon, title, message, testId, role = 'status', children, actions }) {
+  return (
+    <div
+      className={`${styles.panel} ${styles.result} ${styles[`tone_${tone}`]} ${children ? '' : styles.resultCompact}`}
+      data-testid={testId}
+      role={role}
+      aria-live={role === 'status' ? 'polite' : undefined}
+    >
+      <div className={styles.resultHeader}>
+        <span className={styles.resultIcon} aria-hidden="true">
+          <Icon name={icon} size="lg" />
+        </span>
+        <div className={styles.resultHeading}>
+          <h3 className={styles.resultTitle}>{title}</h3>
+          {message && <p className={styles.resultMessage}>{message}</p>}
+        </div>
+      </div>
+      {children && <div className={styles.resultBody}>{children}</div>}
+      {actions && <div className={styles.actionsRow}>{actions}</div>}
+    </div>
+  );
+}
+
+function DetailList({ items }) {
+  return (
+    <dl className={styles.detailList}>
+      {items.filter(Boolean).map((item) => (
+        <div key={item.label} className={styles.detailRow}>
+          <dt>
+            <Icon name={item.icon} size="sm" />
+            <span>{item.label}</span>
+          </dt>
+          <dd className="tabular">{item.value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
 /**
- * Gate Admission Confirmation and Preview Card.
- * Adheres to Technical Contract Section 5 and Product Section 6.
+ * Gate admission panel. One component renders every state of the admission
+ * state machine so the operator always sees exactly one decisive message:
+ * idle → resolving → ready/submitting → admitted | already admitted | invalid |
+ * closed/draft | lost response | network failure | session expired.
  */
 export function AdmissionCard({
   gateState,
@@ -29,409 +91,242 @@ export function AdmissionCard({
     currentGuest?.name?.toUpperCase()?.includes('VIP')
   );
 
-  // 1. Idle state
+  // 1. Idle
   if (gateState === 'idle') {
     return (
-      <div className={styles.emptyCard} data-testid="admission-empty-card" role="status" aria-live="polite">
-        <div className={styles.emptyIcon}>
-          <Icon name="ticket" size="xl" />
-        </div>
-        <h3 className={styles.emptyTitle}>{t(dict, 'gate.previewTitle')}</h3>
-        <p className={styles.emptyText}>{t(dict, 'gate.cameraHint')}</p>
+      <div className={`${styles.panel} ${styles.idle}`} data-testid="admission-empty-card" role="status" aria-live="polite">
+        <span className={styles.idleIcon} aria-hidden="true">
+          <Icon name="scan-qr" size={40} strokeWidth={1.75} />
+        </span>
+        <h3 className={styles.idleTitle}>{t(dict, 'gate.readyTitle')}</h3>
+        <p className={styles.idleText}>{t(dict, 'gate.readyHint')}</p>
       </div>
     );
   }
 
-  // 2. Resolving state
+  // 2. Resolving
   if (gateState === 'resolving') {
     return (
-      <div className={styles.emptyCard} data-testid="admission-resolving-card" role="status" aria-live="polite">
-        <div className={styles.emptyIcon}>
-          <Icon name="refresh" size="xl" />
-        </div>
-        <h3 className={styles.emptyTitle}>{t(dict, 'common.loading')}</h3>
-        <p className={styles.emptyText}>{t(dict, 'gate.cameraStarting')}</p>
+      <div className={`${styles.panel} ${styles.idle}`} data-testid="admission-resolving-card" role="status" aria-live="polite">
+        <span className={styles.bigSpinner} aria-hidden="true" />
+        <h3 className={styles.idleTitle}>{t(dict, 'gate.checkingInvitation')}</h3>
       </div>
     );
   }
+
+  const scanNext = (variant = 'outline') => (
+    <Button type="button" variant={variant} size="lg" fullWidth onClick={onReset} data-testid="scan-next-btn" leadingIcon="scan">
+      {t(dict, 'gate.scanNext')}
+    </Button>
+  );
 
   // 3. Invalid invitation (zero guest details leaked)
   if (gateState === 'invalid_invitation') {
     return (
-      <div
-        className={`${styles.resultCard} ${styles.resultError}`}
-        data-testid="invalid-invitation-card"
+      <ResultPanel
+        tone="danger"
+        icon="x-circle"
+        title={t(dict, 'gate.invalidInvitationTitle')}
+        message={t(dict, 'gate.invalidInvitationMessage')}
+        testId="invalid-invitation-card"
         role="alert"
-      >
-        <h3 className={styles.resultTitle}>
-          <Icon name="warning" size="md" />
-          <span>{t(dict, 'gate.invalidInvitationTitle')}</span>
-        </h3>
-        <p className={styles.resultDetails}>
-          {t(dict, 'gate.invalidInvitationMessage')}
-        </p>
-        <div className={styles.actionsRow}>
-          <Button
-            type="button"
-            variant="outline"
-            size="md"
-            onClick={onReset}
-            data-testid="scan-next-btn"
-          >
-            {t(dict, 'gate.scanNext')}
-          </Button>
-        </div>
-      </div>
+        actions={scanNext('primary')}
+      />
     );
   }
 
-  // 4. Closed / Draft Event (distinct wording per product §6)
+  // 4. Closed / Draft event
   if (gateState === 'closed_event' || gateState === 'draft_event') {
     const isDraft = gateState === 'draft_event';
     return (
-      <div
-        className={`${styles.resultCard} ${styles.resultWarning}`}
-        data-testid="closed-event-card"
-        role="status"
-        aria-live="polite"
-      >
-        <h3 className={styles.resultTitle}>
-          <Icon name="warning" size="md" />
-          <span>{isDraft ? t(dict, 'gate.eventDraftTitle') : t(dict, 'gate.eventClosedTitle')}</span>
-        </h3>
-        <p className={styles.resultDetails}>
-          {isDraft ? t(dict, 'gate.eventDraftMessage') : t(dict, 'gate.eventClosedMessage')}
-        </p>
-        <div className={styles.actionsRow}>
-          <Button
-            type="button"
-            variant="outline"
-            size="md"
-            onClick={onReset}
-            data-testid="scan-next-btn"
-          >
-            {t(dict, 'gate.scanNext')}
-          </Button>
-        </div>
-      </div>
+      <ResultPanel
+        tone="warning"
+        icon={isDraft ? 'clock' : 'lock'}
+        title={isDraft ? t(dict, 'gate.eventDraftTitle') : t(dict, 'gate.eventClosedTitle')}
+        message={isDraft ? t(dict, 'gate.eventDraftMessage') : t(dict, 'gate.eventClosedMessage')}
+        testId="closed-event-card"
+        actions={scanNext()}
+      />
     );
   }
 
-  // 5. Lost response state (connection lost during submit)
+  // 5. Lost response (connection lost during submit)
   if (gateState === 'lost_response') {
     return (
-      <div
-        className={`${styles.resultCard} ${styles.resultWarning}`}
-        data-testid="lost-response-card"
+      <ResultPanel
+        tone="warning"
+        icon="wifi-off"
+        title={t(dict, 'gate.lostResponseTitle')}
+        message={t(dict, 'gate.lostResponseMessage')}
+        testId="lost-response-card"
         role="alert"
+        actions={
+          <>
+            <Button type="button" variant="primary" size="lg" onClick={onRetryAdmission} data-testid="retry-admission-btn" leadingIcon="refresh">
+              {t(dict, 'gate.retryAdmission')}
+            </Button>
+            <Button type="button" variant="outline" size="lg" onClick={onVerifyStatus} data-testid="verify-status-btn" leadingIcon="shield-check">
+              {t(dict, 'gate.verifyStatus')}
+            </Button>
+          </>
+        }
       >
-        <h3 className={styles.resultTitle}>
-          <Icon name="warning" size="md" />
-          <span>{t(dict, 'gate.lostResponseTitle')}</span>
-        </h3>
-        <p className={styles.resultDetails}>
-          {t(dict, 'gate.lostResponseMessage')}
-        </p>
-        <div className={styles.actionsRow}>
-          <Button
-            type="button"
-            variant="primary"
-            size="md"
-            onClick={onRetryAdmission}
-            data-testid="retry-admission-btn"
-          >
-            {t(dict, 'gate.retryAdmission')}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="md"
-            onClick={onVerifyStatus}
-            data-testid="verify-status-btn"
-          >
-            {t(dict, 'gate.verifyStatus')}
-          </Button>
-
-        </div>
-      </div>
+        {currentGuest && <GuestIdentity guest={currentGuest} isVip={isVip} />}
+      </ResultPanel>
     );
   }
 
   // 6. Network failure before submit
   if (gateState === 'network_failure') {
     return (
-      <div
-        className={`${styles.resultCard} ${styles.resultError}`}
-        data-testid="network-error-card"
+      <ResultPanel
+        tone="danger"
+        icon="wifi-off"
+        title={t(dict, 'gate.networkErrorTitle')}
+        message={t(dict, 'gate.networkErrorMessage')}
+        testId="network-error-card"
         role="alert"
-      >
-        <h3 className={styles.resultTitle}>
-          <Icon name="wifi-off" size="md" />
-          <span>{t(dict, 'gate.networkErrorTitle')}</span>
-        </h3>
-        <p className={styles.resultDetails}>
-          {t(dict, 'gate.networkErrorMessage')}
-        </p>
-        <div className={styles.actionsRow}>
-          <Button
-            type="button"
-            variant="outline"
-            size="md"
-            onClick={onReset}
-            data-testid="scan-next-btn"
-          >
+        actions={
+          <Button type="button" variant="outline" size="lg" fullWidth onClick={onReset} data-testid="scan-next-btn" leadingIcon="refresh">
             {t(dict, 'common.retry')}
           </Button>
-        </div>
-      </div>
+        }
+      />
     );
   }
 
-  // 7. Session expired state (no reload — preserves retry intent, stops camera via parent)
+  // 7. Session expired
   if (gateState === 'session_expired') {
     return (
-      <div
-        className={`${styles.resultCard} ${styles.resultError}`}
-        data-testid="session-expired-card"
+      <ResultPanel
+        tone="danger"
+        icon="lock"
+        title={t(dict, 'gate.sessionExpiredTitle')}
+        message={t(dict, 'gate.sessionExpiredMessage')}
+        testId="session-expired-card"
         role="alert"
-      >
-        <h3 className={styles.resultTitle}>
-          <Icon name="lock" size="md" />
-          <span>{t(dict, 'gate.sessionExpiredTitle')}</span>
-        </h3>
-        <p className={styles.resultDetails}>
-          {t(dict, 'gate.sessionExpiredMessage')}
-        </p>
-        <div className={styles.actionsRow}>
+        actions={
           <Button
             type="button"
             variant="primary"
-            size="md"
+            size="lg"
+            fullWidth
             onClick={() => { window.location.href = `/${lang}/login`; }}
             data-testid="session-login-btn"
           >
             {t(dict, 'auth.loginButton')}
           </Button>
-        </div>
-      </div>
+        }
+      />
     );
   }
 
-  // 8. Already admitted state (no second confirm allowed)
+  // 8. Already admitted (no second admission allowed)
   if (gateState === 'already_admitted' && currentGuest?.checkIn) {
     const checkIn = currentGuest.checkIn || {};
-    const formattedTime = checkIn.checkedInAt
-      ? formatRiyadhDate(checkIn.checkedInAt, lang)
-      : checkIn.admittedAt
-      ? formatRiyadhDate(checkIn.admittedAt, lang)
-      : '';
+    const time = checkIn.checkedInAt || checkIn.admittedAt;
+    const formattedTime = time ? formatRiyadhDate(time, lang) : '';
     const operator = checkIn.operatorName || checkIn.operatorUsername || '—';
     const partySize = checkIn.actualPartySize || (1 + (checkIn.actualCompanions || 0));
 
     return (
-      <div
-        className={`${styles.resultCard} ${styles.resultWarning}`}
-        data-testid="already-admitted-card"
-        role="status"
-        aria-live="polite"
+      <ResultPanel
+        tone="warning"
+        icon="alert-triangle"
+        title={t(dict, 'gate.alreadyAdmittedTitle')}
+        message={t(dict, 'gate.alreadyAdmittedDetails', { time: formattedTime, operator, count: partySize })}
+        testId="already-admitted-card"
+        actions={scanNext('primary')}
       >
-        <h3 className={styles.resultTitle}>
-          <Icon name="warning" size="md" />
-          <span>{t(dict, 'gate.alreadyAdmittedTitle')}</span>
-        </h3>
-        <div className={styles.guestHeading}>
-          <span className={styles.guestName} data-testid="guest-preview-name" dir="auto">
-            {currentGuest.name}
-          </span>
-          <div className={styles.metaRow}>
-            <bdi className={styles.shortCode} data-testid="guest-preview-shortcode">
-              {currentGuest.shortCode}
-            </bdi>
-            {isVip && (
-              <span className={styles.vipBadge}>
-                <Icon name="vip" size="xs" /> VIP
-              </span>
-            )}
-            {currentGuest.reference && <span>{currentGuest.reference}</span>}
-          </div>
-        </div>
-        <p className={styles.resultDetails}>
-          {t(dict, 'gate.alreadyAdmittedDetails', {
-            time: formattedTime,
-            operator,
-            count: partySize,
-          })}
-        </p>
-        <div className={styles.actionsRow}>
-          <Button
-            type="button"
-            variant="primary"
-            size="md"
-            onClick={onReset}
-            data-testid="scan-next-btn"
-          >
-            {t(dict, 'gate.scanNext')}
-          </Button>
-        </div>
-      </div>
+        <GuestIdentity guest={currentGuest} isVip={isVip} />
+        <DetailList
+          items={[
+            { icon: 'users', label: t(dict, 'guests.actualParty'), value: partySize },
+            formattedTime && { icon: 'clock', label: t(dict, 'guests.arrival'), value: <bdi>{formattedTime}</bdi> },
+            { icon: 'user', label: t(dict, 'nav.currentStaff'), value: <bdi>{operator}</bdi> },
+          ]}
+        />
+      </ResultPanel>
     );
   }
 
-  // 9. Confirmed admitted state (server success)
+  // 9. Confirmed admitted (server success)
   if (gateState === 'admitted' && currentGuest?.checkIn) {
     const checkIn = currentGuest.checkIn || {};
-    const formattedTime = checkIn.checkedInAt
-      ? formatRiyadhDate(checkIn.checkedInAt, lang)
-      : checkIn.admittedAt
-      ? formatRiyadhDate(checkIn.admittedAt, lang)
-      : '';
+    const time = checkIn.checkedInAt || checkIn.admittedAt;
+    const formattedTime = time ? formatRiyadhDate(time, lang) : '';
     const operator = checkIn.operatorName || checkIn.operatorUsername || '';
     const partySize = checkIn.actualPartySize || derivedPartySize;
 
     return (
-      <div
-        className={`${styles.resultCard} ${styles.resultSuccess}`}
-        data-testid="admitted-success-card"
-        role="status"
-        aria-live="polite"
+      <ResultPanel
+        tone="success"
+        icon="check-circle"
+        title={t(dict, 'gate.successAdmittedTitle')}
+        message={t(dict, 'gate.successPartyCount', { count: partySize })}
+        testId="admitted-success-card"
+        actions={scanNext('primary')}
       >
-        <h3 className={styles.resultTitle}>
-          <Icon name="check-circle" size="md" />
-          <span>{t(dict, 'gate.successAdmittedTitle')}</span>
-        </h3>
-        <div className={styles.guestHeading}>
-          <span className={styles.guestName} data-testid="guest-preview-name" dir="auto">
-            {currentGuest.name}
-          </span>
-          <div className={styles.metaRow}>
-            <bdi className={styles.shortCode} data-testid="guest-preview-shortcode">
-              {currentGuest.shortCode}
-            </bdi>
-            {isVip && (
-              <span className={styles.vipBadge}>
-                <Icon name="vip" size="xs" /> VIP
-              </span>
-            )}
-            {currentGuest.reference && <span>{currentGuest.reference}</span>}
-          </div>
-        </div>
-        <div className={styles.detailsGrid}>
-          <div className={styles.detailItem}>
-            <span className={styles.detailLabel}>
-              {t(dict, 'gate.successPartyCount', { count: partySize })}
-            </span>
-            <span className={styles.detailValue}>{partySize}</span>
-          </div>
-          {formattedTime && (
-            <div className={styles.detailItem}>
-              <span className={styles.detailLabel}>{t(dict, 'guests.arrival')}</span>
-              <span className={styles.detailValue} style={{ fontSize: '14px' }}>
-                {formattedTime}
-              </span>
-            </div>
-          )}
-          {operator && (
-            <div className={styles.detailItem} style={{ gridColumn: 'span 2' }}>
-              <span className={styles.detailLabel}>
-                {t(dict, 'gate.successOperator', { operator })}
-              </span>
-            </div>
-          )}
-        </div>
-        <div className={styles.actionsRow}>
-          <Button
-            type="button"
-            variant="primary"
-            size="lg"
-            onClick={onReset}
-            data-testid="scan-next-btn"
-          >
-            {t(dict, 'gate.scanNext')}
-          </Button>
-        </div>
-      </div>
+        <GuestIdentity guest={currentGuest} isVip={isVip} size="lg" />
+        <DetailList
+          items={[
+            { icon: 'users', label: t(dict, 'gate.enteringNow'), value: partySize },
+            formattedTime && { icon: 'clock', label: t(dict, 'guests.arrival'), value: <bdi>{formattedTime}</bdi> },
+            operator && { icon: 'user', label: t(dict, 'nav.currentStaff'), value: <bdi>{operator}</bdi> },
+          ]}
+        />
+      </ResultPanel>
     );
   }
 
-  // 10. Ready or Submitting state
+  // 10. Ready or submitting
   if (!currentGuest) return null;
 
   const isSubmitting = gateState === 'submitting';
   const maxCompanions = currentGuest.allowedCompanions || 0;
 
   return (
-    <div className={styles.card} data-testid="admission-card" role="status" aria-live="polite">
-      <div className={styles.cardHeader}>
-        <div className={styles.guestHeading}>
-          <h3 className={styles.guestName} data-testid="guest-preview-name" dir="auto">
-            {currentGuest.name}
-          </h3>
-          <div className={styles.metaRow}>
-            <bdi className={styles.shortCode} data-testid="guest-preview-shortcode">
-              {currentGuest.shortCode}
-            </bdi>
-            {isVip && (
-              <span className={styles.vipBadge}>
-                <Icon name="vip" size="xs" /> VIP
-              </span>
-            )}
-            {currentGuest.reference && <span>{currentGuest.reference}</span>}
-          </div>
-        </div>
-        <StatusBadge
-          status="pending"
-          label={t(dict, 'gate.pendingBadge')}
-          size="md"
-        />
+    <div className={`${styles.panel} ${styles.ready}`} data-testid="admission-card" role="status" aria-live="polite">
+      <div className={styles.readyHeader}>
+        <StatusBadge status="pending" label={t(dict, 'gate.pendingBadge')} size="md" />
       </div>
 
-      {/* Allowance details */}
-      <div className={styles.detailsGrid}>
-        <div className={styles.detailItem}>
-          <span className={styles.detailLabel}>
-            {t(dict, 'gate.allowedCompanions')}
-          </span>
-          <span className={styles.detailValue}>
-            {currentGuest.allowedCompanions}
-          </span>
+      <GuestIdentity guest={currentGuest} isVip={isVip} size="lg" />
+
+      <div className={styles.allowanceGrid}>
+        <div className={styles.allowanceItem}>
+          <span className={styles.allowanceLabel}>{t(dict, 'gate.allowedCompanions')}</span>
+          <span className={styles.allowanceValue}>{currentGuest.allowedCompanions}</span>
         </div>
-        <div className={styles.detailItem}>
-          <span className={styles.detailLabel}>
-            {t(dict, 'gate.totalAllowed')}
-          </span>
-          <span className={styles.detailValue} data-testid="guest-preview-total-allowed">
+        <div className={styles.allowanceItem}>
+          <span className={styles.allowanceLabel}>{t(dict, 'gate.totalAllowed')}</span>
+          <span className={styles.allowanceValue} data-testid="guest-preview-total-allowed">
             {currentGuest.totalAllowed}
           </span>
         </div>
       </div>
 
-      {/* Reference companion names if present */}
       {currentGuest.companionNames && currentGuest.companionNames.length > 0 && (
         <div className={styles.companionNamesSection}>
-          <span className={styles.companionNamesLabel}>
-            {t(dict, 'gate.companionNames')}:
-          </span>
+          <span className={styles.sectionLabel}>{t(dict, 'gate.companionNames')}</span>
           <div className={styles.companionNamesList}>
             {currentGuest.companionNames.map((cName, idx) => (
-              <span key={idx} className={styles.companionNameTag}>
+              <span key={idx} className={styles.companionNameTag} dir="auto">
                 {cName}
               </span>
             ))}
           </div>
-          <span className={styles.companionNamesNotice}>
-            {t(dict, 'gate.companionNamesNotice')}
-          </span>
+          <span className={styles.companionNamesNotice}>{t(dict, 'gate.companionNamesNotice')}</span>
         </div>
       )}
 
-      {/* Stepper for actual companions present */}
       <div className={styles.stepperSection}>
-        <div className={styles.stepperHeader}>
-          <span className={styles.stepperLabel}>
-            {t(dict, 'gate.companionCountLabel')}
-          </span>
-          <span className={styles.stepperLimit}>
-            (0 .. {maxCompanions})
+        <div className={styles.stepperText}>
+          <span className={styles.sectionLabel}>{t(dict, 'gate.companionCountLabel')}</span>
+          <span className={styles.helperText}>
+            {derivedPartySize === 1
+              ? t(dict, 'gate.includingGuestSingle')
+              : t(dict, 'gate.includingGuestHelper', { count: derivedPartySize })}
           </span>
         </div>
         <div
@@ -460,13 +355,9 @@ export function AdmissionCard({
             data-testid="companions-stepper-decrement"
             aria-label={t(dict, 'gate.decreaseCompanions')}
           >
-            -
+            <Icon name="minus" size="md" />
           </button>
-          <span
-            className={styles.stepperValue}
-            data-testid="companions-stepper-value"
-            aria-live="polite"
-          >
+          <span className={`${styles.stepperValue} tabular`} data-testid="companions-stepper-value" aria-live="polite">
             {actualCompanions}
           </span>
           <button
@@ -477,27 +368,22 @@ export function AdmissionCard({
             data-testid="companions-stepper-increment"
             aria-label={t(dict, 'gate.increaseCompanions')}
           >
-            +
+            <Icon name="plus" size="md" />
           </button>
         </div>
-        <p className={styles.helperText}>
-          {derivedPartySize === 1
-            ? t(dict, 'gate.includingGuestSingle')
-            : t(dict, 'gate.includingGuestHelper', { count: derivedPartySize })}
-        </p>
       </div>
 
-      {/* Actions */}
-      <div className={styles.actionsRow}>
+      <div className={styles.readyActions}>
         <Button
           type="button"
-          variant="primary"
+          variant="success"
           size="lg"
           onClick={onAdmit}
           disabled={isSubmitting}
           loading={isSubmitting}
           data-testid="admit-guest-btn"
-          style={{ flex: 1, minHeight: '48px' }}
+          leadingIcon="user-check"
+          className={styles.admitButton}
         >
           {derivedPartySize === 1
             ? t(dict, 'gate.admitSingleButton')
@@ -505,12 +391,11 @@ export function AdmissionCard({
         </Button>
         <Button
           type="button"
-          variant="outline"
+          variant="ghost"
           size="lg"
           onClick={onReset}
           disabled={isSubmitting}
           data-testid="cancel-admission-btn"
-          style={{ minHeight: '48px' }}
         >
           {t(dict, 'common.cancel')}
         </Button>

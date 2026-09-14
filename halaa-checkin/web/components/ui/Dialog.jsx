@@ -5,15 +5,33 @@ import { createPortal } from 'react-dom';
 import { Icon } from './Icon.jsx';
 import styles from './Dialog.module.css';
 
+const FOCUSABLE =
+  'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+function isVisible(el) {
+  if (!el) return false;
+  const style = window.getComputedStyle(el);
+  if (style.visibility === 'hidden' || style.display === 'none') return false;
+  if (el.offsetParent === null && el.tagName !== 'BODY') {
+    const rect = el.getBoundingClientRect();
+    if (rect.width === 0 && rect.height === 0) return false;
+  }
+  return true;
+}
+
 /**
  * Accessible modal dialog with focus trap, escape listener, scroll lock, and focus restoration.
- * Supports size variants ('sm', 'md', 'lg'), sticky header/footer,
- * destructive mode, and responsive mobile sheet variant.
+ * Supports size variants ('sm', 'md', 'lg'), an optional header icon + description,
+ * tone ('default' | 'danger' | 'warning' | 'success'), sticky footer, and a mobile sheet.
+ * Initial focus goes to `initialFocusRef`, else the first control in the body.
  */
 export function Dialog({
   isOpen,
   onClose,
   title,
+  description = null,
+  icon = null,
+  tone = 'default',
   children,
   footer = null,
   closeAriaLabel = 'Close dialog',
@@ -22,14 +40,20 @@ export function Dialog({
   destructive = false,
   sheetOnMobile = true,
   closeOnBackdropClick = true,
+  initialFocusRef = null,
 }) {
   const modalRef = useRef(null);
+  const bodyRef = useRef(null);
   const previousFocusRef = useRef(null);
+  const pointerDownOnBackdrop = useRef(false);
   const onCloseRef = useRef(onClose);
   useEffect(() => {
     onCloseRef.current = onClose;
   }, [onClose]);
   const titleIdRef = useRef(`dialog-title-${Math.random().toString(36).slice(2, 8)}`);
+  const descIdRef = useRef(`dialog-desc-${Math.random().toString(36).slice(2, 8)}`);
+  const initialFocusTargetRef = useRef(initialFocusRef);
+  initialFocusTargetRef.current = initialFocusRef;
   const [portalTarget, setPortalTarget] = useState(null);
 
   useEffect(() => {
@@ -51,30 +75,19 @@ export function Dialog({
       appRoot?.setAttribute('aria-hidden', 'true');
     }
 
-    const focusableSelectors =
-      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
-    const isVisible = (el) => {
-      if (!el) return false;
-      const style = window.getComputedStyle(el);
-      if (style.visibility === 'hidden' || style.display === 'none') return false;
-      if (el.offsetParent === null && el.tagName !== 'BODY') {
-        const rect = el.getBoundingClientRect();
-        if (rect.width === 0 && rect.height === 0) return false;
-      }
-      return true;
-    };
     const timer = setTimeout(() => {
-      if (modalRef.current) {
-        const candidates = Array.from(modalRef.current.querySelectorAll(focusableSelectors)).filter(
-          isVisible
-        );
-        const firstFocusable = candidates[0];
-        if (firstFocusable) {
-          firstFocusable.focus();
-        } else {
-          modalRef.current.focus();
-        }
+      const modal = modalRef.current;
+      if (!modal) return;
+      const preferred = initialFocusTargetRef.current?.current;
+      if (preferred && isVisible(preferred) && !preferred.disabled) {
+        preferred.focus();
+        return;
       }
+      const inBody = Array.from(bodyRef.current?.querySelectorAll(FOCUSABLE) || []).filter(isVisible);
+      const anywhere = Array.from(modal.querySelectorAll(FOCUSABLE)).filter(isVisible);
+      const target = inBody[0] || anywhere[anywhere.length - 1];
+      if (target) target.focus();
+      else modal.focus();
     }, 50);
 
     const handleKeyDown = (e) => {
@@ -85,24 +98,18 @@ export function Dialog({
       }
 
       if (e.key === 'Tab' && modalRef.current) {
-        const focusables = Array.from(
-          modalRef.current.querySelectorAll(focusableSelectors)
-        ).filter(isVisible);
+        const focusables = Array.from(modalRef.current.querySelectorAll(FOCUSABLE)).filter(isVisible);
         if (focusables.length === 0) return;
 
         const first = focusables[0];
         const last = focusables[focusables.length - 1];
 
-        if (e.shiftKey) {
-          if (document.activeElement === first) {
-            e.preventDefault();
-            last.focus();
-          }
-        } else {
-          if (document.activeElement === last) {
-            e.preventDefault();
-            first.focus();
-          }
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
         }
       }
     };
@@ -135,38 +142,49 @@ export function Dialog({
 
   const sizeClass =
     size === 'sm' ? styles.sizeSm : size === 'lg' ? styles.sizeLg : styles.sizeMd;
+  const resolvedTone = destructive ? 'danger' : tone;
+  const toneClass = styles[`tone_${resolvedTone}`] || '';
 
   return createPortal(
     <div
-      className={[
-        styles.backdrop,
-        sheetOnMobile ? styles.sheetOnMobile : '',
-      ]
-        .filter(Boolean)
-        .join(' ')}
-      onClick={closeOnBackdropClick ? onClose : undefined}
+      className={[styles.backdrop, sheetOnMobile ? styles.sheetOnMobile : ''].filter(Boolean).join(' ')}
+      onMouseDown={(e) => {
+        pointerDownOnBackdrop.current = e.target === e.currentTarget;
+      }}
+      onClick={(e) => {
+        if (closeOnBackdropClick && pointerDownOnBackdrop.current && e.target === e.currentTarget) {
+          onClose?.();
+        }
+        pointerDownOnBackdrop.current = false;
+      }}
       role="presentation"
     >
       <div
         ref={modalRef}
-        className={[
-          styles.modal,
-          sizeClass,
-          destructive ? styles.destructive : '',
-        ]
-          .filter(Boolean)
-          .join(' ')}
+        className={[styles.modal, sizeClass, toneClass].filter(Boolean).join(' ')}
         style={maxWidth ? { maxWidth } : undefined}
-        role="dialog"
+        role={resolvedTone === 'danger' ? 'alertdialog' : 'dialog'}
         aria-modal="true"
         aria-labelledby={titleIdRef.current}
+        aria-describedby={description ? descIdRef.current : undefined}
         tabIndex={-1}
-        onClick={(e) => e.stopPropagation()}
       >
         <div className={styles.header}>
-          <h2 id={titleIdRef.current} className={styles.title}>
-            {title}
-          </h2>
+          {icon && (
+            <span className={styles.headerIcon} aria-hidden="true">
+              {typeof icon === 'string' ? <Icon name={icon} size="md" /> : icon}
+            </span>
+          )}
+          <div className={styles.headerText}>
+            <h2 id={titleIdRef.current} className={styles.title}>
+              {title}
+            </h2>
+            {description && (
+              <p id={descIdRef.current} className={styles.description}>
+                {description}
+              </p>
+            )}
+          </div>
           <button
             type="button"
             className={styles.closeButton}
@@ -177,7 +195,7 @@ export function Dialog({
           </button>
         </div>
 
-        <div className={styles.body}>{children}</div>
+        <div ref={bodyRef} className={styles.body}>{children}</div>
 
         {footer && <div className={styles.footer}>{footer}</div>}
       </div>

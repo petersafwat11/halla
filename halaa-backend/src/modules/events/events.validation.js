@@ -90,35 +90,40 @@ const guestRepliesInputSchema = z
   })
   .passthrough();
 
-const createEventSchema = z
-  .object({
-    eventDetails: createEventDetailsSchema,
-    guestList: z.array(guestEntry).optional().default([]),
-    staffList: z.array(staffEntry).optional().default([]),
-    visualTemplate: visualTemplateInputSchema.optional().nullable(),
-    taqnyatTemplate: taqnyatTemplateInputSchema.optional().nullable(),
-    guestReplies: guestRepliesInputSchema.optional().nullable(),
-    invitationType: invitationTypeSchema.optional(),
-    launchSettings: z.object({}).passthrough().optional(),
-    // Boundary aliases
-    taqnyatTemplateRef: objectId.optional().nullable(),
-    selectedTemplate: z.any().optional(),
-  })
-  .transform((data) => {
-    const result = { ...data };
-    if (result.taqnyatTemplateRef && !result.taqnyatTemplate) {
-      result.taqnyatTemplate = { templateRef: String(result.taqnyatTemplateRef) };
-    } else if (result.selectedTemplate && !result.taqnyatTemplate) {
-      const ref =
-        result.selectedTemplate?.templateRef ||
-        result.selectedTemplate?._id ||
-        result.selectedTemplate?.id;
-      if (ref) {
-        result.taqnyatTemplate = { templateRef: String(ref) };
-      }
+// Shared by the host create route and the admin create-for-host route.
+const createEventFields = {
+  eventDetails: createEventDetailsSchema,
+  guestList: z.array(guestEntry).optional().default([]),
+  staffList: z.array(staffEntry).optional().default([]),
+  visualTemplate: visualTemplateInputSchema.optional().nullable(),
+  taqnyatTemplate: taqnyatTemplateInputSchema.optional().nullable(),
+  guestReplies: guestRepliesInputSchema.optional().nullable(),
+  invitationType: invitationTypeSchema.optional(),
+  launchSettings: z.object({}).passthrough().optional(),
+  // Boundary aliases
+  taqnyatTemplateRef: objectId.optional().nullable(),
+  selectedTemplate: z.any().optional(),
+};
+
+const applyTaqnyatTemplateAliases = (data) => {
+  const result = { ...data };
+  if (result.taqnyatTemplateRef && !result.taqnyatTemplate) {
+    result.taqnyatTemplate = { templateRef: String(result.taqnyatTemplateRef) };
+  } else if (result.selectedTemplate && !result.taqnyatTemplate) {
+    const ref =
+      result.selectedTemplate?.templateRef ||
+      result.selectedTemplate?._id ||
+      result.selectedTemplate?.id;
+    if (ref) {
+      result.taqnyatTemplate = { templateRef: String(ref) };
     }
-    return result;
-  });
+  }
+  return result;
+};
+
+const createEventSchema = z
+  .object(createEventFields)
+  .transform(applyTaqnyatTemplateAliases);
 
 const updateEventDetailsSchema = z.object({
   title: z.string().trim().min(1).max(200).optional(),
@@ -281,6 +286,8 @@ const sendNewGuestsSchema = z.object({
 }).passthrough();
 
 module.exports = {
+  createEventFields,
+  applyTaqnyatTemplateAliases,
   createEventSchema,
   updateEventDetailsSchema,
   updateGuestListSchema,

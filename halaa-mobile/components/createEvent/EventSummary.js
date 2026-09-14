@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
   Linking,
   Image,
+  useWindowDimensions,
 } from "react-native";
 import { useFormContext } from "react-hook-form";
 import { Ionicons } from "@expo/vector-icons";
@@ -214,10 +215,89 @@ const EventSummary = ({ owner } = {}) => {
     if (mapLink) Linking.openURL(mapLink).catch(() => {});
   };
 
+  // Phones stack the invitation above its details; tablets/landscape keep
+  // them side by side (web stacks below 800 CSS px).
+  const { width: windowWidth } = useWindowDimensions();
+  const isStackedOverview = windowWidth < 600;
+
+  const eventDetailsPanel = (
+    <View style={[styles.detailsSection, styles.overviewDetails]}>
+      <LocalizedText role="label" style={styles.detailsHeader}>
+        {t("event_details")}
+      </LocalizedText>
+      <View style={styles.detailsContent}>
+        {!!eventName && (
+          <AdaptiveText style={styles.eventTitle}>{eventName}</AdaptiveText>
+        )}
+        {!!resolvedInvitation && (
+          <AdaptiveText style={styles.invitationText}>
+            {resolvedInvitation}
+          </AdaptiveText>
+        )}
+
+        <View style={styles.eventDetails}>
+          <DetailRow icon={<RowPeopleIcon />}>
+            <Text style={styles.detailValue}>
+              {t("invitees_count", {
+                count: formatCount(guestList.length, currentLanguage || "ar"),
+              })}
+            </Text>
+          </DetailRow>
+
+          {!!dateTime && (
+            <DetailRow icon={<RowCalendarIcon />}>
+              <Text style={styles.detailValue}>{dateTime}</Text>
+            </DetailRow>
+          )}
+
+          {!!mapLink && (
+            <DetailRow icon={<RowMapIcon />}>
+              <TouchableOpacity onPress={openMap} activeOpacity={0.7}>
+                <Text style={[styles.detailValue, styles.linkValue]}>
+                  {t("view_on_map")}
+                </Text>
+              </TouchableOpacity>
+            </DetailRow>
+          )}
+
+          {!!address?.address && (
+            <DetailRow icon={<RowLocationIcon />}>
+              <AdaptiveText style={styles.detailValue}>
+                {address.address}
+              </AdaptiveText>
+            </DetailRow>
+          )}
+        </View>
+      </View>
+    </View>
+  );
+
   return (
     <ScrollView showsVerticalScrollIndicator={false}>
       <Animated.View style={{ opacity: fadeAnim }}>
-        {!!visualUri && <Image source={{ uri: visualUri }} resizeMode="contain" style={{ width: "100%", height: 360 }} accessibilityLabel={t("invitation_visual")} />}
+        <View
+          style={[
+            styles.invitationOverview,
+            isStackedOverview && styles.invitationOverviewStacked,
+          ]}
+        >
+          {!!visualUri && (
+            <View
+              style={[
+                styles.invitationImageFrame,
+                isStackedOverview && styles.invitationImageFrameStacked,
+              ]}
+            >
+              <Image
+                source={{ uri: visualUri }}
+                resizeMode="contain"
+                style={styles.invitationImage}
+                accessibilityLabel={t("invitation_visual")}
+              />
+            </View>
+          )}
+          {eventDetailsPanel}
+        </View>
         {/* Stat cards row — mirrors web SummaryCards */}
         <View style={styles.statsCards}>
           <StatCard
@@ -240,62 +320,6 @@ const EventSummary = ({ owner } = {}) => {
             value={eventTypeLabel || "—"}
             label={t("event_type")}
           />
-        </View>
-
-        {/* Event details panel — mirrors web EventDataDisplay */}
-        <View style={styles.detailsSection}>
-          <LocalizedText role="label" style={styles.detailsHeader}>
-            {t("event_details")}
-          </LocalizedText>
-          <View style={styles.detailsContent}>
-            {/* Event name / invitation body / address are arbitrary user or
-                backend content — adaptive first-strong rendering. */}
-            {!!eventName && (
-              <AdaptiveText style={styles.eventTitle}>{eventName}</AdaptiveText>
-            )}
-            {!!resolvedInvitation && (
-              <AdaptiveText style={styles.invitationText}>
-                {resolvedInvitation}
-              </AdaptiveText>
-            )}
-
-            <View style={styles.eventDetails}>
-              <DetailRow icon={<RowPeopleIcon />}>
-                {/* Count + label live in one authored interpolation string so
-                    digit order/punctuation is per locale, never concatenated
-                    in JSX (blueprint §6). */}
-                <Text style={styles.detailValue}>
-                  {t("invitees_count", {
-                    count: formatCount(guestList.length, currentLanguage || "ar"),
-                  })}
-                </Text>
-              </DetailRow>
-
-              {!!dateTime && (
-                <DetailRow icon={<RowCalendarIcon />}>
-                  <Text style={styles.detailValue}>{dateTime}</Text>
-                </DetailRow>
-              )}
-
-              {!!mapLink && (
-                <DetailRow icon={<RowMapIcon />}>
-                  <TouchableOpacity onPress={openMap} activeOpacity={0.7}>
-                    <Text style={[styles.detailValue, styles.linkValue]}>
-                      {t("view_on_map")}
-                    </Text>
-                  </TouchableOpacity>
-                </DetailRow>
-              )}
-
-              {!!address?.address && (
-                <DetailRow icon={<RowLocationIcon />}>
-                  <AdaptiveText style={styles.detailValue}>
-                    {address.address}
-                  </AdaptiveText>
-                </DetailRow>
-              )}
-            </View>
-          </View>
         </View>
 
         <View style={styles.detailsSection}>
@@ -337,6 +361,38 @@ const EventSummary = ({ owner } = {}) => {
 
 const styles = StyleSheet.create({
   disclosure: { minHeight: 44, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12, paddingVertical: 8, borderTopWidth: 1, borderTopColor: "#F5ECE4" },
+  invitationOverview: {
+    flexDirection: "row",
+    alignItems: "stretch",
+    gap: 12,
+    marginBottom: 16,
+  },
+  invitationImageFrame: {
+    width: "38%",
+    minHeight: 250,
+    padding: 6,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#EAD9C8",
+    backgroundColor: "#FFF",
+  },
+  invitationOverviewStacked: {
+    flexDirection: "column",
+  },
+  invitationImageFrameStacked: {
+    width: "100%",
+    minHeight: 0,
+    height: 340,
+  },
+  invitationImage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 8,
+  },
+  overviewDetails: {
+    flex: 1,
+    marginBottom: 0,
+  },
   statsCards: {
     flexDirection: "row",
     flexWrap: "wrap",

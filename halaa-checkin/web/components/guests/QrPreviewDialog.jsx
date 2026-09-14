@@ -8,12 +8,13 @@ import { Notice } from '../ui/Notice.jsx';
 import { Skeleton } from '../ui/Skeleton.jsx';
 import { Icon } from '../ui/Icon.jsx';
 import { api } from '../../lib/api.js';
-import { getDictionary, t } from '../../lib/locale.js';
+import { getDictionary, t, formatRiyadhDate } from '../../lib/locale.js';
 import styles from './QrPreviewDialog.module.css';
 
 /**
  * QR pass preview modal dialog.
- * Fetches generated internal QR PNG and displays short code and print options.
+ * Fetches the server-generated QR PNG and renders it as a pass preview with
+ * save-image, A6 PDF and print actions.
  */
 export function QrPreviewDialog({
   isOpen,
@@ -66,106 +67,103 @@ export function QrPreviewDialog({
       isOpen={isOpen}
       onClose={onClose}
       title={t(dict, 'qr.previewTitle')}
-      maxWidth="420px"
+      icon="qr"
+      size="sm"
+      maxWidth="460px"
       closeAriaLabel={t(dict, 'dialog.close')}
+      footer={
+        <Button variant="primary" onClick={onClose}>
+          {t(dict, 'qr.close')}
+        </Button>
+      }
     >
       <div className={styles.container}>
         {error && (
-          <Notice
-            variant="error"
-            message={t(dict, `errors.${error.code}`) || error.message}
-          />
+          <Notice variant="error" message={t(dict, `errors.${error.code}`) || error.message} />
         )}
-        {printError && (
-          <Notice variant="info" message={printError} />
-        )}
+        {printError && <Notice variant="info" message={printError} />}
 
-        {guest && (
-          <div className={styles.guestInfo}>
-            <h3 className={styles.guestName} dir="auto">
-              {guest.name}
-            </h3>
-            <div>
-              <bdi className={styles.shortCodeBadge}>
-                {qrData?.shortCode || guest.shortCode}
-              </bdi>
+        <div className={styles.pass}>
+          {event && (
+            <div className={styles.passHeader}>
+              <span className={styles.eventName} dir="auto">{event.name}</span>
+              <span className={styles.eventMeta}>
+                {event.venue && <span dir="auto">{event.venue}</span>}
+                {event.startsAt && <bdi>{formatRiyadhDate(event.startsAt, lang)}</bdi>}
+              </span>
             </div>
-            {/* F25: preview shows event identity/date/allowance for correct pass context. */}
-            {event && (
-              <div style={{ fontSize: '12px', color: 'var(--color-natural-700, #454545)', marginTop: 6 }}>
-                <div dir="auto">{event.name}</div>
-                {event.venue && <div dir="auto">{event.venue}</div>}
+          )}
+
+          <div className={styles.passBody}>
+            <div className={styles.qrWrapper} data-testid="qr-container">
+              {isLoading ? (
+                <Skeleton width="208px" height="208px" borderRadius="12px" />
+              ) : qrData?.imageDataUrl ? (
+                <img
+                  src={qrData.imageDataUrl}
+                  alt={`${t(dict, 'qr.previewTitle')}: ${guest?.name || ''}`}
+                  className={styles.qrImage}
+                  data-testid="qr-image"
+                />
+              ) : (
+                <div className={styles.emptyErrorState}>
+                  <Icon name="alert-triangle" size="lg" />
+                  <p>{t(dict, 'common.networkError')}</p>
+                  <Button variant="outline" size="sm" leadingIcon="refresh" onClick={() => refetch()}>
+                    {t(dict, 'common.retry')}
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            {guest && (
+              <div className={styles.guestInfo}>
+                <h3 className={styles.guestName} dir="auto">{guest.name}</h3>
+                <bdi className={styles.shortCodeBadge}>{qrData?.shortCode || guest.shortCode}</bdi>
                 {guest.allowedCompanions != null && (
-                  <div>{t(dict, 'gate.allowedCompanions')}: {guest.allowedCompanions}</div>
+                  <span className={styles.allowance}>
+                    <Icon name="users" size="sm" />
+                    {t(dict, 'gate.allowedCompanions')}: {guest.allowedCompanions}
+                  </span>
                 )}
               </div>
             )}
           </div>
-        )}
 
-        <div className={styles.qrWrapper} data-testid="qr-container">
-          {isLoading ? (
-            <div className={styles.skeletonWrapper}>
-              <Skeleton width="180px" height="180px" />
-            </div>
-          ) : qrData?.imageDataUrl ? (
-            <img
-              src={qrData.imageDataUrl}
-              alt={`${t(dict, 'qr.previewTitle')}: ${guest?.name || ''}`}
-              className={styles.qrImage}
-              data-testid="qr-image"
-            />
-          ) : (
-            <div className={styles.emptyErrorState}>
-              <Icon name="warning" size="lg" />
-              <p style={{ margin: 0, fontSize: '13px' }}>{t(dict, 'common.networkError')}</p>
-              <Button variant="secondary" size="sm" leadingIcon={<Icon name="refresh" size="xs" />} onClick={() => refetch()}>
-                {t(dict, 'common.retry')}
-              </Button>
-            </div>
-          )}
+          <p className={styles.instruction}>{t(dict, 'qr.scanInstruction')}</p>
         </div>
-
-        <p className={styles.instruction}>{t(dict, 'qr.scanInstruction')}</p>
 
         <div className={styles.actions}>
           <Button
-            variant="secondary"
-            size="sm"
+            variant="outline"
             onClick={handleDownloadImage}
             disabled={!qrData?.imageDataUrl}
-            leadingIcon={<Icon name="download" size="xs" />}
+            leadingIcon="image-down"
             data-testid="download-qr-img-btn"
           >
-            {lang === 'ar' ? 'تحميل صورة الرمز' : 'Save QR Image'}
+            {t(dict, 'qr.saveImage')}
           </Button>
 
           {onExportPdf && (
             <Button
-              variant="secondary"
-              size="sm"
+              variant="outline"
               onClick={() => guest && onExportPdf(guest)}
               disabled={!guest}
-              leadingIcon={<Icon name="file-text" size="xs" />}
+              leadingIcon="file-down"
               data-testid="export-single-pdf-btn"
             >
-              {lang === 'ar' ? 'تحميل PDF (A6)' : 'Download PDF (A6)'}
+              {t(dict, 'qr.downloadPdfA6')}
             </Button>
           )}
 
           <Button
-            variant="secondary"
-            size="sm"
+            variant="outline"
             onClick={handlePrint}
             disabled={!qrData?.imageDataUrl}
-            leadingIcon={<Icon name="printer" size="xs" />}
+            leadingIcon="printer"
             data-testid="print-qr-btn"
           >
             {t(dict, 'qr.print')}
-          </Button>
-
-          <Button variant="primary" size="sm" onClick={onClose}>
-            {t(dict, 'qr.close')}
           </Button>
         </div>
       </div>

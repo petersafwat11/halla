@@ -74,6 +74,6 @@ export default function LastEventActions({
 
 const styles = StyleSheet.create({
   actionButtonsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing[8], width: '100%' },
-  outlineButton: { flexGrow: 1, flexBasis: 150, minHeight: 48, padding: spacing[12], justifyContent: 'center', alignItems: 'center', borderRadius: 12, borderWidth: 1, borderColor: colors.primary[200], backgroundColor: colors.natural[50] },
+  outlineButton: { flexGrow: 1, flexBasis: 132, minHeight: 44, paddingVertical: 9, paddingHorizontal: 14, justifyContent: 'center', alignItems: 'center', borderRadius: 10, borderWidth: 1, borderColor: '#D6B392', backgroundColor: colors.natural[50] },
   outlineButtonText: { fontSize: 14, fontFamily: 'Cairo_600SemiBold', color: colors.primary[800], textAlign: 'center' },
 });

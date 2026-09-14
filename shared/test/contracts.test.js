@@ -465,7 +465,7 @@ test("toInvitationSettingsDTO and invitationSettingsSchema (EVT-02): normalizes 
     visualTemplate: {
       templateRef: "507f1f77bcf86cd799439012",
       fieldValues: { groomName: "Fahad" },
-      bakedImagePath: "https://s3.example.com/invites/baked.jpg",
+      bakedImagePath: "/uploads/invites/baked.jpg",
       isCustomUpload: false,
     },
     attendanceAutoReply: "See you there!",
@@ -480,7 +480,7 @@ test("toInvitationSettingsDTO and invitationSettingsSchema (EVT-02): normalizes 
   assert.equal(dto.visualTemplate.fieldValues.groomName, "Fahad");
   assert.equal(dto.guestReplies.onAttend, "See you there!");
   assert.equal(dto.guestReplies.onAbsent, "We will miss you!");
-  assert.equal(dto.templateImage, "https://s3.example.com/invites/baked.jpg");
+  assert.equal(dto.templateImage, "/uploads/invites/baked.jpg");
 
   // 2. Schema validation
   const schema = invitationSettingsSchema();

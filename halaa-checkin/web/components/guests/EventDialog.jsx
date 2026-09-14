@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useId } from 'react';
 import { Dialog } from '../ui/Dialog.jsx';
 import { Field } from '../ui/Field.jsx';
 import { Button } from '../ui/Button.jsx';
@@ -23,6 +23,7 @@ export function EventDialog({
   lang = 'ar',
 }) {
   const dict = getDictionary(lang);
+  const formId = useId();
 
   const [name, setName] = useState('');
   const [venue, setVenue] = useState('');
@@ -35,9 +36,9 @@ export function EventDialog({
       if (mode === 'edit' && event) {
         setName(event.name || '');
         setVenue(event.venue || '');
-        const { dateStr: d, timeStr: t } = toRiyadhDateInput(event.startsAt);
+        const { dateStr: d, timeStr: tm } = toRiyadhDateInput(event.startsAt);
         setDateStr(d);
-        setTimeStr(t);
+        setTimeStr(tm);
       } else {
         setName('');
         setVenue('');
@@ -104,32 +105,42 @@ export function EventDialog({
     }
   };
 
-  const title = mode === 'create'
-    ? t(dict, 'events.createFirstEvent')
-    : t(dict, 'events.editSettings');
+  const isCreate = mode === 'create';
 
   return (
     <Dialog
       isOpen={isOpen}
       onClose={onClose}
-      title={title}
-      maxWidth="500px"
+      title={isCreate ? t(dict, 'events.createFirstEvent') : t(dict, 'events.editSettings')}
+      description={isCreate ? t(dict, 'events.createFirstEventPrompt') : null}
+      icon={isCreate ? 'calendar-plus' : 'settings'}
+      maxWidth="560px"
       closeAriaLabel={t(dict, 'dialog.close')}
+      footer={
+        <>
+          <Button variant="ghost" onClick={onClose} disabled={isPending}>
+            {t(dict, 'common.cancel')}
+          </Button>
+          <Button
+            type="submit"
+            form={formId}
+            variant="primary"
+            loading={isPending}
+            data-testid="event-submit-btn"
+          >
+            {isCreate ? t(dict, 'events.createFirstEvent') : t(dict, 'events.saveSettings')}
+          </Button>
+        </>
+      }
     >
-      <form onSubmit={handleSubmit} className={styles.form} noValidate>
+      <form id={formId} onSubmit={handleSubmit} className={styles.form} noValidate>
         {apiError && !Object.keys(apiError.fieldErrors || {}).length && (
-          <Notice
-            variant="error"
-            message={t(dict, `errors.${apiError.code}`) || apiError.message}
-          />
+          <Notice variant="error" message={t(dict, `errors.${apiError.code}`) || apiError.message} />
         )}
 
-        {/* F31: distributed-pass warning when editing metadata with existing guests. */}
-        {mode === 'edit' && (
-          <Notice variant="warning">
-            {lang === 'ar'
-              ? 'تنبيه: تغيير اسم/موعد الفعالية بعد توزيع التصاريح يتطلب إعادة إصدار التصاريح الموزعة.'
-              : 'Warning: changing event details after passes were distributed requires regenerating distributed passes.'}
+        {!isCreate && (
+          <Notice variant="warning" data-testid="stale-pdf-warning">
+            {t(dict, 'events.editWarning')}
           </Notice>
         )}
 
@@ -142,9 +153,10 @@ export function EventDialog({
             setName(e.target.value);
             if (fieldErrors.name) setFieldErrors((prev) => ({ ...prev, name: undefined }));
           }}
-          placeholder={lang === 'ar' ? 'مثال: حفل استقبال هيلتون الرياض' : 'e.g. Hilton Riyadh Reception'}
+          placeholder={t(dict, 'events.namePlaceholder')}
           error={fieldErrors.name}
           disabled={isPending}
+          autoComplete="off"
         />
 
         <Field
@@ -156,14 +168,15 @@ export function EventDialog({
             setVenue(e.target.value);
             if (fieldErrors.venue) setFieldErrors((prev) => ({ ...prev, venue: undefined }));
           }}
-          placeholder={lang === 'ar' ? 'مثال: قاعة الاحتفالات الكبرى' : 'e.g. Grand Ballroom'}
+          placeholder={t(dict, 'events.venuePlaceholder')}
           error={fieldErrors.venue}
           disabled={isPending}
+          autoComplete="off"
         />
 
         <div className={styles.row}>
           <Field
-            label={lang === 'ar' ? 'تاريخ البدء' : 'Start Date'}
+            label={t(dict, 'events.startDate')}
             required
             type="date"
             name="startsDate"
@@ -174,7 +187,7 @@ export function EventDialog({
           />
 
           <Field
-            label={lang === 'ar' ? 'وقت البدء' : 'Start Time'}
+            label={t(dict, 'events.startTime')}
             required
             type="time"
             name="startsTime"
@@ -186,33 +199,7 @@ export function EventDialog({
 
         <div className={styles.tzNote}>
           <Icon name="globe" size="sm" aria-hidden="true" />
-          <span>{t(dict, 'events.timezone')}: Asia/Riyadh (+03:00)</span>
-        </div>
-
-        {mode === 'edit' && (
-          <div className={styles.tzNote} role="note" data-testid="stale-pdf-warning">
-            <Icon name="warning" size="sm" aria-hidden="true" />
-            <span>{lang === 'ar' ? 'تنبيه: تغيير الاسم أو الموعد يجعل بطاقات PDF الموزعة سابقاً قديمة — أعد إنشاء التصدير بعد الحفظ.' : 'Note: changing name/date makes previously distributed PDF passes stale — regenerate exports after saving.'}</span>
-          </div>
-        )}
-
-        <div className={styles.footerActions}>
-          <Button
-            variant="ghost"
-            onClick={onClose}
-            disabled={isPending}
-          >
-            {t(dict, 'common.cancel')}
-          </Button>
-
-          <Button
-            type="submit"
-            variant="primary"
-            loading={isPending}
-            data-testid="event-submit-btn"
-          >
-            {mode === 'create' ? t(dict, 'common.confirm') : t(dict, 'events.saveSettings')}
-          </Button>
+          <span>{t(dict, 'events.timezone')}: <bdi>Asia/Riyadh (UTC+03:00)</bdi></span>
         </div>
       </form>
     </Dialog>

@@ -57,6 +57,8 @@ const CreateEventScreen = () => {
       const presented = presentError(e, { language: lang });
       const displayMsg = formatErrorDisplay(presented, lang);
       toast.error(displayMsg);
+      // Let the wizard route the host back to the step the backend rejected.
+      throw e;
     }
   };
 

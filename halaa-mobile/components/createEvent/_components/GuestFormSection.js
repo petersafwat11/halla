@@ -1,10 +1,14 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { View, Alert, TouchableOpacity, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useFormContext } from "react-hook-form";
+import { isolateAuto } from "@halaa/shared/utils/bidi";
+import { eventPersonPhone } from "@halaa/shared/utils/eventWizard";
 import { useTranslation } from "../../../localization";
 import EventsService from "../../../hooks/events/useEventForm";
 import Button from "../../commen/Button";
+import AdaptiveText from "../../commen/AdaptiveText";
+import LocalizedText from "../../commen/LocalizedText";
 import ListOfGuestsORModerators from "../ListOfGuestsORModerators";
 import GuestQuotaCounter from "../GuestQuotaCounter";
 import GuestModeratorTabs from "./GuestModeratorTabs";
@@ -18,6 +22,8 @@ import ContactsImportModal from "./ContactsImportModal";
 import { useMyContacts } from "../../../hooks/guests";
 import { mergeIncomingGuests } from "../../../utils/guests/mergeIncomingGuests";
 import { isContactsAvailable } from "../../../utils/contacts/phoneContacts";
+
+const MAX_INVALID_ROWS_SHOWN = 5;
 
 const GuestFormSection = ({
   guestList,
@@ -52,6 +58,27 @@ const GuestFormSection = ({
   const remainingCapacity = isUnlimited
     ? Infinity
     : Math.max(0, (guestLimit || 0) - (guestList || []).length);
+
+  // Rows the backend would reject at submit (blank name or non-Saudi mobile),
+  // listed so the host knows exactly which entry keeps Next disabled.
+  const invalidRows = useMemo(() => {
+    const { guests, staff } = EventsService.findInvalidEventPeople({
+      guestList: guestList || [],
+      staffList: staffList || [],
+    });
+    const toRow = (kind, labelKey) => ({ index, person }) => {
+      const phone = eventPersonPhone(person);
+      const label = t(labelKey, { row: index + 1, name: person?.name?.trim() || "—" });
+      return {
+        key: `${kind}-${index}`,
+        text: phone ? `${label} · ${isolateAuto(phone)}` : label,
+      };
+    };
+    return [
+      ...guests.map(toRow("guest", "invalid_guest_row")),
+      ...staff.map(toRow("staff", "invalid_staff_row")),
+    ];
+  }, [guestList, staffList, t]);
 
   // Shared merge for the reuse picker AND native contacts: dedupe by phone,
   // respect remaining capacity (free at list time), persist via the normal save.
@@ -143,6 +170,24 @@ const GuestFormSection = ({
 
       {isLimitReached && activeTab === "guests" && <LimitReachedBanner t={t} />}
 
+      {invalidRows.length > 0 && (
+        <View style={styles.invalidPeople} accessibilityRole="alert">
+          <LocalizedText role="label" style={styles.invalidPeopleTitle}>
+            {t("invalid_people_title")}
+          </LocalizedText>
+          {invalidRows.slice(0, MAX_INVALID_ROWS_SHOWN).map((row) => (
+            <AdaptiveText key={row.key} style={styles.invalidPeopleRow}>
+              {row.text}
+            </AdaptiveText>
+          ))}
+          {invalidRows.length > MAX_INVALID_ROWS_SHOWN && (
+            <LocalizedText style={styles.invalidPeopleRow}>
+              {t("invalid_people_more", { count: invalidRows.length - MAX_INVALID_ROWS_SHOWN })}
+            </LocalizedText>
+          )}
+        </View>
+      )}
+
       <GuestModeratorTabs
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -168,7 +213,7 @@ const GuestFormSection = ({
             >
               <Ionicons
                 name="people-outline"
-                size={18}
+                size={16}
                 color={isLimitReached ? "#AAAAAA" : "#C28E5C"}
               />
               <Text
@@ -187,7 +232,7 @@ const GuestFormSection = ({
               >
                 <Ionicons
                   name="call-outline"
-                  size={18}
+                  size={16}
                   color={isLimitReached ? "#AAAAAA" : "#C28E5C"}
                 />
                 <Text
@@ -261,6 +306,27 @@ const GuestFormSection = ({
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  invalidPeople: {
+    gap: 4,
+    marginBottom: 12,
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#F5C2C0",
+    backgroundColor: "#FDF1F0",
+  },
+  invalidPeopleTitle: {
+    fontSize: 13,
+    fontFamily: "Cairo_600SemiBold",
+    color: "#9B2C2C",
+    lineHeight: 20,
+  },
+  invalidPeopleRow: {
+    fontSize: 12,
+    fontFamily: "Cairo_400Regular",
+    color: "#7A2E2E",
+    lineHeight: 18,
+  },
   sourceRow: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -274,15 +340,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 6,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
+    height: 44,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
     borderRadius: 10,
     borderWidth: 1.5,
     borderColor: "#C28E5C",
     backgroundColor: "#FFF",
   },
   sourceBtnDisabled: { borderColor: "#E0E0E0", backgroundColor: "#F9F9F9" },
-  sourceBtnText: { fontSize: 13, fontFamily: "Cairo_600SemiBold", color: "#C28E5C" },
+  sourceBtnText: {
+    flexShrink: 1,
+    fontSize: 11.5,
+    lineHeight: 16,
+    fontFamily: "Cairo_600SemiBold",
+    color: "#C28E5C",
+  },
   sourceBtnTextDisabled: { color: "#AAAAAA" },
 });
 

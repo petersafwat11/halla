@@ -112,21 +112,21 @@ async function getVendorById(vendorId) {
     throw new NotFoundError('Vendor');
   }
 
-  const { signStoredImage, signStoredImages } = require('../../shared/utils/s3Upload');
+  const { resolveStoredImage, resolveStoredImages } = require('../../shared/utils/localUpload');
   const vd = vendor.profile?.vendorData || {};
   const signedVendorData = {
     ...vd,
-    businessLogo: await signStoredImage(vd.businessLogo),
-    nationalIdImage: await signStoredImage(vd.nationalIdImage),
-    commercialRecordImage: await signStoredImage(vd.commercialRecordImage),
-    profileFile: await signStoredImage(vd.profileFile),
-    portfolioImages: await signStoredImages(vd.portfolioImages),
-    pricePackages: await signStoredImages(vd.pricePackages),
+    businessLogo: await resolveStoredImage(vd.businessLogo),
+    nationalIdImage: await resolveStoredImage(vd.nationalIdImage),
+    commercialRecordImage: await resolveStoredImage(vd.commercialRecordImage),
+    profileFile: await resolveStoredImage(vd.profileFile),
+    portfolioImages: await resolveStoredImages(vd.portfolioImages),
+    pricePackages: await resolveStoredImages(vd.pricePackages),
   };
 
   return {
     ...formatUserResponse(vendor),
-    avatar: await signStoredImage(vendor.avatar),
+    avatar: await resolveStoredImage(vendor.avatar),
     vendorData: signedVendorData,
     preferredLanguage: vendor.preferredLanguage,
   };

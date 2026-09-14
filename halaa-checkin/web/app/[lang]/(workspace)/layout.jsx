@@ -5,9 +5,9 @@ import { useRouter, useParams, usePathname } from 'next/navigation';
 import { useSession } from '../../../hooks/useSession.jsx';
 import { useEvent } from '../../../hooks/useEvent.jsx';
 import { AppHeader } from '../../../components/shell/AppHeader.jsx';
-import { WorkspaceNav } from '../../../components/shell/WorkspaceNav.jsx';
 import { Dialog } from '../../../components/ui/Dialog.jsx';
 import { Button } from '../../../components/ui/Button.jsx';
+import { EmptyState } from '../../../components/ui/EmptyState.jsx';
 import { getDictionary, t } from '../../../lib/locale.js';
 import styles from './workspace.module.css';
 
@@ -19,7 +19,7 @@ export default function WorkspaceLayout({ children }) {
   const pathname = usePathname();
 
   const { user, role, isAuthenticated, isLoading, isExpired, logout } = useSession();
-  const { events, isLoadingEvents, hasEvents, eventsError, refetchEvents } = useEvent();
+  const { isLoadingEvents, hasEvents, eventsError, refetchEvents } = useEvent();
 
   // Guard unauthenticated access
   useEffect(() => {
@@ -30,7 +30,7 @@ export default function WorkspaceLayout({ children }) {
 
   if (isLoading) {
     return (
-      <div className={styles.loadingScreen}>
+      <div className={styles.loadingScreen} role="status">
         <div className={styles.spinner} aria-hidden="true" />
         <p>{t(dict, 'common.loading')}</p>
       </div>
@@ -53,46 +53,35 @@ export default function WorkspaceLayout({ children }) {
   return (
     <div className={styles.shell}>
       <AppHeader />
-      <WorkspaceNav />
 
       <main className={styles.mainContent}>
         {!isLoadingEvents && eventsError && !hasEvents ? (
-          <div className={styles.unassignedCard} role="alert">
-            <h2 className={styles.unassignedTitle}>
-              {t(dict, 'common.networkError')}
-            </h2>
-            <p className={styles.unassignedDesc}>
-              {eventsError?.message || t(dict, 'common.networkError')}
-            </p>
-            <Button variant="primary" onClick={() => refetchEvents?.()}>
-              {t(dict, 'common.retry')}
-            </Button>
+          <div className={styles.stateCard} role="alert">
+            <EmptyState
+              icon="wifi-off"
+              title={t(dict, 'common.networkError')}
+              description={eventsError?.message && eventsError.message !== t(dict, 'common.networkError') ? eventsError.message : null}
+              action={
+                <Button variant="primary" leadingIcon="refresh" onClick={() => refetchEvents?.()}>
+                  {t(dict, 'common.retry')}
+                </Button>
+              }
+            />
           </div>
         ) : showUnassignedState ? (
-          <div className={styles.unassignedCard}>
-            <div className={styles.unassignedIcon} aria-hidden="true">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                <line x1="16" y1="2" x2="16" y2="6" />
-                <line x1="8" y1="2" x2="8" y2="6" />
-                <line x1="3" y1="10" x2="21" y2="10" />
-              </svg>
-            </div>
-            <h2 className={styles.unassignedTitle}>
-              {role === 'admin'
-                ? t(dict, 'events.noEventsAdmin')
-                : t(dict, 'events.noEventsReception')}
-            </h2>
-            <p className={styles.unassignedDesc}>
-              {role === 'admin'
-                ? t(dict, 'events.createFirstEventPrompt')
-                : t(dict, 'events.noEventsReception')}
-            </p>
-            {role === 'admin' && (
-              <Button variant="primary" onClick={() => router.push(`/${lang}/guests`)}>
-                {t(dict, 'events.createFirstEvent')}
-              </Button>
-            )}
+          <div className={styles.stateCard}>
+            <EmptyState
+              icon="calendar"
+              title={role === 'admin' ? t(dict, 'events.noEventsAdmin') : t(dict, 'events.noEventsReception')}
+              description={role === 'admin' ? t(dict, 'events.createFirstEventPrompt') : null}
+              action={
+                role === 'admin' ? (
+                  <Button variant="primary" leadingIcon="plus" onClick={() => router.push(`/${lang}/guests`)}>
+                    {t(dict, 'events.createFirstEvent')}
+                  </Button>
+                ) : null
+              }
+            />
           </div>
         ) : (
           children
@@ -104,15 +93,17 @@ export default function WorkspaceLayout({ children }) {
         isOpen={isExpired}
         onClose={logout}
         title={t(dict, 'auth.sessionExpired')}
+        icon="lock"
+        tone="warning"
+        size="sm"
+        closeAriaLabel={t(dict, 'dialog.close')}
         footer={
           <Button variant="primary" onClick={logout}>
             {t(dict, 'auth.loginButton')}
           </Button>
         }
       >
-        <p style={{ margin: '8px 0', color: 'var(--color-natural-700, #454545)' }}>
-          {t(dict, 'auth.sessionExpired')}
-        </p>
+        <p className={styles.dialogText}>{t(dict, 'auth.loginPrompt')}</p>
       </Dialog>
     </div>
   );

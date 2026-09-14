@@ -31,7 +31,7 @@ const {
 } = require('./services.validation');
 const { marketplaceTrackSchema } = require('../vendors/vendors.validation');
 
-const { uploadServiceImage } = require('../../shared/utils/s3Upload');
+const { uploadServiceImage } = require('../../shared/utils/localUpload');
 // UGC gate (§6 · UGC-02): vendor service name/description are PUBLIC marketplace
 // content, so creation/update requires accepted Terms + Community Rules. The
 // middleware is flag-gated (`UGC_TERMS_ENFORCED`, OFF until client rollout), so

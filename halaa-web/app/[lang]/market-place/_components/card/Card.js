@@ -56,16 +56,16 @@ const VendorCard = ({ vendor, href }) => {
         {description && <p className={styles.description}>{description}</p>}
 
         <div className={styles.meta}>
-          {hasRating && (
-            <span className={styles.rating}>
-              <Star className={styles.ratingIcon} aria-hidden="true" />
-              {Number(vendor.rating).toFixed(1)}
-            </span>
-          )}
           {vendor.location && (
             <span className={styles.location}>
               <MapPin size={14} aria-hidden="true" />
               <span className={styles.locationText}>{vendor.location}</span>
+            </span>
+          )}
+          {hasRating && (
+            <span className={styles.rating}>
+              <Star className={styles.ratingIcon} aria-hidden="true" />
+              {Number(vendor.rating).toFixed(1)}
             </span>
           )}
         </div>

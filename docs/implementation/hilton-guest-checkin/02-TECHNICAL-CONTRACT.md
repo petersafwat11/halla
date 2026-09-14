@@ -223,8 +223,8 @@ All routes below are relative to the base path. All except login/liveness/readin
 | `PATCH /events/:eventId/guests/:guestId` | Admin | `{version,...guest editable fields}` → guest |
 | `DELETE /events/:eventId/guests/:guestId` | Admin | JSON `{version}` → 204 soft-delete; disallow admitted guest |
 | `POST /events/:eventId/imports/preview` | Admin | `{csv}` → `{rows,errors,warnings,validCount,remainingCapacity,canCommit}` |
-| `POST /events/:eventId/imports/commit` | Admin | `{csv}` + `Idempotency-Key` → 201 `{createdCount,guestIds}` |
-| `POST /events/:eventId/gate/resolve` | Scoped | Exactly one of `{token}` or `{guestId}` → safe guest and event state |
+| `POST /events/:eventId/imports/commit` | Admin | `{csv}` + `Idempotency-Key` → 201 `{createdCount,guestIds}`; a concurrent same-key commit with a different CSV hash returns 409 `IDEMPOTENCY_CONFLICT` instead of the cached body |
+| `POST /events/:eventId/gate/resolve` | Scoped | Exactly one of `{token}` or `{guestId}` → safe guest and event state. `token` accepts a scanned QR token or a typed short code (case-insensitive, spaces/hyphens ignored, Crockford O→0 and I/L→1), resolved only within `:eventId`; wire schema unchanged |
 | `GET /events/:eventId/gate/search` | Scoped | `q` length 2..120 → at most 20 safe matches, reference/shortCode supported |
 | `GET /events/:eventId/gate/recent` | Scoped | Latest 10 safe admitted guests (time/operator/count) |
 | `POST /events/:eventId/checkins` | Scoped | `{guestId,version,actualCompanions,method}` + `Idempotency-Key` → safe guest with authoritative checkIn |

@@ -69,7 +69,7 @@ async function run() {
   console.log(`   Event created: "${demoEvent.name}" (Status: live)`);
 
   console.log('3. Provisioning demo staff accounts...');
-  const adminUser = await provisionUser({
+  await provisionUser({
     username: 'admin',
     displayName: 'مدير الفعالية (Admin)',
     password: 'admin123456',
@@ -243,10 +243,12 @@ async function run() {
   });
   console.log(`   API Service listening on http://127.0.0.1:${API_PORT}`);
 
-  console.log('\n6. Launching Web frontend on port 3100...');
+  // --dev serves live source (next dev) instead of the prebuilt bundle.
+  const webScript = process.argv.includes('--dev') ? 'dev' : 'start';
+  console.log(`\n6. Launching Web frontend on port 3100 (next ${webScript})...`);
   const isWin = process.platform === 'win32';
   const npmCmd = isWin ? 'npm.cmd' : 'npm';
-  const webProc = spawn(npmCmd, ['--prefix', path.resolve(rootDir, 'web'), 'run', 'start'], {
+  const webProc = spawn(npmCmd, ['--prefix', path.resolve(rootDir, 'web'), 'run', webScript], {
     stdio: 'inherit',
     shell: true,
     env: {

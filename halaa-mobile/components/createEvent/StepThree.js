@@ -8,6 +8,7 @@ import {
   Modal,
   Image as RNImage,
   Alert,
+  Platform,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFormContext, FormProvider, useForm, useWatch } from "react-hook-form";
@@ -31,8 +32,32 @@ import { bakeCanvas } from "../../utils/canvasBake";
 import { renderTemplateField } from "./_components/TemplateFieldRenderer";
 import { resolveMediaUri } from "../../utils/resolveMediaUri";
 import { normalizeInvitationImage } from "../../utils/invitationImage";
+import * as FileSystem from "expo-file-system/legacy";
+import {
+  createSingleFlight,
+  templateBakeErrorKey,
+} from "@halaa/shared/utils/invitationImagePlan";
+import { withTemplateTextLimits } from "@halaa/shared/utils/templateTextLimits";
+import { useAuthStore } from "../../stores/authStore";
 
 const ACCEPTED_EXT = /\.(jpe?g|png|webp)$/i;
+
+// A replaced bake is no longer referenced by the form; drop its cache file.
+const discardReplacedBake = (previous, next) => {
+  const uri = previous?.uri;
+  if (
+    Platform.OS === "web" &&
+    previous?.ownedObjectUrl &&
+    uri?.startsWith("blob:") &&
+    uri !== next?.uri
+  ) {
+    URL.revokeObjectURL(uri);
+    return;
+  }
+  const cacheDir = FileSystem.cacheDirectory;
+  if (!uri || !cacheDir || uri === next?.uri || !uri.startsWith(cacheDir)) return;
+  FileSystem.deleteAsync(uri, { idempotent: true }).catch(() => {});
+};
 
 /**
  * Resolve a possibly-relative template image path to a full URL.
@@ -187,17 +212,19 @@ const StepThree = () => {
 
   // ── Remove selection ──────────────────────────────────────────────
   const handleRemoveSelection = useCallback(() => {
+    discardReplacedBake(templateImage, null);
     parentSetValue("visualTemplate", null, { shouldValidate: true });
     parentSetValue("templateImage", null, { shouldValidate: true });
     setMode("template");
-  }, [parentSetValue]);
+  }, [parentSetValue, templateImage]);
 
   const discardIncompleteTemplate = useCallback(() => {
     setShowFormModal(false);
+    discardReplacedBake(templateImage, null);
     parentSetValue("visualTemplate", null, { shouldValidate: true });
     parentSetValue("templateImage", null, { shouldValidate: true });
     setMode("template");
-  }, [parentSetValue]);
+  }, [parentSetValue, templateImage]);
 
   // The selection is "confirmed" when the user has completed the
   // customisation modal (template mode) or uploaded an image (upload mode).
@@ -278,7 +305,7 @@ const StepThree = () => {
           )}
           <View style={styles.confirmedCardActions}>
             <TouchableOpacity
-              style={[styles.dangerButton, { flex: 1 }]}
+              style={styles.dangerButton}
               onPress={handleRemoveSelection}
               activeOpacity={0.85}
             >
@@ -289,7 +316,7 @@ const StepThree = () => {
             </TouchableOpacity>
             {mode === "template" && selectedTemplate?.fields?.length > 0 && (
               <TouchableOpacity
-                style={[styles.secondaryButton, { flex: 1 }]}
+                style={styles.secondaryButton}
                 onPress={handleEditTemplate}
                 activeOpacity={0.85}
               >
@@ -376,7 +403,7 @@ const StepThree = () => {
                   <View style={styles.actionsRow}>
                     {selectedTemplate?.fields?.length > 0 && (
                       <TouchableOpacity
-                        style={[styles.secondaryButton, { flex: 1 }]}
+                        style={styles.secondaryButton}
                         onPress={handleEditTemplate}
                         activeOpacity={0.8}
                       >
@@ -388,7 +415,7 @@ const StepThree = () => {
                     )}
 
                     <TouchableOpacity
-                      style={[styles.primaryButton, { flex: 1 }]}
+                      style={styles.primaryButton}
                       onPress={() => setShowPreview(true)}
                       activeOpacity={0.8}
                     >
@@ -414,7 +441,7 @@ const StepThree = () => {
                   />
                   <View style={styles.actionsRow}>
                     <TouchableOpacity
-                      style={[styles.primaryButton, { flex: 1 }]}
+                      style={styles.primaryButton}
                       onPress={pickInvitationImage}
                       activeOpacity={0.85}
                     >
@@ -467,6 +494,7 @@ const StepThree = () => {
         t={t}
         onDiscard={discardIncompleteTemplate}
         onSave={(baked, formValues) => {
+          const previousImage = templateImage;
           parentSetValue(
             "visualTemplate",
             {
@@ -483,6 +511,7 @@ const StepThree = () => {
           );
           parentSetValue("templateImage", baked, { shouldValidate: true });
           setShowFormModal(false);
+          discardReplacedBake(previousImage, baked);
         }}
       />
 
@@ -515,6 +544,7 @@ const LiveCanvas = ({
   hasFields,
   onBackgroundReady,
   onBackgroundError,
+  showPlaceholders,
 }) => {
   const data = useWatch({ control });
   const primaryColor = useWatch({ control, name: "primaryColor" });
@@ -527,6 +557,7 @@ const LiveCanvas = ({
       }
       onBackgroundReady={onBackgroundReady}
       onBackgroundError={onBackgroundError}
+      showPlaceholders={showPlaceholders}
     />
   );
 };
@@ -548,11 +579,15 @@ const TemplateFormModal = ({
   onSave,
 }) => {
   const insets = useSafeAreaInsets();
+  const authToken = useAuthStore((state) => state.token);
   const fieldDirection = useFieldDirection("localized");
   const canvasRef = useRef(null);
-  const [baking, setBaking] = useState(false);
+  const [saveFlight] = useState(createSingleFlight);
+  const [bakePhase, setBakePhase] = useState(null);
+  const baking = bakePhase !== null;
   const [bakeError, setBakeError] = useState(null);
   const [backgroundReady, setBackgroundReady] = useState(false);
+  const [backgroundAttempt, setBackgroundAttempt] = useState(0);
   const handleBackgroundReady = useCallback((ready) => {
     setBackgroundReady(ready);
     if (ready) setBakeError(null);
@@ -561,24 +596,40 @@ const TemplateFormModal = ({
     setBackgroundReady(false);
     setBakeError(error?.message || "TEMPLATE_BACKGROUND_LOAD_FAILED");
   }, []);
+  const retryBackground = useCallback(() => {
+    setBakeError(null);
+    setBackgroundReady(false);
+    setBackgroundAttempt((value) => value + 1);
+  }, []);
 
-  const fields = template?.fields || [];
+  const limitedTemplate = useMemo(
+    () => withTemplateTextLimits(template),
+    [template],
+  );
+  const fields = limitedTemplate?.fields || [];
   const hasFields = fields.length > 0;
+  const contentFields = fields.filter(
+    (field) => field.type !== "font" && field.type !== "color",
+  );
+  const styleFields = fields
+    .filter((field) => field.type === "font" || field.type === "color")
+    .sort((a, b) => (a.type === "font" ? -1 : b.type === "font" ? 1 : 0));
 
   const methods = useForm({
     resolver: hasFields
       ? zodResolver(buildDynamicTemplateSchema(fields, t))
       : undefined,
     defaultValues: hasFields
-      ? buildDefaultValues(template, eventDate, eventTime)
+      ? buildDefaultValues(limitedTemplate, eventDate, eventTime)
       : {},
   });
 
   useEffect(() => {
     if (visible && template?._id) {
-      methods.reset(buildDefaultValues(template, eventDate, eventTime));
+      methods.reset(buildDefaultValues(limitedTemplate, eventDate, eventTime));
       setBakeError(null);
       setBackgroundReady(false);
+      setBackgroundAttempt(0);
     }
     // Re-seed each time the modal opens for a new template; otherwise stale
     // values from a prior template can bleed in.
@@ -586,6 +637,8 @@ const TemplateFormModal = ({
   }, [visible, template?._id]);
 
   const onSubmit = methods.handleSubmit(async (data) => {
+    // Repeated presses share the in-flight save instead of starting another.
+    if (saveFlight.busy) return;
     if (!backgroundReady) {
       setBakeError("TEMPLATE_BACKGROUND_NOT_READY");
       return;
@@ -597,26 +650,33 @@ const TemplateFormModal = ({
       }
     }
 
-    setBakeError(null);
-    setBaking(true);
-    try {
-      const baked = await bakeCanvas(canvasRef, {
-        width: template?.naturalWidth,
-        height: template?.naturalHeight,
-      });
-      if (!baked?.file?.uri) {
-        throw new Error("bakeCanvas returned no file");
+    await saveFlight.run(async () => {
+      setBakeError(null);
+      setBakePhase("preparing");
+      try {
+        const baked = await bakeCanvas(canvasRef, {
+          width: template?.naturalWidth,
+          height: template?.naturalHeight,
+          authToken,
+          onPhase: setBakePhase,
+        });
+        if (!baked?.file?.uri) {
+          throw new Error("bakeCanvas returned no file");
+        }
+        onSave(baked.file, converted);
+      } catch (err) {
+        // The modal stays open with every entered value so the host can retry.
+        console.error("[StepThree] bakeCanvas failed:", err);
+        setBakeError(err?.code || err?.message || "BAKE_FAILED");
+      } finally {
+        setBakePhase(null);
       }
-      onSave(baked.file, converted);
-    } catch (err) {
-      console.error("[StepThree] bakeCanvas failed:", err);
-      setBakeError(err?.message || "BAKE_FAILED");
-    } finally {
-      setBaking(false);
-    }
+    });
   });
 
   const requestClose = useCallback(() => {
+    // Never interrupt an in-flight save: its result commits atomically.
+    if (saveFlight.busy) return;
     Alert.alert(
       t("template_incomplete_title", "Finish your design"),
       t(
@@ -635,7 +695,7 @@ const TemplateFormModal = ({
         },
       ],
     );
-  }, [onDiscard, t]);
+  }, [onDiscard, saveFlight, t]);
 
   if (!template) return null;
 
@@ -679,9 +739,11 @@ const TemplateFormModal = ({
               ref={canvasRef}
             >
               <LiveCanvas
-                template={template}
+                key={`${template?._id || "template"}-${backgroundAttempt}`}
+                template={limitedTemplate}
                 control={methods.control}
                 hasFields={hasFields}
+                showPlaceholders={!baking}
                 onBackgroundReady={handleBackgroundReady}
                 onBackgroundError={handleBackgroundError}
               />
@@ -689,19 +751,38 @@ const TemplateFormModal = ({
 
             {hasFields && (
               <View style={styles.formContainer}>
-                {fields.map((field) =>
+                {contentFields.map((field) =>
                   renderTemplateField(field, locale, t),
+                )}
+                {styleFields.length > 0 && (
+                  <View style={styles.styleControls}>
+                    {styleFields.map((field) => (
+                      <View key={field.key} style={styles.styleControl}>
+                        {renderTemplateField(field, locale, t)}
+                      </View>
+                    ))}
+                  </View>
                 )}
               </View>
             )}
 
-            {bakeError && (
-              <View style={styles.bakeWarningBadge}>
+            {bakeError && !baking && (
+              <View style={styles.bakeWarningBadge} accessibilityRole="alert">
+                <Text style={styles.bakeWarningTitle}>{t("template_failed")}</Text>
                 <Text style={styles.bakeWarningText}>
-                  {String(bakeError).startsWith("TEMPLATE_BACKGROUND")
-                    ? t("template_background_failed")
-                    : t("template_bake_failed")}
+                  {t(templateBakeErrorKey(bakeError))}
                 </Text>
+                <TouchableOpacity
+                  style={styles.bakeRetryButton}
+                  onPress={
+                    templateBakeErrorKey(bakeError) === "template_background_failed"
+                      ? retryBackground
+                      : onSubmit
+                  }
+                  accessibilityRole="button"
+                >
+                  <Text style={styles.bakeRetryText}>{t("template_retry")}</Text>
+                </TouchableOpacity>
               </View>
             )}
           </KeyboardAwareFormScrollView>
@@ -731,8 +812,8 @@ const TemplateFormModal = ({
             activeOpacity={0.85}
             disabled={baking || !backgroundReady}
           >
-            <Text style={styles.footerBtnPrimaryText}>
-              {baking ? t("saving") : t("save")}
+            <Text style={styles.footerBtnPrimaryText} accessibilityLiveRegion="polite">
+              {baking ? t(`template_${bakePhase}`) : t("save")}
             </Text>
           </TouchableOpacity>
         </View>
@@ -816,7 +897,9 @@ const styles = StyleSheet.create({
     borderColor: "#EAD9C8",
   },
   uploadPreviewImg: {
-    width: "100%",
+    width: "72%",
+    maxWidth: 240,
+    alignSelf: "center",
     aspectRatio: 3 / 4,
     borderRadius: 10,
     backgroundColor: "#FFF",
@@ -833,8 +916,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderWidth: 1.5,
     borderColor: "#E5B9B9",
-    paddingVertical: 12,
-    paddingHorizontal: 14,
+    minHeight: 40,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     borderRadius: 10,
     backgroundColor: "#FFF",
     gap: 6,
@@ -856,8 +940,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: "#F5ECE4",
-    padding: 14,
-    gap: 12,
+    padding: 12,
+    gap: 10,
   },
   selectedLabel: {
     fontSize: 13,
@@ -870,15 +954,18 @@ const styles = StyleSheet.create({
   },
   actionsRow: {
     flexDirection: "row",
-    gap: 10,
+    flexWrap: "wrap",
+    justifyContent: "flex-end",
+    gap: 8,
   },
   primaryButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#C28E5C",
-    paddingVertical: 12,
-    paddingHorizontal: 14,
+    minHeight: 40,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     borderRadius: 10,
     gap: 6,
   },
@@ -893,8 +980,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderWidth: 1.5,
     borderColor: "#C28E5C",
-    paddingVertical: 12,
-    paddingHorizontal: 14,
+    minHeight: 40,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     borderRadius: 10,
     backgroundColor: "#FFF",
     gap: 6,
@@ -961,7 +1049,9 @@ const styles = StyleSheet.create({
   },
   confirmedCardActions: {
     flexDirection: "row",
-    gap: 10,
+    flexWrap: "wrap",
+    justifyContent: "center",
+    gap: 8,
     width: "100%",
   },
   // ── modal ──
@@ -989,9 +1079,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   modalScrollContent: {
-    padding: 16,
-    paddingBottom: 32,
-    gap: 16,
+    padding: 12,
+    paddingBottom: 24,
+    gap: 12,
   },
   canvasWrapper: {
     borderRadius: 12,
@@ -999,12 +1089,25 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF",
   },
   formContainer: {
-    gap: 4,
+    gap: 12,
     backgroundColor: "#FFF",
     borderRadius: 12,
     borderWidth: 1,
     borderColor: "#F5ECE4",
-    padding: 16,
+    padding: 12,
+  },
+  styleControls: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: "#F0E6DB",
+  },
+  styleControl: {
+    flexGrow: 1,
+    flexBasis: "46%",
+    minWidth: 140,
   },
   bakeWarningBadge: {
     paddingVertical: 10,
@@ -1021,18 +1124,44 @@ const styles = StyleSheet.create({
     color: "#8D6E00",
     textAlign: "center",
   },
+  bakeWarningTitle: {
+    fontSize: 14,
+    fontFamily: "Cairo_700Bold",
+    color: "#6B5200",
+    textAlign: "center",
+    marginBottom: 2,
+  },
+  bakeRetryButton: {
+    minHeight: 44,
+    marginTop: 8,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: "#C28E5C",
+    backgroundColor: "#FFF",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  bakeRetryText: {
+    fontSize: 13,
+    fontFamily: "Cairo_700Bold",
+    color: "#7C5734",
+  },
   modalFooter: {
     flexDirection: "row",
-    gap: 10,
-    padding: 16,
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingTop: 10,
     backgroundColor: "#FFF",
     borderTopWidth: 1,
     borderTopColor: "#F0E6DB",
   },
   footerBtn: {
     flex: 1,
-    paddingVertical: 14,
-    borderRadius: 12,
+    minHeight: 42,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
   },

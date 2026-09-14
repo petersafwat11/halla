@@ -9,7 +9,7 @@ import styles from "./MediaViewerModal.module.css";
  * Full-screen overlay that displays a single image OR video attachment.
  * Used by the admin ticket detail view to open an uploaded ticket
  * attachment in a popup. Renders a `<video controls>` for videos and an
- * `<img>` for images (S3 URLs come pre-signed to public URLs).
+ * `<img>` for images served by the backend media endpoint.
  *
  * Props:
  *  - attachment: { url, type, mimeType } | null

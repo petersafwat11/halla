@@ -33,7 +33,7 @@ export function useTemplateEditor({
     const localUrl = URL.createObjectURL(file);
     setPendingImageFile(file);
     methods.setValue("imageUrl", localUrl, { shouldDirty: true });
-    methods.setValue("s3Key", "", { shouldDirty: true });
+    methods.setValue("imageRef", "", { shouldDirty: true });
     const img = new Image();
     img.onload = () => {
       methods.setValue("naturalWidth", img.naturalWidth, { shouldDirty: true });
@@ -46,14 +46,14 @@ export function useTemplateEditor({
 
   const submit = async (data) => {
     try {
-      let s3Key = data.s3Key;
+      let imageRef = data.imageRef;
       if (pendingImageFile) {
         setUploading(true);
         const result = await uploadImage.mutateAsync({
           file: pendingImageFile,
           templateId: isNew ? "new" : id,
         });
-        s3Key = result.s3Key;
+        imageRef = result.imageRef;
         setUploading(false);
       }
 
@@ -69,13 +69,13 @@ export function useTemplateEditor({
       };
 
       if (isNew) {
-        if (!s3Key) {
+        if (!imageRef) {
           toastUtils.error(t("templates.editor.imageRequired"));
           return;
         }
         const res = await create.mutateAsync({
           ...payload,
-          s3Key,
+          imageRef,
           naturalWidth: data.naturalWidth,
           naturalHeight: data.naturalHeight,
         });
@@ -86,7 +86,7 @@ export function useTemplateEditor({
           router.push(`/${lang}/admin-dash/templates/${newId}`);
         }
       } else {
-        if (s3Key) payload.s3Key = s3Key;
+        if (imageRef) payload.imageRef = imageRef;
         payload.expectedVersion = data.version ?? 0;
         const res = await update.mutateAsync(payload);
         toastUtils.success(t("templates.editor.saved"));

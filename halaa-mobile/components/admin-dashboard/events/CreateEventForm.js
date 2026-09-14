@@ -163,9 +163,25 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
     return EventsService.validateStepData(eventsServiceStep, eventsServiceStep === 1 ? { ...formData, businessLogoMissing: false } : formData);
   }, [isHostMode, currentStep, formData, hostSelection]);
 
+  // Event-wizard step (1-5) → this form's step (admin mode has HostSelector first).
+  const toFormStep = useCallback(
+    (eventStep) => (isHostMode ? eventStep : eventStep + 1),
+    [isHostMode],
+  );
+
   const handleFinalSubmit = useCallback(
     async (data) => {
       if (isSubmittingRef.current) return;
+      const invalidWizardStep = EventsService.findFirstInvalidEventStep(data);
+      if (invalidWizardStep) {
+        setCurrentStep(toFormStep(invalidWizardStep));
+        if (invalidWizardStep === 1 && data.isBusinessEvent && !data.isExistingEvent && data.businessLogoMissing) {
+          setValue("businessLogoCheckRequested", true);
+        } else {
+          Alert.alert(t("common.error"), t("events.steps.incompleteFields"));
+        }
+        return;
+      }
       isSubmittingRef.current = true;
       setElapsedSeconds(0);
 
@@ -234,6 +250,8 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
             else navigation.reset({ index: 0, routes: [{ name: "MainTabs", params: { screen: "Home" } }] });
           } catch (err) {
             setIsCompleting(false);
+            const serverStep = EventsService.findEventStepForServerError(err);
+            if (serverStep) setCurrentStep(toFormStep(serverStep));
             Sentry.captureException(err, {
               tags: {
                 operation: "event.create",
@@ -253,18 +271,25 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
           return;
         }
 
-        // Admin mode: forward host selection fields then delegate.
+        // Admin mode: forward host selection fields then delegate. The screen
+        // reports the error and rethrows so the wizard can return to the
+        // rejected step.
         if (hostSelection.createForSelf) {
           formDataObj.append("createForSelf", "true");
         } else if (hostSelection.targetUserId) {
           formDataObj.append("targetUserId", hostSelection.targetUserId);
           formDataObj.append("targetType", hostSelection.targetType || "host");
         }
-        await onSubmit?.({
-          formData: formDataObj,
-          idempotencyKey: idempotencyKeyRef.current,
-        });
-        idempotencyKeyRef.current = null;
+        try {
+          await onSubmit?.({
+            formData: formDataObj,
+            idempotencyKey: idempotencyKeyRef.current,
+          });
+          idempotencyKeyRef.current = null;
+        } catch (err) {
+          const serverStep = EventsService.findEventStepForServerError(err);
+          if (serverStep) setCurrentStep(toFormStep(serverStep));
+        }
       } finally {
         clearInterval(timer);
         isSubmittingRef.current = false;
@@ -280,6 +305,9 @@ const CreateEventForm = ({ mode = "admin", onSubmit, loading }) => {
       tCreate,
       currentLanguage,
       clearWizardGuard,
+      t,
+      setValue,
+      toFormStep,
     ],
   );
 

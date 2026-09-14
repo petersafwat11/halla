@@ -12,7 +12,25 @@
  */
 
 import { DEFAULT_INVITATION_TYPE } from "../../utils/invitationTypes.js";
-import { isValidPhone, normalizePhoneNumber } from "@halaa/shared/utils/phone";
+import { isValidSaudiMobile, normalizePhoneNumber } from "@halaa/shared/utils/phone";
+import { normalizeEventCoordinates } from "@halaa/shared/utils/eventLocation";
+import { isObjectIdString } from "@halaa/shared/utils/referenceId";
+import {
+  eventStepForServerCode,
+  eventStepForServerField,
+  findEventStepForServerError,
+  findInvalidEventPeople,
+  isValidEventPerson,
+  resolveTaqnyatTemplateRef,
+  resolveVisualTemplateRef,
+} from "@halaa/shared/utils/eventWizard";
+
+export {
+  eventStepForServerCode,
+  eventStepForServerField,
+  findEventStepForServerError,
+  findInvalidEventPeople,
+};
 
 // ============================================================================
 // VALIDATION HELPERS
@@ -32,7 +50,7 @@ export const validateListItem = (item, type = "guest", existingList = []) => {
 
   if (!phone) {
     errors.phone = "events:validation.phoneRequired";
-  } else if (!isValidPhone(phone)) {
+  } else if (!isValidSaudiMobile(phone)) {
     errors.phone = "events:validation.phoneInvalid";
   }
 
@@ -67,7 +85,7 @@ export const validateCSVRow = (row) => {
   const phone = String(row.mobile || "").trim();
   if (!phone) {
     errors.push("events:validation.phoneRequired");
-  } else if (!isValidPhone(phone)) {
+  } else if (!isValidSaudiMobile(phone)) {
     errors.push("events:validation.phoneInvalid");
   }
 
@@ -219,16 +237,16 @@ export const validateStepData = (stepNumber, formData) => {
       );
     }
     case 2:
-      return !!(formData.guestList && formData.guestList.length > 0);
+      return !!(
+        formData.guestList?.length > 0 &&
+        formData.guestList.every(isValidEventPerson) &&
+        (formData.staffList || []).every(isValidEventPerson)
+      );
     case 3: {
       const visualTemplate = formData.visualTemplate;
       const hasBakedOrUploadedImage = !!formData.templateImage;
       const isCustomUpload = visualTemplate?.isCustomUpload === true;
-      const hasTemplateRef = !!(
-        visualTemplate?.templateRef ||
-        visualTemplate?._id ||
-        visualTemplate?.id
-      );
+      const hasTemplateRef = !!resolveVisualTemplateRef(visualTemplate);
 
       // A predefined template is not complete until its protected
       // background loaded and the customised canvas was baked. Template
@@ -240,11 +258,7 @@ export const validateStepData = (stepNumber, formData) => {
       );
     }
     case 4:
-      return !!(
-        formData.selectedTemplate?.name ||
-        formData.taqnyatTemplate?.templateRef ||
-        formData.taqnyatTemplateRef
-      );
+      return isObjectIdString(resolveTaqnyatTemplateRef(formData));
     case 5:
       // Resolves EVT-07: Mandatory review confirmation
       return formData.confirmReviewed === true;
@@ -262,17 +276,30 @@ export const validateStepData = (stepNumber, formData) => {
   }
 };
 
+export const findFirstInvalidEventStep = (formData) => {
+  for (let step = 1; step <= 5; step += 1) {
+    if (!validateStepData(step, formData)) return step;
+  }
+  return null;
+};
+
 // ============================================================================
 // API PAYLOAD TRANSFORM
 // ============================================================================
 
-export const transformFormDataToPayload = (formData) => ({
+export const transformFormDataToPayload = (formData) => {
+  const taqnyatTemplateRef = resolveTaqnyatTemplateRef(formData);
+
+  return ({
   eventDetails: {
     title: formData.eventName,
     type: formData.eventType,
     date: formData.eventDate,
     time: formData.eventTime,
-    location: formData.address,
+    location: {
+      ...formData.address,
+      ...normalizeEventCoordinates(formData.address),
+    },
     description: formData.description || "",
   },
   guestList: (formData.guestList || []).map((guest) => ({
@@ -291,10 +318,7 @@ export const transformFormDataToPayload = (formData) => ({
           fieldValues: {},
         }
       : {
-          templateRef:
-            formData.visualTemplate.templateRef ||
-            formData.visualTemplate._id ||
-            formData.visualTemplate.id,
+          templateRef: resolveVisualTemplateRef(formData.visualTemplate),
           fieldValues:
             formData.visualTemplate.fieldValues ||
             formData.visualTemplate.data ||
@@ -302,12 +326,9 @@ export const transformFormDataToPayload = (formData) => ({
           isCustomUpload: false,
         }
     : undefined,
-  taqnyatTemplate: formData.selectedTemplate
+  taqnyatTemplate: taqnyatTemplateRef
     ? {
-        templateRef:
-          formData.taqnyatTemplate?.templateRef ||
-          formData.selectedTemplate._id ||
-          formData.selectedTemplate.id,
+        templateRef: taqnyatTemplateRef,
       }
     : undefined,
   guestReplies: {
@@ -320,7 +341,8 @@ export const transformFormDataToPayload = (formData) => ({
     scheduledDate: formData.scheduleDate || undefined,
     scheduledTime: formData.scheduleTime || undefined,
   },
-});
+  });
+};
 
 // ============================================================================
 // DEFAULT VALUES
@@ -374,6 +396,10 @@ const eventForm = {
   validateListItem,
   validateCSVRow,
   validateStepData,
+  findFirstInvalidEventStep,
+  eventStepForServerField,
+  findEventStepForServerError,
+  findInvalidEventPeople,
   addListItem,
   editListItem,
   removeListItem,

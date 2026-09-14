@@ -26,8 +26,8 @@ export default async function LangLayout({ children, params }) {
           minHeight: '100vh',
           display: 'flex',
           flexDirection: 'column',
-          backgroundColor: 'var(--bg-artboard, #f9f4ef)',
-          color: 'var(--color-natural-900, #2c2c2c)',
+          backgroundColor: 'var(--ops-canvas, #f6f3ef)',
+          color: 'var(--ops-ink, #1f1b17)',
         }}
       >
         <Suspense fallback={null}>

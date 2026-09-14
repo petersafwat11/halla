@@ -1,39 +1,42 @@
 'use client';
 
-import React from 'react';
+import React, { forwardRef } from 'react';
 import { Icon } from './Icon.jsx';
 import styles from './Button.module.css';
 
 /**
  * Button primitive matching Halaa Operations tokens and interaction guidelines.
- * Supports primary, secondary, outline, ghost, danger variants.
- * sm (44px min), md (44px), lg (48px) sizes.
- * Leading/trailing icon slots.
- * Width-preserving loading state.
+ * Variants: primary, secondary, outline, ghost, danger, dangerOutline, success.
+ * Sizes: sm (36px), md (42px), lg (50px); coarse pointers get 44px minimum.
+ * Leading/trailing icon slots and a width-preserving loading state.
  */
-export function Button({
-  children,
-  variant = 'primary',
-  size = 'md',
-  loading = false,
-  disabled = false,
-  fullWidth = false,
-  type = 'button',
-  icon = null,
-  leadingIcon = null,
-  trailingIcon = null,
-  className = '',
-  onClick,
-  ...props
-}) {
+export const Button = forwardRef(function Button(
+  {
+    children,
+    variant = 'primary',
+    size = 'md',
+    loading = false,
+    disabled = false,
+    fullWidth = false,
+    type = 'button',
+    icon = null,
+    leadingIcon = null,
+    trailingIcon = null,
+    className = '',
+    onClick,
+    ...props
+  },
+  ref
+) {
   const isDisabled = disabled || loading;
   const effectiveLeadingIcon = leadingIcon || icon;
+  const iconSize = size === 'lg' ? 'md' : 'sm';
 
-  const renderIcon = (iconItem, defaultSize = 'xs') => {
+  const renderIcon = (iconItem) => {
     if (!iconItem) return null;
     if (React.isValidElement(iconItem)) return iconItem;
     if (typeof iconItem === 'string') {
-      return <Icon name={iconItem} size={size === 'lg' ? 'sm' : defaultSize} />;
+      return <Icon name={iconItem} size={iconSize} />;
     }
     return iconItem;
   };
@@ -49,6 +52,7 @@ export function Button({
 
   return (
     <button
+      ref={ref}
       type={type}
       className={classes}
       disabled={isDisabled}
@@ -63,10 +67,10 @@ export function Button({
         </span>
       )}
       <span className={`${styles.contentWrapper} ${loading ? styles.loadingContent : ''}`.trim()}>
-        {effectiveLeadingIcon && <span aria-hidden="true">{renderIcon(effectiveLeadingIcon)}</span>}
+        {effectiveLeadingIcon && <span className={styles.iconSlot} aria-hidden="true">{renderIcon(effectiveLeadingIcon)}</span>}
         {children && <span>{children}</span>}
-        {trailingIcon && <span aria-hidden="true">{renderIcon(trailingIcon)}</span>}
+        {trailingIcon && <span className={styles.iconSlot} aria-hidden="true">{renderIcon(trailingIcon)}</span>}
       </span>
     </button>
   );
-}
+});

@@ -79,7 +79,16 @@
     "reopenReason": "Reopen Reason",
     "reopenReasonPlaceholder": "Enter a detailed reason (5 to 500 characters)",
     "reopenReasonRequired": "Reopen reason is required (at least 5 characters)",
-    "eventClosedBanner": "This event is currently closed. Admissions and guest edits are frozen."
+    "eventClosedBanner": "This event is currently closed. Admissions and guest edits are frozen.",
+    "moreActions": "More event actions",
+    "openEventConfirmTitle": "Open event for check-in",
+    "openEventWarning": "Once the event is live, reception staff can admit guests at the gate.",
+    "startDate": "Start date",
+    "startTime": "Start time",
+    "editWarning": "Changing the name, venue or time after passes were shared makes those PDFs outdated. Re-export passes after saving.",
+    "namePlaceholder": "e.g. Hilton Riyadh Annual Gala",
+    "venuePlaceholder": "e.g. Grand Ballroom",
+    "reasonLength": "5 to 500 characters"
   },
   "dialog": {
     "close": "Close dialog",
@@ -164,7 +173,24 @@
     "correctionReasonTooLong": "Reason exceeds 500 characters",
     "resetReasonRequired": "Reset reason is required (at least 5 characters)",
     "resetReasonTooLong": "Reason exceeds 500 characters",
-    "versionConflictReload": "Data was modified by another user. Reload to get the latest version."
+    "versionConflictReload": "Data was modified by another user. Reload to get the latest version.",
+    "rowActions": "Actions for {name}",
+    "selectGuest": "Select {name}",
+    "selectPage": "Select all guests on this page",
+    "partyColumn": "Party",
+    "partyGuestOnly": "Guest only",
+    "partyWithCompanions": "Guest + {count} companions",
+    "partyArrivedOf": "arrived of {count}",
+    "guestCount": "{count} invitations",
+    "vipGuest": "VIP guest",
+    "vipHint": "Adds the VIP prefix to the reference so the gate highlights this guest.",
+    "companionNamesHint": "Optional — one name per line",
+    "reloadData": "Reload latest data",
+    "formSubtitleAdd": "The guest receives a unique QR pass after saving.",
+    "currentAdmission": "Current",
+    "proposedAdmission": "Proposed",
+    "peopleCount": "{count} people",
+    "companionsCount": "Companions: {count}"
   },
   "imports": {
     "title": "Import Guests (CSV)",
@@ -183,7 +209,21 @@
     "commitButton": "Confirm Import ({count} guests)",
     "commitSuccess": "Successfully imported {count} guests!",
     "importing": "Importing...",
-    "cannotCommitErrors": "Please fix all CSV errors before proceeding. Incomplete data will not be saved."
+    "cannotCommitErrors": "Please fix all CSV errors before proceeding. Incomplete data will not be saved.",
+    "subtitle": "Upload a CSV file. Nothing is saved until you review and confirm.",
+    "previewButton": "Preview import",
+    "backToUpload": "Choose another file",
+    "removeFile": "Remove",
+    "templateTitle": "Need the right format?",
+    "templateHint": "Start from a template with the expected columns.",
+    "readyCount": "Ready",
+    "errorCount": "Errors",
+    "warningCount": "Warnings",
+    "capacityLeft": "Capacity left",
+    "columnLine": "Line",
+    "columnGuest": "Guest",
+    "columnCompanions": "Companions",
+    "columnReference": "Reference"
   },
   "gate": {
     "workspaceTitle": "Gate Reception",
@@ -195,7 +235,15 @@
     "cameraUnavailable": "Camera is not available on this device.",
     "cameraHint": "Point camera at the guest QR code",
     "scannerTitle": "Barcode Scanner (USB / Bluetooth)",
-    "scannerPlaceholder": "Scan QR code or type here and press Enter...",
+    "scannerPlaceholder": "Scan a pass or type its short code…",
+    "scannerHint": "Works with USB and Bluetooth scanners. Press Enter after typing a code.",
+    "cameraSubtitle": "Use this device's camera to scan the guest's QR code",
+    "readyTitle": "Ready for the next guest",
+    "readyHint": "Scan the guest's pass, type its short code, or search by name.",
+    "enteringNow": "Entering now",
+    "liveAdmitted": "Admitted",
+    "liveInvitations": "Invitations",
+    "checkingInvitation": "Checking invitation…",
     "scannerSubmit": "Verify Code",
     "manualSearchTitle": "Manual Guest Lookup",
     "manualSearchPlaceholder": "Search by name, reference, or short code (min 2 characters)...",
@@ -256,7 +304,9 @@
     "scanInstruction": "Present this QR at the entrance",
     "downloadPdf": "Download PDF Pass",
     "print": "Print",
-    "close": "Close"
+    "close": "Close",
+    "saveImage": "Save image",
+    "downloadPdfA6": "PDF pass (A6)"
   },
   "exports": {
     "title": "Export & Reports",
@@ -307,7 +357,11 @@
     "errorNoGuests": "No active invitations in this event.",
     "rateLimited": "Concurrent export limit reached. Please wait.",
     "interimNotice": "Interim report — guests listed as \"pending\" have not yet checked in.",
-    "finalNotice": "Final report — \"did not attend\" includes all invitations without a check-in."
+    "finalNotice": "Final report — \"did not attend\" includes all invitations without a check-in.",
+    "subtitle": "Generate print-ready passes or an attendance report as PDF.",
+    "chooseType": "What would you like to export?",
+    "processingTitle": "Preparing your PDF…",
+    "processingHint": "Large exports can take up to a minute. You can keep this window open."
   },
   "errors": {
     "VALIDATION_FAILED": "Validation failed",
@@ -330,6 +384,8 @@
     "RATE_LIMITED": "Rate limit exceeded, please wait",
     "SERVICE_UNAVAILABLE": "Service temporarily unavailable",
     "UNKNOWN": "An unexpected error occurred",
-    "PRINT_POPUP_BLOCKED": "Popup blocked. PDF downloaded instead — open it to print."
+    "PRINT_POPUP_BLOCKED": "Popup blocked. PDF downloaded instead — open it to print.",
+    "LOST_RESPONSE": "The connection dropped before the server confirmed. Retrying uses the same request, so nothing will be duplicated.",
+    "NOT_CHECKED_IN": "This guest has not been admitted yet, so there is no admission to change."
   }
 }

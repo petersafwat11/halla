@@ -10,14 +10,13 @@ import styles from './WorkspaceNav.module.css';
 
 /**
  * Workspace navigation tabs for Guests and Gate workspaces.
- * Reception role sees Gate only.
- * Uses compact selected surface instead of decorative underline.
+ * Reception role sees Gate only. The selected event is carried across tabs.
  */
 export function WorkspaceNav() {
   const params = useParams();
   const lang = params?.lang === 'en' ? 'en' : 'ar';
   const dict = getDictionary(lang);
-  const pathname = usePathname();
+  const pathname = usePathname() || '';
   const searchParams = useSearchParams();
   const { role } = useSession();
 
@@ -26,36 +25,33 @@ export function WorkspaceNav() {
 
   const isGuests = pathname.includes('/guests');
   const isGate = pathname.includes('/gate');
-
   const isAdmin = role === 'admin';
 
   return (
     <nav className={styles.navBar} aria-label="Workspaces">
-      <div className={styles.segmentedWrapper}>
-        {isAdmin && (
-          <Link
-            href={`/${lang}/guests${queryString}`}
-            className={`${styles.navLink} ${isGuests ? styles.active : ''}`}
-            aria-current={isGuests ? 'page' : undefined}
-          >
-            <span className={styles.icon} aria-hidden="true">
-              <Icon name="users" size="sm" />
-            </span>
-            <span>{t(dict, 'nav.guests')}</span>
-          </Link>
-        )}
-
+      {isAdmin && (
         <Link
-          href={`/${lang}/gate${queryString}`}
-          className={`${styles.navLink} ${isGate ? styles.active : ''}`}
-          aria-current={isGate ? 'page' : undefined}
+          href={`/${lang}/guests${queryString}`}
+          className={`${styles.navLink} ${isGuests ? styles.active : ''}`}
+          aria-current={isGuests ? 'page' : undefined}
         >
           <span className={styles.icon} aria-hidden="true">
-            <Icon name="qr" size="sm" />
+            <Icon name="users" size="sm" />
           </span>
-          <span>{t(dict, 'nav.gate')}</span>
+          <span>{t(dict, 'nav.guests')}</span>
         </Link>
-      </div>
+      )}
+
+      <Link
+        href={`/${lang}/gate${queryString}`}
+        className={`${styles.navLink} ${isGate ? styles.active : ''}`}
+        aria-current={isGate ? 'page' : undefined}
+      >
+        <span className={styles.icon} aria-hidden="true">
+          <Icon name="scan-qr" size="sm" />
+        </span>
+        <span>{t(dict, 'nav.gate')}</span>
+      </Link>
     </nav>
   );
 }

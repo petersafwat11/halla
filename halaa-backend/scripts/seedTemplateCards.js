@@ -19,7 +19,7 @@
  *   2. Soft-deletes every legacy template by `nameEn` (old Wave-1
  *      and Wave-2 specs).
  *   3. Ensures the 7 categories from vocab.
- *   4. Uploads each source image to S3 and creates the polished
+ *   4. Uploads each source image to VPS storage and creates the polished
  *      Template document.
  *
  * Idempotent: re-running skips templates whose `nameEn` already
@@ -106,7 +106,7 @@ const metaRow = (color, topPct, opts = {}) => {
 //     fields: [...], overlays: [...], decorations: [...] }
 //
 // `polished` is the PNG used for the aspect-ratio guard. It does NOT
-// get uploaded — only `file` (the source JPG) goes to S3.
+// get uploaded — only `file` (the source JPG) goes to VPS storage.
 //
 // On dark-background cards, overlays use colorBinding="custom" with a
 // hardcoded readable hex so a host's chosen primaryColor can't render
@@ -936,17 +936,17 @@ async function ensureTemplate(spec, actor) {
   const ext = path.extname(spec.file).toLowerCase();
   const contentType = ext === ".png" ? "image/png" : ext === ".webp" ? "image/webp" : "image/jpeg";
 
-  const { s3Key } = await service.handleImageUpload({
+  const { imageRef } = await service.handleImageUpload({
     fileBuffer,
     filename: spec.file,
     contentType,
     templateId: "seed",
   });
-  if (VERBOSE) console.log(`    uploaded s3Key=${s3Key}`);
+  if (VERBOSE) console.log(`    uploaded imageRef=${imageRef}`);
 
   const doc = await service.createTemplate(
     {
-      s3Key,
+      imageRef,
       nameEn: spec.nameEn,
       nameAr: spec.nameAr,
       categories: spec.categories,
@@ -1013,17 +1013,6 @@ async function main() {
     console.error("[seed] DATABASE env is required (load via config.env)");
     process.exit(1);
   }
-  if (
-    !DRY &&
-    (!process.env.AWS_ACCESS_KEY_ID ||
-      !process.env.AWS_SECRET_ACCESS_KEY ||
-      !process.env.AWS_REGION ||
-      !process.env.AWS_S3_BUCKET)
-  ) {
-    console.error("[seed] AWS_* env required for S3 uploads");
-    process.exit(1);
-  }
-
   // Sanity: source dir + every spec's file must exist on disk.
   if (!fs.existsSync(CARDS_DIR)) {
     console.error(`[seed] CARDS_DIR not found: ${CARDS_DIR}`);
@@ -1040,7 +1029,7 @@ async function main() {
     try {
       await assertAspectRatios();
     } catch (err) {
-      console.error("[seed] aborting before any DB or S3 writes.");
+      console.error("[seed] aborting before any DB or VPS storage writes.");
       process.exit(1);
     }
   }

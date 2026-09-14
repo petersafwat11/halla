@@ -72,7 +72,7 @@ export default async function RootLayout(props) {
 
   const { children } = props;
   return (
-    <html lang={lang} dir={direction}>
+    <html lang={lang} dir={direction} data-scroll-behavior="smooth">
       <ReactQueryProvider>
         <GlobalProvider lang={lang}>
           <body

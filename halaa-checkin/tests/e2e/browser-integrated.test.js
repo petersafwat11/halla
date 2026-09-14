@@ -71,7 +71,7 @@ test('real browser → frontend → Express → replica set: first event, guest,
     await page.getByTestId('event-submit-btn').click();
     await page.getByTestId('open-event-btn').click();
     await page.getByTestId('lifecycle-confirm-btn').click();
-    await page.getByTestId('close-event-btn').waitFor();
+    await page.getByTestId('open-event-btn').waitFor({ state: 'detached' });
     const event = await Event.findOne({ name: 'Browser review event' });
     assert.equal(event.status, 'live');
     await page.getByTestId('add-guest-btn').click();

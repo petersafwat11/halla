@@ -1,6 +1,6 @@
 /**
  * Upload magic-byte + malware-scan policy tests (UGC-04 · P1-05).
- * Pure unit tests — no DB, no S3. Includes malicious fixtures (spoofed
+ * Pure unit tests — no DB or upload directory. Includes malicious fixtures (spoofed
  * Content-Type, executable/script/zip payloads, family mismatch, EICAR-style
  * scanner verdict) and the fail-closed behavior.
  */

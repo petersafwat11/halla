@@ -4,8 +4,8 @@
 .selectionSummary { color: var(--color-secondary-800, #2d251f); font-size: 1.4rem; font-weight: 600; }
 .bulkActions { margin-inline-start: auto; }
 .toolbar button { min-height: 44px; }
-.addButton { min-height: 44px; padding: 8px 16px; border: 1px solid #b99a7d; border-radius: 8px; font: inherit; cursor: pointer; }
-.addButton { background: #6b4e33; color: #fff; margin: 0; white-space: nowrap; font-size: 1.3rem; font-weight: 600; }
+.addButton { display: inline-flex; align-items: center; justify-content: center; min-height: 36px; padding: 8px 12px; border: 1px solid #c28e5c; border-radius: 8px; background: #c28e5c; color: #fff; margin: 0; white-space: nowrap; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; transition: background-color 150ms ease, border-color 150ms ease; }
+.addButton:hover { background: #b07d4d; border-color: #b07d4d; }
 .toolbar button:focus-visible, .addButton:focus-visible, .bulkForm input:focus-visible { outline: 3px solid #b98249; outline-offset: 3px; }
 .bulkForm { display: grid; gap: 16px; padding: 24px; width: min(420px, 88vw); }
 .bulkForm input { min-height: 44px; padding: 10px; border: 1px solid #b99a7d; border-radius: 8px; font: inherit; }

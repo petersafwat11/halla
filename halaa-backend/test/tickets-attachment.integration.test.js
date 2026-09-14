@@ -2,22 +2,16 @@
  * Ticket attachment (image OR video) integration proof.
  *
  * Drives the REAL tickets service against an ephemeral MongoMemoryReplSet with
- * the AWS_S3_BASE_URL env set so signStoredImage produces public URLs. NEVER
- * touches the shared staging/production cluster and NEVER calls real S3 (the
- * multer-s3 `file` object is supplied directly, exactly as the upload
- * middleware would hand it to the controller).
+ * local multer-shaped file objects. It never touches the shared database or
+ * writes upload files.
  *
  * Proves:
- *   1. An image attachment persists as an S3 KEY and is signed to a public URL
- *      on read (create + getById + list all sign it).
+ *   1. An image attachment persists as a local reference and is exposed as a
+ *      stable /uploads URL on every read path.
  *   2. A video attachment is typed "video".
  *   3. No file → attachment is null (JSON-only path unaffected).
  *   4. The async _formatTicket ripple (Promise.all in list) returns signed URLs.
  */
-
-// Set before requiring s3Upload so signStoredImage has a base URL to build from.
-process.env.AWS_S3_BASE_URL =
-  process.env.AWS_S3_BASE_URL || "https://hallamangement.s3.eu-north-1.amazonaws.com";
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
@@ -26,8 +20,9 @@ const db = require("./helpers/memoryDb");
 
 const ticketsService = require("../src/modules/tickets/tickets.service");
 const Ticket = require("../models/TicketModel");
+const { resolveLocalPath } = require("../src/shared/utils/localStorage");
 
-const BASE_URL = process.env.AWS_S3_BASE_URL;
+const PUBLIC_PREFIX = "/uploads/";
 
 const hostUser = () => ({
   _id: new mongoose.Types.ObjectId(),
@@ -54,14 +49,14 @@ const baseTicket = {
   message: "The event page shows a blank screen after login.",
 };
 
-// Shapes mirror a multer-s3 upload: `.key` is the stored S3 object key.
+// Shapes mirror multer.diskStorage output.
 const imageFile = (uid) => ({
-  key: `tickets/${uid}/screenshot-1700000000000-abcd1234.jpg`,
+  path: resolveLocalPath(`tickets/${uid}/screenshot-1700000000000-abcd1234.jpg`),
   mimetype: "image/jpeg",
   size: 204800,
 });
 const videoFile = (uid) => ({
-  key: `tickets/${uid}/screen-recording-1700000000000-abcd1234.mp4`,
+  path: resolveLocalPath(`tickets/${uid}/screen-recording-1700000000000-abcd1234.mp4`),
   mimetype: "video/mp4",
   size: 8_388_608,
 });
@@ -76,7 +71,7 @@ test.beforeEach(async () => {
   await db.clearAll();
 });
 
-test("image attachment: persists S3 key, serves signed public URL on create", async () => {
+test("image attachment persists and serves a stable local URL", async () => {
   const user = await seedHost();
   const file = imageFile(user._id.toString());
 
@@ -88,21 +83,21 @@ test("image attachment: persists S3 key, serves signed public URL on create", as
   assert.equal(ticket.attachment.mimeType, "image/jpeg");
   assert.equal(ticket.attachment.size, 204800);
   assert.ok(
-    ticket.attachment.url.startsWith(BASE_URL),
-    `url should be a public bucket URL, got ${ticket.attachment.url}`
+    ticket.attachment.url.startsWith(PUBLIC_PREFIX),
+    `url should be a public local path, got ${ticket.attachment.url}`
   );
   assert.ok(
-    ticket.attachment.url.endsWith(file.key),
-    `url should end with the stored key, got ${ticket.attachment.url}`
+    ticket.attachment.url.endsWith(".jpg"),
+    `url should retain its extension, got ${ticket.attachment.url}`
   );
 
-  // Stored shape persists the bare KEY (so reads can always re-sign).
+  // Stored shape persists the stable local reference.
   const raw = await Ticket.findById(ticket.id).lean();
-  assert.equal(raw.attachment.url, file.key);
+  assert.equal(raw.attachment.url, ticket.attachment.url);
   assert.equal(raw.attachment.type, "image");
 });
 
-test("video attachment: typed 'video' and signed on read", async () => {
+test("video attachment is typed video and resolves locally", async () => {
   const user = await seedHost();
   const file = videoFile(user._id.toString());
 
@@ -110,7 +105,7 @@ test("video attachment: typed 'video' and signed on read", async () => {
 
   assert.equal(ticket.attachment.type, "video");
   assert.equal(ticket.attachment.mimeType, "video/mp4");
-  assert.ok(ticket.attachment.url.endsWith(file.key));
+  assert.ok(ticket.attachment.url.startsWith(PUBLIC_PREFIX));
 });
 
 test("mixed attachments: stores and returns up to four images and videos", async () => {
@@ -127,7 +122,7 @@ test("mixed attachments: stores and returns up to four images and videos", async
   assert.equal(ticket.attachments.length, 4);
   assert.deepEqual(ticket.attachments.map(item => item.type), ["image", "video", "image", "video"]);
   assert.equal(ticket.attachment.url, ticket.attachments[0].url);
-  assert.ok(ticket.attachments.every(item => item.url.startsWith(BASE_URL)));
+  assert.ok(ticket.attachments.every(item => item.url.startsWith(PUBLIC_PREFIX)));
 });
 
 test("no attachment: JSON-only create leaves attachment null", async () => {
@@ -142,18 +137,18 @@ test("no attachment: JSON-only create leaves attachment null", async () => {
   assert.ok(!raw.attachment || !raw.attachment.url);
 });
 
-test("getTicketById (owner) returns a signed attachment URL", async () => {
+test("getTicketById returns the local attachment URL", async () => {
   const user = await seedHost();
   const file = imageFile(user._id.toString());
   const { ticket: created } = await ticketsService.createTicket({ ...baseTicket }, user, file);
 
   const { ticket } = await ticketsService.getTicketById(created.id, user._id, false);
 
-  assert.ok(ticket.attachment.url.startsWith(BASE_URL));
-  assert.ok(ticket.attachment.url.endsWith(file.key));
+  assert.ok(ticket.attachment.url.startsWith(PUBLIC_PREFIX));
+  assert.ok(ticket.attachment.url.endsWith(".jpg"));
 });
 
-test("list path (async _formatTicket via Promise.all) signs each attachment", async () => {
+test("list path resolves every local attachment", async () => {
   const user = await seedHost();
   await ticketsService.createTicket({ ...baseTicket }, user, imageFile(user._id.toString()));
   await ticketsService.createTicket({ ...baseTicket }, user, videoFile(user._id.toString()));
@@ -166,8 +161,8 @@ test("list path (async _formatTicket via Promise.all) signs each attachment", as
   assert.equal(withAttachment.length, 2);
   for (const t of withAttachment) {
     assert.ok(
-      t.attachment.url.startsWith(BASE_URL),
-      "each listed attachment should be a signed public URL"
+      t.attachment.url.startsWith(PUBLIC_PREFIX),
+      "each listed attachment should be a local public URL"
     );
   }
   assert.ok(["image", "video"].includes(withAttachment[0].attachment.type));
@@ -191,7 +186,7 @@ test("access control: another non-admin user cannot access ticket attachment", a
   );
 });
 
-test("admin access: admin can access any user's ticket with signed attachment", async () => {
+test("admin access returns the owner's local attachment", async () => {
   const owner = await seedHost();
   const adminId = new mongoose.Types.ObjectId();
   const file = videoFile(owner._id.toString());
@@ -201,11 +196,11 @@ test("admin access: admin can access any user's ticket with signed attachment", 
 
   assert.ok(ticket.attachment);
   assert.equal(ticket.attachment.type, "video");
-  assert.ok(ticket.attachment.url.startsWith(BASE_URL));
+  assert.ok(ticket.attachment.url.startsWith(PUBLIC_PREFIX));
 });
 
 test("media filter: allows supported image and video formats, rejects unsupported MIME/extension", () => {
-  const { mediaFilter } = require("../src/shared/utils/s3Upload");
+  const { mediaFilter } = require("../src/shared/utils/localUpload");
 
   const validFiles = [
     { mimetype: "image/jpeg", originalname: "photo.jpg" },

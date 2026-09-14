@@ -72,7 +72,7 @@
   flex-direction: column;
   align-items: center;
   border-radius: 12px;
-  background: var(--bg-artboard);
+  background: var(--landing-card-background, var(--bg-artboard));
   position: relative;
   overflow: hidden;
   transition: transform 0.3s;
@@ -80,10 +80,19 @@
   scroll-snap-stop: normal;
   flex-shrink: 0;
   contain: layout paint style;
+  padding: 0;
+  border: 0;
+  cursor: zoom-in;
+  font: inherit;
 }
 
 .invitationCard:hover {
   transform: translateY(-8px);
+}
+
+.invitationCard:focus-visible {
+  outline: 3px solid var(--color-primary-500);
+  outline-offset: 4px;
 }
 
 .invitationCard img {
@@ -157,6 +166,85 @@
   width: 2rem;
   border-radius: 0.35rem;
   background: var(--color-primary-500);
+}
+
+.previewOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  background: rgba(27, 21, 17, 0.72);
+  backdrop-filter: blur(5px);
+}
+
+.previewDialog {
+  width: min(92vw, 46rem);
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 1.6rem;
+  background: #fff;
+  box-shadow: 0 2.4rem 7rem rgba(0, 0, 0, 0.3);
+}
+
+.previewHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.6rem;
+  padding: 1.6rem 2rem;
+  border-bottom: 1px solid var(--color-natural-200);
+}
+
+.previewHeader h3 {
+  margin: 0;
+  color: var(--text-title-black);
+  font-size: 1.8rem;
+  line-height: 2.4rem;
+}
+
+.previewClose {
+  width: 3.6rem;
+  height: 3.6rem;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--color-natural-100, #f7f5f2);
+  color: #4d453f;
+  font-size: 2.4rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.previewClose:focus-visible {
+  outline: 3px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.previewBody {
+  min-height: 0;
+  padding: 2rem;
+  overflow: auto;
+  background: #f8f5f1;
+}
+
+/* Height-bounded so the whole invitation fits without scrolling; width follows
+   the intrinsic aspect ratio (header ≈ 6.9rem + body padding 4rem + slack). */
+.previewImage {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: calc(92vh - 11.5rem);
+  margin: 0 auto;
+  border-radius: 1rem;
+  background: #fff;
 }
 
 @media (max-width: 1200px) {
@@ -255,6 +343,14 @@
   .invitationCard img {
     width: 138px;
     height: 190px;
+  }
+
+  .previewOverlay {
+    padding: 1.2rem;
+  }
+
+  .previewBody {
+    padding: 1.2rem;
   }
 }
 

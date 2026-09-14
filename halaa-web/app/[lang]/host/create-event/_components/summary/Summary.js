@@ -108,9 +108,18 @@ const Summary = ({ owner } = {}) => {
     <div className={styles.summary}>
       <div className={styles.content}>
         <SummaryCards eventData={eventData} />
-        {imageUrl && <img src={imageUrl} alt={t("invitation_visual")} style={{ maxWidth: "100%", maxHeight: 440, objectFit: "contain" }} />}
-
-        <EventDataDisplay eventData={eventData} />
+        <div className={`${styles.invitationOverview} ${!imageUrl ? styles.invitationOverviewWithoutImage : ""}`}>
+          {imageUrl && (
+            <div className={styles.invitationImageFrame}>
+              <img
+                src={imageUrl}
+                alt={t("invitation_visual")}
+                className={styles.invitationImage}
+              />
+            </div>
+          )}
+          <EventDataDisplay eventData={eventData} />
+        </div>
 
         <section className={styles.reviewDetails} aria-label={t('review_delivery', 'Invitation and replies')}>
           <h3>{t('review_delivery', 'Invitation and replies')}</h3>

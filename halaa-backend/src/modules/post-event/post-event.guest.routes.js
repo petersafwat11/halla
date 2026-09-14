@@ -11,7 +11,7 @@ const postEventController = require("./post-event.controller");
 const { guestAuth } = require("../../shared/middleware/guestAuth");
 const { validateObjectId, validateZod } = require("../../shared/middleware/validation");
 const { authLimiter, reportLimiter } = require("../../shared/middleware/rateLimiter");
-const { uploadMultipleImages } = require("../../shared/utils/s3Upload");
+const { uploadMultipleImages } = require("../../shared/utils/localUpload");
 const {
   addCommentSchema,
   paginationSchema,

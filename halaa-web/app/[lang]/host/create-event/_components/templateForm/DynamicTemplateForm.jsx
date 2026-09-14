@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { memo, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useForm, FormProvider, useFormContext } from "react-hook-form";
+import { useForm, FormProvider, useFormContext, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import CardLayout from "@/ui/commen/card/CardLayout";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
@@ -13,9 +13,13 @@ import {
 } from "@/utils/schemas/createEventSchema";
 import { useFonts } from "@/hooks/templates";
 import TemplatePreviewCanvas from "@/components/shared/TemplatePreviewCanvas";
+import {
+  createSingleFlight,
+  templateBakeErrorKey,
+} from "@halaa/shared/utils/invitationImagePlan";
 import { renderField } from "./renderField";
-import { bakeTemplateImage } from "./useTemplateBake";
-import { toastUtils } from "@/utils/toastUtils";
+import { layoutTemplateFields } from "./templateFieldLayout";
+import { bakeTemplateImage, useBakeSafeTemplate } from "./useTemplateBake";
 import DeleteConfirmation from "@/ui/vendor/modals/DeleteConfirmation";
 import styles from "./templateForm.module.css";
 
@@ -24,6 +28,37 @@ const FALLBACK_FONT_OPTIONS = [
   { value: "cairo", label: "Cairo" },
   { value: "lato", label: "Lato" },
 ];
+
+/**
+ * Subscribes to the template form with `useWatch`, so a keystroke re-renders
+ * the canvas only — never the modal, its inputs or the wizard behind it.
+ */
+const LiveTemplatePreview = memo(function LiveTemplatePreview({
+  control,
+  template,
+  fonts,
+  colorKey,
+  fontKey,
+  previewRef,
+}) {
+  const data = useWatch({ control });
+  // Empty slots show their field label while editing; the bake skips them.
+  const primaryColor = colorKey ? data?.[colorKey] : "#5a4a42";
+  const fontFamilyId = fontKey ? data?.[fontKey] : null;
+  const fontFamilyOverride =
+    fonts.find((f) => f.id === fontFamilyId)?.webFamily || fontFamilyId;
+
+  return (
+    <TemplatePreviewCanvas
+      ref={previewRef}
+      template={template}
+      data={data}
+      primaryColor={primaryColor}
+      fontFamilyOverride={fontFamilyOverride}
+      showPlaceholders
+    />
+  );
+});
 
 export default function DynamicTemplateForm({
   isOpen,
@@ -35,29 +70,78 @@ export default function DynamicTemplateForm({
 }) {
   const { t } = useTranslation("createEvent");
   const previewRef = useRef(null);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const mountedRef = useRef(true);
+  const [saveFlight] = useState(createSingleFlight);
+  const [bakePhase, setBakePhase] = useState(null);
+  const [bakeErrorKey, setBakeErrorKey] = useState(null);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
   const [showDiscardConfirmation, setShowDiscardConfirmation] = useState(false);
+  const isGenerating = bakePhase !== null;
 
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  // Event date/time only seed the defaults; reading them once keeps this
+  // modal from re-rendering with the wizard form.
   const parentFormContext = useFormContext();
-  const parentEventDate = parentFormContext?.watch("eventDate");
-  const parentEventTime = parentFormContext?.watch("eventTime");
+  const [defaultValues] = useState(() =>
+    buildDefaultValues(
+      template,
+      parentFormContext?.getValues?.("eventDate"),
+      parentFormContext?.getValues?.("eventTime")
+    )
+  );
 
   const { data: fontsData } = useFonts();
-  const fonts = fontsData?.data?.fonts || [];
-  const dynamicFontOptions = fonts.length
-    ? fonts.map((f) => ({ value: f.id, label: f.id }))
-    : FALLBACK_FONT_OPTIONS;
+  const fonts = useMemo(() => fontsData?.data?.fonts || [], [fontsData]);
+  const dynamicFontOptions = useMemo(
+    () =>
+      fonts.length
+        ? fonts.map((f) => ({ value: f.id, label: f.id }))
+        : FALLBACK_FONT_OPTIONS,
+    [fonts]
+  );
 
-  const methods = useForm({
-    resolver: zodResolver(buildDynamicTemplateSchema(template.fields, t)),
-    defaultValues: buildDefaultValues(template, parentEventDate, parentEventTime),
-  });
+  const resolver = useMemo(
+    () => zodResolver(buildDynamicTemplateSchema(template.fields, t)),
+    [template.fields, t]
+  );
+  const methods = useForm({ resolver, defaultValues });
+  const { handleSubmit, control, reset, formState: { isDirty } } = methods;
 
-  const { handleSubmit, watch, reset, formState: { isDirty } } = methods;
-  const formData = watch();
+  const {
+    template: previewTemplate,
+    pending: backgroundPending,
+    error: backgroundError,
+    retry: retryBackground,
+  } = useBakeSafeTemplate(template);
+
+  const colorKey = template.fields.find((f) => f.type === "color")?.key;
+  const fontKey = template.fields.find((f) => f.type === "font")?.key;
+  const contentRows = useMemo(
+    () =>
+      layoutTemplateFields(
+        template.fields.filter((field) => field.type !== "font" && field.type !== "color")
+      ),
+    [template.fields]
+  );
+  const styleRows = useMemo(
+    () =>
+      layoutTemplateFields(
+        template.fields
+          .filter((field) => field.type === "font" || field.type === "color")
+          .sort((a, b) => (a.type === "font" ? -1 : b.type === "font" ? 1 : 0))
+      ),
+    [template.fields]
+  );
 
   const requestClose = () => {
+    // Never interrupt an in-flight save: its result commits atomically.
+    if (saveFlight.busy) return;
     if (isDirty) {
       setShowDiscardConfirmation(true);
       return;
@@ -72,41 +156,45 @@ export default function DynamicTemplateForm({
     onClose();
   };
 
-  const primaryColorField = template.fields.find((f) => f.type === "color");
-  const fontField = template.fields.find((f) => f.type === "font");
-  const primaryColor = primaryColorField ? formData[primaryColorField.key] : "#5a4a42";
-  const fontFamilyId = fontField ? formData[fontField.key] : null;
-  const fontFamilyOverride =
-    fonts.find((f) => f.id === fontFamilyId)?.webFamily || fontFamilyId;
-
-  const onSubmit = async (data) => {
-    setIsGenerating(true);
-    try {
-      const file = await bakeTemplateImage(previewRef, {
-        backgroundUrl: template?.imageUrl,
-      });
-      // Commit the template reference and its image atomically. Allowing the
-      // wizard to continue after a failed bake creates an IMAGE-header event
-      // that cannot be delivered by WhatsApp.
-      setEventValues("selectedTemplate", {
-        ...template,
-        fieldValues: data,
-        data,
-      });
-      setEventValues("templateImage", file);
-      onClose();
-    } catch (err) {
-      console.error("[StepThree] template bake failed:", err);
-      toastUtils.error(
-        t(
-          "template_bake_failed",
-          "تعذر إنشاء صورة القالب. يرجى المحاولة مرة أخرى."
-        )
-      );
-    } finally {
-      setIsGenerating(false);
-    }
+  const onSubmit = (data) => {
+    if (saveFlight.busy) return undefined;
+    return saveFlight.run(async () => {
+      setBakeErrorKey(null);
+      setBakePhase("preparing");
+      try {
+        const file = await bakeTemplateImage(previewRef, {
+          naturalWidth: template?.naturalWidth,
+          naturalHeight: template?.naturalHeight,
+          onPhase: (phase) => {
+            if (mountedRef.current) setBakePhase(phase);
+          },
+        });
+        if (!mountedRef.current) return;
+        // Commit the template reference and its image atomically. Allowing the
+        // wizard to continue after a failed bake creates an IMAGE-header event
+        // that cannot be delivered by WhatsApp.
+        setEventValues("selectedTemplate", {
+          ...template,
+          fieldValues: data,
+          data,
+        });
+        setEventValues("templateImage", file);
+        setBakePhase(null);
+        onClose();
+      } catch (err) {
+        console.error("[StepThree] template bake failed:", err);
+        if (!mountedRef.current) return;
+        // Keep the modal open with every entered value so the host can retry.
+        setBakePhase(null);
+        setBakeErrorKey(templateBakeErrorKey(err));
+      }
+    });
   };
+  const submit = handleSubmit(onSubmit);
+
+  const statusKey = bakePhase ? `template_${bakePhase}` : null;
+  const visibleErrorKey =
+    bakeErrorKey || (backgroundError ? "template_background_failed" : null);
 
   return (
     <>
@@ -117,23 +205,33 @@ export default function DynamicTemplateForm({
             type="button"
             className={styles.closeButton}
             onClick={requestClose}
+            disabled={isGenerating}
           >
             <img src="/svg/events/close-circle.svg" alt="close" />
           </button>
         </div>
         <CardLayout className={styles.container}>
           <FormProvider {...methods}>
-            <form className={styles.rightForm} onSubmit={handleSubmit(onSubmit)}>
+            <form className={styles.rightForm} onSubmit={submit}>
               <div className={styles.formGrid}>
-                {template.fields.map((f) => (
-                  <div
-                    key={f.key}
-                    className={f.type === "textarea" ? styles.fullWidth : ""}
-                  >
-                    {renderField(f, locale, dynamicFontOptions)}
+                {contentRows.map(({ field, fullWidth }) => (
+                  <div key={field.key} className={fullWidth ? styles.fullWidth : ""}>
+                    {renderField(field, locale, dynamicFontOptions)}
                   </div>
                 ))}
               </div>
+              {styleRows.length > 0 && (
+                <div className={styles.styleControls}>
+                  {styleRows.map(({ field, fullWidth }) => (
+                    <div
+                      key={field.key}
+                      className={`${styles.styleControl} ${fullWidth ? styles.fullWidth : ""}`}
+                    >
+                      {renderField(field, locale, dynamicFontOptions)}
+                    </div>
+                  ))}
+                </div>
+              )}
               <button
                 type="button"
                 className={styles.mobilePreviewBtn}
@@ -142,6 +240,31 @@ export default function DynamicTemplateForm({
                 <img src="/svg/events/eye.svg" alt="preview" />
                 <span>{t("preview_invitation", "معاينة الدعوة")}</span>
               </button>
+              {statusKey && (
+                <p className={styles.bakeStatus} role="status" aria-live="polite">
+                  {t(statusKey)}
+                </p>
+              )}
+              {visibleErrorKey && !isGenerating && (
+                <div className={styles.bakeError} role="alert">
+                  <strong>{t("template_failed")}</strong>
+                  <span>{t(visibleErrorKey)}</span>
+                  <button
+                    type="button"
+                    className={styles.bakeRetry}
+                    onClick={() => {
+                      if (backgroundError || bakeErrorKey === "template_background_failed") {
+                        setBakeErrorKey(null);
+                        retryBackground();
+                      } else {
+                        submit();
+                      }
+                    }}
+                  >
+                    {t("template_retry")}
+                  </button>
+                </div>
+              )}
               <div className={styles.buttonContainer}>
                 <Button
                   variant="secondary"
@@ -152,9 +275,9 @@ export default function DynamicTemplateForm({
                 />
                 <Button
                   variant="primary"
-                  title={isGenerating ? t("saving", "جاري الحفظ...") : t("save")}
+                  title={isGenerating ? t(statusKey) : t("save")}
                   type="submit"
-                  disabled={isGenerating}
+                  disabled={isGenerating || backgroundPending}
                 />
               </div>
             </form>
@@ -167,12 +290,13 @@ export default function DynamicTemplateForm({
                     : 0.8,
               }}
             >
-              <TemplatePreviewCanvas
-                ref={previewRef}
-                template={template}
-                data={formData}
-                primaryColor={primaryColor}
-                fontFamilyOverride={fontFamilyOverride}
+              <LiveTemplatePreview
+                previewRef={previewRef}
+                control={control}
+                template={previewTemplate}
+                fonts={fonts}
+                colorKey={colorKey}
+                fontKey={fontKey}
               />
             </div>
           </FormProvider>
@@ -207,11 +331,12 @@ export default function DynamicTemplateForm({
             </button>
           </div>
           <div className={styles.mobilePreviewCanvasWrapper}>
-            <TemplatePreviewCanvas
-              template={template}
-              data={formData}
-              primaryColor={primaryColor}
-              fontFamilyOverride={fontFamilyOverride}
+            <LiveTemplatePreview
+              control={control}
+              template={previewTemplate}
+              fonts={fonts}
+              colorKey={colorKey}
+              fontKey={fontKey}
             />
           </div>
         </div>

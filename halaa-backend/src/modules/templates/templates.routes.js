@@ -32,7 +32,7 @@ const {
   adminListQuerySchema,
 } = require("./templates.validation");
 
-// Rate-limit upload endpoints to mitigate S3 spend abuse (30/hr per user).
+// Rate-limit uploads to protect VPS storage and image-processing capacity.
 const uploadUrlLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 30,
@@ -77,8 +77,7 @@ hostRouter.use(protect);
  */
 hostRouter.get("/", validateZod(hostListQuerySchema, "query"), controller.list);
 
-// Authenticated image proxy. The production S3 bucket is private, so direct
-// bucket URLs are not renderable by mobile/web clients.
+// Authenticated image route backed by the persistent VPS upload volume.
 hostRouter.get("/:id/asset", validateObjectId("id"), controller.getAsset);
 
 /**
@@ -167,7 +166,7 @@ adminRouter.get(
  *                 format: binary
  *     responses:
  *       200:
- *         description: Upload accepted, returns S3 key
+ *         description: Upload accepted, returns a local image reference
  *         content:
  *           application/json:
  *             schema: { $ref: '#/components/schemas/TemplateUploadImageEnvelope' }

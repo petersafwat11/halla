@@ -63,6 +63,18 @@ export const CheckinsService = {
     if (payload.token) {
       guest = await GuestsRepository.findByQrToken(eventId, payload.token);
       if (!guest) {
+        // Staff may type the short code printed under the QR (dead phone,
+        // damaged pass). Normalize Crockford look-alikes before matching.
+        const typedCode = payload.token
+          .toUpperCase()
+          .replace(/[\s-]/g, '')
+          .replace(/O/g, '0')
+          .replace(/[IL]/g, '1');
+        if (REGEXES.CROCKFORD_BASE32_SHORT_CODE.test(typedCode)) {
+          guest = await GuestsRepository.findByShortCode(eventId, typedCode);
+        }
+      }
+      if (!guest) {
         throw new DomainError({
           code: ERROR_CODES.INVALID_INVITATION,
           message: 'Invitation not valid for this event',

@@ -10,7 +10,7 @@ const mongoose = require('mongoose');
 const { NotFoundError, ValidationError } = require('../../shared/errors');
 const { SERVICE_STATUS, VENDOR_STATUS, USER_STATUS } = require('../../shared/constants');
 const { containsProhibited } = require('../../shared/utils/contentFilter');
-const { extractStoredRef, signStoredImage } = require('../../shared/utils/s3Upload');
+const { extractStoredRef, resolveStoredImage } = require('../../shared/utils/localUpload');
 const logger = require('../../shared/utils/logger');
 const { logAudit } = require('../../shared/utils/auditLog');
 const locationsService = require('../locations/locations.service');
@@ -209,8 +209,8 @@ class ServicesService {
     }
 
     if (file) {
-      // Persist the S3 key (or local dev path) so reads can sign fresh URLs.
-      // Storing `file.location` (the full S3 URL) breaks once the bucket name
+      // Persist the local reference (or local dev path) so reads can sign fresh URLs.
+      // Storing `file.location` (the full local storage URL) breaks once the bucket name
       // or region moves and forces brittle URL-parsing on every read.
       serviceData.image = extractStoredRef(file);
     }
@@ -321,7 +321,7 @@ class ServicesService {
       category: service.category,
       price: service.price,
       priceUnit: service.priceUnit || service.currency,
-      image: await signStoredImage(service.image),
+      image: await resolveStoredImage(service.image),
       tags: service.tags || [],
       duration: service.duration || null,
       included: service.included || [],
@@ -336,8 +336,8 @@ class ServicesService {
             id: service.vendorId._id || service.vendorId,
             name: service.vendorId.name,
             brandName: service.vendorId.profile?.vendorData?.brandName,
-            logo: await signStoredImage(service.vendorId.profile?.vendorData?.businessLogo),
-            avatar: await signStoredImage(service.vendorId.avatar),
+            logo: await resolveStoredImage(service.vendorId.profile?.vendorData?.businessLogo),
+            avatar: await resolveStoredImage(service.vendorId.avatar),
             email: service.vendorId.email || null,
             phone: service.vendorId.mobile || service.vendorId.phoneNumber || null,
             website: service.vendorId.profile?.vendorData?.socialLinks?.website || null,

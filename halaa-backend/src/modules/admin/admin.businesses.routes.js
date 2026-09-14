@@ -12,7 +12,7 @@ const { ADMIN_PAGES } = require('../../shared/constants');
 const { validateObjectId, validateZod } = require('../../shared/middleware/validation');
 const { auditLog } = require('../../shared/middleware/auditLog');
 const adminValidation = require('./admin.validation');
-const { uploadImage } = require('../../shared/utils/s3Upload');
+const { uploadImage } = require('../../shared/utils/localUpload');
 
 // multipart logo upload (field name: "logo")
 const logoUpload = uploadImage.fields([{ name: 'logo', maxCount: 1 }]);

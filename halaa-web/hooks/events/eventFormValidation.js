@@ -3,6 +3,22 @@
  * Resolves EVT-07 and EVT-08.
  */
 
+import {
+  isValidEventPerson,
+  resolveTaqnyatTemplateRef,
+  resolveVisualTemplateRef,
+} from "@halaa/shared/utils/eventWizard";
+import { isObjectIdString } from "@halaa/shared/utils/referenceId";
+
+export {
+  eventStepForServerField,
+  eventStepForServerCode,
+  findEventStepForServerError,
+  findInvalidEventPeople,
+  resolveTaqnyatTemplateRef,
+  resolveVisualTemplateRef,
+} from "@halaa/shared/utils/eventWizard";
+
 export const validateEventStep = (step, formData) => {
   if (!formData) return false;
   switch (step) {
@@ -30,25 +46,30 @@ export const validateEventStep = (step, formData) => {
       );
     }
     case 2:
-      return Boolean(formData.guestList && formData.guestList.length > 0);
+      return Boolean(
+        formData.guestList?.length > 0 &&
+        formData.guestList.every(isValidEventPerson) &&
+        (formData.staffList || []).every(isValidEventPerson)
+      );
     case 3: {
       const hasTemplateMode = Boolean(
         formData.visualTemplate?.isCustomUpload ||
-        formData.visualTemplate?.templateRef ||
-        formData.visualTemplate?.id ||
-        formData.visualTemplate?._id
+        resolveVisualTemplateRef(formData.visualTemplate)
       );
       return hasTemplateMode && Boolean(formData.templateImage);
     }
     case 4:
-      return Boolean(
-        formData.selectedTemplate?.name ||
-        formData.taqnyatTemplate?.templateRef ||
-        formData.taqnyatTemplateRef
-      );
+      return isObjectIdString(resolveTaqnyatTemplateRef(formData));
     case 5:
       return formData.confirmReviewed === true;
     default:
       return false;
   }
+};
+
+export const findFirstInvalidEventStep = (formData, totalSteps = 5) => {
+  for (let step = 1; step <= totalSteps; step += 1) {
+    if (!validateEventStep(step, formData)) return step;
+  }
+  return null;
 };

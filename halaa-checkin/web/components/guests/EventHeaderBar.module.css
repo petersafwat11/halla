@@ -1,66 +1,66 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  width: 100%;
+  gap: 14px;
 }
 
 .bar {
-  background-color: var(--ops-surface, #ffffff);
-  border-radius: var(--radius-md, 12px);
-  border: 1px solid var(--ops-border, #E4DDD6);
-  padding: 14px 20px;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
+  gap: 16px 24px;
   flex-wrap: wrap;
-  gap: 14px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-  box-sizing: border-box;
 }
 
 .eventMeta {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  min-width: 240px;
+  gap: 6px;
+  min-width: 0;
+  flex: 1 1 360px;
 }
 
 .titleRow {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
+  min-width: 0;
 }
 
 .eventName {
-  font-family: var(--font-cairo, "Cairo", sans-serif);
-  font-size: 18px;
+  font-size: var(--text-2xl);
   font-weight: 700;
-  color: var(--ops-ink, #2C2926);
-  margin: 0;
-  line-height: 1.2;
+  line-height: 1.3;
+  color: var(--ops-ink);
+  overflow-wrap: anywhere;
 }
 
 .detailRow {
   display: flex;
   align-items: center;
-  gap: 16px;
-  font-size: 13px;
-  color: var(--ops-muted, #68615B);
   flex-wrap: wrap;
+  gap: 6px 12px;
+  color: var(--ops-muted);
+  font-size: var(--text-md);
 }
 
 .detailItem {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
+  min-width: 0;
 }
 
-.detailIcon {
-  color: var(--ops-muted, #68615B);
-  display: flex;
-  align-items: center;
+.detailItem > :first-child {
+  color: var(--ops-subtle);
+}
+
+.detailDot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: var(--ops-border-strong);
 }
 
 .actions {
@@ -71,44 +71,37 @@
 }
 
 .closedBanner {
-  background-color: var(--color-error-50, #f9ebea);
-  border: 1px solid var(--color-error-200, #e2a49d);
-  border-radius: var(--radius-sm, 8px);
-  padding: 10px 16px;
   display: flex;
   align-items: center;
   gap: 10px;
-  color: var(--color-error-700, #88281f);
-  font-family: var(--font-cairo, "Cairo", sans-serif);
-  font-size: 14px;
+  padding: 11px 16px;
+  border-radius: var(--radius-md);
+  background-color: var(--ops-surface-sunken);
+  border: 1px solid var(--ops-border-strong);
+  color: var(--ops-ink-soft);
+  font-size: var(--text-md);
   font-weight: 600;
 }
 
-@media (max-width: 768px) {
-  .bar {
-    padding: 10px 14px;
-    gap: 8px;
-  }
-  .eventMeta {
-    min-width: 0;
-    flex: 1;
-    gap: 2px;
-  }
+@media (max-width: 640px) {
   .eventName {
-    font-size: 15px;
+    font-size: var(--text-xl);
   }
+
+  .detailDot {
+    display: none;
+  }
+
   .detailRow {
-    gap: 10px;
-    font-size: 12px;
+    flex-direction: column;
+    align-items: flex-start;
   }
+
   .actions {
     width: 100%;
-    gap: 6px;
   }
-  .actions button {
+
+  .actions > :first-child {
     flex: 1;
-    min-height: 40px;
-    padding: 0 8px;
-    font-size: 12px;
   }
 }
