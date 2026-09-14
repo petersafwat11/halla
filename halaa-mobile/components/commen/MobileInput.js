@@ -12,9 +12,11 @@ import { isolateLtr } from "@halaa/shared/utils/bidi";
 import {
   clampPhoneInput,
   getPhoneMaxLength,
+  isValidSaudiMobile,
   DEFAULT_PHONE_PLACEHOLDER,
 } from "@halaa/shared/utils/phone";
 import { useFieldDirection } from "../../hooks/useInputDirection";
+import { useTranslation } from "../../localization";
 
 /**
  * Hoisted field renderer to satisfy Rules-of-Hooks and stabilize focus state.
@@ -117,6 +119,27 @@ const MobileInput = ({
   ...props
 }) => {
   const formContext = useFormContext();
+  const { t } = useTranslation("common");
+
+  // The field is Saudi-only (fixed +966 chrome, clampPhoneInput), but callers
+  // that pass plain `rules` only ever checked emptiness — so a short number
+  // like "51234567" (8 digits instead of 9) reached the backend and came back
+  // as an opaque 400. Validate the shape here, next to the clamp that
+  // produces it. Forms driven by a zodResolver ignore these rules, so their
+  // schema stays the single source of truth.
+  const mergedRules = { ...rules };
+  const callerValidate =
+    typeof rules?.validate === "function"
+      ? { custom: rules.validate }
+      : rules?.validate || {};
+  mergedRules.validate = {
+    ...callerValidate,
+    saudiMobile: (value) => {
+      const raw = typeof value === "string" ? value.trim() : "";
+      if (!raw) return true; // emptiness is the `required` rule's job
+      return isValidSaudiMobile(raw) || t("validation.invalidSaudiPhone");
+    },
+  };
 
   if (!formContext) {
     return (
@@ -141,7 +164,7 @@ const MobileInput = ({
     <Controller
       control={control}
       name={name}
-      rules={rules}
+      rules={mergedRules}
       render={({
         field: { onChange, onBlur, value, ref },
         fieldState: { error },

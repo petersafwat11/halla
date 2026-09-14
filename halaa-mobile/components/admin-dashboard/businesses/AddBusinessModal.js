@@ -22,6 +22,7 @@ import { CONTENT_DIRECTIONS } from "../../../hooks/useInputDirection";
 import { useCreateBusiness } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
+import { presentError, formatErrorDisplay } from "@halaa/shared/errors";
 import {
   colors,
   spacing,
@@ -39,7 +40,8 @@ import {
  * web UI's required fields.
  */
 const AddBusinessModal = ({ visible, onClose, onSaved }) => {
-  const { t } = useTranslation("admin");
+  const { t, currentLanguage } = useTranslation("admin");
+  const { t: tCommon } = useTranslation("common");
   const toast = useToast();
   const createBusiness = useCreateBusiness();
   const cb = (key, fallback) => t(`businesses.create.${key}`, fallback);
@@ -90,7 +92,20 @@ const AddBusinessModal = ({ visible, onClose, onSaved }) => {
       onSaved?.();
       onClose();
     } catch (error) {
-      toast.error(error.message || cb("error", "Could not create business."));
+      // `assertOk` forwards the backend's code/status/requestId/errors, so use
+      // the canonical presenter (as the event forms do) instead of surfacing
+      // raw backend text, and pin any field errors to their inputs.
+      for (const issue of error?.errors || []) {
+        if (issue?.field && issue?.message) {
+          methods.setError(issue.field, { type: "server", message: issue.message });
+        }
+      }
+      const lang = currentLanguage === "en" ? "en" : "ar";
+      const presented = presentError(error, { language: lang });
+      toast.error(
+        formatErrorDisplay(presented, lang) ||
+          cb("error", "Could not create business.")
+      );
     }
   };
 
@@ -155,13 +170,24 @@ const AddBusinessModal = ({ visible, onClose, onSaved }) => {
           label={cb("name", "Name")}
           placeholder={cb("namePlaceholder", "Business name")}
           contentDirection={CONTENT_DIRECTIONS.ADAPTIVE}
-          rules={{ required: cb("nameRequired", "Name is required") }}
+          rules={{
+            required: cb("nameRequired", "Name is required"),
+            // Mirrors the backend `createBusinessSchema` bounds.
+            minLength: { value: 2, message: tCommon("validation.nameMin") },
+            maxLength: { value: 100, message: tCommon("validation.nameMax") },
+          }}
         />
         <EmailInput
           name="email"
           label={cb("email", "Email")}
           placeholder={cb("emailPlaceholder", "name@example.com")}
-          rules={{ required: cb("emailRequired", "Email is required") }}
+          rules={{
+            required: cb("emailRequired", "Email is required"),
+            pattern: {
+              value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+              message: tCommon("validation.invalidEmail"),
+            },
+          }}
         />
         <MobileInput
           name="phoneNumber"
@@ -174,8 +200,14 @@ const AddBusinessModal = ({ visible, onClose, onSaved }) => {
           label={cb("password", "Password")}
           placeholder={cb("passwordPlaceholder", "Leave blank to auto-generate")}
           rules={{
-            validate: (v) =>
-              !v || v.length >= 8 || cb("passwordMin", "Password must be at least 8 characters"),
+            // Optional: blank means "generate one server-side".
+            validate: (v) => {
+              const raw = (v || "").trim();
+              if (!raw) return true;
+              if (raw.length < 8) return tCommon("validation.passwordMinLength");
+              if (raw.length > 128) return tCommon("validation.passwordMaxLength");
+              return true;
+            },
           }}
         />
         <TextAreaInput
