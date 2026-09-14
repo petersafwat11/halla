@@ -167,9 +167,8 @@ jobs:
           # Caddy's bind-mounted file can change without recreating the
           # long-running container, so explicitly load the synced config.
           docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile
-          # Idempotent: restores the tracked template masters on first local-
-          # storage deploy and becomes a no-op on later pushes.
-          docker compose exec -T api npm run storage:restore-templates
+          # Uploads persist in data/uploads across image replacements. Template
+          # masters are no longer bundled, so deploys must not try to reseed them.
           docker compose ps
           docker image prune -f
           echo "ROLLOUT_COMPLETE $NEW_TAG"
