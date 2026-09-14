@@ -144,14 +144,25 @@ describe("Marketplace iOS direction blueprint (§8 Marketplace row)", () => {
   it("VendorCard name/location/rating cluster at the logical start with LTR-pinned numeric tokens", () => {
     const content = read(MARKETPLACE_SOURCES[2]);
 
-    // Rating + location render as ONE leading cluster under the name —
+    // Location + rating render as ONE leading cluster under the name —
     // never pinned to opposite edges by space-between.
     const metaStart = content.indexOf("<View style={styles.meta}>");
-    const metaEnd = content.indexOf("</View>", content.indexOf("styles.locationRow", metaStart));
+    // Match the outer View, not the closing tag of either nested item.
+    let metaEnd = -1;
+    let depth = 0;
+    for (const tag of content.slice(metaStart).matchAll(/<\/?View\b[^>]*>/g)) {
+      depth += tag[0].startsWith("</") ? -1 : 1;
+      if (depth === 0) {
+        metaEnd = metaStart + tag.index + tag[0].length;
+        break;
+      }
+    }
     assert.ok(metaStart !== -1 && metaEnd > metaStart, "meta block exists");
     const metaBlock = content.slice(metaStart, metaEnd);
     assert.ok(metaBlock.includes("styles.rating") && metaBlock.includes("styles.locationRow"),
       "rating and location live in the same meta cluster");
+    assert.ok(metaBlock.indexOf("styles.locationRow") < metaBlock.indexOf("styles.rating"),
+      "location precedes rating in logical reading order in both locales");
 
     assert.ok(
       /meta:\s*\{[\s\S]{0,200}?gap:\s*12,\s*\}/.test(content) &&
