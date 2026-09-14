@@ -13,7 +13,6 @@ import LiveEventBanner from "./LiveEventBanner";
 import MobilePreviewModal from "./MobilePreviewModal";
 import StaffPopup from "../../create-event/_components/staffPopup/StaffPopup";
 import PopupWrapper from "@/ui/host/popups/popupWrapper/PopupWrapper";
-import Button from "@/ui/commen/button/Button";
 import {
   useEventById,
   useEventSubscriptionInfo,
@@ -198,7 +197,15 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
     t,
   });
 
-  const stepConfig = useStepConfig({ t, subscriptionInfo, eventRaw, isEventLive });
+  const openStaffPopup = useCallback(() => setShowStaffPopup(true), []);
+  const stepConfig = useStepConfig({
+    t,
+    subscriptionInfo,
+    eventRaw,
+    isEventLive,
+    staffCount: staffList?.length ?? 0,
+    onManageStaff: openStaffPopup,
+  });
 
   const toggleMobilePreview = useCallback((show) => {
     setShowMobilePreview(show);
@@ -262,15 +269,6 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
                 <StepTitleAndDesc
                   title={currentStepConfig.title}
                   description={currentStepConfig.description}
-                  Button={
-                    currentStep === 2 ? (
-                      <Button
-                        variant="secondary"
-                        onClick={() => setShowStaffPopup(true)}
-                        title={t("staff_button")}
-                      />
-                    ) : undefined
-                  }
                 />
                 <fieldset
                   disabled={lockoutActive}

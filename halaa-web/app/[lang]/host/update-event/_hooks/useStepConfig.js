@@ -9,7 +9,14 @@ import StepFour from "../../create-event/_components/stepFour/StepFour";
  * Builds the per-step configuration (title, description, component, props)
  * for the update-event wizard.
  */
-const useStepConfig = ({ t, subscriptionInfo, eventRaw, isEventLive }) =>
+const useStepConfig = ({
+  t,
+  subscriptionInfo,
+  eventRaw,
+  isEventLive,
+  staffCount = 0,
+  onManageStaff,
+}) =>
   useMemo(
     () => {
       // Pool-plan events are saved with `guestLimit: -1` (no per-event
@@ -53,6 +60,10 @@ const useStepConfig = ({ t, subscriptionInfo, eventRaw, isEventLive }) =>
             invitationBalance: subscriptionInfo?.invitationBalance ?? null,
           },
           allowAddOnly: isEventLive,
+          // Step 2's people switcher owns staff access; the wizard no longer
+          // renders a separate header button for it.
+          staffCount,
+          onManageStaff,
         },
       },
       3: {
@@ -68,7 +79,7 @@ const useStepConfig = ({ t, subscriptionInfo, eventRaw, isEventLive }) =>
       },
     };
     },
-    [subscriptionInfo, t, eventRaw, isEventLive]
+    [subscriptionInfo, t, eventRaw, isEventLive, staffCount, onManageStaff]
   );
 
 export default useStepConfig;
