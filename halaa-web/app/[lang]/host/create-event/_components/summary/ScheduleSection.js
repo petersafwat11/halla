@@ -9,8 +9,8 @@ const ScheduleSection = ({ eventData }) => {
 
   return (
     <div className={styles.scheduleSection}>
-      <div className={styles.scheduleHeader}>{t("ready_to_launch", "جاهز للإطلاق")}</div>
       <div className={styles.scheduleContent}>
+        {/* A single golden line setting expectations — no card, no heading. */}
         <div className={styles.scheduleText}>
           {isScheduled
             ? t("scheduled_launch_description", "سيتم إرسال الدعوات تلقائياً في الموعد المحدد أدناه:")

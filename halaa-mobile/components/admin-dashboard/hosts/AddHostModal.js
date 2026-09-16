@@ -28,6 +28,7 @@ import {
     textStyles,
     backgrounds,
 } from "../../../styles/tokens";
+import { isValidPhone } from "@halaa/shared/utils/phone";
 import { useCreateHost } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
@@ -53,14 +54,35 @@ const AddHostModal = ({ visible, onClose, onSuccess }) => {
     // schema is rebuilt per language instead of hardcoding English strings.
     const schema = useMemo(
         () =>
+            // Mirrors the backend `createHostSchema`. A resolver overrides the
+            // field-level rules MobileInput registers, so the phone format has
+            // to be checked here — otherwise a short or non-numeric entry
+            // reaches the API and returns an opaque 400.
             z.object({
-                name: z.string().min(1, t("hosts.add.nameRequired")),
+                name: z
+                    .string()
+                    .min(1, t("hosts.add.nameRequired"))
+                    .min(2, t("validation.nameMin"))
+                    .max(100, t("validation.nameMax")),
                 email: z
                     .string()
                     .min(1, t("hosts.add.emailRequired"))
                     .email(t("validation.invalidEmail")),
-                phoneNumber: z.string().min(1, t("hosts.add.phoneRequired")),
-                password: z.string().optional(),
+                phoneNumber: z
+                    .string()
+                    .min(1, t("hosts.add.phoneRequired"))
+                    .refine((v) => isValidPhone(v), {
+                        message: t("validation.invalidSaudiPhone"),
+                    }),
+                password: z
+                    .string()
+                    .optional()
+                    .refine((v) => !v || v.length >= 8, {
+                        message: t("validation.passwordMinLength"),
+                    })
+                    .refine((v) => !v || v.length <= 128, {
+                        message: t("validation.passwordMaxLength"),
+                    }),
             }),
         [t]
     );
