@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useVideoPlayer, VideoView } from "expo-video";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import LocalizedText from "../../commen/LocalizedText";
+import DirectionalIonicon from "../../common/DirectionalIonicon";
 import { useTranslation } from "../../../localization";
 import { getImageUrl } from "../../../utils/imageUtils";
 
@@ -29,11 +30,11 @@ export default function TicketMediaModal({ attachments, onClose }) {
       {isVideo ? <VideoAttachment key={uri} uri={uri} /> : <Image source={{ uri }} style={styles.media} resizeMode="contain" accessibilityLabel={t("tickets.media.view")} />}
       {media.length > 1 && <View style={styles.navigation}>
         <TouchableOpacity style={styles.arrow} onPress={() => setIndex((index + media.length - 1) % media.length)} accessibilityRole="button" accessibilityLabel={t("tickets.media.previous")}>
-          <Ionicons name="chevron-back" size={28} color="#fff" />
+          <DirectionalIonicon name="chevron-back" size={28} color="#fff" />
         </TouchableOpacity>
         <LocalizedText style={styles.counter}>{`${index + 1} / ${media.length}`}</LocalizedText>
         <TouchableOpacity style={styles.arrow} onPress={() => setIndex((index + 1) % media.length)} accessibilityRole="button" accessibilityLabel={t("tickets.media.next")}>
-          <Ionicons name="chevron-forward" size={28} color="#fff" />
+          <DirectionalIonicon name="chevron-forward" size={28} color="#fff" />
         </TouchableOpacity>
       </View>}
     </View>
@@ -43,7 +44,7 @@ const styles = StyleSheet.create({
   overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.95)", alignItems: "center" },
   close: { alignSelf: "flex-end", width: 48, height: 48, alignItems: "center", justifyContent: "center", marginEnd: 16 },
   media: { flex: 1, width: "100%" },
-  navigation: { flexDirection: "row", direction: "ltr", alignItems: "center", gap: 24, padding: 16 },
+  navigation: { flexDirection: "row", alignItems: "center", gap: 24, padding: 16 },
   arrow: { width: 48, height: 48, alignItems: "center", justifyContent: "center" },
   counter: { color: "#fff", writingDirection: "ltr" },
 });

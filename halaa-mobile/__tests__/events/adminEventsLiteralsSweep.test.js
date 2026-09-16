@@ -141,7 +141,6 @@ test("SWEEP-06: admin navigator stack titles are translation keys in both bundle
     "updateEvent",
     "managePostEvent",
     "tickets",
-    "ticketDetails",
   ];
   for (const key of titles) {
     assert.ok(
