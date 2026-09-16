@@ -4,6 +4,7 @@ import { FormProvider } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import styles from "../../../host/create-event/page.module.css";
+import adminStyles from "../../_components/adminWizard.module.css";
 import Header from "../../../host/create-event/_components/header/Header";
 import Stepper from "../../../host/create-event/_components/stepper/Stepper";
 import StepTitleAndDesc from "../../../host/create-event/_components/stepTitleAndDesc/StepTitleAndDesc";
@@ -17,7 +18,6 @@ import WhatsappPreview from "../../../host/create-event/_components/whatsappPrev
 import MobilePreviewButton from "../../../host/create-event/_components/mobilePreviewButton/MobilePreviewButton";
 import StaffPopup from "../../../host/create-event/_components/staffPopup/StaffPopup";
 import PopupWrapper from "@/ui/host/popups/popupWrapper/PopupWrapper";
-import Button from "@/ui/commen/button/Button";
 import HostSelector from "./HostSelector/HostSelector";
 import EventLimitReached from "@/ui/host/subscription/EventLimitReached";
 import useAuthStore from "@/stores/authStore";
@@ -259,14 +259,14 @@ export default function AdminCreateEvent() {
     return (
       <div className={styles.page_container}>
         <div className={styles.main_content}>
-          <div className={styles.header_wrapper}>
+          <div className={`${styles.header_wrapper} ${adminStyles.flushOnMobile}`}>
             <Header
               title={tAdmin("createEvent.title") || "Create Event (Admin)"}
               description={tAdmin("createEvent.subtitle") || "Select who to create the event for"}
               buttonText={t("promo_button")}
             />
           </div>
-          <div className={styles.content_wrapper}>
+          <div className={`${styles.content_wrapper} ${adminStyles.flushOnMobile}`}>
             <div className={styles.form_section}>
               <HostSelector
                 onHostSelect={handleHostSelect}
@@ -321,15 +321,15 @@ export default function AdminCreateEvent() {
             <StepTitleAndDesc
               title={t("step2_title")}
               description={t("step2_description")}
-              Button={
-                <Button
-                  variant="secondary"
-                  onClick={() => setShowStaffPopup(true)}
-                  title={t("staff_button")}
-                />
-              }
             />
-            <StepTwo subscription={normalizeSubscription(selectedHost?.subscription)} />
+            {/* Staff is reached through Step 2's guests/staff tabs — the same
+                switcher the host wizard uses — so there is no separate button
+                above them duplicating the entry point. */}
+            <StepTwo
+              subscription={normalizeSubscription(selectedHost?.subscription)}
+              staffCount={staffList.length}
+              onManageStaff={() => setShowStaffPopup(true)}
+            />
           </>
         );
       case 3:
@@ -362,7 +362,7 @@ export default function AdminCreateEvent() {
     <FormProvider {...methods}>
       <div className={styles.page_container}>
         <div className={styles.main_content}>
-          <div className={styles.header_wrapper}>
+          <div className={`${styles.header_wrapper} ${adminStyles.flushOnMobile}`}>
             <Header
               title={tAdmin("createEvent.title") || "Create Event (Admin)"}
               description={
@@ -374,11 +374,11 @@ export default function AdminCreateEvent() {
             />
           </div>
 
-          <div className={styles.stepper_wrapper}>
+          <div className={`${styles.stepper_wrapper} ${adminStyles.flushOnMobile}`}>
             <Stepper currentStep={currentStep} />
           </div>
 
-          <div className={styles.content_wrapper}>
+          <div className={`${styles.content_wrapper} ${adminStyles.flushOnMobile}`}>
             <div className={`${styles.form_section} ${currentStep === 4 ? styles.form_section_wide : ""}`}>
               <form className={styles.form_card} onSubmit={(e) => e.preventDefault()}>
                 {renderStepContent()}

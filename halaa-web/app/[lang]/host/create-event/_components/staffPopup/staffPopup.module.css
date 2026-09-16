@@ -1,10 +1,17 @@
+/*
+ * No `max-height` / `overflow-y` here: PopupWrapper is already the scroll
+ * container. Duplicating it made this a second, nested scroller, and once
+ * the content grew past the viewport its scrollbar claimed layout width on
+ * the inline-end edge — in Arabic that is the LEFT side, so every row inside
+ * sat further from the left edge than the right and the popup looked
+ * lopsided. The sticky header keeps working; it now sticks to PopupWrapper's
+ * scrollport instead of this one.
+ */
 .popup {
   background: #fff;
   border-radius: 12px;
   width: 100%;
   max-width: 800px;
-  max-height: 90vh;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
 }

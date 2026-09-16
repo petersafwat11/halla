@@ -303,7 +303,7 @@
   "category_search": "ابحث أو اكتب تصنيفاً",
   "category_none": "بدون تصنيف",
   "category_create": "إنشاء «{{q}}»",
-  "add_from_my_guests": "إضافة من قائمة جاهزة",
+  "add_from_my_guests": "إضافة من ضيوفك السابقين",
   "import_from_phone": "استيراد من جهات الاتصال",
   "phone_import_added": "تمت إضافة {{count}} ضيف من جهات الاتصال",
   "phone_import_failed": "تعذّر استيراد جهات الاتصال",

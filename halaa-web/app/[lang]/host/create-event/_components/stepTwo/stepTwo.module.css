@@ -80,6 +80,34 @@
   overflow: visible;
 }
 
+/* Other "add guests" entry points (guest book, phone contacts). They live
+   inside the manual-add card, directly under the import/download row, so all
+   the ways of adding guests read as one group. */
+.guestSources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  width: 100%;
+}
+
+/* Doubled class so these beat Button's own single-class rules regardless of
+   the order the two CSS modules end up in the bundle. */
+.guestSources.guestSources > * {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .guestSources {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .guestSources.guestSources > * {
+    width: 100%;
+  }
+}
+
 .sectionTitle {
   color: var(--Content-Text-Text-title-black, #2c2c2c);
   font-size: 16px;

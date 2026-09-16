@@ -1,0 +1,18 @@
+/*
+ * Admin-only overrides for the shared host create-event wizard.
+ *
+ * The wizard's own stylesheet gives its header / stepper / content wrappers a
+ * `0 1.6rem` gutter below 600px because the host route renders edge-to-edge.
+ * Inside the admin dashboard the layout already supplies the page gutter, so
+ * that inset stacks on top of it and Step 2 sits noticeably narrower than
+ * every other admin page. Drop it here only — the host wizard keeps its own.
+ *
+ * The doubled class raises specificity above the wizard's single-class rules
+ * so the override wins regardless of how the two CSS modules are ordered in
+ * the bundle.
+ */
+@media (max-width: 600px) {
+  .flushOnMobile.flushOnMobile {
+    padding-inline: 0;
+  }
+}

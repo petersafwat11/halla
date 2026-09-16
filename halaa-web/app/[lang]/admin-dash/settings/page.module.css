@@ -79,6 +79,18 @@
 }
 
 @media (max-width: 768px) {
+  /* The admin dashboard layout already supplies the page gutter, so the
+     page's own side padding stacked on top of it and left this page
+     noticeably narrower than the rest of the dashboard. Drop it and keep
+     only the vertical rhythm — same as the events page. */
+  .header {
+    padding: 2.4rem 0;
+  }
+
+  .content {
+    padding: 0;
+  }
+
   .title {
     font-size: 2rem;
     line-height: 2.4rem;
