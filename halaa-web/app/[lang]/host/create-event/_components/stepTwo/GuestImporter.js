@@ -27,6 +27,9 @@ const GuestImporter = ({
   setShowImportLimitPopup,
   categories = [],
   showCategory = true,
+  // Rendered below the add/import/download row so the other "add guests"
+  // entry points (guest book, phone contacts) sit with the rest of them.
+  extraSources = null,
 }) => {
   const { t } = useTranslation("createEvent");
   const fileInputRef = useRef(null);
@@ -285,6 +288,8 @@ const GuestImporter = ({
           isEditing={isEditing}
           isAddDisabled={isLimitReached && !isEditing}
         />
+
+        {extraSources}
       </div>
 
       <input

@@ -436,6 +436,11 @@
     "submitSuccess": "Template submitted for approval. You'll be notified when approved.",
     "submitError": "Failed to submit template"
   },
+  "validation": {
+    "required": "This field is required",
+    "invalidSaudiPhone": "Phone number must be 10 digits (starting with 05) or 9 digits (starting with 5)",
+    "invalidEmail": "Please enter a valid email address"
+  },
   "testMessage": {
     "title": "Send Test Message",
     "description": "Send one test message to verify the functionality and preview the final invitation appearance",

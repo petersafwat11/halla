@@ -570,9 +570,15 @@ const Table = ({
                 inlineBulkActions && selectedRows.length > 0
                   ? styles.headerActionsWithSelection
                   : ""
-              }`}
+              } ${headerAction ? styles.headerActionsWithAction : ""}`}
             >
-              {headerAction}
+              {/* Wrapped so the header row can give the caller's button its
+                  own full-width line on narrow screens. Left inline it has a
+                  nowrap min-content width that the row can't shrink past, and
+                  the whole header overflows the card. */}
+              {headerAction && (
+                <div className={styles.headerActionSlot}>{headerAction}</div>
+              )}
               {showSearch && (
                 <div className={styles.searchContainer}>
                   <Image

@@ -317,7 +317,7 @@
   "category_none_label": "No category",
   "category_create_label": "Create “{{query}}”",
   "continue": "Continue",
-  "add_from_my_guests": "Add from your guests",
+  "add_from_my_guests": "Add from your previous guests",
   "import_from_phone": "Import from contacts",
   "contacts_permission_explanation": "We use your contacts only so you can choose guests for this event. We never upload your address book, and only contacts you select are added.",
   "contacts_permission_denied": "Contacts permission was not granted. You can enable it in device settings.",

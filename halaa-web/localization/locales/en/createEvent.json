@@ -308,7 +308,7 @@
   "category_search": "Search or type a category",
   "category_none": "No category",
   "category_create": "Create \"{{q}}\"",
-  "add_from_my_guests": "Add from a prepared list",
+  "add_from_my_guests": "Add from your previous guests",
   "import_from_phone": "Import from contacts",
   "phone_import_added": "Added {{count}} guests from contacts",
   "phone_import_failed": "Could not import contacts",

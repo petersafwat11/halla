@@ -317,7 +317,7 @@
   "category_none_label": "بدون تصنيف",
   "category_create_label": "إنشاء «{{query}}»",
   "continue": "متابعة",
-  "add_from_my_guests": "أضف من ضيوفك",
+  "add_from_my_guests": "إضافة من ضيوفك السابقين",
   "import_from_phone": "استيراد من جهات الاتصال",
   "contacts_permission_explanation": "نستخدم جهات اتصالك فقط لتختار ضيوف هذه المناسبة. لن نرفع دفتر هاتفك، وفقط جهات الاتصال التي تختارها ستُضاف.",
   "contacts_permission_denied": "لم يتم منح إذن الوصول لجهات الاتصال. يمكنك تفعيله من إعدادات الجهاز.",
