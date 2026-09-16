@@ -365,6 +365,9 @@ describe('T11 — Container-equivalent E2E journey on disposable DB', { timeout:
         headers: admin.headers({}, { withCsrf: false }),
       });
       assert.equal(dl.status, 200);
+      // Consume the streamed report before closing/restarting its HTTP server.
+      const reportBytes = Buffer.from(await dl.arrayBuffer());
+      assert.equal(reportBytes.subarray(0, 5).toString(), '%PDF-');
     }
 
     // 12. Production web serves the bilingual shell (no guest data embedded).

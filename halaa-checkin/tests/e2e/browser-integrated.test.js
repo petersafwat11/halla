@@ -66,7 +66,7 @@ test('real browser → frontend → Express → replica set: first event, guest,
     await page.getByTestId('create-first-event-btn').click();
     await page.locator('input[name="name"]').fill('Browser review event');
     await page.locator('input[name="venue"]').fill('Synthetic hall');
-    await page.locator('input[name="startsDate"]').fill('2026-10-10');
+    await page.locator('input[name="startsDate"]').fill(new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10));
     await page.locator('input[name="startsTime"]').fill('19:00');
     await page.getByTestId('event-submit-btn').click();
     await page.getByTestId('open-event-btn').click();
@@ -163,7 +163,8 @@ test('real browser → frontend → Express → replica set: first event, guest,
     assert.deepEqual(writes[1], writes[0], 'retry keeps exact original payload and UUID after reauth');
     // Logout must revoke the real server session, not just hide the workspace.
     const logoutResponse = page.waitForResponse(res => res.url().endsWith('/auth/logout'));
-    await page.getByRole('button', { name: 'Logout', exact: true }).click();
+    await page.getByRole('button', { name: 'Current Staff', exact: true }).click();
+    await page.getByRole('menuitem', { name: 'Logout', exact: true }).click();
     assert.equal((await logoutResponse).status(), 204);
     assert.equal((await context.request.get(`${origin}/api/checkin/v1/auth/session`)).status(), 401);
     assert.deepEqual(errors, []);
