@@ -242,12 +242,10 @@ async function runEventLaunch(event, workerId) {
 
     if (fresh.subscriptionId) {
       const sub = await Subscription.findById(fresh.subscriptionId).select(
-        "status expiresAt"
+        "status expiresAt metadata.replacedBySubscription"
       );
-      const valid =
-        sub &&
-        ["active", "trial"].includes(sub.status) &&
-        (!sub.expiresAt || new Date(sub.expiresAt).getTime() > Date.now());
+      const { isUsableForEvent } = require("../../modules/subscriptions/subscriptionEventAccess.service");
+      const valid = isUsableForEvent(sub, fresh);
       if (!valid) {
         const reason = !sub
           ? "subscription_missing"

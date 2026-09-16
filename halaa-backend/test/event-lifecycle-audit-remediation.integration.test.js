@@ -697,3 +697,29 @@ test('scheduling accepts a successful test with a stale legacy fingerprint', asy
   assert.equal(reloaded.status, 'scheduled');
   assert.equal(reloaded.testMessageSent, true);
 });
+
+test('launch preserves an existing event subscription after plan replacement', async (t) => {
+  const { event } = await createScheduledEvent();
+  await Subscription.updateOne({ _id: poolSub._id }, { $set: {
+    status: 'cancelled', 'metadata.replacedBySubscription': new mongoose.Types.ObjectId(),
+  } });
+  let sends = 0;
+  t.mock.method(messagingService, 'sendInitialLaunchBatch', async () => {
+    sends++;
+    return { successful: 1, failed: 0 };
+  });
+  const result = await scheduledTasks.runEventLaunch(event, 'replacement-regression');
+  assert.equal(result.launched, true);
+  assert.equal(sends, 1);
+});
+
+test('launch still blocks a genuinely cancelled subscription', async (t) => {
+  const { event } = await createScheduledEvent();
+  await Subscription.updateOne({ _id: poolSub._id }, { $set: { status: 'cancelled' } });
+  t.mock.method(messagingService, 'sendInitialLaunchBatch', async () => {
+    assert.fail('Cancelled subscriptions must not send');
+  });
+  const result = await scheduledTasks.runEventLaunch(event, 'cancelled-regression');
+  assert.equal(result.launched, false);
+  assert.equal((await Event.findById(event._id)).status, 'scheduled');
+});
