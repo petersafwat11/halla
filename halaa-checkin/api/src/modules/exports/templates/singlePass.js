@@ -100,8 +100,9 @@ export function generateSinglePassHtml({ event, guest, locale = 'ar', snapshotAt
     }
 
     .header-logo {
-      height: 22px;
-      margin-bottom: 3mm;
+      height: 46px;
+      width: 46px;
+      margin-bottom: 1mm;
       object-fit: contain;
     }
 

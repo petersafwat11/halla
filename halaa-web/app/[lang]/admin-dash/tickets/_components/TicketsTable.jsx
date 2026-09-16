@@ -8,7 +8,7 @@ import { useMyTickets, useTicketMutation, useExportTickets } from "@/hooks/ticke
 import { handleError } from "@/services/errorHandlingService";
 import { toastUtils } from "@/utils/toastUtils";
 import { normalizeTicketsFilters } from "@/utils/filterNormalizer";
-import Table from "@/ui/commen/new-table/Table";
+import MediaViewerModal from "@/ui/commen/popup/MediaViewerModal";
 import AssignTicketPopup from "./AssignTicketPopup";
 import TicketResponsePopup from "./TicketResponsePopup";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
@@ -23,6 +23,7 @@ export default function TicketsTable() {
   const [showAssignPopup, setShowAssignPopup] = useState(false);
   const [showResponsePopup, setShowResponsePopup] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
+  const [mediaTicket, setMediaTicket] = useState(null);
   const [viewOnly, setViewOnly] = useState(false);
 
   const filters = useMemo(() => normalizeTicketsFilters(searchParams, { limit: 10 }), [searchParams]);
@@ -117,7 +118,7 @@ export default function TicketsTable() {
     try {
       await exportMutation.mutateAsync({
         search: filters.search, status: filters.status,
-        priority: filters.priority, from: filters.from, to: filters.to,
+        from: filters.from, to: filters.to,
       });
     } catch (err) {
       handleError(err, t, { fallbackMessage: "messages.updateError" });
@@ -154,9 +155,9 @@ export default function TicketsTable() {
 
   const tableData = useMemo(() => (data?.data || []).map((ticket) => ({
     id: ticket.id || ticket._id,
-    subject: ticket.subject || ticket.type || "-",
+    subject: ticket.subject || "-",
+    type: ticket.type || "other",
     user: ticket.user?.name || ticket.user?.email || "-",
-    priority: ticket.priority || "medium",
     status: ticket.status || "open",
     assignedTo: ticket.assignedTo?.name || "",
     createdAt: ticket.createdAt || ticket.created_at,
@@ -195,10 +196,16 @@ export default function TicketsTable() {
           handleStatusChange={handleStatusChange}
           handleAssignClick={handleAssignClick}
           handleResponseClick={handleResponseClick}
+          handleMediaClick={setMediaTicket}
           handleViewResolutionClick={handleViewResolutionClick}
         />
       </div>
 
+      {mediaTicket && (
+        <MediaViewerModal attachments={mediaTicket.attachments} onClose={() => setMediaTicket(null)}
+          closeLabel={t("viewResolution.close")} openLabel={t("attachment.openNewTab")}
+          previousLabel={t("media.previous")} nextLabel={t("media.next")} title={t("media.view")} />
+      )}
       {showAssignPopup && selectedTicket && (
         <AssignTicketPopup
           ticket={selectedTicket}

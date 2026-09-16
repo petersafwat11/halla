@@ -1,22 +1,22 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { View, Alert, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useNavigation } from "@react-navigation/native";
 import {
   useAdminTicketsInfinite,
-  useAssignTicket,
+
   useBulkDeleteTickets,
   useBulkResolveTickets,
   useDebounce,
   useExportAdminTickets,
   useReopenTicket,
-  useResolveTicket,
+
 } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
 import { useAuthStore } from "../../../stores/authStore";
-import { canDeleteOnPage, PAGES } from "../../../utils/adminPermissions";
+import { canDeleteOnPage, canEditPage, PAGES } from "../../../utils/adminPermissions";
 import TopBar from "../../../components/plans/TopBar";
+import TicketMediaModal from "../../../components/admin-dashboard/tickets/TicketMediaModal";
 import TicketListItem from "../../../components/admin-dashboard/tickets/TicketListItem";
 import { ResolveTicketModal, AssignTicketModal } from "../../../components/admin-dashboard/tickets";
 import AdminPageHeader from "../../../components/admin-dashboard/common/AdminPageHeader";
@@ -28,10 +28,10 @@ import { backgrounds, colors } from "../../../styles/tokens";
 const STATUS_FILTER_IDS = ["all", "open", "in_progress", "waiting_response", "resolved", "closed"];
 
 const AdminTicketsScreen = () => {
-  const navigation = useNavigation();
   const toast = useToast();
   const { t } = useTranslation("admin");
 
+  const [mediaTicket, setMediaTicket] = useState(null);
   const [activeFilter, setActiveFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [resolveModal, setResolveModal] = useState({ visible: false, ticket: null });
@@ -41,6 +41,7 @@ const AdminTicketsScreen = () => {
 
   const role  = useAuthStore((state) => state.user?.role);
   const exportTickets = useExportAdminTickets();
+  const canEdit = canEditPage(role, PAGES.TICKETS);
   const canDelete = canDeleteOnPage(role, PAGES.TICKETS);
 
   const debouncedSearch = useDebounce(searchQuery, 350);
@@ -68,13 +69,13 @@ const AdminTicketsScreen = () => {
 
   const tickets = useMemo(() =>
     rawTickets.map((tk) => ({
-      id:           tk.id,
+      id:           tk.id || tk._id,
+      type:         tk.type || "other",
+      attachments:  tk.attachments?.length ? tk.attachments : tk.attachment ? [tk.attachment] : [],
       ticketNumber: tk.ticketNumber,
       subject:      tk.subject,
       message:      tk.message,
       status:       tk.status || "open",
-      priority:     tk.priority || "medium",
-      category:     tk.category,
       submittedBy:  tk.user,
       assignedTo:   tk.assignedTo,
       resolution:   tk.resolution,
@@ -107,7 +108,7 @@ const AdminTicketsScreen = () => {
       result = result.filter(
         (tk) =>
           tk.subject?.toLowerCase().includes(q) ||
-          tk.submittedBy?.name?.toLowerCase().includes(q) ||
+          tk.message?.toLowerCase().includes(q) ||
           tk.submittedBy?.name?.toLowerCase().includes(q) ||
           tk.ticketNumber?.toString().includes(q),
       );
@@ -187,7 +188,7 @@ const AdminTicketsScreen = () => {
   };
 
   const bulkActions = [
-    {
+    canEdit && {
       icon: "checkmark-circle-outline",
       label: t("tickets.filters.resolved"),
       color: colors.success[600],
@@ -206,7 +207,7 @@ const AdminTicketsScreen = () => {
 
   // ── Individual ticket actions ──────────────────────────────────────────────
   const handleResolve = (ticket) => {
-    if (ticket.status === "resolved" || ticket.status === "closed") {
+    if (ticket.status === "resolved") {
       reopenTicket.mutateAsync(ticket.id)
         .then(() => { toast.success(t("common.success")); refetch(); })
         .catch(() => toast.error(t("common.error")));
@@ -257,7 +258,8 @@ const AdminTicketsScreen = () => {
           renderItem={({ item }) => (
             <TicketListItem
               ticket={item}
-              onPress={() => navigation.navigate("TicketDetails", { ticketId: item.id || item._id })}
+              onPress={() => setResolveModal({ visible: true, ticket: item })}
+              onMedia={(ticket) => setMediaTicket(ticket)}
               onResolve={handleResolve}
               onAssign={(tk) => setAssignModal({ visible: true, ticket: tk })}
               selected={selectedIds.includes(item.id)}
@@ -279,8 +281,10 @@ const AdminTicketsScreen = () => {
         />
       </View>
 
+      {mediaTicket && <TicketMediaModal attachments={mediaTicket.attachments} onClose={() => setMediaTicket(null)} />}
       <ResolveTicketModal
         visible={resolveModal.visible}
+        viewOnly={!canEdit || ["resolved", "closed"].includes(resolveModal.ticket?.status)}
         ticket={resolveModal.ticket}
         onClose={() => setResolveModal({ visible: false, ticket: null })}
         onSave={handleResolveSuccess}

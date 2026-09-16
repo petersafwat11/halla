@@ -53,15 +53,20 @@ export default function TicketResponsePopup({ ticket, onClose, viewOnly = false,
             <label>{t("close.type")}</label>
             <input
               type="text"
-              value={ticket?.subject || ""}
+              value={t(`types.${ticket?.type}`, ticket?.type || "-")}
               disabled
               className={styles.disabledInput}
             />
           </div>
 
           <div className={styles.formGroup}>
+            <label>{t("close.subject")}</label>
+            <input type="text" dir="auto" value={ticket?.subject || ""} readOnly className={styles.disabledInput} />
+          </div>
+          <div className={styles.formGroup}>
             <label>{t("close.originalMessage")}</label>
             <textarea
+              dir="auto"
               value={ticket?.message || ""}
               disabled
               className={`${styles.disabledInput} ${styles.disabledTextarea}`}

@@ -12,7 +12,6 @@ import {
   VENDOR_STATUS,
   SUBSCRIPTION_STATUS,
   TICKET_STATUS,
-  TICKET_PRIORITY,
   INVITATION_TYPE,
   invitationAllowsReply,
   invitationIncludesQr,
@@ -135,7 +134,7 @@ test("toTicketDTO (ADM-06): normalizes subject, title, description, message", ()
   assert.equal(dto1.description, "Cannot sign in with phone");
   assert.equal(dto1.message, "Cannot sign in with phone");
   assert.equal(dto1.status, "open");
-  assert.equal(dto1.priority, "high");
+  assert.equal(Object.hasOwn(dto1, "priority"), false);
   assert.equal(dto1.attachments.length, 1);
   assert.equal(dto1.attachment.url, "https://example.com/screenshot.jpg");
 
@@ -390,7 +389,6 @@ test("Status Enums: are frozen and contain all required lifecycle states", () =>
   assert.ok(Object.isFrozen(VENDOR_STATUS));
   assert.ok(Object.isFrozen(SUBSCRIPTION_STATUS));
   assert.ok(Object.isFrozen(TICKET_STATUS));
-  assert.ok(Object.isFrozen(TICKET_PRIORITY));
   assert.ok(Object.isFrozen(INVITATION_TYPE));
 
   assert.equal(EVENT_STATUS.PENDING_SCHEDULING, "pending_scheduling");

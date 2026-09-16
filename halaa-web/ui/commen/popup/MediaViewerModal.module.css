@@ -83,3 +83,7 @@
     font-size: 22px;
   }
 }
+
+.navigation { display: flex; align-items: center; gap: 20px; color: white; font-size: 16px; }
+.navigation button { width: 44px; height: 44px; border: 0; border-radius: 50%; background: white; color: #292d32; font-size: 30px; cursor: pointer; }
+.content .media { max-height: 70vh; }

@@ -1,89 +1,12 @@
-.modal {
-  padding: 2rem;
-  width: 100%;
-}
-
-.header {
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--c-n200, #eee);
-}
-
-.title {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: var(--c-s900, #221d18);
-  font-family: var(--font-ar, "Cairo", sans-serif);
-}
-
-.subtitle {
-  font-size: 1.3rem;
-  color: var(--c-n500, #777);
-  margin-top: 0.4rem;
-  font-family: var(--font-ar, "Cairo", sans-serif);
-}
-
-.statusFlow {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 1rem;
-  padding: 0.8rem 1rem;
-  background: var(--c-n100, #f8f9fa);
-  border-radius: var(--r-md, 0.5rem);
-}
-
-.flowArrow {
-  color: var(--c-n500, #888);
-  font-size: 1.4rem;
-}
-
-.form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.4rem;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.label {
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: var(--c-s700, #3a3028);
-  font-family: var(--font-ar, "Cairo", sans-serif);
-}
-
-.input,
-.textarea {
-  padding: 0.75rem 1rem;
-  border: 1.5px solid var(--c-n250, #dfdfdf);
-  border-radius: var(--r-md, 0.5rem);
-  font-size: 1.4rem;
-  font-family: var(--font-ar, "Cairo", sans-serif);
-  background: var(--c-n50, #ffffff);
-  color: var(--c-n900, #2c2c2c);
-  outline: none;
-  width: 100%;
-  transition: border-color 150ms ease;
-}
-
-.textarea {
-  resize: vertical;
-  min-height: 80px;
-}
-
-.input:focus,
-.textarea:focus {
-  border-color: var(--c-p500, #c28e5c);
-}
-
-.actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 1rem;
-}
+.modal { padding: 2rem; width: 100%; }
+.header { margin-bottom: 2rem; }
+.headingRow { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.title { font-size: 2rem; font-weight: 600; color: var(--color-natural-900); }
+.closeBtn { background: none; border: 0; font-size: 3rem; color: var(--color-natural-500); cursor: pointer; width: 4.4rem; height: 4.4rem; }
+.subtitle { font-size: 1.4rem; color: var(--color-natural-500); margin-top: .5rem; }
+.statusFlow { display: flex; align-items: center; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; padding: 1rem; background: var(--color-natural-150); border-radius: .8rem; font-size: 1.4rem; }
+.flowArrow { color: var(--color-natural-500); }
+:global([dir="rtl"]) .flowArrow { transform: scaleX(-1); }
+.form { display: flex; flex-direction: column; gap: 1.5rem; }
+.actions { display: flex; gap: 1rem; margin-top: 1rem; }
+.actions > * { flex: 1; }

@@ -96,6 +96,10 @@ export function parseExplicitOffsetDate(isoString) {
     throw new Error('Timestamp must be an ISO 8601 string with an explicit timezone offset or Z');
   }
   const date = new Date(isoString);
+  const clock = isoString.match(/T(\d{2}):(\d{2}):(\d{2})/);
+  if (!clock || Number(clock[1]) > 23 || Number(clock[2]) > 59 || Number(clock[3]) > 59) {
+    throw new Error('Invalid clock time');
+  }
   if (Number.isNaN(date.getTime())) {
     throw new Error('Invalid calendar date');
   }
@@ -151,6 +155,7 @@ export const isoTimestampWithOffsetSchema = z
   )
   .refine(
     (val) => {
+      try { parseExplicitOffsetDate(val); } catch { return false; }
       const date = new Date(val);
       if (Number.isNaN(date.getTime())) return false;
       const match = val.match(/^(\d{4})-(\d{2})-(\d{2})/);
@@ -222,6 +227,16 @@ export const eventCreateSchema = z
     timezone: z.literal(EVENT_TIMEZONE).default(EVENT_TIMEZONE),
   })
   .strict();
+
+/** Context-dependent scheduling rule shared by the form and API.
+ * An unchanged historical time remains valid when editing other details.
+ */
+export function eventScheduleSchema({ previousStartsAt = null, now = Date.now() } = {}) {
+  return isoTimestampWithOffsetSchema.refine((value) => {
+    const timestamp = new Date(value).getTime();
+    return timestamp > now || (previousStartsAt !== null && timestamp === new Date(previousStartsAt).getTime());
+  }, { message: 'Event start must be in the future', params: { code: 'EVENT_START_IN_PAST' } });
+}
 
 /**
  * Writable payload for PATCH /api/checkin/v1/events/:eventId

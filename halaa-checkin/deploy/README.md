@@ -1,5 +1,9 @@
 # Halaa Guest Check-in — deployment runbook
 
+For the selected deployment at **https://checkin.halaa.com.sa/ar** on the
+existing VPS with local MongoDB Community, follow [SELF-HOSTED.md](SELF-HOSTED.md).
+The Atlas sections below remain an alternative database configuration.
+
 Independent Compose project `halaa-checkin` on the same VPS as Halaa, behind
 the existing Caddy. Secrets are placeholders/inputs here — nothing below is
 authorised production action by itself. Actual rollout happens only when the

@@ -112,7 +112,7 @@ export function formatRiyadhDate(date, lang = 'ar', options = {}) {
     ...options,
   };
 
-  const locale = lang === 'en' ? 'en-US' : 'ar-SA';
+  const locale = lang === 'en' ? 'en-US' : 'ar-SA-u-ca-gregory';
   return new Intl.DateTimeFormat(locale, defaultOptions).format(d);
 }
 
@@ -151,7 +151,7 @@ export function toRiyadhDateInput(isoString) {
  * @returns {string}
  */
 export function toRiyadhIsoString(dateStr, timeStr = '18:00') {
-  if (!dateStr) return '';
+  if (!dateStr || !timeStr) return '';
   const normalizedTime = timeStr && timeStr.length === 5 ? `${timeStr}:00` : (timeStr || '18:00:00');
   return `${dateStr}T${normalizedTime}+03:00`;
 }

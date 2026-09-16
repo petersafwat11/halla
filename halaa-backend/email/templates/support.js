@@ -15,31 +15,9 @@ const {
 const { getConfig } = require("../config");
 
 // ============================================
-// PRIORITY & STATUS HELPERS
+// STATUS HELPERS
 // ============================================
 
-const PRIORITY_CONFIG = {
-  low: {
-    label: { ar: "منخفضة", en: "Low" },
-    color: COLORS.info,
-    badge: "info",
-  },
-  medium: {
-    label: { ar: "متوسطة", en: "Medium" },
-    color: COLORS.warning,
-    badge: "warning",
-  },
-  high: {
-    label: { ar: "عالية", en: "High" },
-    color: COLORS.error,
-    badge: "error",
-  },
-  urgent: {
-    label: { ar: "عاجلة", en: "Urgent" },
-    color: COLORS.error,
-    badge: "error",
-  },
-};
 
 const STATUS_CONFIG = {
   open: {
@@ -75,13 +53,12 @@ const STATUS_CONFIG = {
 
 /**
  * Ticket created confirmation email for users
- * @param {Object} data - { recipientName, ticketId, subject, category, priority, message, ticketUrl }
+ * @param {Object} data - { recipientName, ticketId, subject, category, message, ticketUrl }
  * @param {string} lang - Language code (ar/en)
  * @returns {Object} { subject, html }
  */
 const ticketCreatedEmail = (data, lang = "ar") => {
   const isAr = lang === "ar";
-  const priority = PRIORITY_CONFIG[data.priority] || PRIORITY_CONFIG.medium;
 
   const subject = isAr
     ? `تم إنشاء تذكرة الدعم #${data.ticketId}`
@@ -107,7 +84,6 @@ const ticketCreatedEmail = (data, lang = "ar") => {
       ${getKeyValue(isAr ? "رقم التذكرة" : "Ticket #", `<strong>#${data.ticketId}</strong>`)}
       ${getKeyValue(isAr ? "الموضوع" : "Subject", data.subject)}
       ${data.category ? getKeyValue(isAr ? "التصنيف" : "Category", data.category) : ""}
-      ${getKeyValue(isAr ? "الأولوية" : "Priority", `<span style="color: ${priority.color}; font-weight: 600;">${isAr ? priority.label.ar : priority.label.en}</span>`)}
     `)}
     
     ${
@@ -151,13 +127,12 @@ ${data.message}
 
 /**
  * Ticket assigned notification email for support agents
- * @param {Object} data - { agentName, ticketId, subject, priority, recipientName, userEmail, message, ticketUrl }
+ * @param {Object} data - { agentName, ticketId, subject, recipientName, userEmail, message, ticketUrl }
  * @param {string} lang - Language code (ar/en)
  * @returns {Object} { subject, html }
  */
 const ticketAssignedEmail = (data, lang = "ar") => {
   const isAr = lang === "ar";
-  const priority = PRIORITY_CONFIG[data.priority] || PRIORITY_CONFIG.medium;
 
   const subject = isAr
     ? `تم تعيين تذكرة جديدة لك #${data.ticketId}`
@@ -166,7 +141,7 @@ const ticketAssignedEmail = (data, lang = "ar") => {
   const content = `
     ${getGreeting(data.agentName, lang)}
     
-    <div class="highlight-box ${priority.badge === "error" ? "error-box" : priority.badge === "warning" ? "warning-box" : "info-box"}">
+    <div class="highlight-box info-box">
       <p style="margin: 0; font-size: 16px; font-weight: 600;">🎫 ${isAr ? "تم تعيين تذكرة جديدة لك" : "A new ticket has been assigned to you"}
       </p>
     </div>
@@ -174,7 +149,6 @@ const ticketAssignedEmail = (data, lang = "ar") => {
     ${getHighlightBox(`
       ${getKeyValue(isAr ? "رقم التذكرة" : "Ticket #", `<strong>#${data.ticketId}</strong>`)}
       ${getKeyValue(isAr ? "الموضوع" : "Subject", data.subject)}
-      ${getKeyValue(isAr ? "الأولوية" : "Priority", `<span style="color: ${priority.color}; font-weight: 600;">${isAr ? priority.label.ar : priority.label.en}</span>`)}
       ${getKeyValue(isAr ? "المستخدم" : "User", data.recipientName || data.name)}
       ${data.userEmail ? getKeyValue(isAr ? "البريد الإلكتروني" : "Email", data.userEmail) : ""}
     `)}
@@ -195,28 +169,13 @@ ${data.message}
       data.ticketUrl
     )}
     
-    ${
-      data.priority === "urgent" || data.priority === "high"
-        ? `
-      <div class="highlight-box error-box">
-        <p style="margin: 0; font-size: 14px;">
-          ⚠️ ${
-            isAr
-              ? "هذه تذكرة ذات أولوية عالية. يرجى الرد في أقرب وقت ممكن."
-              : "This is a high priority ticket. Please respond as soon as possible."
-          }
-        </p>
-      </div>
-    `
-        : ""
-    }
   `;
 
   const html = getBaseLayout(content, {
     lang,
     headerTitle: isAr ? "تذكرة جديدة" : "New Ticket Assigned",
     headerSubtitle: `#${data.ticketId}`,
-    headerBgColor: priority.color,
+    headerBgColor: COLORS.primary,
     preheader: isAr
       ? `تم تعيين تذكرة #${data.ticketId} لك`
       : `Ticket #${data.ticketId} assigned to you`,
@@ -501,13 +460,12 @@ const feedbackRequestEmail = (data, lang = "ar") => {
 
 /**
  * New ticket notification email for admins
- * @param {Object} data - { adminName, ticketId, subject, priority, recipientName, userEmail, category, ticketUrl }
+ * @param {Object} data - { adminName, ticketId, subject, recipientName, userEmail, category, ticketUrl }
  * @param {string} lang - Language code (ar/en)
  * @returns {Object} { subject, html }
  */
 const newTicketNotificationEmail = (data, lang = "ar") => {
   const isAr = lang === "ar";
-  const priority = PRIORITY_CONFIG[data.priority] || PRIORITY_CONFIG.medium;
 
   const subject = isAr
     ? `تذكرة دعم جديدة #${data.ticketId}`
@@ -516,7 +474,7 @@ const newTicketNotificationEmail = (data, lang = "ar") => {
   const content = `
     ${getGreeting(data.adminName, lang)}
     
-    <div class="highlight-box ${priority.badge === "error" ? "error-box" : priority.badge === "warning" ? "warning-box" : "info-box"}">
+    <div class="highlight-box info-box">
       <p style="margin: 0; font-size: 16px; font-weight: 600;">🎫 ${isAr ? "تذكرة دعم جديدة" : "New Support Ticket"}
       </p>
     </div>
@@ -525,7 +483,6 @@ const newTicketNotificationEmail = (data, lang = "ar") => {
       ${getKeyValue(isAr ? "رقم التذكرة" : "Ticket #", `<strong>#${data.ticketId}</strong>`)}
       ${getKeyValue(isAr ? "الموضوع" : "Subject", data.subject)}
       ${data.category ? getKeyValue(isAr ? "التصنيف" : "Category", data.category) : ""}
-      ${getKeyValue(isAr ? "الأولوية" : "Priority", `<span style="color: ${priority.color}; font-weight: 600;">${isAr ? priority.label.ar : priority.label.en}</span>`)}
       ${getKeyValue(isAr ? "المستخدم" : "User", data.recipientName || data.name)}
       ${data.userEmail ? getKeyValue(isAr ? "البريد الإلكتروني" : "Email", data.userEmail) : ""}
     `)}
@@ -537,7 +494,7 @@ const newTicketNotificationEmail = (data, lang = "ar") => {
     lang,
     headerTitle: isAr ? "تذكرة جديدة" : "New Ticket",
     headerSubtitle: `#${data.ticketId}`,
-    headerBgColor: priority.color,
+    headerBgColor: COLORS.primary,
     preheader: isAr
       ? `تذكرة دعم جديدة #${data.ticketId}`
       : `New support ticket #${data.ticketId}`,
@@ -558,6 +515,6 @@ module.exports = {
   ticketStatusUpdateEmail,
   feedbackRequestEmail,
   newTicketNotificationEmail,
-  // Config exportsPRIORITY_CONFIG,
+  // Config exports
   STATUS_CONFIG,
 };

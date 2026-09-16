@@ -43,7 +43,9 @@ async function run() {
   const { Event } = await import('../api/src/modules/events/event.model.js');
   const { Guest } = await import('../api/src/modules/guests/guest.model.js');
   const { createApp } = await import('../api/src/app.js');
-  const { loadConfig } = await import('../api/src/config.js');
+  const { loadConfig, config } = await import('../api/src/config.js');
+  const { exportWorker, checkWorkerHealth } = await import('../api/src/modules/exports/exports.worker.js');
+  const { ensureExportQueueFence } = await import('../api/src/modules/exports/exportQuota.js');
   const { generateQrToken, generateShortCode, verifyPassword } = await import('../api/src/utils/crypto.js');
   const { User } = await import('../api/src/modules/auth/user.model.js');
   const { ROLES } = await import('../contracts/src/constants.js');
@@ -71,7 +73,7 @@ async function run() {
   console.log('3. Provisioning demo staff accounts...');
   await provisionUser({
     username: 'admin',
-    displayName: 'مدير الفعالية (Admin)',
+    displayName: 'مدير المناسبة (Admin)',
     password: 'admin123456',
     role: ROLES.ADMIN,
     assignedEventIds: [demoEvent._id],
@@ -237,7 +239,13 @@ async function run() {
     trustProxyHops: 0,
   });
 
-  const app = createApp({ config: cfg, workerHealth: () => true });
+  // Export services use the shared config; keep their artifact path aligned
+  // with this disposable demo and run the same worker as the real server.
+  config.export.dir = exportDir;
+  exportWorker.exportDir = exportDir;
+  await ensureExportQueueFence();
+  exportWorker.start();
+  const app = createApp({ config: cfg, workerHealth: () => checkWorkerHealth({ exportDir }) });
   await new Promise((resolve) => {
     app.listen(API_PORT, '0.0.0.0', resolve);
   });
@@ -271,6 +279,7 @@ async function run() {
   const shutdown = async () => {
     console.log('\nStopping demo environment...');
     webProc.kill('SIGINT');
+    await exportWorker.stop();
     await mongoose.disconnect();
     await replSet.stop();
     process.exit(0);

@@ -233,7 +233,7 @@ export function ImportDialog({
         leadingIcon="check"
         data-testid="commit-import-btn"
       >
-        {t(dict, 'imports.commitButton', { count: previewData?.validCount || 0 })}
+        {t(dict, previewData?.validCount === 1 ? 'imports.commitButtonSingle' : 'imports.commitButton', { count: previewData?.validCount || 0 })}
       </Button>
     </>
   );
@@ -417,13 +417,11 @@ export function ImportDialog({
                     {previewData.rows.map((r, idx) => {
                       const rowErrors = (r.errors || []).map((e) => (typeof e === 'string' ? e : e?.message)).filter(Boolean);
                       return (
-                        <tr key={idx} className={r.valid ? '' : styles.rowInvalid}>
+                        <React.Fragment key={idx}><tr className={r.valid ? '' : styles.rowInvalid}>
                           <td className="tabular">{r.row ?? r.lineNumber ?? idx + 2}</td>
                           <td>
                             <span dir="auto" className={styles.rowName}>{r.data?.name || '—'}</span>
-                            {Array.isArray(r.data?.companionNames) && r.data.companionNames.length > 0 && (
-                              <span dir="auto" className={styles.rowSub}>{r.data.companionNames.join('، ')}</span>
-                            )}
+
                             {rowErrors.length > 0 && <span className={styles.rowError}>{rowErrors.join('; ')}</span>}
                           </td>
                           <td className="tabular">{r.data?.allowedCompanions ?? '—'}</td>
@@ -434,6 +432,14 @@ export function ImportDialog({
                             </span>
                           </td>
                         </tr>
+                        {r.data?.companionNames?.length > 0 && <tr className={styles.companionRow}>
+                          <td />
+                          <td colSpan={4}>
+                            <span className={styles.companionLabel}>{t(dict, 'imports.companionNames')}</span>
+                            <div className={styles.companionList}>{r.data.companionNames.map((name, index) => <span key={index} dir="auto">{name}</span>)}</div>
+                          </td>
+                        </tr>}
+                        </React.Fragment>
                       );
                     })}
                   </tbody>

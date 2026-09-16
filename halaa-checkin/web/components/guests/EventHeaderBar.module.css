@@ -6,16 +6,21 @@
 
 .bar {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
-  gap: 16px 24px;
+  gap: 24px;
   flex-wrap: wrap;
+  padding: 24px;
+  background: var(--ops-surface);
+  border: 1px solid var(--ops-border);
+  border-inline-start: 4px solid var(--ops-brand);
+  border-radius: var(--radius-lg);
 }
 
 .eventMeta {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 14px;
   min-width: 0;
   flex: 1 1 360px;
 }
@@ -40,9 +45,9 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 6px 12px;
+  gap: 10px 24px;
   color: var(--ops-muted);
-  font-size: var(--text-md);
+  font-size: var(--text-sm);
 }
 
 .detailItem {
@@ -57,10 +62,7 @@
 }
 
 .detailDot {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background-color: var(--ops-border-strong);
+  display: none;
 }
 
 .actions {

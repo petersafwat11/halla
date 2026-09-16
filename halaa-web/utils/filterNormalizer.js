@@ -110,7 +110,7 @@ export function normalizeDiscountsFilters(input, defaults = {}) {
 }
 
 /**
- * Normalizes tickets list filters (page, limit, search, status, priority, category, from, to).
+ * Normalizes tickets list filters (page, limit, search, status, category, from, to).
  */
 export function normalizeTicketsFilters(input, defaults = {}) {
   const defaultPage = defaults.page ?? 1;
@@ -120,7 +120,6 @@ export function normalizeTicketsFilters(input, defaults = {}) {
   const limit = cleanInt(getParam(input, "limit"), defaultLimit, 1);
   const search = cleanString(getParam(input, "search"));
   const status = cleanString(getParam(input, "status"));
-  const priority = cleanString(getParam(input, "priority"));
   const category = cleanString(getParam(input, "category"));
   const from = cleanDate(getParam(input, "from"));
   const to = cleanDate(getParam(input, "to"));
@@ -128,7 +127,6 @@ export function normalizeTicketsFilters(input, defaults = {}) {
   const normalized = { page, limit };
   if (search !== undefined) normalized.search = search;
   if (status !== undefined) normalized.status = status;
-  if (priority !== undefined) normalized.priority = priority;
   if (category !== undefined) normalized.category = category;
   if (from !== undefined) normalized.from = from;
   if (to !== undefined) normalized.to = to;

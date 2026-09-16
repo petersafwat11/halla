@@ -361,7 +361,7 @@ const send = {
   /**
    * Send ticket created email
    * @param {string} to - Recipient email
-   * @param {Object} data - { recipientName, ticketId, subject, category, priority, message, ticketUrl }
+   * @param {Object} data - { recipientName, ticketId, subject, category, message, ticketUrl }
    * @param {string} lang - Language (ar/en)
    */
   ticketCreated: async (to, data, lang = "ar") => {

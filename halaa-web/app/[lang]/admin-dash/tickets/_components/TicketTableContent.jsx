@@ -2,11 +2,8 @@
 
 import { useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { useRouter } from "next/navigation";
-import { FiEye, FiUserPlus, FiCheckSquare, FiTrash2 } from "react-icons/fi";
+import { FiEye, FiUserPlus, FiCheckSquare, FiTrash2, FiRotateCcw } from "react-icons/fi";
 import Table from "@/ui/commen/new-table/Table";
-import { handleError } from "@/services/errorHandlingService";
-import { toastUtils } from "@/utils/toastUtils";
 import { getStatusVisual } from "@/utils/statusColors";
 import { formatDate } from "@halaa/shared/utils/locale";
 import styles from "./TicketsTable.module.css";
@@ -15,10 +12,9 @@ export default function TicketTableContent({
   t, tableData, canUpdate, canDelete, filters, data,
   handlePageChange, handleSearchChange, handleFilterChange, handleExport, handleDelete,
   handleBulkDelete, handleBulkResolve, handleStatusChange,
-  handleAssignClick, handleResponseClick, handleViewResolutionClick,
+  handleAssignClick, handleResponseClick, handleViewResolutionClick, handleMediaClick,
 }) {
   const { t: tHook, i18n } = useTranslation("adminTickets");
-  const router = useRouter();
   const i18nT = t || tHook;
 
   const getRowActions = useCallback((row) => {
@@ -26,15 +22,18 @@ export default function TicketTableContent({
     if (row.status === "resolved") {
       actions.push({ type: "dropdown", icon: <FiEye size={16} />, text: i18nT("actions.viewResolution"), onClick: () => handleViewResolutionClick(row) });
     }
-    if (canUpdate && row.status !== "resolved") {
+    if (canUpdate && row.status !== "resolved" && row.status !== "closed") {
       actions.push({ type: "dropdown", icon: <FiUserPlus size={16} />, text: i18nT("actions.assign"), onClick: () => handleAssignClick(row) });
       actions.push({ type: "dropdown", icon: <FiCheckSquare size={16} />, text: i18nT("actions.resolve"), onClick: () => handleResponseClick(row) });
+    }
+    if (canUpdate && row.status === "resolved") {
+      actions.push({ type: "dropdown", icon: <FiRotateCcw size={16} />, text: i18nT("actions.reopen"), onClick: () => handleStatusChange(row.id, "in_progress") });
     }
     if (canDelete) {
       actions.push({ type: "dropdown", icon: <FiTrash2 size={16} />, text: i18nT("actions.delete"), onClick: () => handleDelete(row.id) });
     }
     return actions;
-  }, [canUpdate, canDelete, i18nT, handleViewResolutionClick, handleAssignClick, handleResponseClick, handleDelete]);
+  }, [canUpdate, canDelete, i18nT, handleViewResolutionClick, handleAssignClick, handleResponseClick, handleDelete, handleStatusChange]);
 
   const bulkActions = useMemo(() => {
     const actions = [];
@@ -64,16 +63,8 @@ export default function TicketTableContent({
         </div>
       );
     }
-    if (key === "priority") {
-      const { fg, bg } = getStatusVisual(value);
-      return (
-        <div className={styles.priorityBadge} style={{ background: bg, color: fg }}>
-          <span>{i18nT(`priority.${value}`, value)}</span>
-        </div>
-      );
-    }
-    if (key === "subject") {
-      return <span className={styles.clickable} onClick={() => handleResponseClick(row)}>{value}</span>;
+    if (key === "type") {
+      return <button type="button" className={styles.mediaCountButton} onClick={() => (canUpdate && row.status !== "resolved" && row.status !== "closed" ? handleResponseClick(row) : handleViewResolutionClick(row))}>{i18nT(`types.${value}`, value)}</button>;
     }
     if (key === "attachments") {
       const count = Array.isArray(value) ? value.length : 0;
@@ -81,9 +72,9 @@ export default function TicketTableContent({
         <button
           type="button"
           className={styles.mediaCountButton}
-          onClick={() => router.push(`/${i18n.language || "ar"}/admin-dash/tickets/${row.id}`)}
+          onClick={() => handleMediaClick(row)}
         >
-          {i18nT("table.mediaCount", { count, defaultValue: "{{count}} files" })}
+          {i18nT("media.view") + ` (${count})`}
         </button>
       ) : <span>-</span>;
     }
@@ -93,8 +84,9 @@ export default function TicketTableContent({
       );
     }
     if (key === "createdAt" && value) return formatDate(value, i18n?.language || "ar");
+    if (key === "subject" || key === "message") return <span dir="auto" className={styles.ticketText}>{value || "-"}</span>;
     return value;
-  }, [canUpdate, i18nT, i18n, handleResponseClick, handleAssignClick, router]);
+  }, [canUpdate, i18nT, i18n, handleResponseClick, handleAssignClick, handleMediaClick, handleViewResolutionClick]);
 
   return (
     <Table
@@ -103,14 +95,15 @@ export default function TicketTableContent({
       headers={[
         i18nT("table.columns.ticketType"),
         i18nT("table.columns.submittedBy"),
-        i18nT("table.columns.priority"),
+        i18nT("table.columns.subject"),
+        i18nT("table.columns.message"),
         i18nT("table.columns.status"),
         i18nT("table.columns.assignedTo"),
         i18nT("table.columns.createdAt"),
         i18nT("table.columns.media", "Media"),
       ]}
       data={tableData}
-      headerKeys={["subject", "user", "priority", "status", "assignedTo", "createdAt", "attachments"]}
+      headerKeys={["type", "user", "subject", "message", "status", "assignedTo", "createdAt", "attachments"]}
       searchValue={filters.search || ""}
       onSearchChange={handleSearchChange}
       activeFilter={filters.status || ""}

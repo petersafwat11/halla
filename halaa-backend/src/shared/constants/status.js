@@ -76,15 +76,6 @@ const TICKET_STATUS = {
   CLOSED: 'closed',
 };
 
-/**
- * Ticket priority
- */
-const TICKET_PRIORITY = {
-  LOW: 'low',
-  MEDIUM: 'medium',
-  HIGH: 'high',
-  URGENT: 'urgent',
-};
 
 /**
  * Guest RSVP status
@@ -419,7 +410,6 @@ module.exports = {
   getNextFulfillmentStatus,
   SUBSCRIPTION_STATUS,
   TICKET_STATUS,
-  TICKET_PRIORITY,
   RSVP_STATUS,
   RSVP_BUCKETS,
   classifyRsvpBucket,

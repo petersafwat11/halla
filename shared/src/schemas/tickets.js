@@ -29,7 +29,6 @@ export const TICKET_STATUS = [
   "closed",
 ];
 
-export const TICKET_PRIORITY = ["low", "medium", "high", "urgent"];
 
 const subject = (t) =>
   z
@@ -50,17 +49,12 @@ const type = (t) =>
     errorMap: () => ({ message: t("errors.typeRequired") }),
   });
 
-const priority = (t) =>
-  z.enum(TICKET_PRIORITY, {
-    errorMap: () => ({ message: t("errors.priorityInvalid") }),
-  });
 
 export const createTicketSchema = (t = idT) =>
   z.object({
     subject: subject(t),
     type: type(t),
     message: message(t),
-    priority: priority(t).optional().default("medium"),
   });
 
 export const updateTicketSchema = (t = idT) =>
@@ -68,7 +62,6 @@ export const updateTicketSchema = (t = idT) =>
     subject: subject(t).optional(),
     type: type(t).optional(),
     message: message(t).optional(),
-    priority: priority(t).optional(),
   });
 
 export const ticketResolutionSchema = (t = idT) =>
@@ -97,7 +90,6 @@ export const ticketRatingSchema = (t = idT) =>
 export const ticketFilterSchema = z.object({
   status: z.enum(TICKET_STATUS).optional(),
   type: z.enum(TICKET_TYPES).optional(),
-  priority: z.enum(TICKET_PRIORITY).optional(),
   search: z.string().optional(),
   page: z.number().int().positive().optional().default(1),
   limit: z.number().int().positive().max(100).optional().default(10),
@@ -107,7 +99,6 @@ export const getCreateTicketDefaults = () => ({
   subject: "",
   type: "other",
   message: "",
-  priority: "medium",
 });
 
 export const defaultTicketRatingValues = {
@@ -125,7 +116,6 @@ const ticketSchemas = {
   defaultTicketRatingValues,
   TICKET_TYPES,
   TICKET_STATUS,
-  TICKET_PRIORITY,
 };
 
 export default ticketSchemas;

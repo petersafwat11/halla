@@ -31,7 +31,7 @@ export default async function LangPage({ params }) {
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <Image
-            src="/images/logo.png"
+            src="/logo.png"
             alt="Halaa Logo"
             width={36}
             height={36}
@@ -193,7 +193,7 @@ export default async function LangPage({ params }) {
       >
         <span>
           {isAr
-            ? '© هلا لحلول الفعاليات — خط كايرو المحلي | ألوان هلا المعتمدة'
+            ? '© هلا لحلول المناسبات — خط كايرو المحلي | ألوان هلا المعتمدة'
             : '© Halaa Event Solutions — Local Cairo Typography | Authoritative Tokens'}
         </span>
       </footer>

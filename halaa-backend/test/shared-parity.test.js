@@ -62,18 +62,6 @@ test("Status Constants Parity: Backend and @halaa/shared definitions match", asy
     "TICKET_STATUS values must match"
   );
 
-  // 5. TICKET_PRIORITY parity
-  assert.deepEqual(
-    Object.keys(backendStatus.TICKET_PRIORITY).sort(),
-    Object.keys(shared.TICKET_PRIORITY).sort(),
-    "TICKET_PRIORITY keys must match"
-  );
-  assert.deepEqual(
-    Object.values(backendStatus.TICKET_PRIORITY).sort(),
-    Object.values(shared.TICKET_PRIORITY).sort(),
-    "TICKET_PRIORITY values must match"
-  );
-
   // 6. RSVP_STATUS parity
   assert.deepEqual(
     Object.keys(backendStatus.RSVP_STATUS).sort(),

@@ -54,3 +54,21 @@ halaa.com.sa {
 www.halaa.com.sa {
 	redir https://halaa.com.sa{uri} permanent
 }
+
+# Independent guest check-in app; the normal website keeps its existing routes.
+checkin.halaa.com.sa {
+	encode zstd gzip
+	header {
+		X-Robots-Tag "noindex, nofollow, noarchive"
+		Referrer-Policy "no-referrer"
+		X-Content-Type-Options "nosniff"
+		Permissions-Policy "camera=(self), microphone=()"
+	}
+	@checkinApi path /api/checkin/v1 /api/checkin/v1/*
+	handle @checkinApi {
+		reverse_proxy checkin-api:8100
+	}
+	handle {
+		reverse_proxy checkin-web:3100
+	}
+}

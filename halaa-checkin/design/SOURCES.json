@@ -28,6 +28,11 @@
       "sidebar-mobile-logo.svg": {
         "source": "halaa-web/public/svg/events/sidebar-mobile-logo.svg",
         "sha256": "5900acedc1bd8c0a23da4185b05c5fe1b3dc5a5a2be109afcf058a99aeadae95"
+      },
+      "halaa.png": {
+        "source": "halaa-checkin/web/public/images/logo.png",
+        "sha256": "c60d3276759c29c47cc329a2d6cd0d74cc9f12aab7be9376bd97c2a964300e54",
+        "usage": "Embedded Halaa brand logo in all invitation and attendance-report PDFs"
       }
     },
     "fonts": {

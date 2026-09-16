@@ -798,12 +798,6 @@
       "in_progress": "In Progress",
       "resolved": "Resolved",
       "closed": "Closed"
-    },
-    "priorities": {
-      "low": "Low",
-      "medium": "Medium",
-      "high": "High",
-      "urgent": "Urgent"
     }
   },
   "tickets": {
@@ -830,19 +824,12 @@
       "resolved": "Resolved",
       "closed": "Closed"
     },
-    "priority": {
-      "low": "Low",
-      "medium": "Medium",
-      "high": "High",
-      "urgent": "Urgent"
-    },
     "details": {
       "title": "Ticket Details",
       "ticketId": "Ticket ID",
       "subject": "Subject",
       "description": "Description",
       "status": "Status",
-      "priority": "Priority",
       "category": "Category",
       "createdBy": "Created By",
       "createdAt": "Created At",
@@ -886,7 +873,17 @@
       "message": "There are no support tickets to display"
     },
     "bulkResolveConfirm": "Are you sure you want to resolve {{count}} tickets?",
-    "bulkDeleteConfirm": "Are you sure you want to delete {{count}} tickets?"
+    "bulkDeleteConfirm": "Are you sure you want to delete {{count}} tickets?",
+    "media": {
+      "view": "Show media",
+      "previous": "Previous media",
+      "next": "Next media"
+    },
+    "fields": {
+      "type": "Type",
+      "subject": "Subject",
+      "message": "Original message"
+    }
   },
   "payments": {
     "title": "Payments",

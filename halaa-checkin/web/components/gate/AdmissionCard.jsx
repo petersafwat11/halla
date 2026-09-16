@@ -263,7 +263,7 @@ export function AdmissionCard({
         tone="success"
         icon="check-circle"
         title={t(dict, 'gate.successAdmittedTitle')}
-        message={t(dict, 'gate.successPartyCount', { count: partySize })}
+        message={t(dict, partySize === 1 ? 'gate.successPartySingle' : 'gate.successPartyCount', { count: partySize })}
         testId="admitted-success-card"
         actions={scanNext('primary')}
       >
@@ -376,7 +376,7 @@ export function AdmissionCard({
       <div className={styles.readyActions}>
         <Button
           type="button"
-          variant="success"
+          variant="primary"
           size="lg"
           onClick={onAdmit}
           disabled={isSubmitting}

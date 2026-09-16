@@ -25,13 +25,12 @@ test("Session 2.5 Mobile: Ticket Attachment Matrix (ADM-14)", () => {
   assert.match(modalContent, /selectionLimit:\s*4\s*-\s*attachment\.length/);
   assert.match(modalContent, /handlePickAttachment/);
 
-  // 3. TicketDetailsScreen.js maps raw.attachment and renders attachment section with image/video preview
-  const adminDetailPath = path.join(repoRoot, "halaa-mobile/screens/admin/admin-dashboard/TicketDetailsScreen.js");
-  const adminDetailContent = fs.readFileSync(adminDetailPath, "utf-8");
-
-  assert.match(adminDetailContent, /attachments:\s*raw\.attachments\?\.length/);
-  assert.match(adminDetailContent, /ticket\.attachments\.map/);
-  assert.match(adminDetailContent, /attachment\.type === "image"/);
-  assert.match(adminDetailContent, /Linking\.openURL\(attachment\.url\)/);
-  assert.match(adminDetailContent, /setViewerAttachment\(attachment\)/);
+  const list = fs.readFileSync(path.join(repoRoot, "halaa-mobile/screens/admin/admin-dashboard/AdminTicketsScreen.js"), "utf-8");
+  const viewer = fs.readFileSync(path.join(repoRoot, "halaa-mobile/components/admin-dashboard/tickets/TicketMediaModal.js"), "utf-8");
+  assert.match(list, /attachments:.*tk.attachments/);
+  assert.match(list, /<TicketMediaModal/);
+  assert.doesNotMatch(list, /TicketDetails/);
+  assert.match(viewer, /VideoView/);
+  assert.match(viewer, /tickets.media.previous/);
+  assert.match(viewer, /tickets.media.next/);
 });

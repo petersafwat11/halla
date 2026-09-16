@@ -40,10 +40,10 @@ export function generateReportHtml({ event, guests, snapshotAt, locale = 'ar' })
     ? {
         reportTitle: isClosed ? 'تقرير الحضور النهائي' : 'تقرير الحضور المرحلي',
         snapshotLabel: 'وقت إنشاء التقرير (توقيت الرياض Asia/Riyadh):',
-        eventInfo: 'معلومات الفعالية',
+        eventInfo: 'معلومات المناسبة',
         venueLabel: 'المكان:',
         dateLabel: 'الموعد:',
-        statusLabel: 'حالة الفعالية:',
+        statusLabel: 'حالة المناسبة:',
         statusValues: { draft: 'مسودة', live: 'مباشر', closed: 'مغلقة' },
         summaryTitle: 'ملخص الحضور',
         totalInvitations: 'إجمالي الدعوات',
@@ -194,7 +194,8 @@ export function generateReportHtml({ event, guests, snapshotAt, locale = 'ar' })
     }
 
     .header-logo {
-      height: 28px;
+      height: 52px;
+      width: 52px;
       object-fit: contain;
     }
 
@@ -233,16 +234,16 @@ export function generateReportHtml({ event, guests, snapshotAt, locale = 'ar' })
 
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 3mm;
-      margin-bottom: 6mm;
+      margin-bottom: 4mm;
     }
 
     .stat-card {
       background: #ffffff;
       border: 1px solid #dfdfdf;
       border-radius: 6px;
-      padding: 3mm;
+      padding: 2mm;
       text-align: center;
     }
 
@@ -303,13 +304,13 @@ export function generateReportHtml({ event, guests, snapshotAt, locale = 'ar' })
       background: #f5ede4;
       color: #2c2c2c;
       font-weight: 700;
-      padding: 2mm 2.5mm;
+      padding: 1.6mm 2.5mm;
       border: 1px solid #dfdfdf;
       text-align: inherit;
     }
 
     td {
-      padding: 2mm 2.5mm;
+      padding: 1.6mm 2.5mm;
       border: 1px solid #dfdfdf;
       vertical-align: middle;
     }

@@ -1,0 +1,32 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import React from 'react';
+import { setupDom } from '../helpers/domSetup.mjs';
+import MediaViewerModal from '../../ui/commen/popup/MediaViewerModal.jsx';
+
+test('gallery navigates mixed media, wraps, resets for a new ticket and restores focus', async () => {
+  setupDom();
+  const { render, fireEvent } = await import('@testing-library/react');
+  const opener = document.createElement('button');
+  document.body.appendChild(opener);
+  opener.focus();
+  let closed = false;
+  const props = { attachments: [{ url: '/one.jpg', type: 'image' }, { url: '/two.mp4', type: 'video' }], onClose: () => { closed = true; } };
+  const view = render(React.createElement(MediaViewerModal, props));
+  assert.equal(document.querySelector('img').getAttribute('src'), '/one.jpg');
+  fireEvent.click(view.getByLabelText('Next media'));
+  assert.equal(document.querySelector('video').getAttribute('src'), '/two.mp4');
+  fireEvent.keyDown(document, { key: 'ArrowRight' });
+  assert.equal(document.querySelector('img').getAttribute('src'), '/one.jpg');
+  fireEvent.click(view.getByLabelText('Previous media'));
+  assert.ok(document.querySelector('video'));
+  view.rerender(React.createElement(MediaViewerModal, { ...props, attachments: [{ url: '/new.jpg', type: 'image' }] }));
+  assert.equal(document.querySelector('img').getAttribute('src'), '/new.jpg');
+  assert.equal(view.queryByLabelText('Next media'), null);
+  fireEvent.keyDown(document, { key: 'Escape' });
+  assert.equal(closed, true);
+  view.unmount();
+  assert.equal(document.activeElement, opener);
+  assert.equal(document.body.style.overflow, '');
+  opener.remove();
+});

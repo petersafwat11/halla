@@ -16,9 +16,7 @@ const read = (rel) => fs.readFileSync(path.join(MOBILE_ROOT, rel), "utf8");
 
 const ADMIN_TICKETS_TREE = [
   "screens/admin/admin-dashboard/AdminTicketsScreen.js",
-  "screens/admin/admin-dashboard/TicketDetailsScreen.js",
   "components/admin-dashboard/tickets/TicketListItem.js",
-  "components/admin-dashboard/tickets/TicketHeroCard.js",
   "components/admin-dashboard/tickets/TicketSectionCard.js",
   "components/admin-dashboard/tickets/ModeratorList.js",
   "components/admin-dashboard/tickets/ResolveTicketModal.js",
@@ -107,20 +105,6 @@ test("ModeratorList: adaptive names, LTR emails, localized empty state", () => {
   assert.ok(!/import\s+\{\s*[\s\S]*?\bText\b[\s\S]*?\}\s*from\s+"react-native"/.test(list), "plain Text must not bypass the role primitives");
 });
 
-test("TicketHeroCard: LTR ticket-number token, adaptive subject/category, localized chips + isolated date", () => {
-  const hero = read("components/admin-dashboard/tickets/TicketHeroCard.js");
-
-  assert.match(hero, /isolateLtr\(`#\$\{ticketNumber\}`\)/, "ticket number is an intrinsically LTR token");
-  assert.match(hero, /styles\.heroTicketNum,\s*styles\.ltrToken/, "…pinned LTR so #/digits cannot reorder under RTL");
-  assert.match(hero, /<AdaptiveText style=\{styles\.heroSubject\}>/, "subject resolves first-strong");
-  assert.match(hero, /<AdaptiveText style=\{styles\.categoryChipText\}>/, "category chip value is backend content");
-  assert.match(hero, /<LocalizedText[^>]*styles\.priorityChipText/, "priority label is app copy");
-  assert.match(hero, /<LocalizedText[^>]*styles\.statusChipText/, "status label is app copy");
-  assert.match(hero, /isolateAuto\(formattedDate\)/, "locale-formatted date is first-strong isolated");
-  assert.match(hero, /marginStart:\s*"auto"/, "date hugs the logical end edge");
-  assert.ok(!/import\s+\{\s*[\s\S]*?\bText\b[\s\S]*?\}\s*from\s+"react-native"/.test(hero));
-});
-
 test("TicketSectionCard: localized section title; InfoRow declares a per-row value mode", () => {
   const card = read("components/admin-dashboard/tickets/TicketSectionCard.js");
 
@@ -136,7 +120,7 @@ test("TicketListItem: details/chips classified (ltr ID, adaptive name/category, 
   const item = read("components/admin-dashboard/tickets/TicketListItem.js");
 
   assert.match(item, /text:\s*isolateLtr\(`#\$\{ticketNum\}`\),\s*ltr:\s*true/, "ticket number row is a pinned-LTR token");
-  assert.match(item, /text:\s*ticket\.category,\s*adaptive:\s*true/, "category is backend content");
+  assert.match(item, /text:\s*ticket\.message,\s*adaptive:\s*true/, "message is backend content");
   assert.match(item, /text:\s*isolateAuto\(formatDate\(ticket\.createdAt,\s*currentLanguage\)\)/, "date is locale-formatted then first-strong isolated");
   assert.match(item, /adaptive:\s*true,\s*\n\s*\},\s*\n\s*\]\.filter\(Boolean\)[\s\S]{0,40}details =/, "assignee chip must be marked adaptive");
 });
@@ -150,40 +134,10 @@ test("AdminListItem (shared): adaptive chip labels and LTR detail mode exist for
   assert.match(listItem, /ltrDetailText:\s*\{\s*writingDirection:\s*"ltr"/);
 });
 
-test("TicketDetailsScreen: adaptive bodies, interpolated meta line, explicit modes, labelled actions", () => {
-  const screen = read("screens/admin/admin-dashboard/TicketDetailsScreen.js");
-
-  // Free-text bodies are user/backend content.
-  assert.match(screen, /<AdaptiveText style=\{styles\.messageText\}>/, "ticket message body");
-  assert.match(screen, /<AdaptiveText style=\{styles\.resolutionText\}>/, "resolution body");
-  assert.match(screen, /<AdaptiveText style=\{styles\.messageText\}>\{ticket\.assignmentNote\}/, "assignment note body");
-
-  // The resolved-by sentence comes from i18next interpolation with isolated
-  // tokens — never JSX concatenation of label + name + date.
-  assert.match(screen, /t\("ticketDetails\.resolvedByMeta"/);
-  assert.match(screen, /name:\s*isolateAuto\(resolvedBy\)/);
-  assert.match(screen, /date:\s*isolateAuto\(formatDate\(ticket\.resolution\.at\)\)/);
-  assert.ok(
-    !/\{t\("ticketDetails\.resolvedBy"\)\}\s*\{resolvedBy\}/.test(screen),
-    "old JSX-concatenated meta line removed"
-  );
-
-  // Detail rows declare their content modes.
-  assert.match(screen, /label=\{t\("ticketDetails\.email"\)\}\s*value=\{ticket\.submittedBy\.email\}\s*mode="ltr"/, "email row pins LTR");
-  assert.match(screen, /value=\{isolateAuto\(formatDate\(ticket\.createdAt,\s*true\)\)\}\s*mode="localized"/, "created row is a locale-formatted token");
-  assert.match(screen, /value=\{submitterName\}\s*mode="adaptive"/, "submitter name is backend content");
-
-  // Chrome stays localized; icon-only actions carry localized labels.
-  assert.ok(screen.includes("<LocalizedText"), "center states/action labels use the localized role");
-  assert.match(screen, /accessibilityLabel=\{t\("tickets\.resolve\.resolve"\)\}/, "top-bar icon-only resolve action has a localized label");
-  assert.match(screen, /accessibilityLabel=\{t\("common\.close"\)\}/, "image-viewer close has a localized label");
-
-  // Navigation chevrons flip with the locale; semantic icons stay unmirrored.
-  assert.match(screen, /<DirectionalIonicon name="chevron-forward"/);
-  assert.ok(!screen.includes("DirectionalIonicon name=\"checkmark") &&
-            !screen.includes('DirectionalIonicon name="trash'), "semantic action glyphs are not direction-wrapped");
-
-  assert.ok(!/import\s+\{\s*[\s\S]*?\bText\b[\s\S]*?\}\s*from\s+"react-native"/.test(screen), "plain Text must not bypass the role primitives");
+test("resolution sheet shows original type, subject and message with adaptive text", () => {
+  const sheet = read("components/admin-dashboard/tickets/ResolveTicketModal.js");
+  assert.match(sheet, /\["type", "subject", "message"\]/);
+  assert.match(sheet, /<AdaptiveText/);
 });
 
 test("BulkActionsBar (shared): selected count and action labels are localized roles", () => {

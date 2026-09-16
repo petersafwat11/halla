@@ -337,3 +337,32 @@
   background-color: var(--ops-danger-soft);
   color: var(--ops-danger);
 }
+
+.companionRow td {
+  background: var(--ops-brand-softer);
+  padding-top: 12px;
+  padding-bottom: 14px;
+}
+
+.companionLabel {
+  display: block;
+  color: var(--ops-muted);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.companionList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.companionList span {
+  padding: 4px 10px;
+  background: var(--ops-surface);
+  border: 1px solid var(--ops-brand-border);
+  border-radius: var(--radius-sm);
+  color: var(--ops-brand-strong);
+  overflow-wrap: anywhere;
+}

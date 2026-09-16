@@ -798,12 +798,6 @@
       "in_progress": "قيد المعالجة",
       "resolved": "محلولة",
       "closed": "مغلقة"
-    },
-    "priorities": {
-      "low": "منخفضة",
-      "medium": "متوسطة",
-      "high": "عالية",
-      "urgent": "عاجلة"
     }
   },
   "tickets": {
@@ -830,19 +824,12 @@
       "resolved": "محلولة",
       "closed": "مغلقة"
     },
-    "priority": {
-      "low": "منخفضة",
-      "medium": "متوسطة",
-      "high": "عالية",
-      "urgent": "عاجلة"
-    },
     "details": {
       "title": "تفاصيل التذكرة",
       "ticketId": "رقم التذكرة",
       "subject": "الموضوع",
       "description": "الوصف",
       "status": "الحالة",
-      "priority": "الأولوية",
       "category": "الفئة",
       "createdBy": "أنشئت بواسطة",
       "createdAt": "تاريخ الإنشاء",
@@ -886,7 +873,17 @@
       "message": "لا توجد تذاكر دعم للعرض"
     },
     "bulkResolveConfirm": "هل أنت متأكد من حل {{count}} تذكرة؟",
-    "bulkDeleteConfirm": "هل أنت متأكد من حذف {{count}} تذكرة؟"
+    "bulkDeleteConfirm": "هل أنت متأكد من حذف {{count}} تذكرة؟",
+    "media": {
+      "view": "عرض الوسائط",
+      "previous": "الوسائط السابقة",
+      "next": "الوسائط التالية"
+    },
+    "fields": {
+      "type": "النوع",
+      "subject": "الموضوع",
+      "message": "الرسالة الأصلية"
+    }
   },
   "payments": {
     "title": "المدفوعات",

@@ -84,7 +84,7 @@ services:
     depends_on:
       web:
         condition: service_healthy
-    networks: [halaa]
+    networks: [halaa, halaa_checkin_proxy]
     logging:
       driver: json-file
       options: { max-size: "10m", max-file: "3" }
@@ -92,6 +92,9 @@ services:
 networks:
   halaa:
     driver: bridge
+  halaa_checkin_proxy:
+    name: halaa_checkin_proxy
+    external: true
 
 volumes:
   caddy_data:

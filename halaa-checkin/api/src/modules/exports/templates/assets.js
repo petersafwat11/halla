@@ -88,8 +88,7 @@ export function getHalaaLogoSvg() {
  */
 export function getHalaaLogoDataUrl() {
   if (cachedLogoDataUrl) return cachedLogoDataUrl;
-  const svg = getHalaaLogoSvg();
-  const b64 = Buffer.from(svg).toString('base64');
-  cachedLogoDataUrl = `data:image/svg+xml;base64,${b64}`;
+  const b64 = fs.readFileSync(resolveAssetPath('logos/halaa.png')).toString('base64');
+  cachedLogoDataUrl = `data:image/png;base64,${b64}`;
   return cachedLogoDataUrl;
 }

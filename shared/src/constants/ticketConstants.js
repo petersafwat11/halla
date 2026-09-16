@@ -1,6 +1,6 @@
 /**
  * Ticket enums — mirror `halaa-backend/src/shared/constants/status.js`
- * (TICKET_STATUS, TICKET_PRIORITY) plus the FE-only TICKET_TYPES list.
+ * (TICKET_STATUS) plus the FE-only TICKET_TYPES list.
  */
 
 export const TICKET_TYPES = Object.freeze({
@@ -23,12 +23,6 @@ export const TICKET_STATUS = Object.freeze({
   CLOSED: "closed",
 });
 
-export const TICKET_PRIORITY = Object.freeze({
-  LOW: "low",
-  MEDIUM: "medium",
-  HIGH: "high",
-  URGENT: "urgent",
-});
 
 export const TICKET_TRANSITIONS = Object.freeze({
   [TICKET_STATUS.OPEN]: Object.freeze([

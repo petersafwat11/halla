@@ -1,0 +1,59 @@
+name: deploy-checkin
+
+# Run after the halaa-checkin workflow has published both images for this SHA.
+# Uses existing VPS secrets; database credentials stay in the VPS config.env.
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Full tested commit SHA published by halaa-checkin (also used for rollback)'
+        required: true
+        type: string
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate release
+        env:
+          IMAGE_TAG: ${{ inputs.image_tag }}
+        run: '[[ "$IMAGE_TAG" =~ ^[0-9a-f]{40}$ ]]'
+      - name: Set up SSH
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+      - name: Deploy independent check-in stack
+        env:
+          IMAGE_TAG: ${{ inputs.image_tag }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_USER: ${{ github.actor }}
+        run: |
+          set -euo pipefail
+          remote="$VPS_USER@$VPS_HOST"
+          ssh -i ~/.ssh/id_deploy "$remote" 'test -s /opt/halaa-checkin/config.env'
+          scp -i ~/.ssh/id_deploy halaa-checkin/deploy/compose.yml halaa-checkin/deploy/deploy.sh halaa-checkin/deploy/backup-vps.sh "$remote:/opt/halaa-checkin/"
+          printf '%s' "$GH_TOKEN" | ssh -i ~/.ssh/id_deploy "$remote" "docker login ghcr.io -u '$GH_USER' --password-stdin"
+          trap 'ssh -i ~/.ssh/id_deploy "$remote" "docker logout ghcr.io >/dev/null 2>&1" || true' EXIT
+          ssh -i ~/.ssh/id_deploy "$remote" "bash /opt/halaa-checkin/deploy.sh '$IMAGE_TAG'" | tee rollout.log
+          grep -qx "CHECKIN_DEPLOYED $IMAGE_TAG" rollout.log
+      - name: Verify public origin and existing website
+        run: |
+          for url in https://checkin.halaa.com.sa/api/checkin/v1/health/ready https://checkin.halaa.com.sa/ar https://halaa.com.sa/ar; do
+            curl -fsS -o /dev/null --retry 5 --retry-delay 5 --retry-all-errors --max-time 20 "$url"
+            echo "OK $url"
+          done

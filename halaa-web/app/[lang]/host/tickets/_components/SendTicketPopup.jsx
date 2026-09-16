@@ -95,7 +95,6 @@ const SendTicketPopup = ({
           formData.append("subject", data.subject);
           formData.append("type", data.type);
           formData.append("message", data.message);
-          if (data.priority) formData.append("priority", data.priority);
           attachment.forEach(file => formData.append("ticketAttachments", file));
           payload = formData;
         }

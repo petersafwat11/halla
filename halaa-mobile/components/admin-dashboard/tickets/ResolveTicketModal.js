@@ -10,6 +10,7 @@ import PropTypes from "prop-types";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ActionButton } from "../common";
+import AdaptiveText from "../../commen/AdaptiveText";
 import LocalizedText from "../../commen/LocalizedText";
 import { CONTENT_DIRECTIONS, useFieldDirection } from "../../../hooks/useInputDirection";
 import { isolateAuto, isolateLtr } from "@halaa/shared/utils/bidi";
@@ -36,7 +37,7 @@ import { ticketResolutionSchema } from "@halaa/shared/schemas/tickets";
  * LTR; the subject is adaptive content — both are isolated inside the
  * interpolated translation string (blueprint §6).
  */
-const ResolveTicketModal = ({ visible, onClose, ticket, onSave }) => {
+const ResolveTicketModal = ({ visible, onClose, ticket, onSave, viewOnly = false }) => {
   const { t } = useTranslation("admin");
   const { t: tTickets } = useTranslation("tickets");
   const resolveTicket = useResolveTicket();
@@ -80,7 +81,7 @@ const ResolveTicketModal = ({ visible, onClose, ticket, onSave }) => {
 
   const header = (
     <View style={styles.header}>
-      <LocalizedText style={styles.title}>{t("tickets.resolve.title")}</LocalizedText>
+      <LocalizedText style={styles.title}>{t(viewOnly ? "ticketDetails.details" : "tickets.resolve.title")}</LocalizedText>
       <LocalizedText style={styles.subtitle}>
         {t("tickets.resolve.subtitle", {
           ticketId: isolateLtr(`#${ticket?.id ?? ticket?._id ?? "—"}`),
@@ -93,20 +94,20 @@ const ResolveTicketModal = ({ visible, onClose, ticket, onSave }) => {
   const footer = (
     <View style={styles.actions}>
       <ActionButton
-        label={t("common.cancel")}
+        label={t(viewOnly ? "common.close" : "common.cancel")}
         onPress={handleClose}
-        variant="outline"
+        variant="secondary"
         style={styles.actionButton}
         disabled={resolveTicket.isPending}
       />
-      <ActionButton
+      {!viewOnly && <ActionButton
         label={resolveTicket.isPending ? t("common.loading") : t("tickets.resolve.resolve")}
         onPress={handleSubmit(onSubmit)}
         variant="primary"
         style={styles.actionButton}
         disabled={resolveTicket.isPending || !isValid}
         loading={resolveTicket.isPending}
-      />
+      />}
     </View>
   );
 
@@ -120,6 +121,20 @@ const ResolveTicketModal = ({ visible, onClose, ticket, onSave }) => {
       header={header}
       footer={footer}
     >
+      {["type", "subject", "message"].map((field) => (
+        <View style={styles.fieldContainer} key={field}>
+          <LocalizedText style={styles.label}>{t(`tickets.fields.${field}`)}</LocalizedText>
+          <AdaptiveText style={styles.readOnlyValue}>
+            {field === "type" ? tTickets(`types.${ticket?.type || "other"}`) : ticket?.[field] || "—"}
+          </AdaptiveText>
+        </View>
+      ))}
+      {viewOnly ? (
+        <View style={styles.fieldContainer}>
+          <LocalizedText style={styles.label}>{t("ticketDetails.resolution")}</LocalizedText>
+          <AdaptiveText style={styles.readOnlyValue}>{ticket?.resolution?.message || "—"}</AdaptiveText>
+        </View>
+      ) : <>
       <View style={styles.fieldContainer}>
         <LocalizedText style={styles.label}>{t("tickets.resolve.resolutionLabel")}</LocalizedText>
         <Controller
@@ -165,11 +180,13 @@ const ResolveTicketModal = ({ visible, onClose, ticket, onSave }) => {
           {t("tickets.resolve.warningText")}
         </LocalizedText>
       </View>
+      </>}
     </KeyboardSafeModalSheet>
   );
 };
 
 ResolveTicketModal.propTypes = {
+  viewOnly: PropTypes.bool,
   visible: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   ticket: PropTypes.shape({
@@ -223,6 +240,7 @@ const styles = StyleSheet.create({
     color: colors.natural[900],
     marginBottom: spacing[8],
   },
+  readOnlyValue: { ...textStyles.bodyMedium, color: colors.natural[800], padding: spacing[12], backgroundColor: backgrounds.artboard, borderRadius: borderRadius[8] },
   textAreaContainer: {
     backgroundColor: backgrounds.artboard,
     borderRadius: borderRadius[8],

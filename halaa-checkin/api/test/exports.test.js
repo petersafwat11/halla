@@ -2,7 +2,7 @@
  * @halaa-checkin/api
  * Integration test suite for PDF templates, export worker, and protected download.
  * Validates Technical Contract Sections 3, 6, 7 and Task T06 Acceptance Gate:
- * - Single A6 and bulk 4-up A4 pass templates with local Cairo font and Halaa tokens
+ * - Single A6 and bulk one-per-page A4 pass templates with local Cairo font and Halaa tokens
  * - QR preview endpoint (GET /events/:eventId/guests/:guestId/qr) with no-store
  * - Internal QR generation and round-trip decoding verification with jsqr
  * - Interim and Final attendance report templates with authoritative calculateStats
@@ -292,10 +292,10 @@ test('single pass: generates A6 PDF, enforces ready state, streams with safe dis
 });
 
 // ============================================================================
-// 4. Bulk 4-Up A4 Passes Spanning Pages
+// 4. Bulk One-Per-Page A4 Passes Spanning Pages
 // ============================================================================
 
-test('bulk passes: renders 4-up A4 pages, spans multiple pages, includes all guests', async () => {
+test('bulk passes: renders one-per-page A4 pages, spans multiple pages, includes all guests', async () => {
   const app = createTestApp({ mongodbDbName: testEnv.dbName });
 
   const admin = await provisionUser({
@@ -314,7 +314,7 @@ test('bulk passes: renders 4-up A4 pages, spans multiple pages, includes all gue
     name: 'مؤتمر التقنية المالية 2026',
   });
 
-  // Create 6 guests to guarantee multi-page 4-up layout (Page 1: 4 cards, Page 2: 2 cards)
+  // Create 6 guests to guarantee multi-page one-per-page layout (one invitation on each of six pages)
   const guestIds = [];
   for (let i = 1; i <= 6; i++) {
     const g = await createTestGuest(event._id, {
@@ -350,7 +350,7 @@ test('bulk passes: renders 4-up A4 pages, spans multiple pages, includes all gue
   assert.equal(dlRes.status, 200);
   assert.equal(dlRes.headers['content-type'], 'application/pdf');
   assert.ok(dlRes.body.toString('latin1', 0, 5).startsWith('%PDF-'));
-  assert.equal((dlRes.body.toString('latin1').match(/\/Type\s*\/Page\b/g) || []).length, 2, 'six invitations fit exactly two sheets with snapshot timestamps');
+  assert.equal((dlRes.body.toString('latin1').match(/\/Type\s*\/Page\b/g) || []).length, 6, 'six invitations print on six separate pages with snapshot timestamps');
   // Multi-page A4 PDF should be substantial
   assert.ok(dlRes.body.length > 20000, 'Multi-page bulk PDF should exceed 20KB');
 });
@@ -884,7 +884,7 @@ test('evidence: renders synthetic sample pages and exports PNG screenshots to ev
       fullPage: true,
     });
 
-    // 3. Bulk Passes A4 (4-up)
+    // 3. Bulk Passes A4 (one-per-page)
 
     const bulkPassesHtml = generateBulkPassesHtml({
       event: {

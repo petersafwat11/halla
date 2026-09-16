@@ -14,6 +14,8 @@ import {
   EVENT_TIMEZONE,
   REGEXES,
   eventCreateSchema,
+  eventScheduleSchema,
+  paginationQuerySchema,
   eventUpdateSchema,
   eventStatusTransitionSchema,
   validateEventStatusTransition,
@@ -35,8 +37,7 @@ export const EventsService = {
    * @returns {Promise<{ events: import('./event.model.js').Event[], total: number, page: number, pageSize: number }>}
    */
   async listEvents(user, query = {}) {
-    const page = Math.max(1, parseInt(query.page, 10) || 1);
-    const pageSize = Math.min(100, Math.max(1, parseInt(query.pageSize, 10) || 100));
+    const { page, pageSize } = paginationQuerySchema.parse({ pageSize: 100, ...query });
 
     const filter = {};
     if (user.role === ROLES.RECEPTION) {
@@ -103,6 +104,7 @@ export const EventsService = {
    */
   async createEvent(rawPayload, user, { requestId } = {}) {
     const payload = eventCreateSchema.parse(rawPayload);
+    eventScheduleSchema().parse(payload.startsAt, { path: ['startsAt'] });
     const startsAtUtc = parseExplicitOffsetDate(payload.startsAt);
 
     return withTransaction(async (session) => {
@@ -208,6 +210,7 @@ export const EventsService = {
       }
 
       if (payload.startsAt !== undefined) {
+        eventScheduleSchema({ previousStartsAt: event.startsAt }).parse(payload.startsAt, { path: ['startsAt'] });
         const parsedDate = parseExplicitOffsetDate(payload.startsAt);
         if (parsedDate.getTime() !== event.startsAt.getTime()) {
           changedFields.push('startsAt');

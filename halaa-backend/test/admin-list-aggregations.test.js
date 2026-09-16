@@ -68,7 +68,7 @@ describe('Session 2.2 Backend: Admin List Aggregations & Status Counts (ADM-03)'
     }
   });
 
-  test('getTickets returns aggregate statusCounts and priorityCounts across full dataset', async () => {
+  test('getTickets returns aggregate statusCounts across full dataset', async () => {
     const origFind = Ticket.find;
     const origCount = Ticket.countDocuments;
     const origAgg = Ticket.aggregate;
@@ -80,7 +80,7 @@ describe('Session 2.2 Backend: Admin List Aggregations & Status Counts (ADM-03)'
             populate: () => ({
               populate: () => ({
                 lean: () => Promise.resolve([
-                  { _id: new mongoose.Types.ObjectId(), subject: 'T1', status: 'open', priority: 'high' },
+                  { _id: new mongoose.Types.ObjectId(), subject: 'T1', status: 'open' },
                 ]),
               }),
             }),
@@ -90,39 +90,21 @@ describe('Session 2.2 Backend: Admin List Aggregations & Status Counts (ADM-03)'
     });
 
     Ticket.countDocuments = () => Promise.resolve(100);
-    let aggCallCount = 0;
-    Ticket.aggregate = () => {
-      aggCallCount++;
-      if (aggCallCount % 2 === 1) {
-        // Status aggregation
-        return Promise.resolve([
-          { _id: 'open', count: 40 },
-          { _id: 'in_progress', count: 30 },
-          { _id: 'resolved', count: 20 },
-          { _id: 'closed', count: 10 },
-        ]);
-      }
-      // Priority aggregation
-      return Promise.resolve([
-        { _id: 'low', count: 10 },
-        { _id: 'medium', count: 50 },
-        { _id: 'high', count: 25 },
-        { _id: 'urgent', count: 15 },
-      ]);
-    };
+    Ticket.aggregate = () => Promise.resolve([
+      { _id: 'open', count: 40 }, { _id: 'in_progress', count: 30 },
+      { _id: 'resolved', count: 20 }, { _id: 'closed', count: 10 },
+    ]);
 
     try {
       const result = await ticketsService.getTickets('admin_user', true, {}, { page: 1, limit: 1 });
       assert.equal(result.data.length, 1);
       assert.equal(result.pagination.total, 100);
       assert.ok(result.statusCounts, 'Must return statusCounts object');
-      assert.ok(result.priorityCounts, 'Must return priorityCounts object');
+      assert.equal(Object.hasOwn(result, 'priorityCounts'), false);
       assert.equal(result.statusCounts.open, 40);
       assert.equal(result.statusCounts.in_progress, 30);
       assert.equal(result.statusCounts.resolved, 20);
       assert.equal(result.statusCounts.closed, 10);
-      assert.equal(result.priorityCounts.high, 25);
-      assert.equal(result.priorityCounts.urgent, 15);
     } finally {
       Ticket.find = origFind;
       Ticket.countDocuments = origCount;

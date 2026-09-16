@@ -145,8 +145,8 @@ exports.getTicketForRating = catchAsync(async (req, res) => {
  * GET /api/v2/tickets/export
  */
 exports.exportTickets = catchAsync(async (req, res) => {
-  const { search, status, priority, from, to } = req.query;
-  const data = await ticketsService.exportTickets({ search, status, priority, from, to });
+  const { search, status, from, to } = req.query;
+  const data = await ticketsService.exportTickets({ search, status, from, to });
   const buffer = generateExcel(data, "tickets");
   res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
   res.setHeader("Content-Disposition", "attachment; filename=tickets.xlsx");

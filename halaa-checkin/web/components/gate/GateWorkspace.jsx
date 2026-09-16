@@ -279,7 +279,7 @@ export function GateWorkspace({ lang = 'ar' }) {
                       <span className={styles.recentMeta}>
                         <span className={styles.metaItem}>
                           <Icon name="users" size="xs" />
-                          <span>{t(dict, 'gate.successPartyCount', { count: partySize })}</span>
+                          <span>{t(dict, partySize === 1 ? 'gate.successPartySingle' : 'gate.successPartyCount', { count: partySize })}</span>
                         </span>
                         {operator && (
                           <span className={styles.metaItem}>

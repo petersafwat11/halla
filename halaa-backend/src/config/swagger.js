@@ -1185,10 +1185,6 @@ const swaggerOptions = {
               type: 'string',
               enum: ['technical', 'billing', 'feature_request', 'bug', 'general'],
             },
-            priority: {
-              type: 'string',
-              enum: ['low', 'medium', 'high', 'urgent'],
-            },
             status: {
               type: 'string',
               enum: ['open', 'in_progress', 'resolved', 'closed'],
@@ -1849,11 +1845,6 @@ const swaggerOptions = {
             category: {
               type: 'string',
               enum: ['technical', 'billing', 'feature_request', 'bug', 'general'],
-            },
-            priority: {
-              type: 'string',
-              enum: ['low', 'medium', 'high', 'urgent'],
-              default: 'medium',
             },
           },
         },

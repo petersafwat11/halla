@@ -67,6 +67,7 @@ Thumbs.db
 **/.env
 **/.env.*
 **/config.env
+halaa-checkin/deploy/secrets/
 **/*.pem
 **/*.cer
 **/*.crt

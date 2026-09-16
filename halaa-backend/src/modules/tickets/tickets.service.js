@@ -8,7 +8,6 @@ const config = require("../../config");
 const {
   ROLES,
   TICKET_STATUS,
-  TICKET_PRIORITY,
   TICKET_TRANSITIONS,
   isValidTicketStatusTransition,
   PERMISSIONS,
@@ -44,26 +43,26 @@ const VALID_TRANSITIONS = TICKET_TRANSITIONS;
 
 class TicketsService {
   /**
-   * Determine ticket source and priority from user role
+   * Determine ticket source from user role
    * @param {Object} user
-   * @returns {{source: string, priority: string}}
+   * @returns {{source: string}}
    */
-  getTicketSourceAndPriority(user) {
+  getTicketSource(user) {
     const role = user?.role;
 
     if ([ROLES.ADMIN, ROLES.SUPER_ADMIN, ROLES.MODERATOR].includes(role)) {
-      return { source: TICKET_SOURCE.ADMIN, priority: TICKET_PRIORITY.MEDIUM };
+      return { source: TICKET_SOURCE.ADMIN };
     }
 
     if (role === ROLES.HOST) {
-      return { source: TICKET_SOURCE.HOST, priority: TICKET_PRIORITY.MEDIUM };
+      return { source: TICKET_SOURCE.HOST };
     }
 
     if (role === ROLES.VENDOR) {
-      return { source: TICKET_SOURCE.VENDOR, priority: TICKET_PRIORITY.MEDIUM };
+      return { source: TICKET_SOURCE.VENDOR };
     }
 
-    return { source: TICKET_SOURCE.OTHER, priority: TICKET_PRIORITY.MEDIUM };
+    return { source: TICKET_SOURCE.OTHER };
   }
 
   /**
@@ -93,7 +92,7 @@ class TicketsService {
    * @returns {Promise<{data: Array, pagination: Object}>}
    */
   async getTickets(userId, isAdmin, filters = {}, options = {}, requestingUser = null) {
-    const { status, priority, source, search } = filters;
+    const { status, source, search } = filters;
     const { page = 1, limit = 20 } = options;
     const skip = (page - 1) * limit;
 
@@ -104,7 +103,6 @@ class TicketsService {
     }
 
     if (status) query.status = status;
-    if (priority) query.priority = priority;
     if (source) query.source = source;
 
     if (search) {
@@ -128,7 +126,7 @@ class TicketsService {
       ];
     }
 
-    const [tickets, total, statusAgg, priorityAgg] = await Promise.all([
+    const [tickets, total, statusAgg] = await Promise.all([
       Ticket.find(query)
         .sort({ createdAt: -1 })
         .skip(skip)
@@ -141,16 +139,10 @@ class TicketsService {
         { $match: baseAggQuery },
         { $group: { _id: '$status', count: { $sum: 1 } } },
       ]),
-      Ticket.aggregate([
-        { $match: baseAggQuery },
-        { $group: { _id: '$priority', count: { $sum: 1 } } },
-      ]),
     ]);
 
     const statusCounts = {};
     statusAgg.forEach((s) => { statusCounts[s._id] = s.count; });
-    const priorityCounts = {};
-    priorityAgg.forEach((p) => { priorityCounts[p._id] = p.count; });
 
     return {
       data: await Promise.all(
@@ -165,13 +157,6 @@ class TicketsService {
         resolved: statusCounts.resolved || 0,
         closed: statusCounts.closed || 0,
         ...statusCounts,
-      },
-      priorityCounts: {
-        low: priorityCounts.low || 0,
-        medium: priorityCounts.medium || 0,
-        high: priorityCounts.high || 0,
-        urgent: priorityCounts.urgent || 0,
-        ...priorityCounts,
       },
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     };
@@ -212,13 +197,12 @@ class TicketsService {
    * @returns {Promise<Object>}
    */
   async createTicket(ticketData, user, files = []) {
-    const { source, priority } = this.getTicketSourceAndPriority(user);
+    const { source } = this.getTicketSource(user);
 
     const ticketPayload = {
       ...ticketData,
       user: user._id,
       source,
-      priority: ticketData.priority || priority,
     };
 
     // Optional attachment (image or video) uploaded via multipart. Persist the
@@ -244,7 +228,7 @@ class TicketsService {
     this._notifyAdminsNewTicket(ticket, user).catch((err) => logger.error('ticket creation admin notification failed', err));
 
     // Audit: ticket created
-    logAudit({ action: 'ticket.created', actor: { _id: user._id, role: user.role }, targetType: 'ticket', targetId: ticket._id, metadata: { source, priority: ticket.priority } }).catch((err) => logger.error('ticket creation audit log failed', err));
+    logAudit({ action: 'ticket.created', actor: { _id: user._id, role: user.role }, targetType: 'ticket', targetId: ticket._id, metadata: { source } }).catch((err) => logger.error('ticket creation audit log failed', err));
 
     return { ticket: await this._formatTicket(ticket) };
   }
@@ -510,7 +494,7 @@ class TicketsService {
     }
 
     const allowedFields = isAdmin
-      ? ["subject", "message", "type", "priority", "status"]
+      ? ["subject", "message", "type", "status"]
       : ["subject", "message", "type"];
 
     allowedFields.forEach((field) => {
@@ -591,10 +575,9 @@ class TicketsService {
   /**
    * Export all tickets with filters (admin only)
    */
-  async exportTickets({ search, status, priority, from, to } = {}) {
+  async exportTickets({ search, status, from, to } = {}) {
     const query = {};
     if (status) query.status = status;
-    if (priority) query.priority = priority;
     if (search) {
       const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       query.$or = [
@@ -618,7 +601,6 @@ class TicketsService {
       Subject: t.subject || '-',
       Type: t.type || '-',
       User: t.user?.name || t.user?.email || '-',
-      Priority: t.priority || '-',
       Status: t.status || '-',
       'Assigned To': t.assignedTo?.name || '-',
       'Created At': t.createdAt ? new Date(t.createdAt).toISOString().split('T')[0] : '-',
@@ -648,7 +630,6 @@ class TicketsService {
       attachments,
       attachment: attachments[0] || null,
       status: ticket.status,
-      priority: ticket.priority,
       source: ticket.source,
       user: ticket.user
         ? {

@@ -2,7 +2,6 @@
 const mongoose = require("mongoose");
 const {
   TICKET_STATUS,
-  TICKET_PRIORITY,
   TICKET_SOURCE,
   ROLES,
 } = require("../src/shared/constants");
@@ -109,11 +108,6 @@ const TicketSchema = new mongoose.Schema(
       resolvedAt: Date,
     },
 
-    priority: {
-      type: String,
-      enum: Object.values(TICKET_PRIORITY),
-      default: TICKET_PRIORITY.MEDIUM,
-    },
 
     // User rating after ticket resolution
     userRating: {
@@ -146,23 +140,6 @@ const TicketSchema = new mongoose.Schema(
 TicketSchema.index({ status: 1, type: 1, createdAt: -1 });
 TicketSchema.index({ user: 1, status: 1 });
 TicketSchema.index({ assignedTo: 1, status: 1 });
-TicketSchema.index({ source: 1, priority: 1, status: 1 });
-
-// Static method to get tickets sorted by priority
-TicketSchema.statics.getTicketsByPriority = async function (filters = {}) {
-  const query = { ...filters };
-
-  return this.find(query)
-    .sort({
-      // Sort by priority (urgent first, then high, medium, low)
-      priority: -1,
-      // Then by source
-      source: -1,
-      // Then by creation date (newest first)
-      createdAt: -1,
-    })
-    .populate("user", "name email phoneNumber role")
-    .populate("assignedTo", "name email");
-};
+TicketSchema.index({ source: 1, status: 1 });
 
 module.exports = mongoose.model("Ticket", TicketSchema);

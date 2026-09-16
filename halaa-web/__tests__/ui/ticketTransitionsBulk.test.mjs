@@ -9,18 +9,10 @@ const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "../../..");
 
 describe("Session 2.4 Web: Ticket Transitions & Bulk Operations (ADM-05, ADM-06, ADM-07)", () => {
-  it("TicketDetailView.jsx normalizes subject and uses valid transition for reopen (ADM-05, ADM-06)", () => {
-    const filePath = path.join(
-      repoRoot,
-      "halaa-web/app/[lang]/admin-dash/tickets/[id]/_components/TicketDetailView.jsx"
-    );
-    const content = fs.readFileSync(filePath, "utf-8");
-
-    // ADM-06: subject normalization
-    assert.match(content, /ticket\.subject \|\| ticket\.title/);
-
-    // ADM-05: reopen sends in_progress
-    assert.match(content, /status:\s*"in_progress"/);
+  it("old ticket URLs redirect to the list", () => {
+    const content = fs.readFileSync(path.join(repoRoot, "halaa-web/app/[lang]/admin-dash/tickets/[id]/page.js"), "utf-8");
+    assert.match(content, /redirect/);
+    assert.doesNotMatch(content, /TicketDetailsContent/);
   });
 
   it("TicketTableContent.jsx & TicketsTable.jsx use one-confirmation bulk operations (ADM-07)", () => {

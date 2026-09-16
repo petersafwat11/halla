@@ -8,6 +8,7 @@ import { Notice } from '../ui/Notice.jsx';
 import { Icon } from '../ui/Icon.jsx';
 import { getDictionary, t, toRiyadhDateInput, toRiyadhIsoString } from '../../lib/locale.js';
 import styles from './EventDialog.module.css';
+import { eventCreateSchema, eventUpdateSchema, eventScheduleSchema } from '@halaa-checkin/contracts';
 
 /**
  * Event creation and settings update modal dialog.
@@ -42,9 +43,9 @@ export function EventDialog({
       } else {
         setName('');
         setVenue('');
-        const { dateStr: d } = toRiyadhDateInput();
+        const { dateStr: d, timeStr: tm } = toRiyadhDateInput(new Date(Date.now() + 60 * 60 * 1000));
         setDateStr(d);
-        setTimeStr('18:00');
+        setTimeStr(tm);
       }
       setFieldErrors({});
     }
@@ -57,24 +58,32 @@ export function EventDialog({
     }
   }, [apiError]);
 
+  const selectedStart = () => {
+    if (mode === 'edit' && event?.startsAt) {
+      const original = toRiyadhDateInput(event.startsAt);
+      if (original.dateStr === dateStr && original.timeStr === timeStr) return event.startsAt;
+    }
+    return toRiyadhIsoString(dateStr, timeStr);
+  };
+
   const validate = () => {
+    const startsAt = selectedStart();
+    const payload = { name: name.trim(), venue: venue.trim(), startsAt };
+    const result = mode === 'create'
+      ? eventCreateSchema.safeParse({ ...payload, timezone: 'Asia/Riyadh' })
+      : eventUpdateSchema.safeParse({ ...payload, version: event?.version });
     const errors = {};
-    if (!name.trim()) {
-      errors.name = lang === 'ar' ? 'اسم الفعالية مطلوب' : 'Event name is required';
-    } else if (name.trim().length > 120) {
-      errors.name = lang === 'ar' ? 'اسم الفعالية يتجاوز 120 حرفاً' : 'Event name exceeds 120 characters';
+    if (!result.success) for (const issue of result.error.issues) {
+      const field = issue.path[0];
+      errors[field] = lang === 'ar'
+        ? ({ name: 'أدخل اسم المناسبة من حرف إلى 120 حرفاً', venue: 'أدخل الموقع من حرف إلى 160 حرفاً', startsAt: 'أدخل تاريخاً ووقتاً صحيحين' }[field] || 'تحقق من القيمة المدخلة')
+        : issue.message;
     }
-
-    if (!venue.trim()) {
-      errors.venue = lang === 'ar' ? 'الموقع مطلوب' : 'Venue is required';
-    } else if (venue.trim().length > 160) {
-      errors.venue = lang === 'ar' ? 'الموقع يتجاوز 160 حرفاً' : 'Venue exceeds 160 characters';
+    if (!dateStr || !timeStr) errors.startsAt = lang === 'ar' ? 'التاريخ والوقت مطلوبان' : 'Date and time are required';
+    if (!errors.startsAt) {
+      const schedule = eventScheduleSchema({ previousStartsAt: mode === 'edit' ? event?.startsAt : null }).safeParse(startsAt);
+      if (!schedule.success) errors.startsAt = lang === 'ar' ? 'يجب أن يكون الموعد الجديد للمناسبة في المستقبل' : 'Choose a future date and time';
     }
-
-    if (!dateStr) {
-      errors.startsAt = lang === 'ar' ? 'تاريخ الفعالية مطلوب' : 'Event date is required';
-    }
-
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -83,7 +92,7 @@ export function EventDialog({
     e.preventDefault();
     if (!validate()) return;
 
-    const startsAt = toRiyadhIsoString(dateStr, timeStr);
+    const startsAt = selectedStart();
 
     if (mode === 'create') {
       await onSubmit({
@@ -180,6 +189,7 @@ export function EventDialog({
             required
             type="date"
             name="startsDate"
+            min={mode === 'create' ? toRiyadhDateInput().dateStr : undefined}
             value={dateStr}
             onChange={(e) => setDateStr(e.target.value)}
             disabled={isPending}
@@ -191,6 +201,7 @@ export function EventDialog({
             required
             type="time"
             name="startsTime"
+            error={fieldErrors.startsAt}
             value={timeStr}
             onChange={(e) => setTimeStr(e.target.value)}
             disabled={isPending}

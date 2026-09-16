@@ -295,8 +295,12 @@ describe('T07 — Browser E2E and Visual Responsive Verification', { timeout: 12
 
     // Verify header components
     const staffName = await page.textContent('header');
-    assert.ok(staffName.includes('سارة الأحمد'));
-    assert.ok(staffName.includes('مشرف'));
+    assert.equal(staffName.includes('سارة الأحمد'), false, 'Identity stays inside the account menu');
+    await page.getByRole('button', { name: 'الموظف الحالي', exact: true }).click();
+    const identity = await page.getByRole('menu').innerText();
+    assert.ok(identity.includes('سارة الأحمد'));
+    assert.ok(identity.includes('مشرف'));
+    await page.keyboard.press('Escape');
 
     // Verify both Guests and Gate tabs appear
     const navText = await page.textContent('nav[aria-label="Workspaces"]');
@@ -314,7 +318,10 @@ describe('T07 — Browser E2E and Visual Responsive Verification', { timeout: 12
     // 2. English Admin Workspace Desktop (1440x900)
     await page.goto(`${BASE_URL}/en/guests?eventId=ev-hilton-01`, { waitUntil: 'networkidle' });
     const headerEn = await page.textContent('header');
-    assert.ok(headerEn.includes('Administrator'));
+    assert.equal(headerEn.includes('Administrator'), false);
+    await page.getByRole('button', { name: 'Current Staff', exact: true }).click();
+    assert.ok((await page.getByRole('menu').innerText()).includes('Administrator'));
+    await page.keyboard.press('Escape');
     const navTextEn = await page.textContent('nav[aria-label="Workspaces"]');
     assert.ok(navTextEn.includes('Guests'));
     assert.ok(navTextEn.includes('Gate'));
@@ -544,8 +551,9 @@ describe('T07 — Browser E2E and Visual Responsive Verification', { timeout: 12
     await page.goto(`${BASE_URL}/ar/gate?eventId=ev-special-99`, { waitUntil: 'networkidle' });
     assert.ok(page.url().includes('/ar/gate'));
 
-    // Click language switch link in header
-    await page.click('header a[aria-label="التبديل إلى اللغة الإنجليزية"]');
+    // Open the shared account menu and switch language
+    await page.getByRole('button', { name: 'الموظف الحالي', exact: true }).click();
+    await page.getByRole('menuitem', { name: 'English', exact: true }).click();
     await page.waitForURL('**/en/gate**');
 
     // Verify redirected to /en/gate with preserved eventId

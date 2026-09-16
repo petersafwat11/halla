@@ -22,17 +22,10 @@ describe("Session 2.5 Web: Ticket Attachment Viewer Matrix (ADM-14)", () => {
     assert.match(content, /<MediaViewerModal/);
   });
 
-  it("TicketDetailView.jsx renders attachment preview and MediaViewerModal for admin", () => {
-    const detailPath = path.join(
-      repoRoot,
-      "halaa-web/app/[lang]/admin-dash/tickets/[id]/_components/TicketDetailView.jsx"
-    );
-    const content = fs.readFileSync(detailPath, "utf-8");
-
-    assert.match(content, /import MediaViewerModal from/);
-    assert.match(content, /ticket\.attachments\?\.length/);
-    assert.match(content, /<MediaViewerModal/);
-    assert.match(content, /setOpenAttachment\(attachment\)/);
+  it("admin list opens media directly", () => {
+    const content = fs.readFileSync(path.join(repoRoot, "halaa-web/app/[lang]/admin-dash/tickets/_components/TicketTableContent.jsx"), "utf-8");
+    assert.match(content, /handleMediaClick\(row\)/);
+    assert.doesNotMatch(content, /router.push/);
   });
 
   it("MediaViewerModal.jsx handles both video and image attachments", () => {

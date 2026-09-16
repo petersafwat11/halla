@@ -8,6 +8,7 @@ import { Notice } from '../ui/Notice.jsx';
 import { Icon } from '../ui/Icon.jsx';
 import { getDictionary, t } from '../../lib/locale.js';
 import styles from './GuestForm.module.css';
+import { guestCreateSchema, guestUpdateSchema } from '@halaa-checkin/contracts';
 
 /**
  * Add or Edit Guest modal form.
@@ -103,6 +104,22 @@ export function GuestForm({
       }
     }
 
+    // Keep the browser aligned with the authoritative contract, including
+    // individual companion-name limits and optimistic version validation.
+    const candidate = {
+      name: trimmedName,
+      reference: trimmedRef || (isEdit ? null : undefined),
+      allowedCompanions: companionsNum,
+      companionNames: parseCompanionNames(),
+      ...(isEdit ? { version: guest.version } : {}),
+    };
+    const parsed = (isEdit ? guestUpdateSchema : guestCreateSchema).safeParse(candidate);
+    if (!parsed.success) for (const issue of parsed.error.issues) {
+      const field = issue.path[0];
+      if (!errors[field]) errors[field] = lang === 'ar'
+        ? (field === 'companionNames' ? 'تحقق من أسماء المرافقين؛ يجب ألا يتجاوز كل اسم 120 حرفاً' : 'تحقق من القيمة المدخلة')
+        : issue.message;
+    }
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   };

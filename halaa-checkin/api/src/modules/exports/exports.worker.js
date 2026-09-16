@@ -232,7 +232,7 @@ export class ExportWorker {
           pdfOptions = { format: 'A6' };
           downloadFilename = sanitizeDownloadFilename(`pass-${guest.shortCode}`);
         } else {
-          // Bulk passes A4 (4-up, template @page margins preserved)
+          // Bulk passes A4 (one invitation per page)
           htmlContent = generateBulkPassesHtml({
             event: snapshot.event,
             guests: guestsWithQr,

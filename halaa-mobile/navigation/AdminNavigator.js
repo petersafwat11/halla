@@ -32,7 +32,6 @@ import CreateEventScreen from "../screens/common/CreateEventScreen";
 import UpdateEventScreen from "../screens/common/update-event/UpdateEventScreen";
 import ManagePostEventScreen from "../screens/common/ManagePostEventScreen";
 import AdminTicketsScreen from "../screens/admin/admin-dashboard/AdminTicketsScreen";
-import TicketDetailsScreen from "../screens/admin/admin-dashboard/TicketDetailsScreen";
 import AdminPaymentsScreen from "../screens/admin/admin-dashboard/AdminPaymentsScreen";
 import PaymentDetailScreen from "../screens/admin/admin-dashboard/PaymentDetailScreen";
 import AdminPlansScreen from "../screens/admin/admin-dashboard/AdminPlansScreen";
@@ -169,13 +168,6 @@ function TicketsStackNavigator() {
         }}
       />
 
-      <TicketsStack.Screen
-        name="TicketDetails"
-        component={TicketDetailsScreen}
-        options={{
-          title: t("admin:screenTitles.ticketDetails"),
-        }}
-      />
     </TicketsStack.Navigator>
   );
 }

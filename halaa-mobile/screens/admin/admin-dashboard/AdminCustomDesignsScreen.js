@@ -4,11 +4,13 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import KeyboardSafeModalSheet from "../../../components/commen/keyboard/KeyboardSafeModalSheet";
+import { ActionButton } from "../../../components/admin-dashboard/common";
+import LocalizedText from "../../../components/commen/LocalizedText";
+import { CONTENT_DIRECTIONS } from "../../../hooks/useInputDirection";
 import TextInput from "../../../components/commen/DirectionalTextInput";
 import DirectionalIonicon from "../../../components/common/DirectionalIonicon";
 import {
@@ -27,7 +29,7 @@ import {
   getNextFulfillmentStatus,
 } from "@halaa/shared/constants/addons";
 import { formatDateTime, formatCurrency } from "@halaa/shared/utils/locale";
-import { colors, backgrounds, typography, spacing, borderRadius } from "../../../styles/tokens";
+import { colors, backgrounds, typography, spacing, borderRadius, textStyles } from "../../../styles/tokens";
 
 const FILTER_IDS = ["all", "paid", "queued", "in_progress", "fulfilled"];
 
@@ -240,38 +242,40 @@ const AdminCustomDesignsScreen = () => {
         visible={Boolean(selectedOrder)}
         onClose={closeTransitionModal}
         onRequestClose={closeTransitionModal}
-        centered
-        animationType="fade"
         dismissOnBackdropPress={false}
         contentContainerStyle={styles.modalBody}
-        sheetStyle={styles.modalContent}
-      >
-        <View style={styles.modalHeader}>
-          <Text style={styles.modalTitle}>
+        header={<View style={styles.modalHeader}>
+          <LocalizedText style={styles.modalTitle}>
             {t("customDesigns.modalTitle", "تحديث حالة التنفيذ")}
-          </Text>
-          <TouchableOpacity onPress={closeTransitionModal}>
+          </LocalizedText>
+          <TouchableOpacity onPress={closeTransitionModal} accessibilityRole="button" accessibilityLabel={t("common.close")} style={styles.closeButton}>
             <Ionicons name="close" size={24} color={colors.natural[600]} />
           </TouchableOpacity>
-        </View>
+        </View>}
+        footer={<View style={styles.modalFooter}>
+          <ActionButton variant="secondary" onPress={closeTransitionModal} disabled={transitionMutation.isPending} label={t("common.cancel")} />
+          <ActionButton variant="primary" onPress={handleConfirmTransition} disabled={transitionMutation.isPending}
+            loading={transitionMutation.isPending} label={t("customDesigns.confirmTransition")} />
+        </View>}
+      >
 
-        <ScrollView style={styles.modalScroll}>
           {selectedOrder ? (
             <View style={styles.statusFlow}>
-              <Text style={styles.flowStatus}>
+              <LocalizedText style={styles.flowStatus}>
                 {fulfillmentStatusLabel(selectedOrder.status)}
-              </Text>
+              </LocalizedText>
               <DirectionalIonicon name="arrow-forward" size={16} color={colors.natural[500]} />
-              <Text style={[styles.flowStatus, styles.flowNextStatus]}>
+              <LocalizedText style={[styles.flowStatus, styles.flowNextStatus]}>
                 {fulfillmentStatusLabel(nextStatusForModal)}
-              </Text>
+              </LocalizedText>
             </View>
           ) : null}
 
-          <Text style={styles.inputLabel}>
+          <LocalizedText style={styles.inputLabel}>
             {t("customDesigns.customerNoteLabel", "ملاحظة للعميل (تظهر في الجدول الزمني)")}
-          </Text>
+          </LocalizedText>
           <TextInput
+            contentDirection={CONTENT_DIRECTIONS.ADAPTIVE}
             style={styles.textInput}
             value={customerNote}
             onChangeText={setCustomerNote}
@@ -282,10 +286,11 @@ const AdminCustomDesignsScreen = () => {
             maxLength={2000}
           />
 
-          <Text style={styles.inputLabel}>
+          <LocalizedText style={styles.inputLabel}>
             {t("customDesigns.internalNotesLabel", "ملاحظات إدارية داخلية")}
-          </Text>
+          </LocalizedText>
           <TextInput
+            contentDirection={CONTENT_DIRECTIONS.ADAPTIVE}
             style={styles.textInput}
             value={internalNotes}
             onChangeText={setInternalNotes}
@@ -295,28 +300,7 @@ const AdminCustomDesignsScreen = () => {
             numberOfLines={2}
             maxLength={2000}
           />
-        </ScrollView>
 
-        <View style={styles.modalFooter}>
-          <TouchableOpacity
-            style={styles.cancelBtn}
-            onPress={closeTransitionModal}
-            disabled={transitionMutation.isPending}
-          >
-            <Text style={styles.cancelBtnText}>{t("buttons.cancel", "إلغاء")}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.confirmBtn}
-            onPress={handleConfirmTransition}
-            disabled={transitionMutation.isPending}
-          >
-            <Text style={styles.confirmBtnText}>
-              {transitionMutation.isPending
-                ? t("customDesigns.saving", "جاري الحفظ...")
-                : t("customDesigns.confirmTransition", "تأكيد التحديث")}
-            </Text>
-          </TouchableOpacity>
-        </View>
       </KeyboardSafeModalSheet>
     </SafeAreaView>
   );
@@ -434,33 +418,16 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.body.small,
     color: colors.natural[400],
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: spacing[20],
-  },
-  modalContent: {
-    width: "100%",
-    maxHeight: "80%",
-    backgroundColor: colors.natural[50],
-    borderRadius: borderRadius[20],
-    padding: spacing[20],
-  },
   modalHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingBottom: spacing[12],
+    padding: spacing[20],
     borderBottomWidth: 1,
     borderBottomColor: colors.natural[200],
   },
-  modalTitle: {
-    fontFamily: "Cairo_700Bold",
-    fontSize: typography.fontSize.title.small,
-    color: colors.secondary[900],
-  },
+  modalTitle: { ...textStyles.titleLarge, color: colors.natural[900], flex: 1 },
+  closeButton: { width: 44, height: 44, alignItems: "center", justifyContent: "center" },
   modalBody: {
     padding: spacing[16],
   },
@@ -485,55 +452,17 @@ const styles = StyleSheet.create({
     color: colors.primary[600],
     fontFamily: "Cairo_700Bold",
   },
-  inputLabel: {
-    fontFamily: "Cairo_600SemiBold",
-    fontSize: typography.fontSize.label.medium,
-    color: colors.secondary[800],
-    marginTop: spacing[8],
-    marginBottom: spacing[4],
-  },
-  textInput: {
-    borderWidth: 1,
-    borderColor: colors.natural[250],
-    borderRadius: borderRadius[8],
-    padding: spacing[10],
-    fontFamily: "Cairo_400Regular",
-    fontSize: typography.fontSize.body.small,
-    color: colors.secondary[900],
-    backgroundColor: colors.natural[50],
-    textAlignVertical: "top",
-  },
+  inputLabel: { ...textStyles.labelLarge, color: colors.natural[900], marginTop: spacing[16], marginBottom: spacing[8] },
+  textInput: { ...textStyles.bodyMedium, borderWidth: 1, borderColor: colors.natural[300], borderRadius: borderRadius[8], padding: spacing[12], minHeight: 100, color: colors.natural[900], backgroundColor: backgrounds.artboard, textAlignVertical: "top" },
   modalFooter: {
     flexDirection: "row",
     justifyContent: "flex-end",
     gap: spacing[10],
-    paddingTop: spacing[12],
+    padding: spacing[20],
     borderTopWidth: 1,
     borderTopColor: colors.natural[200],
   },
-  cancelBtn: {
-    paddingVertical: spacing[8],
-    paddingHorizontal: spacing[16],
-    borderRadius: borderRadius[8],
-    borderWidth: 1,
-    borderColor: colors.natural[300],
-  },
-  cancelBtnText: {
-    fontFamily: "Cairo_600SemiBold",
-    fontSize: typography.fontSize.body.small,
-    color: colors.natural[600],
-  },
-  confirmBtn: {
-    backgroundColor: colors.primary[500],
-    paddingVertical: spacing[8],
-    paddingHorizontal: spacing[16],
-    borderRadius: borderRadius[8],
-  },
-  confirmBtnText: {
-    fontFamily: "Cairo_700Bold",
-    fontSize: typography.fontSize.body.small,
-    color: colors.natural[50],
-  },
+
 });
 
 export default AdminCustomDesignsScreen;

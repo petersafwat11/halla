@@ -54,12 +54,6 @@
     "resolved": "تم الحل",
     "closed": "مغلقة"
   },
-  "priority": {
-    "low": "منخفضة",
-    "medium": "متوسطة",
-    "high": "عالية",
-    "urgent": "عاجلة"
-  },
   "actions": {
     "delete": "حذف",
     "edit": "تعديل",
@@ -84,7 +78,6 @@
     "typeInvalid": "نوع الشكوى غير صالح",
     "messageMinLength": "الرسالة يجب أن تكون 10 أحرف على الأقل",
     "messageMaxLength": "الرسالة يجب أن لا تتجاوز 5000 حرف",
-    "priorityInvalid": "أولوية غير صالحة",
     "statusInvalid": "حالة غير صالحة",
     "resolutionMinLength": "الرد يجب أن يكون 10 أحرف على الأقل",
     "resolutionMaxLength": "الرد يجب أن لا يتجاوز 5000 حرف",

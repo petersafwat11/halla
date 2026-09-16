@@ -5,7 +5,6 @@ const { MongoMemoryServer } = require("mongodb-memory-server");
 
 const {
   TICKET_STATUS,
-  TICKET_PRIORITY,
   TICKET_TRANSITIONS,
   isValidTicketStatusTransition,
   USER_STATUS,
@@ -72,7 +71,6 @@ test("Session 2.4: Ticket Reopen Semantics (ADM-05)", async () => {
     subject: "Technical issue with event",
     message: "Cannot upload template images to my event.",
     type: "technical",
-    priority: TICKET_PRIORITY.HIGH,
     status: TICKET_STATUS.OPEN,
   });
 

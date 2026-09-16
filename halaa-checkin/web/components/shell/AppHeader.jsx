@@ -20,7 +20,7 @@ function initialOf(name) {
 
 /**
  * Application top bar: brand, workspace navigation, event switcher and session.
- * Desktop: one 64px row. Below 960px: brand + event + account on the first row,
+ * Desktop: one 76px row with an icon-only account menu. Below 960px: brand + event + account on the first row,
  * workspace tabs on a second full-width row.
  */
 export function AppHeader() {
@@ -52,11 +52,10 @@ export function AppHeader() {
     </div>
   ) : null;
 
-  const mobileMenuItems = [
+  const accountMenuItems = [
     {
       key: 'lang-toggle',
       label: t(dict, 'nav.languageToggle'),
-      icon: <Icon name="languages" size="sm" />,
       onClick: () => router.push(langToggleUrl),
     },
     { type: 'divider' },
@@ -75,17 +74,13 @@ export function AppHeader() {
         <Link href={homeHref} className={styles.brand} aria-label="Halaa">
           <span className={styles.logoTile}>
             <Image
-              src="/images/logo.png"
+              src="/logo.png"
               alt=""
-              width={40}
-              height={40}
+              width={50}
+              height={50}
               priority
               className={styles.logo}
             />
-          </span>
-          <span className={styles.brandText}>
-            <span className={styles.productName}>{t(dict, 'common.appName')}</span>
-            <span className={styles.brandSub}>Halaa · هلا</span>
           </span>
         </Link>
 
@@ -97,40 +92,7 @@ export function AppHeader() {
           <EventSelector />
         </div>
 
-        <div className={`${styles.session} ${styles.desktopOnly}`}>
-          <Link
-            href={langToggleUrl}
-            className={styles.langToggle}
-            aria-label={t(dict, 'nav.languageToggleAria')}
-          >
-            <Icon name="languages" size="sm" />
-            <span>{t(dict, 'nav.languageToggle')}</span>
-          </Link>
-
-          <span className={styles.vDivider} aria-hidden="true" />
-
-          {user && (
-            <div className={styles.staff} title={`${displayName} · ${roleLabel}`}>
-              <span className={styles.avatar} aria-hidden="true">{initialOf(displayName)}</span>
-              <span className={styles.staffText}>
-                <span className={styles.staffName} dir="auto">{displayName}</span>
-                <span className={styles.staffRole}>{roleLabel}</span>
-              </span>
-            </div>
-          )}
-
-          <button
-            type="button"
-            onClick={logout}
-            className={styles.logoutBtn}
-            title={t(dict, 'nav.logout')}
-            aria-label={t(dict, 'nav.logout')}
-          >
-            <Icon name="logout" size="sm" mirror />
-          </button>
-        </div>
-
-        <div className={`${styles.session} ${styles.mobileOnly}`}>
+        <div className={styles.session}>
           <Menu
             align="end"
             aria-label={t(dict, 'nav.currentStaff')}
@@ -143,7 +105,7 @@ export function AppHeader() {
                 variant="ghost"
               />
             }
-            items={mobileMenuItems}
+            items={accountMenuItems}
           />
         </div>
       </div>

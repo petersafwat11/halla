@@ -120,7 +120,6 @@ export const toTicketDTO = (rawTicket) => {
   const description = rawTicket.description || rawTicket.message || "";
   const message = description;
   const status = (rawTicket.status || "open").toLowerCase();
-  const priority = (rawTicket.priority || "medium").toLowerCase();
   const type = rawTicket.type || rawTicket.category || "other";
   const createdAt = rawTicket.createdAt || null;
   const updatedAt = rawTicket.updatedAt || null;
@@ -139,7 +138,6 @@ export const toTicketDTO = (rawTicket) => {
     description,
     message,
     status,
-    priority,
     type,
     createdAt,
     updatedAt,

@@ -882,3 +882,19 @@ test('transactions: rollback when audit write fails leaves no partial records', 
     AuditService.record = originalRecord;
   }
 });
+
+test('event scheduling: API rejects backdating, allows unchanged historical times, and validates pagination', async () => {
+  const { EventsService } = await import('../src/modules/events/events.service.js');
+  const user = { id: new mongoose.Types.ObjectId().toString(), displayName: 'Schedule tester', role: ROLES.ADMIN };
+  await assert.rejects(() => EventsService.createEvent({ name: 'Past event', venue: 'Hall', startsAt: new Date(Date.now() - 86400000).toISOString() }, user), (error) => error.issues?.[0]?.path[0] === 'startsAt');
+  const future = new Date(Date.now() + 86400000).toISOString();
+  const created = await EventsService.createEvent({ name: 'Future event', venue: 'Hall', startsAt: future }, user);
+  assert.equal(created.startsAt.toISOString(), future);
+  const historical = await createTestEvent({ startsAt: '2026-01-01T12:00:30Z', status: 'live' });
+  const updated = await EventsService.updateEvent(String(historical._id), { version: 1, name: 'Renamed', startsAt: historical.startsAt.toISOString() }, user);
+  assert.equal(updated.name, 'Renamed');
+  await assert.rejects(() => EventsService.updateEvent(String(historical._id), { version: 2, startsAt: '2026-01-02T12:00:00Z' }, user), (error) => error.issues?.[0]?.path[0] === 'startsAt');
+  for (const query of [{ page: '-1' }, { page: '1junk' }, { pageSize: '1000' }, { page: ['1','2'] }]) {
+    await assert.rejects(() => EventsService.listEvents(user, query), (error) => error.name === 'ZodError');
+  }
+});

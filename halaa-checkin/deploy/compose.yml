@@ -11,7 +11,9 @@
 #     data/exports/          <- private PDF artifacts, chown 1001:1001
 #     .env                   <- IMAGE_TAG=<immutable SHA> only
 #
-# No service publishes public ports and no local MongoDB is started here:
+# No service publishes public ports. compose.override.yml adds the selected
+# authenticated VPS MongoDB option; see SELF-HOSTED.md. Without that overlay:
+# no local MongoDB is started here and
 # production data lives in a dedicated Atlas database
 # (e.g. halaa_checkin_prod) reached over TLS. Caddy (main Halaa stack,
 # attached to the same external proxy network) is the only public entrypoint.

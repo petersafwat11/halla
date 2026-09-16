@@ -91,9 +91,8 @@
   font-size: var(--text-sm);
   font-weight: 600;
   color: var(--ops-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  line-height: 1.6;
 }
 
 .cardIcon {
@@ -145,9 +144,8 @@
 .cardFoot {
   font-size: var(--text-xs);
   color: var(--ops-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  line-height: 1.6;
 }
 
 .cardFoot strong,

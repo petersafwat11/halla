@@ -1,7 +1,7 @@
 /**
  * @halaa-checkin/api
  * Bulk Passes A4 Template.
- * Formats multiple guest invitation passes in a 4-up A4 portrait layout (2x2 grid)
+ * Formats multiple guest invitation passes in a one-pass-per-page A4 portrait layout
  * with safe cut lines and independent pagination.
  * Adheres to Technical Contract Section 7 and Product Section 7.
  */
@@ -10,7 +10,7 @@ import { getCairoFontFacesCss, getHalaaLogoDataUrl } from './assets.js';
 import { escapeHtml, formatDateTime } from './helpers.js';
 
 /**
- * Generate self-contained HTML for bulk A4 4-up guest passes.
+ * Generate self-contained HTML for bulk A4 single-page guest passes.
  *
  * @param {object} params
  * @param {object} params.event
@@ -45,10 +45,10 @@ export function generateBulkPassesHtml({ event, guests, locale = 'ar', snapshotA
         instruction: 'Present this QR at the entrance',
       };
 
-  // Chunk guests into pages of 4
+  // Each invitation gets its own printed page
   const pages = [];
-  for (let i = 0; i < guests.length; i += 4) {
-    pages.push(guests.slice(i, i + 4));
+  for (let i = 0; i < guests.length; i += 1) {
+    pages.push(guests.slice(i, i + 1));
   }
 
   const renderCard = (guest) => {
@@ -98,13 +98,8 @@ export function generateBulkPassesHtml({ event, guests, locale = 'ar', snapshotA
     .map(
       (pageGuests, pageIdx) => `
     <div class="page-sheet ${pageIdx === pages.length - 1 ? 'last-page' : ''}">
-      <div class="cut-guide-horizontal"></div>
-      <div class="cut-guide-vertical"></div>
       <div class="grid-container">
         ${renderCard(pageGuests[0])}
-        ${renderCard(pageGuests[1])}
-        ${renderCard(pageGuests[2])}
-        ${renderCard(pageGuests[3])}
       </div>
       ${snapshotLine ? `<div class="snapshot-line">${isAr ? 'وقت النسخة (توقيت الرياض Asia/Riyadh): ' : 'Snapshot (Asia/Riyadh): '}${snapshotLine}</div>` : ''}
     </div>
@@ -141,7 +136,7 @@ export function generateBulkPassesHtml({ event, guests, locale = 'ar', snapshotA
 
     .page-sheet {
       width: 100%;
-      height: 280mm; /* Fits A4 margins with room for Chromium rounding. */
+      height: 274mm; /* Fits A4 margins with room for Chromium rounding. */
       break-inside: avoid;
       page-break-after: always;
       position: relative;
@@ -175,8 +170,8 @@ export function generateBulkPassesHtml({ event, guests, locale = 'ar', snapshotA
 
     .grid-container {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: 1fr 1fr;
+      grid-template-columns: 1fr;
+      grid-template-rows: 1fr;
       width: 100%;
       height: ${snapshotLine ? 'calc(100% - 6mm)' : '100%'};
       gap: 5mm;
@@ -196,12 +191,12 @@ export function generateBulkPassesHtml({ event, guests, locale = 'ar', snapshotA
     .pass-card {
       width: 100%;
       height: 100%;
-      max-width: 92mm;
-      max-height: 133mm;
+      max-width: 170mm;
+      max-height: 245mm;
       background: #fdfbf9;
       border: 1px solid #dfdfdf;
       border-radius: 8px;
-      padding: 4.5mm 5mm;
+      padding: 12mm 14mm;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -212,17 +207,17 @@ export function generateBulkPassesHtml({ event, guests, locale = 'ar', snapshotA
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 2mm;
+      gap: 5mm; flex-direction: column;
       margin-bottom: 1.5mm;
     }
 
     .logo-img {
-      height: 16px;
+      height: 64px; width: 64px;
       object-fit: contain;
     }
 
     .event-title {
-      font-size: 11px;
+      font-size: 22px;
       font-weight: 700;
       color: #c28e5c;
       line-height: 1.3;
@@ -231,7 +226,7 @@ export function generateBulkPassesHtml({ event, guests, locale = 'ar', snapshotA
     }
 
     .event-meta {
-      font-size: 8.5px;
+      font-size: 13px;
       color: #656565;
       line-height: 1.2;
       margin-bottom: 1.5mm;
@@ -247,7 +242,7 @@ export function generateBulkPassesHtml({ event, guests, locale = 'ar', snapshotA
     }
 
     .guest-name {
-      font-size: 13px;
+      font-size: 26px;
       font-weight: 700;
       color: #2c2c2c;
       line-height: 1.25;
@@ -257,7 +252,7 @@ export function generateBulkPassesHtml({ event, guests, locale = 'ar', snapshotA
     }
 
     .guest-counts {
-      font-size: 9px;
+      font-size: 14px;
       color: #656565;
       font-weight: 600;
     }
@@ -271,8 +266,8 @@ export function generateBulkPassesHtml({ event, guests, locale = 'ar', snapshotA
     }
 
     .qr-code-img {
-      width: 38mm;
-      height: 38mm;
+      width: 70mm;
+      height: 70mm;
       display: block;
       background: #ffffff;
       border: 1px solid #dfdfdf;
@@ -282,7 +277,7 @@ export function generateBulkPassesHtml({ event, guests, locale = 'ar', snapshotA
 
     .short-code-label {
       font-family: 'Cairo', monospace;
-      font-size: 10px;
+      font-size: 16px;
       font-weight: 700;
       letter-spacing: 1.5px;
       color: #2c2c2c;
@@ -290,7 +285,7 @@ export function generateBulkPassesHtml({ event, guests, locale = 'ar', snapshotA
     }
 
     .footer-msg {
-      font-size: 8px;
+      font-size: 12px;
       color: #656565;
       margin-top: 1mm;
     }

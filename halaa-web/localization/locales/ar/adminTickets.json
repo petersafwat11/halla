@@ -1,8 +1,6 @@
 {
   "attachment": {
     "title": "المرفق",
-    "viewImage": "عرض الصورة",
-    "viewVideo": "عرض الفيديو",
     "close": "إغلاق",
     "openNewTab": "فتح في علامة تبويب جديدة"
   },
@@ -26,11 +24,12 @@
       "ticketNumber": "رقم التذكرة",
       "ticketType": "النوع",
       "submittedBy": "مقدم الطلب",
-      "priority": "الأولوية",
       "assignedTo": "المكلف",
       "status": "الحالة",
       "createdAt": "تاريخ الإنشاء",
-      "media": "الوسائط"
+      "media": "الوسائط",
+      "subject": "الموضوع",
+      "message": "الرسالة"
     },
     "mediaCount": "{{count}} ملفات"
   },
@@ -42,13 +41,6 @@
     "waiting_response": "بانتظار الرد",
     "resolved": "محلولة",
     "closed": "مغلقة"
-  },
-  "priority": {
-    "low": "منخفضة",
-    "normal": "عادية",
-    "medium": "متوسطة",
-    "high": "عالية",
-    "urgent": "عاجلة"
   },
   "ticketType": {
     "technical": "فني",
@@ -93,7 +85,6 @@
     "user": "المستخدم",
     "type": "النوع",
     "status": "الحالة",
-    "priority": "الأولوية",
     "originalMessage": "الرسالة الأصلية",
     "previousResolution": "الحل السابق",
     "resolutionLabel": "رسالة الحل",
@@ -103,7 +94,8 @@
     "error": "فشل في حل التذكرة",
     "cancel": "إلغاء",
     "submit": "حل التذكرة",
-    "closing": "جاري الحل..."
+    "closing": "جاري الحل...",
+    "subject": "الموضوع"
   },
   "viewResolution": {
     "title": "تفاصيل الحل",
@@ -142,5 +134,21 @@
     "lastMonth": "الشهر الماضي",
     "confirm": "تأكيد",
     "cancel": "إلغاء"
+  },
+  "types": {
+    "technical": "مشكلة تقنية",
+    "payment": "مشكلة في الدفع",
+    "event": "مشكلة في الفعالية",
+    "user": "شكوى من مستخدم",
+    "other": "أخرى",
+    "inquiry": "استفسار",
+    "issue": "مشكلة",
+    "request": "طلب",
+    "suggestion": "اقتراح"
+  },
+  "media": {
+    "view": "عرض الوسائط",
+    "previous": "الوسائط السابقة",
+    "next": "الوسائط التالية"
   }
 }

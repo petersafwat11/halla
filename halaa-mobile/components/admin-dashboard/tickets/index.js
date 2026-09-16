@@ -8,4 +8,3 @@ export { default as TicketListItem } from "./TicketListItem";
 export { default as AssignTicketModal } from "./AssignTicketModal";
 export { default as ResolveTicketModal } from "./ResolveTicketModal";
 export { TicketSectionCard, TicketInfoRow } from "./TicketSectionCard";
-export { default as TicketHeroCard } from "./TicketHeroCard";

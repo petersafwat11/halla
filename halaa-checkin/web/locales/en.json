@@ -114,11 +114,12 @@
     "totalExpected": "Expected People",
     "admittedPeople": "Admitted People",
     "admittedInvitations": "Admitted Invitations",
-    "pendingInvitations": "Pending Invitations",
+    "pendingInvitations": "Not checked in",
     "didNotAttend": "Did Not Attend",
     "attendanceRate": "Attendance Rate",
     "headCountRate": "Headcount Rate",
-    "refreshing": "Refreshing..."
+    "refreshing": "Refreshing...",
+    "pendingHint": "Invitations still awaiting check-in"
   },
   "guests": {
     "title": "Guests List",
@@ -223,7 +224,9 @@
     "columnLine": "Line",
     "columnGuest": "Guest",
     "columnCompanions": "Companions",
-    "columnReference": "Reference"
+    "columnReference": "Reference",
+    "companionNames": "Companion names",
+    "commitButtonSingle": "Confirm Import (1 guest)"
   },
   "gate": {
     "workspaceTitle": "Gate Reception",
@@ -294,9 +297,10 @@
     "connectionStale": "Data may be stale",
     "selectGuest": "Select",
     "admittedBadge": "Admitted",
-    "pendingBadge": "Pending",
+    "pendingBadge": "Awaiting check-in",
     "decreaseCompanions": "Decrease companions",
-    "increaseCompanions": "Increase companions"
+    "increaseCompanions": "Increase companions",
+    "successPartySingle": "Party size: 1 person"
   },
   "qr": {
     "previewTitle": "Guest Invitation Pass (QR)",
@@ -311,8 +315,8 @@
   "exports": {
     "title": "Export & Reports",
     "singlePass": "Single Pass (A6)",
-    "selectedPasses": "Selected Passes (A4, 4-up)",
-    "allPasses": "All Passes (A4, 4-up)",
+    "selectedPasses": "Selected passes · one per page",
+    "allPasses": "All passes · one per page",
     "attendanceReport": "Attendance Report",
     "scopeSelected": "Selected ({count} invitations)",
     "scopeAll": "All ({count} invitations)",
@@ -346,7 +350,7 @@
     "reportInterim": "Interim report (event is live)",
     "reportFinal": "Final report (event is closed)",
     "reportPreview": "Report Preview",
-    "pendingInvitations": "Pending Invitations",
+    "pendingInvitations": "Not checked in",
     "admittedInvitations": "Admitted Invitations",
     "didNotAttend": "Did Not Attend",
     "attendanceRate": "Attendance Rate",

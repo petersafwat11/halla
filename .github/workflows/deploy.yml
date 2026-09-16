@@ -117,6 +117,9 @@ jobs:
           set -euo pipefail
           deploy() {
           cd /opt/halaa
+          # Shared only by Caddy and the independent check-in stack. Must exist
+          # before Compose creates/recreates Caddy with its second network.
+          docker network inspect halaa_checkin_proxy >/dev/null 2>&1 || docker network create halaa_checkin_proxy
           NEW_TAG="${{ needs.build.outputs.tag }}"
           PREV_TAG="$(sed -n 's/^IMAGE_TAG=//p' .env 2>/dev/null || true)"
           mkdir -p data/uploads deploy-logs

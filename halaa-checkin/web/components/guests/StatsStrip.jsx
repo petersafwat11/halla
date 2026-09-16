@@ -161,7 +161,7 @@ export function StatsStrip({
           </div>
           <div className={styles.cardValue}>{value(pendingValue)}</div>
           <div className={styles.cardFoot}>
-            {isClosed ? t(dict, 'events.statusClosed') : t(dict, 'status.pending')}
+            {isClosed ? t(dict, 'events.statusClosed') : t(dict, 'stats.pendingHint')}
           </div>
         </div>
       </div>

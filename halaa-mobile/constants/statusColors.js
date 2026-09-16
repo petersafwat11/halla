@@ -81,12 +81,6 @@ const BASE_TONE = {
   resolved: "success",
   closed: "neutral",
 
-  // Ticket priority
-  low: "neutral",
-  medium: "warning",
-  high: "danger",
-  urgent: "danger",
-
   // User / host / moderator / vendor / business
   active: "success",
   suspended: "danger",

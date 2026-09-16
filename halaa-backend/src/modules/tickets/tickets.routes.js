@@ -74,10 +74,6 @@ router.get(
  *         schema:
  *           type: string
  *       - in: query
- *         name: priority
- *         schema:
- *           type: string
- *       - in: query
  *         name: search
  *         schema:
  *           type: string
@@ -141,10 +137,6 @@ router
  *     parameters:
  *       - in: query
  *         name: status
- *         schema:
- *           type: string
- *       - in: query
- *         name: priority
  *         schema:
  *           type: string
  *       - in: query

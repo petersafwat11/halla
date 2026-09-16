@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { useMyTickets } from "@/hooks/tickets";
 import { normalizeTicketsFilters } from "@/utils/filterNormalizer";
 import StatsCards from "@/ui/host/main-page/StatsCards";
-import { FaTicketAlt, FaClock, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import { FaTicketAlt, FaClock, FaCheckCircle } from "react-icons/fa";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import styles from "./TicketStats.module.css";
 
@@ -21,10 +21,8 @@ export default function TicketStats() {
   const statsCards = useMemo(() => {
     const total = data?.pagination?.total || 0;
     const sc = data?.statusCounts || {};
-    const pc = data?.priorityCounts || {};
     const open = sc.open || 0;
     const resolved = (sc.resolved || 0) + (sc.closed || 0);
-    const highPriority = (pc.high || 0) + (pc.urgent || 0);
 
     return [
       {
@@ -47,13 +45,6 @@ export default function TicketStats() {
         title: t("stats.resolvedTickets"),
         value: resolved,
         subtitle: t("status.resolved"),
-      },
-      {
-        src: <FaTimesCircle className={styles.iconRed} />,
-        alt: "high-priority",
-        title: t("priority.high"),
-        value: highPriority,
-        subtitle: t("priority.urgent"),
       },
     ];
   }, [data, t]);

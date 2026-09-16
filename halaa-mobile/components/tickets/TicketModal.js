@@ -120,13 +120,12 @@ const TicketModal = ({ visible, onClose, onSubmit, initialData, loading }) => {
   const handleFormSubmit = (data) => {
     // With an attachment (create mode only) send multipart/form-data. The
     // backend Zod schema is .strict(), so append ONLY known fields and guard
-    // priority. Field name MUST be exactly "ticketAttachment".
+    // media attachments.
     if (!isEditMode && attachment.length) {
       const formData = new FormData();
       formData.append("subject", data.subject);
       formData.append("type", data.type);
       formData.append("message", data.message);
-      if (data.priority) formData.append("priority", data.priority);
       attachment.forEach(item => formData.append("ticketAttachments", {
         uri: item.uri,
         name: item.name,

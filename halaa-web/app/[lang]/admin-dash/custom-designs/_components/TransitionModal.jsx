@@ -1,8 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { FormProvider, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
+import TextArea from "@/ui/commen/inputs/inputGroup/TextArea";
+import InputGroup from "@/ui/commen/inputs/inputGroup/InputGroup";
 import Button from "@/ui/commen/button/Button";
 import { useAdminTransitionFulfillment } from "@/hooks/addons";
 import { getNextFulfillmentStatus } from "@halaa/shared/constants/addons";
@@ -11,6 +14,7 @@ import styles from "./TransitionModal.module.css";
 
 export default function TransitionModal({ isOpen, onClose, order }) {
   const { t } = useTranslation("admin");
+  const methods = useForm();
   const transitionMutation = useAdminTransitionFulfillment();
 
   const [customerNote, setCustomerNote] = useState("");
@@ -72,9 +76,12 @@ export default function TransitionModal({ isOpen, onClose, order }) {
     <PopupLayout isOpen={isOpen} onClose={onClose} size="medium">
       <div className={styles.modal}>
         <div className={styles.header}>
+          <div className={styles.headingRow}>
           <h2 className={styles.title}>
             {t("customDesigns.modalTitle", "تحديث حالة التنفيذ")}
           </h2>
+          <button type="button" className={styles.closeBtn} onClick={onClose} aria-label={t("common.close", "Close")}>×</button>
+          </div>
           <p className={styles.subtitle}>
             {t("customDesigns.orderRef", "طلب رقم")}: {orderRef}
           </p>
@@ -85,51 +92,24 @@ export default function TransitionModal({ isOpen, onClose, order }) {
           </div>
         </div>
 
+        <FormProvider {...methods}>
         <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.field}>
-            <label className={styles.label}>
-              {t("customDesigns.customerNoteLabel", "ملاحظة للعميل (مرئية في الجدول الزمني وإشعار التحديث)")}
-            </label>
-            <textarea
-              className={styles.textarea}
-              rows={3}
-              value={customerNote}
-              onChange={(e) => setCustomerNote(e.target.value)}
-              placeholder={t("customDesigns.customerNotePlaceholder", "أدخل ملاحظة إضافية للعميل...")}
-              maxLength={2000}
-            />
-          </div>
+          <TextArea name="customerNote" label={t("customDesigns.customerNoteLabel")}
+            placeholder={t("customDesigns.customerNotePlaceholder")} rows={3} maxLength={2000}
+            direction="auto" value={customerNote} onChange={(e) => setCustomerNote(e.target.value)} />
 
-          <div className={styles.field}>
-            <label className={styles.label}>
-              {t("customDesigns.internalNotesLabel", "ملاحظات إدارية داخلية (غير مرئية للعميل)")}
-            </label>
-            <textarea
-              className={styles.textarea}
-              rows={2}
-              value={internalNotes}
-              onChange={(e) => setInternalNotes(e.target.value)}
-              placeholder={t("customDesigns.internalNotesPlaceholder", "أدخل ملاحظات داخلية لفريق العمل...")}
-              maxLength={2000}
-            />
-          </div>
+          <TextArea name="internalNotes" label={t("customDesigns.internalNotesLabel")}
+            placeholder={t("customDesigns.internalNotesPlaceholder")} rows={2} maxLength={2000}
+            direction="auto" value={internalNotes} onChange={(e) => setInternalNotes(e.target.value)} />
 
-          <div className={styles.field}>
-            <label className={styles.label}>
-              {t("customDesigns.expectedDeliveryLabel", "تاريخ التسليم المتوقع")}
-            </label>
-            <input
-              type="datetime-local"
-              className={styles.input}
-              value={expectedDeliveryAt}
-              onChange={(e) => setExpectedDeliveryAt(e.target.value)}
-            />
-          </div>
+          <InputGroup name="expectedDeliveryAt" type="datetime-local"
+            label={t("customDesigns.expectedDeliveryLabel")} value={expectedDeliveryAt}
+            onChange={(e) => setExpectedDeliveryAt(e.target.value)} />
 
           <div className={styles.actions}>
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               onClick={onClose}
               disabled={transitionMutation.isPending}
               title={t("common.cancel", "إلغاء")}
@@ -144,6 +124,7 @@ export default function TransitionModal({ isOpen, onClose, order }) {
             />
           </div>
         </form>
+        </FormProvider>
       </div>
     </PopupLayout>
   );

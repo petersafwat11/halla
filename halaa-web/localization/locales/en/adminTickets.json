@@ -1,8 +1,6 @@
 {
   "attachment": {
     "title": "Attachment",
-    "viewImage": "View image",
-    "viewVideo": "View video",
     "close": "Close",
     "openNewTab": "Open in new tab"
   },
@@ -26,11 +24,12 @@
       "ticketNumber": "Ticket #",
       "ticketType": "Type",
       "submittedBy": "Submitted By",
-      "priority": "Priority",
       "assignedTo": "Assigned To",
       "status": "Status",
       "createdAt": "Created Date",
-      "media": "Media"
+      "media": "Media",
+      "subject": "Subject",
+      "message": "Message"
     },
     "mediaCount": "{{count}} files"
   },
@@ -42,13 +41,6 @@
     "waiting_response": "Waiting Response",
     "resolved": "Resolved",
     "closed": "Closed"
-  },
-  "priority": {
-    "low": "Low",
-    "normal": "Normal",
-    "medium": "Medium",
-    "high": "High",
-    "urgent": "Urgent"
   },
   "ticketType": {
     "technical": "Technical",
@@ -93,7 +85,6 @@
     "user": "User",
     "type": "Type",
     "status": "Status",
-    "priority": "Priority",
     "originalMessage": "Original Message",
     "previousResolution": "Previous Resolution",
     "resolutionLabel": "Resolution Message",
@@ -103,7 +94,8 @@
     "error": "Failed to resolve ticket",
     "cancel": "Cancel",
     "submit": "Resolve Ticket",
-    "closing": "Resolving..."
+    "closing": "Resolving...",
+    "subject": "Subject"
   },
   "viewResolution": {
     "title": "Resolution Details",
@@ -142,5 +134,21 @@
     "lastMonth": "Last month",
     "confirm": "Confirm",
     "cancel": "Cancel"
+  },
+  "types": {
+    "technical": "Technical Issue",
+    "payment": "Payment Issue",
+    "event": "Event Issue",
+    "user": "User Complaint",
+    "other": "Other",
+    "inquiry": "Inquiry",
+    "issue": "Issue",
+    "request": "Request",
+    "suggestion": "Suggestion"
+  },
+  "media": {
+    "view": "Show media",
+    "previous": "Previous media",
+    "next": "Next media"
   }
 }

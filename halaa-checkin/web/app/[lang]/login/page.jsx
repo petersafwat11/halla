@@ -99,7 +99,7 @@ export default function LoginPage() {
       <div className={styles.card}>
         <div className={styles.logoWrapper}>
           <Image
-            src="/images/logo.png"
+            src="/logo.png"
             alt="Halaa Logo"
             width={64}
             height={64}
@@ -182,7 +182,7 @@ export default function LoginPage() {
       </div>
 
       <div className={styles.footer}>
-        <span>© هلا لحلول الفعاليات — Halaa Event Solutions</span>
+        <span>© هلا لحلول المناسبات — Halaa Event Solutions</span>
       </div>
     </div>
   );
