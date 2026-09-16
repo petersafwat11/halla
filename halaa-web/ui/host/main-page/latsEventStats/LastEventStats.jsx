@@ -43,7 +43,7 @@ function LastEventStats() {
 
   const data = event || {};
   const [testMessageSent, setTestMessageSent] = useState(false);
-  useEffect(() => setTestMessageSent(false), [data.id, data.testMessageFingerprint]);
+  useEffect(() => setTestMessageSent(false), [data.id, data.testMessageSent]);
   const { canSendTest, canSchedule } = useEventActionGate({ event: data, testMessageSent });
 
   if (isLoading) return <SimpleLoading />;

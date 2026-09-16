@@ -16,11 +16,6 @@ const {
 const { logAudit } = require('../../shared/utils/auditLog');
 const { AppError, NotFoundError, ForbiddenError } = require('../../shared/errors');
 const { EVENT_LIFECYCLE_ALLOWED } = require('../../shared/constants');
-const {
-  resolveTaqnyatTemplate,
-  computeInvitationFingerprint,
-  invitationFingerprintMatches,
-} = require('./messaging.formatting');
 const { getActiveEventGuestsFilter } = require('../../shared/utils/guestFilter');
 
 /**
@@ -57,13 +52,10 @@ async function scheduleBulkSend({
     );
   }
 
-  // Canonical fingerprint validation: test message must match current content
-  const cachedTemplate = await resolveTaqnyatTemplate(event);
-  const currentFingerprint = computeInvitationFingerprint(event, cachedTemplate);
-
-  if (!invitationFingerprintMatches(event, cachedTemplate)) {
+  // Require a successful test, without binding it to a content hash.
+  if (!event.testMessageSent) {
     throw new AppError(
-      'A test message matching the current invitation content must be sent before scheduling',
+      'A successful test message must be sent before scheduling',
       409,
       'TEST_MESSAGE_REQUIRED'
     );
@@ -119,13 +111,12 @@ async function scheduleBulkSend({
       _id: eventId,
       status: { $in: EVENT_LIFECYCLE_ALLOWED.SCHEDULE },
       testMessageSent: true,
-      testMessageFingerprint: currentFingerprint,
     },
     { $set: update }
   );
   if (scheduled.matchedCount !== 1) {
     throw new AppError(
-      'Event content or lifecycle changed while scheduling; send a new test message and try again',
+      'Event lifecycle or test status changed while scheduling; refresh and try again',
       409,
       'TEST_MESSAGE_REQUIRED'
     );

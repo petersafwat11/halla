@@ -31,10 +31,6 @@ const {
 const { parseEventTime, isDue, nowUtc } = require("./timezone");
 const { getActiveEventGuestsFilter } = require("./guestFilter");
 const { eventInstantOf } = require("./schedulingWindow");
-const {
-  resolveTaqnyatTemplate,
-  invitationFingerprintMatches,
-} = require("../../modules/messaging/messaging.formatting");
 const { logAudit } = require("./auditLog");
 const eventLock = require("./eventLock");
 
@@ -208,12 +204,10 @@ async function runEventLaunch(event, workerId) {
       return { launched: false, reason: "stale" };
     }
 
-    // Pre-launch fingerprint validation: test message must match current event content
-    const cachedTemplate = await resolveTaqnyatTemplate(fresh);
-
-    if (!invitationFingerprintMatches(fresh, cachedTemplate)) {
+    // Keep the successful-test gate; content fingerprints are no longer used.
+    if (!fresh.testMessageSent) {
       console.warn(
-        `[Cron] Event ${eventId} launch aborted: test message missing or outdated fingerprint`
+        `[Cron] Event ${eventId} launch aborted: successful test message missing`
       );
       await Event.updateOne(
         { _id: eventId, status: "scheduled" },
@@ -221,7 +215,6 @@ async function runEventLaunch(event, workerId) {
           $set: {
             status: "pending_scheduling",
             testMessageSent: false,
-            testMessageFingerprint: null,
             failureReason: "untested_changes",
           },
           $unset: {
@@ -283,7 +276,7 @@ async function runEventLaunch(event, workerId) {
     }
 
     // Resolve the authoritative current-list subset only after the lock and
-    // fingerprint gate. This prevents stale pre-lock recipient snapshots from
+    // successful-test gate. This prevents stale pre-lock recipient snapshots from
     // being dispatched after a concurrent guest-list edit.
     const Guest = require("../../../models/GuestModel");
     const undelivered = await Guest.find({

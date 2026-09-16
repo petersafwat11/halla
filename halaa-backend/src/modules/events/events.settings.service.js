@@ -163,14 +163,13 @@ module.exports = {
       assertEventDateFloor({ eventInstant: requestedInstant, isTrial: isTrialFromPlan(event.planId) });
     }
 
-    // If the event was scheduled, modifying details invalidates the test fingerprint and auto-unschedules
+    // If the event was scheduled, modifying details resets test approval and auto-unschedules
     const unscheduled = await Event.updateOne(
       { _id: event._id, status: 'scheduled' },
       {
         $set: {
           status: 'pending_scheduling',
           testMessageSent: false,
-          testMessageFingerprint: null,
         },
         $unset: {
           'launchSettings.scheduledDate': 1,
@@ -190,7 +189,6 @@ module.exports = {
       await notifyEventUnscheduled(event);
       event.status = 'pending_scheduling';
       event.testMessageSent = false;
-      event.testMessageFingerprint = null;
       if (event.launchSettings) {
         event.launchSettings.scheduledDate = undefined;
         event.launchSettings.scheduledTime = undefined;
@@ -204,7 +202,6 @@ module.exports = {
       }).catch(() => {});
     } else {
       event.testMessageSent = false;
-      event.testMessageFingerprint = null;
     }
 
     // Does this edit touch the event date/time? Floor validation only runs when it does.
@@ -275,14 +272,13 @@ module.exports = {
     }
     const wasScheduled = event.status === 'scheduled';
 
-    // If the event was scheduled, modifying invitation settings invalidates the test fingerprint and auto-unschedules
+    // If the event was scheduled, modifying invitation settings resets test approval and auto-unschedules
     const unscheduled = await Event.updateOne(
       { _id: event._id, status: 'scheduled' },
       {
         $set: {
           status: 'pending_scheduling',
           testMessageSent: false,
-          testMessageFingerprint: null,
         },
         $unset: {
           'launchSettings.scheduledDate': 1,
@@ -302,7 +298,6 @@ module.exports = {
       await notifyEventUnscheduled(event);
       event.status = 'pending_scheduling';
       event.testMessageSent = false;
-      event.testMessageFingerprint = null;
       if (event.launchSettings) {
         event.launchSettings.scheduledDate = undefined;
         event.launchSettings.scheduledTime = undefined;
@@ -316,7 +311,6 @@ module.exports = {
       }).catch(() => {});
     } else {
       event.testMessageSent = false;
-      event.testMessageFingerprint = null;
     }
 
     if (file) {

@@ -39,7 +39,7 @@ const EventActionsHeader = ({ event, isAdmin = false, onDeleted, showAdminDelete
   const deleteEventMutation = useDeleteEvent();
 
   const eventId = event?.id || event?._id;
-  useEffect(() => { setOptimisticTestSent(false); }, [eventId, event?.testMessageFingerprint]);
+  useEffect(() => { setOptimisticTestSent(false); }, [eventId, event?.testMessageSent]);
   const updateRoute = isAdmin ? "UpdateEvent" : "UpdateEventScreen";
 
   // Shared gate. Visibility rules require an active template before

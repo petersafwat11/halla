@@ -48,7 +48,7 @@ const HomeScreen = ({ navigation }) => {
 
   const eventId = dashboardData?.lastEvent?.id || dashboardData?.lastEvent?._id;
   const [optimisticTestSent, setOptimisticTestSent] = useState(false);
-  useEffect(() => setOptimisticTestSent(false), [eventId, dashboardData?.lastEvent?.testMessageFingerprint]);
+  useEffect(() => setOptimisticTestSent(false), [eventId, dashboardData?.lastEvent?.testMessageSent]);
   const hasEvents = dashboardData?.hasEvents === true;
 
   const handleEditPress = (step) => {

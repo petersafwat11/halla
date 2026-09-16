@@ -43,7 +43,7 @@ export default function EventActionsHeader({ event, isAdmin = false, children })
 
   // Resolve the event ID robustly — Mongoose virtual `id` OR raw `_id`
   const effectiveEventId = event?.id?.toString() || event?._id?.toString();
-  useEffect(() => setOptimisticTestSent(false), [effectiveEventId, event?.testMessageFingerprint]);
+  useEffect(() => setOptimisticTestSent(false), [effectiveEventId, event?.testMessageSent]);
 
   // Gate logic centralised in `useEventActionGate` so the header, the
   // dashboard widget, and the mobile companions all resolve action

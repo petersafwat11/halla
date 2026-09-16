@@ -2,8 +2,8 @@
  * Comprehensive Integration Tests for Event Lifecycle Audit Remediation
  *
  * Validates:
- * 1. Fingerprint invalidation and auto-unscheduling on invitation mutation.
- * 2. Pre-launch fingerprint mismatch protection in runEventLaunch().
+ * 1. Test approval reset and auto-unscheduling on invitation mutation.
+ * 2. Pre-launch successful-test protection in runEventLaunch().
  * 3. Public send isolation (public send restricted to live events).
  * 4. 24-hour Asia/Riyadh event completion outbox claim.
  * 5. Webhook delivery status monotonicity and two-step BSON timestamp updates.
@@ -31,7 +31,6 @@ const messagingScheduleService = require("../src/modules/messaging/messaging.sch
 const messagingWebhookService = require("../src/modules/messaging/messaging.webhook.service");
 const postEventService = require("../src/modules/post-event/post-event.service");
 const scheduledTasks = require("../src/shared/utils/scheduledTasks");
-const { computeInvitationFingerprint } = require("../src/modules/messaging/messaging.formatting");
 const { EVENT_STATUS } = require("../src/shared/constants/status");
 const { getActiveEventGuestsFilter } = require('../src/shared/utils/guestFilter');
 
@@ -132,7 +131,6 @@ async function createScheduledEvent(overrides = {}) {
       scheduledTime: "10:00",
     },
     testMessageSent: true,
-    testMessageFingerprint: null, // to be populated
     guestList: [],
     ...overrides,
   });
@@ -145,19 +143,17 @@ async function createScheduledEvent(overrides = {}) {
   });
 
   event.guestList = [guest._id];
-  event.testMessageFingerprint = computeInvitationFingerprint(event, null);
   await event.save();
 
   return { event, guest };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 1. Fingerprint Auto-Unscheduling on Event Details / Settings Mutation
+// 1. Explicit Edit Auto-Unscheduling on Event Details / Settings Mutation
 // ─────────────────────────────────────────────────────────────────────────────
 test("Editing invitation details on a scheduled event atomically auto-unschedules it", async () => {
   const { event } = await createScheduledEvent();
   assert.equal(event.status, "scheduled");
-  assert.ok(event.testMessageFingerprint);
 
   // Update event details (title change)
   const updated = await eventsService.updateEventDetails(
@@ -175,7 +171,6 @@ test("Editing invitation details on a scheduled event atomically auto-unschedule
   const reloaded = await Event.findById(event._id);
   assert.equal(reloaded.status, "pending_scheduling", "Status must revert to pending_scheduling");
   assert.equal(reloaded.testMessageSent, false, "testMessageSent must reset to false");
-  assert.equal(reloaded.testMessageFingerprint, null, "testMessageFingerprint must be cleared");
   assert.equal(reloaded.launchSettings?.scheduledDate, undefined, "scheduledDate must be unset");
   assert.equal(reloaded.launchSettings?.scheduledTime, undefined, "scheduledTime must be unset");
   const Notification = require('../models/NotificationModel');
@@ -185,9 +180,9 @@ test("Editing invitation details on a scheduled event atomically auto-unschedule
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 2. Pre-Launch Fingerprint Validation & Auto-Unschedule in runEventLaunch
+// 2. Pre-Launch Test Validation & Auto-Unschedule in runEventLaunch
 // ─────────────────────────────────────────────────────────────────────────────
-test("runEventLaunch auto-unschedules event if test fingerprint is invalid or missing", async () => {
+test("runEventLaunch auto-unschedules event if successful test is missing", async () => {
   const { event } = await createScheduledEvent({
     launchSettings: {
       scheduledDate: new Date(Date.now() - 3600000), // due in the past
@@ -195,18 +190,17 @@ test("runEventLaunch auto-unschedules event if test fingerprint is invalid or mi
     },
   });
 
-  // Corrupt the fingerprint
-  event.testMessageFingerprint = "corrupted_stale_fingerprint";
+  // No successful test has been sent
+  event.testMessageSent = false;
   await event.save();
 
   // Trigger launch execution
   await scheduledTasks.runEventLaunch(event, "test-worker");
 
   const reloaded = await Event.findById(event._id);
-  assert.equal(reloaded.status, "pending_scheduling", "Event must be auto-unscheduled on mismatch");
+  assert.equal(reloaded.status, "pending_scheduling", "Event must be auto-unscheduled without a successful test");
   assert.equal(reloaded.failureReason, "untested_changes", "Failure reason must record untested_changes");
   assert.equal(reloaded.testMessageSent, false);
-  assert.equal(reloaded.testMessageFingerprint, null);
   assert.equal(reloaded.launchSettings?.scheduledDate, undefined);
 });
 
@@ -688,3 +682,18 @@ test("runEventCompletion retries pending and failed completion notifications", a
   assert.ok(notif, "Event completed notification must be delivered to host");
 });
 
+// Scheduling no longer depends on a content hash left by an older release.
+test('scheduling accepts a successful test with a stale legacy fingerprint', async () => {
+  const { event } = await createScheduledEvent();
+  await Event.collection.updateOne({ _id: event._id }, { $set: { testMessageFingerprint: 'obsolete-content-hash' } });
+  const { toRiyadhComponents } = require('../src/shared/utils/timezone');
+  const send = toRiyadhComponents(new Date(Date.now() + 26 * 3600000));
+  const result = await messagingScheduleService.scheduleBulkSend({
+    eventId: String(event._id), scheduledDate: send.date, scheduledTime: send.time,
+    userId: String(hostUser._id),
+  });
+  assert.equal(result.success, true);
+  const reloaded = await Event.findById(event._id);
+  assert.equal(reloaded.status, 'scheduled');
+  assert.equal(reloaded.testMessageSent, true);
+});

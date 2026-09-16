@@ -25,7 +25,6 @@ const {
   getEventBodyParams,
   buildSmsBody,
   getRequiredEventImageUrl,
-  computeInvitationFingerprint,
 } = require('./messaging.formatting');
 const taqnyatTemplatesService = require('../taqnyat-templates/taqnyat-templates.service');
 const { INVITATION_TYPE, EVENT_LIFECYCLE_ALLOWED } = require('../../shared/constants');
@@ -132,7 +131,7 @@ async function sendSMS(phoneNumber, message, logContext = {}) {
 
 /**
  * Send a test message for an event.
- * Validates status allowlist, sends test payload, and records canonical test fingerprint.
+ * Validates status allowlist, sends test payload, and records successful test approval.
  */
 async function sendTestMessage({ eventId, phoneNumber, channel = 'whatsapp', isAdmin = false }) {
   const event = await Event.findById(eventId).populate('host', 'name accountType');
@@ -245,7 +244,6 @@ async function sendTestMessage({ eventId, phoneNumber, channel = 'whatsapp', isA
     code: result.code || null,
   });
 
-  const fingerprint = result.success ? computeInvitationFingerprint(event, cached) : null;
 
   // Always update the throttle timestamp; success-only fields stay gated.
   const stamped = await Event.updateOne(
@@ -255,7 +253,6 @@ async function sendTestMessage({ eventId, phoneNumber, channel = 'whatsapp', isA
         lastTestAt: new Date(),
         ...(result.success && {
           testMessageSent: true,
-          testMessageFingerprint: fingerprint,
           'messagingStatus.preferredChannel': channel,
         }),
       },

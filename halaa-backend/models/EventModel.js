@@ -465,11 +465,6 @@ const eventSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    // SHA-256 fingerprint of the message content tested
-    testMessageFingerprint: {
-      type: String,
-      default: null,
-    },
     // last test message timestamp for per-event throttle
     lastTestAt: { type: Date },
 

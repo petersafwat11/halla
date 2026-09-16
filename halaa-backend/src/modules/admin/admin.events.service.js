@@ -164,7 +164,7 @@ async function updateEventFull(eventId, updateData, context = {}) {
     };
   }
 
-  // Message-affecting updates invalidate test message fingerprint and auto-unschedule
+  // Message-affecting updates reset test approval and auto-unschedule
   if (touchesMessage) {
     const unscheduled = await Event.updateOne(
       { _id: event._id, status: 'scheduled' },
@@ -172,7 +172,6 @@ async function updateEventFull(eventId, updateData, context = {}) {
         $set: {
           status: 'pending_scheduling',
           testMessageSent: false,
-          testMessageFingerprint: null,
         },
         $unset: {
           'launchSettings.scheduledDate': 1,
@@ -191,14 +190,12 @@ async function updateEventFull(eventId, updateData, context = {}) {
       await notifyEventUnscheduled(event);
       event.status = 'pending_scheduling';
       event.testMessageSent = false;
-      event.testMessageFingerprint = null;
       if (event.launchSettings) {
         event.launchSettings.scheduledDate = undefined;
         event.launchSettings.scheduledTime = undefined;
       }
     } else {
       event.testMessageSent = false;
-      event.testMessageFingerprint = null;
     }
   }
 
