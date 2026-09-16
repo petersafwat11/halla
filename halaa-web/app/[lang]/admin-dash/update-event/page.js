@@ -9,6 +9,7 @@ import { eventsKeys } from "@/hooks/events/keys";
 import { requirePageAccess } from "@/services/serverAuth";
 import UpdateEventWizard from "../../host/update-event/_components/UpdateEventWizard";
 import styles from "./page.module.css";
+import adminWizardStyles from "../_components/adminWizard.module.css";
 
 /**
  * Admin update-event route — thin wrapper around the shared UpdateEventWizard.
@@ -54,7 +55,10 @@ export default async function AdminUpdateEventPage({ params, searchParams }) {
   return (
     <QueryClientServerProvider queryClient={queryClient}>
       <div className={styles.container}>
-        <UpdateEventWizard returnPath="admin-dash/events" />
+        <UpdateEventWizard
+          returnPath="admin-dash/events"
+          wrapperClassName={adminWizardStyles.flushOnMobile}
+        />
       </div>
     </QueryClientServerProvider>
   );

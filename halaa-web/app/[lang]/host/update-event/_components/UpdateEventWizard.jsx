@@ -4,6 +4,7 @@ import { FormProvider } from "react-hook-form";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "../../create-event/page.module.css";
 import Header from "../../create-event/_components/header/Header";
+import Stepper from "../../create-event/_components/stepper/Stepper";
 import DeleteConfirmation from "@/ui/vendor/modals/DeleteConfirmation";
 import StepTitleAndDesc from "../../create-event/_components/stepTitleAndDesc/StepTitleAndDesc";
 import UpdateButtons from "./UpdateButtons";
@@ -30,6 +31,9 @@ import { handleError } from "@/services/errorHandlingService";
 import useStepConfig from "../_hooks/useStepConfig";
 import useUpdateEventActions from "../_hooks/useUpdateEventActions";
 
+// The wizard's four sections, in stepper order.
+const UPDATE_SECTIONS = ["details", "people", "design", "messages"];
+
 /**
  * Shared update-event wizard used by host and admin-dash routes.
  * Role-aware behaviour lives inside this component as branches rather
@@ -39,8 +43,12 @@ import useUpdateEventActions from "../_hooks/useUpdateEventActions";
  *   returnPath  — relative locale-less path to push on save / cancel
  *                 (e.g. "host" or "admin-dash/events"). Each route's
  *                 thin page.js wrapper supplies the right value.
+ *   wrapperClassName — extra class for the header / stepper / content
+ *                 wrappers. The admin route uses it to drop the wizard's
+ *                 own mobile gutter, which would otherwise stack on top of
+ *                 the one the admin dashboard layout already supplies.
  */
-const UpdateEventWizard = ({ returnPath = "host" }) => {
+const UpdateEventWizard = ({ returnPath = "host", wrapperClassName = "" }) => {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -69,6 +77,17 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
   const navigateWhenClean = (url) => {
     if (methods.formState.isDirty) setPendingNavigation(url);
     else router.push(url);
+  };
+
+  // Jump to a section from the stepper. `step` is 1-based, matching the
+  // stepper's own numbering and the wizard's `currentStep`.
+  const goToSection = (step) => {
+    const section = UPDATE_SECTIONS[step - 1];
+    if (!section) return;
+    const query = new URLSearchParams(searchParams.toString());
+    query.delete("step");
+    query.set("section", section);
+    navigateWhenClean("?" + query.toString());
   };
   useEffect(() => {
     const onUnload = (event) => { if (methods.formState.isDirty) { event.preventDefault(); event.returnValue = ""; } };
@@ -231,7 +250,7 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
         title={t("unsaved_title")} message={t("unsaved_body")} confirmText={t("discard_changes")} cancelText={t("keep_editing")} />
       <div className={styles.page_container}>
         <div className={styles.main_content}>
-          <div className={styles.header_wrapper}>
+          <div className={`${styles.header_wrapper} ${wrapperClassName}`}>
             <Header
               title={t("update_page_title")}
               description={t("update_page_description")}
@@ -239,24 +258,25 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
             />
           </div>
 
-          <div className={styles.stepper_wrapper}>
-            <nav aria-label={t("update_sections")} style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-              {["details", "people", "design", "messages"].map((section, index) => (
-                <button type="button" key={section} aria-current={currentStep === index + 1 ? "page" : undefined}
-                  onClick={() => { const query = new URLSearchParams(searchParams.toString()); query.delete("step"); query.set("section", section); navigateWhenClean("?" + query.toString()); }}>
-                  {t("step" + (index + 1) + "_title")}
-                </button>
-              ))}
-            </nav>
+          {/* Same stepper the create-event wizard uses, in its interactive
+              mode: each step is still the link to that section, so the
+              unsaved-changes guard runs on every jump. */}
+          <div className={`${styles.stepper_wrapper} ${wrapperClassName}`}>
+            <Stepper
+              currentStep={currentStep}
+              totalSteps={UPDATE_SECTIONS.length}
+              ariaLabel={t("update_sections")}
+              onStepClick={goToSection}
+            />
           </div>
 
           {(isEventLive || isEventCompleted) && (
-            <div className={styles.header_wrapper}>
+            <div className={`${styles.header_wrapper} ${wrapperClassName}`}>
               <LiveEventBanner currentStep={currentStep} isEventCompleted={isEventCompleted} />
             </div>
           )}
 
-          <div className={styles.content_wrapper}>
+          <div className={`${styles.content_wrapper} ${wrapperClassName}`}>
             <div
               className={`${styles.form_section} ${
                 currentStep === 4 ? styles.form_section_wide : ""
@@ -340,7 +360,7 @@ const UpdateEventWizard = ({ returnPath = "host" }) => {
   );
 };
 
-const WrappedUpdateEventWizard = ({ returnPath }) => {
+const WrappedUpdateEventWizard = ({ returnPath, wrapperClassName }) => {
   const { t } = useTranslation("createEvent");
 
   return (
@@ -348,7 +368,7 @@ const WrappedUpdateEventWizard = ({ returnPath }) => {
       fallbackTitle={t("errors.boundary")}
       fallbackMessage={t("errors.boundary")}
     >
-      <UpdateEventWizard returnPath={returnPath} />
+      <UpdateEventWizard returnPath={returnPath} wrapperClassName={wrapperClassName} />
     </ErrorBoundary>
   );
 };

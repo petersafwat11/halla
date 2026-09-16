@@ -27,6 +27,11 @@ import {
 
 const MAX_INVALID_ROWS_SHOWN = 5;
 
+// The .vcf upload path is temporarily hidden per product request. The modal and
+// its parser stay in place so the entry point can be switched back on without
+// re-implementing anything.
+const SHOW_VCARD_IMPORT = false;
+
 /**
  * When an event is `live`, the update wizard passes `allowAddOnly={true}`
  * so that Step 2 stays interactive for adding new guests but the existing
@@ -330,39 +335,6 @@ const StepTwo = ({ subscription, allowAddOnly = false, staffCount = 0, onManageS
         </div>
       )}
 
-      {/* Additional guest sources: reuse the host's guest book, and (on
-          supported browsers / Android Chrome) import from phone contacts.
-          Both merge into the local list and persist via the normal save. */}
-      <div
-        style={{
-          display: "flex",
-          gap: "8px",
-          flexWrap: "wrap",
-          marginBottom: "8px",
-        }}
-      >
-        <Button
-          variant="secondary"
-          title={t("add_from_my_guests")}
-          onClick={() => setShowReuseModal(true)}
-          disabled={isLimitReached}
-        />
-        {supportsPicker && (
-          <Button
-            variant="secondary"
-            title={t("import_from_phone")}
-            onClick={handlePhonePick}
-            disabled={isLimitReached}
-          />
-        )}
-        <Button
-          variant="secondary"
-          title={t("vcard_button")}
-          onClick={() => setShowVcardModal(true)}
-          disabled={isLimitReached}
-        />
-      </div>
-
       <GuestImporter
         guestList={guestList}
         setValue={setValue}
@@ -377,6 +349,37 @@ const StepTwo = ({ subscription, allowAddOnly = false, staffCount = 0, onManageS
         setShowImportLimitPopup={setShowImportLimitPopup}
         categories={savedCategories}
         showCategory={showCategory}
+        /* Additional guest sources: reuse the host's guest book, and (on
+           supported browsers / Android Chrome) import from phone contacts.
+           Both merge into the local list and persist via the normal save.
+           They render inside the importer card, right under the
+           download-template button, so every "add guests" path sits together. */
+        extraSources={
+          <div className={styles.guestSources}>
+            <Button
+              variant="secondary"
+              title={t("add_from_my_guests")}
+              onClick={() => setShowReuseModal(true)}
+              disabled={isLimitReached}
+            />
+            {supportsPicker && (
+              <Button
+                variant="secondary"
+                title={t("import_from_phone")}
+                onClick={handlePhonePick}
+                disabled={isLimitReached}
+              />
+            )}
+            {SHOW_VCARD_IMPORT && (
+              <Button
+                variant="secondary"
+                title={t("vcard_button")}
+                onClick={() => setShowVcardModal(true)}
+                disabled={isLimitReached}
+              />
+            )}
+          </div>
+        }
       />
 
       {/* Import Errors Display */}
@@ -469,14 +472,16 @@ const StepTwo = ({ subscription, allowAddOnly = false, staffCount = 0, onManageS
       />
 
       {/* Import from an uploaded contacts file (.vcf) — all browsers */}
-      <VCardImportModal
-        isOpen={showVcardModal}
-        onClose={() => setShowVcardModal(false)}
-        onAdd={(selected) => addIncomingWithFeedback(selected)}
-        existingMobiles={guestList.map((g) => g.mobile)}
-        remainingCapacity={remainingCapacity}
-        showCategory={showCategory}
-      />
+      {SHOW_VCARD_IMPORT && (
+        <VCardImportModal
+          isOpen={showVcardModal}
+          onClose={() => setShowVcardModal(false)}
+          onAdd={(selected) => addIncomingWithFeedback(selected)}
+          existingMobiles={guestList.map((g) => g.mobile)}
+          remainingCapacity={remainingCapacity}
+          showCategory={showCategory}
+        />
+      )}
 
       {/* Bulk link-to-category for the selected guests */}
       {showCategory && (

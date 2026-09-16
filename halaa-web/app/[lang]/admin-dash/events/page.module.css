@@ -4,3 +4,9 @@
   margin: 0 auto;
   padding: 2rem;
 }
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0;
+  }
+}

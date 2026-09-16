@@ -24,8 +24,16 @@ const CheckIcon = () => (
   </svg>
 );
 
-const Stepper = ({ currentStep = 1, totalSteps = 5 }) => {
+/**
+ * `onStepClick` turns the track into a section switcher (the update-event
+ * wizard, where every step is already reachable). Interactive steps render as
+ * buttons and the track stays on screen at every width, because collapsing to
+ * the read-only mobile summary would strip the navigation on phones.
+ */
+const Stepper = ({ currentStep = 1, totalSteps = 5, onStepClick = null, ariaLabel }) => {
   const { t } = useTranslation("createEvent");
+  const isInteractive = typeof onStepClick === "function";
+  const TrackTag = isInteractive ? "nav" : "div";
   const steps = STEP_DEFAULTS.slice(0, totalSteps).map((s) => ({
     id: s.id,
     label: t(s.key, s.fallback),
@@ -40,14 +48,33 @@ const Stepper = ({ currentStep = 1, totalSteps = 5 }) => {
   return (
     <>
       {/* Desktop Stepper */}
-      <div className={styles.stepper_desktop}>
-        <div className={styles.stepper}>
+      <div
+        className={`${styles.stepper_desktop} ${
+          isInteractive ? styles.stepper_interactive : ""
+        }`}
+      >
+        {/* A <nav> only when the steps actually navigate; otherwise it's a
+            progress indicator and an aria-label on a bare div is not exposed. */}
+        <TrackTag
+          className={styles.stepper}
+          {...(isInteractive ? { "aria-label": ariaLabel } : {})}
+        >
           {steps.map((step, index) => {
             const isCompleted = step.id < currentStep;
             const isActive = step.id === currentStep;
+            const StepTag = isInteractive ? "button" : "div";
             return (
               <React.Fragment key={step.id}>
-                <div className={`${styles.step_wrapper} ${statusClass(step.id)}`}>
+                <StepTag
+                  className={`${styles.step_wrapper} ${statusClass(step.id)}`}
+                  {...(isInteractive
+                    ? {
+                        type: "button",
+                        onClick: () => onStepClick(step.id),
+                        "aria-current": isActive ? "step" : undefined,
+                      }
+                    : {})}
+                >
                   <div className={styles.step_number}>
                     {isCompleted ? (
                       <CheckIcon />
@@ -59,7 +86,7 @@ const Stepper = ({ currentStep = 1, totalSteps = 5 }) => {
                   <div className={styles.content}>
                     <div className={styles.step_label}>{step.label}</div>
                   </div>
-                </div>
+                </StepTag>
                 {index < steps.length - 1 && (
                   <div
                     className={`${styles.connector} ${
@@ -70,35 +97,38 @@ const Stepper = ({ currentStep = 1, totalSteps = 5 }) => {
               </React.Fragment>
             );
           })}
-        </div>
+        </TrackTag>
       </div>
 
-      {/* Mobile Stepper */}
-      <div className={styles.stepper_mobile}>
-        <div className={styles.stepper_mobile_container}>
-          <div className={styles.stepper_mobile_header}>
-            <div className={styles.mobile_step_badge}>
-              <span className={styles.mobile_badge_current}>{currentStep}</span>
-              <span className={styles.mobile_badge_divider}>/</span>
-              <span className={styles.mobile_badge_total}>{steps.length}</span>
-            </div>
-            <div className={styles.mobile_step_info}>
-              <div className={styles.mobile_step_eyebrow}>
-                {t("step_label", "الخطوة")} {currentStep}
+      {/* Mobile Stepper — a read-only summary, so the interactive variant
+          skips it entirely and keeps its tappable track instead. */}
+      {!isInteractive && (
+        <div className={styles.stepper_mobile}>
+          <div className={styles.stepper_mobile_container}>
+            <div className={styles.stepper_mobile_header}>
+              <div className={styles.mobile_step_badge}>
+                <span className={styles.mobile_badge_current}>{currentStep}</span>
+                <span className={styles.mobile_badge_divider}>/</span>
+                <span className={styles.mobile_badge_total}>{steps.length}</span>
               </div>
-              <div className={styles.mobile_step_label}>
-                {steps[currentStep - 1].label}
+              <div className={styles.mobile_step_info}>
+                <div className={styles.mobile_step_eyebrow}>
+                  {t("step_label", "الخطوة")} {currentStep}
+                </div>
+                <div className={styles.mobile_step_label}>
+                  {steps[currentStep - 1].label}
+                </div>
               </div>
             </div>
-          </div>
-          <div className={styles.mobile_progress_track}>
-            <div
-              className={styles.mobile_progress_fill}
-              style={{ width: `${(currentStep / steps.length) * 100}%` }}
-            />
+            <div className={styles.mobile_progress_track}>
+              <div
+                className={styles.mobile_progress_fill}
+                style={{ width: `${(currentStep / steps.length) * 100}%` }}
+              />
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </>
   );
 };
