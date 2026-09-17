@@ -38,4 +38,11 @@ export {
   STORE_LIMITS,
 } from "./storeLimits.js";
 
+export {
+  PAYMENT_MARKS,
+  PAYMENT_MARK_KEYS,
+  CARD_NETWORK_ORDER,
+  getPaymentMark,
+} from "./paymentMarks.js";
+
 export { default as brand } from "./brand.js";

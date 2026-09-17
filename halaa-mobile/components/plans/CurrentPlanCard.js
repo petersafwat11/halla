@@ -13,6 +13,18 @@ import {
 } from "../../styles/tokens";
 import { getLocalized } from "@halaa/shared/utils/locale";
 import { countRatioToken, countToken } from "@halaa/shared/utils/displayTokens";
+import {
+  getInviteBreakdown,
+  isTrialSubscription,
+} from "@halaa/shared/utils/invitationBalance";
+
+// One icon per breakdown row key, so the row reads at a glance.
+const BREAKDOWN_ICONS = {
+  planInvites: "layers-outline",
+  extraInvites: "paper-plane-outline",
+  compensationInvites: "gift-outline",
+  carriedInvites: "swap-horizontal-outline",
+};
 
 const CurrentPlanCard = ({ subscription, usage, onBuyAddons, style }) => {
   const { t, i18n } = useTranslation("plans");
@@ -24,13 +36,9 @@ const CurrentPlanCard = ({ subscription, usage, onBuyAddons, style }) => {
 
   // The free trial is not a real plan: it must never render as a purchased
   // subscription ("1 event / 5 invites"). Trial accounts see the same
-  // "no active plan" state as unsubscribed users so they are steered to buy.
-  const isTrialSubscription =
-    subscription.status === "trial" ||
-    subscription.planType === "trial" ||
-    subscription.planId?.planType === "trial";
-
-  if (isTrialSubscription) {
+  // "no active plan" state as unsubscribed users so they are steered to buy —
+  // which also keeps the add-ons entry point off the trial.
+  if (isTrialSubscription(subscription)) {
     return <NoActivePlanCard style={style} />;
   }
 
@@ -61,6 +69,12 @@ const CurrentPlanCard = ({ subscription, usage, onBuyAddons, style }) => {
     : (guestsUsed / guestsLimit) * 100;
   const eventsPercent = Number.isFinite(eventsPercentRaw) ? eventsPercentRaw : 0;
   const guestsPercent = Number.isFinite(guestsPercentRaw) ? guestsPercentRaw : 0;
+
+  // Where the invites came from: plan / purchased extras / 15% compensation /
+  // business carryover. Empty for unlimited plans.
+  const breakdown = getInviteBreakdown(invitationBalance);
+  // The note only explains the 15% row, so it is silent when there is none.
+  const hasCompensation = breakdown.some((row) => row.key === "compensationInvites");
 
   return (
     <View style={[styles.card, style]}>
@@ -99,6 +113,36 @@ const CurrentPlanCard = ({ subscription, usage, onBuyAddons, style }) => {
           </TouchableOpacity>
         ) : null}
       </View>
+
+      {breakdown.length > 0 ? (
+        <View style={styles.breakdown}>
+          <LocalizedText style={styles.breakdownTitle}>
+            {t("currentPlan.inviteBreakdown")}
+          </LocalizedText>
+          {breakdown.map(({ key, value }) => (
+            <View style={styles.breakdownRow} key={key}>
+              <View style={styles.breakdownIcon}>
+                <Ionicons
+                  name={BREAKDOWN_ICONS[key]}
+                  size={14}
+                  color={colors.primary[500]}
+                />
+              </View>
+              <LocalizedText style={styles.breakdownLabel} numberOfLines={1}>
+                {t(`currentPlan.${key}`)}
+              </LocalizedText>
+              <LocalizedText style={styles.breakdownValue}>
+                {countToken(value, lang)}
+              </LocalizedText>
+            </View>
+          ))}
+          {hasCompensation ? (
+            <LocalizedText style={styles.breakdownNote}>
+              {t("currentPlan.compensationNote")}
+            </LocalizedText>
+          ) : null}
+        </View>
+      ) : null}
 
       <View style={styles.statsContainer}>
         <StatItem
@@ -296,6 +340,54 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius[20],
     overflow: "hidden",
   },
+  // Invite provenance block
+  breakdown: {
+    backgroundColor: colors.natural[50],
+    borderRadius: borderRadius[12],
+    borderWidth: 1,
+    borderColor: colors.primary[100],
+    padding: spacing[12],
+    marginBottom: spacing[12],
+    gap: spacing[8],
+  },
+  breakdownTitle: {
+    fontFamily: "Cairo_700Bold",
+    fontSize: typography.fontSize.body.small,
+    color: colors.secondary[700],
+    marginBottom: spacing[4],
+  },
+  breakdownRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing[8],
+  },
+  breakdownIcon: {
+    width: 24,
+    height: 24,
+    borderRadius: borderRadius[8],
+    backgroundColor: colors.primary[100],
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  breakdownLabel: {
+    flex: 1,
+    fontFamily: "Cairo_500Medium",
+    fontSize: typography.fontSize.body.small,
+    color: colors.accent[500],
+  },
+  breakdownValue: {
+    fontFamily: "Cairo_700Bold",
+    fontSize: typography.fontSize.body.medium,
+    color: colors.secondary[700],
+  },
+  breakdownNote: {
+    marginTop: spacing[4],
+    fontFamily: "Cairo_400Regular",
+    fontSize: typography.fontSize.caption.medium,
+    lineHeight: 18,
+    color: colors.natural[400],
+  },
+
   statsContainer: {
     gap: spacing[2],
   },
@@ -315,7 +407,7 @@ const styles = StyleSheet.create({
   },
   statContent: {
     flex: 1,
-    gap: spacing[6],
+    gap: spacing[8],
   },
   statInfo: {
     flexDirection: "row",

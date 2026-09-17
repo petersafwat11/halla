@@ -1,7 +1,10 @@
 .group { display: grid; gap: 10px; }
+
+/* Note first, plan name last: the rule is what the host needs to read; the
+   plan name is the supporting detail. */
 .currentPlan { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 14px 18px; border: 1px solid #e8d4c4; border-radius: 14px; background: #fff; color: #4a3d33; }
-.currentPlan > div { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.currentPlanNote { margin: 0; max-width: 620px; color: #756757; font-size: 12px; line-height: 1.6; }
+.currentPlanMeta { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; flex-shrink: 0; }
 .currentPlanLabel { font-size: 13px; color: #756757; }
 .currentPlanName { font-size: 15px; color: #6b4e33; }
-.currentPlan p { margin: 0; max-width: 620px; color: #756757; font-size: 12px; line-height: 1.6; }
 @media (max-width: 700px) { .currentPlan { align-items: flex-start; flex-direction: column; gap: 6px; } }

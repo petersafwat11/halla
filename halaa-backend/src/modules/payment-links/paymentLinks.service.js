@@ -25,6 +25,7 @@ const {
   ValidationError,
   NotFoundError,
 } = require("../../shared/errors");
+const { buildPublicUrl } = require("../../shared/utils/publicUrl");
 const { parseAmountSarToHalalas } = require("./paymentLinks.money");
 const { createPaymentLinkSchema } = require("./paymentLinks.validation");
 
@@ -50,16 +51,14 @@ const paymentLinksConfig = () => {
   };
 };
 
-const buildCallbackUrl = () => {
-  const base = String(paymentLinksConfig().callbackBaseUrl || "").replace(/\/$/, "");
-  let url;
-  try { url = new URL(base); } catch { throw new ValidationError("Payment link callback URL must be configured"); }
-  if (url.username || url.password || url.search || url.hash ||
-      !["http:", "https:"].includes(url.protocol) || (process.env.NODE_ENV === "production" && url.protocol !== "https:")) {
-    throw new ValidationError("Payment link callback URL is invalid");
-  }
-  return `${base}/api/v2/payment-links/provider-callback`;
-};
+// Backend origin + fixed callback path, resolved through the shared public-URL
+// helper (the same one the business checkout link uses against the frontend origin).
+const buildCallbackUrl = () =>
+  buildPublicUrl(
+    paymentLinksConfig().callbackBaseUrl,
+    "api/v2/payment-links/provider-callback",
+    { label: "Payment link callback" }
+  );
 
 const isHostedUrlAllowed = (url) => {
   if (!url || typeof url !== "string") return false;

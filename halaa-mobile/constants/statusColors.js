@@ -74,6 +74,10 @@ const BASE_TONE = {
   payment_processing: "info",
   activation_failed: "danger",
 
+  // Custom-design fulfillment (paid -> queued -> in_progress -> fulfilled)
+  queued: "warning",
+  fulfilled: "success",
+
   // Tickets
   open: "warning",
   in_progress: "info",
@@ -109,6 +113,7 @@ const DOMAIN_OVERRIDES = {
   subscription: { cancelled: "neutral" }, // terminal but not an error
   delivery: { pending: "neutral" }, // not-yet-sent, not "awaiting action"
   assignment: { paid: "info" }, // paid but activation still pending (intermediate)
+  fulfillment: { paid: "info" }, // first stage of the design queue, not "done"
 };
 
 const normalize = (status) =>

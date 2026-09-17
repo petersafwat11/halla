@@ -22,7 +22,12 @@ test('custom-design shared fields retain values and ticket popup separates type,
   fireEvent.change(note, { target: { value: 'Revised update' } });
   assert.equal(note.value, 'Revised update');
   assert.ok(modal.getByDisplayValue('Team note'));
-  assert.ok(document.querySelector('input[type="datetime-local"]'));
+  // Expected delivery uses the house DatePicker + TimePicker, not a native
+  // datetime-local: the native control renders a US-format value and ignores
+  // the app's locale and RTL layout.
+  assert.equal(document.querySelector('input[type="datetime-local"]'), null);
+  assert.ok(document.querySelector('img[alt="calendar"]'), 'date picker rendered');
+  assert.ok(modal.getByLabelText('timePicker.select'), 'time picker rendered');
   fireEvent.click(modal.getByLabelText('Close'));
   assert.equal(closed, true);
   modal.unmount();

@@ -245,6 +245,13 @@ const messagingStatusSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // Set when the reminder's send window closed WITHOUT anything going out —
+    // the invitations never launched in time, or nobody had confirmed. It is
+    // deliberately NOT `reminderSent`: nothing was sent, and claiming otherwise
+    // is what made the original incident undiagnosable. Closing the reminder
+    // stops the cron retrying forever and leaves a reason on the record.
+    reminderClosedAt: Date,
+    reminderSkipReason: String,
     // Overall delivery status for batch sending
     deliveryStatus: {
       type: String,

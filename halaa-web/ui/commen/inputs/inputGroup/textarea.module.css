@@ -25,6 +25,12 @@
 .input_error[dir="rtl"] {
   text-align: right;
 }
+/* dir="auto" matches neither rule above, so anchor it to the resolved
+   direction rather than leaving it to the UA default. */
+.input[dir="auto"],
+.input_error[dir="auto"] {
+  text-align: start;
+}
 .input_container {
   position: relative;
   width: 100%;

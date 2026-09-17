@@ -34,7 +34,15 @@ const TextArea = ({
   const formError = get(errors, name)?.message;
   const formValue = watch?.(name);
   const isControlled = inputValue !== undefined && onChange !== undefined;
-  const resolvedDirection = direction || localeDirection;
+  const currentValue = isControlled ? inputValue : formValue;
+  const requestedDirection = direction || localeDirection;
+  // `dir="auto"` takes its direction from the first strong character, so an
+  // EMPTY field has none and the browser falls back to LTR — which left-aligns
+  // the placeholder and caret inside an otherwise RTL form. Hold the locale
+  // direction until there is something to detect; once the user types, `auto`
+  // takes over so a note written in either script reads correctly.
+  const resolvedDirection =
+    requestedDirection === "auto" && !currentValue ? localeDirection : requestedDirection;
   const controlledChange = (event) => {
     if (sanitize) event.target.value = sanitize(event.target.value);
     onChange(event);

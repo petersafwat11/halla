@@ -396,3 +396,52 @@ test('ordinary Moyasar invoice-paid events still run the subscription renewal ha
     assert.equal(sub.status, 'active');
   } finally { Subscription.findOne = original; }
 });
+
+test('an issued bill awaiting settlement projects as processing, not unavailable', async () => {
+  const link = await seedReadyLink('HPL-HOLD');
+  const bill = paymentFor(link, { id: 'pay_sadad', status: 'initiated', source: { type: 'sadadbill' } });
+  paymentProvider.fetchInvoice = async () => ({ success: true, data: invoiceFor(link, { status: 'on_hold', payments: [bill] }) });
+  const result = await service.reconcilePaymentLink(link._id);
+  assert.equal(result.status, 'processing');
+  assert.equal(result.invoiceStatus, 'on_hold');
+  const row = await Payment.findOne({ moyasarPaymentId: 'pay_sadad' });
+  assert.equal(row.status, 'pending');
+});
+
+test('an initiated card attempt still reports the 3-D Secure wait', async () => {
+  const link = await seedReadyLink('HPL-3DS');
+  const card = paymentFor(link, { id: 'pay_card', status: 'initiated', source: { type: 'creditcard' } });
+  paymentProvider.fetchInvoice = async () => ({ success: true, data: invoiceFor(link, { payments: [card] }) });
+  const result = await service.reconcilePaymentLink(link._id);
+  assert.equal(result.status, 'processing');
+  assert.equal((await Payment.findOne({ moyasarPaymentId: 'pay_card' })).status, 'pending_3ds');
+});
+
+test('a voided invoice reads as canceled', async () => {
+  const link = await seedReadyLink('HPL-VOID');
+  paymentProvider.fetchInvoice = async () => ({ success: true, data: invoiceFor(link, { status: 'voided' }) });
+  assert.equal((await service.reconcilePaymentLink(link._id)).status, 'canceled');
+});
+
+test('an unknown provider invoice status needs review instead of silently going unavailable', async () => {
+  const link = await seedReadyLink('HPL-UNKNOWN');
+  paymentProvider.fetchInvoice = async () => ({ success: true, data: invoiceFor(link, { status: 'some_new_state' }) });
+  const result = await service.reconcilePaymentLink(link._id);
+  assert.equal(result.status, 'needs_review');
+  assert.equal(result.invoiceStatus, 'some_new_state');
+});
+
+test('cancelling an on-hold bill succeeds when the provider voids the invoice', async () => {
+  const link = await seedReadyLink('HPL-HOLDCANCEL');
+  const bill = paymentFor(link, { id: 'pay_hold', status: 'initiated', source: { type: 'sadadbill' } });
+  let canceled = false;
+  paymentProvider.fetchInvoice = async () => ({ success: true, data: invoiceFor(link, {
+    status: canceled ? 'voided' : 'on_hold', payments: [bill],
+  }) });
+  paymentProvider.cancelInvoice = async () => { canceled = true; return { success: true, providerStatus: 'voided' }; };
+  const result = await service.cancelPaymentLink({ linkId: link._id, actor: actor() });
+  assert.equal(result.status, 'canceled');
+  assert.equal(result.cancelPending, false);
+  assert.ok(result.canceledAt);
+  assert.equal(result.collectedHalalas, 0);
+});

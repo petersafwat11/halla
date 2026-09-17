@@ -50,6 +50,8 @@ const LastEvent = ({
       {subscription && (
         <LastEventQuota
           balance={event.invitationBalance}
+          subscription={subscription}
+          event={event}
         />
       )}
 

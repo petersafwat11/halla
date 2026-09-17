@@ -19,7 +19,10 @@ test('PR4R / F-11: Canonical Invitation Balance Presenter & Contract', async (t)
     assert.deepEqual(balance, {
       unlimited: false,
       base: 100,
+      planBase: 100,
+      extra: 0,
       compensation: 15,
+      carried: 0,
       consumed: 30,
       total: 115,
       remaining: 85,
@@ -36,7 +39,10 @@ test('PR4R / F-11: Canonical Invitation Balance Presenter & Contract', async (t)
     assert.deepEqual(balance, {
       unlimited: false,
       base: 200,
+      planBase: 200,
+      extra: 0,
       compensation: 30,
+      carried: 0,
       consumed: 50,
       total: 230,
       remaining: 180,
@@ -90,7 +96,10 @@ test('PR4R / F-11: Canonical Invitation Balance Presenter & Contract', async (t)
     assert.deepEqual(balance, {
       unlimited: true,
       base: null,
+      planBase: null,
+      extra: null,
       compensation: null,
+      carried: null,
       consumed: 120,
       total: null,
       remaining: null,
@@ -110,7 +119,10 @@ test('PR4R / F-11: Canonical Invitation Balance Presenter & Contract', async (t)
     assert.deepEqual(bNull, {
       unlimited: false,
       base: 0,
+      planBase: 0,
+      extra: 0,
       compensation: 0,
+      carried: 0,
       consumed: 0,
       total: 0,
       remaining: 0,
@@ -121,7 +133,10 @@ test('PR4R / F-11: Canonical Invitation Balance Presenter & Contract', async (t)
     assert.deepEqual(bOrphan, {
       unlimited: false,
       base: 0,
+      planBase: 0,
+      extra: 0,
       compensation: 0,
+      carried: 0,
       consumed: 0,
       total: 0,
       remaining: 0,
@@ -138,11 +153,63 @@ test('PR4R / F-11: Canonical Invitation Balance Presenter & Contract', async (t)
     assert.deepEqual(balance, {
       unlimited: false,
       base: 80,
+      planBase: 80,
+      extra: 0,
       compensation: 12,
+      carried: 0,
       consumed: 10,
       total: 92,
       remaining: 82,
     });
+  });
+
+  await t.test('7b. Split: plan invites vs purchased extras vs carryover', () => {
+    // Stamped baselines: plan gave 100 invites + 15 compensation. The host
+    // then bought a 50-invite add-on (folds into invitePool) and carried 20
+    // invites over from a replaced business plan (folds into compensationPool).
+    const sub = {
+      invitePool: 150,
+      compensationPool: 35,
+      planInvitePool: 100,
+      planCompensationPool: 15,
+      invitesConsumed: 40,
+    };
+    const balance = calculateInvitationBalance(sub);
+    assert.deepEqual(balance, {
+      unlimited: false,
+      base: 150,
+      planBase: 100,
+      extra: 50,
+      compensation: 35,
+      carried: 20,
+      consumed: 40,
+      total: 185,
+      remaining: 145,
+    });
+  });
+
+  await t.test('7c. Split falls back to plan limits when baselines unstamped', () => {
+    const sub = { invitePool: 130, compensationPool: 15, invitesConsumed: 0 };
+    const plan = { limits: { invitePool: 100 } };
+    const balance = calculateInvitationBalance(sub, plan);
+    assert.equal(balance.planBase, 100);
+    assert.equal(balance.extra, 30);
+    assert.equal(balance.carried, 0);
+  });
+
+  await t.test('7d. Refund clawback never yields a negative extra', () => {
+    // Clawback decremented invitePool below the stamped plan baseline.
+    const sub = {
+      invitePool: 80,
+      compensationPool: 15,
+      planInvitePool: 100,
+      planCompensationPool: 15,
+      invitesConsumed: 0,
+    };
+    const balance = calculateInvitationBalance(sub);
+    assert.equal(balance.extra, 0);
+    assert.equal(balance.planBase, 80);
+    assert.equal(balance.base, 80);
   });
 
   await t.test('8. assertHasInviteBudget gates correctly', () => {

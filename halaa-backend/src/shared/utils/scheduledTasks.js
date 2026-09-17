@@ -715,6 +715,43 @@ const _formatDateAr = (date) => {
  * are looked up by `(category, reminder_confirmed)`.
  * A missing template audits and skips — it does not crash the tick.
  */
+// The reminder only fires inside a grace window after its scheduled time; the
+// cron ticks every 15 minutes, so there are a handful of attempts at most.
+const REMINDER_GRACE_SECONDS = 3600;
+const REMINDER_TICK_MS = 15 * 60 * 1000;
+// Skips that are worth retrying WITHIN the window but must not leave the
+// reminder pending once it closes.
+const RETRYABLE_SKIPS = ["invitations_not_launched", "no_eligible_recipients"];
+
+/**
+ * Close a reminder whose window passed without anything being sent.
+ *
+ * Deliberately does NOT set `reminderSent` — nothing was sent, and recording
+ * otherwise is exactly what made the original incident undiagnosable. The
+ * record carries the reason and an audit row so the outcome is explicable.
+ */
+async function _closeUnsentReminder(event, reason) {
+  const result = await Event.updateOne(
+    { _id: event._id, "messagingStatus.reminderSent": { $ne: true }, "messagingStatus.reminderClosedAt": null },
+    { $set: { "messagingStatus.reminderClosedAt": new Date(), "messagingStatus.reminderSkipReason": reason } }
+  );
+  if (!result.modifiedCount) return;
+
+  console.log(`[Cron] Reminder for event ${event._id} closed unsent — ${reason}`);
+  try {
+    await logAudit({
+      action: "reminder.auto_window_closed",
+      actor: { _id: null, role: "system" },
+      targetType: "event",
+      targetId: event._id,
+      status: "skipped",
+      metadata: { reason, scheduledFor: event.reminderSettings?.scheduledDate || null },
+    });
+  } catch (auditError) {
+    console.error("[Cron] Failed to audit reminder close:", auditError?.message);
+  }
+}
+
 const scheduleGuestReminders = () => {
   cron.schedule("*/15 * * * *", async () => {
     try {
@@ -726,6 +763,7 @@ const scheduleGuestReminders = () => {
         status: { $in: ["scheduled", "live"] },
         "reminderSettings.scheduledDate": { $lte: dateLimit },
         "messagingStatus.reminderSent": { $ne: true },
+        "messagingStatus.reminderClosedAt": null,
       }).populate("host", "name accountType");
 
       // Load legacy events without custom settings that fall into the 48h window
@@ -736,6 +774,7 @@ const scheduleGuestReminders = () => {
         "eventDetails.date": { $gte: windowStart, $lte: windowEnd },
         "reminderSettings.scheduledDate": { $exists: false },
         "messagingStatus.reminderSent": { $ne: true },
+        "messagingStatus.reminderClosedAt": null,
       }).populate("host", "name accountType");
 
       // Combine arrays
@@ -751,14 +790,21 @@ const scheduleGuestReminders = () => {
 
       for (const event of allEvents) {
         let shouldSend = false;
+        let windowExpired = false;
+        // Legacy events carry no scheduled instant — they are selected by the
+        // 48h date window instead, so they have no grace window to close.
+        const scheduledTime =
+          event.reminderSettings && event.reminderSettings.scheduledDate
+            ? parseReminderTime(event)
+            : null;
 
         if (event.reminderSettings && event.reminderSettings.scheduledDate) {
-          const scheduledTime = parseReminderTime(event);
           if (scheduledTime) {
             const diffMs = now.getTime() - scheduledTime.getTime();
             const diffSec = diffMs / 1000;
             // Send if scheduled time is in the past, and within a 60 minutes grace window
-            shouldSend = diffSec >= 0 && diffSec < 3600;
+            shouldSend = diffSec >= 0 && diffSec < REMINDER_GRACE_SECONDS;
+            windowExpired = diffSec >= REMINDER_GRACE_SECONDS;
           }
         } else {
           // Legacy event (already matches the 48h query window)
@@ -767,7 +813,26 @@ const scheduleGuestReminders = () => {
 
         if (shouldSend) {
           console.log(`[Cron] Sending reminders for event ${event._id} (custom: ${!!event.reminderSettings?.customReminderTime})`);
-          await _runAutoReminderForEvent(event);
+          const outcome = await _runAutoReminderForEvent(event);
+          // A retryable skip on the LAST tick of the window would otherwise
+          // leave the reminder pending forever, so close it here. Only a
+          // scheduled reminder has a window; a legacy one keeps retrying for
+          // as long as the 48h query still selects it.
+          if (
+            scheduledTime &&
+            !outcome?.reminded &&
+            RETRYABLE_SKIPS.includes(outcome?.reason)
+          ) {
+            const windowEndsAt =
+              scheduledTime.getTime() + REMINDER_GRACE_SECONDS * 1000;
+            if (now.getTime() + REMINDER_TICK_MS >= windowEndsAt) {
+              await _closeUnsentReminder(event, outcome.reason);
+            }
+          }
+        } else if (windowExpired) {
+          // Reached when the reminder was rescheduled into the past, or the
+          // process was down for the whole window.
+          await _closeUnsentReminder(event, "window_expired");
         }
       }
     } catch (error) {
@@ -801,6 +866,19 @@ async function _runAutoReminderForEvent(event) {
     return { reminded: false, reason: `dispatch_blocked:${decision.reason}` };
   }
 
+  // The invitations must have gone out before a reminder can mean anything:
+  // nobody can have confirmed yet, and completing the reminder here would
+  // burn it permanently. Every launch path (`runEventLaunch`, cron or manual)
+  // sets `status: 'live'` together with `launchedAt`, so either signal marks a
+  // launched event. Leave the reminder PENDING so a later tick can pick it up.
+  const invitationsLaunched = event.status === "live" || !!event.launchedAt;
+  if (!invitationsLaunched) {
+    console.log(
+      `[Cron] Reminder for event ${eventId} skipped — invitations not launched yet (status:${event.status}); staying pending`
+    );
+    return { reminded: false, reason: "invitations_not_launched" };
+  }
+
   const allGuests = await Guest.find({
     ...getActiveEventGuestsFilter(eventId, event.guestList),
     "invitation.sent": true,
@@ -812,6 +890,17 @@ async function _runAutoReminderForEvent(event) {
   const confirmedGuests = allGuests.filter(
     (guest) => guest.rsvp?.response === "confirmed"
   );
+
+  // Nobody to remind yet — an empty audience is NOT a completed reminder.
+  // Completing here (0 sent, 0 failed) permanently consumes the event's single
+  // free reminder before anyone has had a chance to confirm. Stay pending; no
+  // audit row, since this tick repeats every 15 minutes.
+  if (confirmedGuests.length === 0) {
+    console.log(
+      `[Cron] Reminder for event ${eventId} skipped — no confirmed guests yet; staying pending`
+    );
+    return { reminded: false, reason: "no_eligible_recipients", successful: 0, failed: 0 };
+  }
 
   let totalSuccess = 0;
   let totalFailed = 0;
@@ -868,7 +957,12 @@ async function _runAutoReminderForEvent(event) {
     }
   }
 
-  if (totalFailed === 0) await Event.findByIdAndUpdate(eventId, {
+  // Complete only on a clean run that actually delivered something. The
+  // audience is non-empty by the guard above, so a batch that reports neither
+  // success nor failure delivered nothing — completing on it would burn the
+  // event's single free reminder silently.
+  const completed = totalFailed === 0 && totalSuccess > 0;
+  if (completed) await Event.findByIdAndUpdate(eventId, {
     $set: {
       "messagingStatus.reminderSent": true,
       "messagingStatus.reminderSentAt": new Date(),
@@ -876,7 +970,7 @@ async function _runAutoReminderForEvent(event) {
   });
 
   await logAudit({
-    action: totalFailed === 0 ? "reminder.auto_dispatched" : "reminder.auto_failed",
+    action: completed ? "reminder.auto_dispatched" : "reminder.auto_failed",
     actor: { _id: null, role: "system" },
     targetType: "event",
     targetId: eventId,
@@ -886,13 +980,13 @@ async function _runAutoReminderForEvent(event) {
       successful: totalSuccess,
       failed: totalFailed,
     },
-    status: totalFailed === 0 ? "success" : totalSuccess === 0 ? "failure" : "partial",
+    status: completed ? "success" : totalSuccess === 0 ? "failure" : "partial",
   }).catch(() => {});
 
   console.log(
     `[Cron] Reminders sent for event ${eventId} — confirmed:${confirmedGuests.length} ok:${totalSuccess} fail:${totalFailed}`
   );
-  return { reminded: totalFailed === 0, successful: totalSuccess, failed: totalFailed };
+  return { reminded: completed, successful: totalSuccess, failed: totalFailed };
 }
 
 /**
@@ -1675,6 +1769,7 @@ module.exports = {
   scheduleEventCompletion,
   scheduleGuestReminders,
   runAutoReminderForEvent: _runAutoReminderForEvent,
+  closeUnsentReminder: _closeUnsentReminder,
   schedulePaymentReconcile,
   schedulePaymentLinksReconcile,
   scheduleSubscriptionRenewal,

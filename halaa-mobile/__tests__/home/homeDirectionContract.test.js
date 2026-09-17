@@ -154,7 +154,11 @@ test("LastEventStatsRow + Quota + StatsCards: locale-formatted atomic counts", (
   );
 
   const quota = read("components", "home", "_components", "LastEventQuota.js");
-  assert.match(quota, /InvitationBalanceCard compact balance=\{balance\}/);
+  // The card is rendered in its compact variant off the canonical balance DTO
+  // (props may span lines now that subscription/event are threaded through for
+  // the "add more invites" gate).
+  assert.match(quota, /<InvitationBalanceCard[\s\S]*\bcompact\b/);
+  assert.match(quota, /balance=\{balance\}/);
   assert.doesNotMatch(quota, /remainingInvites|quota\?\.|quota\./);
 
   const cards = read("components", "home", "StatsCards.js");

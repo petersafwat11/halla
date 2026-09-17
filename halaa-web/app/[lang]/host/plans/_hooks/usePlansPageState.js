@@ -9,9 +9,14 @@ import { useHostPlans } from "@/hooks/plans";
 import { useMySubscription, subscriptionsKeys } from "@/hooks/subscriptions";
 import { buildCreditCardSource } from "@halaa/shared/utils/card";
 import { useCheckout } from "@/hooks/checkout";
+import { useApplePayToken } from "@/hooks/payments";
 import { addonsKeys } from "@/hooks/addons/keys";
 import { eventsKeys } from "@/hooks/events/keys";
 import { resolveWebCompletionUrl } from "@halaa/shared/utils";
+
+// Shown on the Apple Pay sheet's total line — the merchant name the host sees
+// in their wallet, so it stays the brand rather than a translated string.
+const APPLE_PAY_MERCHANT_LABEL = "Halaa";
 
 const getInviteValue = (plan, billingType) => {
   if (billingType === "monthly") return plan.invitePool ?? 0;
@@ -32,6 +37,7 @@ export const usePlansPageState = () => {
   const { data: plansData, isLoading: plansLoading, error: plansError } = useHostPlans();
   const { data: subscriptionData, isLoading: subLoading, error: subError } = useMySubscription();
   const checkoutMutation = useCheckout();
+  const { requestToken: requestApplePayToken } = useApplePayToken();
 
   const [showSummary, setShowSummary] = useState(false);
   const [showAddons, setShowAddons] = useState(false);
@@ -96,15 +102,35 @@ export const usePlansPageState = () => {
     setShowAddons(true);
   }, []);
 
-  const buildSource = useCallback(() => {
-    if (paymentMethod === "creditcard") {
-      return buildCreditCardSource(cardData);
-    }
-    if (paymentMethod === "stcpay") {
-      return { type: "stcpay", mobile: stcMobile };
-    }
-    throw new Error(t("checkout.errors.methodUnavailable", "This payment method is not available"));
-  }, [paymentMethod, cardData, stcMobile, t]);
+  // Async because Apple Pay's token only exists once the host has approved the
+  // sheet. It must still be *called* synchronously from the pay click —
+  // Safari refuses a PassKit session begun outside the originating gesture —
+  // so nothing may be awaited before it on the pay path.
+  const buildSource = useCallback(
+    async (quote) => {
+      if (paymentMethod === "creditcard") {
+        return buildCreditCardSource(cardData);
+      }
+      if (paymentMethod === "stcpay") {
+        return { type: "stcpay", mobile: stcMobile };
+      }
+      if (paymentMethod === "applepay") {
+        const authorized = await requestApplePayToken({
+          amount: quote?.total,
+          currency: quote?.currency || "SAR",
+          label: APPLE_PAY_MERCHANT_LABEL,
+        });
+        // `null` means the host dismissed the Apple Pay sheet — abort quietly
+        // rather than surfacing a payment error they did not cause.
+        if (!authorized) return null;
+        // The sheet is still open; the caller settles it once the charge
+        // resolves so its checkmark never precedes a real payment.
+        return { type: "applepay", token: authorized.token, __settle: authorized.settle };
+      }
+      throw new Error(t("checkout.errors.methodUnavailable", "This payment method is not available"));
+    },
+    [paymentMethod, cardData, stcMobile, requestApplePayToken, t]
+  );
 
   // Map AddonsSection cart into checkout body shape. Scope is forced to
   // pool/org since checkout addons cannot be event-scoped (no event yet at
@@ -127,16 +153,29 @@ export const usePlansPageState = () => {
 
   const handleProceedToPayment = useCallback(async (quote) => {
     if (!selectedPlan) return;
+    // Held open by Apple Pay until the charge resolves; settled in `finally`
+    // so its checkmark can never precede a real payment.
+    let settleWalletSheet = null;
     try {
+      // Resolved first and synchronously from the click so the Apple Pay
+      // sheet can open; `null` means the host dismissed it.
+      const source = await buildSource(quote);
+      if (source === null) return;
+
+      const { __settle, ...chargeSource } = source;
+      settleWalletSheet = __settle || null;
+
       const result = await checkoutMutation.mutateAsync({
         planCode: selectedPlan.code,
         addons: buildCheckoutAddons(),
         ...(appliedDiscountCode ? { discountCode: appliedDiscountCode } : {}),
-        source: buildSource(),
+        source: chargeSource,
         ...(quote?.total != null ? { expectedAmount: quote.total, expectedTotal: quote.total } : {}),
         ...(quote?.quoteId ? { quoteId: quote.quoteId } : {}),
         ...(quote?.quoteExpiresAt ? { quoteExpiresAt: quote.quoteExpiresAt } : {}),
       });
+      settleWalletSheet?.(true);
+      settleWalletSheet = null;
       if (result?.requiresAction) {
         // useCheckout already redirected via window.location; skip the toast.
         return;
@@ -167,6 +206,10 @@ export const usePlansPageState = () => {
       const message =
         error?.response?.data?.message || error?.message || "";
       toastUtils.error(message || t("toasts.subscriptionFailed"));
+    } finally {
+      // Still set only if the charge never reported success — dismiss the
+      // wallet sheet as failed rather than leaving it spinning.
+      settleWalletSheet?.(false);
     }
   }, [
     selectedPlan,

@@ -222,9 +222,25 @@ const formatPhoneDisplay = (phoneNumber) => {
 };
 
 /**
+ * The national significant digits — the part of the number that is identical
+ * whichever prefix it was typed or stored with (`05…`, `5…`, `966…`, `+966…`,
+ * `00966…`). Mirror of the shared util.
+ *
+ * @param {string|number} phoneNumber
+ * @returns {string} e.g. "501234567" for any Saudi spelling, "" if unparseable
+ */
+const getPhoneNationalDigits = (phoneNumber) => {
+  const normalized = normalizePhoneNumber(phoneNumber);
+  if (!normalized) return '';
+  if (normalized.startsWith('966')) return normalized.slice(3);
+  if (normalized.startsWith('20')) return normalized.slice(2);
+  return normalized;
+};
+
+/**
  * Generates all valid query lookup variants for database queries.
  * Given '0501234567' or '501234567', returns:
- * ['966501234567', '501234567', '0501234567', '+966501234567', rawValue]
+ * ['966501234567', '501234567', '0501234567', '+966501234567', '00966501234567', rawValue]
  *
  * @param {string|number} phoneNumber
  * @returns {string[]} Array of unique lookup variants
@@ -239,14 +255,54 @@ const getPhoneLookupVariants = (phoneNumber) => {
   if (normalized) {
     variants.add(normalized);
     variants.add(`+${normalized}`);
-    if (normalized.startsWith('966') && normalized.length === 12) {
-      const nat9 = normalized.slice(3);
-      variants.add(nat9);
-      variants.add(`0${nat9}`);
+    variants.add(`00${normalized}`);
+    const national = getPhoneNationalDigits(normalized);
+    if (national) {
+      variants.add(national);
+      variants.add(`0${national}`);
     }
   }
 
   return Array.from(variants);
+};
+
+/**
+ * Mongo `$or` clause that finds a phone in ANY stored spelling.
+ *
+ * The `$in` arm covers the exact prefix variants and can use the
+ * `{ mobile: 1 }` / `{ phoneNumber: 1, role: 1 }` indexes. The anchored-suffix
+ * regex arm is the safety net for rows saved before normalization, or with
+ * separators (`+966 51 234 5678`), which no `$in` list can enumerate. Callers
+ * pair this with a selective filter (role, event, …) so the regex arm only
+ * ever scans a small candidate set.
+ *
+ * @param {string[]} fields - document paths holding a phone, e.g. ['mobile']
+ * @param {string|number} phoneNumber
+ * @returns {Array<Object>} clauses for `$or` — empty when nothing is searchable
+ */
+const buildPhoneLookupClauses = (fields, phoneNumber) => {
+  const paths = Array.isArray(fields) ? fields.filter(Boolean) : [];
+  if (!paths.length || !phoneNumber) return [];
+
+  const variants = getPhoneLookupVariants(phoneNumber);
+  const national = getPhoneNationalDigits(phoneNumber);
+  const clauses = [];
+
+  for (const path of paths) {
+    if (variants.length) clauses.push({ [path]: { $in: variants } });
+    if (national.length >= 9) {
+      // Digits may be separated in the stored value, so allow non-digits
+      // between them. Anchoring only at the end would also match a LONGER
+      // number that merely ends with these digits (searching 501234567 would
+      // hit a stored 1501234567), so anything before the national run must be
+      // a recognised dialling prefix — `00966`, `966`, `0`, or nothing.
+      const loose = (digits) => digits.split('').join('\\D*');
+      const prefix = `(?:^|\\D)(?:${loose('00966')}|${loose('966')}|0)?\\D*`;
+      clauses.push({ [path]: new RegExp(`${prefix}${loose(national)}$`) });
+    }
+  }
+
+  return clauses;
 };
 
 /**
@@ -271,6 +327,8 @@ module.exports = {
   isValidPhone,
   formatPhoneDisplay,
   getPhoneLookupVariants,
+  getPhoneNationalDigits,
+  buildPhoneLookupClauses,
   mongoosePhoneValidator,
 };
 

@@ -129,7 +129,7 @@ const StepOne = ({ constraints, owner } = {}) => {
   const [draftTime, setDraftTime] = useState(() => new Date());
 
   // Earliest selectable event date enforces the backend event-date floor:
-  //   event date ≥ now + minLead + 3d  (trial minLead = 15min → ~now+3d;
+  //   event date ≥ now + minLead + 3d  (trial minLead = 3min → ~now+3d;
   //   paid minLead = 24h → now+4d). The picker is day-granular; the backend
   //   (assertEventDateFloor) is the source of truth and rejects
   //   EVENT_DATE_TOO_SOON for boundary cases.

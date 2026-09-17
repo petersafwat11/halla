@@ -38,7 +38,6 @@ export function buildConfirmedCaption(event, guest, lang = 'ar') {
   const lines = [getReplyMessage('confirmed', event, lang), '', `🎉 ${title}`];
   if (date) lines.push(`🗓️ ${date}${time ? ` · ${time}` : ''}`);
   if (venue) lines.push(`📍 ${venue}`);
-  lines.push(lang === 'en' ? `👥 Guests: ${guestsCount(guest)}` : `👥 عدد الضيوف: ${guestsCount(guest)}`);
   lines.push('', lang === 'en' ? 'Show this code at the entrance.' : 'يُرجى إبراز هذا الرمز عند الدخول.');
   return lines.join('\n');
 }

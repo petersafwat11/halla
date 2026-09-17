@@ -50,7 +50,7 @@ test("time bounds disable too-early and too-late clock values on boundary days",
     now: new Date("2026-08-27T09:00:30.000Z"),
   });
   assert.deepEqual(getScheduleTimeBounds("2026-08-27", window), {
-    minimumMinutes: 12 * 60 + 16,
+    minimumMinutes: 12 * 60 + 4,
     maximumMinutes: 1439,
   });
   assert.deepEqual(getScheduleTimeBounds("2026-08-31", window), {
@@ -73,7 +73,7 @@ test("serialized Riyadh midnight keeps its intended event day and 12h time", () 
   );
 });
 
-test("trial and paid scheduling windows use 15 minutes and 24 hours", () => {
+test("trial and paid scheduling windows use 3 minutes and 24 hours", () => {
   const now = new Date("2026-08-27T09:00:00.000Z");
   const common = {
     eventDate: "2026-09-03T00:00:00.000Z",
@@ -83,7 +83,7 @@ test("trial and paid scheduling windows use 15 minutes and 24 hours", () => {
 
   const trial = getScheduleWindow({ ...common, isTrial: true });
   const paid = getScheduleWindow({ ...common, isTrial: false });
-  assert.equal(trial.earliestInstant.toISOString(), "2026-08-27T09:15:00.000Z");
+  assert.equal(trial.earliestInstant.toISOString(), "2026-08-27T09:03:00.000Z");
   assert.equal(paid.earliestInstant.toISOString(), "2026-08-28T09:00:00.000Z");
   assert.equal(trial.latestInstant.toISOString(), "2026-08-31T15:00:00.000Z");
   assert.equal(paid.latestInstant.toISOString(), "2026-08-31T15:00:00.000Z");
@@ -99,8 +99,8 @@ test("exact selected time is checked inside the day-granular picker bounds", () 
     now,
   };
 
-  assert.equal(validateScheduleSelection({ ...input, time: "12:05" }).reason, "tooSoon");
-  assert.equal(validateScheduleSelection({ ...input, time: "12:20" }).valid, true);
+  assert.equal(validateScheduleSelection({ ...input, time: "12:02" }).reason, "tooSoon");
+  assert.equal(validateScheduleSelection({ ...input, time: "12:05" }).valid, true);
   assert.equal(
     validateScheduleSelection({ ...input, date: "2026-09-01", time: "12:00" }).reason,
     "tooLate"

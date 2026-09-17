@@ -1,57 +1,44 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { FaLock } from "react-icons/fa";
+import { useApplePayAvailability } from "@/hooks/payments";
 import { formatExpiryInput, detectCardBrand as sharedDetectCardBrand } from "@halaa/shared/utils";
 import {
   clampPhoneInput,
   getPhoneMaxLength,
   DEFAULT_PHONE_PLACEHOLDER,
 } from "@halaa/shared/utils/phone";
+import { CARD_NETWORK_ORDER } from "@halaa/shared/brand/paymentMarks";
+import PaymentBrandMark from "./PaymentBrandMark";
 import styles from "./PaymentMethodSelector.module.css";
-
-// --- Card brand logos (official SVGs served from /public/svg/payment) ---
-const CARD_BRANDS = {
-  visa: { src: "/svg/payment/visa.svg", alt: "Visa" },
-  mastercard: { src: "/svg/payment/mastercard.svg", alt: "Mastercard" },
-  mada: { src: "/svg/payment/mada.svg", alt: "mada" },
-};
-
-const CARD_BRAND_ORDER = ["visa", "mastercard", "mada"];
-
-// A single brand logo normalized inside a uniform white "chip" so the three
-// logos (which have very different native aspect ratios) read consistently.
-const BrandChip = ({ brand }) => {
-  const meta = CARD_BRANDS[brand];
-  if (!meta) return null;
-  return (
-    <span className={styles.brandChip}>
-      <img src={meta.src} alt={meta.alt} className={styles.brandImg} loading="lazy" />
-    </span>
-  );
-};
-
-const StcPayLogo = ({ height = 24 }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 40" width={Math.round(height * (100 / 40))} height={height} style={{ display: 'inline-block', verticalAlign: 'middle' }}>
-    <rect width="100" height="40" fill="#4f005d" rx="6" />
-    <text x="50%" y="58%" dominantBaseline="middle" textAnchor="middle" fontFamily="Cairo, Arial, sans-serif" fontSize="18" fontWeight="bold" fill="#00E5FF">stc pay</text>
-  </svg>
-);
 
 const METHODS = [
   {
     key: "creditcard",
     Logo: () => (
       <div className={styles.brandChips}>
-        {CARD_BRAND_ORDER.map((brand) => (
-          <BrandChip key={brand} brand={brand} />
+        {CARD_NETWORK_ORDER.map((brand) => (
+          <PaymentBrandMark key={brand} brand={brand} chip />
         ))}
       </div>
     ),
   },
-  // Apple Pay must only return after a real wallet session/token integration is available.
-  { key: "stcpay",     Logo: () => <StcPayLogo height={24} /> },
+  {
+    key: "applepay",
+    Logo: () => <PaymentBrandMark brand="applepay" />,
+    // Only offered where an Apple Pay sheet can actually open — otherwise it
+    // would be a dead tab on every non-Apple browser.
+    requiresApplePay: true,
+  },
+  {
+    key: "stcpay",
+    // `stcpay` stays the wire value — it is the Moyasar source type and the
+    // stored Payment.paymentMethod — but the brand shown to the customer is
+    // "stc bank", which is what they see in their own app.
+    Logo: () => <PaymentBrandMark brand="stcbank" />,
+  },
 ];
 
 export default function PaymentMethodSelector({
@@ -64,9 +51,23 @@ export default function PaymentMethodSelector({
   errors = {},
 }) {
   const { t } = useTranslation("plans");
+  const applePayAvailable = useApplePayAvailability();
   const [card, setCard] = useState({ name: "", number: "", month: "", year: "", cvc: "" });
   const [expiryText, setExpiryText] = useState("");
   const [mobileText, setMobileText] = useState("");
+
+  const methods = useMemo(
+    () => METHODS.filter((method) => !method.requiresApplePay || applePayAvailable),
+    [applePayAvailable]
+  );
+
+  // If Apple Pay disappears (or was never there) while selected, fall back to
+  // cards so the host is never left on a method they cannot complete.
+  useEffect(() => {
+    if (value === "applepay" && !applePayAvailable) {
+      onChange("creditcard");
+    }
+  }, [value, applePayAvailable, onChange]);
 
   useEffect(() => {
     if (cardData) {
@@ -121,20 +122,21 @@ export default function PaymentMethodSelector({
 
   const activeCardBrand = sharedDetectCardBrand(card.number || "");
 
-  const renderCardInputBrandIcon = () => {
-    const meta = CARD_BRANDS[activeCardBrand];
-    if (!meta) return null;
-    return (
+  const renderCardInputBrandIcon = () =>
+    CARD_NETWORK_ORDER.includes(activeCardBrand) ? (
       <span className={styles.fieldBrandBox}>
-        <img src={meta.src} alt={meta.alt} className={styles.brandImg} />
+        <PaymentBrandMark brand={activeCardBrand} />
       </span>
-    );
-  };
+    ) : null;
 
   return (
     <div className={styles.wrap}>
-      <div className={styles.tabs} role="radiogroup">
-        {METHODS.map(({ key, Logo }) => {
+      <div
+        className={styles.tabs}
+        role="radiogroup"
+        data-methods={methods.length}
+      >
+        {methods.map(({ key, Logo }) => {
           const active = value === key;
           return (
             <button
@@ -239,6 +241,20 @@ export default function PaymentMethodSelector({
               {t(
                 "checkout.card.secureNote",
                 "Your card details are encrypted and processed securely."
+              )}
+            </span>
+          </p>
+        </div>
+      )}
+
+      {value === "applepay" && (
+        <div className={styles.fields}>
+          <p className={styles.note}>
+            <FaLock className={styles.noteIcon} aria-hidden="true" />
+            <span>
+              {t(
+                "checkout.applepay.note",
+                "Apple Pay opens when you confirm — approve the payment with Face ID, Touch ID or your passcode."
               )}
             </span>
           </p>

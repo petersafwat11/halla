@@ -5,6 +5,7 @@
  */
 
 const env = require('./env');
+const { normalizeOrigin } = require('../shared/utils/publicUrl');
 
 /**
  * @typedef {Object} Config
@@ -60,8 +61,20 @@ const config = {
     enabled: env.REDIS_ENABLED === 'true',
   },
 
+  // Scheduling lead times. These were validated in env.js but never mapped
+  // here, so `config.events?.…` always resolved to undefined and the env vars
+  // were inert — every read fell through to a hardcoded literal.
+  events: {
+    scheduleMinLeadHours: env.SCHEDULE_MIN_LEAD_HOURS,
+    trialScheduleMinLeadMinutes: env.TRIAL_SCHEDULE_MIN_LEAD_MINUTES,
+  },
+
   frontend: {
     url: env.FRONTEND_URL,
+    // Canonical origin used to mint customer-facing links (business checkout,
+    // 3DS returns). Normalized here so call sites never join a path onto a
+    // trailing slash — and never onto `undefined`.
+    canonicalUrl: normalizeOrigin(env.FRONTEND_URL),
   },
 
   backend: {

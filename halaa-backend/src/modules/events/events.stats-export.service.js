@@ -138,10 +138,20 @@ module.exports = {
     return {
       hasSubscription: true,
       status: subscription.status,
+      // Combined status+expiry verdict: a subscription stays `active` in the
+      // DB until a cron sweeps it, so status alone cannot gate a top-up.
+      isActive: subscription.isActive,
+      expiresAt: subscription.expiresAt || null,
       planType: subscription.planType,
       planCode: subscription.planCode,
+      // Customer-facing name — the event page shows this instead of planCode.
+      planNameAr: subscription.planId?.nameAr || null,
+      planNameEn: subscription.planId?.nameEn || null,
       isSingleEvent: isPerEvent,
       isPoolPlan: isPool,
+      // Per-event plans are spent once sending starts — the UI uses this to
+      // stop offering invite top-ups that could never be spent on this event.
+      firstSendAt: subscription.firstSendAt || null,
       canCreateEvent,
       guestLimit,
       isGuestUnlimited,

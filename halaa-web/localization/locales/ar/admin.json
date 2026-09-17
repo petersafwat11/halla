@@ -379,6 +379,8 @@
     "internalNotesLabel": "ملاحظات إدارية داخلية (غير مرئية للعميل)",
     "internalNotesPlaceholder": "أدخل ملاحظات داخلية لفريق العمل...",
     "expectedDeliveryLabel": "تاريخ التسليم المتوقع",
+    "expectedDeliveryPlaceholder": "اختر التاريخ",
+    "expectedDeliveryTimeLabel": "وقت التسليم المتوقع",
     "confirmTransition": "تأكيد التحديث",
     "transitionSuccess": "تم تحديث حالة الطلب بنجاح",
     "transitionError": "تعذر تحديث حالة الطلب",

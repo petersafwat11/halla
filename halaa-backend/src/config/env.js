@@ -86,9 +86,9 @@ const envSchema = Joi.object({
   SCHEDULE_MIN_LEAD_HOURS: Joi.number().min(0).default(24),
 
   // Trial plan: minimum lead time in minutes for scheduling (overrides
-  // SCHEDULE_MIN_LEAD_HOURS for trial users). Default 15 min so trial
+  // SCHEDULE_MIN_LEAD_HOURS for trial users). Default 3 min so trial
   // users can quickly test the scheduling flow.
-  TRIAL_SCHEDULE_MIN_LEAD_MINUTES: Joi.number().min(0).default(15),
+  TRIAL_SCHEDULE_MIN_LEAD_MINUTES: Joi.number().min(0).default(3),
 
   // Maximum number of rows allowed in a single export.
   // Default 10,000. Exports exceeding this limit return 422 with instructions

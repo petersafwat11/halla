@@ -877,6 +877,7 @@ const EventDetailsScreen = () => {
             remaining={invitesRemaining}
             balance={invitationBalance}
             currentSubscription={isAdmin ? null : currentSubscription}
+            event={event}
             eventId={eventId}
           />
         )}

@@ -1,0 +1,284 @@
+/* Detail popups (payment link + transaction). Mirrors the PaymentActionModal
+   shell so every payments dialog reads the same. */
+
+.popup {
+  padding: 2.4rem;
+  width: min(92vw, 640px);
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  font-family: var(--font-ar, "Cairo", sans-serif);
+}
+
+.popupWide {
+  composes: popup;
+  width: min(94vw, 760px);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.6rem;
+}
+
+.headerMain {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--color-secondary-900);
+  margin: 0;
+}
+
+.kicker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.8rem;
+  font-size: 1.3rem;
+  color: var(--color-natural-450);
+}
+
+.reference {
+  font-family: monospace;
+  font-size: 1.3rem;
+  color: var(--color-natural-500);
+}
+
+.closeBtn {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  font-size: 2.4rem;
+  line-height: 1;
+  color: var(--color-natural-500);
+  cursor: pointer;
+  padding: 0.4rem;
+  border-radius: var(--radius-8);
+  transition: background 150ms ease;
+}
+
+.closeBtn:hover {
+  background: var(--color-natural-150);
+}
+
+.notices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.notice {
+  margin: 0;
+  padding: 1rem 1.4rem;
+  border-radius: var(--radius-8);
+  background: var(--color-warning-50);
+  color: var(--color-warning-700);
+  font-size: 1.3rem;
+}
+
+.noticeError {
+  composes: notice;
+  background: var(--color-error-50);
+  color: var(--color-error-700);
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0.8rem;
+}
+
+.summaryItem {
+  min-width: 0;
+  padding: 1.2rem 1.4rem;
+  border: 1px solid var(--color-natural-200);
+  border-radius: var(--radius-12);
+  background: var(--color-natural-150);
+}
+
+.summaryLabel {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 1.2rem;
+  color: var(--color-natural-450);
+}
+
+.summaryValue {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-secondary-900);
+  overflow-wrap: anywhere;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--color-secondary-700);
+}
+
+.rows {
+  border: 1px solid var(--color-natural-200);
+  border-radius: var(--radius-12);
+  padding: 0.4rem 1.6rem;
+  background: var(--color-natural-100);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 1rem 0;
+  font-size: 1.4rem;
+}
+
+.row + .row {
+  border-top: 1px dashed var(--color-natural-200);
+}
+
+.rowLabel {
+  font-weight: 500;
+  color: var(--color-natural-450);
+}
+
+.rowValue {
+  min-width: 0;
+  font-weight: 600;
+  color: var(--color-secondary-900);
+  overflow-wrap: anywhere;
+}
+
+.rowMono {
+  composes: rowValue;
+  font-family: monospace;
+  font-size: 1.3rem;
+}
+
+.copyRow {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  min-width: 0;
+}
+
+.copyValue {
+  min-width: 0;
+  max-width: 28rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: monospace;
+  font-size: 1.3rem;
+  color: var(--color-secondary-900);
+}
+
+.copyBtn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.2rem;
+  height: 3.2rem;
+  border: 1px solid var(--color-natural-250);
+  border-radius: var(--radius-8);
+  background: var(--color-natural-50);
+  color: var(--color-natural-500);
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.copyBtn:hover {
+  background: var(--color-natural-150);
+}
+
+.txRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.2rem 0;
+}
+
+.txRow + .txRow {
+  border-top: 1px dashed var(--color-natural-200);
+}
+
+.txMain {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.8rem;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--color-secondary-900);
+}
+
+.txMeta {
+  font-size: 1.2rem;
+  color: var(--color-natural-450);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1.2rem;
+  padding-top: 1.6rem;
+  border-top: 1px solid var(--color-natural-200);
+}
+
+.state {
+  padding: 3.2rem 0;
+  text-align: center;
+  color: var(--color-natural-450);
+  font-size: 1.4rem;
+}
+
+@media (max-width: 640px) {
+  .popup,
+  .popupWide {
+    padding: 1.6rem;
+    gap: 1.6rem;
+  }
+
+  .title {
+    font-size: 1.6rem;
+  }
+
+  .row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+  }
+
+  .copyValue {
+    max-width: 20rem;
+  }
+
+  .actions {
+    flex-direction: column-reverse;
+    gap: 0.8rem;
+  }
+
+  .actions > * {
+    width: 100%;
+  }
+}

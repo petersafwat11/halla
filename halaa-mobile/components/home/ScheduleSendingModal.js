@@ -24,10 +24,19 @@ import {
 import {
   getScheduleWindow,
   getScheduleTimeBounds,
+  instantToPickerDay,
   validateScheduleSelection,
 } from "@halaa/shared/utils/schedulingWindow";
+
 import { useScheduleSend } from "../../hooks/messaging";
 import { useMySubscription } from "../../hooks/users";
+
+// How far ahead the pickers are prefilled when the host has no stored
+// schedule yet. This is only a NUDGE past the minimum lead — the real floor
+// comes from the schedule window, which is 3 minutes on trial but 24 hours on
+// a paid plan. Prefilling a flat "now + 5 minutes" would open the modal
+// looking valid and then fail submission for every paid host.
+const DEFAULT_PREFILL_MS = 5 * 60 * 1000;
 
 const buildSchema = (t) =>
   z.object({
@@ -52,6 +61,34 @@ const timeFromHHmm = (hhmm) => {
   const d = new Date();
   d.setHours(Number(match[1]), Number(match[2]), 0, 0);
   return d;
+};
+
+// Default selection when nothing is stored yet: the earliest the window
+// actually allows, nudged forward so the host is not sitting exactly on the
+// boundary. `getScheduleTimeBounds` resolves the instant's Riyadh
+// minute-of-day (rounding a partial minute up), so no hand-rolled offset math
+// is needed here. Returns nulls when there is no valid window, which leaves
+// the pickers on their "choose a date" placeholder rather than a value that
+// cannot be submitted.
+const buildPrefillSelection = (scheduleWindow) => {
+  const empty = { scheduledDate: null, scheduledTime: null };
+  if (!scheduleWindow?.hasValidWindow || !scheduleWindow.earliestInstant) return empty;
+
+  const nudged = new Date(Date.now() + DEFAULT_PREFILL_MS);
+  const earliest = new Date(scheduleWindow.earliestInstant);
+  const instant = nudged > earliest ? nudged : earliest;
+  if (scheduleWindow.latestInstant && instant > new Date(scheduleWindow.latestInstant)) {
+    return empty;
+  }
+
+  const date = instantToPickerDay(instant);
+  const { minimumMinutes } = getScheduleTimeBounds(date, {
+    ...scheduleWindow,
+    earliestInstant: instant,
+  });
+  const hh = String(Math.floor(minimumMinutes / 60)).padStart(2, "0");
+  const mm = String(minimumMinutes % 60).padStart(2, "0");
+  return { scheduledDate: date, scheduledTime: timeFromHHmm(`${hh}:${mm}`) };
 };
 
 // Backend reads `getUTCDate()` from `scheduledDate`, so a local-midnight
@@ -85,15 +122,26 @@ const ScheduleSendingModal = ({
     typeof eventIsTrial === "boolean" ? eventIsTrial :
       subscription?.planCode === "trial" || subscription?.planType === "trial";
 
+  // Live scheduling window: [now + minLead, event − 3d]. Computed before the
+  // form so the prefill can be derived from it.
+  const scheduleWindow = useMemo(
+    () => getScheduleWindow({ isTrial, eventDate, eventTime }),
+    [isTrial, eventDate, eventTime, visible]
+  );
+
+  // A stored schedule always wins — re-opening the modal must restore it.
+  const initialSelection = () =>
+    existingSchedule?.scheduledDate
+      ? {
+          scheduledDate: new Date(existingSchedule.scheduledDate),
+          scheduledTime: timeFromHHmm(existingSchedule.scheduledTime),
+        }
+      : buildPrefillSelection(scheduleWindow);
+
   const methods = useForm({
     resolver: zodResolver(buildSchema(t)),
     mode: "onChange",
-    defaultValues: {
-      scheduledDate: existingSchedule?.scheduledDate
-        ? new Date(existingSchedule.scheduledDate)
-        : null,
-      scheduledTime: timeFromHHmm(existingSchedule?.scheduledTime),
-    },
+    defaultValues: initialSelection(),
   });
 
   const {
@@ -104,28 +152,20 @@ const ScheduleSendingModal = ({
 
   useEffect(() => {
     if (!visible) return;
-    reset({
-      scheduledDate: existingSchedule?.scheduledDate
-        ? new Date(existingSchedule.scheduledDate)
-        : null,
-      scheduledTime: timeFromHHmm(existingSchedule?.scheduledTime),
-    });
+    reset(initialSelection());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     visible,
     existingSchedule?.scheduledDate,
     existingSchedule?.scheduledTime,
+    scheduleWindow,
     reset,
   ]);
 
   const isPending = isSubmitting || scheduleSend.isPending;
 
-  // Live scheduling window: [now + minLead, event − 3d]. The picker is
-  // day-granular; the backend is authoritative and returns SCHEDULE_TOO_SOON /
-  // SCHEDULE_TOO_LATE for boundary cases.
-  const scheduleWindow = useMemo(
-    () => getScheduleWindow({ isTrial, eventDate, eventTime }),
-    [isTrial, eventDate, eventTime, visible]
-  );
+  // The picker is day-granular; the backend is authoritative and returns
+  // SCHEDULE_TOO_SOON / SCHEDULE_TOO_LATE for boundary cases.
   const minDate = scheduleWindow.minimumDate;
   const maxDate = scheduleWindow.maximumDate;
   const selectedDate = methods.watch("scheduledDate");

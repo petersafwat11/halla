@@ -65,7 +65,7 @@ async function _assertInviteBudget(subscriptionId, selectedCount) {
     throw new AppError('Event has no stamped subscription', 400, 'ORPHAN_EVENT');
   }
   const sub = await Subscription.findById(subscriptionId)
-    .select('invitePool compensationPool invitesConsumed planId')
+    .select('invitePool compensationPool planInvitePool planCompensationPool invitesConsumed planId')
     .populate('planId', 'planType code limits');
   if (!sub) {
     throw new AppError('Subscription not found for event', 404, 'SUBSCRIPTION_NOT_FOUND');

@@ -1,12 +1,107 @@
-.modal { padding: 2rem; width: 100%; }
-.header { margin-bottom: 2rem; }
-.headingRow { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-.title { font-size: 2rem; font-weight: 600; color: var(--color-natural-900); }
-.closeBtn { background: none; border: 0; font-size: 3rem; color: var(--color-natural-500); cursor: pointer; width: 4.4rem; height: 4.4rem; }
-.subtitle { font-size: 1.4rem; color: var(--color-natural-500); margin-top: .5rem; }
-.statusFlow { display: flex; align-items: center; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; padding: 1rem; background: var(--color-natural-150); border-radius: .8rem; font-size: 1.4rem; }
-.flowArrow { color: var(--color-natural-500); }
+.modal { padding: 2.4rem; width: 100%; }
+
+/* Header: title + order reference on one side, dismiss on the other, with the
+   status transition reading as a banded row beneath. */
+.header {
+  margin-bottom: 2.4rem;
+  padding-bottom: 1.6rem;
+  border-bottom: 1px solid var(--color-natural-250);
+}
+
+.headingRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.2rem;
+}
+
+.headingText { display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; }
+
+.title {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--color-natural-900);
+  font-family: var(--font-ar);
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 1.3rem;
+  color: var(--color-natural-450);
+  font-family: var(--font-ar);
+}
+
+/* The reference is an opaque code — keep its glyph order in both locales. */
+.orderRef {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 1.3rem;
+  letter-spacing: 0.04em;
+  color: var(--color-natural-700);
+  unicode-bidi: isolate;
+}
+
+.closeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 3.6rem;
+  height: 3.6rem;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-8, 0.8rem);
+  background: none;
+  font-size: 2.4rem;
+  line-height: 1;
+  color: var(--color-natural-450);
+  cursor: pointer;
+  transition: background 180ms ease, color 180ms ease, border-color 180ms ease;
+}
+
+.closeBtn:hover {
+  background: var(--color-natural-150);
+  border-color: var(--color-natural-250);
+  color: var(--color-natural-900);
+}
+
+.statusFlow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1.6rem;
+  padding: 1rem 1.2rem;
+  background: var(--color-natural-150);
+  border-radius: var(--radius-12, 1.2rem);
+  font-size: 1.4rem;
+}
+
+.flowArrow { color: var(--color-natural-450); }
 :global([dir="rtl"]) .flowArrow { transform: scaleX(-1); }
-.form { display: flex; flex-direction: column; gap: 1.5rem; }
-.actions { display: flex; gap: 1rem; margin-top: 1rem; }
+
+.form { display: flex; flex-direction: column; gap: 2rem; }
+
+/* Date and time sit side by side — they are one answer, asked in two parts. */
+.deliveryRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.6rem;
+  align-items: start;
+}
+
+@media (max-width: 560px) {
+  .modal { padding: 1.6rem; }
+  .deliveryRow { grid-template-columns: 1fr; }
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.8rem;
+  padding-top: 1.6rem;
+  border-top: 1px solid var(--color-natural-250);
+}
+
 .actions > * { flex: 1; }

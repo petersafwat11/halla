@@ -9,6 +9,13 @@ const { ValidationError, NotFoundError, ConflictError } = require('../../shared/
 const { logAudit } = require('../../shared/utils/auditLog');
 const PURPOSE = 'admin_payment_link';
 const SUCCESS = ['paid', 'captured', 'partially_refunded', 'refunded'];
+// Only card sources run a 3-D Secure step; other methods sit in plain `pending`
+// while initiated, so they are never labelled "awaiting secure verification".
+const THREE_DS_SOURCES = ['creditcard', 'token'];
+// A MISSING source defaults to card: labelling a card as plain `pending` would
+// hide a real 3DS step from the admin, while the reverse only over-describes a
+// wallet payment that is pending anyway.
+const runsThreeDs = (source) => !source?.type || THREE_DS_SOURCES.includes(source.type);
 const LEASE_MS = 120000;
 const delay = (ms) => new Date(Date.now() + ms);
 const audit = (link, action, actor) => logAudit({ action: `payment_link.${action}`,
@@ -146,7 +153,8 @@ module.exports = ({ paymentLinksConfig, isHostedUrlAllowed, validateCreateInput,
         status: { $cond: [{ $gt: ['$capturedAmount', 0] },
           { $cond: [{ $gte: ['$refundedAmount', '$amount'] }, 'refunded',
             { $cond: [{ $gt: ['$refundedAmount', 0] }, 'partially_refunded', 'paid'] }] },
-          { $literal: ({ initiated: 'pending_3ds', authorized: 'authorized', failed: 'failed', voided: 'voided' })[p.status] || 'pending' }] },
+          { $literal: ({ initiated: runsThreeDs(p.source) ? 'pending_3ds' : 'pending',
+            authorized: 'authorized', failed: 'failed', voided: 'voided' })[p.status] || 'pending' }] },
         providerStatus: { $literal: p.status },
       } }]);
     }
@@ -161,9 +169,13 @@ module.exports = ({ paymentLinksConfig, isHostedUrlAllowed, validateCreateInput,
     else if (collected === link.amountHalalas) status = refunded >= collected ? 'refunded' : refunded > 0 ? 'partially_refunded' : 'paid';
     else if (['paid', 'refunded'].includes(inv.status)) status = 'needs_review';
     else if (inv.status === 'expired') status = 'expired';
-    else if (inv.status === 'canceled') status = 'canceled';
+    else if (['canceled', 'voided'].includes(inv.status)) status = 'canceled';
+    // `on_hold` is an issued bill awaiting out-of-band settlement, not a dead link.
+    else if (inv.status === 'on_hold') status = 'processing';
     else if (inv.status === 'initiated') status = evidence.some((p) => ['initiated', 'authorized'].includes(p.status)) ? 'processing' : 'awaiting_payment';
-    else status = 'unavailable';
+    // `unavailable` means the provider never created the invoice; a state we cannot
+    // read is an operator question, not a silent dead end.
+    else status = 'needs_review';
     const ready = !!inv.url && isHostedUrlAllowed(inv.url);
     const failure = [...evidence].reverse().find((p) => p.status === 'failed');
     const successfulDates = collectedRows.map((p) => p.paidAt).filter(Boolean);
@@ -177,7 +189,9 @@ module.exports = ({ paymentLinksConfig, isHostedUrlAllowed, validateCreateInput,
       cancelPending: link.cancelPending && !['canceled', 'expired', 'paid', 'partially_refunded', 'refunded'].includes(status),
       lastFailureSummary: failure ? 'Payment attempt declined' : null,
       lastSyncedAt: new Date(), reconcileAttempts: 0,
-      syncError: status === 'needs_review' ? 'Collection requires review' : ready ? null : 'Hosted URL could not be verified',
+      syncError: status === 'needs_review'
+        ? (collected > 0 ? 'Collection requires review' : 'Provider invoice state requires review')
+        : ready ? null : 'Hosted URL could not be verified',
       nextReconcileAt: delay(['paid', 'refunded', 'partially_refunded', 'expired', 'canceled'].includes(status) ? 86400000 : 60000),
     });
     if (updated.status !== link.status) await audit(updated, 'status_changed');

@@ -10,17 +10,19 @@
   flex-direction: column;
 }
 
-/* ---------- Header strip ---------- */
+/* ---------- Header strip ----------
+   Starts flush with the cards below it (same max-width and side padding), in
+   the reading direction — not centred. */
 .header {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
   padding: 2.4rem 2rem 1.6rem;
   gap: 0.4rem;
-  text-align: center;
+  text-align: start;
 }
 
 .title {
@@ -33,7 +35,7 @@
   letter-spacing: -0.2px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 1rem;
 }
 
@@ -53,6 +55,7 @@
   font-size: 1.4rem;
   margin: 0;
   font-family: var(--font-ar);
+  text-align: start;
 }
 
 /* ---------- Layout (2-column on desktop) ---------- */
@@ -551,6 +554,36 @@
   font-weight: 800;
 }
 
+/* ---------- Pay action dock ----------
+   At >=1024px the summary column is sticky, so the pay button is already in
+   view and the dock is a plain wrapper. Below that the summary column falls
+   to the bottom of a long page, so the dock pins the action to the viewport:
+   the host can pick a payment method and pay without scrolling back. It holds
+   the one real ProceedButton — there is no duplicate control to keep in sync. */
+.payDock {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 1023px) {
+  .payDock {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 40;
+    padding: 1.2rem 1.6rem calc(1.2rem + env(safe-area-inset-bottom, 0px));
+    background: color-mix(in srgb, var(--bg-artboard) 92%, transparent);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--color-primary-100);
+    box-shadow: 0 -4px 20px rgba(82, 68, 56, 0.1);
+  }
+
+  /* Room for the docked bar so the legal links are never covered. */
+  .content {
+    padding-bottom: 11rem;
+  }
+}
+
 /* ---------- Security & terms ---------- */
 .securityNotice {
   display: inline-flex;
@@ -593,7 +626,9 @@
   .backArrow { font-size: 2rem; }
   .subtitle { font-size: 1.25rem; }
 
-  .content { padding: 0 1rem 3rem; }
+  /* Bottom padding keeps clear of the docked pay bar (see .payDock). */
+  .content { padding: 0 1rem 11rem; }
+  .payDock { padding-inline: 1.2rem; }
   .layout { gap: 1.2rem; }
   .leftCol, .rightCol { gap: 1.2rem; }
 

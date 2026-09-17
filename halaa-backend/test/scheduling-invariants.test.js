@@ -24,18 +24,18 @@ describe('Session 1.6: Scheduling Invariants & Timezone Rules (EVT-09)', () => {
     assert.equal(parsed.success, true);
   });
 
-  test('assertSendWindow enforces minimum lead time: 15m for trial, 24h for paid', () => {
+  test('assertSendWindow enforces minimum lead time: 3m for trial, 24h for paid', () => {
     const now = Date.now();
     const futureEventInstant = new Date(now + 10 * 24 * 60 * 60 * 1000); // 10 days in future
 
-    // Trial: 10 min from now is too soon (< 15 min)
-    const tooSoonTrial = new Date(now + 10 * 60 * 1000);
+    // Trial: 1 min from now is too soon (< 3 min)
+    const tooSoonTrial = new Date(now + 1 * 60 * 1000);
     assert.throws(
       () => assertSendWindow({ scheduledInstant: tooSoonTrial, eventInstant: futureEventInstant, isTrial: true, nowMs: now }),
       (err) => err.code === 'SCHEDULE_TOO_SOON'
     );
 
-    // Trial: 20 min from now is valid (> 15 min)
+    // Trial: 20 min from now is valid (> 3 min)
     const validTrial = new Date(now + 20 * 60 * 1000);
     assert.doesNotThrow(() =>
       assertSendWindow({ scheduledInstant: validTrial, eventInstant: futureEventInstant, isTrial: true, nowMs: now })

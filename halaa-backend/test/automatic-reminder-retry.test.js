@@ -9,7 +9,7 @@ const policy = require('../src/modules/messaging/messaging.dispatchPolicy.servic
 const templates = require('../src/modules/taqnyat-templates/taqnyat-templates.service');
 const reminders = require('../src/modules/messaging/messaging.reminder.service');
 const provider = require('../src/infrastructure/taqnyat');
-const { runAutoReminderForEvent } = require('../src/shared/utils/scheduledTasks');
+const { runAutoReminderForEvent, closeUnsentReminder } = require('../src/shared/utils/scheduledTasks');
 
 test.before(() => db.start());
 test.after(() => db.stop());
@@ -152,4 +152,161 @@ test('concurrent extra reminders cannot spend the same last credit', async t => 
  const results=await Promise.allSettled([0,1].map(i=>service.extraReminder.call({_buildScopedEventQuery:id=>({_id:id})},event._id,{guestIds:[guests[i]._id]},{_id:event.host,role:'host'})));
  assert.equal(results.filter(r=>r.status==='fulfilled').length,1);
  assert.equal(sends,1);assert.equal((await Subscription.findById(sub._id)).invitesConsumed,1);
+});
+
+test('an empty confirmed audience leaves the reminder pending instead of completing it', async t => {
+  t.mock.method(policy, 'assertCanDispatch', async () => ({ allowed: true }));
+  t.mock.method(templates, 'findActiveByCategoryAndType', async () => ({ templateName: 'reminder' }));
+  const send = t.mock.method(reminders, 'sendAutoReminderBatch', async () => {
+    throw new Error('must not dispatch without an eligible audience');
+  });
+  const { event, guests } = await fixture();
+  // Nobody has confirmed yet — invitations are out, replies have not arrived.
+  await Guest.updateMany({ _id: { $in: guests.map(g => g._id) } }, { $unset: { 'rsvp.response': '' } });
+  const result = await runAutoReminderForEvent(event);
+  assert.equal(result.reason, 'no_eligible_recipients');
+  assert.equal(result.reminded, false);
+  assert.equal(send.mock.callCount(), 0);
+  assert.notEqual((await Event.findById(event._id)).messagingStatus.reminderSent, true);
+});
+
+test('a reminder that fires before the invitations launch stays pending', async t => {
+  t.mock.method(policy, 'assertCanDispatch', async () => ({ allowed: true }));
+  t.mock.method(templates, 'findActiveByCategoryAndType', async () => ({ templateName: 'reminder' }));
+  const send = t.mock.method(reminders, 'sendAutoReminderBatch', async () => {
+    throw new Error('must not dispatch before launch');
+  });
+  const { event } = await fixture();
+  // Confirmed guests exist, but the event has not launched yet.
+  await Event.updateOne(
+    { _id: event._id },
+    { $set: { status: 'scheduled' }, $unset: { launchedAt: '' } }
+  );
+  const result = await runAutoReminderForEvent(event);
+  assert.equal(result.reason, 'invitations_not_launched');
+  assert.equal(send.mock.callCount(), 0);
+  assert.notEqual((await Event.findById(event._id)).messagingStatus.reminderSent, true);
+
+  // Once launched, the same event is dispatchable again — the flag never stuck.
+  await Event.updateOne({ _id: event._id }, { $set: { status: 'live', launchedAt: new Date() } });
+  send.mock.mockImplementation(async ({ guests: audience }) => ({
+    successful: audience.length, failed: 0, rateLimited: 0,
+    details: audience.map(g => ({ guestId: g._id, success: true, messageId: 'accepted' })),
+  }));
+  assert.equal((await runAutoReminderForEvent(event)).reminded, true);
+  assert.equal((await Event.findById(event._id)).messagingStatus.reminderSent, true);
+});
+
+test('rescheduling the reminder re-arms a completed one; an unchanged schedule does not', async () => {
+  const service = require('../src/modules/events/events.service');
+  const { event } = await fixture();
+  const owner = { _id: event.host, role: 'host' };
+  const day = new Date(Date.now() + 2 * 86400000).toISOString().slice(0, 10);
+  const markSent = () => Event.updateOne(
+    { _id: event._id },
+    { $set: { 'messagingStatus.reminderSent': true, 'messagingStatus.reminderSentAt': new Date() } }
+  );
+
+  await markSent();
+  await service.updateReminderSettings(event._id, { customReminderTime: true, scheduledDate: day, scheduledTime: '15:30' }, owner);
+  const rescheduled = await Event.findById(event._id);
+  assert.equal(rescheduled.messagingStatus.reminderSent, false);
+  assert.ok(!rescheduled.messagingStatus.reminderSentAt);
+
+  // Re-applying the SAME instant is not a reschedule — completion must stand.
+  await markSent();
+  await service.updateReminderSettings(event._id, { customReminderTime: true, scheduledDate: day, scheduledTime: '15:30' }, owner);
+  assert.equal((await Event.findById(event._id)).messagingStatus.reminderSent, true);
+
+  // Dropping back to the automatic 48h default is also a reschedule.
+  await service.updateReminderSettings(event._id, { customReminderTime: false, scheduledDate: null, scheduledTime: null }, owner);
+  assert.equal((await Event.findById(event._id)).messagingStatus.reminderSent, false);
+});
+
+test('a batch that delivers nothing leaves the reminder pending even with no reported failures', async t => {
+  t.mock.method(policy, 'assertCanDispatch', async () => ({ allowed: true }));
+  t.mock.method(templates, 'findActiveByCategoryAndType', async () => ({ templateName: 'reminder' }));
+  t.mock.method(reminders, 'sendAutoReminderBatch', async () => (
+    { successful: 0, failed: 0, rateLimited: 0, details: [] }
+  ));
+  const { event } = await fixture();
+  const result = await runAutoReminderForEvent(event);
+  assert.equal(result.reminded, false);
+  assert.notEqual((await Event.findById(event._id)).messagingStatus.reminderSent, true);
+});
+
+test('a reminder whose window closes unsent is closed out, not left pending forever', async () => {
+  const { event } = await fixture();
+
+  await closeUnsentReminder(event, 'no_eligible_recipients');
+
+  const closed = await Event.findById(event._id);
+  // It must NOT claim to have been sent — nothing went out.
+  assert.notEqual(closed.messagingStatus.reminderSent, true);
+  // But it must be terminal, with the reason on the record, so the cron stops
+  // re-examining it and the outcome is explicable.
+  assert.ok(closed.messagingStatus.reminderClosedAt instanceof Date);
+  assert.equal(closed.messagingStatus.reminderSkipReason, 'no_eligible_recipients');
+
+  // Closing twice must not move the timestamp.
+  const firstClosedAt = closed.messagingStatus.reminderClosedAt.getTime();
+  await closeUnsentReminder(event, 'window_expired');
+  const again = await Event.findById(event._id);
+  assert.equal(again.messagingStatus.reminderClosedAt.getTime(), firstClosedAt);
+  assert.equal(again.messagingStatus.reminderSkipReason, 'no_eligible_recipients');
+});
+
+test('a reminder that already sent is never closed out', async () => {
+  const { event } = await fixture();
+  await Event.updateOne(
+    { _id: event._id },
+    { $set: { 'messagingStatus.reminderSent': true, 'messagingStatus.reminderSentAt': new Date() } }
+  );
+
+  await closeUnsentReminder(event, 'window_expired');
+
+  const after = await Event.findById(event._id);
+  assert.equal(after.messagingStatus.reminderSent, true);
+  assert.ok(!after.messagingStatus.reminderClosedAt);
+});
+
+test('rescheduling re-arms a reminder that was closed unsent', async () => {
+  const service = require('../src/modules/events/events.service');
+  const { event } = await fixture();
+  const owner = { _id: event.host, role: 'host' };
+  const day = new Date(Date.now() + 2 * 86400000).toISOString().slice(0, 10);
+
+  await closeUnsentReminder(event, 'invitations_not_launched');
+  assert.ok((await Event.findById(event._id)).messagingStatus.reminderClosedAt);
+
+  await service.updateReminderSettings(
+    event._id,
+    { customReminderTime: true, scheduledDate: day, scheduledTime: '15:30' },
+    owner
+  );
+
+  const rearmed = await Event.findById(event._id);
+  assert.ok(!rearmed.messagingStatus.reminderClosedAt);
+  assert.ok(!rearmed.messagingStatus.reminderSkipReason);
+  assert.notEqual(rearmed.messagingStatus.reminderSent, true);
+});
+
+test('a legacy event with no scheduled reminder instant never closes and never crashes the tick', async t => {
+  // Legacy events are selected by the 48h date window and carry no
+  // reminderSettings.scheduledDate, so parseReminderTime() returns null.
+  // Computing a grace window from that used to throw and abort the whole tick.
+  t.mock.method(policy, 'assertCanDispatch', async () => ({ allowed: true }));
+  const { event } = await fixture();
+  await Event.updateOne({ _id: event._id }, { $unset: { reminderSettings: 1 } });
+
+  const { parseReminderTime } = require('../src/shared/utils/timezone');
+  const legacy = await Event.findById(event._id);
+  assert.equal(parseReminderTime(legacy), null, 'precondition: no parseable instant');
+
+  const tick = require('../src/shared/utils/scheduledTasks');
+  // The close-out helper must be a no-op decision for legacy events: exercise
+  // the reminder directly and confirm nothing was closed behind our back.
+  await tick.runAutoReminderForEvent(legacy);
+  const after = await Event.findById(event._id);
+  assert.ok(!after.messagingStatus.reminderClosedAt, 'legacy reminder must not be closed');
 });

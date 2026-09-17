@@ -18,7 +18,7 @@ import InvitationBalanceCard from "./InvitationBalanceCard";
  * The icon is semantic (send), not navigation — never mirrored. The row is a
  * normal logical row: icon → label → value at the logical end.
  */
-const RemainingInvitesBadge = ({ remaining, balance, eventId, returnTo, currentSubscription }) => {
+const RemainingInvitesBadge = ({ remaining, balance, eventId, returnTo, currentSubscription, event }) => {
   const { t, currentLanguage } = useTranslation("events");
 
   if (balance) {
@@ -28,6 +28,7 @@ const RemainingInvitesBadge = ({ remaining, balance, eventId, returnTo, currentS
         eventId={eventId}
         returnTo={returnTo}
         currentSubscription={currentSubscription}
+        event={event}
       />
     );
   }

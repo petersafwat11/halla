@@ -10,6 +10,7 @@ import {
 } from "react-icons/fa";
 import { toastUtils } from "@/utils/toastUtils";
 import { useAdminEventTargets, useVerifyHostPhoneMutation } from "@/hooks/admin";
+import { normalizeDigits } from "@halaa/shared/utils/locale";
 import styles from "./hostSelector.module.css";
 
 const PLATFORM_ADMIN_ROLES = ["super_admin", "admin", "moderator"];
@@ -248,9 +249,15 @@ const HostSelector = ({
                 <input
                   type="tel"
                   value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  // Any prefix the admin has to hand — 05…, 5…, 966…, +966…,
+                  // 00966… — with or without separators. Arabic-Indic digits
+                  // are folded here so the request always carries ASCII; the
+                  // backend resolves the prefix.
+                  onChange={(e) => setPhoneNumber(normalizeDigits(e.target.value))}
                   placeholder="05xxxxxxxx"
                   dir="ltr"
+                  inputMode="tel"
+                  autoComplete="off"
                   className={styles.searchInput}
                   onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                 />

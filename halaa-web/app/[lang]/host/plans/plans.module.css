@@ -8,10 +8,11 @@
   background: linear-gradient(180deg, var(--bg-artboard) 0%, var(--color-primary-50) 100%);
 }
 
-/* Page Header */
+/* Page Header — must share `.content`'s max-width and side padding, otherwise
+   the title sits inset from the cards below it instead of flush with them. */
 .pageHeader {
   width: 100%;
-  max-width: 800px;
+  max-width: 1080px;
   margin: 0 auto;
   padding: 2.4rem 2.4rem 1.2rem;
   text-align: start;

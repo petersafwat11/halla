@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FaPaperPlane, FaPalette, FaCheck, FaTimes, FaInfoCircle } from "react-icons/fa";
 import { useAvailableAddons } from "@/hooks/addons";
+import { isolateLtr } from "@halaa/shared/utils/bidi";
 import styles from "./AddonsSection.module.css";
 import MoneyAmount from "@/ui/commen/MoneyAmount/MoneyAmount";
 
@@ -91,7 +92,6 @@ const AddonsSection = ({ onAddonsChange }) => {
   if (isLoading) {
     return (
       <section className={styles.section} aria-busy="true">
-        <SectionHeader t={t} />
         <div className={styles.skeletonGrid}>
           <div className={styles.skeletonCard} />
           <div className={styles.skeletonCard} />
@@ -103,7 +103,6 @@ const AddonsSection = ({ onAddonsChange }) => {
   if (error || !catalog) {
     return (
       <section className={styles.section}>
-        <SectionHeader t={t} />
         <div className={styles.errorState} role="alert">
           <FaTimes className={styles.errorIcon} aria-hidden="true" />
           <p>{t("addons.loadFailed", { defaultValue: "Could not load add-ons." })}</p>
@@ -114,8 +113,6 @@ const AddonsSection = ({ onAddonsChange }) => {
 
   return (
     <section className={styles.section}>
-      <SectionHeader t={t} />
-
       <div className={styles.grid}>
         <AddonCard
           icon={<FaPaperPlane />}
@@ -204,26 +201,14 @@ const AddonsSection = ({ onAddonsChange }) => {
   );
 };
 
-const SectionHeader = ({ t }) => (
-  <header className={styles.sectionHead}>
-    <div className={styles.sectionHeadText}>
-      <h3 className={styles.sectionTitle}>{t("addons.title")}</h3>
-      <p className={styles.sectionSubtitle}>{t("addons.subtitle")}</p>
-    </div>
-  </header>
-);
-
-// Selected count + running total, shown at the bottom of the section (just
+// Running total, shown at the bottom of the section (just
 // above the page's continue button) so the user sees the tally where they act.
 const SummaryBar = ({ t, selectedCount, total, locale, onClear }) =>
   selectedCount > 0 ? (
     <div className={styles.summaryBar}>
       <div className={styles.summaryChip}>
         <span className={styles.summaryCount}>
-          {t("addons.selectedCount", {
-            count: selectedCount,
-            defaultValue: `${selectedCount} selected`,
-          })}
+          {t("addons.totalExtras", { defaultValue: "Total extras" })}
         </span>
         <span className={styles.summaryDivider} aria-hidden="true" />
         <span className={styles.summaryTotal}>
@@ -284,7 +269,9 @@ const TierTile = ({ active, onClick, quantity, price, locale }) => (
     onClick={onClick}
     aria-pressed={active}
   >
-    <span className={styles.tileQty}>+{quantity}</span>
+    {/* Glued to its "+" inside an LTR isolate, or RTL reorders it to "30+".
+        Matches the mobile tile. */}
+    <span className={styles.tileQty}>{isolateLtr(`+${quantity}`)}</span>
     <span className={styles.tilePrice}>
       <MoneyAmount amount={price} locale={locale} />
     </span>

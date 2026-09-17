@@ -1,0 +1,55 @@
+/* Payment brand marks. Vendor artwork keeps its own aspect ratio; wordmarks
+   are set in type. Both are Latin and never mirror with the RTL layout. */
+
+.plain {
+  display: inline-flex;
+  align-items: center;
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+/* Fixed-size white chip so marks with very different native aspect ratios
+   (Visa and mada are wide, Mastercard near-square) read as one row. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 5.2rem;
+  height: 3.4rem;
+  padding: 0.4rem 0.6rem;
+  background: var(--color-natural-50);
+  border: 1px solid var(--color-natural-250);
+  border-radius: var(--radius-8, 0.8rem);
+  box-sizing: border-box;
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+.vector {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 2.2rem;
+  object-fit: contain;
+}
+
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 1.8rem;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+}
+
+.glyph {
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
+}
+
+.wordBold { font-weight: 700; }
+.wordRegular { font-weight: 500; }
+.wordLight { font-weight: 300; }

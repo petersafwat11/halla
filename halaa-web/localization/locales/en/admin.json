@@ -379,6 +379,8 @@
     "internalNotesLabel": "Internal Notes (admin only)",
     "internalNotesPlaceholder": "Enter internal notes for the operations team...",
     "expectedDeliveryLabel": "Expected Delivery Date",
+    "expectedDeliveryPlaceholder": "Select a date",
+    "expectedDeliveryTimeLabel": "Expected Delivery Time",
     "confirmTransition": "Confirm Transition",
     "transitionSuccess": "Fulfillment status updated successfully",
     "transitionError": "Failed to update fulfillment status",

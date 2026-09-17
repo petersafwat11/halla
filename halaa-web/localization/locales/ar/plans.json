@@ -3,7 +3,7 @@
     "method": {
       "card": "بطاقة",
       "applepay": "آبل باي",
-      "stcpay": "إس تي سي باي"
+      "stcpay": "إس تي سي بنك"
     },
     "card": {
       "name": "اسم حامل البطاقة",
@@ -12,7 +12,11 @@
       "cvc": "رمز التحقق"
     },
     "applepay": {
-      "note": "سيُطلب منك التأكيد عبر آبل باي في الخطوة التالية."
+      "note": "ستفتح نافذة آبل باي عند التأكيد — وافق على الدفع ببصمة الوجه أو الإصبع أو رمز الجهاز."
+    },
+    "stcpay": {
+      "mobile": "رقم الجوال",
+      "note": "سيصلك طلب تأكيد الدفع في تطبيق إس تي سي بنك."
     },
     "errors": {
       "nameRequired": "اسم حامل البطاقة مطلوب",
@@ -78,7 +82,20 @@
       }
     }
   },
-  "currentPlan": { "title": "الباقة الحالية", "events": "مناسبات", "invites": "دعوات", "daysRemaining": "أيام متبقية" },
+  "currentPlan": {
+    "title": "الباقة الحالية",
+    "events": "مناسبات",
+    "invites": "دعوات",
+    "daysRemaining": "أيام متبقية",
+    "invitesRemaining": "دعوة متبقية",
+    "inviteBreakdown": "تفاصيل رصيد الدعوات",
+    "planInvites": "دعوات الباقة",
+    "extraInvites": "دعوات إضافية",
+    "compensationInvites": "دعوات تعويضية (15%)",
+    "carriedInvites": "دعوات مُرحّلة",
+    "compensationNote": "التعويض 15% يُحتسب على دعوات الباقة الأساسية فقط، ولا يشمل باقات الدعوات الإضافية.",
+    "noExpiry": "لا تنتهي"
+  },
   "noActiveSubscription": { "title": "لا يوجد اشتراك نشط حالياً", "subtitle": "اختر باقة من الأسفل لتفعيل اشتراكك" },
   "pageTitle": "اختر باقتك",
   "pageSubtitle": "اختر الباقة المناسبة لمناسبتك",
@@ -134,7 +151,7 @@
     },
     "designTemplate": { "title": "قالب تصميم", "description": "تصميم دعوة احترافي من فريقنا" },
     "addButton": "إضافة", "removeButton": "إزالة", "addedBadge": "مُضاف",
-    "selectedCount_one": "إضافة واحدة", "selectedCount_other": "{{count}} إضافات", "clearAll": "إزالة الكل",
+    "selectedCount_one": "إضافة واحدة", "selectedCount_other": "{{count}} إضافات", "totalExtras": "إجمالي الإضافات", "clearAll": "إزالة الكل",
     "loading": "جارِ تحميل الإضافات...",
     "loadFailed": "تعذّر تحميل الإضافات.",
     "purchase": {
@@ -207,7 +224,7 @@
     "compensationHint": "+15% دعوات إضافية مجانية على دعوات باقتك الأساسية. باقات الدعوات الإضافية لا تحصل على تعويض.",
     "totalPoolHint": "دعوات الباقة + الباقات الإضافية + التعويض = إجمالي الدعوات التي يمكنك إرسالها.",
     "poolModelHint": "باقة رصيد: عدة مناسبات تتشارك رصيد الدعوات هذا.",
-    "perEventModelHint": "باقة لكل مناسبة: مناسبة واحدة بإجمالي هذه الدعوات.",
+    "perEventModelHint": "مناسبة واحدة بإجمالي هذه الدعوات.",
     "billingPeriodLabel": "فترة الاشتراك:",
     "periods": {
       "yearly": "سنة كاملة (365 يوماً)",

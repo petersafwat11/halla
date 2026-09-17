@@ -11,7 +11,7 @@ import TextInput from '../../commen/DirectionalTextInput';
 import { useAdminEventTargets, useVerifyHostPhone } from '../../../hooks/admin';
 import { useTranslation } from '../../../localization';
 import { useAuthStore } from '../../../stores/authStore';
-import { formatCount } from '@halaa/shared/utils/locale';
+import { formatCount, normalizeDigits } from '@halaa/shared/utils/locale';
 import { isolateLtr } from '@halaa/shared/utils/bidi';
 import ActionButton from '../common/ActionButton';
 import SectionCard from '../../commen/SectionCard';
@@ -174,7 +174,11 @@ const HostSelectorStep = ({ value = {}, onChange }) => {
             <TextInput
               style={styles.searchInput}
               value={phoneSearch}
-              onChangeText={setPhoneSearch}
+              // Any prefix the admin has to hand — 05…, 5…, 966…, +966…,
+              // 00966… — with or without separators. Arabic-Indic digits are
+              // folded here so the request carries ASCII; the backend
+              // resolves the prefix.
+              onChangeText={(value) => setPhoneSearch(normalizeDigits(value))}
               placeholder={t('events.hostSelector.searchPlaceholder')}
               keyboardType="phone-pad"
             />

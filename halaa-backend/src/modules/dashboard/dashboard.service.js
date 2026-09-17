@@ -377,7 +377,7 @@ class DashboardService {
       let quotaSub = subscription;
       if (lastEvent.subscriptionId) {
         quotaSub = await Subscription.findById(lastEvent.subscriptionId)
-          .select('invitePool compensationPool invitesConsumed planId')
+          .select('invitePool compensationPool planInvitePool planCompensationPool invitesConsumed planId')
           .populate('planId', 'planType code limits')
           .lean();
       }

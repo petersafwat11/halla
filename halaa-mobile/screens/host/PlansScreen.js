@@ -20,6 +20,7 @@ import CurrentPlanCard from "../../components/plans/CurrentPlanCard";
 import HostPlanCard from "../../components/plans/HostPlanCard";
 import AddonsSection from "../../components/plans/AddonsSection";
 import { useHostPlans, useMySubscription } from "../../hooks";
+import { isTrialSubscription } from "@halaa/shared/utils/invitationBalance";
 import { getInviteValue } from "../../components/plans/_components/InviteSelector";
 import {
   colors,
@@ -229,8 +230,14 @@ const PlansScreen = () => {
           subscription={subscription}
           usage={usage}
           style={styles.planComponent}
+          // This is the only route into the add-on store, which also sells
+          // design templates and business customization — so it is gated on
+          // "has a real plan to add on to", NOT on whether extra INVITES are
+          // spendable. AddonsPurchaseScreen applies per-family eligibility.
           onBuyAddons={
-            subscription ? () => navigation.navigate("AddonsPurchase") : undefined
+            subscription && !isTrialSubscription(subscription)
+              ? () => navigation.navigate("AddonsPurchase")
+              : undefined
           }
         />
 

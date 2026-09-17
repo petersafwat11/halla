@@ -3,7 +3,7 @@
     "method": {
       "card": "Card",
       "applepay": "Apple Pay",
-      "stcpay": "STC Pay"
+      "stcpay": "stc bank"
     },
     "card": {
       "name": "Cardholder name",
@@ -12,7 +12,11 @@
       "cvc": "CVC"
     },
     "applepay": {
-      "note": "You'll be prompted by Apple Pay on the next step."
+      "note": "Apple Pay opens when you confirm — approve the payment with Face ID, Touch ID or your passcode."
+    },
+    "stcpay": {
+      "mobile": "Mobile number",
+      "note": "You'll receive a confirmation prompt in your stc bank app."
     },
     "errors": {
       "nameRequired": "Cardholder name is required",
@@ -78,7 +82,20 @@
       }
     }
   },
-  "currentPlan": { "title": "Current Plan", "events": "Events", "invites": "Invites", "daysRemaining": "Days Remaining" },
+  "currentPlan": {
+    "title": "Current Plan",
+    "events": "Events",
+    "invites": "Invites",
+    "daysRemaining": "Days Remaining",
+    "invitesRemaining": "invites left",
+    "inviteBreakdown": "Invite balance breakdown",
+    "planInvites": "Plan invites",
+    "extraInvites": "Extra invites",
+    "compensationInvites": "Compensation invites (15%)",
+    "carriedInvites": "Carried-over invites",
+    "compensationNote": "The 15% compensation is calculated on your base plan invites only — extra invite packages do not earn it.",
+    "noExpiry": "No expiry"
+  },
   "noActiveSubscription": { "title": "No active subscription", "subtitle": "Choose a plan below to activate your subscription" },
   "pageTitle": "Choose Your Plan",
   "pageSubtitle": "Select the right plan for your event",
@@ -134,7 +151,7 @@
     },
     "designTemplate": { "title": "Design Template", "description": "Professional invitation design by our team" },
     "addButton": "Add", "removeButton": "Remove", "addedBadge": "Added",
-    "selectedCount_one": "1 selected", "selectedCount_other": "{{count}} selected", "clearAll": "Clear all",
+    "selectedCount_one": "1 selected", "selectedCount_other": "{{count}} selected", "totalExtras": "Total extras", "clearAll": "Clear all",
     "loading": "Loading add-ons...",
     "loadFailed": "Could not load add-ons.",
     "purchase": {
@@ -207,7 +224,7 @@
     "compensationHint": "+15% bonus invites on your base plan invites — free. Extra invite packages don't earn compensation.",
     "totalPoolHint": "Base invites + extra packages + compensation = the total invites you can send.",
     "poolModelHint": "Pool plan: many events share this invite pool.",
-    "perEventModelHint": "Per-event plan: 1 event with these total invites.",
+    "perEventModelHint": "1 event with these total invites.",
     "billingPeriodLabel": "Billing Period:",
     "periods": {
       "yearly": "1 year (365 days)",

@@ -5,6 +5,8 @@ import { useRouter, useParams } from "next/navigation";
 import styles from "./createEventPopup.module.css";
 import Button from "@/ui/commen/button/Button";
 import { useAdminHosts, useVerifyHostPhoneMutation } from "@/hooks/admin";
+import { getPhoneNationalDigits } from "@halaa/shared/utils/phone";
+import { normalizeDigits } from "@halaa/shared/utils/locale";
 
 const CreateEventPopup = ({ onClose }) => {
   const { t } = useTranslation("adminDashboard");
@@ -27,15 +29,24 @@ const CreateEventPopup = ({ onClose }) => {
 
   const verifyHostPhone = useVerifyHostPhoneMutation();
 
-  // Filter hosts based on phone number input
+  // Filter hosts based on phone number input. Phones are compared on their
+  // national digits so the prefix the admin typed (05… / 5… / 966… / +966…)
+  // does not have to match how the host's number happens to be stored.
   useEffect(() => {
     if (phoneNumber.trim()) {
       const searchTerm = phoneNumber.trim();
-      const filtered = hosts.filter(
-        (host) =>
-          host.phoneNumber?.includes(searchTerm) ||
+      const searchDigits = getPhoneNationalDigits(searchTerm);
+      const filtered = hosts.filter((host) => {
+        const hostPhone = host.phoneNumber || host.mobile;
+        if (searchDigits && hostPhone) {
+          const hostDigits = getPhoneNationalDigits(hostPhone);
+          if (hostDigits && hostDigits.includes(searchDigits)) return true;
+        }
+        return (
+          hostPhone?.includes(searchTerm) ||
           host.name?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+        );
+      });
       setFilteredHosts(filtered);
       // Keep dropdown open even if no matches to show "no results"
       setShowDropdown(true);
@@ -69,7 +80,9 @@ const CreateEventPopup = ({ onClose }) => {
   }, []);
 
   const handleInputChange = useCallback((e) => {
-    setPhoneNumber(e.target.value);
+    // Fold Arabic-Indic digits so the value sent on is always ASCII; the
+    // prefix itself is left alone and resolved by the lookup.
+    setPhoneNumber(normalizeDigits(e.target.value));
     setError("");
   }, []);
 

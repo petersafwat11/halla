@@ -7,6 +7,13 @@
     "events": "مناسبات",
     "invites": "دعوات",
     "daysRemaining": "أيام متبقية",
+    "invitesRemaining": "دعوة متبقية",
+    "inviteBreakdown": "تفاصيل رصيد الدعوات",
+    "planInvites": "دعوات الباقة",
+    "extraInvites": "دعوات إضافية",
+    "compensationInvites": "دعوات تعويضية (15%)",
+    "carriedInvites": "دعوات مُرحّلة",
+    "compensationNote": "التعويض 15% يُحتسب على دعوات الباقة الأساسية فقط، ولا يشمل باقات الدعوات الإضافية.",
     "noExpiry": "لا تنتهي"
   },
   "noActiveSubscription": {
@@ -111,6 +118,7 @@
     "subtitle": "حسّن باقتك بميزات إضافية اختيارية",
     "loadFailed": "تعذّر تحميل الإضافات.",
     "selectedCount": "{{count}} إضافات",
+    "totalExtras": "إجمالي الإضافات",
     "selectedCount_one": "إضافة واحدة",
     "selectedCount_other": "{{count}} إضافات",
     "clearAll": "إزالة الكل",

@@ -1,20 +1,18 @@
 "use client";
-import Button from "@/ui/commen/button/Button";
-import PopupLayout from "@/ui/commen/popup/PopupLayout";
-
-
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAdminPaymentLinkDetail, useRefreshPaymentLink } from "@/hooks/admin";
+import PopupLayout from "@/ui/commen/popup/PopupLayout";
+import Button from "@/ui/commen/button/Button";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
+import StatusBadge from "@/components/shared/StatusBadge";
 import MoneyAmount from "@/ui/commen/MoneyAmount/MoneyAmount";
-import {
-  formatDateTime as sharedFormatDateTime,
-} from "@halaa/shared/utils/locale";
-import styles from "./AdminPaymentsClient.module.css";
-import usePaymentLinkDialog from "./usePaymentLinkDialog";
+import { formatDateTime as sharedFormatDateTime } from "@halaa/shared/utils/locale";
 import { handleError } from "@/services/errorHandlingService";
-import { useState } from "react";
+import CopyableValue from "./CopyableValue";
 import PaymentDetailModal from "./PaymentDetailModal";
+import usePaymentLinkDialog from "./usePaymentLinkDialog";
+import styles from "./PaymentDetailPopup.module.css";
 
 const formatDateTime = (dateStr, isArabic) => {
   if (!dateStr) return "—";
@@ -30,112 +28,274 @@ export default function PaymentLinkDetailModal({ linkId, onClose }) {
   const dialogRef = usePaymentLinkDialog(!!linkId && !transactionId, onClose);
   if (!linkId) return null;
   const link = data?.data;
+  const locale = isArabic ? "ar" : "en";
 
   const handleRefresh = async () => {
     try {
       await refreshMutation.mutateAsync(linkId);
-    } catch (err) { handleError(err, t); }
+    } catch (err) {
+      handleError(err, t);
+    }
   };
 
+  const requestRows = link
+    ? [
+        [t("links.detail.description", "Description"), link.description || "—"],
+        [t("links.detail.clientLabel", "Client label"), link.clientLabel || "—"],
+        [
+          t("links.detail.creator", "Creator"),
+          link.creator?.name || link.creator?.email || "—",
+        ],
+        [t("links.detail.createdAt", "Created at"), formatDateTime(link.createdAt, isArabic)],
+      ]
+    : [];
+
   return (
-    <PopupLayout isOpen={!!linkId} onClose={onClose}>
-      <div ref={dialogRef} tabIndex={-1} className={styles.dialogContent} role="dialog" aria-modal="true" aria-label={t("links.detail.title", "Payment link details")}>
-        <h2 className={styles.modalTitle}>{t("links.detail.title", "Payment link details")}</h2>
-        {error ? (
-          <p role="alert">{t("errors.loadFailed", "Failed to load payments")}</p>
-        ) : isLoading || !link ? (
-          <SimpleLoading />
-        ) : (
-          <>
-            {link.syncPending && <p role="status">{t("links.detail.syncPending", "Could not confirm the latest state. Another check is scheduled.")}</p>}
-            {link.syncStale && <p role="status">{t("links.detail.syncStale")}</p>}
-            {link.cancelPending && <p role="status">{t("links.detail.cancelPending", "Cancellation is awaiting provider confirmation.")}</p>}
-            <div className={styles.detailGrid}>
-              <span className={styles.detailLabel}>{t("links.detail.refunded", "Refunded (SAR)")}</span>
-              <span className={styles.detailValue}>{link.refundedSar || "0.00"}</span>
-              <span className={styles.detailLabel}>{t("links.columns.reference", "Reference")}</span>
-              <span className={styles.detailMono} dir="ltr">{link.reference}</span>
-
-              <span className={styles.detailLabel}>{t("links.columns.status", "Status")}</span>
-              <span className={styles.detailValue}>{t(`links.status.${link.status}`, link.status)}</span>
-
-              <span className={styles.detailLabel}>{t("links.columns.amount", "Amount")}</span>
-              <span className={styles.detailValue}>
-                <MoneyAmount amount={Number(link.amountSar || 0)} currency="SAR" locale={isArabic ? "ar" : "en"} />
-              </span>
-
-              <span className={styles.detailLabel}>{t("links.detail.description", "Description")}</span>
-              <span className={styles.detailValue}>{link.description || "—"}</span>
-
-              <span className={styles.detailLabel}>{t("links.detail.clientLabel", "Client label")}</span>
-              <span className={styles.detailValue}>{link.clientLabel || "—"}</span>
-
-              <span className={styles.detailLabel}>{t("links.detail.creator", "Creator")}</span>
-              <span className={styles.detailValue}>
-                {link.creator?.name || link.creator?.email || "—"}
-              </span>
-
-              <span className={styles.detailLabel}>{t("links.detail.expiry", "Expiry")}</span>
-              <span className={styles.detailValue}>{formatDateTime(link.expiresAt, isArabic)}</span>
-
-              <span className={styles.detailLabel}>{t("links.detail.createdAt", "Created at")}</span>
-              <span className={styles.detailValue}>{formatDateTime(link.createdAt, isArabic)}</span>
-
-              <span className={styles.detailLabel}>{t("links.detail.lastSync", "Last provider check")}</span>
-              <span className={styles.detailValue}>{formatDateTime(link.lastSyncedAt, isArabic)}</span>
-
-              {link.paidAt && (
-                <>
-                  <span className={styles.detailLabel}>{t("links.detail.paidAt", "Paid at")}</span>
-                  <span className={styles.detailValue}>{formatDateTime(link.paidAt, isArabic)}</span>
-                </>
-              )}
-
-              <span className={styles.detailLabel}>{t("links.detail.url", "Payment URL")}</span>
-              <span className={styles.detailMono} dir="ltr" style={{ unicodeBidi: "plaintext" }}>
-                {link.url || link.hostedUrl || "—"}
-              </span>
-
-              {link.lastFailureSummary && (
-                <>
-                  <span className={styles.detailLabel}>{t("links.detail.lastFailure", "Last attempt")}</span>
-                  <span className={styles.detailValue}>{link.lastFailureSummary}</span>
-                </>
+    <>
+      <PopupLayout isOpen={!!linkId} onClose={onClose} size="auto">
+        <div
+          ref={dialogRef}
+          tabIndex={-1}
+          role="dialog"
+          aria-modal="true"
+          aria-label={t("links.detail.title", "Payment link details")}
+          className={styles.popupWide}
+        >
+          <div className={styles.header}>
+            <div className={styles.headerMain}>
+              <h2 className={styles.title}>
+                {t("links.detail.title", "Payment link details")}
+              </h2>
+              {link && (
+                <div className={styles.kicker}>
+                  <StatusBadge
+                    status={link.status}
+                    domain="payment"
+                    text={t(`links.status.${link.status}`, link.status)}
+                  />
+                  <span className={styles.reference} dir="ltr">
+                    {link.reference}
+                  </span>
+                </div>
               )}
             </div>
+            <button
+              type="button"
+              className={styles.closeBtn}
+              onClick={onClose}
+              aria-label={t("actions.close", "Close")}
+            >
+              ×
+            </button>
+          </div>
 
-            {Array.isArray(link.transactions) && link.transactions.length > 0 && (
-              <div className={styles.detailSection}>
-                <div className={styles.detailSectionTitle}>
-                  {t("links.detail.transactions", "Linked transactions")}
+          {error ? (
+            <p className={styles.noticeError} role="alert">
+              {t("errors.loadFailed", "Failed to load payments")}
+            </p>
+          ) : isLoading || !link ? (
+            <div className={styles.state}>
+              <SimpleLoading />
+            </div>
+          ) : (
+            <>
+              {(link.syncPending || link.syncStale || link.cancelPending) && (
+                <div className={styles.notices}>
+                  {link.syncPending && (
+                    <p className={styles.notice} role="status">
+                      {t(
+                        "links.detail.syncPending",
+                        "Could not confirm the latest state. Another check is scheduled."
+                      )}
+                    </p>
+                  )}
+                  {link.syncStale && (
+                    <p className={styles.notice} role="status">
+                      {t("links.detail.syncStale")}
+                    </p>
+                  )}
+                  {link.cancelPending && (
+                    <p className={styles.notice} role="status">
+                      {t(
+                        "links.detail.cancelPending",
+                        "Cancellation is awaiting provider confirmation."
+                      )}
+                    </p>
+                  )}
                 </div>
-                {link.transactions.map((tx) => (
-                  <div key={tx.id} className={styles.refundRow}>
-                    <span>
-                      <MoneyAmount amount={tx.amount} currency={tx.currency || "SAR"} locale={isArabic ? "ar" : "en"} />
-                      {` — ${t(`table.status.${tx.status}`, tx.status)}`}
-                    </span>
-                    <Button variant="secondary" onClick={() => setTransactionId(tx.id)} title={t("actions.viewDetails", "View details")} />
-                  </div>
-                ))}
-              </div>
-            )}
+              )}
 
-            <div className={styles.modalActions}>
+              <div className={styles.summaryGrid}>
+                <div className={styles.summaryItem}>
+                  <span className={styles.summaryLabel}>
+                    {t("links.columns.amount", "Amount")}
+                  </span>
+                  <span className={styles.summaryValue}>
+                    <MoneyAmount amount={Number(link.amountSar || 0)} currency="SAR" locale={locale} />
+                  </span>
+                </div>
+                <div className={styles.summaryItem}>
+                  <span className={styles.summaryLabel}>
+                    {t("links.detail.collected", "Collected")}
+                  </span>
+                  <span className={styles.summaryValue}>
+                    <MoneyAmount
+                      amount={Number(link.collectedSar || 0)}
+                      currency="SAR"
+                      locale={locale}
+                    />
+                  </span>
+                </div>
+                <div className={styles.summaryItem}>
+                  <span className={styles.summaryLabel}>
+                    {t("links.detail.refunded", "Refunded")}
+                  </span>
+                  <span className={styles.summaryValue}>
+                    <MoneyAmount
+                      amount={Number(link.refundedSar || 0)}
+                      currency="SAR"
+                      locale={locale}
+                    />
+                  </span>
+                </div>
+                <div className={styles.summaryItem}>
+                  <span className={styles.summaryLabel}>
+                    {t("links.detail.expiry", "Expiry")}
+                  </span>
+                  <span className={styles.summaryValue}>
+                    {formatDateTime(link.expiresAt, isArabic)}
+                  </span>
+                </div>
+              </div>
+
+              <div className={styles.section}>
+                <h3 className={styles.sectionTitle}>
+                  {t("links.detail.sections.request", "Request")}
+                </h3>
+                <div className={styles.rows}>
+                  {requestRows.map(([label, value]) => (
+                    <div className={styles.row} key={label}>
+                      <span className={styles.rowLabel}>{label}</span>
+                      <span className={styles.rowValue}>{value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className={styles.section}>
+                <h3 className={styles.sectionTitle}>
+                  {t("links.detail.sections.provider", "Provider state")}
+                </h3>
+                <div className={styles.rows}>
+                  <div className={styles.row}>
+                    <span className={styles.rowLabel}>
+                      {t("links.detail.invoiceStatus", "Invoice status")}
+                    </span>
+                    <span className={styles.rowValue}>
+                      {link.invoiceStatus
+                        ? t(`links.invoiceStatus.${link.invoiceStatus}`, link.invoiceStatus)
+                        : "—"}
+                    </span>
+                  </div>
+                  <div className={styles.row}>
+                    <span className={styles.rowLabel}>
+                      {t("links.detail.lastSync", "Last provider check")}
+                    </span>
+                    <span className={styles.rowValue}>
+                      {formatDateTime(link.lastSyncedAt, isArabic)}
+                    </span>
+                  </div>
+                  {link.paidAt && (
+                    <div className={styles.row}>
+                      <span className={styles.rowLabel}>
+                        {t("links.detail.paidAt", "Paid at")}
+                      </span>
+                      <span className={styles.rowValue}>
+                        {formatDateTime(link.paidAt, isArabic)}
+                      </span>
+                    </div>
+                  )}
+                  {link.lastFailureSummary && (
+                    <div className={styles.row}>
+                      <span className={styles.rowLabel}>
+                        {t("links.detail.lastFailure", "Last attempt")}
+                      </span>
+                      <span className={styles.rowValue}>{link.lastFailureSummary}</span>
+                    </div>
+                  )}
+                  <div className={styles.row}>
+                    <span className={styles.rowLabel}>{t("links.detail.url", "Payment URL")}</span>
+                    <CopyableValue value={link.url || link.hostedUrl} />
+                  </div>
+                </div>
+              </div>
+
+              {Array.isArray(link.transactions) && link.transactions.length > 0 && (
+                <div className={styles.section}>
+                  <h3 className={styles.sectionTitle}>
+                    {t("links.detail.transactions", "Linked transactions")}
+                  </h3>
+                  <div className={styles.rows}>
+                    {link.transactions.map((tx) => (
+                      <div className={styles.txRow} key={tx.id}>
+                        <span className={styles.txMain}>
+                          <MoneyAmount
+                            amount={tx.amount}
+                            currency={tx.currency || "SAR"}
+                            locale={locale}
+                          />
+                          <StatusBadge
+                            status={tx.status}
+                            domain="payment"
+                            text={t(`table.status.${tx.status}`, tx.status)}
+                          />
+                          <span className={styles.txMeta}>
+                            {formatDateTime(tx.paidAt || tx.createdAt, isArabic)}
+                          </span>
+                        </span>
+                        <Button
+                          variant="secondary"
+                          size="small"
+                          onClick={() => setTransactionId(tx.id)}
+                          title={t("actions.viewDetails", "View details")}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          <div className={styles.actions}>
+            {link && (
               <Button
                 type="button"
+                variant="secondary"
                 onClick={handleRefresh}
                 disabled={refreshMutation.isPending}
-               variant="secondary" title={refreshMutation.isPending
-                  ? t("links.actions.refreshing", "Checking…")
-                  : t("links.actions.refresh", "Refresh status")} />
-              <Button type="button" onClick={onClose} variant="secondary" title={t("actions.close", "Close")} />
-            </div>
-          </>
-        )}
-        {(error || !link) && <Button type="button" onClick={onClose} variant="secondary" title={t("actions.close", "Close")} />}
-      </div>
-      {transactionId && <PaymentDetailModal paymentId={transactionId} onClose={() => setTransactionId(null)} />}
-    </PopupLayout>
+                title={
+                  refreshMutation.isPending
+                    ? t("links.actions.refreshing", "Checking…")
+                    : t("links.actions.refresh", "Refresh status")
+                }
+              />
+            )}
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={onClose}
+              title={t("actions.close", "Close")}
+            />
+          </div>
+        </div>
+      </PopupLayout>
+      {transactionId && (
+        <PaymentDetailModal
+          paymentId={transactionId}
+          onClose={() => setTransactionId(null)}
+        />
+      )}
+    </>
   );
 }

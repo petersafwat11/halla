@@ -120,7 +120,10 @@ describe('Session 1.5: Event Entitlement & Stats Fixes (EVT-10, EVT-16)', () => 
       assert.deepEqual(caps.invitationBalance, {
         unlimited: false,
         base: 300,
+        planBase: 300,
+        extra: 0,
         compensation: 20,
+        carried: 0,
         consumed: 50,
         total: 320,
         remaining: 270,

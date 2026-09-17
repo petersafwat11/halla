@@ -104,6 +104,13 @@ async function scheduleBulkSend({
     update['reminderSettings.scheduledDate'] = comps.date;
     update['reminderSettings.scheduledTime'] = comps.time;
     update['reminderSettings.customReminderTime'] = true;
+    // Re-arm: the reminder is being pinned to a new instant, so a completion
+    // recorded against the previous schedule must not suppress it.
+    update['messagingStatus.reminderSent'] = false;
+    update['messagingStatus.reminderSentAt'] = null;
+    // Also clears a reminder closed unsent by an expired window.
+    update['messagingStatus.reminderClosedAt'] = null;
+    update['messagingStatus.reminderSkipReason'] = null;
   }
 
   const scheduled = await Event.updateOne(

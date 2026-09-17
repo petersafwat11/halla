@@ -21,7 +21,10 @@ const mongoose = require('mongoose');
 const notificationService = require('../notifications/notifications.service');
 const logger = require('../../shared/utils/logger');
 const { buildSearchQuery, buildDateRangeQuery, formatUserResponse } = require('./admin.shared.service');
-const { normalizePhoneNumber, getPhoneLookupVariants } = require('../../shared/utils/phone');
+const {
+  normalizePhoneNumber,
+  buildPhoneLookupClauses,
+} = require('../../shared/utils/phone');
 const { personalHostFilter } = require('../../shared/utils/accountScope');
 const subscriptionLifecycle = require('../subscriptions/subscriptionLifecycle.service');
 
@@ -57,7 +60,7 @@ async function getHosts({ page = 1, limit = 10, search, status, from, to }) {
       .select('-password -passwordResetToken -__v')
       .populate({
         path: 'subscription',
-        select: 'status activatedAt expiresAt invitePool compensationPool invitesConsumed planId',
+        select: 'status activatedAt expiresAt invitePool compensationPool planInvitePool planCompensationPool invitesConsumed planId',
         populate: { path: 'planId', select: 'features limits name nameAr nameEn code planType' },
       })
       .sort({ createdAt: -1 })
@@ -100,7 +103,7 @@ async function getHostById(hostId) {
     .select('-password -passwordResetToken')
     .populate({
       path: 'subscription',
-      select: 'status activatedAt expiresAt invitePool compensationPool invitesConsumed planId',
+      select: 'status activatedAt expiresAt invitePool compensationPool planInvitePool planCompensationPool invitesConsumed planId',
       populate: { path: 'planId', select: 'features limits name nameAr nameEn code planType' },
     })
     .lean();
@@ -218,6 +221,13 @@ async function createHost({ email, phoneNumber, name, password }) {
           expiresAt: new Date(activatedAt.getTime() + 30 * 24 * 60 * 60 * 1000),
           invitePool,
           compensationPool: invitePool === null
+            ? null
+            : Math.floor(invitePool * COMPENSATION_PERCENTAGE / 100),
+          // Frozen baselines, matching Subscription.createForUser — without
+          // them the invite-provenance split cannot tell plan invites from
+          // purchased extras.
+          planInvitePool: invitePool,
+          planCompensationPool: invitePool === null
             ? null
             : Math.floor(invitePool * COMPENSATION_PERCENTAGE / 100),
           invitesConsumed: 0,
@@ -421,14 +431,12 @@ async function bulkDeleteHosts(hostIds) {
  * Verify host by phone number
  */
 async function verifyHostByPhone(phoneNumber) {
-  const variants = getPhoneLookupVariants(phoneNumber);
-  const query = {
-    $or: [
-      { phoneNumber: { $in: variants } },
-      { mobile: { $in: variants } },
-    ],
-    role: ROLES.HOST,
-  };
+  // Admins paste numbers however they have them — 05…, 5…, 966…, +966…,
+  // 00966…, with or without spaces — so match on every stored spelling.
+  const clauses = buildPhoneLookupClauses(['phoneNumber', 'mobile'], phoneNumber);
+  if (!clauses.length) return { exists: false, host: null };
+
+  const query = { $or: clauses, role: ROLES.HOST };
 
   const host = await User.findOne(query).select('_id name email phoneNumber mobile status').lean();
 
@@ -442,16 +450,12 @@ async function verifyHostByPhone(phoneNumber) {
  * Find or create host
  */
 async function findOrCreateHost({ phoneNumber, name, email }) {
-  const variants = getPhoneLookupVariants(phoneNumber);
-  const query = {
-    $or: [
-      { phoneNumber: { $in: variants } },
-      { mobile: { $in: variants } },
-    ],
-    role: ROLES.HOST,
-  };
+  // Same prefix-agnostic match as verifyHostByPhone — a near-miss here would
+  // create a duplicate host for a number that already exists.
+  const clauses = buildPhoneLookupClauses(['phoneNumber', 'mobile'], phoneNumber);
+  const query = { $or: clauses, role: ROLES.HOST };
 
-  let host = await User.findOne(query);
+  let host = clauses.length ? await User.findOne(query) : null;
 
   if (host) {
     return {

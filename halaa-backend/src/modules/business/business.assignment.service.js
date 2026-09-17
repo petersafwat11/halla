@@ -28,6 +28,7 @@ const { ValidationError, NotFoundError, ConflictError } = require('../../shared/
 const { SUBSCRIPTION_STATUS, ACCOUNT_TYPES } = require('../../shared/constants');
 const { round2 } = require('../../shared/utils/money');
 const { generateCheckoutToken, hashCheckoutToken } = require('../../shared/utils/checkoutToken');
+const { buildPublicUrl } = require('../../shared/utils/publicUrl');
 const { logAudit } = require('../../shared/utils/auditLog');
 const logger = require('../../shared/utils/logger');
 const config = require('../../config');
@@ -40,6 +41,24 @@ const notificationService = require('../notifications/notifications.service');
 const subscriptionLifecycle = require('../subscriptions/subscriptionLifecycle.service');
 
 const LINK_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+/**
+ * Customer-facing checkout URL for a raw token — both the link the admin
+ * copies and the 3DS return Moyasar redirects to. Goes through the shared
+ * resolver so a missing/malformed FRONTEND_URL fails here instead of minting
+ * `undefined/business/checkout/...`.
+ *
+ * requireHttps stays off: this is the same frontend origin every other link
+ * builder uses (verify-email, password reset, guest portal), none of which
+ * enforce https. Adding that rule here alone would turn an http-configured
+ * deploy from "links work" into "checkout cannot be created".
+ */
+const buildCheckoutUrl = (rawToken, suffix = '') =>
+  buildPublicUrl(
+    config.frontend.canonicalUrl,
+    `business/checkout/${rawToken}${suffix ? `/${suffix}` : ''}`,
+    { label: 'Business checkout base', requireHttps: false }
+  );
 
 class BusinessAssignmentService {
   // ─── loaders / guards ────────────────────────────────────────────────
@@ -228,7 +247,7 @@ class BusinessAssignmentService {
       createdBy: createdBy || null,
     });
 
-    const link = `${config.frontend.canonicalUrl}/business/checkout/${raw}`;
+    const link = buildCheckoutUrl(raw);
 
     if (deliver) {
       await this._deliverLink(assignment, user, link);
@@ -401,9 +420,7 @@ class BusinessAssignmentService {
       return this.finalizeActivation(claimed._id, { plan });
     }
 
-    const finalCallbackUrl =
-      callbackUrl ||
-      `${config.frontend.canonicalUrl}/business/checkout/${rawToken}/return`;
+    const finalCallbackUrl = callbackUrl || buildCheckoutUrl(rawToken, 'return');
 
     const paymentRecord = await Payment.create({
       userId: claimed.businessUserId,

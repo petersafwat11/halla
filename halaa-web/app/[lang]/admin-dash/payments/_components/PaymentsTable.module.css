@@ -9,3 +9,15 @@
   background: var(--color-error-50);
   border-radius: 1.2rem;
 }
+
+.statusCell {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+}
+
+.statusNote {
+  font-size: 1.1rem;
+  color: var(--color-natural-450);
+}

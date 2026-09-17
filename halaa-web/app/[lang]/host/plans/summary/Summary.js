@@ -315,13 +315,20 @@ const Summary = ({
                 t={t}
               />
 
-              <ProceedButton
-                onClick={handlePayment}
-                processing={isProcessing || quoteLoading}
-                disabled={!quote || quoteLoading || isExpired}
-                finalTotal={finalTotal}
-                t={t}
-              />
+              {/* Below the two-column breakpoint the summary column sits at
+                  the very bottom of a long page, so the pay action docks to
+                  the viewport instead — the host never has to scroll back up
+                  after picking a payment method. It is the same control, not
+                  a second one, so validation and disabled state cannot drift. */}
+              <div className={styles.payDock}>
+                <ProceedButton
+                  onClick={handlePayment}
+                  processing={isProcessing || quoteLoading}
+                  disabled={!quote || quoteLoading || isExpired}
+                  finalTotal={finalTotal}
+                  t={t}
+                />
+              </div>
 
               <div className={styles.securityNotice}>
                 <FaLock className={styles.securityIcon} />

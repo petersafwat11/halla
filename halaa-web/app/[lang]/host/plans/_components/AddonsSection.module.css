@@ -9,36 +9,6 @@
   margin-top: 2rem;
 }
 
-/* ---- Section header ---- */
-.sectionHead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.sectionHeadText {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.sectionTitle {
-  font-size: 1.7rem;
-  font-weight: 700;
-  color: var(--color-secondary-700);
-  margin: 0;
-  font-family: var(--font-ar);
-}
-
-.sectionSubtitle {
-  font-size: 1.2rem;
-  color: var(--color-natural-400);
-  margin: 0;
-  font-family: var(--font-ar);
-}
-
 /* Selected-count + total tally, pinned to the bottom of the section
    (just above the page's continue button). */
 .summaryBar {
@@ -52,8 +22,8 @@
 .summaryChip {
   display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.55rem 0.65rem 0.55rem 1rem;
+  gap: 0.75rem;
+  padding: 0.7rem 0.75rem 0.7rem 1.25rem;
   background: linear-gradient(135deg, var(--color-primary-100) 0%, var(--color-primary-50) 100%);
   border: 1px solid var(--color-primary-200);
   border-radius: 9999px;
@@ -62,27 +32,29 @@
 }
 
 .summaryCount {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: var(--color-secondary-700);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-accent-500);
 }
 
 .summaryDivider {
   width: 1px;
-  height: 16px;
+  height: 22px;
   background: var(--color-primary-300);
 }
 
 .summaryTotal {
-  font-size: 1.3rem;
+  font-size: 1.8rem;
   font-weight: 800;
+  line-height: 1.2;
   color: var(--color-primary-700);
+  letter-spacing: -0.02em;
 }
 
 .summaryTotal small {
-  font-size: 0.9rem;
+  font-size: 0.65em;
   font-weight: 600;
-  opacity: 0.75;
+  opacity: 0.8;
   margin-inline-start: 2px;
 }
 
@@ -202,31 +174,34 @@
   line-height: 1.4;
 }
 
+/* Running price for this add-on card. It is a money figure, so it carries
+   the same weight as the tile prices rather than reading as a badge. */
 .selectedChip {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.35rem 0.7rem;
+  gap: 0.45rem;
+  padding: 0.5rem 1rem;
   background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-primary-600) 100%);
   color: var(--color-natural-50);
   border-radius: 9999px;
-  font-size: 1.05rem;
-  font-weight: 700;
+  font-size: 1.45rem;
+  font-weight: 800;
+  line-height: 1.2;
   font-family: var(--font-ar);
   box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary-500) 30%, transparent);
   flex-shrink: 0;
 }
 
 .selectedChip small {
-  font-size: 0.85rem;
-  opacity: 0.85;
+  font-size: 0.7em;
+  opacity: 0.9;
   font-weight: 600;
 }
 
 /* ---- Tier tiles (quantity pickers) ---- */
 .tierGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(86px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
   gap: 0.6rem;
 }
 
@@ -253,8 +228,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.25rem;
-  padding: 0.95rem 0.5rem;
+  gap: 0.3rem;
+  padding: 1.1rem 0.6rem;
   border: 2px solid var(--color-primary-100);
   border-radius: var(--radius-12);
   background: var(--color-natural-50);
@@ -285,10 +260,11 @@
 }
 
 .tileQty {
-  font-size: 1.55rem;
+  font-size: 2rem;
   font-weight: 800;
   color: var(--color-primary-600);
   line-height: 1;
+  letter-spacing: -0.02em;
 }
 
 .tileActive .tileQty {
@@ -296,14 +272,15 @@
 }
 
 .tilePrice {
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 1.35rem;
+  font-weight: 700;
   color: var(--color-accent-500);
+  line-height: 1.2;
 }
 
 .tilePrice small {
-  font-size: 0.85rem;
-  opacity: 0.75;
+  font-size: 0.7em;
+  opacity: 0.8;
   margin-inline-start: 2px;
 }
 

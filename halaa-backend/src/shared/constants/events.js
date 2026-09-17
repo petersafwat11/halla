@@ -29,7 +29,7 @@ const SCHEDULE_TOO_LATE = "SCHEDULE_TOO_LATE";
 /**
  * Thrown when the event date is so soon that no valid scheduling window
  * exists (`now + minLead(plan) + 3 days > eventInstant`). The host must
- * pick a later event date. minLead is 15min (trial) / 24h (paid).
+ * pick a later event date. minLead is 3min (trial) / 24h (paid).
  */
 const EVENT_DATE_TOO_SOON = "EVENT_DATE_TOO_SOON";
 

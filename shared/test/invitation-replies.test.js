@@ -10,7 +10,7 @@ test('QR confirmation preview contains the complete actual caption, not just the
   const preview = buildReplyPreview(form);
   assert.equal(preview.channel, 'whatsapp');
   assert.equal(preview.includesQr, true);
-  assert.equal(preview.text, 'Welcome!\n\n🎉 Celebration\n🗓️ 20 أكتوبر 2026 · 18:30\n📍 Riyadh hall\n👥 عدد الضيوف: 1\n\nيُرجى إبراز هذا الرمز عند الدخول.');
+  assert.equal(preview.text, 'Welcome!\n\n🎉 Celebration\n🗓️ 20 أكتوبر 2026 · 18:30\n📍 Riyadh hall\n\nيُرجى إبراز هذا الرمز عند الدخول.');
   assert.doesNotMatch(preview.text, /https?:|latitude|longitude/);
 });
 
@@ -32,10 +32,10 @@ test('empty overrides use real Arabic defaults, and missing event details are om
   assert.equal(buildReplyPreview({...form,response:'declined',guestReplies:{}}).text,defaults.onAbsent);
 });
 
-test('Riyadh date boundary and per-guest party size are preserved', () => {
+test('Riyadh date boundary is preserved and the guest count is never sent', () => {
   const text=buildConfirmedCaption({eventDetails:{title:'Evening',date:'2026-10-19T22:00:00Z'}},{rsvp:{plusOnes:2}});
   assert.match(text,/20 أكتوبر 2026/);
-  assert.match(text,/عدد الضيوف: 3/);
+  assert.doesNotMatch(text,/عدد الضيوف|Guests:/);
 });
 
 test('localized selector copy exists for all modes and both delivery paths', () => {

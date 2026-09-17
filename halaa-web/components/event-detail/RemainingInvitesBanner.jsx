@@ -3,6 +3,7 @@
 import React from "react";
 import { useEvent, useEventSubscriptionInfo } from "@/hooks/events";
 import { getLocalized } from "@halaa/shared/utils/locale";
+import { canPurchaseMoreInvites } from "@halaa/shared/utils/invitationBalance";
 import { useParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import InvitationBalanceCard from "./InvitationBalanceCard";
@@ -32,15 +33,15 @@ export default function RemainingInvitesBanner({ eventId, balance }) {
     currentSubscriptionData?.subscription ||
     currentSubscriptionData;
   const currentPlan = currentSubscription?.planId || currentSubscription?.plan;
+  // Customer-facing name only. The plan code ("basic_monthly_200") is an
+  // internal identifier and must never be shown to a host, so it is not in
+  // this chain — an empty name simply hides the row.
   const currentPlanName =
     getLocalized(currentSubscription, "planName", lang) ||
     getLocalized(currentPlan, "name", lang) ||
-    currentSubscription?.planName?.[lang] ||
-    currentSubscription?.planName ||
-    currentPlan?.name ||
-    currentPlan?.code ||
-    currentSubscription?.planCode ||
-    currentSubscription?.planType;
+    currentPlan?.nameAr ||
+    currentPlan?.nameEn ||
+    null;
 
   if (!effectiveBalance) return null;
 
@@ -48,17 +49,24 @@ export default function RemainingInvitesBanner({ eventId, balance }) {
     <div className={styles.group}>
       {currentPlanName && (
         <div className={styles.currentPlan} role="note">
-          <div>
+          {/* The note explains the rule, so it leads; the plan name is the
+              supporting detail and sits at the end. */}
+          <p className={styles.currentPlanNote}>{t("currentPlan.eventAllowanceNote")}</p>
+          <div className={styles.currentPlanMeta}>
             <span className={styles.currentPlanLabel}>{t("currentPlan.label")}</span>
             <strong className={styles.currentPlanName} dir="auto">{currentPlanName}</strong>
           </div>
-          <p>{t("currentPlan.eventAllowanceNote")}</p>
         </div>
       )}
       <InvitationBalanceCard
         balance={effectiveBalance}
         eventId={eventId}
         returnTo="event-detail"
+        purchasable={canPurchaseMoreInvites({
+          balance: effectiveBalance,
+          subscription: currentSubscription,
+          event,
+        })}
       />
     </div>
   );

@@ -19,7 +19,7 @@ import Table from "@/ui/commen/new-table/Table";
 import SimpleLoading from "@/ui/common/loading/SimpleLoading";
 import CreatePaymentLinkDialog from "./CreatePaymentLinkDialog";
 import PaymentLinkDetailModal from "./PaymentLinkDetailModal";
-import { getStatusVisual } from "@/utils/statusColors";
+import StatusBadge from "@/components/shared/StatusBadge";
 import { formatDate as sharedFormatDate } from "@halaa/shared/utils/locale";
 import MoneyAmount from "@/ui/commen/MoneyAmount/MoneyAmount";
 import styles from "./PaymentsTable.module.css";
@@ -173,21 +173,12 @@ export default function PaymentLinksTable() {
   const renderCell = useCallback(
     (key, value, row) => {
       if (key === "status") {
-        const { fg, bg } = getStatusVisual(value, "payment");
         return (
-          <span
-            style={{
-              display: "inline-flex",
-              padding: "0.2rem 1rem",
-              borderRadius: "999px",
-              fontSize: "1.2rem",
-              fontWeight: 500,
-              background: bg,
-              color: fg,
-            }}
-          >
-            {t(`links.status.${value}`, value)}
-            {(row.original?.syncPending || row.original?.syncStale) && <span> · {t("links.detail.syncStale")}</span>}
+          <span className={styles.statusCell}>
+            <StatusBadge status={value} domain="payment" text={t(`links.status.${value}`, value)} />
+            {(row.original?.syncPending || row.original?.syncStale) && (
+              <span className={styles.statusNote}>{t("links.detail.syncStale")}</span>
+            )}
           </span>
         );
       }

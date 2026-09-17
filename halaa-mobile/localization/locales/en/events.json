@@ -207,7 +207,7 @@
     "timePlaceholder": "Select Time",
     "windowNote": "Choose a send date between the earliest allowed date and at least 3 days before the event.",
     "windowNotePaid": "Sending must be at least 24 hours from now and 3 days before the event. Today is unavailable on this plan. Dates and times use Riyadh time; check the selected calendar date before saving.",
-    "windowNoteTrial": "Sending must be at least 15 minutes from now and 3 days before the event. Dates and times use Riyadh time; check the selected calendar date before saving.",
+    "windowNoteTrial": "Sending must be at least 3 minutes from now and 3 days before the event. Dates and times use Riyadh time; check the selected calendar date before saving.",
     "cancel": "Cancel",
     "confirm": "Confirm Schedule",
     "scheduling": "Scheduling...",

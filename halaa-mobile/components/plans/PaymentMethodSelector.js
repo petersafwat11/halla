@@ -17,60 +17,34 @@ import { useTranslation } from "../../localization";
 import { useFieldDirection } from "../../hooks/useInputDirection";
 import LocalizedText from "../commen/LocalizedText";
 import { colors, spacing, borderRadius, typography } from "../../styles/tokens";
+import { CARD_NETWORK_ORDER } from "@halaa/shared/brand/paymentMarks";
+import PaymentBrandMark from "./PaymentBrandMark";
 
-// --- High-Quality Native Brand Badges ---
-const VisaBadge = () => (
-  <View style={styles.visaBadge}>
-    <Text style={styles.visaText}>VISA</Text>
-  </View>
-);
-
-const MastercardBadge = () => (
-  <View style={styles.mastercardContainer}>
-    <View style={styles.mcCircle1} />
-    <View style={styles.mcCircle2} />
-  </View>
-);
-
-const MadaBadge = () => (
-  <View style={styles.madaBadge}>
-    <Text style={styles.madaText}>mada</Text>
-  </View>
-);
-
-const StcPayBadge = () => (
-  <View style={styles.stcBadge}>
-    <Text style={styles.stcText}>stc pay</Text>
-  </View>
-);
-
-const ApplePayBadge = () => (
-  <View style={styles.appleBadge}>
-    <Text style={styles.appleText}> Pay</Text>
-  </View>
-);
-
+// Brand artwork comes from the shared mark data (the vendors' official paths
+// for the card networks), so mobile and web show the same logos.
 const METHODS = [
   {
     key: "creditcard",
     labelKey: "checkout.method.card",
     Logos: () => (
       <View style={styles.tabLogoRow}>
-        <VisaBadge />
-        <MastercardBadge />
-        <MadaBadge />
+        {CARD_NETWORK_ORDER.map((brand) => (
+          <PaymentBrandMark key={brand} brand={brand} height={18} chip />
+        ))}
       </View>
     ),
   },
   {
     key: "applepay",
     labelKey: "checkout.method.applepay",
-    Logos: ApplePayBadge,
+    Logos: () => <PaymentBrandMark brand="applepay" height={22} />,
   },
   {
     key: "stcpay",
+    // Wire value stays `stcpay` (the Moyasar source type); the brand shown to
+    // the customer is stc bank.
     labelKey: "checkout.method.stcpay",
-    Logos: StcPayBadge,
+    Logos: () => <PaymentBrandMark brand="stcbank" height={22} />,
   },
 ];
 
@@ -172,18 +146,10 @@ const PaymentMethodSelector = ({
 
   const activeCardBrand = (sharedDetectCardBrand || detectCardBrand)(card.number || "");
 
-  const renderCardInputBrandIcon = () => {
-    switch (activeCardBrand) {
-      case "visa":
-        return <VisaBadge />;
-      case "mastercard":
-        return <MastercardBadge />;
-      case "mada":
-        return <MadaBadge />;
-      default:
-        return null;
-    }
-  };
+  const renderCardInputBrandIcon = () =>
+    CARD_NETWORK_ORDER.includes(activeCardBrand) ? (
+      <PaymentBrandMark brand={activeCardBrand} height={16} />
+    ) : null;
 
   return (
     <View style={styles.wrap}>
@@ -384,75 +350,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: spacing[4],
-  },
-
-  // --- Badge Styles ---
-  visaBadge: {
-    paddingHorizontal: 5,
-    paddingVertical: 1,
-    backgroundColor: "#151b54",
-    borderRadius: 3,
-  },
-  visaText: {
-    color: "#F7B600",
-    fontWeight: "bold",
-    fontStyle: "italic",
-    fontSize: 9,
-  },
-  mastercardContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    width: 26,
-    height: 18,
-  },
-  mcCircle1: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: "#EB001B",
-  },
-  mcCircle2: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: "#FF5F00",
-    opacity: 0.85,
-    marginLeft: -8,
-  },
-  madaBadge: {
-    paddingHorizontal: 4,
-    paddingVertical: 1,
-    borderWidth: 1,
-    borderColor: "#0075A0",
-    borderRadius: 3,
-  },
-  madaText: {
-    color: "#0075A0",
-    fontWeight: "bold",
-    fontStyle: "italic",
-    fontSize: 8,
-  },
-  stcBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    backgroundColor: "#4f005d",
-    borderRadius: 4,
-  },
-  stcText: {
-    color: "#00E5FF",
-    fontWeight: "bold",
-    fontSize: 8,
-  },
-  appleBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    backgroundColor: "#000000",
-    borderRadius: 4,
-  },
-  appleText: {
-    color: "#FFFFFF",
-    fontWeight: "bold",
-    fontSize: 9,
   },
 
   // --- Fields ---

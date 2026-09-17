@@ -32,7 +32,17 @@
       "partially_refunded": "Partially refunded",
       "refunded": "Refunded",
       "needs_review": "Needs review",
-      "unavailable": "Unavailable"
+      "unavailable": "Not created at provider"
+    },
+    "invoiceStatus": {
+      "initiated": "Awaiting payment",
+      "on_hold": "Awaiting bill settlement",
+      "paid": "Paid",
+      "failed": "Failed",
+      "refunded": "Refunded",
+      "canceled": "Canceled",
+      "voided": "Voided",
+      "expired": "Expired"
     },
     "stats": {
       "awaiting": "Awaiting payment",
@@ -103,7 +113,13 @@
       "transactions": "Linked transactions",
       "syncPending": "Could not confirm the latest state. Another check is scheduled.",
       "cancelPending": "Cancellation is awaiting provider confirmation.",
-      "refunded": "Refunded (SAR)",
+      "refunded": "Refunded",
+      "collected": "Collected",
+      "invoiceStatus": "Provider invoice status",
+      "sections": {
+        "request": "Request",
+        "provider": "Provider state"
+      },
       "syncStale": "Status is out of date — refresh to check payment"
     },
     "empty": {
@@ -156,7 +172,9 @@
       "applepay": "Apple Pay",
       "samsungpay": "Samsung Pay",
       "stcpay": "STC Pay",
-      "token": "Saved card"
+      "token": "Saved card",
+      "sadadbill": "SADAD bill",
+      "other": "Other method"
     }
   },
   "actions": {
@@ -185,6 +203,7 @@
     "reasonPlaceholder": "Enter a reason for the refund...",
     "cancel": "Cancel",
     "confirm": "Confirm",
+    "copy": "Copy",
     "close": "Close"
   },
   "dateRange": {
@@ -235,6 +254,11 @@
     "capturedAt": "Captured at",
     "voidedAt": "Voided at",
     "refundedAt": "Refunded at",
-    "refunds": "Refunds"
+    "refunds": "Refunds",
+    "providerStatus": "Provider status",
+    "sections": {
+      "identifiers": "Identifiers",
+      "timeline": "Timeline"
+    }
   }
 }

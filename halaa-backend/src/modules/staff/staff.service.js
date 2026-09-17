@@ -24,7 +24,7 @@ const StaffAccessToken = require('../../../models/StaffAccessTokenModel');
 // Existing services
 const notificationService = require('../notifications/notifications.service');
 const { logAudit } = require('../../shared/utils/auditLog');
-const { normalizePhoneNumber, getPhoneLookupVariants } = require('../../shared/utils/phone');
+const { normalizePhoneNumber, buildPhoneLookupClauses } = require('../../shared/utils/phone');
 
 const STAFF_TOKEN_RBAC_ROLES = [
   ROLES.ADMIN,
@@ -226,11 +226,12 @@ class StaffService {
     if (guestId) {
       guest = await Guest.findOne({ _id: guestId, event: eventId });
     } else if (phone) {
-      const variants = getPhoneLookupVariants(phone);
-      guest = await Guest.findOne({
-        event: eventId,
-        phone: { $in: variants },
-      });
+      // Staff read the number off a guest's screen in whatever prefix form it
+      // was saved with, so match every spelling within this event.
+      const clauses = buildPhoneLookupClauses(['phone'], phone);
+      guest = clauses.length
+        ? await Guest.findOne({ event: eventId, $or: clauses })
+        : null;
     }
 
     if (!guest) {

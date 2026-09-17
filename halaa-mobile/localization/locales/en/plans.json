@@ -7,6 +7,13 @@
     "events": "Events",
     "invites": "Invites",
     "daysRemaining": "Days Remaining",
+    "invitesRemaining": "invites left",
+    "inviteBreakdown": "Invite balance breakdown",
+    "planInvites": "Plan invites",
+    "extraInvites": "Extra invites",
+    "compensationInvites": "Compensation invites (15%)",
+    "carriedInvites": "Carried-over invites",
+    "compensationNote": "The 15% compensation is calculated on your base plan invites only — extra invite packages do not earn it.",
     "noExpiry": "No expiry"
   },
   "noActiveSubscription": {
@@ -111,6 +118,7 @@
     "subtitle": "Enhance your plan with optional extras",
     "loadFailed": "Could not load add-ons.",
     "selectedCount": "{{count}} selected",
+    "totalExtras": "Total extras",
     "selectedCount_one": "1 selected",
     "selectedCount_other": "{{count}} selected",
     "clearAll": "Clear all",

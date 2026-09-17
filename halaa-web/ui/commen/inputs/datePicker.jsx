@@ -1,8 +1,10 @@
 'use client';
 import React, { useState, useRef, useEffect } from 'react';
-import { useFormContext, useController } from 'react-hook-form';
+// `get` comes from react-hook-form, not lodash: it is the same path getter,
+// it is already a dependency here, and lodash's CJS named export cannot be
+// statically imported by the ESM test loader. Matches TextArea.
+import { useFormContext, useController, get } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { get } from 'lodash';
 import styles from './datePicker.module.css';
 import Image from 'next/image';
 import Calendar from './Calendar';

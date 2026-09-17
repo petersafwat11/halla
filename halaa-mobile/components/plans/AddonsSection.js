@@ -289,7 +289,7 @@ const AddonsSection = ({ onAddonsChange, showBusiness = false, style }) => {
       <SummaryBar
         visible={selectedCount > 0}
         totalLabel={priceToken(total, sarLabel)}
-        selectedCountLabel={t("addons.selectedCount", { count: selectedCount })}
+        selectedCountLabel={t("addons.totalExtras")}
         clearLabel={t("addons.clearAll")}
         onClear={clearAll}
       />
@@ -297,10 +297,11 @@ const AddonsSection = ({ onAddonsChange, showBusiness = false, style }) => {
   );
 };
 
+// Subtitle only: every screen that renders this section already shows
+// `addons.title` in its TopBar, so repeating it here duplicated the heading.
 const SectionHeader = ({ t }) => (
   <View style={styles.sectionHead}>
     <View style={styles.sectionHeadText}>
-      <LocalizedText style={styles.sectionTitle}>{t("addons.title")}</LocalizedText>
       <LocalizedText style={styles.sectionSubtitle}>
         {t("addons.subtitle")}
       </LocalizedText>
@@ -436,12 +437,6 @@ const styles = StyleSheet.create({
     minWidth: 180,
     gap: 2,
   },
-  sectionTitle: {
-    fontFamily: "Cairo_700Bold",
-    fontSize: typography.fontSize.title.medium,
-    lineHeight: 24,
-    color: colors.secondary[700],
-  },
   sectionSubtitle: {
     fontFamily: "Cairo_400Regular",
     fontSize: typography.fontSize.body.small,
@@ -478,20 +473,20 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   summaryCount: {
-    fontFamily: "Cairo_700Bold",
-    fontSize: typography.fontSize.caption.large,
+    fontFamily: "Cairo_600SemiBold",
+    fontSize: typography.fontSize.body.small,
     lineHeight: 18,
-    color: colors.secondary[700],
+    color: colors.accent[500],
   },
   summaryDivider: {
     width: 1,
-    height: 14,
+    height: 20,
     backgroundColor: colors.primary[300],
   },
   summaryTotal: {
     fontFamily: "Cairo_700Bold",
-    fontSize: typography.fontSize.body.medium,
-    lineHeight: 20,
+    fontSize: typography.fontSize.title.large,
+    lineHeight: 30,
     color: colors.primary[700],
   },
   summaryTotalUnit: {
@@ -631,19 +626,21 @@ const styles = StyleSheet.create({
     borderColor: colors.primary[500],
     backgroundColor: "transparent",
   },
+  // Quantities and prices are the numbers the host compares — they carry
+  // the tile, so they are sized above the surrounding label scale.
   tileQty: {
     fontFamily: "Cairo_700Bold",
-    fontSize: typography.fontSize.title.small,
+    fontSize: typography.fontSize.title.large,
     color: colors.primary[600],
-    lineHeight: 22,
+    lineHeight: 30,
   },
   tileQtyActive: {
     color: colors.primary[700],
   },
   tilePrice: {
-    fontFamily: "Cairo_500Medium",
-    fontSize: typography.fontSize.caption.large,
-    lineHeight: 18,
+    fontFamily: "Cairo_600SemiBold",
+    fontSize: typography.fontSize.body.large,
+    lineHeight: 24,
     color: colors.accent[500],
   },
   tilePriceActive: {

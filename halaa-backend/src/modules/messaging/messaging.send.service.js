@@ -624,7 +624,7 @@ async function sendInitialLaunchBatch({
 
   if (event.subscriptionId) {
     const sub = await Subscription.findById(event.subscriptionId)
-      .select('invitePool compensationPool invitesConsumed planId')
+      .select('invitePool compensationPool planInvitePool planCompensationPool invitesConsumed planId')
       .populate('planId', 'planType code limits');
     if (!sub) {
       throw new AppError('Subscription not found for event', 404, 'SUBSCRIPTION_NOT_FOUND');
@@ -690,7 +690,7 @@ async function sendInitialLaunchBatch({
 
   if (event.subscriptionId && successful > 0) {
     Subscription.findById(event.subscriptionId)
-      .select('userId invitePool compensationPool invitesConsumed')
+      .select('userId invitePool compensationPool planInvitePool planCompensationPool invitesConsumed')
       .then((sub) => sub && maybeNotifyPlanLimit(sub.userId, sub))
       .catch(() => {});
   }
@@ -776,7 +776,7 @@ async function sendBulk({
 
   if (event.subscriptionId) {
     const sub = await Subscription.findById(event.subscriptionId)
-      .select('invitePool compensationPool invitesConsumed planId')
+      .select('invitePool compensationPool planInvitePool planCompensationPool invitesConsumed planId')
       .populate('planId', 'planType code limits');
     if (!sub) {
       throw new AppError('Subscription not found for event', 404, 'SUBSCRIPTION_NOT_FOUND');
@@ -848,7 +848,7 @@ async function sendBulk({
 
   if (event.subscriptionId && successful > 0) {
     Subscription.findById(event.subscriptionId)
-      .select('userId invitePool compensationPool invitesConsumed')
+      .select('userId invitePool compensationPool planInvitePool planCompensationPool invitesConsumed')
       .then((sub) => sub && maybeNotifyPlanLimit(sub.userId, sub))
       .catch(() => {});
   }

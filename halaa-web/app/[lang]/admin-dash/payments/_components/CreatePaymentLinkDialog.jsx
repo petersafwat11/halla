@@ -13,6 +13,7 @@ import InputSelect from "@/ui/commen/inputs/inputGroup/InputSelect";
 import PopupLayout from "@/ui/commen/popup/PopupLayout";
 import Button from "@/ui/commen/button/Button";
 import MoneyAmount from "@/ui/commen/MoneyAmount/MoneyAmount";
+import CopyableLink from "@/ui/commen/CopyableLink/CopyableLink";
 import { paymentLinkFormSchema, normalizePaymentLinkAmount } from "@/utils/schemas/paymentLinks";
 import { formatDateTime } from "@halaa/shared/utils/locale";
 
@@ -36,7 +37,6 @@ export default function CreatePaymentLinkDialog({ open, onClose, onCreated }) {
   const [createdResult, setResult] = useState(null);
   const { data: liveResult } = useAdminPaymentLinkDetail(createdResult?.id, { enabled: !!open && !!createdResult?.id });
   const result = liveResult?.data || createdResult;
-  const [copied, setCopied] = useState(false);
   const [idempotencyKey, setIdempotencyKey] = useState(() => crypto.randomUUID());
   const attempt = useRef(null);
   const submitting = useRef(false);
@@ -75,7 +75,6 @@ export default function CreatePaymentLinkDialog({ open, onClose, onCreated }) {
   useEffect(() => {
     if (open) {
       setFieldError(null);
-      setCopied(false);
       if (!idempotencyKey) {
         setIdempotencyKey(
           typeof crypto !== "undefined" && crypto.randomUUID
@@ -104,7 +103,6 @@ export default function CreatePaymentLinkDialog({ open, onClose, onCreated }) {
   const handleSubmit = async (values) => {
     if (submitting.current || !cfg.canCreate) return;
     setFieldError(null);
-    setCopied(false);
     try {
       submitting.current = true;
       attempt.current ||= {
@@ -136,22 +134,10 @@ export default function CreatePaymentLinkDialog({ open, onClose, onCreated }) {
     }
   };
 
-  const handleCopy = async () => {
-    const url = result?.url || result?.hostedUrl;
-    if (!url) return;
-    try {
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-    } catch {
-      setCopied(false);
-    }
-  };
-
   const handleCreateAnother = () => {
     attempt.current = null;
     saveAttempt(null);
     setResult(null);
-    setCopied(false);
     reset({ amountSar: "", description: "", clientLabel: "", expiresInDays: defaultExpiry });
     setIdempotencyKey(
       typeof crypto !== "undefined" && crypto.randomUUID
@@ -225,27 +211,27 @@ export default function CreatePaymentLinkDialog({ open, onClose, onCreated }) {
               <span className={styles.detailValue}>
                 {result.expiresAt ? formatDateTime(result.expiresAt, isArabic ? "ar" : "en") : "—"}
               </span>
-              <span className={styles.detailLabel}>{t("links.detail.url", "Payment URL")}</span>
-              <span className={styles.detailMono} dir="ltr" style={{ unicodeBidi: "plaintext" }}>
-                {result.url || result.hostedUrl || "—"}
-              </span>
             </div>
-            {result.creationState === "ready" && ["awaiting_payment", "processing"].includes(result.status) && !result.cancelPending && (result.url || result.hostedUrl) && (
-              <>
-                <div className={styles.modalActions} style={{ justifyContent: "flex-start" }}>
-                  <Button type="button" onClick={handleCopy} variant="primary" title={t("links.actions.copy", "Copy link")} />
-                </div>
-                {copied ? (
-                  <p role="status">{t("links.create.copied", "Copied")}</p>
-                ) : (
-                  <p className={styles.hint}>
-                    {t(
-                      "links.create.copyHint",
-                      "If copying fails, long-press / select the URL above to copy it manually."
-                    )}
-                  </p>
+            {/* Generated URL + clipboard: same field the business checkout
+                link uses, so both link surfaces read and behave alike. */}
+            {result.creationState === "ready" && ["awaiting_payment", "processing"].includes(result.status) && !result.cancelPending && (result.url || result.hostedUrl) ? (
+              <CopyableLink
+                url={result.url || result.hostedUrl}
+                label={t("links.detail.url", "Payment URL")}
+                copyLabel={t("links.actions.copy", "Copy link")}
+                copiedLabel={t("links.create.copied", "Copied")}
+                hint={t(
+                  "links.create.copyHint",
+                  "If copying fails, long-press / select the URL above to copy it manually."
                 )}
-              </>
+              />
+            ) : (
+              <div className={styles.detailGrid}>
+                <span className={styles.detailLabel}>{t("links.detail.url", "Payment URL")}</span>
+                <span className={styles.detailMono} dir="ltr" style={{ unicodeBidi: "plaintext" }}>
+                  {result.url || result.hostedUrl || "—"}
+                </span>
+              </div>
             )}
             <div className={styles.modalActions}>
               <Button type="button" onClick={onClose} variant="secondary" title={t("links.create.done", "Done")} />

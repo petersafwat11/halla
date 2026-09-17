@@ -16,8 +16,44 @@ import { toSubscriptionDTO } from "@halaa/shared/utils";
 import {
   getScheduleWindow,
   getScheduleTimeBounds,
+  instantToPickerDay,
   validateScheduleSelection,
 } from "@halaa/shared/utils/schedulingWindow";
+
+// How far ahead the pickers are prefilled when the host has no stored
+// schedule yet. This is only a NUDGE past the minimum lead — the real floor
+// comes from the schedule window, which is 3 minutes on trial but 24 hours on
+// a paid plan. Prefilling a flat "now + 5 minutes" would open the popup
+// looking valid and then fail submission for every paid host.
+const DEFAULT_PREFILL_MS = 5 * 60 * 1000;
+
+// The prefill instant expressed the way the pickers speak: a picker day plus
+// a 24h "HH:mm" Riyadh wall-clock token. `getScheduleTimeBounds` already
+// resolves an instant to its Riyadh minute-of-day (rounding a partial minute
+// up), so no hand-rolled offset math is needed here.
+// Returns nulls when there is no valid window, which leaves the pickers on
+// their placeholder rather than a value that cannot be submitted.
+const buildPrefillSelection = (scheduleWindow) => {
+  if (!scheduleWindow?.hasValidWindow || !scheduleWindow.earliestInstant) {
+    return { date: null, time24: null };
+  }
+
+  const nudged = new Date(Date.now() + DEFAULT_PREFILL_MS);
+  const earliest = new Date(scheduleWindow.earliestInstant);
+  const instant = nudged > earliest ? nudged : earliest;
+  if (scheduleWindow.latestInstant && instant > new Date(scheduleWindow.latestInstant)) {
+    return { date: null, time24: null };
+  }
+
+  const date = instantToPickerDay(instant);
+  const { minimumMinutes } = getScheduleTimeBounds(date, {
+    ...scheduleWindow,
+    earliestInstant: instant,
+  });
+  const hh = String(Math.floor(minimumMinutes / 60)).padStart(2, "0");
+  const mm = String(minimumMinutes % 60).padStart(2, "0");
+  return { date, time24: `${hh}:${mm}` };
+};
 
 const ScheduleSendingPopup = ({
   onClose,
@@ -40,7 +76,7 @@ const ScheduleSendingPopup = ({
       subscription?.planCode === "trial" || subscription?.planType === "trial";
 
   // Live scheduling window: [now + minLead, event − 3d].
-  //   minLead: trial = 15min, paid = 24h.
+  //   minLead: trial = 3min, paid = 24h.
   //   upper bound: 3 days before the event start.
   // The picker is day-granular, so we floor each bound to its calendar day;
   // the backend is authoritative on the exact instant and returns
@@ -111,13 +147,24 @@ const ScheduleSendingPopup = ({
     return `${String(h12).padStart(2, "0")}:${String(mm).padStart(2, "0")}:${ampm}`;
   };
 
+  // A stored schedule always wins — re-opening the popup must restore it.
+  // Otherwise start the host 5 minutes out, comfortably inside the window.
+  const initialSelection = () => {
+    if (existingSchedule?.scheduledDate) {
+      return {
+        date: new Date(existingSchedule.scheduledDate),
+        time: fromHHmm(existingSchedule.scheduledTime),
+      };
+    }
+    const prefill = buildPrefillSelection(scheduleWindow);
+    return {
+      date: prefill.date,
+      time: prefill.time24 ? fromHHmm(prefill.time24) : null,
+    };
+  };
+
   const methods = useForm({
-    defaultValues: {
-      date: existingSchedule?.scheduledDate
-        ? new Date(existingSchedule.scheduledDate)
-        : null,
-      time: fromHHmm(existingSchedule?.scheduledTime),
-    },
+    defaultValues: initialSelection(),
   });
   const selectedDate = methods.watch("date");
   const timeBounds = useMemo(
@@ -139,12 +186,8 @@ const ScheduleSendingPopup = ({
   }, [selectedDate, timeBounds, methods]);
 
   useEffect(() => {
-    methods.reset({
-      date: existingSchedule?.scheduledDate
-        ? new Date(existingSchedule.scheduledDate)
-        : null,
-      time: fromHHmm(existingSchedule?.scheduledTime),
-    });
+    methods.reset(initialSelection());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     existingSchedule?.scheduledDate,
     existingSchedule?.scheduledTime,

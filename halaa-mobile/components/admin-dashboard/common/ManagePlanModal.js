@@ -14,6 +14,7 @@ import LocalizedText from "../../commen/LocalizedText";
 import { Ionicons } from "@expo/vector-icons";
 import PropTypes from "prop-types";
 import { Button } from "../../commen";
+import StatusBadge from "./StatusBadge";
 import {
   colors,
   spacing,
@@ -24,6 +25,7 @@ import {
 } from "../../../styles/tokens";
 import {
   useAssignablePlans,
+  useAvailableAddons,
   useUpdateHostSubscription,
   useGrantHostExtraInvites,
   useAssignBusinessPlan,
@@ -31,15 +33,22 @@ import {
 } from "../../../hooks";
 import { useToast } from "../../../contexts/ToastContext";
 import { useTranslation } from "../../../localization";
-import { getLocalized, formatCount } from "@halaa/shared/utils/locale";
+import { getLocalized, formatCount, formatDate } from "@halaa/shared/utils/locale";
 import { isolateLtr } from "@halaa/shared/utils/bidi";
-
-const INVITE_PRESETS = [10, 25, 50, 100, 250, 500];
+import { priceToken } from "@halaa/shared/utils/displayTokens";
 
 const getCurrentPlanCode = (subscription) =>
   subscription?.planId?.code ||
   subscription?.planCode ||
   subscription?.code ||
+  "";
+
+// Plan names are bilingual backend content — `getSummary()` payloads carry
+// planNameAr/planNameEn, populated payloads carry them on planId. The plan
+// code is never a customer-facing name, so it is not a fallback.
+const getCurrentPlanName = (subscription, locale) =>
+  getLocalized(subscription || {}, "planName", locale) ||
+  getLocalized(subscription?.planId || {}, "name", locale) ||
   "";
 
 const getRemainingInvites = (subscription, unlimitedLabel) => {
@@ -76,9 +85,10 @@ const ManagePlanModal = ({ visible, onClose, entity, entityType = "host", onSave
   const [businessMode, setBusinessMode] = useState("grant");
   const [reason, setReason] = useState("");
   const [discountCode, setDiscountCode] = useState("");
-  const [quantity, setQuantity] = useState("25");
+  const [quantity, setQuantity] = useState("");
   const [addAfterChange, setAddAfterChange] = useState(false);
   const [checkoutLink, setCheckoutLink] = useState(null);
+  const [linkShared, setLinkShared] = useState(false);
 
   const {
     data: plansData,
@@ -87,12 +97,26 @@ const ManagePlanModal = ({ visible, onClose, entity, entityType = "host", onSave
     refetch: refetchPlans,
   } = useAssignablePlans({ availableFor: isBusiness ? "business" : "host" });
 
+  // Extra invites are sold as fixed catalog packages — read the tiers from the
+  // same public catalog the host add-ons picker uses so an admin can never
+  // grant an off-catalog quantity.
+  const {
+    data: addonsData,
+    isLoading: addonsLoading,
+    error: addonsError,
+    refetch: refetchAddons,
+  } = useAvailableAddons();
+
   const updateHost = useUpdateHostSubscription();
   const grantHostExtra = useGrantHostExtraInvites();
   const assignBusiness = useAssignBusinessPlan();
   const grantBusinessExtra = useGrantBusinessExtraInvites();
 
   const plans = useMemo(() => plansData?.data?.plans || [], [plansData]);
+  const inviteTiers = useMemo(
+    () => addonsData?.data?.extra_invites || [],
+    [addonsData]
+  );
   const selectedPlan = plans.find((plan) => plan.code === planCode);
   const isCheckout = isBusiness && businessMode === "checkout";
 
@@ -108,9 +132,10 @@ const ManagePlanModal = ({ visible, onClose, entity, entityType = "host", onSave
       setBusinessMode("grant");
       setReason("");
       setDiscountCode("");
-      setQuantity("25");
+      setQuantity("");
       setAddAfterChange(false);
       setCheckoutLink(null);
+      setLinkShared(false);
     }
   }, [visible, entity]);
 
@@ -134,10 +159,71 @@ const ManagePlanModal = ({ visible, onClose, entity, entityType = "host", onSave
     };
   };
 
+  // Catalog packages, rendered with the same loading/error/retry treatment as
+  // the plan list. Price is the catalog LIST price — an admin grant is free.
+  const renderInviteTiers = () => {
+    if (addonsLoading) {
+      return (
+        <View style={styles.inlineState}>
+          <ActivityIndicator size="small" color={colors.primary[500]} />
+          <LocalizedText style={styles.inlineStateText}>
+            {mp("loadingPackages", "Loading invite packages...")}
+          </LocalizedText>
+        </View>
+      );
+    }
+    if (addonsError) {
+      return (
+        <View style={styles.inlineError}>
+          <LocalizedText style={styles.errorText}>
+            {mp("packagesLoadError", "Could not load invite packages.")}
+          </LocalizedText>
+          <TouchableOpacity onPress={() => refetchAddons()} style={styles.retryBtn}>
+            <LocalizedText style={styles.retryBtnText}>{mp("retry", "Retry")}</LocalizedText>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+    if (inviteTiers.length === 0) {
+      return (
+        <LocalizedText style={styles.inlineStateText}>
+          {mp("noPackages", "No invite packages available.")}
+        </LocalizedText>
+      );
+    }
+    return (
+      <View style={styles.presetRow}>
+        {inviteTiers.map((tier) => {
+          const active = Number(quantity) === Number(tier.quantity);
+          return (
+            <TouchableOpacity
+              key={tier.quantity}
+              style={[styles.preset, active && styles.presetActive]}
+              onPress={() => setQuantity(String(tier.quantity))}
+            >
+              <LocalizedText
+                style={[styles.presetText, active && styles.presetTextActive]}
+              >
+                {formatCount(tier.quantity, locale)}
+              </LocalizedText>
+              {/* Price is ONE atomic LTR-isolated token (blueprint §6). */}
+              <LocalizedText style={styles.presetPrice}>
+                {priceToken(tier.price, mp("currency", "SAR"))}
+              </LocalizedText>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    );
+  };
+
   const grantExtraInvites = async () => {
     const parsedQuantity = Number(quantity);
-    if (!Number.isInteger(parsedQuantity) || parsedQuantity < 1 || parsedQuantity > 500) {
-      toast.warning(mp("invalidQuantity", "Enter 1 to 500 invites."));
+    const tier = inviteTiers.find(
+      (option) => Number(option.quantity) === parsedQuantity
+    );
+    if (!tier) {
+      toast.warning(mp("selectPackage", "Select an invites package."));
       return false;
     }
     if (isBusiness) {
@@ -218,7 +304,8 @@ const ManagePlanModal = ({ visible, onClose, entity, entityType = "host", onSave
   const shareCheckoutLink = async () => {
     if (!checkoutLink) return;
     try {
-      await Share.share({ message: checkoutLink });
+      const result = await Share.share({ message: checkoutLink });
+      if (result?.action === Share.sharedAction) setLinkShared(true);
     } catch (_) {
       // user dismissed the share sheet — no-op
     }
@@ -227,25 +314,29 @@ const ManagePlanModal = ({ visible, onClose, entity, entityType = "host", onSave
   if (!visible || !entity) return null;
 
   const entityName = entity?.name || entity?.email || "—";
+  const periodEnd =
+    subscription?.currentPeriodEnd || subscription?.expiresAt || null;
   const showExtraSection =
     tab === "extra" || (tab === "change" && addAfterChange && !isCheckout);
 
   const summaryRows = [
     {
       label: mp("currentPlan", "Current plan"),
-      value:
-        getLocalized(subscription?.planId || {}, "name", locale) ||
-        subscription?.planId?.code ||
-        subscription?.planType ||
-        "—",
+      value: getCurrentPlanName(subscription, locale) || mp("none", "None"),
     },
     {
       label: mp("status", "Status"),
-      value: subscription?.status || mp("none", "None"),
+      // Status colors come from the shared status→tone map (mirrors web).
+      badge: subscription?.status || null,
+      value: subscription?.status ? null : mp("none", "None"),
     },
     {
       label: mp("remaining", "Remaining invites"),
       value: getRemainingInvites(subscription, mp("unlimited", "Unlimited")),
+    },
+    {
+      label: mp("ends", "Ends"),
+      value: periodEnd ? formatDate(periodEnd, locale) || "—" : "—",
     },
   ];
 
@@ -316,10 +407,19 @@ const ManagePlanModal = ({ visible, onClose, entity, entityType = "host", onSave
               {summaryRows.map((row) => (
                 <View style={styles.summaryItem} key={row.label}>
                   <LocalizedText style={styles.summaryLabel}>{row.label}</LocalizedText>
-                  {/* Values mix plan names, statuses and counts — adaptive. */}
-                  <AdaptiveText style={styles.summaryValue} numberOfLines={1}>
-                    {row.value}
-                  </AdaptiveText>
+                  {row.badge ? (
+                    <StatusBadge
+                      status={row.badge}
+                      domain="subscription"
+                      size="small"
+                      label={t(`managePlan.statusLabels.${row.badge}`, row.badge)}
+                    />
+                  ) : (
+                    /* Values mix plan names and counts — adaptive. */
+                    <AdaptiveText style={styles.summaryValue} numberOfLines={1}>
+                      {row.value}
+                    </AdaptiveText>
+                  )}
                 </View>
               ))}
             </View>
@@ -356,18 +456,37 @@ const ManagePlanModal = ({ visible, onClose, entity, entityType = "host", onSave
 
             {checkoutLink ? (
               <View style={styles.checkoutBox}>
+                <LocalizedText style={styles.linkIntro}>
+                  {mp(
+                    "linkReady",
+                    "Share this link with the business to pay and activate the plan."
+                  )}
+                </LocalizedText>
                 <LocalizedText style={styles.label}>{mp("checkoutLink", "Checkout link")}</LocalizedText>
-                {/* URL — intrinsically LTR token. */}
+                {/* URL — intrinsically LTR token, clipped in the middle so
+                    both the host and the token tail stay readable. */}
                 <Text
                   style={[styles.checkoutLinkText, styles.ltrToken]}
                   selectable
-                  numberOfLines={3}
+                  numberOfLines={2}
+                  ellipsizeMode="middle"
                 >
                   {isolateLtr(checkoutLink)}
                 </Text>
-                <TouchableOpacity style={styles.copyBtn} onPress={shareCheckoutLink}>
-                  <Ionicons name="share-outline" size={16} color={colors.primary[600]} />
-                  <LocalizedText style={styles.copyBtnText}>{mp("copy", "Copy")}</LocalizedText>
+                <TouchableOpacity
+                  style={[styles.copyBtn, linkShared && styles.copyBtnDone]}
+                  onPress={shareCheckoutLink}
+                >
+                  <Ionicons
+                    name={linkShared ? "checkmark" : "share-outline"}
+                    size={16}
+                    color={linkShared ? colors.success[600] : colors.primary[600]}
+                  />
+                  <LocalizedText
+                    style={[styles.copyBtnText, linkShared && styles.copyBtnTextDone]}
+                  >
+                    {linkShared ? mp("shared", "Shared") : mp("copy", "Share")}
+                  </LocalizedText>
                 </TouchableOpacity>
               </View>
             ) : (
@@ -518,33 +637,16 @@ const ManagePlanModal = ({ visible, onClose, entity, entityType = "host", onSave
 
                 {showExtraSection && (
                   <View style={styles.section}>
-                    <LocalizedText style={styles.label}>{mp("quantity", "Quantity")}</LocalizedText>
-                    <View style={styles.presetRow}>
-                      {INVITE_PRESETS.map((preset) => {
-                        const active = Number(quantity) === preset;
-                        return (
-                          <TouchableOpacity
-                            key={preset}
-                            style={[styles.preset, active && styles.presetActive]}
-                            onPress={() => setQuantity(String(preset))}
-                          >
-                            <LocalizedText
-                              style={[styles.presetText, active && styles.presetTextActive]}
-                            >
-                              {formatCount(preset, locale)}
-                            </LocalizedText>
-                          </TouchableOpacity>
-                        );
-                      })}
-                    </View>
-                    <TextInput
-                      style={styles.input}
-                      contentDirection="ltr"
-                      value={quantity}
-                      onChangeText={setQuantity}
-                      keyboardType="number-pad"
-                      maxLength={3}
-                    />
+                    <LocalizedText style={styles.label}>
+                      {mp("package", "Extra invites package")}
+                    </LocalizedText>
+                    {renderInviteTiers()}
+                    <LocalizedText style={styles.hint}>
+                      {mp(
+                        "packagePriceHint",
+                        "Prices shown are list prices — an admin grant is not charged."
+                      )}
+                    </LocalizedText>
                     {tab === "extra" && (
                       <View style={styles.field}>
                         <LocalizedText style={styles.label}>{mp("reason", "Reason")}</LocalizedText>
@@ -807,6 +909,16 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.body.medium,
     color: colors.natural[700],
   },
+  presetPrice: {
+    fontSize: typography.fontSize.body.small,
+    color: colors.natural[450],
+    marginTop: 2,
+    textAlign: "center",
+  },
+  hint: {
+    fontSize: typography.fontSize.body.small,
+    color: colors.natural[450],
+  },
   presetTextActive: {
     color: colors.primary[600],
     fontWeight: typography.fontWeight.semibold,
@@ -817,9 +929,19 @@ const styles = StyleSheet.create({
     backgroundColor: backgrounds.card[3],
     borderRadius: borderRadius[12],
   },
+  linkIntro: {
+    fontSize: typography.fontSize.body.medium,
+    color: colors.natural[700],
+    lineHeight: 22,
+  },
   checkoutLinkText: {
     fontSize: typography.fontSize.body.medium,
     color: colors.natural[800],
+    padding: spacing[12],
+    borderWidth: 1,
+    borderColor: colors.natural[250],
+    borderRadius: borderRadius[8],
+    backgroundColor: backgrounds.card[1],
   },
   ltrToken: {
     writingDirection: "ltr",
@@ -839,6 +961,12 @@ const styles = StyleSheet.create({
     color: colors.primary[600],
     fontWeight: typography.fontWeight.semibold,
     fontSize: typography.fontSize.body.medium,
+  },
+  copyBtnDone: {
+    borderColor: colors.success[500],
+  },
+  copyBtnTextDone: {
+    color: colors.success[600],
   },
   footer: {
     flexDirection: "row",

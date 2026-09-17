@@ -32,7 +32,17 @@
       "partially_refunded": "مستردة جزئيًا",
       "refunded": "مستردة",
       "needs_review": "تحتاج مراجعة",
-      "unavailable": "غير متاحة"
+      "unavailable": "لم يُنشأ لدى المزود"
+    },
+    "invoiceStatus": {
+      "initiated": "بانتظار الدفع",
+      "on_hold": "بانتظار سداد الفاتورة",
+      "paid": "مدفوعة",
+      "failed": "فشلت",
+      "refunded": "مستردة",
+      "canceled": "ملغاة",
+      "voided": "ملغاة",
+      "expired": "منتهية"
     },
     "stats": {
       "awaiting": "بانتظار الدفع",
@@ -103,7 +113,13 @@
       "transactions": "المعاملات المرتبطة",
       "syncPending": "تعذر التحقق من الحالة الأخيرة. تمت جدولة محاولة أخرى.",
       "cancelPending": "الإلغاء بانتظار تأكيد مزود الدفع.",
-      "refunded": "المبلغ المسترد (ر.س)",
+      "refunded": "المبلغ المسترد",
+      "collected": "المبلغ المحصّل",
+      "invoiceStatus": "حالة الفاتورة لدى المزود",
+      "sections": {
+        "request": "بيانات الطلب",
+        "provider": "حالة مزود الدفع"
+      },
       "syncStale": "الحالة غير محدثة — حدّث للتحقق من الدفع"
     },
     "empty": {
@@ -156,7 +172,9 @@
       "applepay": "آبل باي",
       "samsungpay": "سامسونج باي",
       "stcpay": "إس تي سي باي",
-      "token": "بطاقة محفوظة"
+      "token": "بطاقة محفوظة",
+      "sadadbill": "فاتورة سداد",
+      "other": "طريقة أخرى"
     }
   },
   "actions": {
@@ -185,6 +203,7 @@
     "reasonPlaceholder": "أدخل سبب الاسترداد...",
     "cancel": "إلغاء",
     "confirm": "تأكيد",
+    "copy": "نسخ",
     "close": "إغلاق"
   },
   "dateRange": {
@@ -235,6 +254,11 @@
     "capturedAt": "تاريخ القبض",
     "voidedAt": "تاريخ الإلغاء",
     "refundedAt": "تاريخ الاسترداد",
-    "refunds": "المسترجعات"
+    "refunds": "المسترجعات",
+    "providerStatus": "حالة المزود",
+    "sections": {
+      "identifiers": "المعرّفات",
+      "timeline": "التواريخ"
+    }
   }
 }

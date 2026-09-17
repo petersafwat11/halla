@@ -138,5 +138,6 @@ test('detail load error displays an error and an available close action', async 
     data: undefined, error: new Error('offline'), status: 'error', fetchStatus: 'idle',
   }));
   await rtl.waitFor(() => assert.ok(view.getByRole('alert')));
-  assert.ok(view.getByRole('button', { name: 'Close' }));
+  // Header dismiss icon and the footer action are both named "Close".
+  assert.ok(view.getAllByRole('button', { name: 'Close' }).length >= 1);
 });

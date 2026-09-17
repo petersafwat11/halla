@@ -8,16 +8,42 @@
  * Canonical backend DTO:
  * invitationBalance: {
  *   unlimited: boolean,
- *   base: number | null,
- *   compensation: number | null,
+ *   base: number | null,          // plan invites + purchased extras
+ *   planBase: number | null,      // invites the plan itself granted
+ *   extra: number | null,         // purchased/granted extra-invite add-ons
+ *   compensation: number | null,  // 15% bonus + any business carryover
+ *   carried: number | null,       // business plan-change carryover only
  *   consumed: number,
  *   total: number | null,
  *   remaining: number | null
  * }
+ *
+ * `base`/`compensation` are running totals that add-ons and plan-change
+ * carryover mutate. `planBase`/`extra`/`carried` split them back out so the
+ * host can see where their invites came from, using the immutable
+ * `planInvitePool` / `planCompensationPool` baselines stamped at creation.
  */
 
 const { COMPENSATION_PERCENTAGE, isUnlimited } = require('../../shared/constants/plans');
 const AppError = require('../../shared/errors/AppError');
+
+/**
+ * Split a running pool into "what the plan granted" and "what was added on
+ * top". A missing baseline means nothing is known to have been added, so the
+ * whole pool reads as plan-granted — never as a negative extra.
+ *
+ * @param {number} current - running total (invitePool / compensationPool)
+ * @param {number|null|undefined} baseline - stamped plan baseline
+ * @returns {{ planBase: number, extra: number }}
+ */
+function splitPool(current, baseline) {
+  const total = Math.max(0, Number(current) || 0);
+  if (baseline === null || baseline === undefined || !Number.isFinite(Number(baseline))) {
+    return { planBase: total, extra: 0 };
+  }
+  const planBase = Math.min(total, Math.max(0, Number(baseline) || 0));
+  return { planBase, extra: total - planBase };
+}
 
 /**
  * Pure calculator that derives canonical invitation balance from subscription/plan data
@@ -28,7 +54,10 @@ const AppError = require('../../shared/errors/AppError');
  * @returns {{
  *   unlimited: boolean,
  *   base: number | null,
+ *   planBase: number | null,
+ *   extra: number | null,
  *   compensation: number | null,
+ *   carried: number | null,
  *   consumed: number,
  *   total: number | null,
  *   remaining: number | null
@@ -39,7 +68,10 @@ function calculateInvitationBalance(target, optionalPlan = null) {
     return {
       unlimited: false,
       base: 0,
+      planBase: 0,
+      extra: 0,
       compensation: 0,
+      carried: 0,
       consumed: 0,
       total: 0,
       remaining: 0,
@@ -57,7 +89,10 @@ function calculateInvitationBalance(target, optionalPlan = null) {
       return {
         unlimited: true,
         base: null,
+        planBase: null,
+        extra: null,
         compensation: null,
+        carried: null,
         consumed: Math.max(0, Number(target.consumed) || 0),
         total: null,
         remaining: null,
@@ -74,10 +109,21 @@ function calculateInvitationBalance(target, optionalPlan = null) {
       target.remaining != null
         ? Math.max(0, Number(target.remaining) || 0)
         : Math.max(0, total - consumed);
+    // A DTO carries the already-split values, not the baselines, so they are
+    // read back directly. Missing ones mean the whole allowance is
+    // plan-granted rather than inventing extras.
+    const { planBase, extra } = splitPool(base, target.planBase);
+    const carried =
+      target.carried != null
+        ? Math.min(compensation, Math.max(0, Number(target.carried) || 0))
+        : 0;
     return {
       unlimited: false,
       base,
+      planBase,
+      extra,
       compensation,
+      carried,
       consumed,
       total,
       remaining,
@@ -120,7 +166,10 @@ function calculateInvitationBalance(target, optionalPlan = null) {
     return {
       unlimited: true,
       base: null,
+      planBase: null,
+      extra: null,
       compensation: null,
+      carried: null,
       consumed,
       total: null,
       remaining: null,
@@ -156,10 +205,27 @@ function calculateInvitationBalance(target, optionalPlan = null) {
   const total = base + compensation;
   const remaining = Math.max(0, total - consumed);
 
+  // Baselines are stamped on the subscription at creation. Fall back to the
+  // plan's own limits so subscriptions created before the baseline existed
+  // still split correctly.
+  const baseBaseline =
+    target.planInvitePool ?? plan?.limits?.invitePool ?? plan?.invitePool ?? null;
+  const compensationBaseline =
+    target.planCompensationPool ??
+    (baseBaseline != null
+      ? Math.floor((Math.max(0, Number(baseBaseline) || 0) * COMPENSATION_PERCENTAGE) / 100)
+      : null);
+
+  const { planBase, extra } = splitPool(base, baseBaseline);
+  const { extra: carried } = splitPool(compensation, compensationBaseline);
+
   return {
     unlimited: false,
     base,
+    planBase,
+    extra,
     compensation,
+    carried,
     consumed,
     total,
     remaining,

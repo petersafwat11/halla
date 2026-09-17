@@ -26,6 +26,8 @@ const {
   validateAndFormatPhone,
   isValidPhone,
   getPhoneLookupVariants,
+  getPhoneNationalDigits,
+  buildPhoneLookupClauses,
 } = require("../src/shared/utils/phone");
 
 test("DEFAULT_PHONE_PLACEHOLDER is the canonical placeholder", () => {
@@ -138,6 +140,75 @@ test("getPhoneLookupVariants covers every stored representation", () => {
   assert.deepEqual(getPhoneLookupVariants(null), []);
 });
 
+test("every prefix spelling resolves to the same national digits", () => {
+  const expected = "501234567";
+  for (const spelling of [
+    "501234567",
+    "0501234567",
+    "966501234567",
+    "+966501234567",
+    "00966501234567",
+    "+966 50 123 4567",
+    "050-123-4567",
+    "٠٥٠١٢٣٤٥٦٧",
+  ]) {
+    assert.equal(
+      getPhoneNationalDigits(spelling),
+      expected,
+      `national digits for ${spelling}`
+    );
+  }
+  assert.equal(getPhoneNationalDigits(""), "");
+  assert.equal(getPhoneNationalDigits(null), "");
+});
+
+test("buildPhoneLookupClauses matches a number stored in any prefix form", () => {
+  const clauses = buildPhoneLookupClauses(["mobile"], "501234567");
+  assert.ok(clauses.length >= 2, "expected an $in arm and a suffix arm");
+
+  const inArm = clauses.find((c) => c.mobile && c.mobile.$in);
+  for (const stored of [
+    "501234567",
+    "0501234567",
+    "966501234567",
+    "+966501234567",
+    "00966501234567",
+  ]) {
+    assert.ok(inArm.mobile.$in.includes(stored), `$in misses ${stored}`);
+  }
+
+  // The regex arm is the net for separator-formatted rows no $in can enumerate.
+  const rxArm = clauses.find((c) => c.mobile instanceof RegExp);
+  assert.ok(rxArm, "expected a regex clause");
+  for (const stored of [
+    "501234567",
+    "0501234567",
+    "966501234567",
+    "+966501234567",
+    "00966501234567",
+    "+966 50 123 4567",
+    "0501-234-567",
+    "+966-50-123-4567",
+  ]) {
+    assert.match(stored, rxArm.mobile, `regex misses ${stored}`);
+  }
+  // Anything before the national digits must be a recognised dialling prefix,
+  // so a LONGER number that merely ends with them is a different subscriber.
+  for (const other of [
+    "966501234568",
+    "1501234567",
+    "15501234567",
+    "201501234567",
+    "9665501234567",
+    "5501234567",
+  ]) {
+    assert.doesNotMatch(other, rxArm.mobile, `regex wrongly matches ${other}`);
+  }
+
+  assert.deepEqual(buildPhoneLookupClauses(["mobile"], ""), []);
+  assert.deepEqual(buildPhoneLookupClauses([], "501234567"), []);
+});
+
 test("parity: backend copy matches @halaa/shared behavior (no drift)", async () => {
   const shared = await import("@halaa/shared/utils/phone");
 
@@ -173,6 +244,11 @@ test("parity: backend copy matches @halaa/shared behavior (no drift)", async () 
       shared.getPhoneLookupVariants(s),
       getPhoneLookupVariants(s),
       `getPhoneLookupVariants drift for ${s}`
+    );
+    assert.equal(
+      shared.getPhoneNationalDigits(s),
+      getPhoneNationalDigits(s),
+      `getPhoneNationalDigits drift for ${s}`
     );
   }
 

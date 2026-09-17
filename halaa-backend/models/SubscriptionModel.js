@@ -94,6 +94,15 @@ const subscriptionSchema = new mongoose.Schema(
     compensationPool: { type: Number, default: null },
     invitesConsumed:  { type: Number, default: 0 },
 
+    // Immutable baselines stamped from the plan at creation time. `invitePool`
+    // and `compensationPool` are mutable running totals — extra-invite add-ons
+    // fold into `invitePool` (addons.quota.applyQuota) and business plan-change
+    // carryover folds into `compensationPool` — so without these the UI cannot
+    // tell "what the plan gave you" from "what you bought / carried over".
+    // Never mutated after creation.
+    planInvitePool:       { type: Number, default: null },
+    planCompensationPool: { type: Number, default: null },
+
     // Set the first time a real message is dispatched on this subscription
     // (initial send, resend, or extra reminder). This is the authoritative
     // "sending has started" signal for the per-event re-creation gate —
@@ -368,6 +377,11 @@ subscriptionSchema.methods.renew = async function () {
   if (basePool !== null) {
     this.invitePool = basePool;
     this.compensationPool = Math.floor((basePool * COMPENSATION_PERCENTAGE) / 100);
+    // Renewal re-grants the plan's entitlement, so the baselines move with it.
+    // Leaving them stale would make the new period's plan invites read as
+    // "purchased extras" (or go negative against an edited plan).
+    this.planInvitePool = this.invitePool;
+    this.planCompensationPool = this.compensationPool;
   }
   this.invitesConsumed = 0;
   this.firstSendAt = null;
@@ -453,6 +467,11 @@ subscriptionSchema.methods.getSummary = function () {
     planId: this.planId?._id || this.planId,
     planCode: this.planCode, // From virtual
     planType: this.planType, // From virtual
+    // Customer-facing plan name. Follows the `getLocalized(obj, "planName")`
+    // convention shared by web/mobile so no surface ever has to fall back to
+    // the raw plan code (e.g. "basic_monthly_200") in front of a host.
+    planNameAr: this.planId?.nameAr || null,
+    planNameEn: this.planId?.nameEn || null,
     planFamily: this.planId?.planFamily || null,
     billingType: this.planId?.billingType || null,
     status: this.status,
@@ -462,7 +481,12 @@ subscriptionSchema.methods.getSummary = function () {
     isPoolSubscription: this.isPoolSubscription,
     invitePool: this.invitePool,
     compensationPool: this.compensationPool,
+    planInvitePool: this.planInvitePool,
+    planCompensationPool: this.planCompensationPool,
     invitesConsumed: this.invitesConsumed,
+    // Per-event plans are spent once sending starts — the UI uses this to
+    // stop offering invite top-ups that could never be spent.
+    firstSendAt: this.firstSendAt,
     invitationBalance: this.invitationBalance,
     activatedAt: this.activatedAt,
     expiresAt: this.expiresAt,
@@ -550,6 +574,9 @@ subscriptionSchema.statics.createForUser = async function (userId, plan, options
   return this.create({
     userId, planId: plan._id, status: options.status || 'active',
     activatedAt: now, expiresAt, invitePool, compensationPool, invitesConsumed: 0,
+    // Frozen baselines — see schema comment. Add-ons and carryover move the
+    // running pools above; these stay at what the plan itself granted.
+    planInvitePool: invitePool, planCompensationPool: compensationPool,
     pricePaid: { amount: options.pricePaid || 0, currency: options.currency || 'SAR' },
     createdBy: options.createdBy || {},
   });

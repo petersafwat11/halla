@@ -232,7 +232,7 @@ module.exports = {
       try {
         const sub = await Subscription.findById(event.subscriptionId)
           .select(
-            "invitePool compensationPool invitesConsumed status expiresAt planId"
+            "invitePool compensationPool planInvitePool planCompensationPool invitesConsumed status expiresAt planId"
           )
           .populate("planId", "planType code limits name")
           .lean();

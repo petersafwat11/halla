@@ -57,7 +57,7 @@ async function getBusinesses({ page = 1, limit = 10, search, status, from, to })
       .select('-password -passwordResetToken -__v')
       .populate({
         path: 'subscription',
-        select: 'status expiresAt invitePool compensationPool invitesConsumed planId',
+        select: 'status expiresAt invitePool compensationPool planInvitePool planCompensationPool invitesConsumed planId',
         populate: { path: 'planId', select: 'nameAr nameEn code planType billingType' },
       })
       .sort({ createdAt: -1 })
@@ -91,7 +91,7 @@ async function getBusinessById(businessId) {
     .select('-password -passwordResetToken')
     .populate({
       path: 'subscription',
-      select: 'status expiresAt invitePool compensationPool invitesConsumed planId',
+      select: 'status expiresAt invitePool compensationPool planInvitePool planCompensationPool invitesConsumed planId',
       populate: { path: 'planId', select: 'nameAr nameEn code planType billingType limits' },
     })
     .lean();

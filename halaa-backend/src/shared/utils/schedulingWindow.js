@@ -9,7 +9,7 @@
  *   - admin.events.service.updateEventFull         (floor + re-validate stored send)
  *
  * RULES (a "scheduled send" is when the initial bulk invitations go out):
- *   - minLead(plan):  TRIAL = 15 minutes,  PAID = 24 hours.
+ *   - minLead(plan):  TRIAL = 3 minutes,  PAID = 24 hours.
  *   - Scheduled-send window: [ now + minLead, eventInstant − 3 days ].
  *       below min  → SCHEDULE_TOO_SOON
  *       above max  → SCHEDULE_TOO_LATE
@@ -50,7 +50,7 @@ const maxLeadMs = () => SCHEDULE_MAX_LEAD_DAYS * MS_PER_DAY;
 
 /**
  * Minimum lead time in ms between `now` and the scheduled send.
- * TRIAL = 15 min (env-driven), PAID = 24h (env-driven).
+ * TRIAL = 3 min (env-driven), PAID = 24h (env-driven).
  * Defaults to PAID when the plan is indeterminate (fail-closed: paid is the
  * stricter floor, so an unknown plan can't bypass the 24h minimum).
  *
@@ -59,7 +59,7 @@ const maxLeadMs = () => SCHEDULE_MAX_LEAD_DAYS * MS_PER_DAY;
  */
 function minLeadMs(isTrial) {
   return isTrial
-    ? (config?.events?.trialScheduleMinLeadMinutes ?? 15) * MS_PER_MINUTE
+    ? (config?.events?.trialScheduleMinLeadMinutes ?? 3) * MS_PER_MINUTE
     : (config?.events?.scheduleMinLeadHours ?? 24) * MS_PER_HOUR;
 }
 
@@ -139,9 +139,9 @@ function assertSendWindow({ scheduledInstant, eventInstant, isTrial, now = new D
   const earliestSend = now.getTime() + lead;
   if (scheduledInstant.getTime() < earliestSend) {
     const minLeadHours = isTrial
-      ? Math.ceil((config?.events?.trialScheduleMinLeadMinutes ?? 15) / 60)
+      ? Math.ceil((config?.events?.trialScheduleMinLeadMinutes ?? 3) / 60)
       : (config?.events?.scheduleMinLeadHours ?? 24);
-    const minLeadMinutes = config?.events?.trialScheduleMinLeadMinutes ?? 15;
+    const minLeadMinutes = config?.events?.trialScheduleMinLeadMinutes ?? 3;
     const unit = isTrial ? 'minutes' : 'hours';
     const amount = isTrial ? minLeadMinutes : minLeadHours;
     throw new AppError(

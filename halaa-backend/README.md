@@ -125,7 +125,7 @@ EMAIL_FROM=noreply@halaa.sa
 
 # ── Scheduling limits ──────────────────────────────────
 # SCHEDULE_MIN_LEAD_HOURS=24
-# TRIAL_SCHEDULE_MIN_LEAD_MINUTES=15
+# TRIAL_SCHEDULE_MIN_LEAD_MINUTES=3
 # EXPORT_MAX_ROWS=10000
 
 # ── Optional infra ─────────────────────────────────────

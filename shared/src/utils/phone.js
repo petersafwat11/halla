@@ -240,9 +240,30 @@ export const formatPhoneDisplay = (phoneNumber) => {
 };
 
 /**
+ * The national significant digits — the part of the number that is identical
+ * whichever prefix it was typed or stored with (`05…`, `5…`, `966…`, `+966…`,
+ * `00966…`). Use this to match a phone regardless of stored format.
+ *
+ * @param {string|number} phoneNumber
+ * @returns {string} e.g. "501234567" for any Saudi spelling, "" if unparseable
+ */
+export const getPhoneNationalDigits = (phoneNumber) => {
+  const normalized = normalizePhoneNumber(phoneNumber);
+  if (!normalized) return "";
+  if (normalized.startsWith("966")) return normalized.slice(3);
+  if (normalized.startsWith("20")) return normalized.slice(2);
+  return normalized;
+};
+
+/**
  * Generates all valid query lookup variants for database queries.
  * Given '0501234567' or '501234567', returns:
- * ['966501234567', '501234567', '0501234567', '+966501234567', rawValue]
+ * ['966501234567', '501234567', '0501234567', '+966501234567', '00966501234567', rawValue]
+ *
+ * These cover every prefix spelling a number may have been STORED with, so a
+ * lookup finds the record whichever way the caller typed it. For rows stored
+ * with separators (spaces/dashes) an `$in` cannot help — match on
+ * `getPhoneNationalDigits` as a suffix instead.
  *
  * @param {string|number} phoneNumber
  * @returns {string[]} Array of unique lookup variants
@@ -257,10 +278,11 @@ export const getPhoneLookupVariants = (phoneNumber) => {
   if (normalized) {
     variants.add(normalized);
     variants.add(`+${normalized}`);
-    if (normalized.startsWith("966") && normalized.length === 12) {
-      const nat9 = normalized.slice(3);
-      variants.add(nat9);
-      variants.add(`0${nat9}`);
+    variants.add(`00${normalized}`);
+    const national = getPhoneNationalDigits(normalized);
+    if (national) {
+      variants.add(national);
+      variants.add(`0${national}`);
     }
   }
 

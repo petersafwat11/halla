@@ -641,8 +641,40 @@ module.exports = {
       }
     }
 
+    const { parseReminderTime: reminderInstantOf } = require("../../shared/utils/timezone");
+    const previousReminderInstant = reminderInstantOf(event);
+
     event.reminderSettings = { ...event.reminderSettings, ...settings };
     await event.save();
+
+    // Completion is per-SCHEDULE, not per-event: moving the reminder to a new
+    // instant must re-arm it. Read the instant back after save so the pre-save
+    // recompute (customReminderTime → 48h default) is taken into account.
+    const nextReminderInstant = reminderInstantOf(event);
+    const rescheduled =
+      previousReminderInstant?.getTime() !== nextReminderInstant?.getTime();
+    // A reminder that was CLOSED unsent (its window passed) is re-armed by a
+    // reschedule too — the new instant gets its own window.
+    const wasConsumed =
+      event.messagingStatus?.reminderSent || event.messagingStatus?.reminderClosedAt;
+    if (rescheduled && wasConsumed) {
+      await Event.updateOne(
+        { _id: event._id },
+        {
+          $set: {
+            "messagingStatus.reminderSent": false,
+            // null, matching the trial re-arm in messaging.schedule.service.
+            "messagingStatus.reminderSentAt": null,
+            "messagingStatus.reminderClosedAt": null,
+            "messagingStatus.reminderSkipReason": null,
+          },
+        }
+      );
+      event.messagingStatus.reminderSent = false;
+      event.messagingStatus.reminderSentAt = null;
+      event.messagingStatus.reminderClosedAt = null;
+      event.messagingStatus.reminderSkipReason = null;
+    }
 
     const userId =
       typeof userContext === 'object' && userContext !== null

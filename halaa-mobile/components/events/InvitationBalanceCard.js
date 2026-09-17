@@ -3,6 +3,7 @@ import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { formatCount, getLocalized } from "@halaa/shared/utils/locale";
+import { canPurchaseMoreInvites } from "@halaa/shared/utils/invitationBalance";
 import { useTranslation } from "../../localization";
 import LocalizedText from "../commen/LocalizedText";
 
@@ -32,6 +33,7 @@ export default function InvitationBalanceCard({
   compact = false,
   style,
   currentSubscription,
+  event,
 }) {
   const { t, currentLanguage } = useTranslation("events");
   const navigation = useNavigation();
@@ -40,7 +42,13 @@ export default function InvitationBalanceCard({
   if (!balance) return null;
 
   const isUnlimited = Boolean(balance.unlimited);
-  const isPurchasable = purchasable !== undefined ? purchasable : !isUnlimited;
+  // Hidden whenever a top-up could not be spent: unlimited plan, free trial,
+  // inactive subscription, ended/cancelled event, or a per-event plan that
+  // has already started sending. Shared with web so both agree.
+  const isPurchasable =
+    purchasable !== undefined
+      ? purchasable
+      : canPurchaseMoreInvites({ balance, subscription: currentSubscription, event });
 
   const handleAddMore = () => {
     navigation.navigate("MainTabs", {
@@ -62,15 +70,15 @@ export default function InvitationBalanceCard({
     ? t("invitationBalance.unlimited", "غير محدود")
     : formatCount(balance.total ?? 0, locale);
   const currentPlan = currentSubscription?.planId || currentSubscription?.plan;
+  // Customer-facing name only. The plan code ("basic_monthly_200") is an
+  // internal identifier and must never reach a host, so it is not in this
+  // chain — an empty name simply hides the row.
   const currentPlanName =
     getLocalized(currentSubscription, "planName", locale) ||
     getLocalized(currentPlan, "name", locale) ||
-    currentSubscription?.planName?.[locale] ||
-    currentSubscription?.planName ||
-    currentPlan?.name ||
-    currentPlan?.code ||
-    currentSubscription?.planCode ||
-    currentSubscription?.planType;
+    currentPlan?.nameAr ||
+    currentPlan?.nameEn ||
+    null;
 
   if (compact) {
     return (
@@ -113,14 +121,16 @@ export default function InvitationBalanceCard({
   return (
     <View style={styles.group}>
       {currentPlanName ? (
+        // The note explains the rule, so it leads; the plan name is the
+        // supporting detail and closes the block. Mirrors web.
         <View style={styles.currentPlan} accessibilityRole="summary">
+          <LocalizedText style={styles.currentPlanNote}>
+            {t("currentPlan.eventAllowanceNote")}
+          </LocalizedText>
           <LocalizedText style={styles.currentPlanLabel}>
             {t("currentPlan.label")}
           </LocalizedText>
           <LocalizedText style={styles.currentPlanName}>{currentPlanName}</LocalizedText>
-          <LocalizedText style={styles.currentPlanNote}>
-            {t("currentPlan.eventAllowanceNote")}
-          </LocalizedText>
         </View>
       ) : null}
     <View style={[styles.card, style]}>
@@ -150,7 +160,7 @@ const styles = StyleSheet.create({
   currentPlan: { backgroundColor: "#FFFFFF", borderRadius: 14, borderWidth: 1, borderColor: "#E8D4C4", padding: 14, marginHorizontal: 4, gap: 3 },
   currentPlanLabel: { fontSize: 12, fontFamily: "Cairo_400Regular", color: "#756757" },
   currentPlanName: { fontSize: 16, fontFamily: "Cairo_700Bold", color: "#6B4E33" },
-  currentPlanNote: { marginTop: 3, fontSize: 11, lineHeight: 18, fontFamily: "Cairo_400Regular", color: "#756757" },
+  currentPlanNote: { marginBottom: 3, fontSize: 11, lineHeight: 18, fontFamily: "Cairo_400Regular", color: "#756757" },
   card: { backgroundColor: "#FFFFFF", borderRadius: 14, borderWidth: 1, borderColor: "#E8D4C4", padding: 18, marginHorizontal: 4, marginVertical: 6, gap: 12 },
   title: { fontSize: 15, fontFamily: "Cairo_600SemiBold", color: "#4A3D33", lineHeight: 24 },
   balanceRow: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 16 },

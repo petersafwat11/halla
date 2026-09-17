@@ -17,7 +17,7 @@ const StepOne = ({ constraints, owner } = {}) => {
   const isTrial = subscriptionData?.data?.planCode === "trial";
 
   // Earliest selectable event date enforces the backend event-date floor:
-  //   event date ≥ now + minLead + 3d  (trial minLead = 15min → ~now+3d,
+  //   event date ≥ now + minLead + 3d  (trial minLead = 3min → ~now+3d,
   //   paid minLead = 24h → now+4d). The picker is day-granular, so we floor
   //   to the calendar day; the backend (assertEventDateFloor) is the source
   //   of truth and rejects EVENT_DATE_TOO_SOON for boundary cases.
